@@ -1,0 +1,32 @@
+Version 2.6.0 Update Announcement
+
+New Features and Improvements:
+1. Batch Deletion/Hiding of Save Files
+   - Now you can delete or hide multiple saves at once
+
+2. Updated Graphics for Different Levels
+   - Refreshed images across various game levels
+
+3. Bug Fixes
+   - Several stability and performance improvements
+
+Difficulty System Changes:
+- If save difficulty matches actual difficulty, only one difficulty will be displayed
+
+Detailed Save Information:
+- Save Difficulty: Difficulty indicated in the save file name
+- Actual Difficulty: Difficulty found within the file contents
+
+Example:
+- A Nightmare difficulty save named MULTIPLAYER_xxx_Hard.sav
+  * Save Difficulty: Hard
+  * Actual Difficulty: Nightmare
+
+Gameplay Tip for Nightmare Difficulty:
+- When creating a Nightmare difficulty save, locate a Hard difficulty save
+- If you die, you can continue playing from that save
+
+Important Cloud Save Warning:
+⚠️ If cloud saves are enabled:
+- Deleted or edited saves may be restored
+- Edited saves will be retained

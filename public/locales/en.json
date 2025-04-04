@@ -1,0 +1,11 @@
+{
+    "singleplayer": "Singleplayer",
+    "multiplayer": "Multiplayer",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "nightmare": "Nightmare",
+    "archive_difficulty": "Archive Difficulty",
+    "actual_difficulty": "Actual Difficulty",
+    "archive_mode": "Archive Mode"
+}

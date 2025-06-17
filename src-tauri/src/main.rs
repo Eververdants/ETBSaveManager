@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    etbsgt_lib::run()
+    etbsm_lib::run()
 }

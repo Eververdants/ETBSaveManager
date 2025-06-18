@@ -102,10 +102,10 @@ npm tauri dev
 
 ---
 
-### 📹 Bilibili 视频介绍（2.6.0）
+## 📹 Bilibili 视频介绍（2.6.0）
 观看详细的操作指南，请访问：[视频介绍](https://www.bilibili.com/video/BV1L3yeYzEfi)
 
 ---
 
-### 📄 许可证
+## 📄 许可证
 本项目采用 MIT License，请参阅[LICENSE](https://bgithub.xyz/llzgdc/ETBSaveManager/blob/main/LICENSE)文件。

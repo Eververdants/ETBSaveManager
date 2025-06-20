@@ -2,9 +2,14 @@
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+<p align="center">
+  <img src="./src-tauri/icons/128x128.png" alt="icon">
+</p>
+
 > 正在开发中的重大更新版本 —— 更现代化的UI、搜索功能、颜色主题、多语言切换等新特性！
 
 这是一个专为游戏《逃离后室》设计的桌面级存档管理工具，使用 Vue.js + JavaScript + CSS 构建前端，并通过 Vite 作为构建工具。3.0 是一次全面升级，带来全新的用户体验与更强的功能模块。
+
 ‼️‼️‼️本仓库、程序不属于Escape The Backrooms开发者Fancy‼️‼️‼️
 
 ---
@@ -68,7 +73,7 @@ cd ETBSaveManager
 npm install
 
 # 运行开发环境
-npm tauri dev
+npm run tauri dev
 ```
 
 ---
@@ -108,4 +113,4 @@ npm tauri dev
 ---
 
 ## 📄 许可证
-本项目采用 MIT License，请参阅[LICENSE](https://bgithub.xyz/llzgdc/ETBSaveManager/blob/main/LICENSE)文件。
+本项目采用 MIT License，请参阅[LICENSE](https://github.com/llzgdc/ETBSaveManager/blob/main/LICENSE)文件。

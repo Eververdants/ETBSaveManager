@@ -16,11 +16,14 @@
     "@tauri-apps/plugin-fs": "latest",
     "@tauri-apps/plugin-opener": "^2",
     "gsap": "^3.13.0",
+    "i18next": "^25.2.1",
+    "i18next-browser-languagedetector": "^8.2.0",
+    "i18next-http-backend": "^3.0.2",
     "lucide-vue-next": "^0.513.0",
     "postcss": "^8.5.4",
     "tailwindcss": "^4.1.8",
     "vue": "^3.5.13",
-    "vue-i18n": "next"
+    "vue-i18n": "^11.1.6"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",

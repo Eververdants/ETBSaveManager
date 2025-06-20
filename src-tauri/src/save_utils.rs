@@ -1,5 +1,5 @@
-use std::path::{Path, PathBuf};
 use serde::Serialize;
+use std::path::{Path, PathBuf};
 
 #[derive(Serialize)]
 pub struct SaveFileInfo {
@@ -24,7 +24,10 @@ pub fn build_save_info(
 ) -> SaveFileInfo {
     let file_name = path.file_name().unwrap().to_str().unwrap();
 
-    let re = regex::Regex::new(r"^(MULTIPLAYER|SINGLEPLAYER)_(.+?)_(Easy|Normal|Hard|Nightmare|\d+)\.sav$").unwrap();
+    let re = regex::Regex::new(
+        r"^(MULTIPLAYER|SINGLEPLAYER)_(.+?)_(Easy|Normal|Hard|Nightmare|\d+)\.sav$",
+    )
+    .unwrap();
     let caps = re.captures(file_name).unwrap();
 
     let mode_raw = caps.get(1).unwrap().as_str();
@@ -35,7 +38,8 @@ pub fn build_save_info(
         "MULTIPLAYER" => "多人模式",
         "SINGLEPLAYER" => "单人模式",
         _ => "未知模式",
-    }.to_string();
+    }
+    .to_string();
 
     let difficulty = match difficulty_raw.to_lowercase().as_str() {
         "easy" => "简单难度",
@@ -43,7 +47,8 @@ pub fn build_save_info(
         "hard" => "困难难度",
         "nightmare" => "噩梦难度",
         _ => "普通难度",
-    }.to_string();
+    }
+    .to_string();
 
     let difficulty_class = match difficulty_raw.to_lowercase().as_str() {
         "easy" => "Easy",
@@ -51,12 +56,14 @@ pub fn build_save_info(
         "hard" => "Hard",
         "nightmare" => "Nightmare",
         _ => "Normal",
-    }.to_string();
+    }
+    .to_string();
 
     // 获取 SaveGames 根目录
     let base_dir = std::env::var("LOCALAPPDATA")
-        .map(|local_appdata| PathBuf::from(local_appdata)
-        .join("EscapeTheBackrooms\\Saved\\SaveGames"))
+        .map(|local_appdata| {
+            PathBuf::from(local_appdata).join("EscapeTheBackrooms\\Saved\\SaveGames")
+        })
         .ok()
         .filter(|dir| dir.exists());
 

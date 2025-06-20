@@ -1,9 +1,9 @@
 use chrono::{DateTime, Local};
-use uesave::Save;
 use serde_json::Value;
+use std::fs::File;
+use std::io::{Cursor, Read};
 use std::path::Path;
-use std::fs::{File};
-use std::io::{Read, Cursor};
+use uesave::Save;
 
 /// 解析 .sav 文件为 Save 对象
 pub fn parse_sav_file(path: &Path) -> Result<Save, String> {
@@ -26,12 +26,14 @@ pub fn parse_sav_file(path: &Path) -> Result<Save, String> {
 /// 获取文件最后修改时间，格式为 "YYYY-MM-DD"
 pub fn get_modified_date(path: &Path) -> Result<String, String> {
     let metadata = std::fs::metadata(path).map_err(|e| format!("获取文件元信息失败: {}", e))?;
-    let modified = metadata.modified().map_err(|e| format!("获取修改时间失败: {}", e))?;
+    let modified = metadata
+        .modified()
+        .map_err(|e| format!("获取修改时间失败: {}", e))?;
     let datetime: DateTime<Local> = DateTime::from(modified);
     Ok(datetime.format("%Y-%m-%d").to_string())
 }
 
-/// 提取 CurrentLevel_0.Name 字段值（使用类似 JSON 的嵌套访问风格） 
+/// 提取 CurrentLevel_0.Name 字段值（使用类似 JSON 的嵌套访问风格）
 pub fn extract_current_level(json: &Value) -> String {
     json["root"]["properties"]["CurrentLevel_0"]["Name"]
         .as_str()

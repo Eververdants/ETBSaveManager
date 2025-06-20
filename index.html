@@ -1,34 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/ETBSM-background.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="/fontawesome/js/all.min.js"></script>
+    <link rel="stylesheet" href="./src/assets/css/index.css">
     <title>ETBSM</title>
   </head>
-
-  <style>
-    /* 隐藏滚动条，但保持可滚动 */
-    body::-webkit-scrollbar {
-        display: none; /* 仅对WebKit有效 */
-    }
-
-    /* 对于非WebKit浏览器，可以尝试下面的方法 */
-    html, body {
-        overflow: hidden;
-        height: 100%;
-    }
-
-    body {
-      overflow-y: scroll; /* 允许垂直滚动 */
-      -ms-overflow-style: none; /* IE和Edge */
-      scrollbar-width: none; /* Firefox */
-    }
-  </style>
 
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
-    <script type="module" src="/src/utils/disableShortcuts.js"></script>
+    <!-- <script type="module" src="/src/utils/disableShortcuts.js"></script> -->
   </body>
 </html>

@@ -1,12 +1,19 @@
 <template>
   <div :class="{ 'light-mode': lightMode }">
-    <ArchiveCard v-for="archive in archives" :key="archive.id" :archive="archive" :light-mode="lightMode"
-      @delete="handleDelete" @edit="handleEdit" @toggle="handleToggle" />
+    <ArchiveCard
+      v-for="archive in archives"
+      :key="archive.id"
+      :archive="archive"
+      :light-mode="lightMode"
+      @delete="handleDelete"
+      @edit="handleEdit"
+      @toggle="handleToggle"
+    />
   </div>
 </template>
 
 <script>
-import ArchiveCard from '../components/LG_Card.vue';
+import ArchiveCard from "../components/LG_Card.vue";
 
 export default {
   components: { ArchiveCard },
@@ -24,7 +31,7 @@ export default {
           mode: "生存模式",
           date: "2023-06-15",
           currentLevel: "Level 5",
-          hidden: false
+          hidden: false,
         },
         {
           id: 2,
@@ -36,7 +43,7 @@ export default {
           mode: "创造模式",
           date: "2023-05-22",
           currentLevel: "Level 5",
-          hidden: false
+          hidden: false,
         },
         {
           id: 3,
@@ -48,9 +55,9 @@ export default {
           mode: "极限模式",
           date: "2023-07-10",
           currentLevel: "末日",
-          hidden: true
-        }
-      ]
+          hidden: true,
+        },
+      ],
     };
   },
   methods: {
@@ -62,8 +69,8 @@ export default {
     },
     handleToggle(archiveId) {
       // 处理切换可见性逻辑
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -82,7 +89,7 @@ export default {
 }
 pre {
   margin: 12px 0 0 0;
-  background: rgba(0,0,0,0.04);
+  background: rgba(0, 0, 0, 0.04);
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 13px;
@@ -90,23 +97,21 @@ pre {
   width: 100%;
   overflow-x: auto;
 }
-.btn-row[style*='background'] pre {
-  background: rgba(255,255,255,0.08);
+.btn-row[style*="background"] pre {
+  background: rgba(255, 255, 255, 0.08);
   color: #eee;
 }
 
 .btn {
-    margin: 10px;
+  margin: 10px;
 }
 
 .achieve-list {
   display: grid;
-    grid-template-columns: repeat(3, var(--card-width));
-    gap: 25px;
-    width: 100%;
-    padding: 0 20px;
-    justify-content: center;
+  grid-template-columns: repeat(3, var(--card-width));
+  gap: 25px;
+  width: 100%;
+  padding: 0 20px;
+  justify-content: center;
 }
-
-
 </style>

@@ -1,5 +1,5 @@
-mod get_file_path;
 mod cli_handlers;
+mod get_file_path;
 mod save_utils;
 
 // use tauri::Manager;
@@ -27,7 +27,13 @@ async fn load_all_saves() -> Result<Vec<SaveFileInfo>, String> {
         let date = cli_handlers::get_modified_date(path)?;
 
         // 构建保存信息
-        let info = save_utils::build_save_info((i + 1) as u32, path, current_level, actual_difficulty, date);
+        let info = save_utils::build_save_info(
+            (i + 1) as u32,
+            path,
+            current_level,
+            actual_difficulty,
+            date,
+        );
         result.push(info);
     }
 

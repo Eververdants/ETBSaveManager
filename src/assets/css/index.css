@@ -1,0 +1,17 @@
+/* 隐藏滚动条，但保持可滚动 */
+body::-webkit-scrollbar {
+  display: none; /* 仅对WebKit有效 */
+}
+
+/* 对于非WebKit浏览器，可以尝试下面的方法 */
+html,
+body {
+  overflow: hidden;
+  height: 100%;
+}
+
+body {
+  overflow-y: scroll; /* 允许垂直滚动 */
+  -ms-overflow-style: none; /* IE和Edge */
+  scrollbar-width: none; /* Firefox */
+}

@@ -1,19 +1,40 @@
 <template>
   <div class="glass-dropdown" ref="dropdown">
-    <div class="dropdown-trigger" @click="toggleDropdown" @keydown.enter="toggleDropdown" @keydown.down="openDropdown"
-      tabindex="0">
+    <div
+      class="dropdown-trigger"
+      @click="toggleDropdown"
+      @keydown.enter="toggleDropdown"
+      @keydown.down="openDropdown"
+      tabindex="0"
+    >
       <span>{{ displayText }}</span>
-      <svg class="dropdown-icon" :class="{ rotated: isOpen }" viewBox="0 0 24 24" fill="none"
-        xmlns="http://www.w3.org/2000/svg">
-        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-          stroke-linejoin="round" />
+      <svg
+        class="dropdown-icon"
+        :class="{ rotated: isOpen }"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M6 9L12 15L18 9"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
       </svg>
     </div>
 
     <div class="dropdown-list" :class="{ visible: isOpen }" ref="dropdownList">
-      <div v-for="(option, index) in options" :key="index" class="dropdown-item"
-        :class="{ selected: modelValue === option.value }" @click="selectOption(option)"
-        @keydown.enter="selectOption(option)" tabindex="0">
+      <div
+        v-for="(option, index) in options"
+        :key="index"
+        class="dropdown-item"
+        :class="{ selected: modelValue === option.value }"
+        @click="selectOption(option)"
+        @keydown.enter="selectOption(option)"
+        tabindex="0"
+      >
         {{ option.label }}
       </div>
     </div>
@@ -21,69 +42,77 @@
 </template>
 
 <script>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
-import gsap from 'gsap';
+import { ref, watch, onMounted, onUnmounted } from "vue";
+import gsap from "gsap";
 
 export default {
-  name: 'GlassDropdown',
+  name: "GlassDropdown",
   props: {
     modelValue: {
       type: [String, Number],
-      default: null
+      default: null,
     },
     options: {
       type: Array,
       required: true,
-      default: () => []
+      default: () => [],
     },
     darkMode: {
       type: Boolean,
-      default: false
+      default: false,
     },
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
     defaultText: {
       type: String,
-      default: '请选择'
-    }
+      default: "请选择",
+    },
   },
-  emits: ['update:modelValue'],
+  emits: ["update:modelValue"],
   setup(props, { emit }) {
     const isOpen = ref(false);
     const dropdown = ref(null);
     const dropdownList = ref(null);
     const displayText = ref(props.defaultText);
 
-    watch(() => props.modelValue, (newVal) => {
-      const selectedOption = props.options.find(opt => opt.value === newVal);
-      displayText.value = selectedOption ? selectedOption.label : props.defaultText;
-    }, { immediate: true });
+    watch(
+      () => props.modelValue,
+      (newVal) => {
+        const selectedOption = props.options.find(
+          (opt) => opt.value === newVal
+        );
+        displayText.value = selectedOption
+          ? selectedOption.label
+          : props.defaultText;
+      },
+      { immediate: true }
+    );
 
     const openDropdown = () => {
       if (props.disabled) return;
 
       isOpen.value = true;
-      document.addEventListener('click', handleClickOutside);
+      document.addEventListener("click", handleClickOutside);
 
       gsap.to(dropdownList.value, {
         duration: 0.3,
         opacity: 1,
         y: 0,
-        ease: "power2.out"
+        ease: "power2.out",
       });
     };
 
     const closeDropdown = () => {
       isOpen.value = false;
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
 
       gsap.to(dropdownList.value, {
         duration: 0.2,
         opacity: 0,
         y: -10,
-        ease: "power2.in"
+        ease: "power2.in",
       });
     };
 
@@ -104,36 +133,36 @@ export default {
     };
 
     const selectOption = (option) => {
-      emit('update:modelValue', option.value);
+      emit("update:modelValue", option.value);
       closeDropdown();
     };
 
     const handleKeydown = (event) => {
       if (!isOpen.value) return;
 
-      const items = dropdownList.value.querySelectorAll('.dropdown-item');
+      const items = dropdownList.value.querySelectorAll(".dropdown-item");
       if (!items.length) return;
 
       const currentIndex = Array.from(items).findIndex(
-        item => document.activeElement === item
+        (item) => document.activeElement === item
       );
 
       let nextIndex = -1;
 
       switch (event.key) {
-        case 'ArrowDown':
+        case "ArrowDown":
           event.preventDefault();
           nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
           break;
-        case 'ArrowUp':
+        case "ArrowUp":
           event.preventDefault();
           nextIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
           break;
-        case 'Escape':
+        case "Escape":
           closeDropdown();
           break;
-        case 'Enter':
-        case ' ':
+        case "Enter":
+        case " ":
           if (currentIndex >= 0) {
             selectOption(props.options[currentIndex]);
           }
@@ -146,12 +175,12 @@ export default {
     };
 
     onMounted(() => {
-      document.addEventListener('keydown', handleKeydown);
+      document.addEventListener("keydown", handleKeydown);
     });
 
     onUnmounted(() => {
-      document.removeEventListener('click', handleClickOutside);
-      document.removeEventListener('keydown', handleKeydown);
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("keydown", handleKeydown);
     });
 
     return {
@@ -162,9 +191,9 @@ export default {
       toggleDropdown,
       openDropdown,
       closeDropdown,
-      selectOption
+      selectOption,
     };
-  }
+  },
 };
 </script>
 
@@ -284,10 +313,12 @@ export default {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: transform 0.5s ease;
   transform: translateX(-100%);
 }

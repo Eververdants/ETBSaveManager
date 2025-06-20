@@ -5,6 +5,7 @@
 > A major update in development — featuring a more modern UI, search functionality, color themes, multi-language switching, and more!
 
 This is a desktop-level save management tool specifically designed for the game "Escape The Backrooms", built using Vue.js + JavaScript + CSS for the frontend, and Vite as the build tool. Version 3.0 represents a complete upgrade, offering an entirely new user experience and enhanced functionalities.
+
 ‼️‼️‼️ This repository and program are not affiliated with Escape The Backrooms developer Fancy‼️‼️‼️
 
 ---
@@ -68,7 +69,7 @@ cd ETBSaveManager
 npm install
 
 # Run development environment
-npm tauri dev
+npm run tauri dev
 ```
 
 ---
@@ -108,4 +109,4 @@ Watch detailed operation guides at: [Video Introduction](https://www.bilibili.co
 ---
 
 ## 📄 License
-This project is licensed under the MIT License, see the [LICENSE](https://bgithub.xyz/llzgdc/ETBSaveManager/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License, see the [LICENSE](https://github.com/llzgdc/ETBSaveManager/blob/main/LICENSE) file for details.

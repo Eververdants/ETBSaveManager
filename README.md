@@ -1,6 +1,10 @@
-# 🕳️ Escape The Backrooms Save Manager - 3.0 Development Edition
+# 🕳️ E.T.B. Save Manager - 3.0 Development Edition
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+<p align="center">
+  <img src="./src-tauri/icons/128x128.png" alt="icon">
+</p>
 
 > A major update in development — featuring a more modern UI, search functionality, color themes, multi-language switching, and more!
 
@@ -30,15 +34,16 @@ This is a desktop-level save management tool specifically designed for the game 
 | 🌐 Multi-Language Switching | ⏳ In Progress | Easier switching between multiple languages |
 | 💾 Save Data Editing | ⏳ In Progress | Allows users to directly edit save data within the tool |
 | ➕ Expanded New Save Creation | ⏳ In Progress | Adds more options and settings to enhance new save creation |
+| 📄 Expansion Content Pack | ⏳ In Conceptualization | Optional Expansion Features Available for Selection |
 | 🌐 Cross-Platform Support | ✅ Basic Support | Supports Windows/macOS/Linux |
 
 ---
 
-## 📚 2.6.0 Version Review (For Reference)
+## 📚 2.7.2 Version Review (For Reference)
 
-If you need to use the stable version, please refer to the [v2.6.0 Release Page](https://github.com/llzgdc/ETBSaveManager).
+If you need to use the stable version, please refer to the [v2.7.2 Release Page](https://github.com/llzgdc/ETBSaveManager).
 
-### Main Features (2.6.0)
+### Main Features (2.7.2)
 - ✅ Create, Edit, Delete, Refresh Saves
 - ✅ Hide Saves Functionality
 - ✅ Open Save Directory
@@ -100,6 +105,12 @@ npm run tauri dev
 
 ### Expanded New Save Creation
 - Adds additional options such as level collection info
+
+### Expansion Content Pack (Early Stage, May Not Be Available)
+- Select which expansion features to use  
+- Expansion packs will provide additional functionality  
+- Option to download packs from GitHub or Gitee (if available)  
+- Expansion packs developed by llzgdc are free of charge
 
 ---
 

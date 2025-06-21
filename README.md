@@ -16,7 +16,7 @@ This is a desktop-level save management tool specifically designed for the game 
 
 ## 🚧 Current Status: In Development (Alpha Stage)
 
-- 🔵 Basic architecture setup 40% complete
+- 🔵 Basic architecture setup 30% complete
 - ❌ Features not fully implemented yet
 - 🛠️ Continuous updates in progress, please follow the repository for the latest developments
 - 🧐 More features under consideration
@@ -26,16 +26,16 @@ This is a desktop-level save management tool specifically designed for the game 
 
 ## 📦 Main Updates (3.0 New Features)
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| 🎨 Modernized UI | ⏳ In Progress | Rebuilt entire interface using modern design principles to enhance user experience |
-| 🔍 Search Functionality | ⏳ In Progress | Quickly find saves by name, level, etc. |
-| 🎨 Color Themes | ⏳ In Progress | Users can customize application color themes |
-| 🌐 Multi-Language Switching | ⏳ In Progress | Easier switching between multiple languages |
-| 💾 Save Data Editing | ⏳ In Progress | Allows users to directly edit save data within the tool |
-| ➕ Expanded New Save Creation | ⏳ In Progress | Adds more options and settings to enhance new save creation |
-| 📄 Expansion Content Pack | ⏳ In Conceptualization | Optional Expansion Features Available for Selection |
-| 🌐 Cross-Platform Support | ✅ Basic Support | Supports Windows/macOS/Linux |
+| Feature | Status | Progress | Description |
+| --- | --- | --- | --- |
+| 🎨 More modern UI interface | ⏳ In development | 30% | Refactor the entire interface using modern design principles to enhance user experience |
+| 🔍 Search functionality | ⏳ In development | 70% | Support quick search of archives by keywords such as name, hierarchy, etc. |
+| 🎨 Color themes | ⏳ In development | 0% | Users can customize the application's color themes |
+| 🌐 Multi-language switching | ⏳ In development | 5% | Provide more convenient multi-language switching support |
+| 💾 Archive data editing | ⏳ In development | 0% | Allow users to directly edit archive data within the tool |
+| ➕ Expansion of new archive creation features | ⏳ In development | 0% | Add more options and settings to enhance the function of creating new archives |
+| 📄 Expansion content pack | ⏳ In conception | 0% | Selectable additional features for use |
+| 🌐 Cross-platform support | ✅ Basic support | 100% | Supports Windows/macOS/Linux |
 
 ---
 
@@ -104,7 +104,7 @@ npm run tauri dev
 - Modify level information
 
 ### Expanded New Save Creation
-- Adds additional options such as level collection info
+- Add more options, such as: hierarchical collectible (key) information
 
 ### Expansion Content Pack (Early Stage, May Not Be Available)
 - Select which expansion features to use  

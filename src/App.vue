@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from "vue";
 import Home from "./views/Home.vue";
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 </script>
 
 <template>

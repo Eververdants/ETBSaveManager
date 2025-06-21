@@ -46,7 +46,7 @@ import { ref, watch, onMounted, onUnmounted } from "vue";
 import gsap from "gsap";
 
 export default {
-  name: "GlassDropdown",
+  name: "Dropdown",
   props: {
     modelValue: {
       type: [String, Number],

@@ -19,7 +19,7 @@
       ref="searchContainerRef"
     >
       <div class="search-header">
-        <h2 class="search-title"><i class="fas fa-search"></i> 高级搜索</h2>
+        <h2 class="search-title"><i class="fas fa-search"></i> 存档搜索</h2>
         <div
           class="close-btn"
           @click="closeSearch"
@@ -45,40 +45,42 @@
       <div class="filters-container">
         <div class="filter-group">
           <label class="filter-label">难度级别</label>
-          <select class="filter-select" v-model="difficultyFilter">
-            <option value="">全部难度</option>
-            <option value="easy">简单</option>
-            <option value="medium">中等</option>
-            <option value="hard">困难</option>
-          </select>
+          <LG_Dropdown
+            v-model="difficultyFilter"
+            :options="difficultyOptions"
+            :darkMode="!lightMode"
+            defaultText="全部难度"
+          />
         </div>
 
         <div class="filter-group">
           <label class="filter-label">游戏模式</label>
-          <select class="filter-select" v-model="modeFilter">
-            <option value="">全部模式</option>
-            <option value="survival">生存模式</option>
-            <option value="creative">创造模式</option>
-            <option value="adventure">冒险模式</option>
-          </select>
+          <LG_Dropdown
+            v-model="modeFilter"
+            :options="modeOptions"
+            :darkMode="!lightMode"
+            defaultText="全部模式"
+          />
         </div>
 
         <div class="filter-group">
           <label class="filter-label">存档状态</label>
-          <select class="filter-select" v-model="statusFilter">
-            <option value="">全部状态</option>
-            <option value="visible">可见</option>
-            <option value="hidden">已隐藏</option>
-          </select>
+          <LG_Dropdown
+            v-model="statusFilter"
+            :options="statusOptions"
+            :darkMode="!lightMode"
+            defaultText="全部状态"
+          />
         </div>
 
         <div class="filter-group">
           <label class="filter-label">排序方式</label>
-          <select class="filter-select" v-model="sortBy">
-            <option value="date">创建日期</option>
-            <option value="name">名称</option>
-            <option value="difficulty">难度</option>
-          </select>
+          <LG_Dropdown
+            v-model="sortBy"
+            :options="sortOptions"
+            :darkMode="!lightMode"
+            defaultText="创建日期"
+          />
         </div>
       </div>
 
@@ -99,16 +101,44 @@
 
 <script setup>
 import { ref } from "vue";
-import gsap from "gsap"; // 确保已安装并导入 gsap
+import gsap from "gsap";
+import LG_Dropdown from "./LG_Dropdown.vue"; // 导入自定义下拉框组件
 
 // 响应式数据
-const lightMode = ref(false);
+const lightMode = ref(true);
 const searchQuery = ref("");
 const difficultyFilter = ref("");
 const modeFilter = ref("");
 const statusFilter = ref("");
 const sortBy = ref("date");
 const isSearchOpen = ref(false);
+
+// 下拉框选项
+const difficultyOptions = ref([
+  { label: "全部难度", value: "" },
+  { label: "简单难度", value: "Easy" },
+  { label: "普通难度", value: "Normal" },
+  { label: "困难难度", value: "Hard" },
+  { label: "噩梦难度", value: "Nightmare" },
+]);
+
+const modeOptions = ref([
+  { label: "全部模式", value: "" },
+  { label: "单人模式", value: "Singleplayer" },
+  { label: "多人模式", value: "Multiplayer" },
+]);
+
+const statusOptions = ref([
+  { label: "全部状态", value: "" },
+  { label: "可见", value: "visible" },
+  { label: "已隐藏", value: "hidden" },
+]);
+
+const sortOptions = ref([
+  { label: "创建日期", value: "date" },
+  { label: "名称", value: "name" },
+  { label: "难度", value: "difficulty" },
+]);
 
 const searchButtonRef = ref(null);
 const searchContainerRef = ref(null);
@@ -225,14 +255,8 @@ const performSearch = () => {
   );
 
   setTimeout(() => {
-    alert(`执行搜索:
-  关键词: ${searchQuery.value}
-  难度: ${difficultyFilter.value || "全部"}
-  模式: ${modeFilter.value || "全部"}
-  状态: ${statusFilter.value || "全部"}
-  排序: ${sortBy.value}`);
     closeSearch();
-  }, 600);
+  }, 300);
 };
 </script>
 
@@ -270,6 +294,7 @@ const performSearch = () => {
   transition-duration: 0.25s;
   transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform-origin: center;
+  will-change: transform, opacity;
 }
 
 .search-button:hover {
@@ -385,6 +410,7 @@ const performSearch = () => {
 
 /* 筛选下拉框 */
 .filters-container {
+  margin-right: 35px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 15px;
@@ -399,7 +425,7 @@ const performSearch = () => {
   font-size: 0.9rem;
   color: var(--Search-text-secondary);
   margin-bottom: 8px;
-  margin-left: 10px;
+  margin-left: 35px;
 }
 
 .filter-select {

@@ -1,7 +1,7 @@
 <template>
-  <Search :light-mode="lightMode ? true : false" />
+  <Search :light-mode="lightMode ? true : false" ref="searchButtonRef" />
   <div class="glass-scroll-container">
-    <div class="glass-scroll-content">
+    <div class="glass-scroll-content" ref="glassScrollContentRef">
       <div class="cards-container" :data-theme="lightMode ? 'light' : 'dark'">
         <Card
           v-for="archive in archives"
@@ -16,9 +16,10 @@
 </template>
 
 <script>
+import { ref, onMounted, onUnmounted } from "vue";
+import gsap from "gsap";
 import Card from "../components/LG_Card.vue";
 import Search from "../components/LG_Search.vue";
-import { notify } from "../services/notificationManager.js";
 import { invoke } from "@tauri-apps/api/core";
 
 export default {
@@ -26,94 +27,120 @@ export default {
     Card,
     Search,
   },
-  data() {
-    return {
-      lightMode: true,
-      archives: [], // 初始化为空数组
-    };
-  },
-  async mounted() {
-    await this.loadSaves();
-  },
-  methods: {
-    async loadTranslations() {
+  setup() {
+    const lightMode = ref(true);
+    const archives = ref([]);
+    const searchButtonRef = ref(null);
+    const glassScrollContentRef = ref(null); // ✅ 添加这一行，修复报错
+
+    const loadTranslations = async () => {
       try {
         const response = await fetch("/locales/zh-CN/zh-CN.json");
-        if (!response.ok) {
-          notify.error({
-            title: "加载失败",
-            message: "无法加载语言文件。",
-            position: "top-right",
-          });
-          throw new Error("无法加载语言文件");
-        }
-        const translations = await response.json();
-        return translations;
+        if (!response.ok) throw new Error("无法加载语言文件");
+        return await response.json();
       } catch (err) {
         console.error("加载语言文件失败:", err);
         return {};
       }
-    },
-    async loadSaves() {
+    };
+
+    const loadSaves = async () => {
       try {
         const [saves, translations] = await Promise.all([
           invoke("load_all_saves"),
-          this.loadTranslations(),
+          loadTranslations(),
         ]);
 
         const levelNames = translations?.LevelName || {};
 
-        this.archives = saves.map((save) => ({
+        archives.value = saves.map((save) => ({
           id: save.id,
           name: save.name,
           difficulty: save.difficulty,
           difficultyClass: save.difficulty_class,
-          setDifficulty: save.difficulty,
           actualDifficulty: save.actual_difficulty,
           mode: save.mode,
           date: save.date,
           currentLevel: levelNames[save.current_level] || save.current_level,
           hidden: save.hidden,
         }));
-
-        // 在数据加载完成后显示通知
-        notify.success({
-          title: "操作成功",
-          message: "您的设置已成功保存",
-          position: "top-right",
-        });
       } catch (err) {
         console.error("加载失败:", err);
       }
-    },
-    async handleDelete(archiveId) {
-      notify.success({
-        title: "操作成功",
-        message: "您的设置已成功保存",
-        position: "top-right",
-      });
-    },
-    handleEdit(archiveId) {
-      // 处理编辑逻辑
-    },
-    handleToggle(archiveId) {
-      notify.success({
-        title: "操作成功",
-        message: "您的设置已成功保存",
-        position: "top-right",
-      });
-    },
+    };
+
+    const handleDelete = (archiveId) => {};
+
+    const handleScroll = () => {
+      const container = glassScrollContentRef.value;
+      if (!container) return;
+
+      const scrollTop = container.scrollTop;
+      const scrollHeight = container.scrollHeight;
+      const clientHeight = container.clientHeight;
+
+      const bottomThreshold = scrollHeight - clientHeight * 1.15;
+
+      if (searchButtonRef.value && searchButtonRef.value.$el) {
+        const buttonEl = searchButtonRef.value.$el;
+
+        if (scrollTop >= bottomThreshold) {
+          gsap.to(buttonEl, {
+            duration: 0.3,
+            scale: 0.7,
+            y: -40,
+            opacity: 0.8,
+            ease: "power2.out",
+          });
+        } else {
+          gsap.to(buttonEl, {
+            duration: 0.3,
+            scale: 1,
+            y: 0,
+            opacity: 1,
+            ease: "power2.out",
+          });
+        }
+      }
+    };
+
+    onMounted(async () => {
+      await loadSaves();
+
+      if (glassScrollContentRef.value) {
+        glassScrollContentRef.value.addEventListener("scroll", handleScroll);
+      }
+    });
+
+    onUnmounted(() => {
+      if (glassScrollContentRef.value) {
+        glassScrollContentRef.value.removeEventListener("scroll", handleScroll);
+      }
+    });
+
+    return {
+      lightMode,
+      archives,
+      loadSaves,
+      handleDelete,
+      searchButtonRef,
+    };
   },
 };
 </script>
 
 <style scoped>
+.card {
+  position: relative;
+  left: 10px;
+}
+
 .cards-container {
   position: relative;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 25px;
-  width: 85%;
+  width: 90%;
   height: 90vh;
   margin: 0 auto;
   padding: 20px;
@@ -125,6 +152,7 @@ export default {
   overflow-y: auto;
   position: relative;
   z-index: 1;
+  clip-path: inset(0 round 20px);
 }
 
 .glass-scroll-content {
@@ -133,6 +161,13 @@ export default {
   overflow-y: auto;
   padding-right: 20px;
   border-radius: 20px;
+  clip-path: inset(0 round 20px);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'%3E%3Crect x='0' y='0' width='100%' height='100%' rx='20' ry='20' fill='white'/%3E%3C/svg%3E")
+    no-repeat center / contain;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'%3E%3Crect x='0' y='0' width='100%' height='100%' rx='20' ry='20' fill='white'/%3E%3C/svg%3E")
+    no-repeat center / contain;
+  mask-composite: add;
+  -webkit-mask-composite: source-in;
 }
 </style>
 

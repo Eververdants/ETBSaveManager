@@ -31,15 +31,15 @@ export default {
     const lightMode = ref(true);
     const archives = ref([]);
     const searchButtonRef = ref(null);
-    const glassScrollContentRef = ref(null); // ✅ 添加这一行，修复报错
+    const glassScrollContentRef = ref(null);
 
     const loadTranslations = async () => {
       try {
         const response = await fetch("/locales/zh-CN/zh-CN.json");
-        if (!response.ok) throw new Error("无法加载语言文件");
+        if (!response.ok) throw new Error("Failed to load language file.");
         return await response.json();
       } catch (err) {
-        console.error("加载语言文件失败:", err);
+        console.error("Error: Failed to load language file:", err);
         return {};
       }
     };
@@ -63,13 +63,37 @@ export default {
           date: save.date,
           currentLevel: levelNames[save.current_level] || save.current_level,
           hidden: save.hidden,
+          path: save.path,
         }));
       } catch (err) {
-        console.error("加载失败:", err);
+        console.error("Error: Failed to load save file:", err);
       }
     };
 
-    const handleDelete = (archiveId) => {};
+    const handleDelete = async (archiveId) => {
+      console.log(
+        "Received deletion request. ID Type:",
+        typeof archiveId,
+        "Value:",
+        archiveId
+      );
+      console.log(
+        "Current all archive IDs:",
+        archives.value.map((a) => a.id)
+      );
+
+      const archive = archives.value.find((a) => a.id === archiveId);
+      console.log("Found archives:", archive);
+
+      if (!archive) return;
+
+      try {
+        await invoke("delete_file", { filePath: archive.path });
+        archives.value = archives.value.filter((a) => a.id !== archiveId);
+      } catch (err) {
+        console.error("Failed to delete file:", err);
+      }
+    };
 
     const handleScroll = () => {
       const container = glassScrollContentRef.value;

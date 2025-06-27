@@ -121,4 +121,4 @@ npm run tauri dev
 ---
 
 ## 📄 许可证
-本项目采用 MIT License，请参阅[LICENSE](https://github.com/llzgdc/ETBSaveManager/blob/main/LICENSE)文件。
+本项目采用 MIT License，请参阅[LICENSE](https://github.com/llzgdc/ETBSaveManager/blob/master/LICENSE)文件。

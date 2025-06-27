@@ -2,11 +2,8 @@ mod cli_handlers;
 mod get_file_path;
 mod save_utils;
 
-// use tauri::Manager;
-// use serde::Serialize;
-
-// 导入结构体
 use save_utils::SaveFileInfo;
+use std::fs;
 
 #[tauri::command]
 async fn load_all_saves() -> Result<Vec<SaveFileInfo>, String> {
@@ -40,13 +37,19 @@ async fn load_all_saves() -> Result<Vec<SaveFileInfo>, String> {
     Ok(result)
 }
 
+#[tauri::command]
+fn delete_file(file_path: String) -> Result<(), String> {
+    match fs::remove_file(&file_path) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(format!("Failed to delete file: {}", e)),
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![
-            load_all_saves // 注册正确的命令
-        ])
+        .invoke_handler(tauri::generate_handler![load_all_saves, delete_file])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

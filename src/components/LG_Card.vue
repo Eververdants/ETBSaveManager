@@ -42,7 +42,10 @@
     <div class="card-footer">
       <div class="date">修改于: {{ archive.date }}</div>
       <div class="actions-container">
-        <button class="action-btn delete-btn" @click="$emit('delete')">
+        <button
+          class="action-btn delete-btn"
+          @click="$emit('delete', archive.id)"
+        >
           <img src="/delete_forever.svg" alt="删除" />
         </button>
         <button class="action-btn edit-btn" @click="$emit('edit')">

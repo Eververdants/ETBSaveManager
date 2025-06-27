@@ -40,7 +40,7 @@
     </div>
 
     <div class="card-footer">
-      <div class="date">修改于: {{ archive.date }}</div>
+      <div class="date">最后游玩时间: {{ archive.date }}</div>
       <div class="actions-container">
         <button
           class="action-btn delete-btn"

@@ -1,5 +1,12 @@
 <template>
   <Search :light-mode="lightMode ? true : false" ref="searchButtonRef" />
+  <DeleteConfirm
+    v-if="showDeleteConfirm"
+    :archive="selectedArchiveForDelete"
+    :light-mode="lightMode"
+    @confirm="handleDeleteConfirm"
+    @cancel="showDeleteConfirm = false"
+  />
   <div class="glass-scroll-container">
     <div class="glass-scroll-content" ref="glassScrollContentRef">
       <div class="cards-container" :data-theme="lightMode ? 'light' : 'dark'">
@@ -20,18 +27,22 @@ import { ref, onMounted, onUnmounted } from "vue";
 import gsap from "gsap";
 import Card from "../components/LG_Card.vue";
 import Search from "../components/LG_Search.vue";
+import DeleteConfirm from "../components/LG_DeleteConfirm.vue";
 import { invoke } from "@tauri-apps/api/core";
 
 export default {
   components: {
     Card,
     Search,
+    DeleteConfirm,
   },
   setup() {
     const lightMode = ref(true);
     const archives = ref([]);
     const searchButtonRef = ref(null);
     const glassScrollContentRef = ref(null);
+    const showDeleteConfirm = ref(false);
+    const selectedArchiveForDelete = ref(null);
 
     const loadTranslations = async () => {
       try {
@@ -70,28 +81,26 @@ export default {
       }
     };
 
-    const handleDelete = async (archiveId) => {
-      console.log(
-        "Received deletion request. ID Type:",
-        typeof archiveId,
-        "Value:",
-        archiveId
-      );
-      console.log(
-        "Current all archive IDs:",
-        archives.value.map((a) => a.id)
-      );
-
+    const handleDelete = (archiveId) => {
       const archive = archives.value.find((a) => a.id === archiveId);
-      console.log("Found archives:", archive);
+      if (!archive) return;
 
+      selectedArchiveForDelete.value = archive;
+      showDeleteConfirm.value = true;
+    };
+
+    const handleDeleteConfirm = async () => {
+      const archive = selectedArchiveForDelete.value;
       if (!archive) return;
 
       try {
         await invoke("delete_file", { filePath: archive.path });
-        archives.value = archives.value.filter((a) => a.id !== archiveId);
+        archives.value = archives.value.filter((a) => a.id !== archive.id);
       } catch (err) {
-        console.error("Failed to delete file:", err);
+        console.error("删除文件失败:", err);
+      } finally {
+        showDeleteConfirm.value = false;
+        selectedArchiveForDelete.value = null;
       }
     };
 
@@ -148,6 +157,9 @@ export default {
       loadSaves,
       handleDelete,
       searchButtonRef,
+      showDeleteConfirm,
+      selectedArchiveForDelete,
+      handleDeleteConfirm,
     };
   },
 };

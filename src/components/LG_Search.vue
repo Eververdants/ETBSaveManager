@@ -79,7 +79,7 @@
             v-model="sortBy"
             :options="sortOptions"
             :darkMode="!lightMode"
-            defaultText="创建日期"
+            defaultText="默认排序"
           />
         </div>
       </div>
@@ -102,7 +102,7 @@
 <script setup>
 import { ref } from "vue";
 import gsap from "gsap";
-import LG_Dropdown from "./LG_Dropdown.vue"; // 导入自定义下拉框组件
+import LG_Dropdown from "./LG_Dropdown.vue";
 
 // 响应式数据
 const lightMode = ref(true);
@@ -110,8 +110,9 @@ const searchQuery = ref("");
 const difficultyFilter = ref("");
 const modeFilter = ref("");
 const statusFilter = ref("");
-const sortBy = ref("date");
+const sortBy = ref("default");
 const isSearchOpen = ref(false);
+const emit = defineEmits(["search"]);
 
 // 下拉框选项
 const difficultyOptions = ref([
@@ -130,14 +131,15 @@ const modeOptions = ref([
 
 const statusOptions = ref([
   { label: "全部状态", value: "" },
-  { label: "可见", value: "visible" },
-  { label: "已隐藏", value: "hidden" },
+  { label: "可见状态", value: "visible" },
+  { label: "隐藏状态", value: "hidden" },
 ]);
 
 const sortOptions = ref([
+  { label: "默认排序", value: "default" },
   { label: "创建日期", value: "date" },
-  { label: "名称", value: "name" },
-  { label: "难度", value: "difficulty" },
+  { label: "名称排序", value: "name" },
+  { label: "难度排序", value: "difficulty" },
 ]);
 
 const searchButtonRef = ref(null);
@@ -231,7 +233,16 @@ const resetFilters = () => {
   difficultyFilter.value = "";
   modeFilter.value = "";
   statusFilter.value = "";
-  sortBy.value = "date";
+  sortBy.value = "default";
+
+  // 发出重置搜索事件
+  emit("search", {
+    query: "",
+    difficulty: "",
+    mode: "",
+    status: "",
+    sortBy: "default",
+  });
 
   const filters = document.querySelectorAll(".filter-select");
   filters.forEach((filter) => {
@@ -253,6 +264,15 @@ const performSearch = () => {
       ease: "power2.out",
     }
   );
+
+  // 发出搜索事件
+  emit("search", {
+    query: searchQuery.value,
+    difficulty: difficultyFilter.value,
+    mode: modeFilter.value,
+    status: statusFilter.value,
+    sortBy: sortBy.value,
+  });
 
   setTimeout(() => {
     closeSearch();

@@ -18,8 +18,10 @@
           v-for="archive in archives"
           :key="archive.id"
           :archive="archive"
+          :file-path="archive.path"
           :lightMode="lightMode"
           @delete="handleDelete"
+          @update-archive="updateArchive"
         />
       </div>
     </div>
@@ -87,6 +89,13 @@ export default {
         console.error("Error: Failed to load save file:", err);
       }
     };
+
+    const updateArchive = (updatedArchive) => {
+  const index = archives.value.findIndex(a => a.id === updatedArchive.id)
+  if (index !== -1) {
+    archives.value.splice(index, 1, updatedArchive)
+  }
+}
 
     const handleSearch = (searchParams) => {
       let filtered = [...originalArchives.value];
@@ -261,6 +270,7 @@ export default {
       selectedArchiveForDelete,
       handleDeleteConfirm,
       handleSearch,
+      updateArchive,
     };
   },
 };

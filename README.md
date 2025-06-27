@@ -120,4 +120,4 @@ Watch detailed operation guides at: [Video Introduction](https://www.bilibili.co
 ---
 
 ## 📄 License
-This project is licensed under the MIT License, see the [LICENSE](https://github.com/llzgdc/ETBSaveManager/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License, see the [LICENSE](https://github.com/llzgdc/ETBSaveManager/blob/master/LICENSE) file for details.

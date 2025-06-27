@@ -16,7 +16,7 @@ This is a desktop-level save management tool specifically designed for the game 
 
 ## 🚧 Current Status: In Development (Alpha Stage)
 
-- 🔵 Basic architecture setup 30% complete
+- 🔵 Basic architecture setup 45% complete
 - ❌ Features not fully implemented yet
 - 🛠️ Continuous updates in progress, please follow the repository for the latest developments
 - 🧐 More features under consideration
@@ -29,7 +29,7 @@ This is a desktop-level save management tool specifically designed for the game 
 | Feature | Status | Progress | Description |
 | --- | --- | --- | --- |
 | 🎨 More modern UI interface | ⏳ In development | 30% | Refactor the entire interface using modern design principles to enhance user experience |
-| 🔍 Search functionality | ⏳ In development | 70% | Support quick search of archives by keywords such as name, hierarchy, etc. |
+| 🔍 Search functionality | ✅ Completed | 100% | Support quick search of archives by keywords such as name, hierarchy, etc. |
 | 🎨 Color themes | ⏳ In development | 0% | Users can customize the application's color themes |
 | 🌐 Multi-language switching | ⏳ In development | 5% | Provide more convenient multi-language switching support |
 | 💾 Archive data editing | ⏳ In development | 0% | Allow users to directly edit archive data within the tool |

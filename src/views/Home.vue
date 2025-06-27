@@ -1,5 +1,9 @@
 <template>
-  <Search :light-mode="lightMode ? true : false" ref="searchButtonRef" />
+  <Search
+    :light-mode="lightMode ? true : false"
+    ref="searchButtonRef"
+    @search="handleSearch"
+  />
   <DeleteConfirm
     v-if="showDeleteConfirm"
     :archive="selectedArchiveForDelete"
@@ -43,6 +47,7 @@ export default {
     const glassScrollContentRef = ref(null);
     const showDeleteConfirm = ref(false);
     const selectedArchiveForDelete = ref(null);
+    const originalArchives = ref([]);
 
     const loadTranslations = async () => {
       try {
@@ -76,9 +81,100 @@ export default {
           hidden: save.hidden,
           path: save.path,
         }));
+
+        originalArchives.value = [...archives.value];
       } catch (err) {
         console.error("Error: Failed to load save file:", err);
       }
+    };
+
+    const handleSearch = (searchParams) => {
+      let filtered = [...originalArchives.value];
+
+      // 难度映射表：将英文标识符映射为中文标签
+      const difficultyLabelMap = {
+        Easy: "简单难度",
+        Normal: "普通难度",
+        Hard: "困难难度",
+        Nightmare: "噩梦难度",
+      };
+
+      // 模式映射表：英文标识符 → 中文标签
+      const modeLabelMap = {
+        Singleplayer: "单人模式",
+        Multiplayer: "多人模式",
+      };
+
+      // ✅ 仅根据【存档名称】进行关键词搜索
+      if (searchParams.query) {
+        const query = searchParams.query.trim().toLowerCase();
+        if (query) {
+          filtered = filtered.filter((archive) =>
+            archive.name.toLowerCase().includes(query)
+          );
+        }
+      }
+
+      // 难度筛选：使用映射表进行中英文转换后比对
+      if (searchParams.difficulty) {
+        const targetLabel = difficultyLabelMap[searchParams.difficulty];
+        if (targetLabel) {
+          filtered = filtered.filter(
+            (archive) => archive.difficulty === targetLabel
+          );
+        }
+      }
+
+      // 游戏模式筛选：使用映射表进行中英文转换后比对
+      if (searchParams.mode) {
+        const targetLabel = modeLabelMap[searchParams.mode];
+        if (targetLabel) {
+          filtered = filtered.filter((archive) => archive.mode === targetLabel);
+        }
+      }
+
+      // 存档状态筛选
+      if (searchParams.status) {
+        const isHidden = searchParams.status === "hidden";
+        filtered = filtered.filter((archive) => archive.hidden === isHidden);
+      }
+
+      // 排序
+      switch (searchParams.sortBy) {
+        case "default":
+          // 使用原始顺序（即后端传来的顺序）
+          filtered.sort((a, b) => {
+            const indexA = originalArchives.value.indexOf(a);
+            const indexB = originalArchives.value.indexOf(b);
+            return indexA - indexB;
+          });
+          break;
+
+        case "name":
+          filtered.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+
+        case "difficulty": {
+          const difficultyOrder = [
+            "简单难度",
+            "普通难度",
+            "困难难度",
+            "噩梦难度",
+          ];
+          filtered.sort(
+            (a, b) =>
+              difficultyOrder.indexOf(a.difficulty) -
+              difficultyOrder.indexOf(b.difficulty)
+          );
+          break;
+        }
+
+        case "date":
+        default:
+          filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+      }
+
+      archives.value = filtered;
     };
 
     const handleDelete = (archiveId) => {
@@ -95,6 +191,10 @@ export default {
 
       try {
         await invoke("delete_file", { filePath: archive.path });
+        // 从两个列表中删除
+        originalArchives.value = originalArchives.value.filter(
+          (a) => a.id !== archive.id
+        );
         archives.value = archives.value.filter((a) => a.id !== archive.id);
       } catch (err) {
         console.error("删除文件失败:", err);
@@ -160,6 +260,7 @@ export default {
       showDeleteConfirm,
       selectedArchiveForDelete,
       handleDeleteConfirm,
+      handleSearch,
     };
   },
 };

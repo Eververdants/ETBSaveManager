@@ -51,8 +51,15 @@
         <button class="action-btn edit-btn" @click="$emit('edit')">
           <img src="/edit.svg" alt="编辑" />
         </button>
-        <button class="action-btn toggle-btn" @click="$emit('toggle')">
-          <component :is="archive.hidden ? 'VisibilityOff' : 'VisibilityOn'" />
+        <button
+          class="action-btn toggle-btn"
+          @click="handleToggle"
+          type="button"
+        >
+          <component
+            :is="isVisible ? 'VisibilityOn' : 'VisibilityOff'"
+            ref="toggleIcon"
+          />
         </button>
       </div>
     </div>
@@ -63,7 +70,9 @@
 </template>
 
 <script>
-import { gsap } from "gsap";
+import { ref, watch } from "vue";
+import { invoke } from "@tauri-apps/api/core";
+import gsap from "gsap";
 import VisibilityOn from "./icons/VisibilityOn.vue";
 import VisibilityOff from "./icons/VisibilityOff.vue";
 
@@ -88,54 +97,96 @@ export default {
         hidden: false,
       }),
     },
+    filePath: {
+      type: String,
+      required: true,
+    },
     lightMode: {
       type: Boolean,
       default: false,
     },
   },
-  emits: ["delete", "edit", "toggle"],
-  methods: {
-    handleMouseEnter(event) {
+  emits: ["delete", "edit", "toggle", "update-archive"],
+  setup(props, { emit }) {
+    const isVisible = ref(!props.archive.hidden);
+    const toggleIcon = ref(null);
+
+    watch(
+      () => props.archive.hidden,
+      (newVal) => {
+        isVisible.value = !newVal;
+      }
+    );
+
+    const handleToggle = async () => {
+      try {
+        const newPath = await invoke("handle_file", {
+          filePath: props.filePath,
+        });
+
+        // 更新状态
+        const newHidden = !props.archive.hidden;
+        emit("update-archive", {
+          ...props.archive,
+          hidden: newHidden,
+          path: newPath,
+        });
+      } catch (err) {
+        console.error("操作失败:", err);
+      } finally {
+      }
+      return true;
+    };
+
+    const onCardHover = (index) => {
+      const card = document.querySelectorAll(".living-glass-card")[index];
+      if (card) {
+        gsap.to(card, {
+          y: -8,
+          duration: 0.3,
+          ease: "power2.out",
+          boxShadow:
+            "0 12px 32px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2)",
+        });
+      }
+    };
+
+    const onCardLeave = (index) => {
+      const card = document.querySelectorAll(".living-glass-card")[index];
+      if (card) {
+        gsap.to(card, {
+          y: 0,
+          duration: 0.4,
+          ease: "elastic.out(1, 0.8)",
+          boxShadow:
+            "0 8px 24px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
+        });
+      }
+    };
+
+    const handleMouseEnter = (event) => {
       const index = Array.from(event.currentTarget.parentNode.children).indexOf(
         event.currentTarget
       );
       onCardHover(index);
-    },
-    handleMouseLeave(event) {
+    };
+
+    const handleMouseLeave = (event) => {
       const index = Array.from(event.currentTarget.parentNode.children).indexOf(
         event.currentTarget
       );
       onCardLeave(index);
-    },
+    };
+
+    return {
+      isVisible,
+      toggleIcon,
+      handleToggle,
+      handleMouseEnter,
+      handleMouseLeave,
+    };
   },
 };
-
-// 提取为可复用的方法
-function onCardHover(index) {
-  const card = document.querySelectorAll(".living-glass-card")[index];
-  if (card) {
-    gsap.to(card, {
-      y: -8,
-      duration: 0.3,
-      ease: "power2.out",
-      boxShadow:
-        "0 12px 32px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2)",
-    });
-  }
-}
-
-function onCardLeave(index) {
-  const card = document.querySelectorAll(".living-glass-card")[index];
-  if (card) {
-    gsap.to(card, {
-      y: 0,
-      duration: 0.4,
-      ease: "elastic.out(1, 0.8)",
-      boxShadow:
-        "0 8px 24px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
-    });
-  }
-}
 </script>
 
 <style scoped>

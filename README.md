@@ -10,6 +10,8 @@
 
 This is a desktop-level save management tool specifically designed for the game "Escape The Backrooms", built using Vue.js + JavaScript + CSS for the frontend, and Vite as the build tool. Version 3.0 represents a complete upgrade, offering an entirely new user experience and enhanced functionalities.
 
+Please note: Future development may include features such as encryption keys. For data security, this part of the code will not be open-sourced, and I will make corresponding annotations for these sections.
+
 ‼️‼️‼️ This repository and program are not affiliated with Escape The Backrooms developer Fancy‼️‼️‼️
 
 ---

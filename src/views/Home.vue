@@ -4,12 +4,22 @@
     ref="searchButtonRef"
     @search="handleSearch"
   />
+
   <DeleteConfirm
     v-if="showDeleteConfirm"
     :archive="selectedArchiveForDelete"
     :light-mode="lightMode"
     @confirm="handleDeleteConfirm"
     @cancel="showDeleteConfirm = false"
+  />
+
+  <EditArchiveModal
+    v-if="showEditModal"
+    :show="showEditModal"
+    :archive="editingArchive"
+    :lightMode="lightMode"
+    @update:show="showEditModal = $event"
+    @save="handleSaveEdit"
   />
   <div class="glass-scroll-container">
     <div class="glass-scroll-content" ref="glassScrollContentRef">
@@ -22,6 +32,7 @@
           :lightMode="lightMode"
           @delete="handleDelete"
           @update-archive="updateArchive"
+          @edit="handleEdit"
         />
       </div>
     </div>
@@ -34,6 +45,7 @@ import gsap from "gsap";
 import Card from "../components/LG_Card.vue";
 import Search from "../components/LG_Search.vue";
 import DeleteConfirm from "../components/LG_DeleteConfirm.vue";
+import EditArchiveModal from "../components/EditArchiveModal.vue";
 import { invoke } from "@tauri-apps/api/core";
 
 export default {
@@ -41,6 +53,7 @@ export default {
     Card,
     Search,
     DeleteConfirm,
+    EditArchiveModal,
   },
   setup() {
     const lightMode = ref(true);
@@ -50,6 +63,8 @@ export default {
     const showDeleteConfirm = ref(false);
     const selectedArchiveForDelete = ref(null);
     const originalArchives = ref([]);
+    const showEditModal = ref(false);
+    const editingArchive = ref(null);
 
     const loadTranslations = async () => {
       try {
@@ -90,12 +105,24 @@ export default {
       }
     };
 
+    // 在卡片组件中触发编辑
+    const handleEdit = (archive) => {
+      editingArchive.value = { ...archive };
+      showEditModal.value = true;
+    };
+    
+    // 处理保存编辑
+    const handleSaveEdit = (editedArchive) => {
+      // 更新存档逻辑
+      updateArchive(editedArchive);
+    };
+
     const updateArchive = (updatedArchive) => {
-  const index = archives.value.findIndex(a => a.id === updatedArchive.id)
-  if (index !== -1) {
-    archives.value.splice(index, 1, updatedArchive)
-  }
-}
+      const index = archives.value.findIndex((a) => a.id === updatedArchive.id);
+      if (index !== -1) {
+        archives.value.splice(index, 1, updatedArchive);
+      }
+    };
 
     const handleSearch = (searchParams) => {
       let filtered = [...originalArchives.value];
@@ -271,6 +298,8 @@ export default {
       handleDeleteConfirm,
       handleSearch,
       updateArchive,
+      handleEdit,
+      showEditModal,
     };
   },
 };

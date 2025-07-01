@@ -48,7 +48,7 @@
         >
           <img src="/delete_forever.svg" alt="删除" />
         </button>
-        <button class="action-btn edit-btn" @click="$emit('edit')">
+        <button class="action-btn edit-btn" @click="$emit('edit', archive)">
           <img src="/edit.svg" alt="编辑" />
         </button>
         <button

@@ -1,7 +1,9 @@
 mod cli_handlers;
+mod encryption;
 mod get_file_path;
 mod save_utils;
 
+use encryption::*;
 use save_utils::SaveFileInfo;
 use std::env;
 use std::fs;
@@ -118,6 +120,40 @@ fn handle_file(file_path: String) -> Result<String, String> {
     }
 }
 
+#[tauri::command]
+fn init_config_command(password: String, custom_dir: Option<String>) -> Result<(), String> {
+    init_config(&password, custom_dir.as_deref())
+}
+
+#[tauri::command]
+fn load_master_key_command(custom_dir: Option<String>) -> Result<[u8; 32], String> {
+    let key = encryption::load_master_key(custom_dir.as_deref())?;
+    Ok(*key)
+}
+
+#[tauri::command]
+fn encrypt_file_command(
+    master_key: [u8; 32],
+    input_path: String,
+    output_path: String,
+) -> Result<(), String> {
+    encryption::encrypt_file(&master_key, &input_path, &output_path)
+}
+
+#[tauri::command]
+fn decrypt_file_command(
+    master_key: [u8; 32],
+    input_path: String,
+    output_path: String,
+) -> Result<(), String> {
+    encryption::decrypt_file(&master_key, &input_path, &output_path)
+}
+
+#[tauri::command]
+fn clear_saved_password_command() -> Result<(), String> {
+    encryption::clear_saved_password()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -125,7 +161,12 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             load_all_saves,
             delete_file,
-            handle_file
+            handle_file,
+            init_config_command,
+            load_master_key_command,
+            encrypt_file_command,
+            decrypt_file_command,
+            clear_saved_password_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

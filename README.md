@@ -36,16 +36,16 @@ Please note: Future development may include features such as encryption keys. Fo
 | 🌐 Multi-language switching | ⏳ In development | 5% | Provide more convenient multi-language switching support |
 | 💾 Archive data editing | ⏳ In development | 0% | Allow users to directly edit archive data within the tool |
 | ➕ Expansion of new archive creation features | ⏳ In development | 0% | Add more options and settings to enhance the function of creating new archives |
-| 📄 Expansion content pack | ⏳ In conception | 0% | Selectable additional features for use |
+| 📄 Expansion content pack | ⏳ In development | 0% | Selectable additional features for use |
 | 🌐 Cross-platform support | ✅ Basic support | 100% | Supports Windows/macOS/Linux |
 
 ---
 
-## 📚 2.7.2 Version Review (For Reference)
+## 📚 2.7.3 Version Review (For Reference)
 
-If you need to use the stable version, please refer to the [v2.7.2 Release Page](https://github.com/llzgdc/ETBSaveManager).
+If you need to use the stable version, please refer to the [v2.7.3 Release Page](https://github.com/llzgdc/ETBSaveManager).
 
-### Main Features (2.7.2)
+### Main Features (2.7.3)
 - ✅ Create, Edit, Delete, Refresh Saves
 - ✅ Hide Saves Functionality
 - ✅ Open Save Directory
@@ -108,7 +108,7 @@ npm run tauri dev
 ### Expanded New Save Creation
 - Add more options, such as: hierarchical collectible (key) information
 
-### Expansion Content Pack (Early Stage, May Not Be Available)
+### Expansion Content Pack
 - Select which expansion features to use  
 - Expansion packs will provide additional functionality  
 - Option to download packs from GitHub or Gitee (if available)  

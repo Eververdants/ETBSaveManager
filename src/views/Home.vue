@@ -13,14 +13,15 @@
     @cancel="showDeleteConfirm = false"
   />
 
-  <EditArchiveModal
-    v-if="showEditModal"
-    :show="showEditModal"
-    :archive="editingArchive"
-    :lightMode="lightMode"
-    @update:show="showEditModal = $event"
-    @save="handleSaveEdit"
-  />
+  <!-- 在主页中使用 -->
+<EditArchiveModal
+  v-if="showEditModal"
+  :show="showEditModal"
+  :archive="editingArchive"
+  :lightMode="lightMode"
+  @update:show="showEditModal = $event"
+  @save="handleSaveEdit"
+/>
   <div class="glass-scroll-container">
     <div class="glass-scroll-content" ref="glassScrollContentRef">
       <div class="cards-container" :data-theme="lightMode ? 'light' : 'dark'">
@@ -45,7 +46,7 @@ import gsap from "gsap";
 import Card from "../components/LG_Card.vue";
 import Search from "../components/LG_Search.vue";
 import DeleteConfirm from "../components/LG_DeleteConfirm.vue";
-import EditArchiveModal from "../components/EditArchiveModal.vue";
+import EditArchiveModal from "../components/LG_EditModal.vue";
 import { invoke } from "@tauri-apps/api/core";
 
 export default {
@@ -113,8 +114,8 @@ export default {
     
     // 处理保存编辑
     const handleSaveEdit = (editedArchive) => {
-      // 更新存档逻辑
-      updateArchive(editedArchive);
+      // 更新存档逻辑...
+      console.log('保存编辑:', editedArchive);
     };
 
     const updateArchive = (updatedArchive) => {
@@ -298,8 +299,10 @@ export default {
       handleDeleteConfirm,
       handleSearch,
       updateArchive,
-      handleEdit,
       showEditModal,
+      editingArchive,
+      handleEdit,
+      handleSaveEdit,
     };
   },
 };

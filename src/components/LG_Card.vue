@@ -46,10 +46,10 @@
           class="action-btn delete-btn"
           @click="$emit('delete', archive.id)"
         >
-          <img src="/delete_forever.svg" alt="删除" />
+          <img src="/icons/delete_forever.svg" alt="删除" />
         </button>
         <button class="action-btn edit-btn" @click="$emit('edit', archive)">
-          <img src="/edit.svg" alt="编辑" />
+          <img src="/icons/edit.svg" alt="编辑" />
         </button>
         <button
           class="action-btn toggle-btn"

@@ -10,7 +10,9 @@
 
 This is a desktop-level save management tool specifically designed for the game "Escape The Backrooms", built using Vue.js + JavaScript + CSS for the frontend, and Vite as the build tool. Version 3.0 represents a complete upgrade, offering an entirely new user experience and enhanced functionalities.
 
-Please note: Future development may include features such as encryption keys. For data security, this part of the code will not be open-sourced, and I will make corresponding annotations for these sections.
+Please note: Future development may involve features related to encryption keys. For data security, the code for these parts will not be open-sourced, and I will make corresponding annotations in the code.
+
+This project uses assets extracted from Escape The Backrooms, which are stored in the `icons/ETB_UI` folder within the `public`directory. The names of the resources have not been modified.
 
 ‼️‼️‼️ This repository and program are not affiliated with Escape The Backrooms developer Fancy‼️‼️‼️
 
@@ -34,7 +36,7 @@ Please note: Future development may include features such as encryption keys. Fo
 | 🔍 Search functionality | ✅ Completed | 100% | Support quick search of archives by keywords such as name, hierarchy, etc. |
 | 🎨 Color themes | ⏳ In development | 0% | Users can customize the application's color themes |
 | 🌐 Multi-language switching | ⏳ In development | 5% | Provide more convenient multi-language switching support |
-| 💾 Archive data editing | ⏳ In development | 0% | Allow users to directly edit archive data within the tool |
+| 💾 Archive data editing | ⏳ In development | 50% | Allow users to directly edit archive data within the tool |
 | ➕ Expansion of new archive creation features | ⏳ In development | 0% | Add more options and settings to enhance the function of creating new archives |
 | 📄 Expansion content pack | ⏳ In development | 0% | Selectable additional features for use |
 | 🌐 Cross-platform support | ✅ Basic support | 100% | Supports Windows/macOS/Linux |

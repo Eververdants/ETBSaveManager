@@ -1,90 +1,97 @@
 <template>
-    <div class="custom-select" :class="{ 'light-mode': lightMode, 'open': isOpen }" ref="selectRef">
-      <div class="select-header" @click="toggleDropdown">
-        <span class="selected-value">{{ selectedLabel }}</span>
-        <i class="fas fa-chevron-down" :class="{ 'rotate': isOpen }"></i>
-      </div>
-      
-      <Transition name="dropdown">
-        <div v-if="isOpen" class="dropdown-menu">
-          <div 
-            v-for="option in options" 
-            :key="option.value" 
-            class="dropdown-item"
-            :class="{ 'selected': option.value === modelValue }"
-            @click="selectOption(option)"
-          >
-            {{ option.label }}
-          </div>
-        </div>
-      </Transition>
+  <div
+    class="custom-select"
+    :class="{ 'light-mode': lightMode, open: isOpen }"
+    ref="selectRef"
+  >
+    <div class="select-header" @click="toggleDropdown">
+      <span class="selected-value">{{ selectedLabel }}</span>
+      <i class="fas fa-chevron-down" :class="{ rotate: isOpen }"></i>
     </div>
-  </template>
-  
-  <script>
-  import { ref, computed, onMounted, onUnmounted } from 'vue';
-  import gsap from 'gsap';
-  
-  export default {
-    props: {
-      modelValue: [String, Number, Boolean],
-      options: Array,
-      lightMode: Boolean
-    },
-    emits: ['update:modelValue', 'change'],
-    setup(props, { emit }) {
-      const isOpen = ref(false);
-      const selectRef = ref(null);
-      
-      const selectedLabel = computed(() => {
-        const selectedOption = props.options.find(opt => opt.value === props.modelValue);
-        return selectedOption ? selectedOption.label : '请选择';
-      });
-      
-      const toggleDropdown = () => {
-        isOpen.value = !isOpen.value;
-      };
-      
-      const selectOption = (option) => {
-        emit('update:modelValue', option.value);
-        emit('change', option.value);
+
+    <Transition name="dropdown">
+      <div v-if="isOpen" class="dropdown-menu">
+        <div
+          v-for="option in options"
+          :key="option.value"
+          class="dropdown-item"
+          :class="{ selected: option.value === modelValue }"
+          @click="selectOption(option)"
+        >
+          {{ option.label }}
+        </div>
+      </div>
+    </Transition>
+  </div>
+</template>
+
+<script>
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import gsap from "gsap";
+
+export default {
+  props: {
+    modelValue: [String, Number, Boolean],
+    options: Array,
+    lightMode: Boolean,
+  },
+  emits: ["update:modelValue", "change"],
+  setup(props, { emit }) {
+    const isOpen = ref(false);
+    const selectRef = ref(null);
+
+    const selectedLabel = computed(() => {
+      const selectedOption = props.options.find(
+        (opt) => opt.value === props.modelValue
+      );
+      return selectedOption ? selectedOption.label : "请选择";
+    });
+
+    const toggleDropdown = () => {
+      isOpen.value = !isOpen.value;
+    };
+
+    const selectOption = (option) => {
+      emit("update:modelValue", option.value);
+      emit("change", option.value);
+      isOpen.value = false;
+
+      // 添加点击反馈动画
+      const selectedElement = event?.target;
+      if (selectedElement) {
+        gsap.fromTo(
+          selectedElement,
+          { scale: 0.95 },
+          { scale: 1, duration: 0.3, ease: "elastic.out(1, 0.8)" }
+        );
+      }
+    };
+
+    // 点击外部关闭下拉框
+    const handleClickOutside = (event) => {
+      if (selectRef.value && !selectRef.value.contains(event.target)) {
         isOpen.value = false;
-        
-        // 添加点击反馈动画
-        const selectedElement = event?.target;
-        if (selectedElement) {
-          gsap.fromTo(selectedElement, 
-            { scale: 0.95 },
-            { scale: 1, duration: 0.3, ease: 'elastic.out(1, 0.8)' }
-          );
-        }
-      };
-      
-      // 点击外部关闭下拉框
-      const handleClickOutside = (event) => {
-        if (selectRef.value && !selectRef.value.contains(event.target)) {
-          isOpen.value = false;
-        }
-      };
-      
-      onMounted(() => {
-        document.addEventListener('click', handleClickOutside);
-      });
-      
-      onUnmounted(() => {
-        document.removeEventListener('click', handleClickOutside);
-      });
-      
-      return {
-        isOpen,
-        selectedLabel,
-        selectRef,
-        toggleDropdown,
-        selectOption
-      };
-    }
-  };
-  </script>
+      }
+    };
+
+    onMounted(() => {
+      document.addEventListener("click", handleClickOutside);
+    });
+
+    onUnmounted(() => {
+      document.removeEventListener("click", handleClickOutside);
+    });
+
+    return {
+      isOpen,
+      selectedLabel,
+      selectRef,
+      toggleDropdown,
+      selectOption,
+    };
+  },
+};
+</script>
 
 <style scoped>
 .custom-select {

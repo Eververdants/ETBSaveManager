@@ -6,6 +6,8 @@
   <img src="./src-tauri/icons/128x128.png" alt="icon">
 </p>
 
+[中文](#) | [English](./README.md)
+
 > 正在开发中的重大更新版本 —— 更现代化的UI、搜索功能、颜色主题、多语言切换等新特性！
 
 这是一个专为游戏《逃离后室》设计的桌面级存档管理工具，使用 Vue.js + JavaScript + CSS 构建前端，并通过 Vite 作为构建工具。3.0 是一次全面升级，带来全新的用户体验与更强的功能模块。
@@ -13,6 +15,12 @@
 请注意：未来的开发中可能会涉及一些加密密钥之类的功能，为了数据安全，这部分的代码可能不作开源，并且这部分代码我会做出相应标注。
 
 本项目中，使用了由 Escape The Backrooms 解包而来的资源，存放在`public`文件夹中的`icons/ETB_UI`文件夹内，资源名称未修改。
+
+目前有一个试用版本，版本号为`V3.0.0-Alpha-1`。可体验新版的界面。并且现在只有`中文`版本。
+
+如果你在使用试用版本时遇到了一些bug，请详细的描述问题给开发者，或截图DevTools中的错误信息，并提交issue。
+
+我的邮箱：**`llzgd@outlook.com`**
 
 ‼️‼️‼️本仓库、程序不属于Escape The Backrooms开发者Fancy‼️‼️‼️
 
@@ -65,9 +73,15 @@
 
 ---
 
-## 📥 安装方式（开发中）
+## 📥 安装方式（V3.0.0-Alpha-1测试版）
 
-> 注意：目前仅限开发者或测试者使用，暂未发布正式安装包。
+### Windows
+
+1. 下载 [v3.0.0-Alpha-1](https://github.com/llzgdc/ETBSaveManager/releases/tag/v3.0.0-Alpha-1) 的 Windows 安装包。
+
+2. 双击安装包进行安装。（如果你没有安装WebView2，安装包应该会自动进行安装。如果没有，请点击[这里](https://developer.microsoft.com/microsoft-edge/webview2)下载并安装WebView2）
+
+### 代码下载
 
 ```bash
 # 克隆项目

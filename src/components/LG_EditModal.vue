@@ -11,7 +11,7 @@
         ref="modalRef"
       >
         <div class="modal-header">
-          <h2>编辑存档</h2>
+          <h2>编辑存档 (本部分暂未完工。)</h2>
           <button class="close-btn" @click="closeModal">
             <i class="fas fa-times"></i>
           </button>

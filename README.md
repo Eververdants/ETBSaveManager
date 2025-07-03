@@ -6,6 +6,8 @@
   <img src="./src-tauri/icons/128x128.png" alt="icon">
 </p>
 
+[中文](./README-CN.md) | [English](#)
+
 > A major update in development — featuring a more modern UI, search functionality, color themes, multi-language switching, and more!
 
 This is a desktop-level save management tool specifically designed for the game "Escape The Backrooms", built using Vue.js + JavaScript + CSS for the frontend, and Vite as the build tool. Version 3.0 represents a complete upgrade, offering an entirely new user experience and enhanced functionalities.
@@ -13,6 +15,12 @@ This is a desktop-level save management tool specifically designed for the game 
 Please note: Future development may involve features related to encryption keys. For data security, the code for these parts will not be open-sourced, and I will make corresponding annotations in the code.
 
 This project uses assets extracted from Escape The Backrooms, which are stored in the `icons/ETB_UI` folder within the `public`directory. The names of the resources have not been modified.
+
+There is currently a trial version available, with the version number `V3.0.0-Alpha-1`. You can experience the new interface in this version. However, at this time, only the `Chinese` language is supported.
+
+If you encounter any bugs while using the trial version, please provide a detailed description of the issue to the developer, or take a screenshot of the error messages shown in the DevTools, and submit an issue.
+
+My email: **`llzgd@outlook.com`**
 
 ‼️‼️‼️ This repository and program are not affiliated with Escape The Backrooms developer Fancy‼️‼️‼️
 
@@ -65,9 +73,15 @@ If you need to use the stable version, please refer to the [v2.7.3 Release Page]
 
 ---
 
-## 📥 Installation (In Development)
+## 📥 Installation (V3.0.0-Alpha-1)
 
-> Note: Currently only for developers or testers, no official installation package released yet.
+### Windows
+
+1. Download the Windows installer for [v3.0.0-Alpha-1](https://github.com/llzgdc/ETBSaveManager/releases/tag/v3.0.0-Alpha-1).
+
+2. Double-click the installer to begin installation. (If you don't have WebView2 installed, the installer should install it automatically. If not, please click [here](https://developer.microsoft.com/microsoft-edge/webview2) to download and install WebView2.)
+
+### Source Code Download
 
 ```bash
 # Clone the project

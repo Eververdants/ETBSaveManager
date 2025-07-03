@@ -14,14 +14,14 @@
   />
 
   <!-- 在主页中使用 -->
-<EditArchiveModal
-  v-if="showEditModal"
-  :show="showEditModal"
-  :archive="editingArchive"
-  :lightMode="lightMode"
-  @update:show="showEditModal = $event"
-  @save="handleSaveEdit"
-/>
+  <EditArchiveModal
+    v-if="showEditModal"
+    :show="showEditModal"
+    :archive="editingArchive"
+    :lightMode="lightMode"
+    @update:show="showEditModal = $event"
+    @save="handleSaveEdit"
+  />
   <div class="glass-scroll-container">
     <div class="glass-scroll-content" ref="glassScrollContentRef">
       <div class="cards-container" :data-theme="lightMode ? 'light' : 'dark'">
@@ -111,11 +111,11 @@ export default {
       editingArchive.value = { ...archive };
       showEditModal.value = true;
     };
-    
+
     // 处理保存编辑
     const handleSaveEdit = (editedArchive) => {
       // 更新存档逻辑...
-      console.log('保存编辑:', editedArchive);
+      console.log("保存编辑:", editedArchive);
     };
 
     const updateArchive = (updatedArchive) => {

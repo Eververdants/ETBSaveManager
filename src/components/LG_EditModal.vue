@@ -1,7 +1,15 @@
 <template>
   <Transition name="modal" appear>
-    <div v-if="show" class="edit-modal-overlay" @mousedown.self="handleOverlayClick">
-      <div class="edit-modal" :class="{ 'light-mode': lightMode }" ref="modalRef">
+    <div
+      v-if="show"
+      class="edit-modal-overlay"
+      @mousedown.self="handleOverlayClick"
+    >
+      <div
+        class="edit-modal"
+        :class="{ 'light-mode': lightMode }"
+        ref="modalRef"
+      >
         <div class="modal-header">
           <h2>编辑存档</h2>
           <button class="close-btn" @click="closeModal">
@@ -20,18 +28,18 @@
               <div class="form-group">
                 <label for="archive-name">存档名称</label>
                 <div class="input-wrapper">
-                  <input 
-                    id="archive-name" 
-                    type="text" 
-                    v-model="editedArchive.name" 
+                  <input
+                    id="archive-name"
+                    type="text"
+                    v-model="editedArchive.name"
                     :class="{ 'light-mode': lightMode }"
-                  >
+                  />
                 </div>
               </div>
 
               <div class="form-group">
                 <label>存档难度</label>
-                <CustomSelect 
+                <CustomSelect
                   v-model="editedArchive.difficulty"
                   :options="difficultyOptions"
                   :light-mode="lightMode"
@@ -40,7 +48,7 @@
 
               <div class="form-group">
                 <label>实际难度</label>
-                <CustomSelect 
+                <CustomSelect
                   v-model="editedArchive.actualDifficulty"
                   :options="difficultyOptions"
                   :light-mode="lightMode"
@@ -49,7 +57,7 @@
 
               <div class="form-group">
                 <label>游戏模式</label>
-                <CustomSelect 
+                <CustomSelect
                   v-model="editedArchive.mode"
                   :options="modeOptions"
                   :light-mode="lightMode"
@@ -58,7 +66,7 @@
 
               <div class="form-group">
                 <label>状态</label>
-                <CustomSelect 
+                <CustomSelect
                   v-model="editedArchive.hidden"
                   :options="visibilityOptions"
                   :light-mode="lightMode"
@@ -74,26 +82,30 @@
               <h3>具体数据</h3>
             </div>
             <div class="section-nav">
-              <button 
+              <button
                 :class="{ active: activeDataSection === 'level' }"
                 @click="scrollToSection('level')"
               >
                 <i class="fas fa-layer-group"></i> 层级修改
               </button>
-              <button 
+              <button
                 :class="{ active: activeDataSection === 'inventory' }"
                 @click="scrollToSection('inventory')"
               >
                 <i class="fas fa-backpack"></i> 玩家背包
               </button>
             </div>
-            <div class="section-content scrollable" ref="dataSection" @scroll="handleSectionScroll">
+            <div
+              class="section-content scrollable"
+              ref="dataSection"
+              @scroll="handleSectionScroll"
+            >
               <!-- 层级修改部分 -->
               <div class="data-section" id="level-section">
                 <h4>层级修改</h4>
                 <div class="form-group">
                   <label>当前层级</label>
-                  <CustomSelect 
+                  <CustomSelect
                     v-model="editedArchive.currentLevel"
                     :options="levelOptions"
                     :light-mode="lightMode"
@@ -106,21 +118,24 @@
                 <h4>玩家背包</h4>
                 <div class="player-selector">
                   <label>选择玩家</label>
-                  <CustomSelect 
+                  <CustomSelect
                     v-model="selectedPlayer"
                     :options="playerOptions"
                     :light-mode="lightMode"
                   />
                 </div>
                 <div class="inventory-grid">
-                  <div 
-                    v-for="(slot, index) in currentPlayerInventory" 
-                    :key="index" 
+                  <div
+                    v-for="(slot, index) in currentPlayerInventory"
+                    :key="index"
                     class="inventory-slot"
                     @click="openItemMenu($event, index)"
                   >
                     <template v-if="slot.item">
-                      <div class="item-icon" :style="{ backgroundImage: `url(${slot.item.icon})` }"></div>
+                      <div
+                        class="item-icon"
+                        :style="{ backgroundImage: `url(${slot.item.icon})` }"
+                      ></div>
                     </template>
                     <!-- 空格子不显示任何符号 -->
                   </div>
@@ -140,13 +155,13 @@
               <div class="form-group">
                 <label>梯子数量</label>
                 <div class="input-wrapper">
-                  <input 
-                    type="number" 
-                    v-model="levelInfo.entityCount" 
+                  <input
+                    type="number"
+                    v-model="levelInfo.entityCount"
                     min="0"
                     max="4"
                     :class="{ 'light-mode': lightMode }"
-                  >
+                  />
                 </div>
               </div>
             </div>
@@ -159,7 +174,7 @@
         </div>
 
         <!-- 物品选择菜单 -->
-        <ItemMenu 
+        <ItemMenu
           v-if="showItemMenu"
           :position="itemMenuPosition"
           :items="itemOptions"
@@ -174,204 +189,271 @@
 </template>
 
 <script>
-import { ref, reactive, watch, onMounted, computed } from 'vue';
-import gsap from 'gsap';
-import CustomSelect from './LG_CustomSelect.vue';
-import ItemMenu from './LG_ItemMenu.vue';
+import {
+  ref,
+  reactive,
+  watch,
+  onMounted,
+  computed,
+  nextTick,
+  onUnmounted,
+  shallowRef,
+} from "vue";
+import gsap from "gsap";
+import CustomSelect from "./LG_CustomSelect.vue";
+import ItemMenu from "./LG_ItemMenu.vue";
 
 // 物品选项定义在组件外部
 const itemOptions = [
-  { id: 1, name: '浓缩杏仁水', icon: './icons/ETB_UI/T_UI_Inv_Icon_AlmondConcentrate.png' },
-  { id: 2, name: '杀虫剂', icon: './icons/ETB_UI/T_UI_Inv_Icon_BugSpray.png' },
-  { id: 3, name: '摄像机', icon: './icons/ETB_UI/T_UI_Inv_Icon_Camera.png' },
-  { id: 4, name: '杏仁水', icon: './icons/ETB_UI/T_UI_Inv_Icon_Can.png' },
-  { id: 5, name: '电锯', icon: './icons/ETB_UI/T_UI_Inv_Icon_Chainsaw.png' },
-  { id: 6, name: '潜水头盔', icon: './icons/ETB_UI/T_UI_Inv_Icon_DivingHelmet.png' },
-  { id: 7, name: '能量棒', icon: './icons/ETB_UI/T_UI_Inv_Icon_EnergyBar.png' },
-  { id: 8, name: '烟花', icon: './icons/ETB_UI/T_UI_Inv_Icon_Firework.png' },
-  { id: 9, name: '信号枪', icon: './icons/ETB_UI/T_UI_Inv_Icon_FlareGun.png' },
-  { id: 10, name: '手电筒', icon: './icons/ETB_UI/T_UI_Inv_Icon_Flashlight.png' },
-  { id: 11, name: '蓝色荧光棒', icon: './icons/ETB_UI/T_UI_Inv_Icon_GlowStick__Blue.png' },
-  { id: 12, name: '绿色荧光棒', icon: './icons/ETB_UI/T_UI_Inv_Icon_GlowStick_Green.png' },
-  { id: 13, name: '红色荧光棒', icon: './icons/ETB_UI/T_UI_Inv_Icon_GlowStick_Red.png' },
-  { id: 14, name: '黄色荧光棒', icon: './icons/ETB_UI/T_UI_Inv_Icon_GlowStick_Yellow.png' },
-  { id: 15, name: '果汁', icon: './icons/ETB_UI/T_UI_Inv_Icon_Juice_v2png.png' },
-  { id: 16, name: '液体痛苦', icon: './icons/ETB_UI/T_UI_Inv_Icon_Juice.png' },
-  { id: 17, name: '绳索', icon: './icons/ETB_UI/T_UI_Inv_Icon_Rope.png' },
-  { id: 18, name: '扫描仪', icon: './icons/ETB_UI/T_UI_Inv_Icon_Scanner.png' },
-  { id: 19, name: '温度计', icon: './icons/ETB_UI/T_UI_Inv_Icon_Thermometer.png' },
-  { id: 20, name: '票', icon: './icons/ETB_UI/T_UI_Inv_Icon_Ticket.png' },
-  { id: 21, name: '对讲机', icon: './icons/ETB_UI/T_UI_Inv_Icon_WalkieTalkie.png' },
-  { id: 22, name: '飞蛾果冻', icon: './icons/ETB_UI/T_UI_Inv_Icon_WaxBar.png' },
-  { id: 23, name: '撬棍', icon: './icons/ETB_UI/T_UI_Inv_Icon_Crowbar.png' }
+  {
+    id: 1,
+    name: "浓缩杏仁水",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_AlmondConcentrate.png",
+  },
+  { id: 2, name: "杀虫剂", icon: "./icons/ETB_UI/T_UI_Inv_Icon_BugSpray.png" },
+  { id: 3, name: "摄像机", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Camera.png" },
+  { id: 4, name: "杏仁水", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Can.png" },
+  { id: 5, name: "电锯", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Chainsaw.png" },
+  {
+    id: 6,
+    name: "潜水头盔",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_DivingHelmet.png",
+  },
+  { id: 7, name: "能量棒", icon: "./icons/ETB_UI/T_UI_Inv_Icon_EnergyBar.png" },
+  { id: 8, name: "烟花", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Firework.png" },
+  { id: 9, name: "信号枪", icon: "./icons/ETB_UI/T_UI_Inv_Icon_FlareGun.png" },
+  {
+    id: 10,
+    name: "手电筒",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Flashlight.png",
+  },
+  {
+    id: 11,
+    name: "蓝色荧光棒",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_GlowStick__Blue.png",
+  },
+  {
+    id: 12,
+    name: "绿色荧光棒",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_GlowStick_Green.png",
+  },
+  {
+    id: 13,
+    name: "红色荧光棒",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_GlowStick_Red.png",
+  },
+  {
+    id: 14,
+    name: "黄色荧光棒",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_GlowStick_Yellow.png",
+  },
+  {
+    id: 15,
+    name: "果汁",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Juice_v2png.png",
+  },
+  { id: 16, name: "液体痛苦", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Juice.png" },
+  { id: 17, name: "绳索", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Rope.png" },
+  { id: 18, name: "扫描仪", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Scanner.png" },
+  {
+    id: 19,
+    name: "温度计",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Thermometer.png",
+  },
+  { id: 20, name: "票", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Ticket.png" },
+  {
+    id: 21,
+    name: "对讲机",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_WalkieTalkie.png",
+  },
+  { id: 22, name: "飞蛾果冻", icon: "./icons/ETB_UI/T_UI_Inv_Icon_WaxBar.png" },
+  { id: 23, name: "撬棍", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Crowbar.png" },
 ];
 
 export default {
   components: {
     CustomSelect,
-    ItemMenu
+    ItemMenu,
   },
   props: {
     show: Boolean,
     archive: Object,
-    lightMode: Boolean
+    lightMode: Boolean,
   },
-  emits: ['update:show', 'save'],
+  emits: ["update:show", "save"],
   setup(props, { emit }) {
     const modalRef = ref(null);
     const itemMenuRef = ref(null);
-    
+
     // 编辑的存档数据 - 深拷贝
     const editedArchive = ref(JSON.parse(JSON.stringify(props.archive)));
-    
+
     // 下拉框选项
     const difficultyOptions = ref([
-      { value: '简单难度', label: '简单难度' },
-      { value: '普通难度', label: '普通难度' },
-      { value: '困难难度', label: '困难难度' },
-      { value: '噩梦难度', label: '噩梦难度' }
+      { value: "简单难度", label: "简单难度" },
+      { value: "普通难度", label: "普通难度" },
+      { value: "困难难度", label: "困难难度" },
+      { value: "噩梦难度", label: "噩梦难度" },
     ]);
-    
+
     const modeOptions = ref([
-      { value: '单人模式', label: '单人模式' },
-      { value: '多人模式', label: '多人模式' }
+      { value: "单人模式", label: "单人模式" },
+      { value: "多人模式", label: "多人模式" },
     ]);
-    
+
     const visibilityOptions = ref([
-      { value: false, label: '可见' },
-      { value: true, label: '隐藏' }
+      { value: false, label: "可见" },
+      { value: true, label: "隐藏" },
     ]);
-    
+
     const levelOptions = ref([
-      { value: 'level-0', label: 'Level 0 - 教学关卡' },
-      { value: 'level-1', label: 'Level 1 - 起始之地' },
-      { value: 'level-2', label: 'Level 2 - 管道迷宫' },
-      { value: 'level-3', label: 'Level 3 - 电气室' },
-      { value: 'level-4', label: 'Level 4 - 废弃办公室' },
-      { value: 'level-5', label: 'Level 5 - 旅馆' }
+      { value: "level-0", label: "Level 0 - 教学关卡" },
+      { value: "level-1", label: "Level 1 - 起始之地" },
+      { value: "level-2", label: "Level 2 - 管道迷宫" },
+      { value: "level-3", label: "Level 3 - 电气室" },
+      { value: "level-4", label: "Level 4 - 废弃办公室" },
+      { value: "level-5", label: "Level 5 - 旅馆" },
     ]);
-    
+
     const playerOptions = ref([
-      { value: 'player1', label: '玩家1' },
-      { value: 'player2', label: '玩家2' },
-      { value: 'player3', label: '玩家3' },
-      { value: 'player4', label: '玩家4' }
+      { value: "player1", label: "玩家1" },
+      { value: "player2", label: "玩家2" },
+      { value: "player3", label: "玩家3" },
+      { value: "player4", label: "玩家4" },
     ]);
-    
+
     const levelInfoOptions = ref([
-      { value: 'level-0', label: 'Level 0' },
-      { value: 'level-1', label: 'Level 1' },
-      { value: 'level-2', label: 'Level 2' },
-      { value: 'level-3', label: 'Level 3' },
-      { value: 'level-4', label: 'Level 4' },
-      { value: 'level-5', label: 'Level 5' }
+      { value: "level-0", label: "Level 0" },
+      { value: "level-1", label: "Level 1" },
+      { value: "level-2", label: "Level 2" },
+      { value: "level-3", label: "Level 3" },
+      { value: "level-4", label: "Level 4" },
+      { value: "level-5", label: "Level 5" },
     ]);
-    
+
     const safetyOptions = ref([
-      { value: '安全', label: '安全' },
-      { value: '中等', label: '中等' },
-      { value: '危险', label: '危险' },
-      { value: '致命', label: '致命' }
+      { value: "安全", label: "安全" },
+      { value: "中等", label: "中等" },
+      { value: "危险", label: "危险" },
+      { value: "致命", label: "致命" },
     ]);
-    
+
     // 玩家背包状态
     const playerInventory = reactive({
-      player1: Array(12).fill().map((_, i) => ({ 
-        id: i, 
-        item: i % 3 === 0 ? itemOptions[i % itemOptions.length] : null
-      })),
-      player2: Array(12).fill().map(() => ({ item: null })),
-      player3: Array(12).fill().map(() => ({ item: null })),
-      player4: Array(12).fill().map(() => ({ item: null }))
+      player1: Array(12)
+        .fill()
+        .map((_, i) => ({
+          id: i,
+          item: i % 3 === 0 ? itemOptions[i % itemOptions.length] : null,
+        })),
+      player2: Array(12)
+        .fill()
+        .map(() => ({ item: null })),
+      player3: Array(12)
+        .fill()
+        .map(() => ({ item: null })),
+      player4: Array(12)
+        .fill()
+        .map(() => ({ item: null })),
     });
-    
-    const selectedPlayer = ref('player1');
+
+    const selectedPlayer = ref("player1");
     const currentPlayerInventory = computed(() => {
       return playerInventory[selectedPlayer.value];
     });
-    
+
     // 物品菜单状态
     const showItemMenu = ref(false);
     const itemMenuPosition = ref({ x: 0, y: 0 });
     const currentSlotIndex = ref(null);
-    
+
     // 具体数据板块导航
-    const activeDataSection = ref('level');
+    const activeDataSection = shallowRef("level");
     const dataSection = ref(null);
-    
+
     // 层级信息
-    const selectedLevelInfo = ref('level-0');
+    const selectedLevelInfo = ref("level-0");
     const levelInfo = reactive({
-      name: 'Level 0 - 教学关卡',
-      safetyLevel: '安全',
+      name: "Level 0 - 教学关卡",
+      safetyLevel: "安全",
       entityCount: 0,
-      exploration: 45
+      exploration: 45,
     });
-    
+
     // 监听层级信息选择变化
     watch(selectedLevelInfo, (newValue) => {
       const levelData = {
-        'level-0': { name: 'Level 0 - 教学关卡', safetyLevel: '安全', entityCount: 0, exploration: 45 },
-        'level-1': { name: 'Level 1 - 起始之地', safetyLevel: '中等', entityCount: 3, exploration: 30 },
-        'level-2': { name: 'Level 2 - 管道迷宫', safetyLevel: '危险', entityCount: 8, exploration: 15 },
-        'level-3': { name: 'Level 3 - 电气室', safetyLevel: '致命', entityCount: 12, exploration: 5 },
-        'level-4': { name: 'Level 4 - 废弃办公室', safetyLevel: '中等', entityCount: 5, exploration: 25 },
-        'level-5': { name: 'Level 5 - 旅馆', safetyLevel: '危险', entityCount: 10, exploration: 10 }
+        "level-0": {
+          name: "Level 0 - 教学关卡",
+          safetyLevel: "安全",
+          entityCount: 0,
+          exploration: 45,
+        },
+        "level-1": {
+          name: "Level 1 - 起始之地",
+          safetyLevel: "中等",
+          entityCount: 3,
+          exploration: 30,
+        },
+        "level-2": {
+          name: "Level 2 - 管道迷宫",
+          safetyLevel: "危险",
+          entityCount: 8,
+          exploration: 15,
+        },
+        "level-3": {
+          name: "Level 3 - 电气室",
+          safetyLevel: "致命",
+          entityCount: 12,
+          exploration: 5,
+        },
+        "level-4": {
+          name: "Level 4 - 废弃办公室",
+          safetyLevel: "中等",
+          entityCount: 5,
+          exploration: 25,
+        },
+        "level-5": {
+          name: "Level 5 - 旅馆",
+          safetyLevel: "危险",
+          entityCount: 10,
+          exploration: 10,
+        },
       };
-      
+
       Object.assign(levelInfo, levelData[newValue]);
     });
-    
+
     // 修复：打开物品菜单
-    const openItemMenu = (event, slotIndex) => {
-      if (event && typeof event.stopPropagation === 'function') {
-        event.stopPropagation();
-      }
-      
+    const openItemMenu = async (event, slotIndex) => {
+      if (event?.stopPropagation) event.stopPropagation();
+
       const slotElement = event.currentTarget;
       const rect = slotElement.getBoundingClientRect();
       const modalRect = modalRef.value.getBoundingClientRect();
-      
-      // 计算菜单位置（在格子下方）
+
       let menuX = rect.left;
-      let menuY = rect.bottom + 5;
-      
-      // 菜单尺寸
+      let menuY = rect.bottom + 10;
+
       const menuWidth = 240;
       const menuHeight = 300;
-      
-      // 检查是否会超出弹窗底部
-      if (menuY + menuHeight > modalRect.bottom) {
-        // 如果超出，则在格子上方显示
+
+      // 边界检测
+      if (menuY + menuHeight > modalRect.bottom)
         menuY = rect.top - menuHeight - 5;
-      }
-      
-      // 检查是否会超出弹窗右侧
-      if (menuX + menuWidth > modalRect.right) {
+      if (menuX + menuWidth > modalRect.right)
         menuX = modalRect.right - menuWidth - 15;
-      }
-      
-      // 检查是否会超出弹窗左侧
-      if (menuX < modalRect.left) {
-        menuX = modalRect.left + 10;
-      }
-      
-      // 如果菜单已经打开，则使用动画移动到新位置
-      if (showItemMenu.value && itemMenuRef.value) {
-        gsap.to(itemMenuRef.value.$el, {
-          left: `${menuX}px`,
-          top: `${menuY}px`,
-          duration: 0.3,
-          ease: 'power2.out'
-        });
-      } else {
-        itemMenuPosition.value = { x: menuX, y: menuY };
-      }
-      
+      if (menuX < modalRect.left) menuX = modalRect.left + 10;
+
+      itemMenuPosition.value = { x: menuX, y: menuY };
       currentSlotIndex.value = slotIndex;
+
+      // 延迟显示菜单，确保动画生效
+      showItemMenu.value = false;
+      await nextTick();
       showItemMenu.value = true;
     };
-    
+
     // 选择物品
     const selectItem = (item) => {
       if (currentSlotIndex.value !== null) {
@@ -379,40 +461,189 @@ export default {
       }
       closeItemMenu();
     };
-    
+
     // 关闭物品菜单
     const closeItemMenu = () => {
       showItemMenu.value = false;
       currentSlotIndex.value = null;
     };
-    
+
     // 处理板块滚动事件
     const handleSectionScroll = () => {
+      console.log("用户正在滚动具体数据板块");
+
       if (showItemMenu.value) {
         closeItemMenu();
       }
     };
-    
+
     // 滚动到具体数据板块
     const scrollToSection = (section) => {
       if (!dataSection.value) return;
-      
-      let targetElement;
-      if (section === 'level') {
-        targetElement = document.getElementById('level-section');
-      } else {
-        targetElement = document.getElementById('inventory-section');
-      }
-      
+
+      const targetElement = document.getElementById(
+        section === "level" ? "level-section" : "inventory-section"
+      );
+
       if (targetElement) {
+        // 先设置 active 状态
+        setActiveButton(section);
+
+        // 再执行滚动动画
         gsap.to(dataSection.value, {
           scrollTop: targetElement.offsetTop,
           duration: 0.5,
-          ease: 'power2.out'
+          ease: "power2.out",
         });
       }
     };
-    
+
+    // 滚动检测函数
+    const checkActiveSection = () => {
+      console.log("dataSection.value:", dataSection.value); // 看看是否为 null 或 undefined
+
+      if (!dataSection.value) return;
+
+      const levelSection = document.getElementById("level-section");
+      const inventorySection = document.getElementById("inventory-section");
+
+      console.log("levelSection:", levelSection); // 看看是否能获取到 DOM 元素
+      console.log("inventorySection:", inventorySection);
+
+      if (!levelSection || !inventorySection) return;
+
+      const container = dataSection.value;
+      const scrollTop = container.scrollTop;
+      const containerHeight = container.clientHeight;
+
+      const levelTop = levelSection.offsetTop;
+      const inventoryTop = inventorySection.offsetTop;
+
+      const viewportTop = scrollTop;
+      const viewportBottom = scrollTop + containerHeight;
+
+      const levelInView = levelTop >= viewportTop && levelTop < viewportBottom;
+      const inventoryInView =
+        inventoryTop >= viewportTop && inventoryTop < viewportBottom;
+
+      if (levelInView) {
+        activeDataSection.value = "level";
+      } else if (inventoryInView) {
+        activeDataSection.value = "inventory";
+      }
+    };
+
+    // 绑定滚动监听
+    watch(
+      () => props.show,
+      (newVal) => {
+        if (newVal && dataSection.value) {
+          nextTick(() => {
+            checkActiveSection(); // 初始判断
+          });
+        }
+      }
+    );
+
+    const levelSection = ref(null);
+    const inventorySection = ref(null);
+    let ticking = false;
+
+    function setActiveButton(section) {
+      const buttons = document.querySelectorAll(".section-nav button");
+      buttons.forEach((btn) => btn.classList.remove("active"));
+      if (section === "level") buttons[0]?.classList.add("active");
+      else if (section === "inventory") buttons[1]?.classList.add("active");
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!ticking) {
+          requestAnimationFrame(() => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                if (entry.target === levelSection.value) {
+                  setActiveButton("level");
+                } else if (entry.target === inventorySection.value) {
+                  setActiveButton("inventory");
+                }
+              }
+            });
+            ticking = false;
+          });
+          ticking = true;
+        }
+      },
+      {
+        root: dataSection.value,
+        threshold: [0.4, 0.6],
+      }
+    );
+
+    function setActiveButton(section) {
+      const buttons = document.querySelectorAll(".section-nav button");
+      buttons.forEach((btn) => btn.classList.remove("active"));
+      if (section === "level") buttons[0]?.classList.add("active");
+      else if (section === "inventory") buttons[1]?.classList.add("active");
+    }
+
+    onMounted(async () => {
+      await nextTick(); // 确保 DOM 已渲染
+
+      const container = dataSection.value;
+      if (!container) return;
+
+      const levelTop = levelSection.value?.offsetTop;
+      const inventoryTop = inventorySection.value?.offsetTop;
+
+      if (levelTop === undefined || inventoryTop === undefined) return;
+
+      // ✅ 创建 observer 在这里
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (!ticking) {
+            requestAnimationFrame(() => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  if (entry.target === levelSection.value) {
+                    setActiveButton("level");
+                  } else if (entry.target === inventorySection.value) {
+                    setActiveButton("inventory");
+                  }
+                }
+              });
+              ticking = false;
+            });
+            ticking = true;
+          }
+        },
+        {
+          root: dataSection.value, // ✅ 滚动容器
+          threshold: [0.4, 0.6], // 可视比例
+        }
+      );
+
+      if (levelSection.value) observer.observe(levelSection.value);
+      if (inventorySection.value) observer.observe(inventorySection.value);
+
+      // 初始判断当前激活项
+      const scrollTop = container.scrollTop;
+      const clientHeight = container.clientHeight;
+
+      if (levelTop >= scrollTop && levelTop < scrollTop + clientHeight / 2) {
+        setActiveButton("level");
+      } else if (
+        inventoryTop >= scrollTop &&
+        inventoryTop < scrollTop + clientHeight / 2
+      ) {
+        setActiveButton("inventory");
+      }
+    });
+
+    onUnmounted(() => {
+      observer.disconnect();
+    });
+
     // 关闭弹窗动画
     const closeModal = () => {
       gsap.to(modalRef.value, {
@@ -420,48 +651,51 @@ export default {
         scale: 0.9,
         y: 30,
         duration: 0.3,
-        ease: 'back.in(1.7)',
+        ease: "back.in(1.7)",
         onComplete: () => {
-          emit('update:show', false);
-        }
+          emit("update:show", false);
+        },
       });
     };
-    
+
     // 保存修改
     const saveChanges = () => {
       // 添加背包数据到存档
       editedArchive.value.inventory = {};
-      Object.keys(playerInventory).forEach(player => {
+      Object.keys(playerInventory).forEach((player) => {
         editedArchive.value.inventory[player] = playerInventory[player]
-          .filter(slot => slot.item)
-          .map(slot => slot.item.name);
+          .filter((slot) => slot.item)
+          .map((slot) => slot.item.name);
       });
-      
-      emit('save', editedArchive.value);
+
+      emit("save", editedArchive.value);
       closeModal();
     };
-    
+
     // 监听弹窗显示状态 - 添加进场动画
-    watch(() => props.show, (newVal) => {
-      if (newVal && modalRef.value) {
-        // 设置初始状态
-        gsap.set(modalRef.value, {
-          opacity: 0,
-          scale: 0.9,
-          y: 30
-        });
-        
-        // 动画效果
-        gsap.to(modalRef.value, {
-          opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: 0.4,
-          ease: 'back.out(1.7)'
-        });
+    watch(
+      () => props.show,
+      async (newVal) => {
+        if (newVal && modalRef.value) {
+          await nextTick(); // 等待 DOM 更新
+          gsap.set(modalRef.value, {
+            opacity: 0,
+            scale: 0.9,
+            y: 30,
+          });
+
+          gsap.to(modalRef.value, {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.4,
+            ease: "power3.out",
+            overwrite: "auto",
+          });
+        }
       }
-    });
-    
+    );
+
     return {
       modalRef,
       itemMenuRef,
@@ -488,9 +722,12 @@ export default {
       scrollToSection,
       closeModal,
       saveChanges,
-      itemOptions
+      itemOptions,
+      itemMenuPosition,
+      levelSection,
+      inventorySection,
     };
-  }
+  },
 };
 </script>
 
@@ -522,6 +759,7 @@ export default {
   flex-direction: column;
   border: 1px solid rgba(255, 255, 255, 0.1);
   transform-origin: center;
+  will-change: transform, opacity;
 }
 
 .edit-modal.light-mode {
@@ -1067,11 +1305,13 @@ input:focus {
 }
 
 /* 弹窗动画 */
-.modal-enter-active, .modal-leave-active {
+.modal-enter-active,
+.modal-leave-active {
   transition: opacity 0.4s ease;
 }
 
-.modal-enter-from, .modal-leave-to {
+.modal-enter-from,
+.modal-leave-to {
   opacity: 0;
 }
 
@@ -1123,7 +1363,8 @@ input:focus {
 }
 
 /* 输入框和下拉框居中 */
-.input-wrapper, .custom-select {
+.input-wrapper,
+.custom-select {
   width: 100%;
   max-width: 100%;
   margin: 0 auto;

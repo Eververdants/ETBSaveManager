@@ -1,57 +1,55 @@
 <template>
-  <Transition name="menu" appear>
-    <div
-      v-if="show"
-      class="item-menu"
-      :class="{ 'light-mode': lightMode }"
-      :style="menuStyle"
-      ref="menuRef"
-      @click.stop
-    >
-      <div class="menu-header">
-        <h4>选择物品</h4>
-        <button class="close-menu" @click="close">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
+  <div
+    v-if="show"
+    class="item-menu"
+    :class="{ 'light-mode': lightMode }"
+    :style="menuStyle"
+    ref="menuRef"
+    @click.stop
+  >
+    <div class="menu-header">
+      <h4>选择物品</h4>
+      <button class="close-menu" @click="close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
 
-      <div class="menu-search">
-        <div class="search-wrapper">
-          <input
-            type="text"
-            v-model="searchQuery"
-            placeholder="搜索物品..."
-            :class="{ 'light-mode': lightMode }"
-            ref="searchInput"
-            @click.stop
-          />
-        </div>
-      </div>
-
-      <div class="menu-items" ref="menuItems" @scroll.stop>
-        <div
-          v-for="item in filteredItems"
-          :key="item.id"
-          class="menu-item"
-          @click="selectItem(item)"
-        >
-          <div
-            class="item-icon"
-            :style="{ backgroundImage: `url(${item.icon})` }"
-          ></div>
-          <span class="item-name">{{ item.name }}</span>
-        </div>
-
-        <div v-if="filteredItems.length === 0" class="no-results">
-          没有找到匹配的物品
-        </div>
+    <div class="menu-search">
+      <div class="search-wrapper">
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="搜索物品..."
+          :class="{ 'light-mode': lightMode }"
+          ref="searchInput"
+          @click.stop
+        />
       </div>
     </div>
-  </Transition>
+
+    <div class="menu-items" ref="menuItems" @scroll.stop>
+      <div
+        v-for="item in filteredItems"
+        :key="item.id"
+        class="menu-item"
+        @click="selectItem(item)"
+      >
+        <div
+          class="item-icon"
+          :style="{ backgroundImage: `url(${item.icon})` }"
+        ></div>
+        <span class="item-name">{{ item.name }}</span>
+      </div>
+
+      <div v-if="filteredItems.length === 0" class="no-results">
+        没有找到匹配的物品
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch, onUnmounted } from "vue";
 import gsap from "gsap";
 
 export default {
@@ -79,6 +77,33 @@ export default {
         zIndex: 2000,
       };
     });
+
+    watch(
+      () => props.position,
+      (newPos) => {
+        if (menuRef.value) {
+          gsap.set(menuRef.value, {
+            left: `${props.position.x}px`,
+            top: `${props.position.y}px`,
+          });
+
+          gsap.to(menuRef.value, {
+            left: `${newPos.x}px`,
+            top: `${newPos.y}px`,
+            duration: 0.3,
+            ease: "power2.out",
+          });
+        }
+      }
+    );
+
+    // 点击外部区域关闭菜单
+    const handleClickOutside = (event) => {
+      const menu = menuRef.value;
+      if (menu && !menu.contains(event.target)) {
+        close();
+      }
+    };
 
     // 过滤物品
     const filteredItems = computed(() => {
@@ -144,10 +169,18 @@ export default {
         );
       }
 
+      // 添加全局点击监听
+      document.addEventListener("click", handleClickOutside);
+
       // 自动聚焦搜索框
       if (searchInput.value) {
         searchInput.value.focus();
       }
+    });
+
+    onUnmounted(() => {
+      // 移除监听防止内存泄漏
+      document.removeEventListener("click", handleClickOutside);
     });
 
     return {

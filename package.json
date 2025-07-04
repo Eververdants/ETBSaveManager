@@ -18,9 +18,11 @@
     "i18next-browser-languagedetector": "^8.2.0",
     "i18next-http-backend": "^3.0.2",
     "lucide-vue-next": "^0.513.0",
+    "marked": "^16.0.0",
     "postcss": "^8.5.4",
     "vue": "^3.5.13",
-    "vue-i18n": "^11.1.6"
+    "vue-i18n": "^11.1.6",
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",

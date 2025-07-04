@@ -5,6 +5,7 @@ import Backend from "i18next-http-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
 import i18next from "i18next"; // 显式引入 i18next
 import "./assets/css/variables.css";
+import router from "./router";
 
 // 单独初始化 i18next 实例并使用插件
 i18next
@@ -33,7 +34,7 @@ const i18n = createI18n({
   i18n: i18next, // 显式将 i18next 实例传递给 vue-i18n
 });
 
-const app = createApp(App);
+const app = createApp(App).use(router);
 
 app.use(i18n);
 app.mount("#app");

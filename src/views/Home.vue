@@ -318,7 +318,7 @@ export default {
   position: relative;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 25px;
+  gap: clamp(10px, 5%, 25px); /* 动态调整间距 */
   width: 90%;
   height: 90vh;
   margin: 0 auto;
@@ -332,6 +332,7 @@ export default {
   position: relative;
   z-index: 1;
   clip-path: inset(0 round 20px);
+  left: 35px;
 }
 
 .glass-scroll-content {

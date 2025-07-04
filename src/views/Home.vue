@@ -110,12 +110,109 @@ export default {
     const handleEdit = async (archive) => {
       try {
         const playerData = await invoke("get_player_data", {
-          filePath: archive.path, // ✅ 正确参数名
+          filePath: archive.path,
         });
 
         console.log("Player Data:", playerData);
 
-        editingArchive.value = { ...archive, playerData };
+        // 处理玩家数据
+        const { ids, inventories, sanities } = playerData;
+
+        // 创建玩家选项
+        const newPlayerOptions = ids.map((id, index) => ({
+          value: `player${index + 1}`,
+          label: `玩家${index + 1} (${id})`,
+        }));
+
+        // 更新玩家背包
+        const newPlayerInventory = {};
+        inventories.forEach((inventory, playerIndex) => {
+          const key = `player${playerIndex + 1}`;
+          newPlayerInventory[key] = Array(12)
+            .fill()
+            .map((_, slotIndex) => {
+              // 根据指定位置填充物品
+              let item = null;
+              const itemId = inventory[slotIndex];
+
+              const nameMap = {
+                Flashlight: "手电筒",
+                AlmondConcentrate: "浓缩杏仁水",
+                BugSpray: "杀虫剂",
+                Camera: "摄像机",
+                Can: "杏仁水",
+                Chainsaw: "电锯",
+                DivingHelmet: "潜水头盔",
+                EnergyBar: "能量棒",
+                Firework: "烟花",
+                FlareGun: "信号枪",
+                GlowStickBlue: "蓝色荧光棒",
+                GlowStickGreen: "绿色荧光棒",
+                GlowStickRed: "红色荧光棒",
+                GlowStickYellow: "黄色荧光棒",
+                Juice: "果汁",
+                LiquidPain: "液体痛苦",
+                Rope: "绳索",
+                Scanner: "扫描仪",
+                Thermometer: "温度计",
+                Ticket: "票",
+                WalkieTalkie: "对讲机",
+                WaxBar: "飞蛾果冻",
+                Crowbar: "撬棍",
+              };
+
+              // 位置映射规则
+              const mapping = {
+                0: [1, 1],
+                1: [1, 2],
+                2: [1, 3],
+                3: [2, 1],
+                4: [3, 1],
+                5: [4, 1],
+                6: [2, 2],
+                7: [3, 2],
+                8: [4, 2],
+                9: [2, 3],
+                10: [3, 3],
+                11: [4, 3],
+              };
+
+              if (itemId && itemId !== "None") {
+                const chineseName = nameMap[itemId] || itemId;
+                const foundItem = itemOptions.find(
+                  (i) => i.name === chineseName
+                );
+
+                if (foundItem) {
+                  item = { ...foundItem, position: mapping[slotIndex] };
+                } else {
+                  console.warn(`未找到物品: ${itemId}`);
+                }
+              }
+
+              return {
+                id: slotIndex,
+                item: item,
+                position: mapping[slotIndex],
+              };
+            });
+        });
+
+        // 更新玩家理智
+        const newPlayerSanity = {};
+        sanities.forEach((sanity, playerIndex) => {
+          newPlayerSanity[`player${playerIndex + 1}`] = parseFloat(
+            sanity.toFixed(1)
+          );
+        });
+
+        // 更新组件状态
+        editingArchive.value = {
+          ...archive,
+          playerOptions: newPlayerOptions,
+          playerInventory: newPlayerInventory,
+          playerSanity: newPlayerSanity,
+        };
         showEditModal.value = true;
       } catch (err) {
         console.error("Error fetching player data:", err);
@@ -343,6 +440,7 @@ export default {
   z-index: 1;
   clip-path: inset(0 round 20px);
   left: 35px;
+  top: 10px;
 }
 
 .glass-scroll-content {

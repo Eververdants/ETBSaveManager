@@ -1,10 +1,12 @@
 mod cli_handlers;
 mod encryption;
 mod get_file_path;
+mod player_data;
 mod save_utils;
 
 use encryption::*;
 use save_utils::SaveFileInfo;
+use serde_json::{json, Value};
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -154,6 +156,22 @@ fn clear_saved_password_command() -> Result<(), String> {
     encryption::clear_saved_password()
 }
 
+#[tauri::command]
+fn get_player_data(file_path: String) -> Result<Value, String> {
+    let path = Path::new(&file_path); // 将 String 转换为 &Path
+    let save = cli_handlers::parse_sav_file(path)?; // 传入 &Path 参数
+    let save_json = serde_json::to_value(&save).map_err(|e| e.to_string())?;
+
+    let (ids, sanities, inventories) = player_data::extract_player_data(&save_json);
+
+    // 构造返回的 JSON 对象
+    Ok(json!({
+        "ids": ids,
+        "sanities": sanities,
+        "inventories": inventories
+    }))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -166,7 +184,8 @@ pub fn run() {
             load_master_key_command,
             encrypt_file_command,
             decrypt_file_command,
-            clear_saved_password_command
+            clear_saved_password_command,
+            get_player_data
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -30,7 +30,11 @@ export default {
       theme: "light",
       activeItem: 0,
       sidebarItems: [
-        { icon: "👤", title: "项目介绍", file: "/markdown/about/introduction-CN.md" },
+        {
+          icon: "👤",
+          title: "项目介绍",
+          file: "/markdown/about/introduction-CN.md",
+        },
         { icon: "⚖️", title: "法律声明", file: "/markdown/about/license.md" },
       ],
       markdownTexts: [], // 存储从文件读取的内容

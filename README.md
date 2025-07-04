@@ -38,16 +38,16 @@ My email: **`llzgd@outlook.com`**
 
 ## 📦 Main Updates (3.0 New Features)
 
-| Feature | Status | Progress | Description |
-| --- | --- | --- | --- |
-| 🎨 More modern UI interface | ⏳ In development | 30% | Refactor the entire interface using modern design principles to enhance user experience |
-| 🔍 Search functionality | ✅ Completed | 100% | Support quick search of archives by keywords such as name, hierarchy, etc. |
-| 🎨 Color themes | ⏳ In development | 0% | Users can customize the application's color themes |
-| 🌐 Multi-language switching | ⏳ In development | 5% | Provide more convenient multi-language switching support |
-| 💾 Archive data editing | ⏳ In development | 50% | Allow users to directly edit archive data within the tool |
-| ➕ Expansion of new archive creation features | ⏳ In development | 0% | Add more options and settings to enhance the function of creating new archives |
-| 📄 Expansion content pack | ⏳ In development | 0% | Selectable additional features for use |
-| 🌐 Cross-platform support | ✅ Basic support | 100% | Supports Windows/macOS/Linux |
+| Feature                                       | Status            | Progress | Description                                                                             |
+| --------------------------------------------- | ----------------- | -------- | --------------------------------------------------------------------------------------- |
+| 🎨 More modern UI interface                   | ⏳ In development | 30%      | Refactor the entire interface using modern design principles to enhance user experience |
+| 🔍 Search functionality                       | ✅ Completed      | 100%     | Support quick search of archives by keywords such as name, hierarchy, etc.              |
+| 🎨 Color themes                               | ⏳ In development | 0%       | Users can customize the application's color themes                                      |
+| 🌐 Multi-language switching                   | ⏳ In development | 5%       | Provide more convenient multi-language switching support                                |
+| 💾 Archive data editing                       | ⏳ In development | 50%      | Allow users to directly edit archive data within the tool                               |
+| ➕ Expansion of new archive creation features | ⏳ In development | 0%       | Add more options and settings to enhance the function of creating new archives          |
+| 📄 Expansion content pack                     | ⏳ In development | 0%       | Selectable additional features for use                                                  |
+| 🌐 Cross-platform support                     | ✅ Basic support  | 100%     | Supports Windows/macOS/Linux                                                            |
 
 ---
 
@@ -56,6 +56,7 @@ My email: **`llzgd@outlook.com`**
 If you need to use the stable version, please refer to the [v2.7.3 Release Page](https://github.com/llzgdc/ETBSaveManager).
 
 ### Main Features (2.7.3)
+
 - ✅ Create, Edit, Delete, Refresh Saves
 - ✅ Hide Saves Functionality
 - ✅ Open Save Directory
@@ -73,11 +74,11 @@ If you need to use the stable version, please refer to the [v2.7.3 Release Page]
 
 ---
 
-## 📥 Installation (V3.0.0-Alpha-1)
+## 📥 Installation (V3.0.0-Alpha-1.1)
 
 ### Windows
 
-1. Download the Windows installer for [v3.0.0-Alpha-1](https://github.com/llzgdc/ETBSaveManager/releases/tag/v3.0.0-Alpha-1).
+1. Download the Windows installer for [v3.0.0-Alpha-1.1](https://github.com/llzgdc/ETBSaveManager/releases/tag/v3.0.0-Alpha-1.1).
 
 2. Double-click the installer to begin installation. (If you don't have WebView2 installed, the installer should install it automatically. If not, please click [here](https://developer.microsoft.com/microsoft-edge/webview2) to download and install WebView2.)
 
@@ -98,44 +99,54 @@ npm run tauri dev
 ---
 
 ## 📖 Feature Overview (3.0)
+
 ### Save Management
+
 - Create, Edit, Delete, Copy, Hide, Show Multiple Saves
 - Supports batch operations
 - Filter saves by level, difficulty, mode
 - Display current level location
 
 ### Save Search
+
 - Quickly locate target saves via keywords
 - Supports fuzzy matching
 
 ### Color Themes
+
 - Users can select from multiple preset color themes
 - Supports custom color configurations
 
 ### Multi-Language Switching
+
 - Provides support for Simplified Chinese, English, and other languages
 - Easy switching of interface language
 
 ### Save Data Editing
+
 - Directly modify save data within the tool
 - Modify player inventory
 - Modify level information
 
 ### Expanded New Save Creation
+
 - Add more options, such as: hierarchical collectible (key) information
 
 ### Expansion Content Pack
-- Select which expansion features to use  
-- Expansion packs will provide additional functionality  
-- Option to download packs from GitHub or Gitee (if available)  
+
+- Select which expansion features to use
+- Expansion packs will provide additional functionality
+- Option to download packs from GitHub or Gitee (if available)
 - Expansion packs developed by llzgdc are free of charge
 
 ---
 
 ## 📹 Bilibili Video Introduction (2.6.0)
+
 Watch detailed operation guides at: [Video Introduction](https://www.bilibili.com/video/BV1L3yeYzEfi)
 
 ---
 
 ## 📄 License
+
 This project is licensed under the MIT License, see the [LICENSE](https://github.com/llzgdc/ETBSaveManager/blob/master/LICENSE) file for details.

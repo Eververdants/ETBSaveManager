@@ -1,10 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/Home.vue";
-import About from "../views/About.vue";
-import How2Use from "../views/How2Use.vue";
-import AdditionalContent from "../views/AdditionalContent.vue";
-import CreateArchive from "../views/CreateArchive.vue";
-import settings from "../views/settings.vue";
 
 const routes = [
   {
@@ -15,27 +10,27 @@ const routes = [
   {
     path: "/about",
     name: "About",
-    component: About,
+    component: () => import("../views/About.vue"),
   },
   {
     path: "/how2use",
     name: "HowToUse",
-    component: () => How2Use,
+    component: () => import("../views/How2Use.vue"),
   },
   {
     path: "/additionalcontent",
     name: "AdditionalContent",
-    component: () => AdditionalContent,
+    component: () => import("../views/AdditionalContent.vue"),
   },
   {
     path: "/createarchive",
     name: "CreateArchive",
-    component: () => CreateArchive,
+    component: () => import("../views/CreateArchive.vue"),
   },
   {
     path: "/settings",
     name: "Settings",
-    component: () => settings,
+    component: () => import("../views/settings.vue"),
   },
 ];
 

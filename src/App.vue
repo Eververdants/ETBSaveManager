@@ -24,7 +24,7 @@ const handleItemSelected = (item) => {
       router.push("/how2use");
       break;
     case "settings":
-      router.push("/Settings");
+      router.push("/settings");
       break;
     default:
       router.push("/");

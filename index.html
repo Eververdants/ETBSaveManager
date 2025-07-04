@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/ETBSM-background.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="/fontawesome/js/all.min.js"></script>
-    <link rel="stylesheet" href="./src/assets/css/index.css">
+    <link rel="stylesheet" href="./src/assets/css/index.css" />
     <title>ETBSM</title>
   </head>
 
@@ -19,10 +19,15 @@
   <style>
     .warn {
       position: fixed;
-      z-index: 99999999;
+      z-index: 9999999999999999999999999999999999999;
       left: 50%;
       transform: translateX(-50%);
       bottom: 0;
+      background-color: #00000057; /* 黑色背景 */
+      color: #fff; /* 白色文字 */
+      padding: 10px 20px; /* 内边距，让文字与边界有一定距离 */
+      border-radius: 4px; /* 圆角边框 */
+      pointer-events: none;
     }
     .warn::before {
       content: "⚠️";

@@ -107,9 +107,19 @@ export default {
     };
 
     // 在卡片组件中触发编辑
-    const handleEdit = (archive) => {
-      editingArchive.value = { ...archive };
-      showEditModal.value = true;
+    const handleEdit = async (archive) => {
+      try {
+        const playerData = await invoke("get_player_data", {
+          filePath: archive.path, // ✅ 正确参数名
+        });
+
+        console.log("Player Data:", playerData);
+
+        editingArchive.value = { ...archive, playerData };
+        showEditModal.value = true;
+      } catch (err) {
+        console.error("Error fetching player data:", err);
+      }
     };
 
     // 处理保存编辑

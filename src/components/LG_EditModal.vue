@@ -92,7 +92,7 @@
                 :class="{ active: activeDataSection === 'inventory' }"
                 @click="scrollToSection('inventory')"
               >
-                <i class="fas fa-backpack"></i> 玩家背包
+                <i class="fas fa-backpack"></i> 玩家数据
               </button>
             </div>
             <div
@@ -115,7 +115,9 @@
 
               <!-- 玩家背包部分 -->
               <div class="data-section" id="inventory-section">
-                <h4>玩家背包</h4>
+                <h4>玩家数据</h4>
+
+                <!-- 玩家选择器 -->
                 <div class="player-selector">
                   <label>选择玩家</label>
                   <CustomSelect
@@ -124,20 +126,70 @@
                     :light-mode="lightMode"
                   />
                 </div>
-                <div class="inventory-grid">
-                  <div
-                    v-for="(slot, index) in currentPlayerInventory"
-                    :key="index"
-                    class="inventory-slot"
-                    @click="openItemMenu($event, index)"
+
+                <!-- 数据标签页 -->
+                <div class="inventory-tabs">
+                  <button
+                    v-for="tab in ['背包', '理智']"
+                    :key="tab"
+                    :class="['tab-button', { active: currentTab === tab }]"
+                    @click="currentTab = tab"
                   >
-                    <template v-if="slot.item">
+                    {{ tab }}
+                  </button>
+                </div>
+
+                <!-- 数据内容区域 -->
+                <div class="tab-content">
+                  <!-- 背包内容 -->
+                  <div v-show="currentTab === '背包'" class="inventory-grid">
+                    <div
+                      v-for="(slot, index) in currentPlayerInventory"
+                      :key="index"
+                      class="inventory-slot"
+                      @click="openItemMenu($event, index)"
+                    >
+                      <template v-if="slot.item">
+                        <div
+                          class="item-icon"
+                          :style="{ backgroundImage: `url(${slot.item.icon})` }"
+                        ></div>
+                      </template>
+
+                      <!-- 显示物品位置信息 -->
+                      <div class="item-position">
+                        {{ slot.position[0] }},{{ slot.position[1] }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 理智内容 -->
+                  <div v-show="currentTab === '理智'" class="sanity-section">
+                    <h4>玩家理智</h4>
+                    <div
+                      class="sanity-slider"
+                      :class="{ 'light-mode': lightMode }"
+                    >
+                      <div class="slider-labels">
+                        <span>0.0</span>
+                        <span>100.0</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        v-model.number="currentPlayerSanity"
+                        class="slider-input"
+                        :class="{ 'light-mode': lightMode }"
+                      />
                       <div
-                        class="item-icon"
-                        :style="{ backgroundImage: `url(${slot.item.icon})` }"
-                      ></div>
-                    </template>
-                    <!-- 空格子不显示任何符号 -->
+                        class="slider-value"
+                        :class="{ 'light-mode': lightMode }"
+                      >
+                        {{ currentPlayerSanity.toFixed(1) }}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -210,18 +262,46 @@ const itemOptions = [
     name: "浓缩杏仁水",
     icon: "./icons/ETB_UI/T_UI_Inv_Icon_AlmondConcentrate.png",
   },
-  { id: 2, name: "杀虫剂", icon: "./icons/ETB_UI/T_UI_Inv_Icon_BugSpray.png" },
-  { id: 3, name: "摄像机", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Camera.png" },
-  { id: 4, name: "杏仁水", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Can.png" },
-  { id: 5, name: "电锯", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Chainsaw.png" },
+  {
+    id: 2,
+    name: "杀虫剂",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_BugSpray.png",
+  },
+  {
+    id: 3,
+    name: "摄像机",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Camera.png",
+  },
+  {
+    id: 4,
+    name: "杏仁水",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Can.png",
+  },
+  {
+    id: 5,
+    name: "电锯",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Chainsaw.png",
+  },
   {
     id: 6,
     name: "潜水头盔",
     icon: "./icons/ETB_UI/T_UI_Inv_Icon_DivingHelmet.png",
   },
-  { id: 7, name: "能量棒", icon: "./icons/ETB_UI/T_UI_Inv_Icon_EnergyBar.png" },
-  { id: 8, name: "烟花", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Firework.png" },
-  { id: 9, name: "信号枪", icon: "./icons/ETB_UI/T_UI_Inv_Icon_FlareGun.png" },
+  {
+    id: 7,
+    name: "能量棒",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_EnergyBar.png",
+  },
+  {
+    id: 8,
+    name: "烟花",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Firework.png",
+  },
+  {
+    id: 9,
+    name: "信号枪",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_FlareGun.png",
+  },
   {
     id: 10,
     name: "手电筒",
@@ -252,22 +332,46 @@ const itemOptions = [
     name: "果汁",
     icon: "./icons/ETB_UI/T_UI_Inv_Icon_Juice_v2png.png",
   },
-  { id: 16, name: "液体痛苦", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Juice.png" },
-  { id: 17, name: "绳索", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Rope.png" },
-  { id: 18, name: "扫描仪", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Scanner.png" },
+  {
+    id: 16,
+    name: "液体痛苦",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Juice.png",
+  },
+  {
+    id: 17,
+    name: "绳索",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Rope.png",
+  },
+  {
+    id: 18,
+    name: "扫描仪",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Scanner.png",
+  },
   {
     id: 19,
     name: "温度计",
     icon: "./icons/ETB_UI/T_UI_Inv_Icon_Thermometer.png",
   },
-  { id: 20, name: "票", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Ticket.png" },
+  {
+    id: 20,
+    name: "票",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Ticket.png",
+  },
   {
     id: 21,
     name: "对讲机",
     icon: "./icons/ETB_UI/T_UI_Inv_Icon_WalkieTalkie.png",
   },
-  { id: 22, name: "飞蛾果冻", icon: "./icons/ETB_UI/T_UI_Inv_Icon_WaxBar.png" },
-  { id: 23, name: "撬棍", icon: "./icons/ETB_UI/T_UI_Inv_Icon_Crowbar.png" },
+  {
+    id: 22,
+    name: "飞蛾果冻",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_WaxBar.png",
+  },
+  {
+    id: 23,
+    name: "撬棍",
+    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Crowbar.png",
+  },
 ];
 
 export default {
@@ -370,6 +474,9 @@ export default {
     // 具体数据板块导航
     const activeDataSection = shallowRef("level");
     const dataSection = ref(null);
+
+    // 添加当前标签页状态
+    const currentTab = ref("背包");
 
     // 层级信息
     const selectedLevelInfo = ref("level-0");
@@ -696,6 +803,23 @@ export default {
       }
     );
 
+    // 玩家理智状态
+    const playerSanity = reactive({
+      player1: 85.5,
+      player2: 100.0,
+      player3: 75.0,
+      player4: 90.0,
+    });
+
+    const currentPlayerSanity = computed({
+      get() {
+        return playerSanity[selectedPlayer.value];
+      },
+      set(value) {
+        playerSanity[selectedPlayer.value] = parseFloat(value.toFixed(1));
+      },
+    });
+
     return {
       modalRef,
       itemMenuRef,
@@ -726,6 +850,9 @@ export default {
       itemMenuPosition,
       levelSection,
       inventorySection,
+      currentTab,
+      playerSanity,
+      currentPlayerSanity,
     };
   },
 };
@@ -1397,5 +1524,140 @@ input:focus {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+}
+.sanity-section {
+  margin-top: 20px;
+}
+
+.sanity-slider {
+  background: rgba(30, 32, 45, 0.7);
+  border-radius: 12px;
+  padding: 15px;
+  border: 1px solid rgba(100, 110, 180, 0.3);
+  transition: all 0.3s ease;
+}
+
+.sanity-slider.light-mode {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(120, 140, 220, 0.3);
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #a0a0d0;
+  font-size: 14px;
+}
+
+.slider-labels.light-mode {
+  color: #5a6da8;
+}
+
+.slider-input {
+  width: 80%;
+  appearance: none;
+  height: 8px;
+  border-radius: 5px;
+  background: rgba(100, 110, 180, 0.3);
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.slider-input.light-mode {
+  background: rgba(120, 140, 220, 0.3);
+}
+
+.slider-input::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7a89c9, #5a6da8);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.slider-input.light-mode::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #5a6da8, #7a89c9);
+}
+
+.slider-value {
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #e0e0ff;
+  text-align: right;
+}
+
+.slider-value.light-mode {
+  color: #2c3e50;
+}
+.inventory-tabs {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 8px 12px;
+  background: rgba(60, 65, 90, 0.4);
+  border: none;
+  border-radius: 8px;
+  color: #b0b0e0;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+  background: rgba(80, 85, 120, 0.5);
+  color: #e0e0ff;
+}
+
+.tab-button.active {
+  background: rgba(100, 110, 180, 0.6);
+  color: white;
+  box-shadow: 0 4px 12px rgba(100, 110, 180, 0.3);
+}
+
+.tab-button.light-mode {
+  background: rgba(200, 205, 220, 0.5);
+  color: #5a6da8;
+}
+
+.tab-button.light-mode:hover {
+  background: rgba(180, 190, 220, 0.7);
+  color: #3a4a8a;
+}
+
+.tab-button.light-mode.active {
+  background: rgba(120, 140, 220, 0.7);
+  color: white;
+  box-shadow: 0 4px 12px rgba(120, 140, 220, 0.3);
+}
+
+.tab-content {
+  position: relative;
+  min-height: 200px;
+}
+
+.item-position {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1px 3px;
+  border-radius: 3px;
+}
+
+.light-mode .item-position {
+  color: rgba(0, 0, 0, 0.7);
+  background: rgba(255, 255, 255, 0.3);
 }
 </style>

@@ -155,11 +155,6 @@
                           :style="{ backgroundImage: `url(${slot.item.icon})` }"
                         ></div>
                       </template>
-
-                      <!-- 显示物品位置信息 -->
-                      <div class="item-position">
-                        {{ slot.position[0] }},{{ slot.position[1] }}
-                      </div>
                     </div>
                   </div>
 
@@ -250,129 +245,12 @@ import {
   nextTick,
   onUnmounted,
   shallowRef,
+  watchEffect,
 } from "vue";
 import gsap from "gsap";
 import CustomSelect from "./LG_CustomSelect.vue";
 import ItemMenu from "./LG_ItemMenu.vue";
-
-// 物品选项定义在组件外部
-const itemOptions = [
-  {
-    id: 1,
-    name: "浓缩杏仁水",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_AlmondConcentrate.png",
-  },
-  {
-    id: 2,
-    name: "杀虫剂",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_BugSpray.png",
-  },
-  {
-    id: 3,
-    name: "摄像机",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Camera.png",
-  },
-  {
-    id: 4,
-    name: "杏仁水",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Can.png",
-  },
-  {
-    id: 5,
-    name: "电锯",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Chainsaw.png",
-  },
-  {
-    id: 6,
-    name: "潜水头盔",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_DivingHelmet.png",
-  },
-  {
-    id: 7,
-    name: "能量棒",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_EnergyBar.png",
-  },
-  {
-    id: 8,
-    name: "烟花",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Firework.png",
-  },
-  {
-    id: 9,
-    name: "信号枪",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_FlareGun.png",
-  },
-  {
-    id: 10,
-    name: "手电筒",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Flashlight.png",
-  },
-  {
-    id: 11,
-    name: "蓝色荧光棒",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_GlowStick__Blue.png",
-  },
-  {
-    id: 12,
-    name: "绿色荧光棒",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_GlowStick_Green.png",
-  },
-  {
-    id: 13,
-    name: "红色荧光棒",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_GlowStick_Red.png",
-  },
-  {
-    id: 14,
-    name: "黄色荧光棒",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_GlowStick_Yellow.png",
-  },
-  {
-    id: 15,
-    name: "果汁",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Juice_v2png.png",
-  },
-  {
-    id: 16,
-    name: "液体痛苦",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Juice.png",
-  },
-  {
-    id: 17,
-    name: "绳索",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Rope.png",
-  },
-  {
-    id: 18,
-    name: "扫描仪",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Scanner.png",
-  },
-  {
-    id: 19,
-    name: "温度计",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Thermometer.png",
-  },
-  {
-    id: 20,
-    name: "票",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Ticket.png",
-  },
-  {
-    id: 21,
-    name: "对讲机",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_WalkieTalkie.png",
-  },
-  {
-    id: 22,
-    name: "飞蛾果冻",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_WaxBar.png",
-  },
-  {
-    id: 23,
-    name: "撬棍",
-    icon: "./icons/ETB_UI/T_UI_Inv_Icon_Crowbar.png",
-  },
-];
+import { itemOptions } from "../utils/constants.js";
 
 export default {
   components: {
@@ -383,6 +261,28 @@ export default {
     show: Boolean,
     archive: Object,
     lightMode: Boolean,
+    playerOptions: {
+      type: Array,
+      required: true,
+      default: () => [
+        { value: "player1", label: "玩家1" },
+        { value: "player2", label: "玩家2" },
+        { value: "player3", label: "玩家3" },
+        { value: "player4", label: "玩家4" },
+      ],
+    },
+    playerInventory: {
+      type: Object,
+      default: () => ({}),
+    },
+    playerSanity: {
+      type: Object,
+      default: () => ({}),
+    },
+    selectedPlayer: {
+      type: [String, Number],
+      default: null,
+    },
   },
   emits: ["update:show", "save"],
   setup(props, { emit }) {
@@ -391,6 +291,114 @@ export default {
 
     // 编辑的存档数据 - 深拷贝
     const editedArchive = ref(JSON.parse(JSON.stringify(props.archive)));
+
+    // 初始化背包函数
+    const initPlayerInventory = (playerOptions) => {
+      const inventory = {};
+      if (!playerOptions) return inventory;
+
+      playerOptions.forEach((player) => {
+        const playerId = player.value;
+        inventory[playerId] = Array(12)
+          .fill()
+          .map((_, slotIndex) => ({
+            id: slotIndex,
+            item: null,
+            position: [Math.floor(slotIndex / 4) + 1, (slotIndex % 4) + 1],
+          }));
+      });
+
+      return inventory;
+    };
+
+    // 强制初始化所有玩家背包
+    const playerInventory = reactive(initPlayerInventory(props.playerOptions));
+
+    // 如果外部传入了 playerInventory，则合并更新
+    watchEffect(() => {
+      if (props.playerInventory) {
+        // 清空旧数据
+        for (const key in playerInventory) {
+          delete playerInventory[key];
+        }
+
+        // 深拷贝并确保每个玩家背包都是数组
+        for (const key in props.playerInventory) {
+          const source = props.playerInventory[key];
+
+          // 如果 source 不是数组，或者为空，则填充默认值
+          if (!Array.isArray(source)) {
+            playerInventory[key] = Array(12).fill({
+              id: null,
+              item: null,
+              position: [0, 0],
+            });
+            continue;
+          }
+
+          playerInventory[key] = source.map((item, index) => ({
+            id: index,
+            item: item?.item || null,
+            position: [Math.floor(index / 4) + 1, (index % 4) + 1],
+          }));
+        }
+      }
+    });
+
+    const currentPlayerInventory = computed(() => {
+      const current = selectedPlayer.value;
+      return current ? playerInventory[current] || [] : [];
+    });
+
+    // 设置默认玩家
+    const selectedPlayer = ref("");
+
+    watchEffect(() => {
+      if (props.playerOptions && props.playerOptions.length > 0) {
+        selectedPlayer.value = props.playerOptions[0].value;
+      }
+    });
+
+    // 使用 props 初始化理智值
+    const localPlayerSanity = ref(
+      JSON.parse(JSON.stringify(props.playerSanity))
+    );
+
+    // 切换玩家时更新理智值
+    const currentPlayerSanity = computed({
+      get() {
+        const value = localPlayerSanity.value?.[selectedPlayer.value];
+        return value !== undefined && value !== null ? value : 85.5;
+      },
+      set(value) {
+        localPlayerSanity.value[selectedPlayer.value] = parseFloat(
+          value.toFixed(1)
+        );
+      },
+    });
+
+    watchEffect(() => {
+      const current = selectedPlayer.value;
+      if (
+        current &&
+        localPlayerSanity.value &&
+        localPlayerSanity.value[current] !== undefined
+      ) {
+        // 当前玩家理智值已存在，不需要 fallback
+      } else if (current && props.playerSanity?.[current]) {
+        // 如果 props 中有值，则优先使用
+        localPlayerSanity.value = {
+          ...localPlayerSanity.value,
+          [current]: parseFloat(props.playerSanity[current].toFixed(1)),
+        };
+      } else if (current) {
+        // 否则才 fallback 到默认值
+        localPlayerSanity.value = {
+          ...localPlayerSanity.value,
+          [current]: 85.5,
+        };
+      }
+    });
 
     // 下拉框选项
     const difficultyOptions = ref([
@@ -419,13 +427,6 @@ export default {
       { value: "level-5", label: "Level 5 - 旅馆" },
     ]);
 
-    const playerOptions = ref([
-      { value: "player1", label: "玩家1" },
-      { value: "player2", label: "玩家2" },
-      { value: "player3", label: "玩家3" },
-      { value: "player4", label: "玩家4" },
-    ]);
-
     const levelInfoOptions = ref([
       { value: "level-0", label: "Level 0" },
       { value: "level-1", label: "Level 1" },
@@ -434,37 +435,6 @@ export default {
       { value: "level-4", label: "Level 4" },
       { value: "level-5", label: "Level 5" },
     ]);
-
-    const safetyOptions = ref([
-      { value: "安全", label: "安全" },
-      { value: "中等", label: "中等" },
-      { value: "危险", label: "危险" },
-      { value: "致命", label: "致命" },
-    ]);
-
-    // 玩家背包状态
-    const playerInventory = reactive({
-      player1: Array(12)
-        .fill()
-        .map((_, i) => ({
-          id: i,
-          item: i % 3 === 0 ? itemOptions[i % itemOptions.length] : null,
-        })),
-      player2: Array(12)
-        .fill()
-        .map(() => ({ item: null })),
-      player3: Array(12)
-        .fill()
-        .map(() => ({ item: null })),
-      player4: Array(12)
-        .fill()
-        .map(() => ({ item: null })),
-    });
-
-    const selectedPlayer = ref("player1");
-    const currentPlayerInventory = computed(() => {
-      return playerInventory[selectedPlayer.value];
-    });
 
     // 物品菜单状态
     const showItemMenu = ref(false);
@@ -577,8 +547,6 @@ export default {
 
     // 处理板块滚动事件
     const handleSectionScroll = () => {
-      console.log("用户正在滚动具体数据板块");
-
       if (showItemMenu.value) {
         closeItemMenu();
       }
@@ -607,15 +575,10 @@ export default {
 
     // 滚动检测函数
     const checkActiveSection = () => {
-      console.log("dataSection.value:", dataSection.value); // 看看是否为 null 或 undefined
-
       if (!dataSection.value) return;
 
       const levelSection = document.getElementById("level-section");
       const inventorySection = document.getElementById("inventory-section");
-
-      console.log("levelSection:", levelSection); // 看看是否能获取到 DOM 元素
-      console.log("inventorySection:", inventorySection);
 
       if (!levelSection || !inventorySection) return;
 
@@ -803,23 +766,6 @@ export default {
       }
     );
 
-    // 玩家理智状态
-    const playerSanity = reactive({
-      player1: 85.5,
-      player2: 100.0,
-      player3: 75.0,
-      player4: 90.0,
-    });
-
-    const currentPlayerSanity = computed({
-      get() {
-        return playerSanity[selectedPlayer.value];
-      },
-      set(value) {
-        playerSanity[selectedPlayer.value] = parseFloat(value.toFixed(1));
-      },
-    });
-
     return {
       modalRef,
       itemMenuRef,
@@ -828,7 +774,7 @@ export default {
       modeOptions,
       visibilityOptions,
       levelOptions,
-      playerOptions,
+      playerOptions: props.playerOptions,
       levelInfoOptions,
       safetyOptions,
       selectedLevelInfo,
@@ -851,7 +797,6 @@ export default {
       levelSection,
       inventorySection,
       currentTab,
-      playerSanity,
       currentPlayerSanity,
     };
   },
@@ -1173,9 +1118,9 @@ input:focus {
 
 .inventory-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr); /* 3行 */
+  grid-auto-flow: column; /* 列优先 */
   gap: 12px;
-  margin-top: 10px;
 }
 
 .inventory-slot {

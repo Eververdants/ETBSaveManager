@@ -19,6 +19,9 @@
     :show="showEditModal"
     :archive="editingArchive"
     :lightMode="lightMode"
+    :player-options="playerOptions"
+    :player-inventory="editingArchive.playerInventory"
+    :player-sanity="editingArchive.playerSanity"
     @update:show="showEditModal = $event"
     @save="handleSaveEdit"
   />
@@ -41,13 +44,14 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watchEffect } from "vue";
 import gsap from "gsap";
 import Card from "../components/LG_Card.vue";
 import Search from "../components/LG_Search.vue";
 import DeleteConfirm from "../components/LG_DeleteConfirm.vue";
 import EditArchiveModal from "../components/LG_EditModal.vue";
 import { invoke } from "@tauri-apps/api/core";
+import { itemOptions } from "../utils/constants.js";
 
 export default {
   components: {
@@ -66,6 +70,7 @@ export default {
     const originalArchives = ref([]);
     const showEditModal = ref(false);
     const editingArchive = ref(null);
+    const playerOptions = ref(null);
 
     const loadTranslations = async () => {
       try {
@@ -106,7 +111,7 @@ export default {
       }
     };
 
-    // 在卡片组件中触发编辑
+    // 更新玩家背包和相关状态
     const handleEdit = async (archive) => {
       try {
         const playerData = await invoke("get_player_data", {
@@ -115,104 +120,103 @@ export default {
 
         console.log("Player Data:", playerData);
 
-        // 处理玩家数据
         const { ids, inventories, sanities } = playerData;
 
-        // 创建玩家选项
-        const newPlayerOptions = ids.map((id, index) => ({
-          value: `player${index + 1}`,
-          label: `玩家${index + 1} (${id})`,
+        playerOptions.value = ids.map((id) => ({
+          value: id,
+          label: id,
         }));
 
-        // 更新玩家背包
         const newPlayerInventory = {};
         inventories.forEach((inventory, playerIndex) => {
-          const key = `player${playerIndex + 1}`;
-          newPlayerInventory[key] = Array(12)
-            .fill()
-            .map((_, slotIndex) => {
-              // 根据指定位置填充物品
-              let item = null;
-              const itemId = inventory[slotIndex];
+          const key = ids[playerIndex];
 
-              const nameMap = {
-                Flashlight: "手电筒",
-                AlmondConcentrate: "浓缩杏仁水",
-                BugSpray: "杀虫剂",
-                Camera: "摄像机",
-                Can: "杏仁水",
-                Chainsaw: "电锯",
-                DivingHelmet: "潜水头盔",
-                EnergyBar: "能量棒",
-                Firework: "烟花",
-                FlareGun: "信号枪",
-                GlowStickBlue: "蓝色荧光棒",
-                GlowStickGreen: "绿色荧光棒",
-                GlowStickRed: "红色荧光棒",
-                GlowStickYellow: "黄色荧光棒",
-                Juice: "果汁",
-                LiquidPain: "液体痛苦",
-                Rope: "绳索",
-                Scanner: "扫描仪",
-                Thermometer: "温度计",
-                Ticket: "票",
-                WalkieTalkie: "对讲机",
-                WaxBar: "飞蛾果冻",
-                Crowbar: "撬棍",
-              };
+          // 保证每个玩家都有12个格子，缺失的填"None"
+          const validInventory = Array.from({ length: 12 }, (_, i) => {
+            if (inventory && Array.isArray(inventory) && i in inventory) {
+              return inventory[i];
+            }
+            return "None";
+          });
 
-              // 位置映射规则
-              const mapping = {
-                0: [1, 1],
-                1: [1, 2],
-                2: [1, 3],
-                3: [2, 1],
-                4: [3, 1],
-                5: [4, 1],
-                6: [2, 2],
-                7: [3, 2],
-                8: [4, 2],
-                9: [2, 3],
-                10: [3, 3],
-                11: [4, 3],
-              };
+          newPlayerInventory[key] = validInventory.map((itemId, slotIndex) => {
+            let item = null;
 
-              if (itemId && itemId !== "None") {
-                const chineseName = nameMap[itemId] || itemId;
-                const foundItem = itemOptions.find(
-                  (i) => i.name === chineseName
-                );
+            // 物品映射表
+            const nameMap = {
+              Flashlight: "手电筒",
+              AlmondConcentrate: "浓缩杏仁水",
+              BugSpray: "杀虫剂",
+              Camera: "摄像机",
+              AlmondWater: "杏仁水",
+              Chainsaw: "电锯",
+              DivingHelmet: "潜水头盔",
+              EnergyBar: "能量棒",
+              Firework: "烟花",
+              FlareGun: "信号枪",
+              GlowStickBlue: "蓝色荧光棒",
+              GlowStickGreen: "绿色荧光棒",
+              GlowStickRed: "红色荧光棒",
+              GlowStickYellow: "黄色荧光棒",
+              Juice: "果汁",
+              LiquidPain: "液体痛苦",
+              Rope: "绳索",
+              Scanner: "扫描仪",
+              Thermometer: "温度计",
+              Ticket: "票",
+              WalkieTalkie: "对讲机",
+              WaxBar: "飞蛾果冻",
+              Crowbar: "撬棍",
+            };
 
-                if (foundItem) {
-                  item = { ...foundItem, position: mapping[slotIndex] };
-                } else {
-                  console.warn(`未找到物品: ${itemId}`);
-                }
+            const chineseName = nameMap[itemId] || itemId;
+
+            if (itemId && itemId !== "None") {
+              const foundItem = itemOptions.find((i) => i.name === chineseName);
+              if (foundItem) {
+                item = { ...foundItem };
               }
+            }
 
-              return {
-                id: slotIndex,
-                item: item,
-                position: mapping[slotIndex],
-              };
-            });
+            // 自定义 position 映射规则
+            let row, col;
+            if (slotIndex < 3) {
+              // 第1~3格：(1,1), (2,1), (3,1)
+              row = slotIndex + 1;
+              col = 1;
+            } else {
+              // 第4~12格：按列优先排列
+              const adjustedIndex = slotIndex - 3; // 从0开始计算
+              const colGroup = Math.floor(adjustedIndex / 3); // 每列3个
+              const rowInCol = adjustedIndex % 3; // 行号(0~2)
+
+              row = rowInCol + 1;
+              col = colGroup + 2; // 从第2列开始
+            }
+
+            return {
+              id: slotIndex,
+              item: item,
+              position: [row, col],
+            };
+          });
         });
 
-        // 更新玩家理智
         const newPlayerSanity = {};
         sanities.forEach((sanity, playerIndex) => {
-          newPlayerSanity[`player${playerIndex + 1}`] = parseFloat(
-            sanity.toFixed(1)
-          );
+          const steamId = ids[playerIndex]; // 获取对应的 Steam ID
+          if (steamId) {
+            newPlayerSanity[steamId] = parseFloat(sanity.toFixed(1));
+          }
         });
 
-        // 更新组件状态
         editingArchive.value = {
           ...archive,
-          playerOptions: newPlayerOptions,
           playerInventory: newPlayerInventory,
           playerSanity: newPlayerSanity,
+          selectedPlayer: ids[0], // 使用 Steam ID
         };
+
         showEditModal.value = true;
       } catch (err) {
         console.error("Error fetching player data:", err);
@@ -410,6 +414,7 @@ export default {
       editingArchive,
       handleEdit,
       handleSaveEdit,
+      playerOptions,
     };
   },
 };

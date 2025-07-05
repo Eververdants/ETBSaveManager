@@ -198,19 +198,16 @@
               <h3>层级信息</h3>
             </div>
             <div class="section-content scrollable">
-              <h3 class="level-name">Level 0</h3>
-              <div class="form-group">
-                <label>梯子数量</label>
-                <div class="input-wrapper">
-                  <input
-                    type="number"
-                    v-model="levelInfo.entityCount"
-                    min="0"
-                    max="4"
-                    :class="{ 'light-mode': lightMode }"
-                  />
-                </div>
-              </div>
+              <h3 class="level-name">{{ levelInfo.name }}</h3>
+              
+              <!-- 动态生成表单字段 -->
+              <LG_FormField
+                v-for="field in levelInfoFields"
+                :key="field.id"
+                :field="field"
+                v-model="levelInfo[field.id]"
+                :light-mode="lightMode"
+              />
             </div>
           </div>
         </div>
@@ -251,6 +248,7 @@ import gsap from "gsap";
 import CustomSelect from "./LG_CustomSelect.vue";
 import ItemMenu from "./LG_ItemMenu.vue";
 import { itemOptions } from "../utils/constants.js";
+import { levelConfig } from "../utils/levelConfig";
 
 export default {
   components: {
@@ -450,55 +448,36 @@ export default {
 
     // 层级信息
     const selectedLevelInfo = ref("level-0");
+
+    const levelInfoFields = ref(levelConfig.fields);
+
+    // 初始化层级信息
     const levelInfo = reactive({
       name: "Level 0 - 教学关卡",
-      safetyLevel: "安全",
-      entityCount: 0,
-      exploration: 45,
+      // 使用配置中的默认值初始化
+      ...Object.fromEntries(
+        levelConfig.fields.map(field => [field.id, field.default])
+      )
     });
 
-    // 监听层级信息选择变化
+    // 将这个 watch 放在 selectedLevelInfo 定义之后
     watch(selectedLevelInfo, (newValue) => {
       const levelData = {
-        "level-0": {
-          name: "Level 0 - 教学关卡",
-          safetyLevel: "安全",
-          entityCount: 0,
-          exploration: 45,
-        },
-        "level-1": {
-          name: "Level 1 - 起始之地",
-          safetyLevel: "中等",
-          entityCount: 3,
-          exploration: 30,
-        },
-        "level-2": {
-          name: "Level 2 - 管道迷宫",
-          safetyLevel: "危险",
-          entityCount: 8,
-          exploration: 15,
-        },
-        "level-3": {
-          name: "Level 3 - 电气室",
-          safetyLevel: "致命",
-          entityCount: 12,
-          exploration: 5,
-        },
-        "level-4": {
-          name: "Level 4 - 废弃办公室",
-          safetyLevel: "中等",
-          entityCount: 5,
-          exploration: 25,
-        },
-        "level-5": {
-          name: "Level 5 - 旅馆",
-          safetyLevel: "危险",
-          entityCount: 10,
-          exploration: 10,
-        },
+        "level-0": { name: "Level 0 - 教学关卡" },
+        "level-1": { name: "Level 1 - 起始之地" },
+        "level-2": { name: "Level 2 - 管道迷宫" },
+        "level-3": { name: "Level 3 - 电气室" },
+        "level-4": { name: "Level 4 - 废弃办公室" },
+        "level-5": { name: "Level 5 - 旅馆" }
       };
-
-      Object.assign(levelInfo, levelData[newValue]);
+      
+      Object.assign(levelInfo, {
+        ...levelData[newValue],
+        // 保留原有字段值
+        ...Object.fromEntries(
+          levelConfig.fields.map(field => [field.id, levelInfo[field.id]])
+        )
+      });
     });
 
     // 修复：打开物品菜单
@@ -547,6 +526,7 @@ export default {
 
     // 处理板块滚动事件
     const handleSectionScroll = () => {
+
       if (showItemMenu.value) {
         closeItemMenu();
       }
@@ -575,6 +555,7 @@ export default {
 
     // 滚动检测函数
     const checkActiveSection = () => {
+
       if (!dataSection.value) return;
 
       const levelSection = document.getElementById("level-section");
@@ -730,14 +711,15 @@ export default {
 
     // 保存修改
     const saveChanges = () => {
-      // 添加背包数据到存档
-      editedArchive.value.inventory = {};
-      Object.keys(playerInventory).forEach((player) => {
-        editedArchive.value.inventory[player] = playerInventory[player]
-          .filter((slot) => slot.item)
-          .map((slot) => slot.item.name);
-      });
-
+      // 获取所有层级信息数据
+      const levelData = { ...levelInfo };
+      
+      // 添加其他数据到存档
+      editedArchive.value = {
+        ...editedArchive.value,
+        levelData // 包含所有层级信息
+      };
+      
       emit("save", editedArchive.value);
       closeModal();
     };
@@ -776,7 +758,6 @@ export default {
       levelOptions,
       playerOptions: props.playerOptions,
       levelInfoOptions,
-      safetyOptions,
       selectedLevelInfo,
       levelInfo,
       playerInventory,

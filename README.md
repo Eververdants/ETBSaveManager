@@ -20,6 +20,8 @@ There is currently a trial version available, with the version number `V3.0.0-Al
 
 If you encounter any bugs while using the trial version, please provide a detailed description of the issue to the developer, or take a screenshot of the error messages shown in the DevTools, and submit an issue.
 
+Due to the high development complexity and intricate logic involved, the `"Hierarchy Information Editing"` feature will be postponed to a future version. Originally, this feature was planned to be introduced in the `"Create New Archive"` and `"Edit Archive"` interfaces
+
 My email: **`llzgd@outlook.com`**
 
 ‼️‼️‼️ This repository and program are not affiliated with Escape The Backrooms developer Fancy‼️‼️‼️

@@ -1,41 +1,57 @@
-// src/utils/levelConfig.js
 export const levelConfig = {
-  fields: [
-    {
-      id: "entityCount",
-      label: "梯子数量",
-      type: "number",
-      min: 0,
-      max: 4,
-      default: 0,
-    },
-    {
-      id: "safetyLevel",
-      label: "安全等级",
-      type: "radio",
-      options: [
-        { value: "安全", label: "安全" },
-        { value: "中等", label: "中等" },
-        { value: "危险", label: "危险" },
-        { value: "致命", label: "致命" },
+  levelMeta: {
+    "level-0": {
+      name: "Level 0 - 教学关卡",
+      subtitle: "这是 Level 0 的小标题",
+      fields: [
+        {
+          id: "entityCount",
+          label: "梯子数量",
+          type: "number",
+          min: 0,
+          max: 4,
+          default: 0,
+        },
+        {
+          id: "safetyLevel",
+          label: "安全等级",
+          type: "radio",
+          options: [
+            { value: "安全", label: "安全" },
+            { value: "中等", label: "中等" },
+            { value: "危险", label: "危险" },
+            { value: "致命", label: "致命" },
+          ],
+          default: "安全",
+        },
       ],
-      default: "安全",
     },
-    {
-      id: "exploration",
-      label: "探索度(%)",
-      type: "range",
-      min: 0,
-      max: 100,
-      step: 5,
-      default: 0,
+
+    "level-1": {
+      name: "Level 1 - 起始之地",
+      subtitle: "这是 Level 1 的小标题",
+      fields: [
+        {
+          id: "enemyCount",
+          label: "敌人数量",
+          type: "number",
+          min: 0,
+          max: 10,
+          default: 3,
+        },
+        {
+          id: "weather",
+          label: "天气类型",
+          type: "radio",
+          options: [
+            { value: "晴天", label: "晴天" },
+            { value: "雨天", label: "雨天" },
+            { value: "雾天", label: "雾天" },
+          ],
+          default: "晴天",
+        },
+      ],
     },
-    {
-      id: "hasExit",
-      label: "是否存在出口",
-      type: "checkbox",
-      default: false,
-    },
-    // 后续可在此添加更多字段
-  ],
+    // 其他层级类似...
+  },
 };

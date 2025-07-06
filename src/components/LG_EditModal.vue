@@ -108,6 +108,8 @@
                   <CustomSelect
                     v-model="editedArchive.currentLevel"
                     :options="levelOptions"
+                    track-by="searchLabel"
+                    label="label"
                     :light-mode="lightMode"
                   />
                 </div>
@@ -192,22 +194,36 @@
           </div>
 
           <!-- 层级信息板块 -->
-          <div class="section">
+          <div class="section" v-if="false">
             <div class="section-header">
               <i class="fas fa-map-marked-alt"></i>
               <h3>层级信息</h3>
             </div>
+
             <div class="section-content scrollable">
-              <h3 class="level-name">{{ levelInfo.name }}</h3>
-              
-              <!-- 动态生成表单字段 -->
-              <LG_FormField
-                v-for="field in levelInfoFields"
-                :key="field.id"
-                :field="field"
-                v-model="levelInfo[field.id]"
-                :light-mode="lightMode"
-              />
+              <!-- 遍历所有层级 -->
+              <div
+                v-for="(meta, levelKey) in levelConfig.levelMeta"
+                :key="levelKey"
+                class="level-section"
+              >
+                <div v-if="meta.subtitle" class="level-name">
+                  <h3>{{ meta.subtitle }}</h3>
+                </div>
+
+                <!-- 动态渲染该层级的字段 -->
+                <div
+                  v-for="field in meta.fields"
+                  :key="field.id"
+                  class="form-group"
+                >
+                  <LG_FormField
+                    :field="field"
+                    v-model="meta[field.id]"
+                    :light-mode="lightMode"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -249,11 +265,13 @@ import CustomSelect from "./LG_CustomSelect.vue";
 import ItemMenu from "./LG_ItemMenu.vue";
 import { itemOptions } from "../utils/constants.js";
 import { levelConfig } from "../utils/levelConfig";
+import LG_FormField from "./LG_FormField.vue";
 
 export default {
   components: {
     CustomSelect,
     ItemMenu,
+    LG_FormField,
   },
   props: {
     show: Boolean,
@@ -284,8 +302,24 @@ export default {
   },
   emits: ["update:show", "save"],
   setup(props, { emit }) {
+    console.log(props)
     const modalRef = ref(null);
     const itemMenuRef = ref(null);
+    const levelNameMap = ref({});
+
+    onMounted(async () => {
+      try {
+        const response = await fetch('/locales/zh-CN/zh-CN.json'); // 注意路径是否正确
+        const data = await response.json();
+        levelNameMap.value = data.LevelName || {};
+      } catch (error) {
+        console.error('加载语言包失败:', error);
+      }
+    });
+
+    const levelConfigReactive = reactive(
+      JSON.parse(JSON.stringify(levelConfig))
+    );
 
     // 编辑的存档数据 - 深拷贝
     const editedArchive = ref(JSON.parse(JSON.stringify(props.archive)));
@@ -416,14 +450,13 @@ export default {
       { value: true, label: "隐藏" },
     ]);
 
-    const levelOptions = ref([
-      { value: "level-0", label: "Level 0 - 教学关卡" },
-      { value: "level-1", label: "Level 1 - 起始之地" },
-      { value: "level-2", label: "Level 2 - 管道迷宫" },
-      { value: "level-3", label: "Level 3 - 电气室" },
-      { value: "level-4", label: "Level 4 - 废弃办公室" },
-      { value: "level-5", label: "Level 5 - 旅馆" },
-    ]);
+    const levelOptions = computed(() => {
+      return Object.entries(levelNameMap.value).map(([value, label]) => ({
+        value,
+        label,
+        searchLabel: label.toLowerCase()
+      }));
+    });
 
     const levelInfoOptions = ref([
       { value: "level-0", label: "Level 0" },
@@ -453,32 +486,33 @@ export default {
 
     // 初始化层级信息
     const levelInfo = reactive({
-      name: "Level 0 - 教学关卡",
-      // 使用配置中的默认值初始化
-      ...Object.fromEntries(
-        levelConfig.fields.map(field => [field.id, field.default])
-      )
+      name: "",
+      subtitle: "",
+      fields: [],
     });
 
-    // 将这个 watch 放在 selectedLevelInfo 定义之后
+    // 当 selectedLevelInfo 变化时更新 levelInfo
     watch(selectedLevelInfo, (newValue) => {
-      const levelData = {
-        "level-0": { name: "Level 0 - 教学关卡" },
-        "level-1": { name: "Level 1 - 起始之地" },
-        "level-2": { name: "Level 2 - 管道迷宫" },
-        "level-3": { name: "Level 3 - 电气室" },
-        "level-4": { name: "Level 4 - 废弃办公室" },
-        "level-5": { name: "Level 5 - 旅馆" }
-      };
-      
-      Object.assign(levelInfo, {
-        ...levelData[newValue],
-        // 保留原有字段值
-        ...Object.fromEntries(
-          levelConfig.fields.map(field => [field.id, levelInfo[field.id]])
-        )
-      });
+      const meta = levelConfig.levelMeta[newValue];
+
+      if (meta) {
+        levelInfo.name = meta.name;
+        levelInfo.subtitle = meta.subtitle;
+        levelInfo.fields = meta.fields || [];
+      }
     });
+
+    function initLevelFields() {
+      Object.values(levelConfigReactive.levelMeta).forEach((meta) => {
+        meta.fields.forEach((field) => {
+          if (!Object.prototype.hasOwnProperty.call(meta, field.id)) {
+            meta[field.id] = field.default !== undefined ? field.default : null;
+          }
+        });
+      });
+    }
+
+    initLevelFields(); // 初始化字段值
 
     // 修复：打开物品菜单
     const openItemMenu = async (event, slotIndex) => {
@@ -488,18 +522,32 @@ export default {
       const rect = slotElement.getBoundingClientRect();
       const modalRect = modalRef.value.getBoundingClientRect();
 
+      const menuWidth = 1000;
+      const menuHeight = 590;
+      const padding = 15; // 设置与边缘的距离
+
       let menuX = rect.left;
       let menuY = rect.bottom + 10;
 
-      const menuWidth = 240;
-      const menuHeight = 300;
+      // 检查是否底部越界
+      if (menuY + menuHeight > modalRect.bottom) {
+        menuY = rect.top - menuHeight - 10;
+      }
 
-      // 边界检测
-      if (menuY + menuHeight > modalRect.bottom)
-        menuY = rect.top - menuHeight - 5;
-      if (menuX + menuWidth > modalRect.right)
-        menuX = modalRect.right - menuWidth - 15;
-      if (menuX < modalRect.left) menuX = modalRect.left + 10;
+      // 检查是否右侧越界
+      if (menuX + menuWidth > modalRect.right) {
+        menuX = modalRect.right - menuWidth - padding;
+      }
+
+      // 检查是否左侧越界
+      if (menuX < modalRect.left) {
+        menuX = modalRect.left + padding;
+      }
+
+      // 检查调整后的位置是否仍越界（比如弹窗太小）
+      if (menuY < modalRect.top) {
+        menuY = modalRect.top + padding;
+      }
 
       itemMenuPosition.value = { x: menuX, y: menuY };
       currentSlotIndex.value = slotIndex;
@@ -520,13 +568,21 @@ export default {
 
     // 关闭物品菜单
     const closeItemMenu = () => {
-      showItemMenu.value = false;
-      currentSlotIndex.value = null;
-    };
+      const menuEl = itemMenuRef.value?.$el;
+      if (!menuEl) {
+        showItemMenu.value = false;
+        return;
+      }
 
+      // 使用 requestAnimationFrame 避免绿色帧
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          showItemMenu.value = false;
+        }, 300); // 等待动画完成
+      });
+    };
     // 处理板块滚动事件
     const handleSectionScroll = () => {
-
       if (showItemMenu.value) {
         closeItemMenu();
       }
@@ -555,7 +611,6 @@ export default {
 
     // 滚动检测函数
     const checkActiveSection = () => {
-
       if (!dataSection.value) return;
 
       const levelSection = document.getElementById("level-section");
@@ -713,13 +768,13 @@ export default {
     const saveChanges = () => {
       // 获取所有层级信息数据
       const levelData = { ...levelInfo };
-      
+
       // 添加其他数据到存档
       editedArchive.value = {
         ...editedArchive.value,
-        levelData // 包含所有层级信息
+        levelData, // 包含所有层级信息
       };
-      
+
       emit("save", editedArchive.value);
       closeModal();
     };
@@ -747,6 +802,9 @@ export default {
         }
       }
     );
+
+    console.log("levelOptions:", levelOptions.value);
+    console.log("currentLevel:", editedArchive.value.currentLevel);
 
     return {
       modalRef,
@@ -779,6 +837,7 @@ export default {
       inventorySection,
       currentTab,
       currentPlayerSanity,
+      levelConfig: levelConfigReactive,
     };
   },
 };
@@ -879,16 +938,14 @@ export default {
   display: flex;
   flex: 1;
   padding: 0 10px 10px;
-  /* 修复滚动问题：确保内容区域可以扩展 */
   min-height: 0;
 }
 
 .section {
   flex: 1;
-  display: flex;
+  display:none;
   flex-direction: column;
   padding: 0 10px;
-  /* 修复滚动问题：确保内容区域可以扩展 */
   min-height: 0;
 }
 
@@ -899,7 +956,6 @@ export default {
   background: rgba(0, 0, 0, 0.15);
   border-radius: 12px;
   margin: 0 10px 10px;
-  /* 修复滚动问题：固定头部 */
   flex-shrink: 0;
 }
 
@@ -932,7 +988,6 @@ export default {
   display: flex;
   padding: 0 10px 10px;
   gap: 10px;
-  /* 修复滚动问题：固定导航 */
   flex-shrink: 0;
 }
 

@@ -100,7 +100,7 @@ export default {
           actualDifficulty: save.actual_difficulty,
           mode: save.mode,
           date: save.date,
-          currentLevel: levelNames[save.current_level] || save.current_level,
+          currentLevel: save.current_level,
           hidden: save.hidden,
           path: save.path,
         }));

@@ -225,9 +225,14 @@ export default {
       }
     };
 
+    const refreshArchives = async () => {
+          await loadSaves(); // 重新加载存档数据
+          console.log("存档列表已刷新");
+    };
+
     // 处理保存编辑
     const handleSaveEdit = (editedArchive) => {
-      // 更新存档逻辑...
+      refreshArchives();
       console.log("保存编辑:", editedArchive);
     };
 

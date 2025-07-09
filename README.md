@@ -76,11 +76,11 @@ If you need to use the stable version, please refer to the [v2.7.3 Release Page]
 
 ---
 
-## 📥 Installation (V3.0.0-Alpha-1.1)
+## 📥 Installation (V3.0.0-Alpha-1.2)
 
 ### Windows
 
-1. Download the Windows installer for [v3.0.0-Alpha-1.1](https://github.com/llzgdc/ETBSaveManager/releases/tag/v3.0.0-Alpha-1.1).
+1. Download the Windows installer for [v3.0.0-Alpha-1.2](https://github.com/llzgdc/ETBSaveManager/releases/tag/v3.0.0-Alpha-1.2).
 
 2. Double-click the installer to begin installation. (If you don't have WebView2 installed, the installer should install it automatically. If not, please click [here](https://developer.microsoft.com/microsoft-edge/webview2) to download and install WebView2.)
 

@@ -842,6 +842,8 @@ export default {
           playerSanity: { ...localPlayerSanity.value }
         });
 
+        emit("save");
+
         closeModal();
       } catch (error) {
         console.error("保存失败:", error);

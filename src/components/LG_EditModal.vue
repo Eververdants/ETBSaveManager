@@ -11,7 +11,7 @@
         ref="modalRef"
       >
         <div class="modal-header">
-          <h2>编辑存档 (本部分暂未完工。)</h2>
+          <h2>编辑存档</h2>
           <button class="close-btn" @click="closeModal">
             <i class="fas fa-times"></i>
           </button>
@@ -106,7 +106,7 @@
                 <div class="form-group">
                   <label>当前层级</label>
                   <CustomSelect
-                    v-model="editedArchive.currentLevel"
+                    v-model="editedArchive.currentLevel1"
                     :options="levelOptions"
                     track-by="searchLabel"
                     label="label"
@@ -266,6 +266,7 @@ import ItemMenu from "./LG_ItemMenu.vue";
 import { itemOptions } from "../utils/constants.js";
 import { levelConfig } from "../utils/levelConfig";
 import LG_FormField from "./LG_FormField.vue";
+import { invoke } from "@tauri-apps/api/core";
 
 export default {
   components: {
@@ -302,18 +303,17 @@ export default {
   },
   emits: ["update:show", "save"],
   setup(props, { emit }) {
-    console.log(props)
     const modalRef = ref(null);
     const itemMenuRef = ref(null);
     const levelNameMap = ref({});
 
     onMounted(async () => {
       try {
-        const response = await fetch('/locales/zh-CN/zh-CN.json'); // 注意路径是否正确
+        const response = await fetch("/locales/zh-CN/zh-CN.json"); // 注意路径是否正确
         const data = await response.json();
         levelNameMap.value = data.LevelName || {};
       } catch (error) {
-        console.error('加载语言包失败:', error);
+        console.error("加载语言包失败:", error);
       }
     });
 
@@ -454,7 +454,7 @@ export default {
       return Object.entries(levelNameMap.value).map(([value, label]) => ({
         value,
         label,
-        searchLabel: label.toLowerCase()
+        searchLabel: label.toLowerCase(),
       }));
     });
 
@@ -522,9 +522,9 @@ export default {
       const rect = slotElement.getBoundingClientRect();
       const modalRect = modalRef.value.getBoundingClientRect();
 
-      const menuWidth = 1000;
-      const menuHeight = 590;
-      const padding = 15; // 设置与边缘的距离
+      const menuWidth = 800;
+      const menuHeight = 600;
+      const padding = 0; // 设置与边缘的距离
 
       let menuX = rect.left;
       let menuY = rect.bottom + 10;
@@ -549,7 +549,7 @@ export default {
         menuY = modalRect.top + padding;
       }
 
-      itemMenuPosition.value = { x: menuX, y: menuY };
+      itemMenuPosition.value = { x: menuX - 70, y: menuY };
       currentSlotIndex.value = slotIndex;
 
       // 延迟显示菜单，确保动画生效
@@ -764,19 +764,88 @@ export default {
       });
     };
 
-    // 保存修改
-    const saveChanges = () => {
-      // 获取所有层级信息数据
-      const levelData = { ...levelInfo };
+    const difficultyMap = {
+      "简单难度": "Easy",
+      "普通难度": "Normal",
+      "困难难度": "Hard",
+      "噩梦难度": "Nightmare",
+    };
 
-      // 添加其他数据到存档
-      editedArchive.value = {
-        ...editedArchive.value,
-        levelData, // 包含所有层级信息
+    const modeMap = {
+      "单人模式": "Singleplayer",
+      "多人模式": "Multiplayer",
+    };
+
+    // 保存修改
+    const saveChanges = async () => {
+      // 将中文映射为英文
+      const difficulty = difficultyMap[editedArchive.value.difficulty] || editedArchive.value.difficulty;
+      const actualDifficulty = difficultyMap[editedArchive.value.actualDifficulty] || editedArchive.value.actualDifficulty;
+      const mode = modeMap[editedArchive.value.mode] || editedArchive.value.mode;
+
+      // 动态判断 outputDir
+      const isHidden = editedArchive.value.hidden === true || editedArchive.value.hidden === "hidden";
+      let outputDir = "";
+
+      try {
+        // 获取 %LOCALAPPDATA%
+        const localAppData = await invoke("get_local_appdata");
+        const baseDir = `${localAppData}/EscapeTheBackrooms/Saved/SaveGames`;
+
+        if (!isHidden) {
+          outputDir = `${baseDir}/HiddenFiles`;
+        } else {
+          outputDir = baseDir;
+        }
+
+        // 确保输出目录存在
+        await invoke("ensure_dir_exists", { path: outputDir });
+      } catch (e) {
+        console.error("获取 LOCALAPPDATA 失败:", e);
+        alert("无法确定保存路径，请确保游戏数据目录可用");
+        return;
+      }
+
+      // 构造完整存档数据
+      const payload = {
+        jsonInput: {
+          saveData: {
+            outputDir,
+            jsonData: {
+              name: editedArchive.value.name,
+              path: editedArchive.value.path,
+              difficulty,
+              actualDifficulty,
+              mode,
+              hidden: isHidden,
+              currentLevel: editedArchive.value.currentLevel1,
+              playerInventory: { ...playerInventory },
+              playerSanity: { ...localPlayerSanity.value },
+            }
+          }
+        }
       };
 
-      emit("save", editedArchive.value);
-      closeModal();
+      try {
+        console.log("保存数据:", payload);
+        await invoke("handle_edit_save", payload);
+
+        // ✅ 正确地 emit 编辑后的存档数据
+        emit("save", {
+          ...editedArchive.value,
+          difficulty,
+          actualDifficulty,
+          mode,
+          hidden: isHidden,
+          currentLevel: editedArchive.value.currentLevel1,
+          playerInventory: { ...playerInventory },
+          playerSanity: { ...localPlayerSanity.value }
+        });
+
+        closeModal();
+      } catch (error) {
+        console.error("保存失败:", error);
+      }
     };
 
     // 监听弹窗显示状态 - 添加进场动画
@@ -802,9 +871,6 @@ export default {
         }
       }
     );
-
-    console.log("levelOptions:", levelOptions.value);
-    console.log("currentLevel:", editedArchive.value.currentLevel);
 
     return {
       modalRef,
@@ -861,8 +927,8 @@ export default {
 
 .edit-modal {
   position: relative;
-  width: 1000px;
-  height: 590px;
+  width: 800px;
+  height: 600px;
   background: rgba(25, 25, 35, 0.85);
   border-radius: 20px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
@@ -943,7 +1009,7 @@ export default {
 
 .section {
   flex: 1;
-  display:none;
+  display: none;
   flex-direction: column;
   padding: 0 10px;
   min-height: 0;

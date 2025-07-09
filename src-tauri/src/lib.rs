@@ -3,6 +3,7 @@ mod encryption;
 mod get_file_path;
 mod player_data;
 mod save_utils;
+mod save_editor;
 
 use encryption::*;
 use save_utils::SaveFileInfo;
@@ -172,6 +173,38 @@ fn get_player_data(file_path: String) -> Result<Value, String> {
     }))
 }
 
+#[tauri::command]
+fn handle_edit_save(json_input: Value) -> Result<String, String> {
+    let save_data = json_input.get("saveData")
+        .ok_or("Missing 'saveData' in input")?;
+
+    let output_dir = save_data.get("outputDir")
+        .and_then(|v| v.as_str())
+        .ok_or("Missing or invalid 'outputDir' in saveData")?;
+
+    let json_data = save_data.get("jsonData")
+        .and_then(|v| v.as_object())
+        .ok_or("Missing or invalid 'jsonData' in saveData")?;
+
+    // 将 serde_json::Map 转换为 serde_json::Value::Object
+    let json_value = serde_json::Value::Object(json_data.clone());
+
+    save_editor::edit_save_file(&json_value, output_dir)
+}
+
+#[tauri::command]
+fn get_local_appdata() -> Result<String, String> {
+    env::var("LOCALAPPDATA").map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn ensure_dir_exists(path: String) -> Result<(), String> {
+    if !Path::new(&path).exists() {
+        fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -185,7 +218,10 @@ pub fn run() {
             encrypt_file_command,
             decrypt_file_command,
             clear_saved_password_command,
-            get_player_data
+            get_player_data,
+            handle_edit_save,
+            get_local_appdata,
+            ensure_dir_exists
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

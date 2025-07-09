@@ -46,7 +46,7 @@ My email: **`llzgd@outlook.com`**
 | 🔍 Search functionality                       | ✅ Completed      | 100%     | Support quick search of archives by keywords such as name, hierarchy, etc.              |
 | 🎨 Color themes                               | ⏳ In development | 0%       | Users can customize the application's color themes                                      |
 | 🌐 Multi-language switching                   | ⏳ In development | 5%       | Provide more convenient multi-language switching support                                |
-| 💾 Archive data editing                       | ⏳ In development | 65%      | Allow users to directly edit archive data within the tool                               |
+| 💾 Archive data editing                       | ✅ Completed      | 100%     | Allow users to directly edit archive data within the tool                               |
 | ➕ Expansion of new archive creation features | ⏳ In development | 0%       | Add more options and settings to enhance the function of creating new archives          |
 | 📄 Expansion content pack                     | ⏳ In development | 0%       | Selectable additional features for use                                                  |
 | 🌐 Cross-platform support                     | ✅ Basic support  | 100%     | Supports Windows/macOS/Linux                                                            |
@@ -128,7 +128,6 @@ npm run tauri dev
 
 - Directly modify save data within the tool
 - Modify player inventory
-- Modify level information
 
 ### Expanded New Save Creation
 

@@ -35,6 +35,11 @@ export default {
           title: "项目介绍",
           file: "/markdown/about/introduction-CN.md",
         },
+        {
+          icon: "👤",
+          title: "更新公告",
+          file: "/markdown/about/announcement-CN.md",
+        },
         { icon: "⚖️", title: "法律声明", file: "/markdown/about/license.md" },
       ],
       markdownTexts: [], // 存储从文件读取的内容

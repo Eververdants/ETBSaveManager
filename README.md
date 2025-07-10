@@ -131,7 +131,7 @@ npm run tauri dev
 
 ### Expanded New Save Creation
 
-- Add more options, such as: hierarchical collectible (key) information
+- Add more options
 
 ### Expansion Content Pack
 

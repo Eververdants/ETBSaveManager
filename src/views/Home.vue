@@ -452,7 +452,7 @@ export default {
   z-index: 1;
   clip-path: inset(0 round 20px);
   left: 35px;
-  top: 10px;
+  top: 0px;
 }
 
 .glass-scroll-content {

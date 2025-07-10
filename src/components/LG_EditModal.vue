@@ -33,6 +33,7 @@
                     type="text"
                     v-model="editedArchive.name"
                     :class="{ 'light-mode': lightMode }"
+                    autocomplete="off"
                   />
                 </div>
               </div>

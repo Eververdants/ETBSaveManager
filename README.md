@@ -47,7 +47,7 @@ My email: **`llzgd@outlook.com`**
 | 🎨 Color themes                               | ⏳ In development | 0%       | Users can customize the application's color themes                                      |
 | 🌐 Multi-language switching                   | ⏳ In development | 5%       | Provide more convenient multi-language switching support                                |
 | 💾 Archive data editing                       | ✅ Completed      | 100%     | Allow users to directly edit archive data within the tool                               |
-| ➕ Expansion of new archive creation features | ⏳ In development | 0%       | Add more options and settings to enhance the function of creating new archives          |
+| ➕ Expansion of new archive creation features | ⏳ In development | 50%      | Add more options and settings to enhance the function of creating new archives          |
 | 📄 Expansion content pack                     | ⏳ In development | 0%       | Selectable additional features for use                                                  |
 | 🌐 Cross-platform support                     | ✅ Basic support  | 100%     | Supports Windows/macOS/Linux                                                            |
 

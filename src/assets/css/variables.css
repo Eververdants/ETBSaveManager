@@ -17,4 +17,17 @@
   --Home-scrollbar-track-color: rgba(255, 255, 255, 0.1);
   --Home-scrollbar-hover-color: rgba(138, 158, 255, 0.8);
   --Home-container-border-radius: 20px;
+
+  /* CreateArchive.vue */
+  --CreateArchive-bg-primary: #f9fbfd;
+  --CreateArchive-text-primary: #1e293b;
+  --CreateArchive-text-secondary: #64748b;
+  --CreateArchive-accent-color: #3b82f6; /* 蓝色主色调 */
+  --CreateArchive-accent-hover: #2563eb;
+  --CreateArchive-success-color: #10b981;
+  --CreateArchive-card-bg: #ffffff;
+  --CreateArchive-card-border: #e0e7ef;
+  --CreateArchive-card-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+  --CreateArchive-card-shadow-hover: 0 6px 16px rgba(59, 130, 246, 0.2);
+  --CreateArchive-loading-color: #3b82f6;
 }

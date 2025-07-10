@@ -544,7 +544,7 @@ SOFTWARE.
 
 ## Asset Usage Declaration
 
-This project incorporates assets extracted from the game "Escape The Backrooms" to facilitate the editing of in-game player inventories. Specifically, these assets are used to visually represent items within the player's inventory on an editor page.
+This project incorporates assets extracted from the game "Escape The Backrooms" to facilitate the editing of in-game player inventories, as well as to provide visual aids through the use of screenshots depicting game saves and levels. Specifically, these assets are used to visually represent items within the player's inventory on an editor page, alongside screenshots that help illustrate specific scenarios or states within the game.
 
 - **Game Title**: Escape The Backrooms
 - **Developer/Publisher**: Fancy Games
@@ -552,7 +552,7 @@ This project incorporates assets extracted from the game "Escape The Backrooms" 
 
 ### Purpose of Use
 
-The purpose of using these assets is to enable users of our editor tool to see accurate visual representations of items that can be added to or removed from a player's inventory. This enhances the user experience by providing clear and recognizable icons for each item.
+The purpose of using these assets is to enable users of our editor tool to see accurate visual representations of items that can be added to or removed from a player's inventory. Additionally, we utilize screenshots of game saves and levels to offer more detailed guidance and context for editing purposes. This enhances the user experience by providing clear, recognizable icons for each item and illustrative examples of gameplay situations.
 
 ### Important Notice
 

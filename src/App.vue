@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import router from "./router"; // 引入 router 实例
 import LivingGlassSidebar from "./components/LG_SideBar.vue";
 
@@ -30,7 +30,23 @@ const handleItemSelected = (item) => {
       router.push("/");
   }
 };
+
+// 定义为响应式函数以便在添加和移除时引用同一个
+const preventNavigate = (event) => {
+  history.pushState(null, null, window.location.pathname);
+  event.preventDefault();
+};
+
+onMounted(() => {
+  window.history.pushState(null, null, window.location.pathname);
+  window.addEventListener("popstate", preventNavigate);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("popstate", preventNavigate);
+});
 </script>
+
 
 <template>
   <main class="container">

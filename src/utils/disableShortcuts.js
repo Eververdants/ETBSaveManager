@@ -98,3 +98,38 @@ document.addEventListener("auxclick", function (event) {
     }
   }
 });
+
+window.addEventListener(
+  "popstate",
+  function (event) {
+    // 阻止返回或前进操作
+    history.pushState(null, null, window.location.pathname);
+    event.preventDefault();
+  },
+  false
+);
+
+// 在页面加载时增加一个历史记录点，防止用户通过后退离开应用
+window.addEventListener("load", function () {
+  history.pushState(null, null, window.location.pathname);
+  window.addEventListener("popstate", function () {
+    history.pushState(null, null, window.location.pathname);
+  });
+});
+
+document.addEventListener(
+  "mousedown",
+  function (event) {
+    if (event.button === 3 || event.button === 4) {
+      event.preventDefault();
+    }
+  },
+  false
+);
+
+window.onload = function () {
+  history.pushState(null, null, location.href);
+  window.onpopstate = function (event) {
+    history.pushState(null, null, location.href);
+  };
+};

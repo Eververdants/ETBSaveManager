@@ -16,7 +16,7 @@ Please note: Future development may involve features related to encryption keys.
 
 This project uses assets extracted from Escape The Backrooms, which are stored in the `icons/ETB_UI` folder within the `public`directory. The names of the resources have not been modified.
 
-There is currently a trial version available, with the version number `V3.0.0-Alpha-1.1`. You can experience the new interface in this version. However, at this time, only the `Chinese` language is supported.
+There is currently a trial version available, with the version number `V3.0.0-Alpha-2`. You can experience the new interface in this version. However, at this time, only the `Chinese` language is supported.
 
 If you encounter any bugs while using the trial version, please provide a detailed description of the issue to the developer, or take a screenshot of the error messages shown in the DevTools, and submit an issue.
 
@@ -47,7 +47,7 @@ My email: **`llzgd@outlook.com`**
 | 🎨 Color themes                               | ⏳ In development | 0%       | Users can customize the application's color themes                                      |
 | 🌐 Multi-language switching                   | ⏳ In development | 5%       | Provide more convenient multi-language switching support                                |
 | 💾 Archive data editing                       | ✅ Completed      | 100%     | Allow users to directly edit archive data within the tool                               |
-| ➕ Expansion of new archive creation features | ⏳ In development | 50%      | Add more options and settings to enhance the function of creating new archives          |
+| ➕ Expansion of new archive creation features | ✅ Completed      | 100%     | Add more options and settings to enhance the function of creating new archives          |
 | 📄 Expansion content pack                     | ⏳ In development | 0%       | Selectable additional features for use                                                  |
 | 🌐 Cross-platform support                     | ✅ Basic support  | 100%     | Supports Windows/macOS/Linux                                                            |
 
@@ -76,11 +76,11 @@ If you need to use the stable version, please refer to the [v2.7.3 Release Page]
 
 ---
 
-## 📥 Installation (V3.0.0-Alpha-1.2)
+## 📥 Installation (V3.0.0-Alpha-2)
 
 ### Windows
 
-1. Download the Windows installer for [v3.0.0-Alpha-1.2](https://github.com/llzgdc/ETBSaveManager/releases/tag/v3.0.0-Alpha-1.2).
+1. Download the Windows installer for [v3.0.0-Alpha-2](https://github.com/llzgdc/ETBSaveManager/releases/tag/v3.0.0-Alpha-2).
 
 2. Double-click the installer to begin installation. (If you don't have WebView2 installed, the installer should install it automatically. If not, please click [here](https://developer.microsoft.com/microsoft-edge/webview2) to download and install WebView2.)
 

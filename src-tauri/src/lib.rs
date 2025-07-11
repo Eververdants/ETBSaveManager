@@ -4,6 +4,7 @@ mod get_file_path;
 mod player_data;
 mod save_utils;
 mod save_editor;
+mod new_save;
 
 use encryption::*;
 use save_utils::SaveFileInfo;
@@ -205,6 +206,11 @@ fn ensure_dir_exists(path: String) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn handle_new_save(save_data: new_save::SaveData) -> Result<(), String> {
+    new_save::create_new_save(save_data)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -221,7 +227,8 @@ pub fn run() {
             get_player_data,
             handle_edit_save,
             get_local_appdata,
-            ensure_dir_exists
+            ensure_dir_exists,
+            handle_new_save
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

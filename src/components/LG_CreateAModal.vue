@@ -84,8 +84,7 @@
 import { ref, reactive, onMounted, watchEffect, onBeforeUnmount } from "vue";
 import gsap from "gsap";
 import CustomSelect from "./LG_CustomSelect.vue";
-import { resolveResource } from "@tauri-apps/api/path";
-import { appDataDir } from "@tauri-apps/api/path";
+import { invoke } from "@tauri-apps/api/core";
 
 export default {
   components: {
@@ -185,10 +184,21 @@ export default {
       levelKey: props.levelKey || "",
     });
 
-    const createArchive = async () => {
-      console.log("currentLevelKey:", props.levelKey);
-      console.log("newArchive.levelKey:", newArchive.levelKey);
+    const loadJsonFile = async (filename) => {
+      try {
+        const response = await fetch(`/${filename}`);
+        if (!response.ok) {
+          throw new Error(`无法加载文件: ${filename}`);
+        }
+        const jsonData = await response.json();
+        return jsonData;
+      } catch (error) {
+        console.error("读取 JSON 文件失败:", error);
+        return null;
+      }
+    };
 
+    const createArchive = async () => {
       if (!newArchive.name.trim()) {
         nameError.value = true;
         return;
@@ -203,34 +213,41 @@ export default {
         newArchive.actualDifficulty;
       const mode = modeMap[newArchive.mode] || newArchive.mode;
 
-      // 根据 levelKey 判断使用哪个基础存档文件
-      let baseArchiveRelativePath = "BasicArchive.json"; // 默认路径
+      let baseArchiveRelativePath = "BasicArchive.json";
 
       const levelKey = newArchive.levelKey;
-      if (levelKey === "Pipes1" || levelKey === "Pipes2") {
-        baseArchiveRelativePath = "Pipes1.json";
-      } else if (levelKey === "Pipes2") {
-        baseArchiveRelativePath = "Pipes2.json";
-      } else if (levelKey === "Level05") {
-        baseArchiveRelativePath = "Level05.json";
+      if (levelKey === "Pipes2") {
+        baseArchiveRelativePath = "pipes2.json";
       }
 
-      // ✅ 使用 Tauri 的 resolveResource 获取绝对路径
-      const baseArchiveAbsolutePath = await resolveResource(
-        `public/${baseArchiveRelativePath}`
-      );
+      // ✅ 读取 JSON 文件
+      const jsonData = await loadJsonFile(baseArchiveRelativePath);
+
+      if (!jsonData) {
+        console.error("JSON 文件读取失败");
+        return;
+      }
 
       const archiveData = {
         name: newArchive.name,
-        difficulty,
-        actualDifficulty,
-        mode,
-        levelKey: newArchive.levelKey,
-        baseArchivePath: baseArchiveAbsolutePath, // ✅ 绝对路径
+        difficulty: difficulty,
+        actual_difficulty: actualDifficulty,
+        mode: mode,
+        level_key: levelKey,
+        json_data: jsonData,
       };
 
-      emit("create", archiveData);
-      closeModal();
+      try {
+        // 调用 Tauri 后端命令
+        await invoke("handle_new_save", {
+          saveData: archiveData,
+        });
+
+        emit("create", archiveData);
+        closeModal();
+      } catch (err) {
+        console.error("调用后端失败:", err);
+      }
     };
 
     // 进场动画

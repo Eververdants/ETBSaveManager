@@ -16,7 +16,7 @@
 
 本项目中，使用了由 Escape The Backrooms 解包而来的资源，存放在`public`文件夹中的`icons/ETB_UI`文件夹内，资源名称未修改。
 
-目前有一个试用版本，版本号为`V3.0.0-Alpha-1.1`。可体验新版的界面。并且现在只有`中文`版本。
+目前有一个试用版本，版本号为`V3.0.0-Alpha-2`。可体验新版的界面。并且现在只有`中文`版本。
 
 如果你在使用试用版本时遇到了一些 bug，请详细的描述问题给开发者，或截图 DevTools 中的错误信息，并提交 issue。
 
@@ -47,7 +47,7 @@
 | 🎨 颜色主题           | ⏳ 开发中   | 0%   | 用户可自定义应用的颜色主题                 |
 | 🌐 多语言切换         | ⏳ 开发中   | 5%   | 提供更方便的多语言切换支持                 |
 | 💾 存档数据编辑       | ✅ 已完成   | 100% | 允许用户直接在工具内编辑存档数据           |
-| ➕ 新建存档功能拓展   | ⏳ 开发中   | 50%  | 新增更多选项和设置以增强新建存档功能       |
+| ➕ 新建存档功能拓展   | ✅ 已完成   | 100% | 新增更多选项和设置以增强新建存档功能       |
 | 📄 拓展内容包         | ⏳ 开发中   | 0%   | 可选择需要使用的拓展功能                   |
 | 🌐 跨平台支持         | ✅ 基础支持 | 100% | 支持 Windows/macOS/Linux                   |
 
@@ -76,11 +76,11 @@
 
 ---
 
-## 📥 安装方式（V3.0.0-Alpha-1.2 测试版）
+## 📥 安装方式（V3.0.0-Alpha-2 测试版）
 
 ### Windows
 
-1. 下载 [v3.0.0-Alpha-1.2](https://github.com/llzgdc/ETBSaveManager/releases/tag/v3.0.0-Alpha-1.2) 的 Windows 安装包。
+1. 下载 [v3.0.0-Alpha-2](https://github.com/llzgdc/ETBSaveManager/releases/tag/v3.0.0-Alpha-2) 的 Windows 安装包。
 
 2. 双击安装包进行安装。（如果你没有安装 WebView2，安装包应该会自动进行安装。如果没有，请点击[这里](https://developer.microsoft.com/microsoft-edge/webview2)下载并安装 WebView2）
 

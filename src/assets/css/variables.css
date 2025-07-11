@@ -30,4 +30,25 @@
   --CreateArchive-card-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
   --CreateArchive-card-shadow-hover: 0 6px 16px rgba(59, 130, 246, 0.2);
   --CreateArchive-loading-color: #3b82f6;
+
+  /* AdditionalContent.vue */
+  --AddiCon-dark-bg: #121826;
+  --AddiCon-dark-card: #1e293b;
+  --AddiCon-dark-text: #e2e8f0;
+  --AddiCon-dark-text-secondary: #94a3b8;
+  --AddiCon-dark-accent: #6366f1;
+  --AddiCon-dark-border: #334155;
+  --AddiCon-light-bg: #f8fafc;
+  --AddiCon-light-card: #ffffff;
+  --AddiCon-light-text: #1e293b;
+  --AddiCon-light-text-secondary: #64748b;
+  --AddiCon-light-accent: #4f46e5;
+  --AddiCon-light-border: #e2e8f0;
+  --AddiCon-success: #10b981;
+  --AddiCon-warning: #f59e0b;
+  --AddiCon-error: #ef4444;
+  --AddiCon-radius: 12px;
+  --AddiCon-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  --AddiCon-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

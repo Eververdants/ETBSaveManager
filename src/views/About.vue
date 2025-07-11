@@ -111,7 +111,6 @@ export default {
   padding: 20px;
   transition: background-color 0.3s, color 0.3s;
   position: relative;
-  left: 30px;
   bottom: 10px;
 }
 
@@ -134,7 +133,11 @@ export default {
   padding: 30px 0;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start; /* 关键：从顶部开始排列 */
+  align-items: stretch;
+  overflow-y: auto; /* 可选：加滚动条 */
 }
+
 
 .light .sidebar {
   background: rgba(255, 255, 255, 0.7);

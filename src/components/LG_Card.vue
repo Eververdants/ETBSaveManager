@@ -287,6 +287,7 @@ export default {
 .info-item {
   display: flex;
   flex-direction: column;
+  padding-left: 10px;
 }
 
 .info-label {

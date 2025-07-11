@@ -29,7 +29,7 @@
         @click="setActive('expand')"
       >
         <i class="fas fa-box-open"></i>
-        <span class="menu-text">拓展内容</span>
+        <span class="menu-text">拓展市场</span>
       </a>
     </div>
 

@@ -47,12 +47,14 @@ onBeforeUnmount(() => {
 });
 </script>
 
-
 <template>
   <main class="container">
-    <LivingGlassSidebar @item-selected="handleItemSelected" />
-    <router-view />
-    <!-- 页面内容显示在这里 -->
+    <div class="sidebar">
+      <LivingGlassSidebar @item-selected="handleItemSelected" />
+    </div>
+    <div class="view">
+      <router-view />
+    </div>
   </main>
 </template>
 
@@ -60,8 +62,19 @@ onBeforeUnmount(() => {
 .container {
   margin: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  text-align: left; /* 可根据需要调整文本对齐方式 */
+}
+
+.sidebar {
+  width: 60px;
+  display: flex;
   justify-content: center;
-  text-align: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.view {
+  flex: 1;
 }
 </style>

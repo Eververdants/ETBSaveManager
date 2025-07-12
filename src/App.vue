@@ -3,6 +3,12 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import router from "./router"; // 引入 router 实例
 import LivingGlassSidebar from "./components/LG_SideBar.vue";
 
+const currentTheme = ref("CloudGlow");
+
+onMounted(() => {
+  document.documentElement.classList.add(currentTheme.value);
+});
+
 const handleItemSelected = (item) => {
   console.log("选中的菜单项:", item);
 
@@ -48,7 +54,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main class="container">
+  <main class="container" :class="currentTheme">
     <div class="sidebar">
       <LivingGlassSidebar @item-selected="handleItemSelected" />
     </div>
@@ -68,9 +74,6 @@ onBeforeUnmount(() => {
 
 .sidebar {
   width: 60px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   height: 100vh;
 }
 

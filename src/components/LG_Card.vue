@@ -1,15 +1,12 @@
 <template>
   <div
+    ref="cardElement"
     class="living-glass-card"
-    :class="{ 'light-mode': lightMode }"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >
     <div class="card-header">
       <div class="archive-name">{{ archive.name }}</div>
-      <div class="difficulty-tag" :class="archive.difficultyClass">
-        {{ archive.difficulty }}
-      </div>
     </div>
 
     <div class="card-content">
@@ -44,16 +41,19 @@
       <div class="actions-container">
         <button
           class="action-btn delete-btn"
-          @click="$emit('delete', archive.id)"
+          @click.stop="$emit('delete', archive.id)"
         >
           <img src="/icons/delete_forever.svg" alt="删除" />
         </button>
-        <button class="action-btn edit-btn" @click="$emit('edit', archive)">
+        <button
+          class="action-btn edit-btn"
+          @click.stop="$emit('edit', archive)"
+        >
           <img src="/icons/edit.svg" alt="编辑" />
         </button>
         <button
           class="action-btn toggle-btn"
-          @click="handleToggle"
+          @click.stop="handleToggle"
           type="button"
         >
           <component
@@ -64,13 +64,13 @@
       </div>
     </div>
 
-    <div class="glass-edge"></div>
-    <div class="glow-effect"></div>
+    <div class="card-highlight"></div>
+    <div class="active-indicator" :class="{ active: isCardActive }"></div>
   </div>
 </template>
 
 <script>
-import { ref, watch } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import gsap from "gsap";
 import VisibilityOn from "./icons/VisibilityOn.vue";
@@ -110,6 +110,20 @@ export default {
   setup(props, { emit }) {
     const isVisible = ref(!props.archive.hidden);
     const toggleIcon = ref(null);
+    const cardElement = ref(null);
+    const isCardActive = ref(false);
+    let ctx;
+
+    onMounted(() => {
+      ctx = gsap.context(() => {
+        // 初始化卡片状态
+        gsap.set(cardElement.value, {
+          y: 0,
+          boxShadow: "var(--Card-shadow-normal)",
+          opacity: 1,
+        });
+      }, cardElement.value);
+    });
 
     watch(
       () => props.archive.hidden,
@@ -124,6 +138,19 @@ export default {
           filePath: props.filePath,
         });
 
+        // 添加切换动画
+        gsap.fromTo(
+          toggleIcon.value.$el,
+          { scale: 1 },
+          {
+            scale: 1.4,
+            duration: 0.2,
+            yoyo: true,
+            repeat: 1,
+            ease: "power2.out",
+          }
+        );
+
         // 更新状态
         const newHidden = !props.archive.hidden;
         emit("update-archive", {
@@ -133,54 +160,54 @@ export default {
         });
       } catch (err) {
         console.error("操作失败:", err);
-      } finally {
-      }
-      return true;
-    };
-
-    const onCardHover = (index) => {
-      const card = document.querySelectorAll(".living-glass-card")[index];
-      if (card) {
-        gsap.to(card, {
-          y: -8,
-          duration: 0.3,
-          ease: "power2.out",
-          boxShadow:
-            "0 12px 32px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2)",
-        });
       }
     };
 
-    const onCardLeave = (index) => {
-      const card = document.querySelectorAll(".living-glass-card")[index];
-      if (card) {
-        gsap.to(card, {
-          y: 0,
-          duration: 0.4,
-          ease: "elastic.out(1, 0.8)",
-          boxShadow:
-            "0 8px 24px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
-        });
-      }
+    const handleMouseEnter = () => {
+      isCardActive.value = true;
+
+      // 卡片悬浮动画
+      gsap.to(cardElement.value, {
+        y: -8,
+        duration: 0.3,
+        ease: "power2.out",
+        boxShadow: "var(--Card-shadow-hover)",
+        overwrite: true,
+      });
+
+      // 显示高光
+      gsap.to(".card-highlight", {
+        opacity: 0.8,
+        duration: 0.4,
+        ease: "sine.out",
+      });
     };
 
-    const handleMouseEnter = (event) => {
-      const index = Array.from(event.currentTarget.parentNode.children).indexOf(
-        event.currentTarget
-      );
-      onCardHover(index);
-    };
+    const handleMouseLeave = () => {
+      isCardActive.value = false;
 
-    const handleMouseLeave = (event) => {
-      const index = Array.from(event.currentTarget.parentNode.children).indexOf(
-        event.currentTarget
-      );
-      onCardLeave(index);
+      // 卡片恢复动画
+      gsap.to(cardElement.value, {
+        y: 0,
+        duration: 0.4,
+        ease: "elastic.out(1, 0.8)",
+        boxShadow: "var(--Card-shadow-normal)",
+        overwrite: true,
+      });
+
+      // 隐藏高光
+      gsap.to(".card-highlight", {
+        opacity: 0,
+        duration: 0.3,
+        ease: "sine.in",
+      });
     };
 
     return {
       isVisible,
       toggleIcon,
+      cardElement,
+      isCardActive,
       handleToggle,
       handleMouseEnter,
       handleMouseLeave,
@@ -194,29 +221,50 @@ export default {
   cursor: default;
   position: relative;
   width: 300px;
-  height: 300px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 20px;
+  height: auto;
+  min-height: 280px;
+  background: var(--Card-bg-primary);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
   padding: 22px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15),
-    inset 0 1px 1px rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--Card-shadow-normal);
+  border: 1px solid var(--Card-border-color);
   overflow: hidden;
   z-index: 1;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: transform, box-shadow;
+  transition: background 0.4s ease, border-color 0.4s ease;
 }
 
-.light-mode .living-glass-card {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
-    inset 0 1px 1px rgba(255, 255, 255, 0.8),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.03);
+.card-highlight {
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  transform: rotate(15deg);
+}
+
+.active-indicator {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 4px;
+  height: 24px;
+  background: var(--Card-accent-primary);
+  border-radius: 0 2px 2px 0;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.active-indicator.active {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .card-header {
@@ -225,55 +273,24 @@ export default {
   align-items: flex-start;
   margin-bottom: 18px;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.light-mode .card-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--Card-border-color);
+  position: relative;
+  z-index: 2;
 }
 
 .archive-name {
-  position: relative;
-  top: 5px;
   font-size: 1.3rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--Card-text-primary);
   max-width: 70%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.3s ease;
 }
 
-.light-mode .archive-name {
-  color: #2d3748;
-}
-
-.difficulty-tag {
-  padding: 5px 10px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.Easy {
-  background: rgba(70, 200, 120, 0.2);
-  color: #46c878;
-}
-
-.Normal {
-  background: rgba(255, 180, 70, 0.2);
-  color: #ffb446;
-}
-
-.Hard {
-  background: rgba(255, 80, 100, 0.2);
-  color: #ff5064;
-}
-
-.Nightmare {
-  background: rgba(133, 14, 163, 0.2);
-  color: #850ea3;
+.living-glass-card:hover .archive-name {
+  color: var(--Card-accent-primary);
 }
 
 .card-content {
@@ -282,35 +299,36 @@ export default {
   gap: 16px;
   flex-grow: 1;
   margin-bottom: 15px;
+  position: relative;
+  z-index: 2;
 }
 
 .info-item {
   display: flex;
   flex-direction: column;
-  padding-left: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.info-item:hover {
+  transform: translateY(-2px);
 }
 
 .info-label {
   font-size: 0.8rem;
-  color: #a0aec0;
+  color: var(--Card-text-secondary);
   margin-bottom: 4px;
-}
-
-.light-mode .info-label {
-  color: #718096;
+  letter-spacing: 0.3px;
 }
 
 .info-value {
   font-size: 1rem;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--Card-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.light-mode .info-value {
-  color: #2d3748;
 }
 
 .card-footer {
@@ -319,21 +337,20 @@ export default {
   align-items: center;
   margin-top: auto;
   padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.light-mode .card-footer {
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid var(--Card-border-color);
+  position: relative;
+  z-index: 2;
 }
 
 .date {
   font-size: 0.8rem;
-  color: #8a9eff;
+  color: var(--Card-text-secondary);
   font-weight: 500;
+  transition: color 0.3s ease;
 }
 
-.light-mode .date {
-  color: #667eea;
+.living-glass-card:hover .date {
+  color: var(--Card-accent-secondary);
 }
 
 .actions-container {
@@ -358,25 +375,45 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--Card-bg-secondary);
+  border: 1px solid var(--Card-border-color);
+  color: var(--Card-text-secondary);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
 }
 
-.light-mode .action-btn {
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  color: #4a5568;
+.action-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--Card-surface-overlay);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.action-btn:hover::before {
+  opacity: 1;
+}
+
+.action-btn img {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
 }
 
 .action-btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn:hover img {
+  transform: scale(1.15);
 }
 
 .delete-btn:hover {
@@ -392,53 +429,5 @@ export default {
 .toggle-btn:hover {
   background: rgba(70, 200, 120, 0.25);
   color: #46c878;
-}
-
-.glass-edge {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 20px;
-  pointer-events: none;
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.1);
-  z-index: -1;
-}
-
-.light-mode .glass-edge {
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.03);
-}
-
-.glow-effect {
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle at center,
-    rgba(138, 158, 255, 0.3) 0%,
-    transparent 60%
-  );
-  opacity: 0;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  pointer-events: none;
-  z-index: -2;
-}
-
-.living-glass-card:hover .glow-effect {
-  opacity: 0.15;
-}
-
-.light-mode .living-glass-card:hover .glow-effect {
-  background: radial-gradient(
-    circle at center,
-    rgba(102, 126, 234, 0.2) 0%,
-    transparent 60%
-  );
-  opacity: 0.1;
 }
 </style>

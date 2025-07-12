@@ -766,26 +766,33 @@ export default {
     };
 
     const difficultyMap = {
-      "简单难度": "Easy",
-      "普通难度": "Normal",
-      "困难难度": "Hard",
-      "噩梦难度": "Nightmare",
+      简单难度: "Easy",
+      普通难度: "Normal",
+      困难难度: "Hard",
+      噩梦难度: "Nightmare",
     };
 
     const modeMap = {
-      "单人模式": "Singleplayer",
-      "多人模式": "Multiplayer",
+      单人模式: "Singleplayer",
+      多人模式: "Multiplayer",
     };
 
     // 保存修改
     const saveChanges = async () => {
       // 将中文映射为英文
-      const difficulty = difficultyMap[editedArchive.value.difficulty] || editedArchive.value.difficulty;
-      const actualDifficulty = difficultyMap[editedArchive.value.actualDifficulty] || editedArchive.value.actualDifficulty;
-      const mode = modeMap[editedArchive.value.mode] || editedArchive.value.mode;
+      const difficulty =
+        difficultyMap[editedArchive.value.difficulty] ||
+        editedArchive.value.difficulty;
+      const actualDifficulty =
+        difficultyMap[editedArchive.value.actualDifficulty] ||
+        editedArchive.value.actualDifficulty;
+      const mode =
+        modeMap[editedArchive.value.mode] || editedArchive.value.mode;
 
       // 动态判断 outputDir
-      const isHidden = editedArchive.value.hidden === true || editedArchive.value.hidden === "hidden";
+      const isHidden =
+        editedArchive.value.hidden === true ||
+        editedArchive.value.hidden === "hidden";
       let outputDir = "";
 
       try {
@@ -822,9 +829,9 @@ export default {
               currentLevel: editedArchive.value.currentLevel1,
               playerInventory: { ...playerInventory },
               playerSanity: { ...localPlayerSanity.value },
-            }
-          }
-        }
+            },
+          },
+        },
       };
 
       try {
@@ -840,7 +847,7 @@ export default {
           hidden: isHidden,
           currentLevel: editedArchive.value.currentLevel1,
           playerInventory: { ...playerInventory },
-          playerSanity: { ...localPlayerSanity.value }
+          playerSanity: { ...localPlayerSanity.value },
         });
 
         emit("save");

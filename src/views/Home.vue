@@ -27,17 +27,28 @@
   />
   <div class="glass-scroll-container">
     <div class="glass-scroll-content" ref="glassScrollContentRef">
-      <div class="cards-container" :data-theme="lightMode ? 'light' : 'dark'">
-        <Card
-          v-for="archive in archives"
-          :key="archive.id"
-          :archive="archive"
-          :file-path="archive.path"
-          :lightMode="lightMode"
-          @delete="handleDelete"
-          @update-archive="updateArchive"
-          @edit="handleEdit"
-        />
+      <div
+        class="cards-container"
+        :data-theme="lightMode ? 'light' : 'dark'"
+        ref="cardsContainer"
+      >
+        <div
+          v-for="(archive, index) in displayedArchives"
+          :key="index"
+          class="card-wrapper"
+        >
+          <Card
+            v-if="archive"
+            :archive="archive"
+            :file-path="archive.path"
+            :lightMode="lightMode"
+            @delete="handleDelete"
+            @update-archive="updateArchive"
+            @edit="handleEdit"
+          />
+          <!-- 空白卡片 -->
+          <div v-else class="empty-card"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -71,6 +82,76 @@ export default {
     const showEditModal = ref(false);
     const editingArchive = ref(null);
     const playerOptions = ref(null);
+    const cardsContainer = ref(null);
+    const displayedArchives = ref([]);
+
+    // 根据容器宽度动态计算一行最多能放几张卡片
+    function calculateCardsPerRow() {
+      if (!cardsContainer.value) return 3; // 默认值
+
+      const containerWidth = cardsContainer.value.clientWidth;
+      const minCardWidth = 280; // 每张卡片最小宽度
+      const gap = 20; // 卡片之间的 gap 值
+
+      // 计算实际可用空间（减去所有 gap）
+      const availableWidth = containerWidth - gap * 2;
+
+      // 计算一行最多能放几张卡片
+      const cardsPerRow = Math.floor(
+        (availableWidth + gap) / (minCardWidth + gap)
+      );
+      return Math.max(cardsPerRow, 1); // 至少一张
+    }
+
+    // 自动补空白卡片
+    function fillEmptyCards(archivesArray, cardsPerRow) {
+      const totalItems = archivesArray.length;
+      const fullRows = Math.floor(totalItems / cardsPerRow);
+      const remainder = totalItems % cardsPerRow;
+
+      const filledArray = [...archivesArray];
+
+      // 如果刚好整除，不需要补位
+      if (remainder === 0) return filledArray;
+
+      // 否则补充透明卡片到下一行满
+      const emptySlots = cardsPerRow - remainder;
+
+      for (let i = 0; i < emptySlots; i++) {
+        filledArray.push(null); // null 表示一个空白卡片
+      }
+
+      return filledArray;
+    }
+
+    // 使用 ResizeObserver 动态监听容器宽度变化
+    let resizeObserver;
+
+    onMounted(() => {
+      if (cardsContainer.value) {
+        resizeObserver = new ResizeObserver(() => {
+          updateDisplayedArchives();
+        });
+        resizeObserver.observe(cardsContainer.value);
+      }
+    });
+
+    onUnmounted(() => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    });
+
+    // 更新带空白卡片的列表
+    function updateDisplayedArchives() {
+      const cardsPerRow = calculateCardsPerRow();
+      displayedArchives.value = fillEmptyCards(archives.value, cardsPerRow);
+    }
+
+    // 当原始卡片数据更新时也重新计算
+    watchEffect(() => {
+      updateDisplayedArchives();
+    });
 
     const loadTranslations = async () => {
       try {
@@ -226,8 +307,8 @@ export default {
     };
 
     const refreshArchives = async () => {
-          await loadSaves(); // 重新加载存档数据
-          console.log("存档列表已刷新");
+      await loadSaves(); // 重新加载存档数据
+      console.log("存档列表已刷新");
     };
 
     // 处理保存编辑
@@ -422,94 +503,25 @@ export default {
       handleEdit,
       handleSaveEdit,
       playerOptions,
+      cardsContainer,
+      displayedArchives,
     };
   },
 };
 </script>
 
 <style scoped>
-.card {
-  position: relative;
-  left: 10px;
-}
-
 .cards-container {
-  position: relative;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: clamp(10px, 5%, 25px); /* 动态调整间距 */
-  width: 90%;
-  height: 90vh;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  width: 95%;
   margin: 0 auto;
-  padding: 20px;
-  justify-content: center;
-  align-items: start;
-  background-color: #d4dde5;
-  color: #111827;
-  border-radius: 37px;
-  overflow-y: auto;
-  position: relative;
-  z-index: 1;
-  clip-path: inset(0 round 20px);
-  top: 0px;
+  padding: 20px 0;
 }
 
-.glass-scroll-content {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  padding-right: 20px;
-  border-radius: 20px;
-  clip-path: inset(0 round 20px);
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'%3E%3Crect x='0' y='0' width='100%' height='100%' rx='20' ry='20' fill='white'/%3E%3C/svg%3E")
-    no-repeat center / contain;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'%3E%3Crect x='0' y='0' width='100%' height='100%' rx='20' ry='20' fill='white'/%3E%3C/svg%3E")
-    no-repeat center / contain;
-  mask-composite: add;
-  -webkit-mask-composite: source-in;
-}
-</style>
-
-<style>
-.glass-scroll-container {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--Home-container-border-radius);
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.light-mode {
-  --Home-scrollbar-thumb-color: rgba(102, 126, 234, 0.5);
-  --Home-scrollbar-track-color: rgba(0, 0, 0, 0.05);
-  --Home-scrollbar-hover-color: rgba(102, 126, 234, 0.8);
-}
-
-.glass-scroll-content::-webkit-scrollbar {
-  width: var(--Home-scrollbar-width);
-}
-
-.glass-scroll-content::-webkit-scrollbar-track {
-  background: var(--Home-scrollbar-track-color);
-  border-radius: var(--Home-scrollbar-border-radius);
-}
-
-.glass-scroll-content::-webkit-scrollbar-thumb {
-  background: var(--Home-scrollbar-thumb-color);
-  border-radius: var(--Home-scrollbar-border-radius);
-  background-clip: padding-box;
-  transition: all 0.3s ease;
-}
-
-.glass-scroll-content::-webkit-scrollbar-thumb:hover {
-  background: var(--Home-scrollbar-hover-color);
-}
-
-.glass-scroll-content {
-  scrollbar-width: thin;
-  scrollbar-color: var(--Home-scrollbar-thumb-color)
-    var(--Home-scrollbar-track-color);
+.empty-card {
+  visibility: hidden; /* 占位但不可见 */
+  pointer-events: none; /* 不响应任何事件 */
 }
 </style>

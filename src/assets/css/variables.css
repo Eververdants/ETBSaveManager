@@ -10,14 +10,6 @@
   --Search-inset-shadow: inset 0 -1px 1px rgba(0, 0, 0, 0.1);
   --Search-transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-  /* Home.vue */
-  --Home-scrollbar-width: 12px;
-  --Home-scrollbar-border-radius: 20px;
-  --Home-scrollbar-thumb-color: rgba(138, 158, 255, 0.5);
-  --Home-scrollbar-track-color: rgba(255, 255, 255, 0.1);
-  --Home-scrollbar-hover-color: rgba(138, 158, 255, 0.8);
-  --Home-container-border-radius: 20px;
-
   /* CreateArchive.vue */
   --CreateArchive-bg-primary: #f9fbfd;
   --CreateArchive-text-primary: #1e293b;
@@ -51,4 +43,86 @@
   --AddiCon-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
     0 8px 10px -6px rgba(0, 0, 0, 0.05);
   --AddiCon-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 侧边栏Sidebar */
+  --sidebar-width-collapsed: 72px;
+  --sidebar-width-expanded: 280px;
+  --Sidebar-border-radius: 16px;
+  --Sidebar-elevation-1: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --Sidebar-elevation-2: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --Sidebar-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 浅色主题： 云朵日光Cloud Glow */
+:root.CloudGlow {
+  /* 侧边栏Sidebar */
+  --Sidebar-color-bg: #f5f7fa;
+  --Sidebar-color-surface: rgba(255, 255, 255, 0.85);
+  --Sidebar-color-on-surface: #333333;
+  --Sidebar-color-primary: #5e35b1;
+  --Sidebar-color-on-primary: #ffffff;
+  --Sidebar-color-secondary: #1e88e5;
+  --Sidebar-color-on-secondary: #ffffff;
+  --Sidebar-color-divider: rgba(0, 0, 0, 0.12);
+  --Sidebar-color-hover: rgba(0, 0, 0, 0.04);
+  --Sidebar-color-active: rgba(94, 53, 177, 0.12);
+  --Sidebar-color-shadow: rgba(0, 0, 0, 0.1);
+
+  /* 卡片Card */
+  --Card-bg-primary: rgba(255, 255, 255, 0.7);
+  --Card-bg-secondary: rgba(245, 247, 250, 0.9);
+  --Card-border-color: rgba(200, 210, 230, 0.4);
+  --Card-text-primary: #333333;
+  --Card-text-secondary: #5a5a77;
+  --Card-accent-primary: #5e35b1;
+  --Card-accent-secondary: #1e88e5;
+  --Card-shadow-normal: 0 4px 20px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.05);
+  --Card-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.1),
+    0 3px 6px rgba(0, 0, 0, 0.05);
+  --Card-highlight-gradient: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0) 80%
+  );
+  --Card-surface-overlay: rgba(255, 255, 255, 0.15);
+  --Card-indicator-active: #5e35b1;
+}
+
+/* 深色主题： 夜幕星辉Night Glow */
+:root.NightGlow {
+  /* 侧边栏Sidebar */
+  --Sidebar-color-bg: #121212;
+  --Sidebar-color-surface: rgba(30, 30, 30, 0.85);
+  --Sidebar-color-on-surface: #e0e0e0;
+  --Sidebar-color-primary: #7c4dff;
+  --Sidebar-color-on-primary: #ffffff;
+  --Sidebar-color-secondary: #82b1ff;
+  --Sidebar-color-on-secondary: #000000;
+  --Sidebar-color-divider: rgba(255, 255, 255, 0.12);
+  --Sidebar-color-hover: rgba(255, 255, 255, 0.08);
+  --Sidebar-color-active: rgba(124, 77, 255, 0.2);
+  --Sidebar-color-shadow: rgba(0, 0, 0, 0.3);
+
+  /* 卡片Card */
+  --Card-bg-primary: rgba(30, 30, 40, 0.6);
+  --Card-bg-secondary: rgba(25, 25, 35, 0.8);
+  --Card-border-color: rgba(100, 100, 130, 0.3);
+  --Card-text-primary: #e0e0e0;
+  --Card-text-secondary: #a0a0b0;
+  --Card-accent-primary: #7c4dff;
+  --Card-accent-secondary: #82b1ff;
+  --Card-shadow-normal: 0 4px 20px rgba(0, 0, 0, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+  --Card-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.4),
+    0 3px 6px rgba(0, 0, 0, 0.25);
+  --Card-highlight-gradient: linear-gradient(
+    120deg,
+    rgba(124, 77, 255, 0.15) 0%,
+    rgba(124, 77, 255, 0) 80%
+  );
+  --Card-surface-overlay: rgba(124, 77, 255, 0.08);
+  --Card-indicator-active: #7c4dff;
 }

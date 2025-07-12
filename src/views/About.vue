@@ -138,7 +138,6 @@ export default {
   overflow-y: auto; /* 可选：加滚动条 */
 }
 
-
 .light .sidebar {
   background: rgba(255, 255, 255, 0.7);
   border-right: 1px solid rgba(0, 0, 0, 0.05);

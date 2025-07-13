@@ -1,14 +1,9 @@
 <template>
-  <Search
-    :light-mode="lightMode ? true : false"
-    ref="searchButtonRef"
-    @search="handleSearch"
-  />
+  <Search ref="searchButtonRef" @search="handleSearch" />
 
   <DeleteConfirm
     v-if="showDeleteConfirm"
     :archive="selectedArchiveForDelete"
-    :light-mode="lightMode"
     @confirm="handleDeleteConfirm"
     @cancel="showDeleteConfirm = false"
   />
@@ -18,7 +13,6 @@
     v-if="showEditModal"
     :show="showEditModal"
     :archive="editingArchive"
-    :lightMode="lightMode"
     :player-options="playerOptions"
     :player-inventory="editingArchive.playerInventory"
     :player-sanity="editingArchive.playerSanity"
@@ -27,11 +21,7 @@
   />
   <div class="glass-scroll-container">
     <div class="glass-scroll-content" ref="glassScrollContentRef">
-      <div
-        class="cards-container"
-        :data-theme="lightMode ? 'light' : 'dark'"
-        ref="cardsContainer"
-      >
+      <div class="cards-container" ref="cardsContainer">
         <div
           v-for="(archive, index) in displayedArchives"
           :key="index"
@@ -41,7 +31,6 @@
             v-if="archive"
             :archive="archive"
             :file-path="archive.path"
-            :lightMode="lightMode"
             @delete="handleDelete"
             @update-archive="updateArchive"
             @edit="handleEdit"
@@ -320,7 +309,12 @@ export default {
     const updateArchive = (updatedArchive) => {
       const index = archives.value.findIndex((a) => a.id === updatedArchive.id);
       if (index !== -1) {
-        archives.value.splice(index, 1, updatedArchive);
+        // 创建一个新对象以确保响应性
+        const newArchive = {
+          ...archives.value[index],
+          ...updatedArchive,
+        };
+        archives.value.splice(index, 1, newArchive);
       }
     };
 

@@ -57,7 +57,9 @@
 
 /* 浅色主题： 云朵日光Cloud Glow */
 :root.CloudGlow {
-  /* 侧边栏Sidebar */
+  --bg-primary: #f5f7fa;
+
+  /* 侧边栏 */
   --Sidebar-color-bg: #f5f7fa;
   --Sidebar-color-surface: rgba(255, 255, 255, 0.85);
   --Sidebar-color-on-surface: #333333;
@@ -70,7 +72,7 @@
   --Sidebar-color-active: rgba(94, 53, 177, 0.12);
   --Sidebar-color-shadow: rgba(0, 0, 0, 0.1);
 
-  /* 卡片Card */
+  /* 卡片 */
   --Card-bg-primary: rgba(255, 255, 255, 0.7);
   --Card-bg-secondary: rgba(245, 247, 250, 0.9);
   --Card-border-color: rgba(200, 210, 230, 0.4);
@@ -89,11 +91,34 @@
   );
   --Card-surface-overlay: rgba(255, 255, 255, 0.15);
   --Card-indicator-active: #5e35b1;
+
+  /* 创建存档界面 */
+  --CreateArchive-bg-primary: #f5f7fa;
+  --CreateArchive-bg-secondary: #eef2f6;
+  --CreateArchive-text-primary: #2d3748;
+  --CreateArchive-text-secondary: #4a5568;
+  --CreateArchive-text-tertiary: #718096;
+  --CreateArchive-card-bg: rgba(255, 255, 255, 0.85);
+  --CreateArchive-card-border: rgba(226, 232, 240, 0.6);
+  --CreateArchive-card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 
+                              0 5px 10px -5px rgba(0, 0, 0, 0.03);
+  --CreateArchive-card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 
+                                    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --CreateArchive-accent-primary: #5e35b1;
+  --CreateArchive-accent-secondary: #7e57c2;
+  --CreateArchive-accent-hover: #4527a0;
+  --CreateArchive-button-bg: #5e35b1;
+  --CreateArchive-button-text: #ffffff;
+  --CreateArchive-loading-color: #5e35b1;
+  --CreateArchive-header-bg: rgba(255, 255, 255, 0.7);
+  --CreateArchive-header-border: rgba(226, 232, 240, 0.6);
 }
 
 /* 深色主题： 夜幕星辉Night Glow */
 :root.NightGlow {
-  /* 侧边栏Sidebar */
+  --bg-primary: #121212;
+  
+  /* 侧边栏 */
   --Sidebar-color-bg: #121212;
   --Sidebar-color-surface: rgba(30, 30, 30, 0.85);
   --Sidebar-color-on-surface: #e0e0e0;
@@ -106,7 +131,7 @@
   --Sidebar-color-active: rgba(124, 77, 255, 0.2);
   --Sidebar-color-shadow: rgba(0, 0, 0, 0.3);
 
-  /* 卡片Card */
+  /* 卡片 */
   --Card-bg-primary: rgba(30, 30, 40, 0.6);
   --Card-bg-secondary: rgba(25, 25, 35, 0.8);
   --Card-border-color: rgba(100, 100, 130, 0.3);
@@ -125,4 +150,25 @@
   );
   --Card-surface-overlay: rgba(124, 77, 255, 0.08);
   --Card-indicator-active: #7c4dff;
+
+  /* 创建存档界面 */
+  --CreateArchive-bg-primary: #121212;
+  --CreateArchive-bg-secondary: #1a1a1a;
+  --CreateArchive-text-primary: #e2e8f0;
+  --CreateArchive-text-secondary: #a0aec0;
+  --CreateArchive-text-tertiary: #718096;
+  --CreateArchive-card-bg: rgba(30, 30, 40, 0.7);
+  --CreateArchive-card-border: rgba(74, 85, 104, 0.3);
+  --CreateArchive-card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 
+                              0 5px 10px -5px rgba(0, 0, 0, 0.25);
+  --CreateArchive-card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 
+                                    0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  --CreateArchive-accent-primary: #7c4dff;
+  --CreateArchive-accent-secondary: #9575cd;
+  --CreateArchive-accent-hover: #651fff;
+  --CreateArchive-button-bg: #7c4dff;
+  --CreateArchive-button-text: #ffffff;
+  --CreateArchive-loading-color: #7c4dff;
+  --CreateArchive-header-bg: rgba(30, 30, 40, 0.7);
+  --CreateArchive-header-border: rgba(74, 85, 104, 0.3);
 }

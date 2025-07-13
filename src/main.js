@@ -6,6 +6,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import i18next from "i18next"; // 显式引入 i18next
 import "./assets/css/variables.css";
 import router from "./router";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 // 单独初始化 i18next 实例并使用插件
 i18next
@@ -35,6 +36,8 @@ const i18n = createI18n({
 });
 
 const app = createApp(App).use(router);
+
+app.component("FontAwesomeIcon", FontAwesomeIcon);
 
 app.use(i18n);
 app.mount("#app");

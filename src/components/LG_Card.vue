@@ -1,72 +1,75 @@
 <template>
-  <div
-    ref="cardElement"
-    class="living-glass-card"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
-  >
-    <div class="card-header">
-      <div class="archive-name">{{ archive.name }}</div>
+  <Transition appear @enter="enterCardAnimation" :css="false">
+    <div
+      ref="cardElement"
+      class="living-glass-card"
+      :class="{ 'no-hover': isAnimating.value }"
+      @mouseenter="handleMouseEnter"
+      @mouseleave="handleMouseLeave"
+    >
+      <div class="card-header">
+        <div class="archive-name">{{ archive.name }}</div>
+      </div>
+
+      <div class="card-content">
+        <div class="info-item">
+          <span class="info-label">存档难度</span>
+          <span class="info-value">{{ archive.difficulty }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">实际难度</span>
+          <span class="info-value">{{ archive.actualDifficulty }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">游戏模式</span>
+          <span class="info-value">{{ archive.mode }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">状态</span>
+          <span class="info-value">{{
+            archive.hidden ? "已隐藏" : "可见"
+          }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">当前层级</span>
+          <span class="info-value">{{ archive.currentLevel }}</span>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="date">最后游玩时间: {{ archive.date }}</div>
+        <div class="actions-container">
+          <button
+            class="action-btn delete-btn"
+            @click.stop="$emit('delete', archive.id)"
+          >
+            <i class="fa-solid fa-trash"></i>
+          </button>
+          <button
+            class="action-btn edit-btn"
+            @click.stop="$emit('edit', archive)"
+          >
+            <i class="fa-solid fa-edit"></i>
+          </button>
+          <button
+            class="action-btn toggle-btn"
+            @click.stop="handleToggle"
+            type="button"
+          >
+            <FontAwesomeIcon :icon="isVisible ? ['fas', 'eye'] : ['fas', 'eye-slash']" ref="toggleIcon" />
+          </button>
+        </div>
+      </div>
+
+      <div class="card-highlight"></div>
+      <div class="active-indicator" :class="{ active: isCardActive }"></div>
+      <div v-if="isAnimating.value" class="card-mask"></div>
     </div>
-
-    <div class="card-content">
-      <div class="info-item">
-        <span class="info-label">存档难度</span>
-        <span class="info-value">{{ archive.difficulty }}</span>
-      </div>
-
-      <div class="info-item">
-        <span class="info-label">实际难度</span>
-        <span class="info-value">{{ archive.actualDifficulty }}</span>
-      </div>
-
-      <div class="info-item">
-        <span class="info-label">游戏模式</span>
-        <span class="info-value">{{ archive.mode }}</span>
-      </div>
-
-      <div class="info-item">
-        <span class="info-label">状态</span>
-        <span class="info-value">{{ archive.hidden ? "已隐藏" : "可见" }}</span>
-      </div>
-
-      <div class="info-item">
-        <span class="info-label">当前层级</span>
-        <span class="info-value">{{ archive.currentLevel }}</span>
-      </div>
-    </div>
-
-    <div class="card-footer">
-      <div class="date">最后游玩时间: {{ archive.date }}</div>
-      <div class="actions-container">
-        <button
-          class="action-btn delete-btn"
-          @click.stop="$emit('delete', archive.id)"
-        >
-          <img src="/icons/delete_forever.svg" alt="删除" />
-        </button>
-        <button
-          class="action-btn edit-btn"
-          @click.stop="$emit('edit', archive)"
-        >
-          <img src="/icons/edit.svg" alt="编辑" />
-        </button>
-        <button
-          class="action-btn toggle-btn"
-          @click.stop="handleToggle"
-          type="button"
-        >
-          <component
-            :is="isVisible ? 'VisibilityOn' : 'VisibilityOff'"
-            ref="toggleIcon"
-          />
-        </button>
-      </div>
-    </div>
-
-    <div class="card-highlight"></div>
-    <div class="active-indicator" :class="{ active: isCardActive }"></div>
-  </div>
+  </Transition>
 </template>
 
 <script>
@@ -112,6 +115,7 @@ export default {
     const toggleIcon = ref(null);
     const cardElement = ref(null);
     const isCardActive = ref(false);
+    const isAnimating = ref(false);
     let ctx;
 
     onMounted(() => {
@@ -183,6 +187,22 @@ export default {
       });
     };
 
+    // 卡片进入动画
+    const enterCardAnimation = (el, done) => {
+      isAnimating.value = true;
+      gsap.from(el, {
+        duration: 0.6,
+        y: 40,
+        opacity: 0,
+        scale: 0.95,
+        ease: "back.out(1.7)",
+        onComplete: () => {
+          isAnimating.value = false;
+          done();
+        },
+      });
+    };
+
     const handleMouseLeave = () => {
       isCardActive.value = false;
 
@@ -211,6 +231,8 @@ export default {
       handleToggle,
       handleMouseEnter,
       handleMouseLeave,
+      enterCardAnimation,
+      isAnimating,
     };
   },
 };
@@ -429,5 +451,24 @@ export default {
 .toggle-btn:hover {
   background: rgba(70, 200, 120, 0.25);
   color: #46c878;
+}
+
+.living-glass-card.no-hover {
+  pointer-events: none;
+  transition: none !important;
+  animation: none !important;
+}
+
+.card-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(2px);
+  z-index: 10;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 </style>

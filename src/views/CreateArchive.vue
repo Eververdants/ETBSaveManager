@@ -1,245 +1,270 @@
 <template>
   <div class="archive-selector">
-    <div class="cards-container">
-      <div
-        v-for="(key, index) in levelKeys"
-        :key="key"
-        class="card"
-        @click="selectArchive(index)"
-      >
-        <div class="card-image">
-          <img :src="getImageUrl(index)" alt="存档图片" />
-        </div>
-        <div class="card-name">
-          <span>{{ getLevelName(index) }}</span>
-        </div>
-        <div class="card-action">
-          <button>
-            <i class="fas fa-check-circle"></i>
-            <span>选择</span>
-          </button>
-        </div>
-      </div>
+    <div class="header">
+      <h1>选择层级</h1>
     </div>
 
-    <div v-if="loading" class="loading">
-      <i class="fas fa-spinner fa-spin"></i>
-      <span>加载存档中...</span>
+    <div class="cards-container">
+      <div v-for="(key, index) in levelKeys" :key="key" class="card-wrapper">
+        <Transition appear @enter="enterCardAnimation" :css="false">
+          <div
+            v-show="getImageUrl(index)"
+            class="card"
+            @click="selectArchive(index)"
+            :class="{ 'card-loading': !getImageUrl(index) }"
+          >
+            <div class="card-image">
+              <div v-if="!getImageUrl(index)" class="image-placeholder">
+                <i class="fas fa-spinner fa-spin"></i>
+              </div>
+              <img v-else :src="getImageUrl(index)" alt="存档图片" />
+            </div>
+            <div class="card-content">
+              <div class="card-name">
+                <span>{{ getLevelName(index) }}</span>
+              </div>
+            </div>
+            <div class="card-action">
+              <button class="ripple-button">
+                <i class="fas fa-arrow-right"></i>
+                <span>选择</span>
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
     </div>
 
     <LG_CreateAModal
       v-model:show="showModal"
-      :light-mode="true"
       @create="handleCreate"
       :level-key="selectedLevelKey"
-      ref="modalRef"
     />
   </div>
 </template>
 
 <script>
+import { ref, onMounted } from "vue";
 import LG_CreateAModal from "../components/LG_CreateAModal.vue";
+import gsap from "gsap";
 
 export default {
   name: "ArchiveSelector",
   components: {
     LG_CreateAModal,
   },
-  data() {
-    return {
-      imagesMap: {}, // 存储 index -> image 映射
-      levelKeys: [], // 存储所有层级 key
-      loading: true,
-      levelNames: {},
-      showModal: false,
-      selectedLevelKey: null,
-    };
-  },
-  async mounted() {
-    try {
-      const response = await fetch("/locales/zh-CN/zh-CN.json");
-      if (!response.ok) throw new Error("网络响应失败");
-      const data = await response.json();
-      this.levelNames = data.LevelName_Display;
+  setup() {
+    const imagesMap = ref({});
+    const levelKeys = ref([]);
+    const levelNames = ref({});
+    const showModal = ref(false);
+    const selectedLevelKey = ref(null);
 
-      // 获取所有层级 key
-      this.levelKeys = Object.keys(this.levelNames);
-
-      // 预加载对应图片
-      for (let i = 0; i < this.levelKeys.length; i++) {
-        const imgUrl = `/images/${i}.jpg`;
-        const exists = await this.imageExists(imgUrl);
-        if (exists) {
-          this.imagesMap[i] = imgUrl;
-        }
-      }
-
-      console.log("levelKeys:", this.levelKeys);
-    } catch (err) {
-      console.error("加载失败:", err);
-    } finally {
-      this.loading = false;
-    }
-  },
-  methods: {
-    async loadImages() {
-      this.loading = true;
-      this.images = [];
-
+    // 加载语言文件
+    async function loadLevelNames() {
       try {
-        let index = 0;
-        const loadedImages = [];
+        const response = await fetch("/locales/zh-CN/zh-CN.json");
+        if (!response.ok) throw new Error("网络响应失败");
+        const data = await response.json();
+        levelNames.value = data.LevelName_Display;
 
-        while (index < 100) {
-          const imgUrl = `/images/${index}.jpg`;
-          const exists = await this.imageExists(imgUrl);
+        // 获取所有层级 key
+        levelKeys.value = Object.keys(levelNames.value);
 
+        // 开始异步加载每张图并逐步显示卡片
+        for (let i = 0; i < levelKeys.value.length; i++) {
+          const imgUrl = `/images/${i}.jpg`;
+          const exists = await imageExists(imgUrl);
           if (exists) {
-            loadedImages.push(imgUrl);
-          } else {
-            let missingCount = 0;
-            for (let i = 1; i <= 5; i++) {
-              const nextImg = `/images/${index + i}.jpg`;
-              if (!(await this.imageExists(nextImg))) {
-                missingCount++;
-              }
-            }
-            if (missingCount >= 5) break;
+            // 使用数组索引作为键更新对象
+            imagesMap.value[i] = imgUrl;
           }
-
-          index++;
         }
-
-        this.images = loadedImages;
-      } catch (error) {
-        console.error("加载存档图片失败:", error);
-      } finally {
-        this.loading = false;
+      } catch (err) {
+        console.error("加载失败:", err);
       }
-    },
+    }
 
-    getImageUrl(index) {
-      return this.imagesMap[index] || "/images/default.jpg"; // 默认图可选
-    },
-    selectArchive(index) {
-      if (index >= this.levelKeys.length) {
-        alert("无效的层级，请刷新页面重试");
-        return;
-      }
-
-      this.selectedLevelKey = this.levelKeys[index];
-      this.showModal = true;
-      document.body.classList.add("modal-open");
-    },
-    getLevelName(index) {
-      return this.levelNames[this.levelKeys[index]] || `层级 #${index}`;
-    },
-
-    imageExists(url) {
+    // 图片是否存在
+    function imageExists(url) {
       return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => resolve(true);
         img.onerror = () => resolve(false);
         img.src = url;
       });
-    },
+    }
 
-    getLevelName(index) {
-      const keys = Object.keys(this.levelNames);
-      return keys[index] ? this.levelNames[keys[index]] : `层级 #${index}`;
-    },
+    // 获取图片路径
+    function getImageUrl(index) {
+      return imagesMap.value[index];
+    }
 
-    selectArchive(index) {
-      if (Object.keys(this.levelNames).length === 0) {
-        alert("请稍等，层级数据正在加载...");
+    // 获取层级名称
+    function getLevelName(index) {
+      return levelNames.value[levelKeys.value[index]] || `层级 #${index + 1}`;
+    }
+
+    // 选择存档
+    function selectArchive(index) {
+      if (index >= levelKeys.value.length) {
+        alert("无效的层级，请刷新页面重试");
         return;
       }
 
-      const keys = Object.keys(this.levelNames);
-      this.selectedLevelKey = keys[index] || null;
+      selectedLevelKey.value = levelKeys.value[index];
+      showModal.value = true;
+      document.body.classList.add("modal-open");
+    }
 
-      if (this.selectedLevelKey) {
-        this.showModal = true;
-        document.body.classList.add("modal-open");
-      } else {
-        alert("无效的层级，请刷新页面重试");
-      }
-    },
+    // 卡片进入动画
+    function enterCardAnimation(el, done) {
+      gsap.from(el, {
+        duration: 0.6,
+        y: 40,
+        opacity: 0,
+        scale: 0.95,
+        ease: "back.out(1.7)",
+        onComplete: done,
+      });
+    }
 
-    handleCreate(data) {
+    // 创建存档回调
+    function handleCreate(data) {
       console.log("创建存档数据:", data);
-
       // 强制跳过动画关闭模态框
-      this.$refs.modalRef?.closeModal({ skipAnimation: true });
-    },
+    }
+
+    // 初始化加载
+    onMounted(() => {
+      loadLevelNames();
+    });
+
+    return {
+      imagesMap,
+      levelKeys,
+      levelNames,
+      showModal,
+      selectedLevelKey,
+      selectArchive,
+      getLevelName,
+      getImageUrl,
+      handleCreate,
+      enterCardAnimation,
+    };
   },
 };
 </script>
 
 <style scoped>
-.dark-theme {
-  --CreateArchive-bg-primary: #0f172a;
-  --CreateArchive-text-primary: #f1f5f9;
-  --CreateArchive-text-secondary: #94a3b8;
-  --CreateArchive-accent-color: #60a5fa;
-  --CreateArchive-accent-hover: #3b82f6;
-  --CreateArchive-success-color: #34d399;
-  --CreateArchive-card-bg: #1e293b;
-  --CreateArchive-card-border: #334155;
-  --CreateArchive-card-shadow: 0 4px 12px rgba(96, 165, 250, 0.15);
-  --CreateArchive-card-shadow-hover: 0 6px 16px rgba(96, 165, 250, 0.3);
-  --CreateArchive-loading-color: #60a5fa;
-}
-
-/* 基础样式 */
 .archive-selector {
   width: 100%;
-  height: 90vh;
+  min-height: 100vh;
+  right: 0;
+  top: 0;
   background-color: var(--CreateArchive-bg-primary);
-  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   overflow: hidden;
+  position: relative;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 0;
+  margin-left: 40px;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.header h1 {
+  color: var(--CreateArchive-text-primary);
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0;
 }
 
 .cards-container {
-  width: 90%;
-  height: 100%;
+  width: 100%;
+  margin-right: 20px;
+  margin-left: 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px;
-  overflow-y: auto;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
   padding: 10px;
+  box-sizing: border-box;
+}
+
+.card-wrapper {
+  perspective: 1000px;
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  background-color: var(--CreateArchive-card-bg);
-  border-radius: 12px;
+  background: var(--CreateArchive-card-bg);
+  border-radius: 16px;
   overflow: hidden;
   box-shadow: var(--CreateArchive-card-shadow);
   border: 1px solid var(--CreateArchive-card-border);
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: pointer;
-  height: 320px; /* 固定卡片高度 */
+  height: 340px;
+  backdrop-filter: blur(10px);
+  position: relative;
 }
 
 .card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-8px);
   box-shadow: var(--CreateArchive-card-shadow-hover);
+  border-color: var(--CreateArchive-accent-primary);
 }
 
-.card.selected {
-  border: 2px solid var(--CreateArchive-success-color);
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+.card:active {
+  transform: translateY(2px);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--CreateArchive-accent-primary);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card.card-loading {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0.8;
+  }
 }
 
 .card-image {
-  height: 60%; /* 192px (320 * 0.6) */
+  height: 60%;
   overflow: hidden;
+  position: relative;
 }
 
 .card-image img {
@@ -247,146 +272,144 @@ export default {
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.5s ease;
 }
 
-.card-name {
-  height: 20%; /* 64px (320 * 0.2) */
+.card:hover .card-image img {
+  transform: scale(1.05);
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
-  border-bottom: 1px solid var(--CreateArchive-card-border);
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--CreateArchive-text-secondary);
+}
+
+.image-placeholder i {
+  font-size: 2rem;
+  color: var(--CreateArchive-loading-color);
+}
+
+.card-content {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-name {
+  text-align: center;
 }
 
 .card-name span {
   color: var(--CreateArchive-text-primary);
-  font-size: 1.1rem;
-  font-weight: 600;
-  white-space: nowrap;
+  font-size: 1.3rem;
+  font-weight: 700;
+  display: -webkit-box;
+  line-clamp: 1;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 90%;
 }
 
 .card-action {
-  height: 20%; /* 64px (320 * 0.2) */
+  padding: 0 20px 20px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 10px;
 }
 
-.card-action button {
-  background-color: var(--CreateArchive-accent-color);
-  color: white;
+.ripple-button {
+  position: relative;
+  overflow: hidden;
+  background: var(--CreateArchive-button-bg);
+  color: var(--CreateArchive-button-text);
   border: none;
-  border-radius: 6px;
-  padding: 8px 20px;
-  font-size: 0.95rem;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.card-action button:hover {
-  background-color: var(--CreateArchive-accent-hover);
-  color: white;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-}
-
-.card.selected .card-action button {
-  background-color: var(--CreateArchive-success-color);
-}
-
-/* 加载状态 */
-.loading {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  color: var(--CreateArchive-text-primary);
-  font-size: 1.1rem;
-}
-
-.loading i {
-  font-size: 2rem;
-  color: var(--CreateArchive-loading-color);
-}
-
-/* 无存档状态 */
-.no-archives {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: var(--CreateArchive-text-secondary);
-}
-
-.no-archives i {
-  font-size: 3rem;
-  margin-bottom: 15px;
-  color: var(--CreateArchive-text-secondary);
-}
-
-.no-archives h3 {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-  color: var(--CreateArchive-text-primary);
-}
-
-/* 滚动条样式 */
-.cards-container::-webkit-scrollbar {
-  width: 8px;
-}
-
-.cards-container::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 4px;
-}
-
-.cards-container::-webkit-scrollbar-thumb {
-  background: var(--CreateArchive-accent-color);
-  border-radius: 4px;
-}
-
-.cards-container::-webkit-scrollbar-thumb:hover {
+.ripple-button:hover {
   background: var(--CreateArchive-accent-hover);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
 }
 
-/* 响应式设计 */
+.ripple-button:active {
+  transform: translateY(1px);
+}
+
+.ripple-button::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.ripple-button:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(25, 25);
+    opacity: 0;
+  }
+}
+
 @media (max-width: 1200px) {
   .cards-container {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
 }
 
 @media (max-width: 768px) {
   .cards-container {
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
   }
 
-  .card {
-    height: 280px;
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
   }
 }
 
 @media (max-width: 480px) {
   .cards-container {
     grid-template-columns: 1fr;
-    width: 95%;
   }
 
   .card {
-    height: 300px;
+    height: 320px;
+  }
+
+  .header h1 {
+    font-size: 1.8rem;
   }
 }
 </style>

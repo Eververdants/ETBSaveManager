@@ -55,8 +55,8 @@ export default {
       isDarkTheme: false,
       topMenuItems: [
         { id: "archive", text: "存档列表", icon: "fas fa-archive" },
-        { id: "new", text: "新建存档", icon: "fas fa-plus-circle" },
-        { id: "expand", text: "拓展市场", icon: "fas fa-box-open" },
+        { id: "new", text: "创建存档", icon: "fas fa-plus-circle" },
+        { id: "expand", text: "插件市场", icon: "fas fa-box-open" },
       ],
       bottomMenuItems: [
         { id: "about", text: "关于", icon: "fas fa-info-circle" },

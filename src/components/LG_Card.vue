@@ -170,9 +170,11 @@ export default {
     const handleMouseEnter = () => {
       isCardActive.value = true;
 
-      // 卡片悬浮动画
+      // 卡片悬浮动画，确保 scale 归位为 1
       gsap.to(cardElement.value, {
         y: -8,
+        scale: 1, // 保证最终尺寸一致
+        opacity: 1, // 保证透明度一致
         duration: 0.3,
         ease: "power2.out",
         boxShadow: "var(--Card-shadow-hover)",
@@ -198,6 +200,10 @@ export default {
         ease: "back.out(1.7)",
         onComplete: () => {
           isAnimating.value = false;
+          // 如果动画结束时鼠标仍停留在卡片上，手动触发悬浮动画，保证视觉一致
+          if (cardElement.value && cardElement.value.matches(":hover")) {
+            handleMouseEnter();
+          }
           done();
         },
       });
@@ -206,9 +212,11 @@ export default {
     const handleMouseLeave = () => {
       isCardActive.value = false;
 
-      // 卡片恢复动画
+      // 卡片恢复动画，确保 scale 恢复为 1
       gsap.to(cardElement.value, {
         y: 0,
+        scale: 1, // 保证尺寸恢复
+        opacity: 1, // 保证透明度恢复
         duration: 0.4,
         ease: "elastic.out(1, 0.8)",
         boxShadow: "var(--Card-shadow-normal)",

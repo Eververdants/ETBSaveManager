@@ -64,7 +64,7 @@ export default {
     async function loadLevelNames() {
       try {
         const response = await fetch("/locales/zh-CN/zh-CN.json");
-        if (!response.ok) throw new Error("网络响应失败");
+        if (!response.ok) throw new Error("语言文件加载失败");
         const data = await response.json();
         levelNames.value = data.LevelName_Display;
 

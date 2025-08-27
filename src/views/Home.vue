@@ -1,521 +1,605 @@
 <template>
-  <Search ref="searchButtonRef" @search="handleSearch" />
+  <div class="archive-list-container">
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <h3>{{ $t('archiveSearch.loadingArchives') }}</h3>
+      <p>{{ $t('archiveSearch.scanningFiles') }}</p>
+    </div>
 
-  <DeleteConfirm
-    v-if="showDeleteConfirm"
-    :archive="selectedArchiveForDelete"
-    @confirm="handleDeleteConfirm"
-    @cancel="showDeleteConfirm = false"
-  />
+    <!-- 存档网格 -->
+    <div v-else class="archive-grid" ref="archiveGrid">
+      <transition-group name="archive-card" appear>
+        <ArchiveCard v-for="(archive, index) in displayArchives" :key="archive.id" :archive="archive" :index="index"
+          @click="selectArchive(archive)" @toggle-visibility="handleToggleVisibility" @edit="handleEdit"
+          @delete="deleteArchive" />
+      </transition-group>
 
-  <!-- 在主页中使用 -->
-  <EditArchiveModal
-    v-if="showEditModal"
-    :show="showEditModal"
-    :archive="editingArchive"
-    :player-options="playerOptions"
-    :player-inventory="editingArchive.playerInventory"
-    :player-sanity="editingArchive.playerSanity"
-    @update:show="showEditModal = $event"
-    @save="handleSaveEdit"
-  />
-  <div class="glass-scroll-container">
-    <div class="glass-scroll-content" ref="glassScrollContentRef">
-      <div class="cards-container" ref="cardsContainer">
-        <div
-          v-for="(archive, index) in displayedArchives"
-          :key="index"
-          class="card-wrapper"
-        >
-          <Card
-            v-if="archive"
-            :archive="archive"
-            :file-path="archive.path"
-            @delete="handleDelete"
-            @update-archive="updateArchive"
-            @edit="handleEdit"
-          />
-          <!-- 空白卡片 -->
-          <div v-else class="empty-card"></div>
-        </div>
+      <div v-if="displayArchives.length === 0 && archives.length > 0" class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>{{ $t('archiveSearch.noResults') }}</h3>
+        <p>{{ $t('archiveSearch.noMatchingArchives') }}</p>
+        <p style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          {{ $t('archiveSearch.adjustSearchOrClearFilters') }}
+        </p>
+      </div>
+
+      <div v-else-if="displayArchives.length === 0 && archives.length === 0" class="empty-state">
+        <div class="empty-icon">📁</div>
+        <h3>{{ $t('archiveSearch.noArchives') }}</h3>
+        <p style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+          {{ $t('archiveSearch.createNewArchive') }}
+        </p>
       </div>
     </div>
+
+    <!-- 搜索存档组件 -->
+    <transition name="search-panel">
+      <ArchiveSearchFilter v-if="showSearch" :archives="archives" :initial-filters="lastSearchFilters"
+        @filtered="handleFilteredArchives" @filters-changed="updateLastFilters" class="search-overlay" />
+    </transition>
+
+    <!-- 浮动操作按钮 -->
+    <FloatingActionButton @search-click="toggleSearch" @refresh-click="refreshArchives"
+      @folder-click="openSaveGamesFolder" />
+
+    <!-- 删除确认模态框 -->
+    <ConfirmModal v-model:show="showDeleteConfirm" title="删除存档" :message="`确定要删除存档 '${archiveToDelete?.name || ''}' 吗？`"
+      description="此操作将永久删除存档文件，无法恢复。" type="danger" confirm-text="删除" cancel-text="取消" :loading="isDeleting"
+      @confirm="confirmDelete" @cancel="cancelDelete" />
   </div>
 </template>
 
-<script>
-import { ref, onMounted, onUnmounted, watchEffect } from "vue";
-import gsap from "gsap";
-import Card from "../components/LG_Card.vue";
-import Search from "../components/LG_Search.vue";
-import DeleteConfirm from "../components/LG_DeleteConfirm.vue";
-import EditArchiveModal from "../components/LG_EditModal.vue";
-import { invoke } from "@tauri-apps/api/core";
-import { itemOptions } from "../utils/constants.js";
+<script setup>
+import { ref, onMounted, nextTick } from 'vue'
+import { gsap } from 'gsap'
+import { useRouter } from 'vue-router'
+import { invoke } from '@tauri-apps/api/core'
+import ArchiveCard from '../components/ArchiveCard.vue'
+import ArchiveSearchFilter from '../components/ArchiveSearchFilter.vue'
+import FloatingActionButton from '../components/FloatingActionButton.vue'
+import ConfirmModal from '../components/ConfirmModal.vue'
 
-export default {
-  components: {
-    Card,
-    Search,
-    DeleteConfirm,
-    EditArchiveModal,
-  },
-  setup() {
-    const lightMode = ref(true);
-    const archives = ref([]);
-    const searchButtonRef = ref(null);
-    const glassScrollContentRef = ref(null);
-    const showDeleteConfirm = ref(false);
-    const selectedArchiveForDelete = ref(null);
-    const originalArchives = ref([]);
-    const showEditModal = ref(false);
-    const editingArchive = ref(null);
-    const playerOptions = ref(null);
-    const cardsContainer = ref(null);
-    const displayedArchives = ref([]);
+// 从后端加载的真实存档数据
+const archives = ref([])
+const router = useRouter()
 
-    // 根据容器宽度动态计算一行最多能放几张卡片
-    function calculateCardsPerRow() {
-      if (!cardsContainer.value) return 3; // 默认值
+// 加载状态
+const loading = ref(true)
 
-      const containerWidth = cardsContainer.value.clientWidth;
-      const minCardWidth = 280; // 每张卡片最小宽度
-      const gap = 20; // 卡片之间的 gap 值
+// 加载真实存档数据
+const loadRealArchives = async () => {
+  try {
+    // 调用后端的 load_all_saves 命令
+    const response = await invoke('load_all_saves')
+    if (response && Array.isArray(response)) {
+      // 中文难度到英文的映射
+      const difficultyMap = {
+        '简单难度': 'easy',
+        '普通难度': 'normal',
+        '困难难度': 'hard',
+        '噩梦难度': 'nightmare'
+      }
 
-      // 计算实际可用空间（减去所有 gap）
-      const availableWidth = containerWidth - gap * 2;
+      // 将后端返回的数据格式转换为前端需要的格式
+      return response.map(item => ({
+        id: item.id,
+        name: item.name,
+        currentLevel: item.current_level,
+        gameMode: item.mode === '单人模式' ? 'singleplayer' :
+          item.mode === '多人模式' ? 'multiplayer' :
+            item.mode.toLowerCase(),
+        archiveDifficulty: difficultyMap[item.difficulty] || item.difficulty.toLowerCase(),
+        actualDifficulty: difficultyMap[item.actual_difficulty] || item.actual_difficulty.toLowerCase(),
+        isVisible: !item.hidden,
+        path: item.path,
+        date: item.date
+      }))
+    }
+    return []
+  } catch (error) {
+    console.error('加载存档失败:', error)
+    return []
+  }
+}
 
-      // 计算一行最多能放几张卡片
-      const cardsPerRow = Math.floor(
-        (availableWidth + gap) / (minCardWidth + gap)
-      );
-      return Math.max(cardsPerRow, 1); // 至少一张
+// 初始化真实存档数据
+const initializeArchives = async () => {
+  loading.value = true
+  const realArchives = await loadRealArchives()
+  archives.value = realArchives
+
+  // 如果没有找到存档，显示空列表
+  if (realArchives.length === 0) {
+    console.warn('未找到可加载的存档')
+    archives.value = []
+  }
+  loading.value = false
+}
+
+
+
+// 搜索相关状态
+const showSearch = ref(false)
+const filteredArchives = ref([])
+const displayArchives = ref([])
+
+// 删除确认相关状态
+const showDeleteConfirm = ref(false)
+const archiveToDelete = ref(null)
+const isDeleting = ref(false)
+
+// 筛选状态持久化（内存中，不保存到本地存储）
+const lastSearchFilters = ref({
+  searchQuery: '',
+  selectedGameMode: '',
+  selectedArchiveDifficulty: '',
+  selectedActualDifficulty: '',
+  selectedVisibility: ''
+})
+
+// 初始化显示所有存档
+displayArchives.value = [...archives.value]
+
+// 应用筛选逻辑
+const applyFilters = (archives, filters) => {
+  if (!archives || archives.length === 0) return []
+
+  let filtered = archives
+
+  // 按名称搜索
+  if (filters.searchQuery) {
+    const query = filters.searchQuery.toLowerCase()
+    filtered = filtered.filter(archive =>
+      archive.name.toLowerCase().includes(query)
+    )
+  }
+
+  // 按游戏模式筛选
+  if (filters.selectedGameMode) {
+    filtered = filtered.filter(archive =>
+      archive.gameMode === filters.selectedGameMode
+    )
+  }
+
+  // 按存档难度筛选
+  if (filters.selectedArchiveDifficulty) {
+    filtered = filtered.filter(archive =>
+      archive.archiveDifficulty === filters.selectedArchiveDifficulty
+    )
+  }
+
+  // 按实际难度筛选
+  if (filters.selectedActualDifficulty) {
+    filtered = filtered.filter(archive =>
+      archive.actualDifficulty === filters.selectedActualDifficulty
+    )
+  }
+
+  // 按可见性筛选
+  if (filters.selectedVisibility) {
+    const isVisible = filters.selectedVisibility === 'visible'
+    filtered = filtered.filter(archive =>
+      archive.isVisible === isVisible
+    )
+  }
+
+  return filtered
+}
+
+// 性能监控：监听系统性能状态
+const performanceObserver = () => {
+  if ('PerformanceObserver' in window) {
+    const observer = new PerformanceObserver((list) => {
+      const entries = list.getEntries()
+      const longTaskCount = entries.filter(entry => entry.duration > 50).length
+
+      if (longTaskCount > 5) {
+        console.warn('检测到性能问题，建议减少动画或卡片数量')
+      }
+    })
+    observer.observe({ entryTypes: ['longtask'] })
+  }
+}
+
+// 页面加载完成后显示存档数量统计
+setTimeout(() => {
+  console.log(`📊 当前存档数量: ${archives.value.length} 个`)
+}, 1500)
+
+performanceObserver()
+
+const archiveGrid = ref(null)
+
+// 搜索相关方法
+const toggleSearch = () => {
+  showSearch.value = !showSearch.value
+  // 不再重置显示，保持筛选结果
+}
+
+const updateLastFilters = (filters) => {
+  lastSearchFilters.value = { ...filters }
+}
+
+const handleFilteredArchives = (archives) => {
+  filteredArchives.value = archives
+  displayArchives.value = archives
+}
+
+// 选择存档
+const selectArchive = (archive) => {
+  console.log('选择存档:', archive.name)
+}
+
+const handleToggleVisibility = async (updatedArchive) => {
+  console.log('切换存档可见性:', updatedArchive.name)
+
+  try {
+    // 调用后端API移动文件
+    if (updatedArchive.path) {
+      const newPath = await invoke('handle_file', { filePath: updatedArchive.path })
+      console.log('文件移动成功:', newPath)
+
+      // 更新存档路径和隐藏状态
+      updatedArchive.path = newPath
+      updatedArchive.hidden = !updatedArchive.hidden
     }
 
-    // 自动补空白卡片
-    function fillEmptyCards(archivesArray, cardsPerRow) {
-      const totalItems = archivesArray.length;
-      const fullRows = Math.floor(totalItems / cardsPerRow);
-      const remainder = totalItems % cardsPerRow;
+    // 找到并更新对应的存档
+    const index = archives.value.findIndex(a => a.id === updatedArchive.id)
+    if (index > -1) {
+      archives.value[index] = updatedArchive
 
-      const filledArray = [...archivesArray];
-
-      // 如果刚好整除，不需要补位
-      if (remainder === 0) return filledArray;
-
-      // 否则补充透明卡片到下一行满
-      const emptySlots = cardsPerRow - remainder;
-
-      for (let i = 0; i < emptySlots; i++) {
-        filledArray.push(null); // null 表示一个空白卡片
+      // 同步更新displayArchives，确保视图立即更新
+      const displayIndex = displayArchives.value.findIndex(a => a.id === updatedArchive.id)
+      if (displayIndex > -1) {
+        displayArchives.value[displayIndex] = updatedArchive
       }
 
-      return filledArray;
+      // 如果当前有筛选器，重新应用筛选器（不刷新整个列表）
+      if (lastSearchFilters.value && Object.keys(lastSearchFilters.value).length > 0) {
+        const filtered = applyFilters(archives.value, lastSearchFilters.value)
+        displayArchives.value = filtered
+      }
     }
+  } catch (error) {
+    console.error('切换可见性失败:', error)
+    alert('切换可见性失败: ' + error)
 
-    // 使用 ResizeObserver 动态监听容器宽度变化
-    let resizeObserver;
+    // 如果失败，恢复原来的状态
+    const index = archives.value.findIndex(a => a.id === updatedArchive.id)
+    if (index > -1) {
+      updatedArchive.isVisible = !updatedArchive.isVisible
+      archives.value[index] = updatedArchive
 
-    onMounted(() => {
-      if (cardsContainer.value) {
-        resizeObserver = new ResizeObserver(() => {
-          updateDisplayedArchives();
-        });
-        resizeObserver.observe(cardsContainer.value);
+      const displayIndex = displayArchives.value.findIndex(a => a.id === updatedArchive.id)
+      if (displayIndex > -1) {
+        displayArchives.value[displayIndex] = updatedArchive
       }
-    });
-
-    onUnmounted(() => {
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-      }
-    });
-
-    // 更新带空白卡片的列表
-    function updateDisplayedArchives() {
-      const cardsPerRow = calculateCardsPerRow();
-      displayedArchives.value = fillEmptyCards(archives.value, cardsPerRow);
     }
+  }
+}
 
-    // 当原始卡片数据更新时也重新计算
-    watchEffect(() => {
-      updateDisplayedArchives();
-    });
+const handleEdit = (archive) => {
+  console.log('编辑存档:', archive)
+  router.push({
+    name: 'EditArchive',
+    params: { archiveData: JSON.stringify(archive) }
+  })
+}
 
-    const loadTranslations = async () => {
-      try {
-        const response = await fetch("/locales/zh-CN/zh-CN.json");
-        if (!response.ok) throw new Error("Failed to load language file.");
-        return await response.json();
-      } catch (err) {
-        console.error("Error: Failed to load language file:", err);
-        return {};
-      }
-    };
+const deleteArchive = (archive) => {
+  console.log('准备删除存档:', archive.name)
+  archiveToDelete.value = archive
+  showDeleteConfirm.value = true
+}
 
-    const loadSaves = async () => {
-      try {
-        const [saves, translations] = await Promise.all([
-          invoke("load_all_saves"),
-          loadTranslations(),
-        ]);
+const confirmDelete = async () => {
+  if (!archiveToDelete.value) return
 
-        const levelNames = translations?.LevelName || {};
+  isDeleting.value = true
+  const archive = archiveToDelete.value
+  const index = archives.value.findIndex(a => a.id === archive.id)
 
-        archives.value = saves.map((save) => ({
-          id: save.id,
-          name: save.name,
-          difficulty: save.difficulty,
-          difficultyClass: save.difficulty_class,
-          actualDifficulty: save.actual_difficulty,
-          mode: save.mode,
-          date: save.date,
-          currentLevel: levelNames[save.current_level] || save.current_level,
-          currentLevel1: save.current_level,
-          hidden: save.hidden,
-          path: save.path,
-        }));
-
-        originalArchives.value = [...archives.value];
-      } catch (err) {
-        console.error("Error: Failed to load save file:", err);
-      }
-    };
-
-    // 更新玩家背包和相关状态
-    const handleEdit = async (archive) => {
-      try {
-        const playerData = await invoke("get_player_data", {
-          filePath: archive.path,
-        });
-
-        console.log("Player Data:", playerData);
-
-        const { ids, inventories, sanities } = playerData;
-
-        playerOptions.value = ids.map((id) => ({
-          value: id,
-          label: id,
-        }));
-
-        const newPlayerInventory = {};
-        inventories.forEach((inventory, playerIndex) => {
-          const key = ids[playerIndex];
-
-          // 保证每个玩家都有12个格子，缺失的填"None"
-          const validInventory = Array.from({ length: 12 }, (_, i) => {
-            if (inventory && Array.isArray(inventory) && i in inventory) {
-              return inventory[i];
-            }
-            return "None";
-          });
-
-          newPlayerInventory[key] = validInventory.map((itemId, slotIndex) => {
-            let item = null;
-
-            // 物品映射表
-            const nameMap = {
-              Flashlight: "手电筒",
-              AlmondConcentrate: "浓缩杏仁水",
-              BugSpray: "杀虫剂",
-              Camera: "摄像机",
-              AlmondWater: "杏仁水",
-              Chainsaw: "电锯",
-              ChainsawFast: "电锯",
-              DivingHelmet: "潜水头盔",
-              EnergyBar: "能量棒",
-              Firework: "烟花",
-              Flaregun: "信号枪",
-              GlowstickBlue: "蓝色荧光棒",
-              GlowStick: "绿色荧光棒",
-              GlowstickRed: "红色荧光棒",
-              GlowstickYellow: "黄色荧光棒",
-              Juice: "果汁",
-              LiquidPain: "液体痛苦",
-              Rope: "绳索",
-              LiDAR: "扫描仪",
-              Thermometer: "温度计",
-              Ticket: "票",
-              WalkieTalkie: "对讲机",
-              MothJelly: "飞蛾果冻",
-              Crowbar: "撬棍",
-            };
-
-            const chineseName = nameMap[itemId] || itemId;
-
-            if (itemId && itemId !== "None") {
-              const foundItem = itemOptions.find((i) => i.name === chineseName);
-              if (foundItem) {
-                item = { ...foundItem };
+  if (index > -1) {
+    try {
+      // 添加删除动画
+      const cardElement = document.querySelector(`[data-archive-id="${archive.id}"]`)
+      if (cardElement) {
+        gsap.to(cardElement, {
+          scale: 0.9,
+          opacity: 0,
+          duration: 0.3,
+          ease: "power2.out",
+          onComplete: async () => {
+            try {
+              // 调用后端删除实际文件
+              if (archive.path) {
+                await invoke('delete_file', { filePath: archive.path })
+                console.log('成功删除存档文件:', archive.path)
               }
+
+              // 从前端数据中移除
+              archives.value.splice(index, 1)
+
+              // 更新显示列表
+              const filtered = applyFilters(archives.value, lastSearchFilters.value)
+              displayArchives.value = filtered
+
+            } catch (error) {
+              console.error('删除存档失败:', error)
+              // 显示错误提示
+              alert('删除存档失败: ' + error)
+
+              // 恢复卡片显示
+              if (cardElement) {
+                gsap.to(cardElement, {
+                  scale: 1,
+                  opacity: 1,
+                  duration: 0.2,
+                  ease: "power2.out"
+                })
+              }
+            } finally {
+              closeDeleteModal()
             }
-
-            // 自定义 position 映射规则
-            let row, col;
-            if (slotIndex < 3) {
-              // 第1~3格：(1,1), (2,1), (3,1)
-              row = slotIndex + 1;
-              col = 1;
-            } else {
-              // 第4~12格：按列优先排列
-              const adjustedIndex = slotIndex - 3; // 从0开始计算
-              const colGroup = Math.floor(adjustedIndex / 3); // 每列3个
-              const rowInCol = adjustedIndex % 3; // 行号(0~2)
-
-              row = rowInCol + 1;
-              col = colGroup + 2; // 从第2列开始
-            }
-
-            return {
-              id: slotIndex,
-              item: item,
-              position: [row, col],
-            };
-          });
-        });
-
-        const newPlayerSanity = {};
-        sanities.forEach((sanity, playerIndex) => {
-          const steamId = ids[playerIndex]; // 获取对应的 Steam ID
-          if (steamId) {
-            newPlayerSanity[steamId] = parseFloat(sanity.toFixed(1));
           }
-        });
+        })
+      } else {
+        // 没有动画效果的情况
+        try {
+          if (archive.path) {
+            await invoke('delete_file', { filePath: archive.path })
+            console.log('成功删除存档文件:', archive.path)
+          }
 
-        editingArchive.value = {
-          ...archive,
-          playerInventory: newPlayerInventory,
-          playerSanity: newPlayerSanity,
-          selectedPlayer: ids[0], // 使用 Steam ID
-        };
+          archives.value.splice(index, 1)
 
-        showEditModal.value = true;
-      } catch (err) {
-        console.error("Error fetching player data:", err);
-      }
-    };
+          // 更新显示列表
+          const filtered = applyFilters(archives.value, lastSearchFilters.value)
+          displayArchives.value = filtered
 
-    const refreshArchives = async () => {
-      await loadSaves(); // 重新加载存档数据
-      console.log("存档列表已刷新");
-    };
-
-    // 处理保存编辑
-    const handleSaveEdit = (editedArchive) => {
-      refreshArchives();
-      console.log("保存编辑:", editedArchive);
-    };
-
-    const updateArchive = (updatedArchive) => {
-      const index = archives.value.findIndex((a) => a.id === updatedArchive.id);
-      if (index !== -1) {
-        // 创建一个新对象以确保响应性
-        const newArchive = {
-          ...archives.value[index],
-          ...updatedArchive,
-        };
-        archives.value.splice(index, 1, newArchive);
-      }
-    };
-
-    const handleSearch = (searchParams) => {
-      let filtered = [...originalArchives.value];
-
-      // 难度映射表：将英文标识符映射为中文标签
-      const difficultyLabelMap = {
-        Easy: "简单难度",
-        Normal: "普通难度",
-        Hard: "困难难度",
-        Nightmare: "噩梦难度",
-      };
-
-      // 模式映射表：英文标识符 → 中文标签
-      const modeLabelMap = {
-        Singleplayer: "单人模式",
-        Multiplayer: "多人模式",
-      };
-
-      // ✅ 仅根据【存档名称】进行关键词搜索
-      if (searchParams.query) {
-        const query = searchParams.query.trim().toLowerCase();
-        if (query) {
-          filtered = filtered.filter((archive) =>
-            archive.name.toLowerCase().includes(query)
-          );
+        } catch (error) {
+          console.error('删除存档失败:', error)
+          alert('删除存档失败: ' + error)
+        } finally {
+          closeDeleteModal()
         }
       }
+    } catch (error) {
+      console.error('删除存档时发生错误:', error)
+      alert('删除存档时发生错误: ' + error)
+      closeDeleteModal()
+    }
+  }
+}
 
-      // 难度筛选：使用映射表进行中英文转换后比对
-      if (searchParams.difficulty) {
-        const targetLabel = difficultyLabelMap[searchParams.difficulty];
-        if (targetLabel) {
-          filtered = filtered.filter(
-            (archive) => archive.difficulty === targetLabel
-          );
-        }
-      }
+const cancelDelete = () => {
+  closeDeleteModal()
+}
 
-      // 游戏模式筛选：使用映射表进行中英文转换后比对
-      if (searchParams.mode) {
-        const targetLabel = modeLabelMap[searchParams.mode];
-        if (targetLabel) {
-          filtered = filtered.filter((archive) => archive.mode === targetLabel);
-        }
-      }
+const closeDeleteModal = () => {
+  showDeleteConfirm.value = false
+  archiveToDelete.value = null
+  isDeleting.value = false
+}
 
-      // 存档状态筛选
-      if (searchParams.status) {
-        const isHidden = searchParams.status === "hidden";
-        filtered = filtered.filter((archive) => archive.hidden === isHidden);
-      }
+// 刷新存档列表
+const refreshArchives = async () => {
+  console.log('正在刷新存档列表...')
+  loading.value = true
 
-      // 排序
-      switch (searchParams.sortBy) {
-        case "default":
-          // 使用原始顺序（即后端传来的顺序）
-          filtered.sort((a, b) => {
-            const indexA = originalArchives.value.indexOf(a);
-            const indexB = originalArchives.value.indexOf(b);
-            return indexA - indexB;
-          });
-          break;
+  try {
+    // 重新加载真实存档数据
+    const realArchives = await loadRealArchives()
+    archives.value = realArchives
 
-        case "name":
-          filtered.sort((a, b) => a.name.localeCompare(b.name));
-          break;
+    // 如果没有找到存档，显示空列表
+    if (realArchives.length === 0) {
+      console.warn('未找到存档')
+      archives.value = []
+    }
 
-        case "difficulty": {
-          const difficultyOrder = [
-            "简单难度",
-            "普通难度",
-            "困难难度",
-            "噩梦难度",
-          ];
-          filtered.sort(
-            (a, b) =>
-              difficultyOrder.indexOf(a.difficulty) -
-              difficultyOrder.indexOf(b.difficulty)
-          );
-          break;
-        }
+    // 重新应用当前筛选器
+    const filtered = applyFilters(archives.value, lastSearchFilters.value)
+    displayArchives.value = filtered
 
-        case "date":
-        default:
-          filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-      }
+    console.log(`已刷新存档列表，共找到 ${archives.value.length} 个存档`)
 
-      archives.value = filtered;
-    };
+  } catch (error) {
+    console.error('刷新存档失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
 
-    const handleDelete = (archiveId) => {
-      const archive = archives.value.find((a) => a.id === archiveId);
-      if (!archive) return;
+// 打开存档文件夹
+const openSaveGamesFolder = async () => {
+  console.log('正在打开存档文件夹...')
 
-      selectedArchiveForDelete.value = archive;
-      showDeleteConfirm.value = true;
-    };
+  try {
+    await invoke('open_save_games_folder')
+    console.log('成功打开存档文件夹')
+  } catch (error) {
+    console.error('打开文件夹失败:', error)
+    alert('打开文件夹失败: ' + error)
+  }
+}
 
-    const handleDeleteConfirm = async () => {
-      const archive = selectedArchiveForDelete.value;
-      if (!archive) return;
+// 页面加载动画
+onMounted(async () => {
+  await nextTick()
 
-      try {
-        await invoke("delete_file", { filePath: archive.path });
-        // 从两个列表中删除
-        originalArchives.value = originalArchives.value.filter(
-          (a) => a.id !== archive.id
-        );
-        archives.value = archives.value.filter((a) => a.id !== archive.id);
-      } catch (err) {
-        console.error("删除文件失败:", err);
-      } finally {
-        showDeleteConfirm.value = false;
-        selectedArchiveForDelete.value = null;
-      }
-    };
+  // 加载真实存档数据
+  await initializeArchives()
 
-    const handleScroll = () => {
-      const container = glassScrollContentRef.value;
-      if (!container) return;
+  // 更新显示
+  displayArchives.value = [...archives.value]
 
-      const scrollTop = container.scrollTop;
-      const scrollHeight = container.scrollHeight;
-      const clientHeight = container.clientHeight;
-
-      const bottomThreshold = scrollHeight - clientHeight * 1.15;
-
-      if (searchButtonRef.value && searchButtonRef.value.$el) {
-        const buttonEl = searchButtonRef.value.$el;
-
-        if (scrollTop >= bottomThreshold) {
-          gsap.to(buttonEl, {
-            duration: 0.3,
-            scale: 0.7,
-            y: -40,
-            opacity: 0.8,
-            ease: "power2.out",
-          });
-        } else {
-          gsap.to(buttonEl, {
-            duration: 0.3,
-            scale: 1,
-            y: 0,
-            opacity: 1,
-            ease: "power2.out",
-          });
-        }
-      }
-    };
-
-    onMounted(async () => {
-      await loadSaves();
-
-      if (glassScrollContentRef.value) {
-        glassScrollContentRef.value.addEventListener("scroll", handleScroll);
-      }
-    });
-
-    onUnmounted(() => {
-      if (glassScrollContentRef.value) {
-        glassScrollContentRef.value.removeEventListener("scroll", handleScroll);
-      }
-    });
-
-    return {
-      lightMode,
-      archives,
-      loadSaves,
-      handleDelete,
-      searchButtonRef,
-      showDeleteConfirm,
-      selectedArchiveForDelete,
-      handleDeleteConfirm,
-      handleSearch,
-      updateArchive,
-      showEditModal,
-      editingArchive,
-      handleEdit,
-      handleSaveEdit,
-      playerOptions,
-      cardsContainer,
-      displayedArchives,
-    };
-  },
-};
+  // 让卡片动画在ArchiveCard组件内部处理，这里不再重复设置
+})
 </script>
 
 <style scoped>
-.cards-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  width: 95%;
-  margin: 0 auto;
-  padding: 20px 0;
+.archive-list-container {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  padding: 24px;
 }
 
-.empty-card {
-  visibility: hidden; /* 占位但不可见 */
-  pointer-events: none; /* 不响应任何事件 */
+/* 存档网格 */
+.archive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 320px);
+  gap: 24px;
+  justify-content: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  /* 性能优化：减少回流 */
+  contain: layout style;
+  /* 启用硬件加速 */
+  transform: translateZ(0);
+}
+
+/* 动画 */
+.archive-card-enter-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.archive-card-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* 搜索面板样式 */
+.search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding-top: 60px;
+}
+
+.search-overlay>.archive-search-filter {
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: 20px 0;
+}
+
+/* 搜索面板动画 */
+.search-panel-enter-active,
+.search-panel-leave-active {
+  transition: all 0.3s ease;
+}
+
+.search-panel-enter-from,
+.search-panel-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* 加载状态样式 */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: var(--text-secondary);
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-color);
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 24px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .archive-list-container {
+    padding: 16px;
+  }
+
+  .page-title {
+    font-size: 28px;
+  }
+
+  .action-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-container {
+    max-width: none;
+  }
+
+  .archive-grid {
+    grid-template-columns: repeat(auto-fill, 280px);
+    gap: 20px;
+  }
+
+  .search-overlay {
+    padding: 16px;
+  }
+
+  .search-overlay>.archive-search-filter {
+    max-height: 85vh;
+    margin: 16px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .archive-list-container {
+    padding: 12px;
+  }
+
+  .swift-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .swift-search-input {
+    padding: 10px 12px 10px 40px;
+    font-size: 14px;
+  }
+
+  .archive-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .search-overlay {
+    padding: 12px;
+  }
+
+  .search-overlay>.archive-search-filter {
+    max-height: 80vh;
+    margin: 12px 0;
+  }
 }
 </style>

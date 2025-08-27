@@ -12,11 +12,9 @@
 
 This is a desktop-level save management tool specifically designed for the game "Escape The Backrooms", built using Vue.js + JavaScript + CSS for the frontend, and Vite as the build tool. Version 3.0 represents a complete upgrade, offering an entirely new user experience and enhanced functionalities.
 
-Please note: Future development may involve features related to encryption keys. For data security, the code for these parts will not be open-sourced, and I will make corresponding annotations in the code.
-
 This project uses assets extracted from Escape The Backrooms, which are stored in the `icons/ETB_UI` folder within the `public`directory. The names of the resources have not been modified.
 
-There is currently a trial version available, with the version number `V3.0.0-Alpha-2.1`. You can experience the new interface in this version. However, at this time, only the `Chinese` language is supported.
+There is currently a trial version available, with the version number `V3.0.0-Alpha-3`.
 
 If you encounter any bugs while using the trial version, please provide a detailed description of the issue to the developer, or take a screenshot of the error messages shown in the DevTools, and submit an issue.
 
@@ -30,7 +28,7 @@ My email: **`llzgd@outlook.com`**
 
 ## 🚧 Current Status: In Development (Alpha Stage)
 
-- 🔵 Basic architecture setup 45% complete
+- 🔵 Basic architecture setup 80% complete
 - ❌ Features not fully implemented yet
 - 🛠️ Continuous updates in progress, please follow the repository for the latest developments
 - 🧐 More features under consideration
@@ -42,10 +40,10 @@ My email: **`llzgd@outlook.com`**
 
 | Feature                                       | Status            | Progress | Description                                                                             |
 | --------------------------------------------- | ----------------- | -------- | --------------------------------------------------------------------------------------- |
-| 🎨 More modern UI interface                   | ⏳ In development | 30%      | Refactor the entire interface using modern design principles to enhance user experience |
+| 🎨 More modern UI interface                   | ✅ Completed | 100%      | Refactor the entire interface using modern design principles to enhance user experience |
 | 🔍 Search functionality                       | ✅ Completed      | 100%     | Support quick search of archives by keywords such as name, hierarchy, etc.              |
-| 🎨 Color themes                               | ⏳ In development | 30%       | Users can customize the application's color themes                                      |
-| 🌐 Multi-language switching                   | ⏳ In development | 5%       | Provide more convenient multi-language switching support                                |
+| 🎨 Color themes                               | ⏳ In development | 90%       | Users can customize the application's color themes                                      |
+| 🌐 Multi-language switching                   | ✅ Completed | 100%       | Provide more convenient multi-language switching support                                |
 | 💾 Archive data editing                       | ✅ Completed      | 100%     | Allow users to directly edit archive data within the tool                               |
 | ➕ Expansion of new archive creation features | ✅ Completed      | 100%     | Add more options and settings to enhance the function of creating new archives          |
 | 📄 Expansion content pack                     | ⏳ In development | 10%      | Selectable additional features for use                                                  |
@@ -55,7 +53,7 @@ My email: **`llzgd@outlook.com`**
 
 ## 📚 2.7.3 Version Review (For Reference)
 
-If you need to use the stable version, please refer to the [v2.7.3 Release Page](https://github.com/llzgdc/ETBSaveManager).
+If you need to use the stable version, please refer to the [v2.7.3 Release Page](https://github.com/Eververdants/ETBSaveManager).
 
 ### Main Features (2.7.3)
 
@@ -76,11 +74,11 @@ If you need to use the stable version, please refer to the [v2.7.3 Release Page]
 
 ---
 
-## 📥 Installation (V3.0.0-Alpha-2.1)
+## 📥 Installation (V3.0.0-Alpha-3)
 
 ### Windows
 
-1. Download the Windows installer for [v3.0.0-Alpha-2.1](https://github.com/llzgdc/ETBSaveManager/releases/tag/v3.0.0-Alpha-2.1).
+1. Download the Windows installer for [v3.0.0-Alpha-3](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-3).
 
 2. Double-click the installer to begin installation. (If you don't have WebView2 installed, the installer should install it automatically. If not, please click [here](https://developer.microsoft.com/microsoft-edge/webview2) to download and install WebView2.)
 
@@ -88,7 +86,7 @@ If you need to use the stable version, please refer to the [v2.7.3 Release Page]
 
 ```bash
 # Clone the project
-git clone https://github.com/llzgdc/ETBSaveManager.git
+git clone https://github.com/Eververdants/ETBSaveManager.git
 cd ETBSaveManager
 
 # Install dependencies
@@ -137,8 +135,7 @@ npm run tauri dev
 
 - Select which expansion features to use
 - Expansion packs will provide additional functionality
-- Option to download packs from GitHub or Gitee (if available)
-- Expansion packs developed by llzgdc are free of charge
+- Option to download packs from GitHub
 
 ---
 
@@ -150,4 +147,4 @@ Watch detailed operation guides at: [Video Introduction](https://www.bilibili.co
 
 ## 📄 License
 
-This project is licensed under the MIT License, see the [LICENSE](https://github.com/llzgdc/ETBSaveManager/blob/master/LICENSE) file for details.
+This project is licensed under the MIT License, see the [LICENSE](https://github.com/Eververdants/ETBSaveManager/blob/master/LICENSE) file for details. 

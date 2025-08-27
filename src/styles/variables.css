@@ -1,0 +1,263 @@
+/* 主色调 */
+:root {
+    --primary-color: #6366f1;
+    --secondary-color: #8b5cf6;
+
+    /* 下拉组件增强 */
+    --dropdown-border-hover: rgba(99, 102, 241, 0.5);
+    --dropdown-transition-duration: 0.3s;
+}
+
+/* 新增：Swift UI风格颜色系统 */
+:root {
+    /* 背景层级 */
+    --bg-primary: #f8f9fa;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f2f2f7;
+
+    /* 文本层级 */
+    --text-primary: #1c1c1e;
+    --text-secondary: #3a3a3c;
+    --text-tertiary: #8e8e93;
+
+    /* 强调色 */
+    --accent-color: #007aff;
+    --accent-hover: #0051d5;
+    --success-color: #34c759;
+    --error-color: #ff3b30;
+
+    /* 分割线 */
+    --divider-color: rgba(60, 60, 67, 0.1);
+    --divider-light: rgba(60, 60, 67, 0.05);
+}
+
+/* 明亮主题 */
+[data-theme="light"] {
+    --dropdown-bg: #ffffff;
+    --dropdown-border: #e4e4e7;
+    --dropdown-text: #374151;
+    --dropdown-icon: #4b5563;
+    --dropdown-shadow: rgba(0, 0, 0, 0.1);
+    --dropdown-shadow-hover: rgba(0, 0, 0, 0.15);
+    --dropdown-hover-bg: #f8fafc;
+    --dropdown-selected-bg: #eef2ff;
+}
+
+/* 暗黑主题 */
+[data-theme="dark"] {
+    --dropdown-bg: #1f2937;
+    --dropdown-border: #374151;
+    --dropdown-text: #f3f4f6;
+    --dropdown-icon: #9ca3af;
+    --dropdown-shadow: rgba(255, 255, 255, 0.1);
+    --dropdown-shadow-hover: rgba(255, 255, 255, 0.15);
+    --dropdown-hover-bg: #374151;
+    --dropdown-selected-bg: #4f46e5;
+}
+
+/* Light theme variables */
+:root {
+    --bg: #f8f9fa;
+    --card-bg: #ffffff;
+    --text: #1c1c1e;
+    --primary: #007aff;
+
+    --sidebar-bg: rgba(240, 240, 245, 0.8);
+    --sidebar-item-hover-bg: rgba(220, 220, 225, 0.9);
+    --sidebar-text-color: #1c1c1e;
+    --sidebar-border-color: rgba(210, 210, 215, 0.9);
+
+    --sidebar-hover-bg: rgba(220, 220, 225, 0.9);
+    --sidebar-active-bg: rgba(0, 122, 255, 0.1);
+    --sidebar-active-color: #007aff;
+    --sidebar-active-border: rgba(0, 122, 255, 0.5);
+    --sidebar-active-hover-bg: rgba(0, 122, 255, 0.15);
+
+    /* Titlebar colors */
+    --titlebar-bg: rgba(248, 249, 250, 0.8);
+    --titlebar-border: rgba(125, 125, 125, 0.3);
+    --titlebar-button-hover: rgba(255, 255, 255, 0.1);
+
+    /* Scrollbar colors */
+    --scrollbar-track: rgba(200, 200, 205, 0.3);
+    --scrollbar-thumb: rgba(180, 180, 185, 0.5);
+    --scrollbar-thumb-hover: rgba(160, 160, 165, 0.7);
+
+    /* Dropdown colors */
+    --dropdown-bg: rgba(255, 255, 255, 0.8);
+    --dropdown-border: rgba(60, 60, 67, 0.1);
+    --dropdown-hover-bg: rgba(0, 0, 0, 0.05);
+    --dropdown-selected-bg: #007aff;
+    --dropdown-selected-text: #ffffff;
+    --dropdown-shadow: rgba(0, 0, 0, 0.08);
+    --dropdown-text: #000000;
+    --dropdown-icon: rgba(60, 60, 67, 0.6);
+}
+
+/* Dark theme variables with Swift UI style */
+[data-theme="dark"] {
+    --bg: #1c1c1e;
+    --card-bg: #2c2c2e;
+    --text: #f5f5f7;
+    --primary: #0a84ff;
+
+    --sidebar-bg: rgba(40, 40, 45, 0.8);
+    --sidebar-item-hover-bg: rgba(70, 70, 75, 0.9);
+    --sidebar-text-color: #f5f5f7;
+    --sidebar-border-color: rgba(80, 80, 85, 0.9);
+
+    --sidebar-hover-bg: rgba(70, 70, 75, 0.9);
+    --sidebar-active-bg: rgba(10, 132, 255, 0.1);
+    --sidebar-active-color: #0a84ff;
+    --sidebar-active-border: rgba(10, 132, 255, 0.5);
+    --sidebar-active-hover-bg: rgba(10, 132, 255, 0.15);
+
+    /* Titlebar colors */
+    --titlebar-bg: rgba(28, 28, 30, 0.8);
+    --titlebar-border: rgba(125, 125, 125, 0.3);
+    --titlebar-button-hover: rgba(255, 255, 255, 0.1);
+
+    /* Scrollbar colors for dark theme */
+    --scrollbar-track: rgba(60, 60, 65, 0.3);
+    --scrollbar-thumb: rgba(100, 100, 105, 0.5);
+    --scrollbar-thumb-hover: rgba(120, 120, 125, 0.7);
+
+    /* Dropdown colors */
+    --dropdown-bg: rgba(28, 28, 30, 0.8);
+    --dropdown-border: rgba(84, 84, 88, 0.3);
+    --dropdown-hover-bg: rgba(255, 255, 255, 0.05);
+    --dropdown-selected-bg: #0a84ff;
+    --dropdown-selected-text: #ffffff;
+    --dropdown-shadow: rgba(0, 0, 0, 0.3);
+    --dropdown-text: #ffffff;
+    --dropdown-icon: rgba(235, 235, 245, 0.6);
+}
+
+/* About页面专用颜色变量 - 与设置页面统一 */
+[data-theme="light"] {
+    --about-glass-bg: var(--bg-secondary);
+    --about-glass-border: var(--divider-color);
+    --about-glass-shadow: rgba(0, 0, 0, 0.08);
+    --about-list-bg: var(--bg-secondary);
+    --about-hover-bg: var(--bg-tertiary);
+    --about-border-light: var(--divider-color);
+    --about-header-bg: var(--bg-secondary);
+    --about-header-border: var(--divider-color);
+}
+
+[data-theme="dark"] {
+    --about-glass-bg: var(--bg-secondary);
+    --about-glass-border: var(--divider-color);
+    --about-glass-shadow: rgba(0, 0, 0, 0.3);
+    --about-list-bg: var(--bg-secondary);
+    --about-hover-bg: var(--bg-tertiary);
+    --about-border-light: var(--divider-color);
+    --about-header-bg: var(--bg-secondary);
+    --about-header-border: var(--divider-color);
+}
+
+/* 新增：确保设置界面使用Swift UI颜色 */
+[data-theme="light"] {
+    --bg-primary: #f8f9fa;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f2f2f7;
+    --text-primary: #1c1c1e;
+    --text-secondary: #3a3a3c;
+    --text-tertiary: #8e8e93;
+    --accent-color: #007aff;
+    --accent-hover: #0051d5;
+    --success-color: #34c759;
+    --error-color: #ff3b30;
+    --divider-color: rgba(60, 60, 67, 0.1);
+    --divider-light: rgba(60, 60, 67, 0.05);
+
+    /* 毛玻璃样式变量 */
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow-light: rgba(0, 0, 0, 0.1);
+    --glass-shadow-medium: rgba(0, 0, 0, 0.05);
+    --glass-backdrop-filter: blur(20px);
+    --glass-border-light: rgba(60, 60, 67, 0.1);
+
+    /* 卡片样式变量 */
+    --card-bg: var(--bg-secondary);
+    --card-shadow: 0 8px 32px var(--glass-shadow-light);
+    --card-shadow-hover: 0 12px 48px var(--glass-shadow-medium);
+    --card-border: 1px solid var(--glass-border-light);
+    --card-radius: 16px;
+    --card-padding: 16px;
+    --card-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    --card-active-indicator: var(--accent-color);
+    --card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --card-hover-transform: translateY(-2px);
+
+    /* LG Card 样式变量（兼容旧版卡片） */
+    --Card-bg-primary: var(--bg-secondary);
+    --Card-bg-secondary: var(--bg-tertiary);
+    --Card-border-color: var(--divider-color);
+    --Card-shadow-normal: var(--card-shadow);
+    --Card-shadow-hover: var(--card-shadow-hover);
+    --Card-accent-primary: var(--accent-color);
+    --Card-accent-secondary: var(--accent-hover);
+    --Card-text-primary: var(--text-primary);
+    --Card-text-secondary: var(--text-secondary);
+
+    /* LG Card 样式变量（兼容旧版卡片） */
+    --Card-bg-primary: var(--bg-secondary);
+    --Card-bg-secondary: var(--bg-tertiary);
+    --Card-border-color: var(--divider-color);
+    --Card-shadow-normal: var(--card-shadow);
+    --Card-shadow-hover: var(--card-shadow-hover);
+    --Card-accent-primary: var(--accent-color);
+    --Card-accent-secondary: var(--accent-hover);
+    --Card-text-primary: var(--text-primary);
+    --Card-text-secondary: var(--text-secondary);
+    --Card-surface-overlay: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] {
+    --bg-primary: #1c1c1e;
+    --bg-secondary: #2c2c2e;
+    --bg-tertiary: #3a3a3c;
+    --text-primary: #f5f5f7;
+    --text-secondary: #ebebf5;
+    --text-tertiary: #8e8e93;
+    --accent-color: #0a84ff;
+    --accent-hover: #0096ff;
+    --success-color: #30d158;
+    --error-color: #ff453a;
+    --divider-color: rgba(84, 84, 88, 0.3);
+    --divider-light: rgba(84, 84, 88, 0.1);
+
+    /* 毛玻璃样式变量 */
+    --glass-bg: rgba(28, 28, 30, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow-light: rgba(0, 0, 0, 0.3);
+    --glass-shadow-medium: rgba(0, 0, 0, 0.2);
+    --glass-backdrop-filter: blur(20px);
+    --glass-border-light: rgba(84, 84, 88, 0.3);
+
+    /* 卡片样式变量 */
+    --card-bg: var(--bg-secondary);
+    --card-shadow: 0 8px 32px var(--glass-shadow-light);
+    --card-shadow-hover: 0 12px 48px var(--glass-shadow-medium);
+    --card-border: 1px solid var(--glass-border-light);
+    --card-radius: 16px;
+    --card-padding: 16px;
+    --card-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    --card-active-indicator: var(--accent-color);
+    --card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --card-hover-transform: translateY(-2px);
+
+    /* LG Card 样式变量（兼容旧版卡片） */
+    --Card-bg-primary: var(--bg-secondary);
+    --Card-bg-secondary: var(--bg-tertiary);
+    --Card-border-color: var(--divider-color);
+    --Card-shadow-normal: var(--card-shadow);
+    --Card-shadow-hover: var(--card-shadow-hover);
+    --Card-accent-primary: var(--accent-color);
+    --Card-accent-secondary: var(--accent-hover);
+    --Card-text-primary: var(--text-primary);
+    --Card-text-secondary: var(--text-secondary);
+    --Card-surface-overlay: rgba(0, 0, 0, 0.2);
+}

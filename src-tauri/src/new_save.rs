@@ -5,42 +5,53 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::time::{SystemTime, UNIX_EPOCH};
 use uesave::{
-    Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial, Save,
+    Properties, Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
+    PropertyType, Save, StructType, StructValue, ValueArray, ValueVec,
 };
+use uuid;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SaveData {
-    pub actual_difficulty: String,
+    pub archive_name: String,
+    pub level: String,
+    pub game_mode: String,
     pub difficulty: String,
-    pub level_key: String,
-    pub mode: String,
-    pub name: String,
-    pub json_data: JsonValue, // 前端传来的完整 JSON 存档内容
+    pub actual_difficulty: String,
+    pub players: Vec<PlayerData>,
+    pub basic_archive: JsonValue, // 前端传来的完整 BasicArchive.json 内容
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct PlayerData {
+    pub steam_id: String,
+    pub inventory: Vec<String>,
 }
 
 pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
     println!("📦 接收到新建存档请求：");
-    println!("  模式: {}", save_data.mode);
-    println!("  存档名: {}", save_data.name);
-    println!("  难度: {}", save_data.difficulty);
+    println!("  存档名: {}", save_data.archive_name);
+    println!("  层级: {}", save_data.level);
+    println!("  游戏模式: {}", save_data.game_mode);
+    println!("  存档难度: {}", save_data.difficulty);
+    println!("  实际难度: {}", save_data.actual_difficulty);
+    println!("  玩家数量: {}", save_data.players.len());
 
-    let difficulty = if save_data.mode == "Singleplayer" {
+    // 处理层级映射（Pipes1/Pipes2 -> Pipes）
+    let processed_level = match save_data.level.as_str() {
+        "Pipes1" | "Pipes2" => "Pipes".to_string(),
+        _ => save_data.level.clone(),
+    };
+
+    // 生成文件名后缀（多人模式使用时间戳）
+    let file_suffix = if save_data.game_mode == "singleplayer" {
+        save_data.difficulty.clone()
+    } else {
         SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map_err(|e| format!("无法获取时间戳: {}", e))?
             .as_secs()
             .to_string()
-    } else {
-        save_data.difficulty.clone() // 直接克隆字符串
     };
-
-    // ✅ 修改 level_key 的逻辑
-    let processed_level_key = match save_data.level_key.as_str() {
-        "Pipes1" | "Pipes2" => "Pipes".to_string(),
-        _ => save_data.level_key,
-    };
-
-    println!("  目标关卡: {}", processed_level_key);
 
     // 1. 构建目标路径
     let app_data_dir = get_local_appdata_dir()?;
@@ -52,29 +63,60 @@ pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
 
     let file_name = format!(
         "{}_{}_{}.sav",
-        save_data.mode.to_uppercase(),
-        save_data.name,
-        difficulty
+        save_data.game_mode.to_uppercase(),
+        save_data.archive_name,
+        file_suffix
     );
     let save_path = save_dir.join(file_name);
 
     println!("📂 目标存档路径: {:?}", save_path);
 
-    // 2. 从 JSON 构造 Save 对象
-    let mut save = parse_json_to_save(&save_data.json_data)?;
+    // 2. 从前端传来的 BasicArchive.json 构造 Save 对象
+    let mut save = parse_json_to_save(&save_data.basic_archive)?;
 
-    // 3. 修改 CurrentLevel（新增逻辑）
-    if processed_level_key == "Level0" {
+    // 3. 修改 CurrentLevel 字段
+    if processed_level == "Level0" {
         remove_current_level(&mut save);
         println!("✅ Level0 检测到，已移除 CurrentLevel_0 整个字段");
     } else {
-        modify_current_level(&mut save, processed_level_key); // 使用处理后的 level_key
+        modify_current_level(&mut save, processed_level.clone());
     }
 
-    // 4. 修改难度设置
+    // 4. 处理 Pipes1/Pipes2 的 UnlockedFun_0 字段
+    match save_data.level.as_str() {
+        "Pipes1" => {
+            // 删除 UnlockedFun_0 字段
+            let unlocked_fun_key = PropertyKey(0, "UnlockedFun".to_string());
+            if save.root.properties.0.contains_key(&unlocked_fun_key) {
+                save.root.properties.0.shift_remove(&unlocked_fun_key);
+                println!("🗑️ 已删除 UnlockedFun_0 字段 (Pipes1)");
+            }
+        }
+        "Pipes2" => {
+            // 创建 UnlockedFun_0 字段，设置为 true
+            let unlocked_fun_prop = Property {
+                tag: PropertyTagPartial {
+                    id: None,
+                    data: PropertyTagDataPartial::Other(uesave::PropertyType::BoolProperty),
+                },
+                inner: PropertyInner::Bool(true),
+            };
+            let unlocked_fun_key = PropertyKey(0, "UnlockedFun".to_string());
+            save.root.properties.0.insert(unlocked_fun_key, unlocked_fun_prop);
+            println!("✅ 已创建 UnlockedFun_0 字段，值为 true (Pipes2)");
+        }
+        _ => {}
+    }
+
+    // 5. 修改难度设置
     update_difficulty(&mut save, &save_data.actual_difficulty);
 
-    // 5. 写出为 .sav 文件
+    // 5. 更新玩家数据（如果有玩家信息）
+    if !save_data.players.is_empty() {
+        update_player_data(&mut save, &save_data.players)?;
+    }
+
+    // 6. 写出为 .sav 文件
     let file = fs::File::create(&save_path).map_err(|e| format!("创建输出文件失败: {}", e))?;
     let mut writer = BufWriter::new(file);
     save.write(&mut writer)
@@ -179,6 +221,89 @@ pub fn update_difficulty(save: &mut Save, difficulty: &str) {
     } else {
         println!("➖ 跳过难度字段修改（Normal 难度）");
     }
+}
+
+// 更新玩家数据
+fn update_player_data(save: &mut Save, players: &[PlayerData]) -> Result<(), String> {
+    if players.is_empty() {
+        return Ok(());
+    }
+
+    println!("👥 开始处理玩家数据...");
+
+    // 创建 PlayerData_0 Map
+    let mut map_entries = Vec::new();
+
+    for player in players {
+        // 创建背包物品列表
+        let mut inventory_items = Vec::new();
+        for item in player.inventory.iter().take(12) {
+            inventory_items.push(item.clone());
+        }
+        // 确保正好12个物品
+        while inventory_items.len() < 12 {
+            inventory_items.push("None".to_string());
+        }
+
+        // 创建玩家结构体属性
+        let mut player_struct_properties = Properties::default();
+
+        // Sanity 属性
+        let sanity_prop = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
+            },
+            inner: PropertyInner::Float(100.0), // 默认理智值
+        };
+
+        // Inventory 属性
+        let inventory_prop = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(PropertyType::NameProperty))),
+            },
+            inner: PropertyInner::Array(ValueArray::Base(ValueVec::Name(inventory_items))),
+        };
+
+        // 插入玩家属性 - 使用与 test3.json 完全匹配的字段名
+        player_struct_properties.0.insert(
+            PropertyKey(0, "Sanity_6_A5AFAB454F51CC63745A669BD7E629F6".to_string()),
+            sanity_prop,
+        );
+        player_struct_properties.0.insert(
+            PropertyKey(0, "Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4".to_string()),
+            inventory_prop,
+        );
+
+        // 创建 Map Entry
+        let map_entry = uesave::MapEntry {
+            key: uesave::PropertyValue::Str(player.steam_id.clone()),
+            value: uesave::PropertyValue::Struct(StructValue::Struct(player_struct_properties)),
+        };
+
+        map_entries.push(map_entry);
+    }
+
+    // 创建 PlayerData_0 属性
+    let player_data_prop = Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Map {
+                key_type: Box::new(PropertyTagDataPartial::Other(PropertyType::StrProperty)),
+                value_type: Box::new(PropertyTagDataPartial::Struct {
+                    struct_type: StructType::Struct(None),
+                    id: uuid::Uuid::nil(),
+                }),
+            },
+        },
+        inner: PropertyInner::Map(map_entries),
+    };
+
+    save.root.properties.0.insert(PropertyKey(0, "PlayerData".to_string()), player_data_prop);
+    println!("✅ 已创建 PlayerData_0 Map");
+
+    Ok(())
 }
 
 fn get_local_appdata_dir() -> Result<std::path::PathBuf, String> {

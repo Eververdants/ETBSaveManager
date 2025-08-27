@@ -45,7 +45,7 @@ pub fn extract_player_data(save_json: &Value) -> (Vec<String>, Vec<f64>, Vec<Vec
                 let names = inventory
                     .unwrap_or(&vec![])
                     .iter()
-                    .filter_map(|name| name.as_str().map(String::from))
+                    .map(|name| name.as_str().unwrap_or("None").to_string())
                     .collect();
                 player_inventories.push(names);
             } else {

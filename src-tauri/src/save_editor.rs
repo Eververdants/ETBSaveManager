@@ -1,13 +1,12 @@
 use serde_json::Value as JsonValue;
-use std::env;
 use std::fs::{self, File};
 use std::io::{BufReader, BufWriter};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 use uesave::{
     Properties, Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
-    PropertyValue, Save, StructValue, ValueArray, ValueVec,
-};
+    PropertyType, PropertyValue, Save, StructValue, ValueArray, ValueVec,
+};use uuid;
 
 // 物品ID到英文名的映射表
 fn map_item_id_to_name(id: i32) -> &'static str {
@@ -39,62 +38,6 @@ fn map_item_id_to_name(id: i32) -> &'static str {
     }
 }
 
-fn is_subdirectory_of(child: &Path, parent: &Path) -> bool {
-    if let (Ok(canonical_child), Ok(canonical_parent)) =
-        (fs::canonicalize(child), fs::canonicalize(parent))
-    {
-        canonical_child.starts_with(canonical_parent)
-    } else {
-        false
-    }
-}
-
-pub fn handle_file(file_path: String) -> Result<String, String> {
-    println!("Received file path: {}", file_path);
-    let local_appdata = env::var("LOCALAPPDATA").map_err(|e| e.to_string())?;
-    let base_dir = PathBuf::from(local_appdata).join("EscapeTheBackrooms/Saved/SaveGames");
-    if !base_dir.exists() {
-        return Err("Base directory does not exist".to_string());
-    }
-    let hidden_dir = base_dir.join("HiddenFiles");
-    if !hidden_dir.exists() {
-        fs::create_dir_all(&hidden_dir)
-            .map_err(|e| format!("Failed to create HiddenFiles: {}", e))?;
-    }
-    let file_path = PathBuf::from(file_path);
-    if !file_path.exists() {
-        return Err("File does not exist".to_string());
-    }
-    let file_parent = file_path.parent().ok_or("Invalid file path")?;
-    if is_subdirectory_of(file_parent, &hidden_dir) {
-        let file_name = file_path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .ok_or("Invalid file name")?;
-        let dest_path = base_dir.join(file_name);
-        if dest_path.exists() {
-            fs::remove_file(&dest_path)
-                .map_err(|e| format!("Failed to remove existing file: {}", e))?;
-        }
-        fs::rename(&file_path, &dest_path)
-            .map_err(|e| format!("Failed to move file to base_dir: {}", e))?;
-        Ok(dest_path.to_str().unwrap_or("Invalid path").to_string())
-    } else {
-        println!("Moving file to HiddenFiles...");
-        let file_name = file_path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .ok_or("Invalid file name")?;
-        let dest_path = hidden_dir.join(file_name);
-        if dest_path.exists() {
-            fs::remove_file(&dest_path)
-                .map_err(|e| format!("Failed to remove existing file: {}", e))?;
-        }
-        fs::rename(&file_path, &dest_path).map_err(|e| format!("Failed to move file: {}", e))?;
-        Ok(dest_path.to_str().unwrap_or("Invalid path").to_string())
-    }
-}
-
 // 辅助函数：按名称查找属性（忽略类型ID）
 fn get_property_by_name_mut<'a>(
     properties: &'a mut Properties,
@@ -107,7 +50,7 @@ fn get_property_by_name_mut<'a>(
         .map(|(_, prop)| prop)
 }
 
-/// 修改 CurrentLevel_0.Name 字段值（使用类似 JSON 的嵌套访问风格）
+/// 修改 CurrentLevel_0.Name 字段值，如果没有找到则创建新的
 pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
     // 查找 root.properties 中的 CurrentLevel_0
     if let Some(current_level_prop) = save
@@ -129,8 +72,22 @@ pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
             }
         }
     } else {
-        eprintln!("❌ 未找到 CurrentLevel_0 字段");
-        false
+        println!("⚠️ 未找到 CurrentLevel_0 字段，正在创建新的...");
+        
+        // 创建新的 CurrentLevel_0 字段，使用正确的NameProperty结构
+        let new_current_level = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::NameProperty),
+            },
+            inner: PropertyInner::Name(new_level_name.clone()),
+        };
+        
+        let current_level_key = PropertyKey(0, "CurrentLevel".to_string());
+        save.root.properties.0.insert(current_level_key, new_current_level);
+        
+        println!("✅ 已创建新的 CurrentLevel_0 字段，值为: {}", new_level_name);
+        true
     }
 }
 
@@ -174,7 +131,9 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
             .to_string()
     };
 
-    let new_filename = format!("{}_{}_{}.sav", mode.to_uppercase(), name, difficulty);
+    // 确保难度首字母大写
+    let capitalized_difficulty = difficulty[..1].to_uppercase() + &difficulty[1..];
+    let new_filename = format!("{}_{}_{}.sav", mode.to_uppercase(), name, capitalized_difficulty);
     let output_path = Path::new(output_dir).join(&new_filename);
 
     println!("📂 正在读取原始存档文件: {:?}", original_path);
@@ -184,10 +143,38 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
 
     let mut save = Save::read(&mut reader).map_err(|e| format!("解析存档失败: {:?}", e))?;
 
+    // === 处理Pipes1和Pipes2的特殊逻辑 ===
+    let processed_level = if current_level == "Pipes1" {
+        println!("🔄 检测到Pipes1，修改为Pipes并删除UnlockedFun_0");
+        // 删除UnlockedFun_0字段
+        let unlocked_fun_key = PropertyKey(0, "UnlockedFun".to_string());
+        if save.root.properties.0.contains_key(&unlocked_fun_key) {
+            save.root.properties.0.shift_remove(&unlocked_fun_key);
+            println!("🗑️ 已删除UnlockedFun_0字段");
+        }
+        "Pipes".to_string()
+    } else if current_level == "Pipes2" {
+        println!("🔄 检测到Pipes2，修改为Pipes并创建UnlockedFun_0");
+        // 创建UnlockedFun_0字段
+        let unlocked_fun_prop = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
+            },
+            inner: PropertyInner::Bool(true),
+        };
+        let unlocked_fun_key = PropertyKey(0, "UnlockedFun".to_string());
+        save.root.properties.0.insert(unlocked_fun_key, unlocked_fun_prop);
+        println!("✅ 已创建UnlockedFun_0字段");
+        "Pipes".to_string()
+    } else {
+        current_level.to_string()
+    };
+
     // === 修改 CurrentLevel_0.Name 字段 ===
-    let success = modify_current_level(&mut save, current_level.to_string());
+    let success = modify_current_level(&mut save, processed_level.clone());
     if success {
-        println!("✅ 当前关卡名称已修改");
+        println!("✅ 当前关卡名称已修改为: {}", processed_level);
     } else {
         println!("❌ 修改失败，请检查结构是否匹配");
     }
@@ -211,6 +198,8 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
         save.root.properties.0.shift_remove(&key);
     }
 
+    println!("🔍 实际传入的难度值: '{}'", actual_difficulty);
+    
     // 如果不是Normal难度，则创建新的难度字段
     if actual_difficulty != "Normal" {
         println!("🆕 创建新的难度字段");
@@ -220,7 +209,10 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
             "Easy" => "E_Difficulty::NewEnumerator0".to_string(),
             "Hard" => "E_Difficulty::NewEnumerator1".to_string(),
             "Nightmare" => "E_Difficulty::NewEnumerator2".to_string(),
-            _ => "E_Difficulty::NewEnumerator0".to_string(), // 默认为Easy
+            _ => {
+                println!("⚠️ 未知难度值，使用默认: {}", actual_difficulty);
+                "E_Difficulty::NewEnumerator0".to_string()
+            }
         };
 
         // 创建难度属性（匹配原始结构）
@@ -251,10 +243,10 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
         println!("  - 类型: {}, 名称: {}", key.0, key.1);
     }
 
-    // 查找 PlayerData_0 属性
-    if let Some(player_data_prop) =
-        get_property_by_name_mut(&mut save.root.properties, "PlayerData")
-    {
+    // 查找或创建 PlayerData_0 属性
+    let player_data_key = PropertyKey(0, "PlayerData".to_string());
+    
+    if let Some(player_data_prop) = save.root.properties.0.get_mut(&player_data_key) {
         println!("🎯 成功找到 PlayerData_0 字段");
 
         // 确认它是 Map 类型
@@ -264,117 +256,219 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
                 map_value.len()
             );
 
-            for (i, entry) in map_value.iter_mut().enumerate() {
-                println!("📍 处理 Map 条目 #{} 键: {:?}", i, entry.key);
-
-                // 确保 value 是 Struct 类型
-                if let PropertyValue::Struct(StructValue::Struct(ref mut player_struct)) =
-                    &mut entry.value
-                {
-                    // 获取 Steam ID
-                    let steam_id = match &entry.key {
-                        PropertyValue::Str(s) => s.as_str(),
-                        _ => {
-                            println!("❌ 键不是字符串类型");
-                            continue;
-                        }
-                    };
-
-                    if steam_id.is_empty() {
-                        println!("❌ 条目没有有效的 Steam ID");
-                        continue;
+            // 收集需要处理的所有Steam ID（包括现有和新增的）
+            let mut steam_ids_to_process = Vec::new();
+            
+            // 首先收集现有的Steam ID
+            for entry in map_value.iter() {
+                if let PropertyValue::Str(s) = &entry.key {
+                    if !s.is_empty() {
+                        steam_ids_to_process.push(s.to_string());
                     }
+                }
+            }
+            
+            // 然后检查前端传来的Steam ID，添加不存在的
+            if let Some(player_inventory) = json_data["playerInventory"].as_object() {
+                for steam_id in player_inventory.keys() {
+                    let trimmed_id = steam_id.trim();
+                    if !steam_ids_to_process.iter().any(|id| id.trim() == trimmed_id) {
+                        steam_ids_to_process.push(trimmed_id.to_string());
+                        println!("🆕 发现新增Steam ID: '{}'", trimmed_id);
+                    }
+                }
+            }
 
-                    println!("🆔 处理玩家 Steam ID: {}", steam_id);
-
-                    // === 修改背包 ===
-                    if let Some(inventory_prop) = get_property_by_name_mut(
-                        player_struct,
-                        "Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4",
-                    ) {
-                        println!("🎒 找到 Inventory 字段");
-
-                        // 确认它是 Array 类型
-                        if let PropertyInner::Array(ValueArray::Base(ref mut value_vec)) =
-                            &mut inventory_prop.inner
-                        {
-                            if let ValueVec::Name(ref mut str_values) = value_vec {
-                                // 清空原有背包内容
-                                str_values.clear();
-
-                                // 获取前端传来的物品列表
-                                if let Some(items) =
-                                    json_data["playerInventory"][steam_id].as_array()
-                                {
-                                    println!("📦 为该玩家找到 {} 个物品", items.len());
-
-                                    for item_value in items.iter().take(12) {
-                                        let item_id =
-                                            item_value["item"]["id"].as_i64().unwrap_or(-1) as i32;
-                                        let item_name = map_item_id_to_name(item_id);
-                                        str_values.push(item_name.to_string());
-                                        println!("🛍️ 添加物品: {}", item_name);
-                                    }
-                                } else {
-                                    println!("⚠️ 没有为该玩家找到背包数据，跳过填充");
-                                }
-                            } else {
-                                println!("❌ 背包数据不是 Name 类型");
-                            }
-                        } else {
-                            println!("❌ 背包数据不是 Array 类型");
-                        }
+            // 处理每个Steam ID
+            for steam_id in steam_ids_to_process {
+                println!("🆔 处理玩家 Steam ID: '{}'", steam_id);
+                println!("📦 该Steam ID对应的背包数据: {:?}", json_data["playerInventory"][&steam_id]);
+                
+                // 查找或创建玩家条目
+                let player_entry = map_value.iter_mut().find(|entry| {
+                    if let PropertyValue::Str(s) = &entry.key {
+                        s.trim() == steam_id.trim()
                     } else {
-                        println!("❌ 在玩家数据中未找到背包字段");
-                        // 打印玩家数据结构的所有键以帮助调试
-                        println!("玩家数据结构中的键:");
-                        for key in player_struct.0.keys() {
-                            println!("  - 类型: {}, 名称: {}", key.0, key.1);
+                        false
+                    }
+                });
+
+                match player_entry {
+                    Some(entry) => {
+                        // 更新现有玩家
+                        if let PropertyValue::Struct(StructValue::Struct(ref mut player_struct)) = &mut entry.value {
+                            update_player_data(player_struct, &steam_id, json_data);
                         }
                     }
-
-                    // === 修改理智值 ===
-                    if let Some(sanity_prop) = get_property_by_name_mut(
-                        player_struct,
-                        "Sanity_6_A5AFAB454F51CC63745A669BD7E629F6",
-                    ) {
-                        println!("🧠 找到 Sanity 字段");
-
-                        // 确认它是 Float 类型
-                        if let PropertyInner::Float(ref mut val) = sanity_prop.inner {
-                            // 获取前端传来的理智值
-                            let new_sanity = json_data["playerSanity"][steam_id]
-                                .as_f64()
-                                .map(|v| v as f32) // 转换为f32
-                                .unwrap_or_else(|| {
-                                    println!("⚠️ 没有为该玩家找到理智值数据，保留原值: {}", *val);
-                                    *val // 保留原值
-                                });
-
-                            *val = new_sanity;
-                            println!("🧪 设置新理智值: {}", new_sanity);
-                        } else {
-                            println!("❌ Sanity 字段不是 Float 类型");
-                        }
-                    } else {
-                        println!("❌ 在玩家数据中未找到 Sanity 字段");
+                    None => {
+                        // 创建新玩家
+                        println!("➕ 创建新玩家数据: {}", steam_id);
+                        let new_player_struct = create_new_player_struct(&steam_id, json_data);
+                        map_value.push(uesave::MapEntry {
+                            key: PropertyValue::Str(steam_id.clone()),
+                            value: PropertyValue::Struct(StructValue::Struct(new_player_struct)),
+                        });
                     }
-                } else {
-                    println!("❌ 玩家数据条目不是 Struct 类型");
                 }
             }
         } else {
             println!("❌ PlayerData_0 不是 Map 类型");
-            // 打印实际类型以帮助调试
-            println!("PlayerData_0 的实际类型: {:?}", player_data_prop.inner);
         }
     } else {
-        println!("❌ 没有找到 PlayerData_0 字段");
-        // 打印根属性中的所有键以帮助调试
-        println!("根属性中的键:");
-        for key in save.root.properties.0.keys() {
-            println!("  - 类型: {}, 名称: {}", key.0, key.1);
+        println!("⚠️ 没有找到 PlayerData_0 字段，正在创建...");
+        
+        // 创建新的 PlayerData_0 字段
+        let mut map_value = Vec::new();
+        
+        // 收集所有需要处理的Steam ID
+        let mut steam_ids_to_process = Vec::new();
+        
+        // 检查前端传来的Steam ID
+        if let Some(player_inventory) = json_data["playerInventory"].as_object() {
+            for steam_id in player_inventory.keys() {
+                steam_ids_to_process.push(steam_id.trim().to_string());
+            }
         }
+        
+        // 如果没有Steam ID，添加一个默认的
+        if steam_ids_to_process.is_empty() {
+            steam_ids_to_process.push("76561199536995340".to_string()); // 默认Steam ID
+        }
+
+        // 为每个Steam ID创建玩家数据
+        for steam_id in steam_ids_to_process {
+            println!("🆕 创建新玩家数据: {}", steam_id);
+            let new_player_struct = create_new_player_struct(&steam_id, json_data);
+            map_value.push(uesave::MapEntry {
+                key: PropertyValue::Str(steam_id.clone()),
+                value: PropertyValue::Struct(StructValue::Struct(new_player_struct)),
+            });
+        }
+
+        // 创建 PlayerData_0 属性
+        let player_data_prop = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Map {
+                    key_type: Box::new(PropertyTagDataPartial::Other(PropertyType::StrProperty)),
+                    value_type: Box::new(PropertyTagDataPartial::Struct {
+                        struct_type: uesave::StructType::Struct(None),
+                        id: uuid::Uuid::nil(),
+                    }),
+                },
+            },
+            inner: PropertyInner::Map(map_value),
+        };
+
+        save.root.properties.0.insert(player_data_key, player_data_prop);
+        println!("✅ 已成功创建 PlayerData_0 字段");
+    }
+
+    // 辅助函数：更新现有玩家数据
+    fn update_player_data(player_struct: &mut Properties, steam_id: &str, json_data: &JsonValue) {
+        // === 修改背包 ===
+        println!("🔍 正在查找背包属性: Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4_0");
+        if let Some(inventory_prop) = get_property_by_name_mut(
+            player_struct,
+            "Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4",
+        ) {
+            if let PropertyInner::Array(ValueArray::Base(ref mut value_vec)) = &mut inventory_prop.inner {
+                if let ValueVec::Name(ref mut str_values) = value_vec {
+                    str_values.clear();
+                    if let Some(items) = json_data["playerInventory"][steam_id].as_array() {
+                        for item_value in items.iter().take(12) {
+                            let item_id = item_value["item"]["id"].as_i64().unwrap_or(-1) as i32;
+                            let item_name = map_item_id_to_name(item_id);
+                            str_values.push(item_name.to_string());
+                        }
+                    }
+                    // 确保有12个槽位
+                    while str_values.len() < 12 {
+                        str_values.push("None".to_string());
+                    }
+                }
+            }
+        }
+
+        // === 修改理智值 ===
+        println!("🧠 正在查找理智值属性: Sanity_6_A5AFAB454F51CC63745A669BD7E629F6_0");
+        if let Some(sanity_prop) = get_property_by_name_mut(
+            player_struct,
+            "Sanity_6_A5AFAB454F51CC63745A669BD7E629F6",
+        ) {
+            if let PropertyInner::Float(ref mut val) = sanity_prop.inner {
+                let new_sanity = json_data["playerSanity"][steam_id]
+                    .as_f64()
+                    .map(|v| v as f32)
+                    .unwrap_or(100.0); // 默认值
+                *val = new_sanity.clamp(0.0, 100.0);
+            }
+        }
+    }
+
+    // 辅助函数：创建新玩家数据结构
+    fn create_new_player_struct(steam_id: &str, json_data: &JsonValue) -> Properties {
+        println!("🆕 开始创建新玩家数据结构: {}", steam_id);
+        let mut properties = Properties::default();
+
+        // 创建背包属性
+        let mut inventory_items = Vec::new();
+        if let Some(items) = json_data["playerInventory"][steam_id].as_array() {
+            println!("📦 找到背包数据，物品数量: {}", items.len());
+            for (i, item_value) in items.iter().take(12).enumerate() {
+                let item_id = item_value["item"]["id"].as_i64().unwrap_or(-1) as i32;
+                let item_name = map_item_id_to_name(item_id);
+                println!("🎒 槽位 {}: ID={}, 名称={}", i, item_id, item_name);
+                inventory_items.push(item_name.to_string());
+            }
+        } else {
+            println!("⚠️ 未找到背包数据，填充12个空槽位");
+            // 填充12个空槽位
+            inventory_items.resize(12, "None".to_string());
+        }
+        
+        // 确保正好12个槽位
+        inventory_items.truncate(12);
+        while inventory_items.len() < 12 {
+            inventory_items.push("None".to_string());
+        }
+        
+        println!("✅ 最终背包物品: {:?}", inventory_items);
+
+        let inventory_prop = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(PropertyType::NameProperty))),
+            },
+            inner: PropertyInner::Array(ValueArray::Base(ValueVec::Name(inventory_items))),
+        };
+
+        // 创建理智值属性
+        let sanity_value = json_data["playerSanity"][steam_id]
+            .as_f64()
+            .map(|v| v as f32)
+            .unwrap_or(100.0)
+            .clamp(0.0, 100.0);
+
+        let sanity_prop = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
+            },
+            inner: PropertyInner::Float(sanity_value),
+        };
+
+        // 插入属性 - 使用正确的属性名称格式（与test3.json完全一致）
+        properties.0.insert(
+            PropertyKey(0, "Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4".to_string()),
+            inventory_prop,
+        );
+        properties.0.insert(
+            PropertyKey(0, "Sanity_6_A5AFAB454F51CC63745A669BD7E629F6".to_string()),
+            sanity_prop,
+        );
+
+        properties
     }
 
     // 删除原始存档文件（在写入新文件前删除）
@@ -391,6 +485,6 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
 
     println!("💾 存档已保存至: {:?}", output_path);
 
-    // ✅ 移动文件到目标目录
-    handle_file(output_path.to_str().unwrap_or("Invalid path").to_string())
+    // ✅ 直接返回新文件路径，不移动文件
+    Ok(output_path.to_str().unwrap_or("Invalid path").to_string())
 }

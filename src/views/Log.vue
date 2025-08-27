@@ -1,0 +1,663 @@
+<template>
+  <div class="log-view">
+    <div class="header">
+      <h1>{{ t('logs.title') }}</h1>
+      <div class="header-actions">
+        <button @click="clearLogs" class="btn btn-secondary">
+          <font-awesome-icon :icon="['fas', 'trash']" />
+          {{ t('logs.clear') }}
+        </button>
+        <button @click="exportLogs" class="btn btn-primary">
+          <font-awesome-icon :icon="['fas', 'download']" />
+          {{ t('logs.export') }}
+        </button>
+      </div>
+    </div>
+
+    <div class="log-controls">
+      <div class="filter-group">
+        <label>{{ t('logs.filter') }}:</label>
+        <select v-model="filterLevel" @change="applyFilter">
+          <option value="">{{ t('logs.allLevels') }}</option>
+          <option value="error">{{ t('logs.error') }}</option>
+          <option value="warn">{{ t('logs.warn') }}</option>
+          <option value="info">{{ t('logs.info') }}</option>
+          <option value="debug">{{ t('logs.debug') }}</option>
+        </select>
+      </div>
+
+      <div class="search-group">
+        <input v-model="searchText" :placeholder="t('logs.search')" @input="applyFilter" class="search-input" />
+      </div>
+    </div>
+
+    <!-- 控制台命令区域 -->
+    <div class="console-section">
+      <div class="console-input-line">
+        <span class="console-prompt">$ </span>
+        <input
+          ref="consoleInput"
+          v-model="consoleCommand"
+          type="text"
+          placeholder="输入 help 查看可用命令"
+          class="console-input"
+          @keyup.enter="executeConsoleCommand"
+          @keyup.up="navigateHistory(-1)"
+          @keyup.down="navigateHistory(1)"
+        />
+      </div>
+    </div>
+
+    <div class="log-container" ref="logContainer">
+      <div v-for="(log, index) in filteredLogs" :key="index" :class="['log-entry', log.type]">
+        <div class="log-time">{{ formatTime(log.date) }}</div>
+        <div class="log-level" :class="log.type">[{{ log.type.toUpperCase() }}]</div>
+        <div class="log-message">
+          <div v-if="Array.isArray(log.message)" class="log-multiline">
+            <div v-for="(line, lineIndex) in log.message" :key="lineIndex" 
+                 :class="{'log-command': lineIndex === 0, 'log-result': lineIndex === 1 && log.message.length > 1}">
+              {{ line }}
+            </div>
+          </div>
+          <div v-else>{{ log.message }}</div>
+        </div>
+      </div>
+
+      <div v-if="filteredLogs.length === 0" class="no-logs">
+        {{ t('logs.noLogs') }}
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { logService } from '../services/logService.js';
+
+const { t } = useI18n({ useScope: 'global' })
+
+const logs = ref([]);
+const filterLevel = ref('');
+const searchText = ref('');
+const logContainer = ref(null);
+const consoleInput = ref(null);
+const consoleCommand = ref('');
+const commandHistory = ref([]);
+const historyIndex = ref(-1);
+
+// 获取过滤后的日志
+const filteredLogs = computed(() => {
+  let result = logs.value;
+
+  if (filterLevel.value) {
+    result = result.filter(log => log.type === filterLevel.value);
+  }
+
+  if (searchText.value) {
+    const searchLower = searchText.value.toLowerCase();
+    result = result.filter(log =>
+      log.message.toLowerCase().includes(searchLower)
+    );
+  }
+
+  return result;
+});
+
+// 格式化时间
+const formatTime = (timestamp) => {
+  return new Date(timestamp).toLocaleString();
+};
+
+// 应用过滤器
+const applyFilter = () => {
+  nextTick(() => {
+    scrollToBottom();
+  });
+};
+
+// 清空日志
+const clearLogs = () => {
+  logService.clearLogs();
+  logs.value = [];
+};
+
+// 导出日志
+const exportLogs = () => {
+  logService.exportLogs();
+};
+
+// 滚动到底部
+const scrollToBottom = () => {
+  if (logContainer.value) {
+    logContainer.value.scrollTop = logContainer.value.scrollHeight;
+  }
+};
+
+// 控制台命令执行
+const executeConsoleCommand = () => {
+  try {
+    const cmd = consoleCommand.value.trim();
+    if (!cmd) return;
+
+    // 添加到历史记录
+    commandHistory.value.unshift(cmd);
+    if (commandHistory.value.length > 50) {
+      commandHistory.value = commandHistory.value.slice(0, 50);
+    }
+    historyIndex.value = -1;
+
+    let result;
+    
+    // 控制台命令解析
+    switch(cmd.toLowerCase()) {
+      case 'help':
+        result = `可用命令:
+  help        - 显示此帮助信息
+  locale      - 显示当前语言
+  messages    - 显示所有翻译消息
+  t(key)      - 测试翻译键值，如: t('app.name')
+  app.name    - 显示应用名称
+  clear       - 清空控制台
+  ls          - 列出可用语言
+  
+JavaScript 支持:
+  console.log("文本") - 输出日志
+  1 + 1 - 数学计算
+  "hello" - 字符串
+  [1,2,3] - 数组
+  {a:1} - 对象`;
+        break;
+      case 'locale':
+        result = `当前语言: ${i18n.locale || '未知'}`;
+        break;
+      case 'messages':
+        result = JSON.stringify(i18n.messages || {}, null, 2);
+        break;
+      case 'clear':
+        logService.clearLogs();
+        consoleCommand.value = '';
+        return;
+      case 'ls':
+        result = `可用语言: ${Object.keys(i18n.messages || {}).join(', ')}`;
+        break;
+      default:
+        // 处理翻译测试
+        if (cmd.startsWith('t(')) {
+          const match = cmd.match(/t\(['"]([^'"]+)['"]\)/);
+          if (match) {
+            const key = match[1];
+            result = t(key);
+          } else {
+            result = '用法: t("key")';
+          }
+        } else if (cmd.includes('console.log')) {
+          // 处理 console.log
+          try {
+            // 创建一个安全的 console 对象
+            const safeConsole = {
+              log: (...args) => {
+                result = args.map(arg => 
+                  typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                ).join(' ');
+              }
+            };
+            
+            // 替换 console.log 并执行
+            const safeCmd = cmd.replace(/console\.log/g, 'safeConsole.log');
+            eval(safeCmd);
+            
+            if (!result) {
+              result = 'console.log 已执行';
+            }
+          } catch (e) {
+            result = `错误: ${e.message}`;
+          }
+        } else if (cmd.includes('.') && !cmd.includes('(') && !cmd.includes(' ')) {
+          // 直接翻译键值
+          result = t(cmd);
+        } else {
+          // 执行 JavaScript 表达式
+          try {
+            // 直接处理翻译键值
+            if (cmd.startsWith('t(') && cmd.endsWith(')')) {
+              // 处理 t('key') 格式
+              const match = cmd.match(/t\(['"`](.*?)['"`]\)/);
+              if (match) {
+                const key = match[1];
+                result = this.$t(key);
+              } else {
+                result = this.$t('app.name'); // 默认测试
+              }
+            } else if (cmd.startsWith('console.log(')) {
+              // 处理console.log
+              const match = cmd.match(/console\.log\((.*)\)$/);
+              if (match) {
+                const args = match[1];
+                const func = new Function('t', `
+                  const console = {
+                    log: (...args) => args.map(arg => 
+                      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                    ).join(' ')
+                  };
+                  return console.log(${args});
+                `);
+                result = func(this.$t.bind(this));
+              }
+            } else {
+              // 处理普通表达式
+              const func = new Function('t', `
+                return (${cmd});
+              `);
+              result = func(this.$t.bind(this));
+              if (result === undefined) {
+                result = 'undefined';
+              }
+            }
+          } catch (e) {
+            result = `错误: ${e.message}`;
+          }
+        }
+    }
+    
+    // 将命令和结果添加到日志
+    logService.addLog('info', [`$ ${cmd}`, `→ ${result}`]);
+    
+  } catch (error) {
+    logService.addLog('error', [`$ ${consoleCommand.value}`, `✗ 错误: ${error.message}`]);
+  }
+  
+  consoleCommand.value = '';
+};
+
+// 命令历史导航
+const navigateHistory = (direction) => {
+  if (commandHistory.value.length === 0) return;
+  
+  if (direction === -1) { // 上箭头
+    if (historyIndex.value < commandHistory.value.length - 1) {
+      historyIndex.value++;
+      consoleCommand.value = commandHistory.value[historyIndex.value];
+    }
+  } else { // 下箭头
+    if (historyIndex.value > 0) {
+      historyIndex.value--;
+      consoleCommand.value = commandHistory.value[historyIndex.value];
+    } else {
+      historyIndex.value = -1;
+      consoleCommand.value = '';
+    }
+  }
+};
+
+// 更新日志
+const updateLogs = () => {
+  const newLogs = logService.getLogs();
+  const newLogCount = newLogs.length;
+
+  logs.value = newLogs;
+
+  // 只在有新日志且用户未手动滚动时滚动到底部
+  if (newLogCount > lastLogCount && !isUserScrolling) {
+    nextTick(() => {
+      scrollToBottom();
+    });
+  }
+  lastLogCount = newLogCount;
+};
+
+// 自动滚动开关
+let autoScrollInterval;
+let lastLogCount = 0;
+let isUserScrolling = false;
+
+// 检测用户是否在手动滚动
+const checkUserScrolling = () => {
+  if (!logContainer.value) return;
+
+  const container = logContainer.value;
+  const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 10;
+
+  if (!isAtBottom) {
+    isUserScrolling = true;
+  } else {
+    isUserScrolling = false;
+  }
+};
+
+onMounted(() => {
+  updateLogs();
+  lastLogCount = logs.value.length;
+
+  // 监听日志更新
+  window.addEventListener('logs-updated', updateLogs);
+
+  // 监听用户滚动事件
+  if (logContainer.value) {
+    logContainer.value.addEventListener('scroll', checkUserScrolling);
+  }
+
+  // 智能滚动：只有在新日志产生且用户没有手动滚动时才滚动到底部
+  autoScrollInterval = setInterval(() => {
+    const newLogs = logService.getLogs();
+    const newLogCount = newLogs.length;
+
+    // 检查是否有新日志
+    if (newLogCount > lastLogCount && !isUserScrolling) {
+      logs.value = newLogs;
+      lastLogCount = newLogCount;
+      nextTick(() => {
+        scrollToBottom();
+      });
+    } else if (newLogCount !== logs.value.length) {
+      // 更新日志但不自动滚动
+      logs.value = newLogs;
+      lastLogCount = newLogCount;
+    }
+  }, 1000);
+});
+
+onUnmounted(() => {
+  try {
+    window.removeEventListener('logs-updated', updateLogs);
+    if (autoScrollInterval) {
+      clearInterval(autoScrollInterval);
+      autoScrollInterval = null;
+    }
+    if (logContainer.value) {
+      logContainer.value.removeEventListener('scroll', checkUserScrolling);
+    }
+  } catch (error) {
+    console.error('清理日志监听器时出错:', error);
+  }
+});
+</script>
+
+<style scoped>
+.log-view {
+  height: 100vh;
+  max-height: 100vh;
+  padding: 0;
+  margin: 0;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family: 'Consolas', 'Monaco', 'Lucida Console', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: #252526;
+  border-bottom: 1px solid #3e3e42;
+  flex-shrink: 0;
+  height: 40px;
+}
+
+.header h1 {
+  font-size: 14px;
+  font-weight: bold;
+  color: #cccccc;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 2px;
+  font-size: 12px;
+  cursor: pointer;
+  background: #0e639c;
+  color: white;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn:hover {
+  background: #1177bb;
+}
+
+.btn-secondary {
+  background: #3c3c3c;
+}
+
+.btn-secondary:hover {
+  background: #4a4a4a;
+}
+
+.log-controls {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #252526;
+  border-bottom: 1px solid #3e3e42;
+  flex-shrink: 0;
+  height: 36px;
+  align-items: center;
+}
+
+.filter-group,
+.search-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-group label {
+  font-size: 12px;
+  color: #cccccc;
+}
+
+select,
+.search-input {
+  padding: 4px 8px;
+  border: 1px solid #3e3e42;
+  border-radius: 2px;
+  background: #3c3c3c;
+  color: #cccccc;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.search-input {
+  min-width: 150px;
+}
+
+.log-container {
+  height: calc(100vh - 108px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 16px;
+  background: #1e1e1e;
+  font-size: 13px;
+  line-height: 1.4;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.log-entry {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  max-width: 100%;
+  word-wrap: break-word;
+  box-sizing: border-box;
+}
+
+.log-time {
+  color: #6a9955;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.log-level {
+  min-width: 50px;
+  flex-shrink: 0;
+  font-weight: bold;
+}
+
+.log-level.error {
+  color: #f48771;
+}
+
+.log-level.warn {
+  color: #dcdcaa;
+}
+
+.log-level.info {
+  color: #9cdcfe;
+}
+
+.log-level.debug {
+  color: #6a9955;
+}
+
+.log-message {
+  flex: 1;
+  color: #d4d4d4;
+  word-break: break-word;
+  white-space: pre-wrap;
+  min-width: 0;
+  max-width: calc(100% - 160px);
+}
+
+.log-multiline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.log-command {
+  color: #4ec9b0;
+  font-weight: bold;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.log-result {
+  color: #d4d4d4;
+  margin-left: 16px;
+  border-left: 1px solid #3e3e42;
+  padding-left: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.no-logs {
+  text-align: center;
+  color: #6a9955;
+  padding: 2rem;
+  font-style: italic;
+}
+
+.console-section {
+  background: #1e1e1e;
+  border-top: 1px solid #3e3e42;
+  padding: 8px 16px;
+  flex-shrink: 0;
+  height: 40px;
+}
+
+.console-input-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.console-prompt {
+  color: #4ec9b0;
+  font-family: inherit;
+  font-weight: normal;
+  user-select: none;
+  font-size: 13px;
+}
+
+.console-input {
+  flex: 1;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #d4d4d4;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  height: 100%;
+}
+
+.console-input::placeholder {
+  color: #6a9955;
+  opacity: 0.7;
+  font-size: 12px;
+}
+
+/* 滚动条样式 */
+.log-container::-webkit-scrollbar {
+  width: 10px;
+}
+
+.log-container::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.log-container::-webkit-scrollbar-thumb {
+  background: #424242;
+}
+
+.log-container::-webkit-scrollbar-thumb:hover {
+  background: #4f4f4f;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .log-view {
+    font-size: 12px;
+  }
+  
+  .header {
+    padding: 6px 12px;
+    height: auto;
+  }
+  
+  .log-controls {
+    padding: 6px 12px;
+    height: auto;
+    flex-wrap: wrap;
+  }
+  
+  .log-container {
+    padding: 6px 12px;
+  }
+  
+  .console-section {
+    padding: 6px 12px;
+  }
+  
+  .log-time {
+    min-width: 80px;
+    font-size: 11px;
+  }
+  
+  .log-level {
+    min-width: 40px;
+    font-size: 11px;
+  }
+}
+</style>

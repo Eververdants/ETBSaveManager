@@ -12,11 +12,7 @@
 
 这是一个专为游戏《逃离后室》设计的桌面级存档管理工具，使用 Vue.js + JavaScript + CSS 构建前端，并通过 Vite 作为构建工具。3.0 是一次全面升级，带来全新的用户体验与更强的功能模块。
 
-请注意：未来的开发中可能会涉及一些加密密钥之类的功能，为了数据安全，这部分的代码可能不作开源，并且这部分代码我会做出相应标注。
-
 本项目中，使用了由 Escape The Backrooms 解包而来的资源，存放在`public`文件夹中的`icons/ETB_UI`文件夹内，资源名称未修改。
-
-目前有一个试用版本，版本号为`V3.0.0-Alpha-2.1`。可体验新版的界面。并且现在只有`中文`版本。
 
 如果你在使用试用版本时遇到了一些 bug，请详细的描述问题给开发者，或截图 DevTools 中的错误信息，并提交 issue。
 
@@ -30,7 +26,7 @@
 
 ## 🚧 当前状态：开发中（Alpha 阶段）
 
-- 🔵 基础架构完成搭建 45%
+- 🔵 基础架构完成搭建 80%
 - ❌ 功能尚未完全实现
 - 🛠️ 正在持续更新中，请关注仓库获取最新进展
 - 🧐 正在构思更多功能
@@ -42,10 +38,10 @@
 
 | 功能                  | 状态        | 进度 | 描述                                       |
 | --------------------- | ----------- | ---- | ------------------------------------------ |
-| 🎨 更现代化的 UI 界面 | ⏳ 开发中   | 30%  | 使用现代设计原则重构整个界面，提升用户体验 |
+| 🎨 更现代化的 UI 界面 | ✅ 已完成   | 30%  | 使用现代设计原则重构整个界面，提升用户体验 |
 | 🔍 搜索功能           | ✅ 已完成   | 100% | 支持通过名称、层级等关键词快速查找存档     |
-| 🎨 颜色主题           | ⏳ 开发中   | 30%   | 用户可自定义应用的颜色主题                 |
-| 🌐 多语言切换         | ⏳ 开发中   | 5%   | 提供更方便的多语言切换支持                 |
+| 🎨 颜色主题           | ⏳ 开发中   | 90%   | 用户可自定义应用的颜色主题                 |
+| 🌐 多语言切换         | ✅ 已完成   | 100%   | 提供更方便的多语言切换支持                 |
 | 💾 存档数据编辑       | ✅ 已完成   | 100% | 允许用户直接在工具内编辑存档数据           |
 | ➕ 新建存档功能拓展   | ✅ 已完成   | 100% | 新增更多选项和设置以增强新建存档功能       |
 | 📄 拓展内容包         | ⏳ 开发中   | 10%  | 可选择需要使用的拓展功能                   |
@@ -55,7 +51,7 @@
 
 ## 📚 2.7.3 版本回顾（供参考）
 
-如果你需要使用稳定版本，请查看 [v2.7.3 发布页面](https://github.com/llzgdc/ETBSaveManager)。
+如果你需要使用稳定版本，请查看 [v2.7.3 发布页面](https://github.com/Eververdants/ETBSaveManager)。
 
 ### 主要功能（2.7.3）
 
@@ -76,11 +72,11 @@
 
 ---
 
-## 📥 安装方式（V3.0.0-Alpha-2.1 测试版）
+## 📥 安装方式（V3.0.0-Alpha-3 测试版）
 
 ### Windows
 
-1. 下载 [v3.0.0-Alpha-2.1](https://github.com/llzgdc/ETBSaveManager/releases/tag/v3.0.0-Alpha-2.1) 的 Windows 安装包。
+1. 下载 [v3.0.0-Alpha-3](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-3) 的 Windows 安装包。
 
 2. 双击安装包进行安装。（如果你没有安装 WebView2，安装包应该会自动进行安装。如果没有，请点击[这里](https://developer.microsoft.com/microsoft-edge/webview2)下载并安装 WebView2）
 
@@ -88,7 +84,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/llzgdc/ETBSaveManager.git
+git clone https://github.com/Eververdants/ETBSaveManager.git
 cd ETBSaveManager
 
 # 安装依赖
@@ -138,8 +134,7 @@ npm run tauri dev
 
 - 可选择需要使用的拓展功能
 - 拓展内容包将提供更多功能
-- 选择从 Github 或 Gitee 下载拓展包（如果可行）
-- 由 llzgdc 开发的拓展包无付费
+- 选择从 Github 下载拓展包
 
 ---
 
@@ -151,4 +146,4 @@ npm run tauri dev
 
 ## 📄 许可证
 
-本项目采用 MIT License，请参阅[LICENSE](https://github.com/llzgdc/ETBSaveManager/blob/master/LICENSE)文件。
+本项目采用 MIT License，请参阅[LICENSE](https://github.com/Eververdants/ETBSaveManager/blob/master/LICENSE)文件。

@@ -1,10 +1,10 @@
 mod cli_handlers;
 mod encryption;
 mod get_file_path;
-mod player_data;
-mod save_utils;
-mod save_editor;
 mod new_save;
+mod player_data;
+mod save_editor;
+mod save_utils;
 
 use encryption::*;
 use save_utils::SaveFileInfo;
@@ -19,27 +19,35 @@ async fn load_all_saves() -> Result<Vec<SaveFileInfo>, String> {
     let mut result = Vec::new();
 
     for (i, path) in paths.iter().enumerate() {
-        // 解析存档文件并获取 Save 对象
-        let save = cli_handlers::parse_sav_file(path)?; // 返回可能是 Save 结构体
+        // 尝试解析每个存档文件，失败时跳过
+        match cli_handlers::parse_sav_file(path) {
+            Ok(save) => {
+                let save_json = serde_json::to_value(&save).map_err(|e| e.to_string())?;
 
-        let save_json = serde_json::to_value(&save).map_err(|e| e.to_string())?;
+                // 提取所需字段
+                let current_level = cli_handlers::extract_current_level(&save_json);
+                let actual_difficulty = cli_handlers::extract_difficulty_label(&save_json);
+                let date = cli_handlers::get_modified_date(path)?;
 
-        // 提取所需字段
-        let current_level = cli_handlers::extract_current_level(&save_json);
-
-        let actual_difficulty = cli_handlers::extract_difficulty_label(&save_json); // 现在接受 &Value
-
-        let date = cli_handlers::get_modified_date(path)?;
-
-        // 构建保存信息
-        let info = save_utils::build_save_info(
-            (i + 1) as u32,
-            path,
-            current_level,
-            actual_difficulty,
-            date,
-        );
-        result.push(info);
+                // 构建保存信息
+                match save_utils::build_save_info(
+                    (i + 1) as u32,
+                    path,
+                    current_level,
+                    actual_difficulty,
+                    date,
+                ) {
+                    Ok(info) => result.push(info),
+                    Err(e) => {
+                        eprintln!("跳过存档 {}: 构建信息失败 - {}", path.display(), e);
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!("跳过存档 {}: 解析失败 - {}", path.display(), e);
+                // 继续处理下一个存档
+            }
+        }
     }
 
     Ok(result)
@@ -51,6 +59,54 @@ fn delete_file(file_path: String) -> Result<(), String> {
         Ok(_) => Ok(()),
         Err(e) => Err(format!("Failed to delete file: {}", e)),
     }
+}
+
+#[tauri::command]
+fn open_save_games_folder() -> Result<(), String> {
+    use std::env;
+    use std::path::PathBuf;
+    use std::process::Command;
+
+    let local_appdata = env::var("LOCALAPPDATA").map_err(|e| e.to_string())?;
+    let save_games_path = PathBuf::from(local_appdata).join("EscapeTheBackrooms\\Saved\\SaveGames");
+
+    println!("尝试打开文件夹: {}", save_games_path.display());
+
+    if !save_games_path.exists() {
+        println!("存档目录不存在: {}", save_games_path.display());
+        return Err(format!("存档目录不存在: {}", save_games_path.display()));
+    }
+
+    // 使用系统默认文件管理器打开目录
+    let path_str = save_games_path.to_str().ok_or("无效路径")?;
+    println!("正在打开路径: {}", path_str);
+
+    #[cfg(target_os = "windows")]
+    {
+        let result = Command::new("explorer")
+            .arg(path_str)
+            .spawn()
+            .map_err(|e| format!("无法打开文件夹: {}", e))?;
+        println!("Windows Explorer启动成功: {:?}", result);
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        Command::new("open")
+            .arg(path_str)
+            .spawn()
+            .map_err(|e| format!("无法打开文件夹: {}", e))?;
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        Command::new("xdg-open")
+            .arg(path_str)
+            .spawn()
+            .map_err(|e| format!("无法打开文件夹: {}", e))?;
+    }
+
+    Ok(())
 }
 
 // 工具函数：判断一个路径是否是某个目录或其子目录内的路径
@@ -176,14 +232,17 @@ fn get_player_data(file_path: String) -> Result<Value, String> {
 
 #[tauri::command]
 fn handle_edit_save(json_input: Value) -> Result<String, String> {
-    let save_data = json_input.get("saveData")
+    let save_data = json_input
+        .get("saveData")
         .ok_or("Missing 'saveData' in input")?;
 
-    let output_dir = save_data.get("outputDir")
+    let output_dir = save_data
+        .get("outputDir")
         .and_then(|v| v.as_str())
         .ok_or("Missing or invalid 'outputDir' in saveData")?;
 
-    let json_data = save_data.get("jsonData")
+    let json_data = save_data
+        .get("jsonData")
         .and_then(|v| v.as_object())
         .ok_or("Missing or invalid 'jsonData' in saveData")?;
 
@@ -215,6 +274,9 @@ fn handle_new_save(save_data: new_save::SaveData) -> Result<(), String> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
             load_all_saves,
             delete_file,
@@ -228,7 +290,8 @@ pub fn run() {
             handle_edit_save,
             get_local_appdata,
             ensure_dir_exists,
-            handle_new_save
+            handle_new_save,
+            open_save_games_folder
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

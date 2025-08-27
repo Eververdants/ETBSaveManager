@@ -21,18 +21,21 @@ pub fn build_save_info(
     current_level: String,
     actual_difficulty: String,
     date: String,
-) -> SaveFileInfo {
+) -> Result<SaveFileInfo, String> {
     let file_name = path.file_name().unwrap().to_str().unwrap();
 
     let re = regex::Regex::new(
-        r"^(MULTIPLAYER|SINGLEPLAYER)_(.+?)_(Easy|Normal|Hard|Nightmare|\d+)\.sav$",
+        r"^(MULTIPLAYER|SINGLEPLAYER)_(.+?)_(Easy|easy|Normal|normal|Hard|hard|Nightmare|nightmare|\d+)\.sav$",
     )
     .unwrap();
-    let caps = re.captures(file_name).unwrap();
 
-    let mode_raw = caps.get(1).unwrap().as_str();
-    let name = caps.get(2).unwrap().as_str();
-    let difficulty_raw = caps.get(3).unwrap().as_str();
+    let caps = re
+        .captures(file_name)
+        .ok_or_else(|| format!("文件名格式不匹配: {}", file_name))?;
+
+    let mode_raw = caps.get(1).ok_or("无法提取游戏模式")?.as_str();
+    let name = caps.get(2).ok_or("无法提取存档名称")?.as_str();
+    let difficulty_raw = caps.get(3).ok_or("无法提取难度")?.as_str().to_lowercase();
 
     let mode = match mode_raw {
         "MULTIPLAYER" => "多人模式",
@@ -69,7 +72,7 @@ pub fn build_save_info(
 
     let hidden = path.parent() != base_dir.as_ref().map(|p: &PathBuf| p.as_path());
 
-    SaveFileInfo {
+    Ok(SaveFileInfo {
         id: index,
         name: name.to_string(),
         difficulty,
@@ -80,5 +83,5 @@ pub fn build_save_info(
         current_level,
         hidden,
         path: path.to_str().unwrap().to_string(),
-    }
+    })
 }

@@ -33,12 +33,25 @@ pub fn get_modified_date(path: &Path) -> Result<String, String> {
     Ok(datetime.format("%Y-%m-%d").to_string())
 }
 
-/// 提取 CurrentLevel_0.Name 字段值（使用类似 JSON 的嵌套访问风格）
+/// 提取 CurrentLevel_0.Name 字段值，并根据 UnlockedFun_0 判断 Pipes1/Pipes2
 pub fn extract_current_level(json: &Value) -> String {
-    json["root"]["properties"]["CurrentLevel_0"]["Name"]
+    let current_level = json["root"]["properties"]["CurrentLevel_0"]["Name"]
         .as_str()
         .map(|s| s.to_string())
-        .unwrap_or_else(|| "Level 0".to_string())
+        .unwrap_or_else(|| "Level0".to_string());
+
+    // 如果当前层级是 Pipes，检查 UnlockedFun_0
+    if current_level == "Pipes" {
+        let unlocked_fun = &json["root"]["properties"]["UnlockedFun_0"]["Bool"];
+        
+        match unlocked_fun {
+            Value::Bool(true) => "Pipes2".to_string(),
+            Value::Bool(false) => "Pipes1".to_string(),
+            _ => "Pipes1".to_string(), // 如果没有 UnlockedFun_0，默认为 Pipes1
+        }
+    } else {
+        current_level
+    }
 }
 
 /// 提取 Difficulty_0.Byte.Label 并映射难度等级

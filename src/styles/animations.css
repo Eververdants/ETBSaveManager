@@ -1,0 +1,129 @@
+/* Swift UI风格动画 */
+
+/* 按钮动画 - 弹簧效果 */
+@keyframes springPop {
+  0% {
+    transform: scale(1);
+  }
+
+  30% {
+    transform: scale(0.95);
+  }
+
+  60% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Swift UI风格的文字动画 */
+.text-swift-enter-active {
+  animation: fadeInUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.text-swift-leave-active {
+  animation: fadeInUp 0.25s cubic-bezier(0.4, 0, 0.2, 1) reverse;
+}
+
+/* 按钮悬停效果 */
+.switch-btn:hover {
+  animation: springPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* 按钮波纹效果 */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(0);
+  animation: ripple 0.6s ease-out;
+  pointer-events: none;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* 文字淡入淡出动画 - 仅作用于文字 */
+.text-fade-enter-active,
+.text-fade-leave-active {
+  transition: opacity 0.15s ease-out;
+}
+
+.text-fade-enter-from {
+  opacity: 0;
+}
+
+.text-fade-leave-to {
+  opacity: 0;
+}
+
+/* 移除全局页面过渡，只保留文字动画 */
+
+/* 页面切换过渡动画 */
+.page-enter-active {
+  animation: pageSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-leave-active {
+  animation: pageSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pageSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pageSlideOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+/* 页面内容淡入动画 */
+.page-content-fade-enter-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-content-fade-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-content-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-content-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}

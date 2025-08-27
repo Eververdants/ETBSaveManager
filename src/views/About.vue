@@ -1,342 +1,408 @@
 <template>
-  <div :class="['about-container', theme]">
-    <div class="living-glass-panel">
-      <div class="sidebar">
-        <div
-          v-for="(item, index) in sidebarItems"
-          :key="index"
-          :class="['sidebar-item', { active: activeItem === index }]"
-          @click="activeItem = index"
-        >
-          <div class="icon">{{ item.icon }}</div>
-          <div class="title">{{ item.title }}</div>
+  <div class="about-container">
+    <main class="about-content">
+      <!-- 毛玻璃卡片 -->
+      <section class="glass-card app-info">
+        <img class="app-icon" :class="{ 'loaded': iconLoaded }" src="/app-icon.png" alt="App Icon"
+          @load="handleImageLoad" @error="handleImageLoad" @click="handleAppIconClick" />
+        <div>
+          <h2 class="app-title">{{ $t('app.name') }}</h2>
+          <p class="app-version">{{ $t('about.version') }} {{ version }}</p>
+          <p class="app-desc">{{ $t('about.tagline') }}</p>
         </div>
-      </div>
+        <div v-if="showEasterEgg" class="easter-egg">
+          <img src="/Written_by_Máo.png" alt="Easter Egg" class="easter-egg-image"
+            :class="{ 'loaded': easterEggImageLoaded }" @load="easterEggImageLoaded = true"
+            @error="easterEggImageLoaded = true" />
+        </div>
+      </section>
 
-      <div class="content">
-        <div class="markdown-content" v-html="compiledMarkdown"></div>
-      </div>
-    </div>
+      <!-- 分组：应用信息 -->
+      <section class="list-section">
+        <h3 class="section-title">{{ $t('about.appInfo') }}</h3>
+        <div class="list-item clickable" @click="handleEasterEgg">
+          <span>{{ $t('about.author') }}</span>
+          <span class="text-secondary">{{ $t('about.authorName') }}</span>
+        </div>
+        <div class="list-item">
+          <span>{{ $t('about.license') }}</span>
+          <span class="text-secondary">{{ $t('about.licenseName') }}</span>
+        </div>
+      </section>
+
+      <!-- 分组：更新公告 -->
+      <section class="list-section">
+        <h3 class="section-title">{{ $t('about.releaseNotes') }}</h3>
+        <div class="list-item single">
+          ✨ {{ $t('archive.updated') }}：{{ $t('archive.updateDetails') }}
+        </div>
+      </section>
+
+      <!-- 分组：致谢 -->
+      <section class="list-section">
+        <h3 class="section-title">{{ $t('about.acknowledgements') }}</h3>
+        <div class="list-item single">
+          {{ $t('archive.thanks') }}
+        </div>
+      </section>
+
+      <!-- 分组：联系方式（图标点击） -->
+      <section class="list-section">
+        <h3 class="section-title">{{ $t('about.contact') }}</h3>
+        <div class="icon-row">
+          <a href="mailto:llzgd@outlook.com" target="_blank">
+            <font-awesome-icon :icon="['fas', 'envelope']" />
+          </a>
+          <a href="https://github.com/Eververdants" target="_blank">
+            <font-awesome-icon :icon="['fab', 'github']" />
+          </a>
+          <a v-if="showChineseSocial" href="https://space.bilibili.com/2019959464" target="_blank">
+            <font-awesome-icon :icon="['fab', 'bilibili']" />
+          </a>
+          <a v-if="showChineseSocial"
+            href="https://www.douyin.com/user/MS4wLjABAAAA8MEFE6VVh4_nWkTLPbueZYywgSyN19xhUFkmDF-nkhlnWytZWiBZ9YWM5s3RsprJ"
+            target="_blank">
+            <font-awesome-icon :icon="['fab', 'tiktok']" />
+          </a>
+        </div>
+      </section>
+
+      <!-- 底部版权 -->
+      <footer class="about-footer">
+        <p>© 2025 {{ $t('app.name') }}</p>
+        <small>{{ $t('about.licenseName') }} | {{ $t('archive.disclaimer') }}</small>
+      </footer>
+    </main>
   </div>
 </template>
 
-<script>
-import { marked } from "marked";
+<script setup>
+import { useI18n } from 'vue-i18n';
+import { computed, ref, onMounted, nextTick } from 'vue';
 
-export default {
-  name: "AboutPage",
-  data() {
-    return {
-      theme: "light",
-      activeItem: 0,
-      sidebarItems: [
-        {
-          icon: "👤",
-          title: "项目介绍",
-          file: "/markdown/about/introduction-CN.md",
-        },
-        {
-          icon: "👤",
-          title: "更新公告",
-          file: "/markdown/about/announcement-CN.md",
-        },
-        { icon: "⚖️", title: "法律声明", file: "/markdown/about/license.md" },
-      ],
-      markdownTexts: [], // 存储从文件读取的内容
-      isLoading: true,
-    };
-  },
-  computed: {
-    compiledMarkdown() {
-      return this.markdownTexts[this.activeItem]
-        ? marked(this.markdownTexts[this.activeItem], { breaks: true })
-        : "<p>加载中...</p>";
-    },
-  },
-  methods: {
-    async loadMarkdownFiles() {
-      const promises = this.sidebarItems.map(async (item, index) => {
-        try {
-          const response = await fetch(item.file);
-          if (!response.ok) throw new Error(`无法加载 ${item.file}`);
-          const text = await response.text();
-          this.markdownTexts[index] = text;
-        } catch (error) {
-          console.error(error);
-          this.markdownTexts[index] = `⚠️ 加载失败：${item.title}`;
-        }
-      });
 
-      await Promise.all(promises);
-      this.isLoading = false;
-    },
-    toggleTheme() {
-      this.theme = this.theme === "light" ? "dark" : "light";
-    },
-  },
-  mounted() {
-    marked.setOptions({
-      gfm: true,
-      tables: true,
-      breaks: true,
-      pedantic: false,
-      sanitize: false,
-      smartLists: true,
-      smartypants: false,
-    });
+const { t, locale } = useI18n({ useScope: 'global' });
+const version = "3.0.0-Alpha-3";
 
-    this.loadMarkdownFiles();
-  },
-  updated() {
-    // 页面更新后自动为所有 <a> 标签添加 target 和 rel 属性
-    this.$nextTick(() => {
-      const links = this.$el.querySelectorAll(".markdown-content a");
-      links.forEach((link) => {
-        if (!link.href.startsWith("mailto:") && !link.href.startsWith("tel:")) {
-          link.setAttribute("target", "_blank");
-          link.setAttribute("rel", "noopener");
-        }
-      });
-    });
-  },
+const showChineseSocial = computed(() => ['zh-CN', 'zh-TW'].includes(locale.value));
+const showEasterEgg = ref(false);
+const iconLoaded = ref(false);
+const easterEggImageLoaded = ref(false);
+let clickCount = 0;
+let clickTimer = null;
+
+const handleImageLoad = () => {
+  iconLoaded.value = true;
 };
+
+onMounted(() => {
+  // 确保图片已经缓存，直接触发加载完成状态
+  const img = new Image();
+  img.onload = handleImageLoad;
+  img.onerror = handleImageLoad; // 即使加载失败也显示图标
+  img.src = '/app-icon.png';
+});
+
+const handleEasterEgg = () => {
+  if (clickTimer) {
+    clearTimeout(clickTimer);
+  }
+
+  clickCount++;
+
+  if (clickCount >= 5) {
+    // 直接重置动画状态，无需隐藏再显示
+    easterEggImageLoaded.value = false;
+
+    // 强制触发重新加载图片和动画
+    setTimeout(() => {
+      easterEggImageLoaded.value = true;
+    }, 50);
+
+    // 确保彩蛋可见
+    if (!showEasterEgg.value) {
+      showEasterEgg.value = true;
+    }
+
+    clickCount = 0;
+    clearTimeout(clickTimer);
+  } else {
+    clickTimer = setTimeout(() => {
+      clickCount = 0;
+    }, 2000);
+  }
+};
+
+// 处理app-icon的5次点击事件
+let appIconClickCount = 0;
+let appIconClickTimer = null;
+
+const handleAppIconClick = () => {
+  if (appIconClickTimer) {
+    clearTimeout(appIconClickTimer);
+  }
+
+  appIconClickCount++;
+
+  if (appIconClickCount >= 5) {
+    // 触发添加日志菜单事件
+    window.dispatchEvent(new CustomEvent('add-log-menu'));
+
+    // 显示提示
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position: fixed;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      z-index: 9999;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      animation: fadeInOut 2s ease-in-out;
+    `;
+    toast.textContent = '日志功能已激活！';
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 2000);
+
+    appIconClickCount = 0;
+    clearTimeout(appIconClickTimer);
+  } else {
+    appIconClickTimer = setTimeout(() => {
+      appIconClickCount = 0;
+    }, 1000); // 1秒内点击5次
+  }
+};
+
 </script>
 
 <style scoped>
 .about-container {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  background: var(--bg-primary);
+}
+
+.about-content {
+  padding: 1.5rem 1.5rem 3rem;
+  overflow-y: auto;
+}
+
+/* 毛玻璃卡片 */
+.glass-card {
+  background: var(--about-glass-bg);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--about-glass-border);
+  border-radius: 20px;
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 20px var(--about-glass-shadow);
+  position: relative;
+}
+
+.easter-egg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 1rem;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  transition: background-color 0.3s, color 0.3s;
-  position: relative;
-  bottom: 10px;
+  text-align: center;
 }
 
-.living-glass-panel {
-  display: flex;
-  width: 1170px;
-  height: 680px;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  position: relative;
-}
-
-/* 侧边栏样式 */
-.sidebar {
-  width: 170px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 30px 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start; /* 关键：从顶部开始排列 */
-  align-items: stretch;
-  overflow-y: auto; /* 可选：加滚动条 */
-}
-
-.light .sidebar {
-  background: rgba(255, 255, 255, 0.7);
-  border-right: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.sidebar-item {
-  padding: 15px 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.light .sidebar-item:hover {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.sidebar-item.active {
-  background: rgba(255, 255, 255, 0.2);
-  border-left: 4px solid #4e89ff;
-}
-
-.light .sidebar-item.active {
-  background: rgba(0, 0, 0, 0.08);
-  border-left: 4px solid #4e89ff;
-}
-
-.icon {
-  font-size: 20px;
-  margin-right: 12px;
-}
-
-.title {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* 内容区域样式 */
-.content {
-  flex: 1;
-  padding: 40px;
-  overflow-y: auto;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-}
-
-.light .content {
-  background: rgba(255, 255, 255, 0.8);
-}
-</style>
-
-<style>
-/* Markdown内容全局样式 */
-.markdown-content {
-  line-height: 1.7;
-}
-
-.markdown-content h1,
-.markdown-content h2,
-.markdown-content h3,
-.markdown-content h4 {
-  margin-top: 1.5em;
-  margin-bottom: 0.8em;
-  position: relative;
-  padding-bottom: 0.3em;
-}
-
-.light .markdown-content h1,
-.light .markdown-content h2,
-.light .markdown-content h3,
-.light .markdown-content h4 {
-  color: #2c3e50;
-}
-
-.dark .markdown-content h1,
-.dark .markdown-content h2,
-.dark .markdown-content h3,
-.dark .markdown-content h4 {
-  color: #f0f0f0;
-}
-
-.markdown-content h1 {
-  font-size: 2.2em;
-  border-bottom: 2px solid #4e89ff;
-}
-
-.markdown-content h2 {
-  font-size: 1.8em;
-  border-bottom: 1px solid rgba(78, 137, 255, 0.5);
-}
-
-.markdown-content h3 {
-  font-size: 1.5em;
-}
-
-.markdown-content p {
-  margin-bottom: 1.2em;
-}
-
-.markdown-content ul,
-.markdown-content ol {
-  margin-bottom: 1.5em;
-  padding-left: 1.5em;
-}
-
-.markdown-content li {
-  margin-bottom: 0.5em;
-}
-
-.markdown-content a {
-  color: #4e89ff;
-  text-decoration: none;
-  position: relative;
-}
-
-.markdown-content a:after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: #4e89ff;
-  transition: width 0.3s;
-}
-
-.markdown-content a:hover:after {
-  width: 100%;
-}
-
-.markdown-content strong {
-  font-weight: 600;
-}
-
-.markdown-content code {
-  background: rgba(78, 137, 255, 0.15);
-  padding: 0.2em 0.4em;
-  border-radius: 4px;
-  font-family: "Fira Code", monospace;
-}
-
-.dark .markdown-content code {
-  background: rgba(78, 137, 255, 0.2);
-}
-
-.markdown-content pre {
-  background: rgba(0, 0, 0, 0.08);
-  padding: 15px;
+.easter-egg-image {
+  max-height: 60px;
+  opacity: 0.8;
   border-radius: 8px;
-  overflow-x: auto;
-  margin: 1.5em 0;
-  border-left: 3px solid #4e89ff;
 }
 
-.light .markdown-content pre {
-  background: rgba(0, 0, 0, 0.03);
+.easter-egg-image.loaded {
+  animation: fadeIn 0.3s ease-in;
+  animation-fill-mode: forwards;
 }
 
-.markdown-content blockquote {
-  border-left: 4px solid #4e89ff;
-  padding: 0.5em 1em;
-  margin: 1.5em 0;
-  background: rgba(78, 137, 255, 0.05);
-  border-radius: 0 8px 8px 0;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 0.8;
+    transform: translateX(0);
+  }
 }
 
-.dark .markdown-content blockquote {
-  background: rgba(78, 137, 255, 0.1);
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+
+  20% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
 }
 
-.markdown-content table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1.5em 0;
+@keyframes iconFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
-.markdown-content th,
-.markdown-content td {
-  padding: 0.8em;
-  text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.app-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: rgba(128, 128, 128, 0.1);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  padding: 8px;
+  box-sizing: border-box;
+  opacity: 0;
+  transition: opacity 0.2s ease-in;
 }
 
-.light .markdown-content th,
-.light .markdown-content td {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+.app-icon.loaded {
+  opacity: 1;
+  animation: iconFadeIn 0.2s ease-in forwards;
 }
 
-.markdown-content th {
+.app-title {
+  font-size: 1.3rem;
   font-weight: 600;
-  background: rgba(78, 137, 255, 0.1);
+  margin: 0;
+  color: var(--text-primary);
 }
 
-.dark .markdown-content th {
-  background: rgba(78, 137, 255, 0.15);
+.app-version {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0.2rem 0;
+}
+
+.app-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* 分组列表 */
+.list-section {
+  margin-bottom: 1.2rem;
+  background: var(--about-list-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--about-glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.section-title {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--about-border-light);
+}
+
+.list-item {
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  transition: background 0.2s ease;
+}
+
+.list-item:hover {
+  background: var(--about-hover-bg);
+}
+
+.list-item.single {
+  color: var(--text-secondary);
+  justify-content: flex-start;
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+/* 联系方式图标 */
+.icon-row {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 0.8rem 0;
+}
+
+.icon-row a {
+  font-size: 1.4rem;
+  color: var(--text-primary);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.icon-row a:hover {
+  color: var(--accent-color);
+  transform: scale(1.15);
+}
+
+/* 底部版权 */
+.about-footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--about-glass-border);
+  color: var(--text-secondary);
+  position: relative;
+}
+
+.about-footer p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.about-footer small {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  opacity: 0.7;
+}
+
+
+
+.clickable {
+  cursor: pointer;
+}
+
+/* 深色模式适配 */
+[data-theme="dark"] .about-container {
+  background: linear-gradient(to bottom, var(--about-bg-gradient-start), var(--about-bg-gradient-end));
 }
 </style>

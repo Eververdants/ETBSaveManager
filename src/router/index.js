@@ -1,5 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/Home.vue";
+import About from "../views/About.vue";
+import Settings from "../views/Settings.vue";
+import PluginMarket from "../views/PluginMarket.vue";
+import CreateArchive from "../views/CreateArchive.vue";
+import EditArchive from "../views/EditArchive.vue";
+import Log from "../views/Log.vue";
 
 const routes = [
   {
@@ -10,27 +16,33 @@ const routes = [
   {
     path: "/about",
     name: "About",
-    component: () => import("../views/About.vue"),
-  },
-  {
-    path: "/how2use",
-    name: "HowToUse",
-    component: () => import("../views/How2Use.vue"),
-  },
-  {
-    path: "/additionalcontent",
-    name: "AdditionalContent",
-    component: () => import("../views/AdditionalContent.vue"),
-  },
-  {
-    path: "/createarchive",
-    name: "CreateArchive",
-    component: () => import("../views/CreateArchive.vue"),
+    component: About,
   },
   {
     path: "/settings",
     name: "Settings",
-    component: () => import("../views/settings.vue"),
+    component: Settings,
+  },
+  {
+    path: "/plugins",
+    name: "PluginMarket",
+    component: PluginMarket,
+  },
+  {
+    path: "/create-archive",
+    name: "CreateArchive",
+    component: CreateArchive,
+  },
+  {
+    path: "/edit-archive/:archiveData?",
+    name: "EditArchive",
+    component: EditArchive,
+    props: true,
+  },
+  {
+    path: "/logs",
+    name: "Log",
+    component: Log,
   },
 ];
 
@@ -38,8 +50,9 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    return { top: 0, left: 0, behavior: "auto" };
-  },
+    // 对于自定义滚动容器，返回 false 让 App.vue 中的 afterEach 处理
+    return false;
+  }
 });
 
 export default router;

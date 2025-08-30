@@ -20,7 +20,7 @@
     "listDescription": "View and manage all archives",
     "createDescription": "Create new game archive",
     "updated": "Update",
-    "updateDetails": "Multilingual support, themes, and many more features are now complete.",
+    "updateDetails": "Added deletion placeholder animation and creation prompts, and fixed known bugs.",
     "thanks": "Thanks to everyone who provided feedback, suggestions and support for this project",
     "disclaimer": "This tool is for educational and communication purposes only"
   },
@@ -104,20 +104,24 @@
     "check": "Check",
     "latestVersion": "You're using the latest version",
     "updateFailed": "Update check failed, please try again later",
+    "rateLimitError": "Too many requests, please try again in 12 hours",
+    "networkError": "Network connection failed, please check your connection and try again",
+    "resourceNotFound": "Update information not found, please try again later",
+    "accessDenied": "Access denied, please try again later",
     "versionInfo": "ETB Save Manager v{version}",
     "developedBy": "Developed by Eververdants",
     "newVersionAvailable": "New version v{version} available",
     "updateAvailable": "Update Available",
     "updateNotes": "Update Notes",
-    "downloadUpdate": "Update Now",
+    "downloadUpdate": "Go to Download",
     "updateLater": "Remind Me Later",
-    "downloading": "Downloading...",
-    "installing": "Installing...",
-    "restartToUpdate": "Restart app to complete update",
-    "updateComplete": "Update Complete",
-    "updateError": "Update failed: {error}",
+    "downloading": "Opening...",
+    "installing": "Preparing download...",
+    "restartToUpdate": "Please manually install the update",
+    "updateComplete": "Download page opened",
+    "updateError": "Failed to open download page: {error}",
     "checkUpdateError": "Update check failed: {error}",
-    "updateDownloaded": "Update downloaded, ready to install",
+    "updateDownloaded": "Please download the update from GitHub",
     "updateCheckSkipped": "Update check skipped",
     "updateCheckInterval": "Automatically check for updates once per day"
   },
@@ -198,7 +202,26 @@
   },
   "archiveCard": {
     "archiveDifficulty": "Archive Difficulty",
-    "actualDifficulty": "Actual Difficulty"
+    "actualDifficulty": "Actual Difficulty",
+    "currentLevel": "Current Level",
+    "gameMode": "Game Mode",
+    "singleplayer": "Singleplayer",
+    "multiplayer": "Multiplayer",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "nightmare": "Nightmare",
+    "visible": "Visible",
+    "hidden": "Hidden",
+    "lastModified": "Last Modified",
+    "id": "Archive ID"
+  },
+  "confirmModal": {
+    "deleteArchiveTitle": "Delete Archive",
+    "deleteArchiveMessage": "Are you sure you want to delete the archive '{name}'?",
+    "deleteArchiveDescription": "This action will permanently delete the archive file and cannot be recovered.",
+    "confirm": "Delete",
+    "cancel": "Cancel"
   },
   "createArchive": {
     "title": "Create New Archive",
@@ -220,6 +243,7 @@
       "singleplayer": "Single Player",
       "multiplayer": "Multiplayer"
     },
+    "singleplayerNotice": "In single player mode, only normal difficulty is available",
     "difficulty": "Difficulty",
     "actualDifficulty": "Actual Difficulty",
     "difficultyLevels": {
@@ -247,7 +271,8 @@
     "archiveCreatedError": "Archive creation failed, please try again.",
     "canProceed": "Ready to proceed",
     "cannotProceed": "Please complete required fields",
-    "noPlayersHint": "Please add a player Steam ID to manage inventory"
+    "noPlayersHint": "Please add a player Steam ID to manage inventory",
+    "creating": "Creating..."
   },
   "editArchive": {
     "title": "Edit Archive",

@@ -212,7 +212,6 @@ if (props.archives.length > 0) {
 <style scoped>
 .archive-search-filter {
   width: 100%;
-  max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -232,7 +231,7 @@ if (props.archives.length > 0) {
   backdrop-filter: var(--glass-backdrop-filter, blur(10px));
   border-radius: 12px;
   padding: 16px 20px;
-  box-shadow: var(--card-shadow, 0 8px 32px rgba(0, 0, 0, 0.3));
+  box-shadow: var(--card-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
   border: var(--card-border, 1px solid rgba(255, 255, 255, 0.1));
   z-index: 100;
   flex: 0 0 auto;
@@ -249,7 +248,7 @@ if (props.archives.length > 0) {
   backdrop-filter: var(--glass-backdrop-filter, blur(10px));
   border-radius: 12px;
   padding: 16px 20px;
-  box-shadow: var(--card-shadow, 0 8px 32px rgba(0, 0, 0, 0.3));
+  box-shadow: var(--card-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
   border: var(--card-border, 1px solid rgba(255, 255, 255, 0.1));
   z-index: 100;
   flex: 0 0 auto;
@@ -291,7 +290,7 @@ if (props.archives.length > 0) {
   backdrop-filter: var(--glass-backdrop-filter, blur(10px));
   border-radius: 12px;
   padding: 16px 20px;
-  box-shadow: var(--card-shadow, 0 8px 32px rgba(0, 0, 0, 0.3));
+  box-shadow: var(--card-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
   border: var(--card-border, 1px solid rgba(255, 255, 255, 0.1));
   z-index: 100;
   flex: 2;

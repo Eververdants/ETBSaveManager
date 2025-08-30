@@ -20,7 +20,7 @@
     "listDescription": "查看和管理所有存档",
     "createDescription": "创建新的游戏存档",
     "updated": "更新内容",
-    "updateDetails": "完成了多语言、主题与其他更多功能。",
+    "updateDetails": "添加了删除补位动画与创建存档时的提示，并且修复了已知bug。",
     "thanks": "感谢所有为本项目提供反馈、建议与支持的朋友们",
     "disclaimer": "本工具仅供学习交流使用"
   },
@@ -104,20 +104,24 @@
     "check": "检查",
     "latestVersion": "当前已是最新版本",
     "updateFailed": "检查更新失败，请稍后重试",
+    "rateLimitError": "请求过于频繁，请12小时后再试",
+    "networkError": "网络连接失败，请检查网络后重试",
+    "resourceNotFound": "更新信息获取失败，请稍后再试",
+    "accessDenied": "访问受限，请稍后再试",
     "versionInfo": "逃离后室存档工具 v{version}",
     "developedBy": "由 Eververdants 开发",
     "newVersionAvailable": "发现新版本 v{version}",
     "updateAvailable": "有可用更新",
     "updateNotes": "更新内容",
-    "downloadUpdate": "立即更新",
+    "downloadUpdate": "前往下载",
     "updateLater": "稍后提醒",
-    "downloading": "正在下载...",
-    "installing": "正在安装...",
-    "restartToUpdate": "重启应用以完成更新",
-    "updateComplete": "更新完成",
-    "updateError": "更新失败：{error}",
+    "downloading": "正在打开...",
+    "installing": "准备下载...",
+    "restartToUpdate": "请手动安装更新",
+    "updateComplete": "已打开下载页面",
+    "updateError": "打开下载页面失败：{error}",
     "checkUpdateError": "检查更新失败：{error}",
-    "updateDownloaded": "更新已下载，准备安装",
+    "updateDownloaded": "请前往GitHub下载更新",
     "updateCheckSkipped": "已跳过更新检查",
     "updateCheckInterval": "每天自动检查一次更新"
   },
@@ -200,6 +204,13 @@
     "archiveDifficulty": "存档难度",
     "actualDifficulty": "实际难度"
   },
+  "confirmModal": {
+    "deleteArchiveTitle": "删除存档",
+    "deleteArchiveMessage": "确定要删除存档 '{name}' 吗？",
+    "deleteArchiveDescription": "此操作将永久删除存档文件，无法恢复。",
+    "confirm": "删除",
+    "cancel": "取消"
+  },
   "createArchive": {
     "title": "创建新存档",
     "steps": {
@@ -221,6 +232,7 @@
       "multiplayer": "多人模式",
       "cooperative": "合作模式"
     },
+    "singleplayerNotice": "单人模式下只能选择普通难度",
     "difficulty": "难度",
     "actualDifficulty": "实际难度",
     "difficultyLevels": {
@@ -245,7 +257,9 @@
     "archiveCreated": "存档创建成功！",
     "archiveCreatedMessage": "您的新存档已创建完成",
     "canProceed": "可以继续",
-    "cannotProceed": "请完成必填字段"
+    "cannotProceed": "请完成必填字段",
+    "batchCreate": "批量创建",
+    "creating": "创建中..."
   },
   "editArchive": {
     "title": "编辑存档",
@@ -323,6 +337,53 @@
     "useFiltersAbove": "使用上方的搜索和筛选功能",
     "loadingArchives": "正在加载存档...",
     "scanningFiles": "正在扫描存档文件"
+  },
+  "batchCreate": {
+    "title": "批量创建存档",
+    "subtitle": "一次性创建多个游戏存档",
+    "baseConfig": "基础配置",
+    "levelConfig": "层级配置",
+    "difficultyConfig": "难度配置",
+    "playerConfig": "玩家配置",
+    "archivePrefix": "存档前缀",
+    "prefixPlaceholder": "请输入存档名称前缀",
+    "prefixError": "存档前缀不能包含下划线",
+    "generateCount": "生成数量",
+    "gameMode": "游戏模式",
+    "gameModes": {
+      "singleplayer": "单人模式",
+      "multiplayer": "多人模式"
+    },
+    "levelMode": "层级选择模式",
+    "singleLevel": "单个层级",
+    "multipleLevels": "多个层级",
+    "randomLevels": "随机层级",
+    "selectSingleLevel": "选择层级",
+    "chooseLevel": "请选择层级",
+    "selectMultipleLevels": "选择多个层级",
+    "randomLevelCount": "随机层级数量",
+    "difficulty": "存档难度",
+    "actualDifficulty": "实际难度",
+    "difficultyLevels": {
+      "easy": "简单",
+      "normal": "普通",
+      "hard": "困难",
+      "nightmare": "噩梦"
+    },
+    "steamIds": "玩家Steam ID",
+    "steamIdPlaceholder": "请输入Steam ID",
+    "add": "添加",
+    "inventorySettings": "背包设置",
+    "emptyInventory": "空背包",
+    "templateInventory": "模板背包",
+    "switchToSingle": "返回单个创建",
+    "startBatchCreate": "开始批量创建",
+    "resetForm": "重置表单",
+    "creating": "创建中...",
+    "createSuccess": "批量创建完成！",
+    "createSuccessMessage": "成功创建了 {count} 个存档",
+    "createFailed": "创建失败",
+    "createFailedMessage": "创建过程中出现错误"
   },
   "floatingButton": {
     "searchArchive": "搜索存档",

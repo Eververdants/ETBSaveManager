@@ -82,7 +82,7 @@ import { computed, ref, onMounted, nextTick } from 'vue';
 
 
 const { t, locale } = useI18n({ useScope: 'global' });
-const version = "3.0.0-Alpha-4";
+const version = "3.0.0-Alpha-4.1";
 
 const showChineseSocial = computed(() => ['zh-CN', 'zh-TW'].includes(locale.value));
 const showEasterEgg = ref(false);
@@ -164,7 +164,7 @@ const handleAppIconClick = () => {
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       animation: fadeInOut 2s ease-in-out;
     `;
-    toast.textContent = '日志功能已激活！';
+    toast.textContent = '日志功能已激活！请在侧边栏查看';
     document.body.appendChild(toast);
 
     setTimeout(() => {

@@ -157,7 +157,7 @@ class LogService {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `etb-logs-${new Date().toISOString().slice(0, 10)}.txt`;
+      a.download = `ETBSaveManager-logs-${new Date().toISOString().slice(0, 10)}.txt`;
       document.body.appendChild(a); // 添加到DOM以确保兼容性
       a.click();
       document.body.removeChild(a); // 清理

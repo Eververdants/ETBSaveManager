@@ -8,7 +8,7 @@
             <font-awesome-icon icon="fa-solid fa-times" />
           </button>
         </div>
-        
+
         <div class="modal-body">
           <div class="modal-icon" :class="type">
             <font-awesome-icon :icon="icon" />
@@ -16,21 +16,12 @@
           <p class="modal-message">{{ message }}</p>
           <p v-if="description" class="modal-description">{{ description }}</p>
         </div>
-        
+
         <div class="modal-footer">
-          <button 
-            class="btn btn-secondary" 
-            @click="handleCancel"
-            :disabled="loading"
-          >
+          <button class="btn btn-secondary" @click="handleCancel" :disabled="loading">
             {{ cancelText }}
           </button>
-          <button 
-            class="btn" 
-            :class="`btn-${type}`"
-            @click="handleConfirm"
-            :disabled="loading"
-          >
+          <button class="btn" :class="`btn-${type}`" @click="handleConfirm" :disabled="loading">
             <span v-if="loading" class="loading-spinner"></span>
             {{ confirmText }}
           </button>
@@ -145,8 +136,9 @@ onUnmounted(() => {
   -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
+  padding-top: 60px;
   justify-content: center;
-  z-index: 9999;
+  z-index: 1099;
   padding: 20px;
 }
 
@@ -308,31 +300,13 @@ onUnmounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+  0% {
+    transform: rotate(0deg);
+  }
 
-/* 动画效果 */
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-  transform: scale(0.9);
-}
-
-.modal-enter-active .modal-container,
-.modal-leave-active .modal-container {
-  transition: all 0.3s ease;
-}
-
-.modal-enter-from .modal-container,
-.modal-leave-to .modal-container {
-  opacity: 0;
-  transform: scale(0.95) translateY(-20px);
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 响应式设计 */
@@ -340,29 +314,30 @@ onUnmounted(() => {
   .modal-overlay {
     padding: 16px;
   }
-  
+
   .modal-container {
     margin: 0;
   }
-  
+
   .modal-header {
     padding: 16px 20px 12px;
   }
-  
+
   .modal-body {
     padding: 20px;
   }
-  
+
   .modal-footer {
     padding: 12px 20px 20px;
     flex-direction: column-reverse;
     gap: 8px;
   }
-  
+
   .btn {
     width: 100%;
   }
 }
+
 /* 模态框动画 */
 .modal-enter-active {
   transition: opacity 0.3s ease-out;
@@ -379,6 +354,7 @@ onUnmounted(() => {
 
 .modal-enter-active .modal-container {
   transition: all 0.3s ease-out;
+  transition-delay: 0.1s;
 }
 
 .modal-leave-active .modal-container {
@@ -395,21 +371,11 @@ onUnmounted(() => {
   opacity: 0;
 }
 
-
-
-.loading-spinner {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid white;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-right: 8px;
+.modal-overlay.modal-leave-active {
+  transition: opacity 0.25s ease-in;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.modal-overlay.modal-leave-to {
+  opacity: 0;
 }
 </style>

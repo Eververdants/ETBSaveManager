@@ -18,6 +18,14 @@
       </div>
     </div>
 
+    <!-- 切换到批量创建页面的按钮 -->
+    <transition name="batch-switch">
+      <button class="batch-create-button" @click="switchToBatchCreate" :class="{ 'shrink': isSwitching }">
+        <font-awesome-icon :icon="['fas', 'layer-group']" />
+        <span class="button-text">{{ $t('createArchive.batchCreate') }}</span>
+      </button>
+    </transition>
+
     <!-- 主要内容区域 -->
     <div class="content-wrapper">
       <!-- 步骤内容容器 -->
@@ -71,6 +79,13 @@
                     <span class="radio-label">{{ $t(`createArchive.gameModes.${mode.value}`) }}</span>
                   </label>
                 </div>
+                <!-- 单人模式提示 -->
+                <transition name="fade-slide" mode="out-in">
+                  <div v-if="selectedGameMode === 'singleplayer'" class="singleplayer-notice" key="singleplayer-notice">
+                    <font-awesome-icon :icon="['fas', 'info-circle']" />
+                    <span>{{ $t('createArchive.singleplayerNotice') }}</span>
+                  </div>
+                </transition>
               </div>
 
               <!-- 存档难度 -->
@@ -78,8 +93,11 @@
                 <h3 class="form-section-title">{{ $t('createArchive.difficulty') }}</h3>
                 <div class="difficulty-grid">
                   <div v-for="difficulty in difficultyLevels" :key="difficulty.value" class="difficulty-option"
-                    :class="{ selected: selectedDifficulty === difficulty.value }"
-                    @click="selectedDifficulty = difficulty.value">
+                    :class="{ 
+                      selected: selectedDifficulty === difficulty.value,
+                      disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal'
+                    }"
+                    @click="selectDifficulty(difficulty.value)">
                     <div class="difficulty-icon">
                       <font-awesome-icon :icon="difficulty.icon" />
                     </div>
@@ -93,8 +111,12 @@
                 <h3 class="form-section-title">{{ $t('createArchive.actualDifficulty') }}</h3>
                 <div class="difficulty-grid">
                   <div v-for="difficulty in difficultyLevels" :key="`actual-${difficulty.value}`"
-                    class="difficulty-option" :class="{ selected: selectedActualDifficulty === difficulty.value }"
-                    @click="selectedActualDifficulty = difficulty.value">
+                    class="difficulty-option" 
+                    :class="{ 
+                      selected: selectedActualDifficulty === difficulty.value,
+                      disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal'
+                    }"
+                    @click="selectActualDifficulty(difficulty.value)">
                     <div class="difficulty-icon">
                       <font-awesome-icon :icon="difficulty.icon" />
                     </div>
@@ -201,8 +223,14 @@
       </div>
 
       <button @click="nextStep" class="action-button primary" :disabled="!canProceed">
-        {{ currentStep === 3 ? $t('createArchive.createArchive') : $t('createArchive.next') }}
-        <font-awesome-icon :icon="['fas', currentStep === 3 ? 'check' : 'arrow-right']" />
+        <template v-if="currentStep === 3 && isCreating">
+          {{ $t('createArchive.creating') }}
+          <font-awesome-icon :icon="['fas', 'spinner']" spin />
+        </template>
+        <template v-else>
+          {{ currentStep === 3 ? $t('createArchive.createArchive') : $t('createArchive.next') }}
+          <font-awesome-icon :icon="['fas', currentStep === 3 ? 'check' : 'arrow-right']" />
+        </template>
       </button>
     </div>
     <!-- 物品选择器 -->
@@ -212,9 +240,10 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { gsap } from 'gsap'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import InventoryItemSelector from '../components/InventoryItemSelector.vue'
 
 export default {
@@ -224,6 +253,7 @@ export default {
   },
   setup() {
     const { t } = useI18n({ useScope: 'global' })
+    const router = useRouter()
     const currentStep = ref(1)
     const previousStepValue = ref(1)
     const selectedLevel = ref(-1)
@@ -235,6 +265,8 @@ export default {
     const activePlayerIndex = ref(-1)
     const showItemSelector = ref(false)
     const editingSlot = ref({ playerIndex: -1, slotIndex: -1 })
+    const isSwitching = ref(false)
+    const isCreating = ref(false) // 添加创建状态标志
 
     // 动态加载层级数据
     const availableLevels = reactive([])
@@ -256,6 +288,11 @@ export default {
 
     // 计算属性
     const canProceed = computed(() => {
+      // 如果正在创建，禁用按钮
+      if (isCreating.value) {
+        return false
+      }
+
       switch (currentStep.value) {
         case 1:
           return selectedLevel.value !== -1
@@ -269,6 +306,46 @@ export default {
     })
 
     // 方法
+    const selectDifficulty = (difficulty) => {
+      // 如果是单人模式，只能选择普通难度
+      if (selectedGameMode.value === 'singleplayer' && difficulty !== 'normal') {
+        return
+      }
+      selectedDifficulty.value = difficulty
+    }
+
+    const selectActualDifficulty = (difficulty) => {
+      // 如果是单人模式，只能选择普通难度
+      if (selectedGameMode.value === 'singleplayer' && difficulty !== 'normal') {
+        return
+      }
+      selectedActualDifficulty.value = difficulty
+    }
+
+    // 监听游戏模式变化
+    watch(selectedGameMode, (newMode) => {
+      // 如果切换到单人模式，自动设置难度为普通
+      if (newMode === 'singleplayer') {
+        selectedDifficulty.value = 'normal'
+        selectedActualDifficulty.value = 'normal'
+      }
+    })
+
+    const switchToBatchCreate = () => {
+      isSwitching.value = true
+
+      // 添加淡出动画
+      gsap.to('.create-archive-container', {
+        opacity: 0,
+        scale: 0.95,
+        duration: 0.3,
+        ease: 'power2.in',
+        onComplete: () => {
+          router.push('/batch-create-archive')
+        }
+      })
+    }
+
     const loadLevels = async () => {
       // 层级名称映射
       const levelMappings = [
@@ -351,6 +428,20 @@ export default {
       }
     }
 
+    const resetForm = () => {
+      // 重置表单状态
+      currentStep.value = 1
+      selectedLevel.value = -1
+      archiveName.value = ''
+      selectedGameMode.value = 'singleplayer'
+      selectedDifficulty.value = 'normal'
+      selectedActualDifficulty.value = 'normal'
+      newSteamId.value = ''
+      activePlayerIndex.value = -1
+      players.splice(0, players.length)
+      isCreating.value = false
+    }
+
     const nextStep = () => {
       if (currentStep.value < 3 && canProceed.value) {
         previousStepValue.value = currentStep.value
@@ -396,11 +487,19 @@ export default {
     }
 
     const createArchive = async () => {
+      // 防止重复点击
+      if (isCreating.value) {
+        return
+      }
+
       try {
+        isCreating.value = true // 开始创建
+
         // 获取选中的层级
         const selectedLevelData = availableLevels[selectedLevel.value]
         if (!selectedLevelData) {
           alert('请选择层级')
+          isCreating.value = false
           return
         }
 
@@ -408,6 +507,7 @@ export default {
         const basicArchive = await loadJsonFile('BasicArchive.json')
         if (!basicArchive) {
           alert('加载存档模板失败，请检查 BasicArchive.json 文件是否存在')
+          isCreating.value = false
           return
         }
 
@@ -431,10 +531,12 @@ export default {
         // 验证所有必需字段
         if (!saveData.archive_name) {
           alert('请输入存档名称')
+          isCreating.value = false
           return
         }
         if (!saveData.level) {
           alert('请选择层级')
+          isCreating.value = false
           return
         }
 
@@ -463,7 +565,7 @@ export default {
           }
           return fallbackTranslations[key] || key
         }
-        
+
         // 创建成功提示卡片
         const successCard = document.createElement('div')
         successCard.className = 'success-card'
@@ -604,6 +706,7 @@ export default {
                   const stepsWrapper = container?.querySelector('.content-wrapper')
                   if (!stepsWrapper) {
                     resetForm()
+                    isCreating.value = false
                     return
                   }
 
@@ -625,13 +728,19 @@ export default {
                         x: '0%',
                         opacity: 1,
                         duration: 0.7,
-                        ease: "power2.out"
+                        ease: "power2.out",
+                        onComplete: () => {
+                          // 延迟恢复按钮状态，确保用户看到明显的状态变化
+                          setTimeout(() => {
+                            isCreating.value = false
+                          }, 2000) // 延长禁用时间至2秒
+                        }
                       })
                     }
                   })
                 }
               })
-            }, 1500)
+            }, 1000)
           }
         })
 
@@ -681,6 +790,7 @@ export default {
       } catch (error) {
         console.error('创建存档失败:', error)
         alert('创建存档失败: ' + (error.message || '未知错误'))
+        isCreating.value = false // 失败时立即重置状态
       }
     }
 
@@ -726,18 +836,6 @@ export default {
           }
         })
       }
-    }
-
-    const resetForm = () => {
-      currentStep.value = 1
-      selectedLevel.value = -1
-      archiveName.value = ''
-      selectedGameMode.value = 'singleplayer'
-      selectedDifficulty.value = 'normal'
-      selectedActualDifficulty.value = 'normal'
-      players.splice(0, players.length)
-      activePlayerIndex.value = -1
-      newSteamId.value = ''
     }
 
     // 侧边栏展开状态
@@ -848,6 +946,8 @@ export default {
       players,
       activePlayerIndex,
       isSidebarExpanded,
+      isSwitching,
+      isCreating,
       showItemSelector,
       editingSlot,
       canProceed,
@@ -863,8 +963,11 @@ export default {
       previousStep,
       createArchive,
       resetForm,
+      switchToBatchCreate,
       onStepEnter,
-      onStepLeave
+      onStepLeave,
+      selectDifficulty,
+      selectActualDifficulty
     }
   }
 }
@@ -1240,6 +1343,62 @@ export default {
 .difficulty-option.selected {
   border-color: var(--accent-color);
   background: rgba(0, 122, 255, 0.1);
+}
+
+/* 单人模式提示 */
+.singleplayer-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--divider-light);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* 过渡动画 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.fade-slide-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-slide-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* 禁用状态样式 */
+.difficulty-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.difficulty-option.disabled:hover {
+  border-color: var(--divider-light);
+  background: var(--bg-secondary);
+}
+
+.step-info {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .difficulty-icon {
@@ -1688,6 +1847,99 @@ export default {
 
   .slot-icon {
     font-size: 16px;
+  }
+}
+
+/* 批量创建按钮样式 */
+.batch-create-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  /* display: flex; */
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--divider-light);
+  border-radius: 25px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.batch-create-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+  background: var(--bg-tertiary);
+  border-color: var(--accent-color);
+}
+
+.batch-create-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.batch-create-button.shrink {
+  transform: scale(0.9);
+  opacity: 0;
+}
+
+/* 批量创建按钮动画 */
+.batch-switch-enter-active,
+.batch-switch-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.batch-switch-enter-from {
+  opacity: 0;
+  transform: translateX(20px) scale(0.8);
+}
+
+.batch-switch-enter-to {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.batch-switch-leave-from {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.batch-switch-leave-to {
+  opacity: 0;
+  transform: translateX(-20px) scale(0.8);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .batch-create-button {
+    top: 16px;
+    right: 16px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .batch-create-button .button-text {
+    display: none;
+  }
+
+  .batch-create-button .fa-layer-group {
+    margin: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .batch-create-button {
+    top: 12px;
+    right: 12px;
+    padding: 8px 12px;
   }
 }
 </style>

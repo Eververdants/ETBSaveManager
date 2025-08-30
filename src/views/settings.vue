@@ -91,28 +91,32 @@
 
     <!-- 更新提示 -->
     <transition name="slide">
-      <div v-if="updateMessage" :class="['update-message', updateMessage.type]" :key="updateMessage.text">
+      <div v-if="updateMessage" :class="['update-message', updateMessage.type]" :key="updateMessage.key || updateMessage.text">
         <font-awesome-icon :icon="updateMessage.icon" />
         <transition name="text-swift" mode="out-in">
           <span :key="currentLanguage + '-' + updateMessage.text">{{ updateMessage.text }}</span>
         </transition>
-        
+
         <!-- 更新操作按钮 -->
-        <div v-if="updateStatus === UpdateStatus.AVAILABLE" class="update-actions">
-          <button class="update-btn" @click="downloadAndInstall">
-            <font-awesome-icon :icon="['fas', 'download']" />
-            立即更新
-          </button>
-          <button class="update-btn secondary" @click="updateMessage = null">
-            稍后
-          </button>
-        </div>
-        
+        <transition name="expand" mode="out-in">
+          <div v-if="updateStatus === UpdateStatus.AVAILABLE" class="update-actions" :key="'actions-' + updateMessage.key">
+            <button class="update-btn" @click="downloadAndInstall" :disabled="isProcessing">
+              <font-awesome-icon :icon="['fas', 'external-link-alt']" />
+              前往下载
+            </button>
+            <button class="update-btn secondary" @click="closeUpdateMessage">
+              稍后
+            </button>
+          </div>
+        </transition>
+
         <!-- 更新详情 -->
-        <div v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE" class="update-details">
-          <h4>版本 {{ updateInfo.version }} 更新内容:</h4>
-          <div class="update-content" v-html="formatUpdateNotes(updateInfo.body)"></div>
-        </div>
+        <transition name="expand" mode="out-in">
+          <div v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE" class="update-details" :key="'details-' + updateMessage.key">
+            <h4>版本 {{ updateInfo.version }} 更新内容:</h4>
+            <div class="update-content" v-html="formatUpdateNotes(updateInfo.body)"></div>
+          </div>
+        </transition>
       </div>
     </transition>
   </div>
@@ -130,14 +134,17 @@ export default {
   },
   data() {
     return {
-      currentTheme: 'light',
-      currentLanguage: 'zh-CN',
+      currentTheme: localStorage.getItem('theme') || 'light',
+      currentLanguage: localStorage.getItem('language') || 'zh-CN',
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: '3.0.0-Alpha-3',
+      appVersion: '3.0.0-Alpha-4',
       activeDropdown: null,
       updateInfo: null,
-      updateStatus: UpdateStatus.IDLE
+      updateStatus: UpdateStatus.IDLE,
+      UpdateStatus: UpdateStatus, // 将UpdateStatus暴露给模板使用
+      isProcessing: false,
+      messageId: 0
     };
   },
   computed: {
@@ -162,15 +169,42 @@ export default {
   methods: {
     formatUpdateNotes(body) {
       if (!body) return '暂无更新说明';
+
+      let html = body;
       
-      // 将Markdown格式转换为HTML
-      return body
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/- (.*?)(\n|$)/g, '<li>$1</li>')
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/^/, '<p>')
-        .replace(/$/, '</p>');
+      // 处理代码块
+      html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      
+      // 处理标题
+      html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+      html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+      html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+      
+      // 处理列表
+      html = html.replace(/^\* (.*$)/gm, '<li>$1</li>');
+      html = html.replace(/^- (.*$)/gm, '<li>$1</li>');
+      html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+      
+      // 处理粗体和斜体
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+      html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+      
+      // 处理链接 [text](url)
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+      
+      // 处理换行
+      html = html.replace(/\n\n/g, '</p><p>');
+      html = html.replace(/\n/g, '<br>');
+      
+      // 包装段落
+      if (!html.includes('<h') && !html.includes('<pre') && !html.includes('<ul')) {
+        html = '<p>' + html + '</p>';
+      }
+      
+      return html;
     },
 
     handleDropdownOpen(dropdownName) {
@@ -223,69 +257,121 @@ export default {
     },
 
     async checkForUpdates() {
+      if (this.isProcessing) return;
+      
+      this.isProcessing = true;
       this.checkingUpdate = true;
       this.updateMessage = null;
       this.updateStatus = UpdateStatus.CHECKING;
+      this.messageId++;
 
       try {
         const update = await updateService.checkForUpdates();
-        
+
         if (update.shouldUpdate) {
           this.updateInfo = update;
           this.updateStatus = UpdateStatus.AVAILABLE;
           this.updateMessage = {
-            text: `发现新版本 ${update.version}，点击下载更新`,
+            text: `发现新版本 ${update.version}，点击查看详情`,
             type: 'info',
-            icon: ['fas', 'download']
+            icon: ['fas', 'external-link-alt'],
+            key: `available-${this.messageId}`
           };
         } else {
           this.updateStatus = UpdateStatus.NOT_AVAILABLE;
           this.updateMessage = {
             text: this.$t('settings.latestVersion'),
             type: 'success',
-            icon: ['fas', 'check']
+            icon: ['fas', 'check'],
+            key: `latest-${this.messageId}`
           };
         }
       } catch (error) {
         this.updateStatus = UpdateStatus.ERROR;
+        this.messageId++;
+        
+        // 使用更详细的错误信息
+        let errorText = this.$t('settings.updateFailed');
+        if (error.type === '速率限制' || error.message?.includes('rate limit') || error.message?.includes('429')) {
+          errorText = this.$t('settings.rateLimitError');
+        } else if (error.type === '网络连接') {
+          errorText = this.$t('settings.networkError');
+        } else if (error.type === '资源未找到') {
+          errorText = this.$t('settings.resourceNotFound');
+        } else if (error.type === '访问受限') {
+          errorText = this.$t('settings.accessDenied');
+        }
+        
         this.updateMessage = {
-          text: this.$t('settings.updateFailed'),
+          text: errorText,
           type: 'error',
-          icon: ['fas', 'times']
+          icon: ['fas', 'times'],
+          key: `error-${this.messageId}`
         };
       } finally {
         this.checkingUpdate = false;
+        this.isProcessing = false;
 
-        // 5秒后自动隐藏提示
+        // 8秒后自动隐藏错误提示（给更多时间阅读错误信息）
         setTimeout(() => {
           if (this.updateStatus !== UpdateStatus.AVAILABLE) {
-            this.updateMessage = null;
+            this.closeUpdateMessage();
           }
-        }, 5000);
+        }, this.updateStatus === UpdateStatus.ERROR ? 8000 : 5000);
       }
     },
 
+    closeUpdateMessage() {
+      this.updateMessage = null;
+      // 添加延迟确保动画完成
+      setTimeout(() => {
+        this.updateStatus = UpdateStatus.IDLE;
+        this.updateInfo = null;
+      }, 400);
+    },
+
     async downloadAndInstall() {
-      if (!this.updateInfo) return;
+      if (!this.updateInfo || this.isProcessing) return;
+
+      this.isProcessing = true;
+      this.messageId++;
 
       try {
-        this.updateStatus = UpdateStatus.DOWNLOADING;
+        this.updateStatus = UpdateStatus.AVAILABLE;
         this.updateMessage = {
-          text: '正在下载更新...',
+          text: '正在打开下载页面...',
           type: 'info',
-          icon: ['fas', 'spinner']
+          icon: ['fas', 'external-link-alt'],
+          key: `downloading-${this.messageId}`
         };
 
         await updateService.downloadAndInstall();
-        
-        // 更新完成会在服务中处理重启
-      } catch (error) {
-        this.updateStatus = UpdateStatus.ERROR;
+
+        // 成功打开下载页面
         this.updateMessage = {
-          text: '下载更新失败: ' + error.message,
-          type: 'error',
-          icon: ['fas', 'times']
+          text: '已打开下载页面，请手动下载安装',
+          type: 'success',
+          icon: ['fas', 'check'],
+          key: `success-${this.messageId}`
         };
+
+        // 3秒后清除提示
+        setTimeout(() => {
+          this.closeUpdateMessage();
+        }, 3000);
+
+      } catch (error) {
+        console.error('打开下载页面失败:', error);
+        this.updateStatus = UpdateStatus.ERROR;
+        this.messageId++;
+        this.updateMessage = {
+          text: '打开下载页面失败，请稍后再试',
+          type: 'error',
+          icon: ['fas', 'times'],
+          key: `error-${this.messageId}`
+        };
+      } finally {
+        this.isProcessing = false;
       }
     },
 
@@ -322,13 +408,11 @@ export default {
     }
   },
   async mounted() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    this.currentTheme = savedTheme;
-
+    // 应用保存的主题
     if (window.themeManager) {
-      window.themeManager.setTheme(savedTheme);
+      window.themeManager.setTheme(this.currentTheme);
     } else {
-      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.documentElement.setAttribute('data-theme', this.currentTheme);
     }
 
     await this.initializeLanguage();
@@ -556,12 +640,12 @@ export default {
 /* 更新消息样式 */
 .update-message {
   position: fixed;
-  top: 20px;
+  top: 70px; /* 考虑标题栏高度 */
   right: 20px;
   padding: 1rem 1.5rem;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  z-index: 1000;
+  z-index: 10000; /* 提高z-index确保在最上层 */
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -569,21 +653,35 @@ export default {
   min-width: 320px;
   backdrop-filter: blur(20px);
   transition: all 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--divider-color);
+}
+
+.update-message svg,
+.update-message span,
+.update-message .update-btn,
+.update-message .update-content,
+.update-message .update-details h4 {
+  color: var(--text);
 }
 
 .update-message.success {
-  background: var(--success-color);
-  color: white;
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--success-color);
 }
 
 .update-message.error {
-  background: var(--error-color);
-  color: white;
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--error-color);
 }
 
 .update-message.info {
-  background: var(--info-color);
-  color: white;
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--info-color);
 }
 
 .update-actions {
@@ -593,9 +691,9 @@ export default {
 }
 
 .update-btn {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--primary-color);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--primary-color);
   padding: 0.5rem 1rem;
   border-radius: 8px;
   cursor: pointer;
@@ -606,29 +704,42 @@ export default {
   text-align: center;
 }
 
-.update-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
+.update-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
   transform: translateY(-1px);
 }
 
-.update-btn:active {
+.update-btn:active:not(:disabled) {
   transform: translateY(0);
+}
+
+.update-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .update-btn.secondary {
   background: transparent;
+  color: var(--text);
+  border: 1px solid var(--divider-color);
+}
+
+.update-btn.secondary:hover {
+  background: var(--bg-tertiary);
 }
 
 .update-details {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid var(--divider-color);
 }
 
 .update-details h4 {
   font-size: 0.875rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: var(--text);
   opacity: 0.9;
 }
 
@@ -637,34 +748,189 @@ export default {
   line-height: 1.5;
   max-height: 200px;
   overflow-y: auto;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text);
 }
 
 .update-content :deep(p) {
-  margin: 0.25rem 0;
+  margin: 0.125rem 0;
+  line-height: 1.3;
 }
 
 .update-content :deep(ul) {
-  margin: 0.5rem 0;
-  padding-left: 1rem;
+  margin: 0.25rem 0;
+  padding-left: 0.75rem;
 }
 
 .update-content :deep(li) {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.125rem;
+  line-height: 1.2;
 }
 
 .update-content :deep(strong) {
   font-weight: 600;
 }
 
-/* 更新检查中的动画 */
+.update-content :deep(h1),
+.update-content :deep(h2),
+.update-content :deep(h3) {
+  font-weight: 600;
+  margin: 0.25rem 0 0.125rem 0;
+  color: var(--text);
+}
+
+.update-content :deep(h1) {
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--divider-color);
+  padding-bottom: 0.25rem;
+}
+
+.update-content :deep(h2) {
+  font-size: 0.825rem;
+}
+
+.update-content :deep(h3) {
+  font-size: 0.8rem;
+}
+
+.update-content :deep(code) {
+  background: var(--bg-tertiary);
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+  font-family: 'Consolas', 'Monaco', 'Lucida Console', monospace;
+  font-size: 0.7rem;
+  color: var(--text);
+}
+
+.update-content :deep(pre) {
+  background: var(--bg-tertiary);
+  padding: 0.4rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 0.25rem 0;
+  font-family: 'Consolas', 'Monaco', 'Lucida Console', monospace;
+  font-size: 0.7rem;
+  line-height: 1.3;
+  border: 1px solid var(--divider-color);
+}
+
+.update-content :deep(pre code) {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+.update-content :deep(a) {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+.update-content :deep(a:hover) {
+  text-decoration: underline;
+}
+
+/* 更新提示动画 */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform, opacity;
+}
+
+.slide-enter-from {
+  opacity: 0;
+  transform: translateX(100%) translateY(-20px) scale(0.8);
+  transform-origin: top right;
+}
+
+.slide-enter-to {
+  opacity: 1;
+  transform: translateX(0) translateY(0) scale(1);
+  transform-origin: top right;
+}
+
+.slide-leave-from {
+  opacity: 1;
+  transform: translateX(0) translateY(0) scale(1);
+  transform-origin: top right;
+}
+
+.slide-leave-to {
+  opacity: 0;
+  transform: translateX(100%) translateY(-20px) scale(0.8);
+  transform-origin: top right;
+}
+
+/* 文字切换动画 */
+.text-swift-enter-active,
+.text-swift-leave-active {
+  transition: all 0.3s ease;
+}
+
+.text-swift-enter-from {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.text-swift-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.text-swift-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.text-swift-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+/* 展开动画 */
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  max-height: 300px;
+  overflow: hidden;
+  will-change: max-height, opacity, transform;
+}
+
+.expand-enter-from {
+  opacity: 0;
+  max-height: 0;
+  transform: scaleY(0.6);
+  transform-origin: top;
+}
+
+.expand-enter-to {
+  opacity: 1;
+  max-height: 300px;
+  transform: scaleY(1);
+  transform-origin: top;
+}
+
+.expand-leave-from {
+  opacity: 1;
+  max-height: 300px;
+  transform: scaleY(1);
+  transform-origin: top;
+}
+
+.expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: scaleY(0.6);
+  transform-origin: top;
+}
+
+  /* 更新检查中的动画 */
 .spinner {
   display: inline-block;
   width: 12px;
   height: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid var(--text-tertiary);
   border-radius: 50%;
-  border-top-color: white;
+  border-top-color: var(--text);
   animation: spin 1s ease-in-out infinite;
 }
 
@@ -681,11 +947,11 @@ export default {
     max-width: none;
     min-width: auto;
   }
-  
+
   .update-actions {
     flex-direction: column;
   }
-  
+
   .update-btn {
     width: 100%;
   }

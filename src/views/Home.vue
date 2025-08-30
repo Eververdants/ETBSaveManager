@@ -8,14 +8,12 @@
     </div>
 
     <!-- 存档网格 -->
-    <div v-else class="archive-grid" ref="archiveGrid">
-      <transition-group name="archive-card" appear>
-        <ArchiveCard v-for="(archive, index) in displayArchives" :key="archive.id" :archive="archive" :index="index"
-          @click="selectArchive(archive)" @toggle-visibility="handleToggleVisibility" @edit="handleEdit"
-          @delete="deleteArchive" />
-      </transition-group>
+    <transition-group name="archive-card" appear tag="div" class="archive-grid" ref="archiveGrid">
+      <ArchiveCard v-for="(archive, index) in displayArchives" :key="archive.id" :archive="archive" :index="index"
+        @click="selectArchive(archive)" @toggle-visibility="handleToggleVisibility" @edit="handleEdit"
+        @delete="deleteArchive" />
 
-      <div v-if="displayArchives.length === 0 && archives.length > 0" class="empty-state">
+      <div v-if="displayArchives.length === 0 && archives.length > 0" key="no-results" class="empty-state">
         <div class="empty-icon">🔍</div>
         <h3>{{ $t('archiveSearch.noResults') }}</h3>
         <p>{{ $t('archiveSearch.noMatchingArchives') }}</p>
@@ -24,14 +22,14 @@
         </p>
       </div>
 
-      <div v-else-if="displayArchives.length === 0 && archives.length === 0" class="empty-state">
+      <div v-else-if="displayArchives.length === 0 && archives.length === 0" key="no-archives" class="empty-state">
         <div class="empty-icon">📁</div>
         <h3>{{ $t('archiveSearch.noArchives') }}</h3>
         <p style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
           {{ $t('archiveSearch.createNewArchive') }}
         </p>
       </div>
-    </div>
+    </transition-group>
 
     <!-- 搜索存档组件 -->
     <transition name="search-panel">
@@ -44,8 +42,10 @@
       @folder-click="openSaveGamesFolder" />
 
     <!-- 删除确认模态框 -->
-    <ConfirmModal v-model:show="showDeleteConfirm" title="删除存档" :message="`确定要删除存档 '${archiveToDelete?.name || ''}' 吗？`"
-      description="此操作将永久删除存档文件，无法恢复。" type="danger" confirm-text="删除" cancel-text="取消" :loading="isDeleting"
+    <ConfirmModal v-model:show="showDeleteConfirm" :title="$t('confirmModal.deleteArchiveTitle')"
+      :message="$t('confirmModal.deleteArchiveMessage', { name: archiveToDelete?.name || '' })"
+      :description="$t('confirmModal.deleteArchiveDescription')" type="danger"
+      :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isDeleting"
       @confirm="confirmDelete" @cancel="cancelDelete" />
   </div>
 </template>
@@ -303,72 +303,32 @@ const confirmDelete = async () => {
 
   if (index > -1) {
     try {
-      // 添加删除动画
-      const cardElement = document.querySelector(`[data-archive-id="${archive.id}"]`)
-      if (cardElement) {
-        gsap.to(cardElement, {
-          scale: 0.9,
-          opacity: 0,
-          duration: 0.3,
-          ease: "power2.out",
-          onComplete: async () => {
-            try {
-              // 调用后端删除实际文件
-              if (archive.path) {
-                await invoke('delete_file', { filePath: archive.path })
-                console.log('成功删除存档文件:', archive.path)
-              }
-
-              // 从前端数据中移除
-              archives.value.splice(index, 1)
-
-              // 更新显示列表
-              const filtered = applyFilters(archives.value, lastSearchFilters.value)
-              displayArchives.value = filtered
-
-            } catch (error) {
-              console.error('删除存档失败:', error)
-              // 显示错误提示
-              alert('删除存档失败: ' + error)
-
-              // 恢复卡片显示
-              if (cardElement) {
-                gsap.to(cardElement, {
-                  scale: 1,
-                  opacity: 1,
-                  duration: 0.2,
-                  ease: "power2.out"
-                })
-              }
-            } finally {
-              closeDeleteModal()
-            }
-          }
-        })
-      } else {
-        // 没有动画效果的情况
-        try {
-          if (archive.path) {
-            await invoke('delete_file', { filePath: archive.path })
-            console.log('成功删除存档文件:', archive.path)
-          }
-
-          archives.value.splice(index, 1)
-
-          // 更新显示列表
-          const filtered = applyFilters(archives.value, lastSearchFilters.value)
-          displayArchives.value = filtered
-
-        } catch (error) {
-          console.error('删除存档失败:', error)
-          alert('删除存档失败: ' + error)
-        } finally {
-          closeDeleteModal()
-        }
+      // 先调用后端删除实际文件
+      if (archive.path) {
+        await invoke('delete_file', { filePath: archive.path })
+        console.log('成功删除存档文件:', archive.path)
       }
+
+      // 从前端数据中移除
+      archives.value.splice(index, 1)
+
+      // 直接更新displayArchives，这会触发transition-group的离开动画
+      if (lastSearchFilters.value && Object.keys(lastSearchFilters.value).some(key => lastSearchFilters.value[key])) {
+        // 如果有筛选条件，重新应用筛选
+        displayArchives.value = applyFilters(archives.value, lastSearchFilters.value)
+      } else {
+        // 如果没有筛选条件，直接显示所有存档
+        displayArchives.value = [...archives.value]
+      }
+
+      // 等待动画完成后关闭模态框
+      setTimeout(() => {
+        closeDeleteModal()
+      }, 400) // 与CSS动画时长匹配
+
     } catch (error) {
-      console.error('删除存档时发生错误:', error)
-      alert('删除存档时发生错误: ' + error)
+      console.error('删除存档失败:', error)
+      alert('删除存档失败: ' + error)
       closeDeleteModal()
     }
   }
@@ -455,20 +415,28 @@ onMounted(async () => {
   justify-content: center;
   max-width: 1400px;
   margin: 0 auto;
-  /* 性能优化：减少回流 */
-  contain: layout style;
-  /* 启用硬件加速 */
-  transform: translateZ(0);
 }
 
-/* 动画 */
-.archive-card-enter-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* 动画 - 确保补位动画正常工作 */
+.archive-card-enter-active,
+.archive-card-leave-active,
+.archive-card-move {
+  transition: all 0.5s ease;
 }
 
 .archive-card-enter-from {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(-30px);
+}
+
+.archive-card-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.archive-card-leave-active {
+  position: absolute;
+  z-index: 0;
 }
 
 /* 搜索面板样式 */
@@ -479,18 +447,18 @@ onMounted(async () => {
   right: 0;
   bottom: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
-  padding: 20px;
+  background: var(--search-overlay-bg, rgba(0, 0, 0, 0.5));
+  backdrop-filter: var(--search-overlay-backdrop, blur(8px));
   display: flex;
   align-items: flex-start;
   justify-content: center;
   overflow-y: auto;
   padding-top: 60px;
+  width: 100%;
 }
 
 .search-overlay>.archive-search-filter {
-  max-width: 800px;
+  max-width: 1920px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -568,6 +536,7 @@ onMounted(async () => {
   }
 
   .search-overlay>.archive-search-filter {
+    max-width: 100%;
     max-height: 85vh;
     margin: 16px 0;
   }

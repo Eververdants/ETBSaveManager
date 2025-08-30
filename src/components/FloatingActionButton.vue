@@ -1,7 +1,7 @@
 <template>
   <div class="floating-action-container">
     <div class="action-button" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" @wheel="handleWheel"
-      @click="handleClick" ref="actionButton" style="width: 60px; height: 60px; min-width: 60px; min-height: 60px;">
+      @click="handleClick" ref="actionButton">
       <!-- 主要图标 -->
       <div class="icon-wrapper main-icon" ref="mainIcon">
         <font-awesome-icon :icon="['fas', getCurrentIcon]" />
@@ -196,15 +196,23 @@ const showScrollHint = () => {
 onMounted(() => {
   // 初始化状态
   gsap.set(tooltip.value, { opacity: 0, y: 10 })
-
-  // 入场动画
-  gsap.from(actionButton.value, {
+  gsap.set(actionButton.value, {
     scale: 0,
     opacity: 0,
-    duration: 0.5,
-    delay: 0.2,
-    ease: "back.out(1.7)"
+    x: 0,
+    y: 0,
+    transformOrigin: "center center"
   })
+
+  // 入场动画
+  setTimeout(() => {
+    gsap.to(actionButton.value, {
+      scale: 1,
+      opacity: 1,
+      duration: 0.5,
+      ease: "back.out(1.7)"
+    })
+  }, 10)
 
   // 显示滚动提示（仅在第一次使用时显示）
   if (!localStorage.getItem('fabScrollHintShown')) {
@@ -222,8 +230,6 @@ onMounted(() => {
   bottom: 30px;
   right: 30px;
   z-index: 1000;
-  /* 确保初始大小正确 */
-  --fab-size: 60px;
 }
 
 .action-button {
@@ -240,7 +246,7 @@ onMounted(() => {
   border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
   color: var(--accent-color, #007aff);
   cursor: pointer;
-  transition: all var(--card-transition, 0.3s ease);
+  transition: var(--card-transition);
   display: flex !important;
   align-items: center;
   justify-content: center;

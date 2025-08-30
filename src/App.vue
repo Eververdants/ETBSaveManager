@@ -17,6 +17,14 @@ const handleSidebarExpand = (expanded) => {
 };
 
 onMounted(() => {
+  // 应用保存的主题
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  if (window.themeManager) {
+    window.themeManager.setTheme(savedTheme);
+  } else {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }
+
   // 监听路由变更事件
   window.addEventListener('sidebar-route-change', (event) => {
     const routeName = event.detail.route;

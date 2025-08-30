@@ -137,7 +137,6 @@ export function disableInteractions() {
  * 恢复所有交互
  */
 export function enableInteractions() {
-  // 移除事件监听器（需要保存引用才能移除，这里简化处理）
   console.log('交互已恢复');
 }
 

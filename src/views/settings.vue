@@ -53,6 +53,26 @@
         <div class="section-header" :key="currentLanguage">{{ t('settings.systemAndUpdates') }}</div>
       </transition>
 
+      <!-- 更新源设置 -->
+      <div class="setting-item">
+        <div class="setting-icon">
+          <font-awesome-icon :icon="['fas', 'cloud']" />
+        </div>
+        <div class="setting-details">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">{{ t('settings.updateSource') }}</div>
+          </transition>
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-description" :key="currentLanguage">{{ t('settings.updateSourceDescription') }}</div>
+          </transition>
+        </div>
+        <div class="setting-action">
+          <CustomDropdown v-model="currentUpdateSource" :options="updateSourceOptions"
+            @change="handleUpdateSourceChange" @dropdown-open="handleDropdownOpen('updateSource')"
+            :is-open="activeDropdown === 'updateSource'" :placeholder="t('common.select')" />
+        </div>
+      </div>
+
       <!-- 检查更新 -->
       <div class="setting-item">
         <div class="setting-icon">
@@ -91,7 +111,8 @@
 
     <!-- 更新提示 -->
     <transition name="slide">
-      <div v-if="updateMessage" :class="['update-message', updateMessage.type]" :key="updateMessage.key || updateMessage.text">
+      <div v-if="updateMessage" :class="['update-message', updateMessage.type]"
+        :key="updateMessage.key || updateMessage.text">
         <font-awesome-icon :icon="updateMessage.icon" />
         <transition name="text-swift" mode="out-in">
           <span :key="currentLanguage + '-' + updateMessage.text">{{ updateMessage.text }}</span>
@@ -99,7 +120,8 @@
 
         <!-- 更新操作按钮 -->
         <transition name="expand" mode="out-in">
-          <div v-if="updateStatus === UpdateStatus.AVAILABLE" class="update-actions" :key="'actions-' + updateMessage.key">
+          <div v-if="updateStatus === UpdateStatus.AVAILABLE" class="update-actions"
+            :key="'actions-' + updateMessage.key">
             <button class="update-btn" @click="downloadAndInstall" :disabled="isProcessing">
               <font-awesome-icon :icon="['fas', 'external-link-alt']" />
               前往下载
@@ -112,7 +134,8 @@
 
         <!-- 更新详情 -->
         <transition name="expand" mode="out-in">
-          <div v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE" class="update-details" :key="'details-' + updateMessage.key">
+          <div v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE" class="update-details"
+            :key="'details-' + updateMessage.key">
             <h4>版本 {{ updateInfo.version }} 更新内容:</h4>
             <div class="update-content" v-html="formatUpdateNotes(updateInfo.body)"></div>
           </div>
@@ -124,6 +147,7 @@
 
 <script>
 import { updateService, UpdateStatus } from '../services/updateService.js';
+import { getAllUpdateSources, getUserUpdateSource, setUserUpdateSource } from '../config/updateConfig.js';
 import CustomDropdown from '../components/CustomDropdown.vue';
 import { useI18n } from 'vue-i18n';
 
@@ -136,9 +160,10 @@ export default {
     return {
       currentTheme: localStorage.getItem('theme') || 'light',
       currentLanguage: localStorage.getItem('language') || 'zh-CN',
+      currentUpdateSource: localStorage.getItem('updateSource') || 'GITEE',
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: '3.0.0-Alpha-4',
+      appVersion: '3.0.0-Alpha-4.1',
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
@@ -160,6 +185,13 @@ export default {
         { value: 'zh-TW', label: '繁體中文' },
         { value: 'en-US', label: 'English' }
       ];
+    },
+    updateSourceOptions() {
+      const sources = getAllUpdateSources();
+      return Object.entries(sources).map(([key, source]) => ({
+        value: key,
+        label: source.name
+      }));
     }
   },
   setup() {
@@ -171,39 +203,39 @@ export default {
       if (!body) return '暂无更新说明';
 
       let html = body;
-      
+
       // 处理代码块
       html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
       html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-      
+
       // 处理标题
       html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
       html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
       html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
-      
+
       // 处理列表
       html = html.replace(/^\* (.*$)/gm, '<li>$1</li>');
       html = html.replace(/^- (.*$)/gm, '<li>$1</li>');
       html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-      
+
       // 处理粗体和斜体
       html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
       html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
       html = html.replace(/_(.*?)_/g, '<em>$1</em>');
-      
+
       // 处理链接 [text](url)
       html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-      
+
       // 处理换行
       html = html.replace(/\n\n/g, '</p><p>');
       html = html.replace(/\n/g, '<br>');
-      
+
       // 包装段落
       if (!html.includes('<h') && !html.includes('<pre') && !html.includes('<ul')) {
         html = '<p>' + html + '</p>';
       }
-      
+
       return html;
     },
 
@@ -256,9 +288,40 @@ export default {
       }
     },
 
+    handleUpdateSourceChange(option) {
+      const source = option.value;
+      try {
+        setUserUpdateSource(source);
+        this.currentUpdateSource = source;
+        localStorage.setItem('updateSource', source);
+
+        // 显示成功提示
+        this.updateMessage = {
+          text: `更新源已切换为 ${option.label}`,
+          type: 'success',
+          icon: ['fas', 'check'],
+          key: `source-changed-${this.messageId++}`
+        };
+
+        // 3秒后自动隐藏提示
+        setTimeout(() => {
+          this.closeUpdateMessage();
+        }, 3000);
+
+      } catch (error) {
+        console.error('更新源切换失败:', error);
+        this.updateMessage = {
+          text: '更新源切换失败，请重试',
+          type: 'error',
+          icon: ['fas', 'times'],
+          key: `source-error-${this.messageId++}`
+        };
+      }
+    },
+
     async checkForUpdates() {
       if (this.isProcessing) return;
-      
+
       this.isProcessing = true;
       this.checkingUpdate = true;
       this.updateMessage = null;
@@ -289,7 +352,7 @@ export default {
       } catch (error) {
         this.updateStatus = UpdateStatus.ERROR;
         this.messageId++;
-        
+
         // 使用更详细的错误信息
         let errorText = this.$t('settings.updateFailed');
         if (error.type === '速率限制' || error.message?.includes('rate limit') || error.message?.includes('429')) {
@@ -301,7 +364,7 @@ export default {
         } else if (error.type === '访问受限') {
           errorText = this.$t('settings.accessDenied');
         }
-        
+
         this.updateMessage = {
           text: errorText,
           type: 'error',
@@ -640,12 +703,14 @@ export default {
 /* 更新消息样式 */
 .update-message {
   position: fixed;
-  top: 70px; /* 考虑标题栏高度 */
+  top: 70px;
+  /* 考虑标题栏高度 */
   right: 20px;
   padding: 1rem 1.5rem;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  z-index: 10000; /* 提高z-index确保在最上层 */
+  z-index: 10000;
+  /* 提高z-index确保在最上层 */
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -923,7 +988,7 @@ export default {
   transform-origin: top;
 }
 
-  /* 更新检查中的动画 */
+/* 更新检查中的动画 */
 .spinner {
   display: inline-block;
   width: 12px;

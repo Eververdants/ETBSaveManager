@@ -20,7 +20,7 @@
     "listDescription": "檢視並管理所有存檔",
     "createDescription": "建立新的遊戲存檔",
     "updated": "更新內容",
-    "updateDetails": "完成了多語言、主題與更多其他功能。",
+    "updateDetails": "新增了刪除補位動畫與建立存檔時的提示，並修復了已知錯誤。",
     "thanks": "感謝所有為本專案提供回饋、建議與支援的朋友",
     "disclaimer": "本工具僅供學習交流使用"
   },
@@ -104,20 +104,24 @@
     "check": "檢查",
     "latestVersion": "目前已為最新版本",
     "updateFailed": "檢查更新失敗，請稍後再試",
+    "rateLimitError": "請求過於頻繁，請12小時後再試",
+    "networkError": "網路連線失敗，請檢查網路後重試",
+    "resourceNotFound": "更新資訊取得失敗，請稍後再試",
+    "accessDenied": "存取受限，請稍後再試",
     "versionInfo": "逃離後室存檔工具 v{version}",
     "developedBy": "由 Eververdants 開發",
     "newVersionAvailable": "發現新版本 v{version}",
     "updateAvailable": "有可用的更新",
     "updateNotes": "更新內容",
-    "downloadUpdate": "立即更新",
+    "downloadUpdate": "前往下載",
     "updateLater": "稍後提醒",
-    "downloading": "正在下載…",
-    "installing": "正在安裝…",
-    "restartToUpdate": "重新啟動以完成更新",
-    "updateComplete": "更新完成",
-    "updateError": "更新失敗：{error}",
+    "downloading": "正在開啟…",
+    "installing": "準備下載…",
+    "restartToUpdate": "請手動安裝更新",
+    "updateComplete": "已開啟下載頁面",
+    "updateError": "開啟下載頁面失敗：{error}",
     "checkUpdateError": "檢查更新失敗：{error}",
-    "updateDownloaded": "更新已下載，準備安裝",
+    "updateDownloaded": "請前往 GitHub 下載更新",
     "updateCheckSkipped": "已跳過更新檢查",
     "updateCheckInterval": "每天自動檢查一次更新"
   },
@@ -198,7 +202,26 @@
   },
   "archiveCard": {
     "archiveDifficulty": "存檔難度",
-    "actualDifficulty": "實際難度"
+    "actualDifficulty": "實際難度",
+    "currentLevel": "目前層級",
+    "gameMode": "遊戲模式",
+    "singleplayer": "單人模式",
+    "multiplayer": "多人模式",
+    "easy": "簡單難度",
+    "normal": "普通難度",
+    "hard": "困難難度",
+    "nightmare": "噩夢難度",
+    "visible": "可見",
+    "hidden": "隱藏",
+    "lastModified": "最後修改",
+    "id": "存檔ID"
+  },
+  "confirmModal": {
+    "deleteArchiveTitle": "刪除存檔",
+    "deleteArchiveMessage": "確定要刪除存檔 '{name}' 嗎？",
+    "deleteArchiveDescription": "此操作將永久刪除存檔檔案，無法恢復。",
+    "confirm": "刪除",
+    "cancel": "取消"
   },
   "createArchive": {
     "title": "建立新存檔",
@@ -221,6 +244,7 @@
       "multiplayer": "多人模式",
       "cooperative": "合作模式"
     },
+    "singleplayerNotice": "單人模式下只能選擇普通難度",
     "difficulty": "難度",
     "actualDifficulty": "實際難度",
     "difficultyLevels": {
@@ -245,7 +269,8 @@
     "archiveCreated": "存檔建立成功！",
     "archiveCreatedMessage": "您的新存檔已建立完成",
     "canProceed": "可繼續",
-    "cannotProceed": "請完成必填欄位"
+    "cannotProceed": "請完成必填欄位",
+    "creating": "建立中..."
   },
   "editArchive": {
     "title": "編輯存檔",

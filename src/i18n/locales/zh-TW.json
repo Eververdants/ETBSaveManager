@@ -20,7 +20,7 @@
     "listDescription": "檢視並管理所有存檔",
     "createDescription": "建立新的遊戲存檔",
     "updated": "更新內容",
-    "updateDetails": "新增了刪除補位動畫與建立存檔時的提示，並修復了已知錯誤。",
+    "updateDetails": "新增應用程式更新來源選擇功能。",
     "thanks": "感謝所有為本專案提供回饋、建議與支援的朋友",
     "disclaimer": "本工具僅供學習交流使用"
   },
@@ -113,17 +113,19 @@
     "newVersionAvailable": "發現新版本 v{version}",
     "updateAvailable": "有可用的更新",
     "updateNotes": "更新內容",
-    "downloadUpdate": "前往下載",
+    "downloadUpdate": "立即下載",
     "updateLater": "稍後提醒",
     "downloading": "正在開啟…",
     "installing": "準備下載…",
     "restartToUpdate": "請手動安裝更新",
-    "updateComplete": "已開啟下載頁面",
+    "updateComplete": "已開始下載",
     "updateError": "開啟下載頁面失敗：{error}",
     "checkUpdateError": "檢查更新失敗：{error}",
     "updateDownloaded": "請前往 GitHub 下載更新",
     "updateCheckSkipped": "已跳過更新檢查",
-    "updateCheckInterval": "每天自動檢查一次更新"
+    "updateCheckInterval": "每天自動檢查一次更新",
+    "updateSource": "更新來源",
+    "updateSourceDescription": "選擇從哪裡獲取應用更新"
   },
   "inventory": {
     "selectItem": "選擇物品",

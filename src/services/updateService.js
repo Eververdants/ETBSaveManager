@@ -2,14 +2,10 @@
  * 简化版更新服务 - 仅检查更新和跳转下载
  */
 
-// 版本信息
-const CURRENT_VERSION = '3.0.0-Alpha-4';
+import { getCurrentUpdateSource } from '../config/updateConfig.js';
 
-// GitHub 配置
-const GITHUB_OWNER = 'Eververdants';
-const GITHUB_REPO = 'ETBSaveManager';
-const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
-const GITHUB_RELEASES_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases`;
+// 版本信息
+const CURRENT_VERSION = '3.0.0-Alpha-4.1';
 
 // 简化版更新状态
 export const UpdateStatus = {
@@ -28,7 +24,7 @@ class UpdateService {
   }
 
   /**
-   * 检查更新 - 获取所有版本包括预发布
+   * 检查更新 - 支持GitHub和Gitee
    * @returns {Promise<Object>} 更新信息
    */
   async checkForUpdates() {
@@ -36,14 +32,29 @@ class UpdateService {
       this.status = UpdateStatus.CHECKING;
       this.error = null;
 
-      // 获取所有版本（包括预发布）
-      const allReleasesUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases`;
-      const response = await fetch(allReleasesUrl);
+      const sourceConfig = getCurrentUpdateSource();
+      const apiUrl = sourceConfig.apiUrl;
+      const releasesUrl = sourceConfig.releasesUrl;
+
+      console.log(`使用 ${sourceConfig.name} 检查更新...`);
+
+      const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error('无法获取版本信息');
       }
 
-      const releases = await response.json();
+      const data = await response.json();
+      
+      // 处理 Gitee 和 GitHub 的 API 差异
+      let releases;
+      if (sourceConfig.name.includes('Gitee')) {
+        // Gitee API 返回的是数组
+        releases = Array.isArray(data) ? data : [data];
+      } else {
+        // GitHub API 返回的是数组
+        releases = Array.isArray(data) ? data : [data];
+      }
+
       if (!releases || releases.length === 0) {
         throw new Error('没有找到任何版本');
       }
@@ -51,10 +62,11 @@ class UpdateService {
       // 从所有版本中找到最新版本（包括预发布）
       const allVersions = releases.map(r => ({
         version: r.tag_name.replace('v', ''),
-        published_at: r.published_at,
-        body: r.body || '暂无更新说明',
-        prerelease: r.prerelease,
-        html_url: r.html_url
+        published_at: sourceConfig.name.includes('Gitee') ? r.created_at : r.published_at,
+        body: sourceConfig.name.includes('Gitee') ? (r.body || r.description || '暂无更新说明') : (r.body || '暂无更新说明'),
+        prerelease: sourceConfig.name.includes('Gitee') ? (r.prerelease || false) : r.prerelease,
+        html_url: r.html_url || r.url,
+        assets: r.assets || []
       }));
 
       // 使用版本比较找到真正的最新版本
@@ -63,16 +75,42 @@ class UpdateService {
       });
 
       console.log('找到的最新版本:', latestVersion);
+      console.log('资产信息:', latestVersion.assets);
       
       if (this.isNewVersion(latestVersion.version, CURRENT_VERSION)) {
         this.status = UpdateStatus.AVAILABLE;
+        // 获取下载链接
+        let downloadUrl = latestVersion.html_url || releasesUrl;
+        let directDownloadUrl = null;
+        
+        // 尝试获取直接下载链接
+        if (latestVersion.assets && latestVersion.assets.length > 0) {
+          // 优先选择zip文件，如果没有则选择第一个可用文件
+          const zipAsset = latestVersion.assets.find(asset => {
+            const downloadUrl = asset.browser_download_url || asset.download_url || asset.url;
+            const fileName = asset.name || asset.filename || '';
+            return downloadUrl && 
+                   (fileName.endsWith('.zip') || fileName.endsWith('.exe') || fileName.endsWith('.dmg'));
+          });
+          
+          if (zipAsset) {
+            directDownloadUrl = zipAsset.browser_download_url || zipAsset.download_url || zipAsset.url;
+          } else {
+            // 使用第一个可用资产
+            const firstAsset = latestVersion.assets[0];
+            directDownloadUrl = firstAsset.browser_download_url || firstAsset.download_url || firstAsset.url;
+          }
+        }
+
         this.updateInfo = {
           version: latestVersion.version,
           date: latestVersion.published_at,
           body: latestVersion.body,
-          downloadUrl: latestVersion.html_url || GITHUB_RELEASES_URL,
+          downloadUrl: latestVersion.html_url || releasesUrl,
+          directDownloadUrl: directDownloadUrl || latestVersion.html_url || releasesUrl,
           prerelease: latestVersion.prerelease,
-          shouldUpdate: true
+          shouldUpdate: true,
+          source: sourceConfig.name
         };
         return this.updateInfo;
       } else {
@@ -211,7 +249,7 @@ class UpdateService {
   }
 
   /**
-   * 跳转到下载页面（简化版，不再自动下载）
+   * 直接下载更新文件
    * @returns {Promise<void>}
    */
   async downloadAndInstall() {
@@ -220,27 +258,24 @@ class UpdateService {
     }
 
     try {
-      // 使用多种方式尝试打开浏览器
-      const url = this.updateInfo.downloadUrl;
+      // 使用直接下载链接
+      const url = this.updateInfo.directDownloadUrl;
       
-      // 方法1: 标准window.open
-      const newWindow = window.open(url, '_blank');
+      // 创建临时链接元素进行直接下载
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = ''; // 触发下载而不是导航
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.style.display = 'none';
       
-      // 方法2: 如果window.open被拦截，使用location.href
-      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-        // 创建临时链接元素
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       
-      console.log('已打开下载页面:', url);
+      console.log('已开始下载:', url);
     } catch (error) {
-      console.error('打开下载页面失败:', error);
+      console.error('下载失败:', error);
       this.status = UpdateStatus.ERROR;
       this.error = error.message;
       throw error;
@@ -300,6 +335,14 @@ class UpdateService {
    */
   getCurrentVersion() {
     return CURRENT_VERSION;
+  }
+
+  /**
+   * 获取当前更新源信息
+   * @returns {Object} 当前更新源配置
+   */
+  getCurrentUpdateSource() {
+    return getCurrentUpdateSource();
   }
 }
 

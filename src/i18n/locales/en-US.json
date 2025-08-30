@@ -20,7 +20,7 @@
     "listDescription": "View and manage all archives",
     "createDescription": "Create new game archive",
     "updated": "Update",
-    "updateDetails": "Added deletion placeholder animation and creation prompts, and fixed known bugs.",
+    "updateDetails": "Added update source selection feature.",
     "thanks": "Thanks to everyone who provided feedback, suggestions and support for this project",
     "disclaimer": "This tool is for educational and communication purposes only"
   },
@@ -113,17 +113,19 @@
     "newVersionAvailable": "New version v{version} available",
     "updateAvailable": "Update Available",
     "updateNotes": "Update Notes",
-    "downloadUpdate": "Go to Download",
+    "downloadUpdate": "Download Now",
     "updateLater": "Remind Me Later",
     "downloading": "Opening...",
     "installing": "Preparing download...",
     "restartToUpdate": "Please manually install the update",
-    "updateComplete": "Download page opened",
+    "updateComplete": "Download started",
     "updateError": "Failed to open download page: {error}",
     "checkUpdateError": "Update check failed: {error}",
     "updateDownloaded": "Please download the update from GitHub",
     "updateCheckSkipped": "Update check skipped",
-    "updateCheckInterval": "Automatically check for updates once per day"
+    "updateCheckInterval": "Automatically check for updates once per day",
+    "updateSource": "Update Source",
+    "updateSourceDescription": "Choose where to get app updates from"
   },
   "inventory": {
     "selectItem": "Select Item",

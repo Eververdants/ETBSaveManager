@@ -20,7 +20,7 @@
     "listDescription": "查看和管理所有存档",
     "createDescription": "创建新的游戏存档",
     "updated": "更新内容",
-    "updateDetails": "添加了删除补位动画与创建存档时的提示，并且修复了已知bug。",
+    "updateDetails": "新增应用更新源选择功能。",
     "thanks": "感谢所有为本项目提供反馈、建议与支持的朋友们",
     "disclaimer": "本工具仅供学习交流使用"
   },
@@ -113,17 +113,19 @@
     "newVersionAvailable": "发现新版本 v{version}",
     "updateAvailable": "有可用更新",
     "updateNotes": "更新内容",
-    "downloadUpdate": "前往下载",
+    "downloadUpdate": "立即下载",
     "updateLater": "稍后提醒",
     "downloading": "正在打开...",
     "installing": "准备下载...",
     "restartToUpdate": "请手动安装更新",
-    "updateComplete": "已打开下载页面",
+    "updateComplete": "已开始下载",
     "updateError": "打开下载页面失败：{error}",
     "checkUpdateError": "检查更新失败：{error}",
     "updateDownloaded": "请前往GitHub下载更新",
     "updateCheckSkipped": "已跳过更新检查",
-    "updateCheckInterval": "每天自动检查一次更新"
+    "updateCheckInterval": "每天自动检查一次更新",
+    "updateSource": "更新源",
+    "updateSourceDescription": "选择从哪里获取应用更新"
   },
   "inventory": {
     "selectItem": "选择物品",

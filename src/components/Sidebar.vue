@@ -170,9 +170,14 @@ const addLogMenuItem = () => {
       route: "Log",
     });
 
-    // 触发重新渲染
+    // 触发重新渲染并自动展开侧边栏
     nextTick(() => {
       setActiveItemFromRoute();
+      // 自动展开侧边栏，让用户看到新添加的日志选项
+      if (!isExpanded.value) {
+        isExpanded.value = true;
+        emit('sidebar-expand', true);
+      }
     });
   }
 };

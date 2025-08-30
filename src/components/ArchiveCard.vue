@@ -1,5 +1,5 @@
 <template>
-  <div class="archive-card" :data-archive-id="archive.id" :class="{ 'rendered': hasRendered }">
+  <div class="archive-card" :data-archive-id="archive.id">
     <!-- 上半背景区域 -->
     <div class="card-background">
       <img :src="backgroundImage" :alt="currentLevelName" class="background-image" />
@@ -261,18 +261,12 @@ onMounted(async () => {
       // 先计算标签宽度
       await updateTagWidths()
 
-      // 计算完成后才渲染卡片
-      hasRendered.value = true
-      card.classList.add('rendered')
-
       // 立即执行动画
       animateCard()
 
     } catch (error) {
       console.error('标签宽度计算失败:', error)
-      // 即使计算失败也渲染，避免卡片不显示
-      hasRendered.value = true
-      card.classList.add('rendered')
+      // 即使计算失败也执行动画
       animateCard()
     }
   }
@@ -355,29 +349,17 @@ onMounted(async () => {
     }
   })
 
-  // 卡片进场动画
+  // 卡片进场动画 - 简化版本，避免与transition-group冲突
   const animateCard = () => {
     // 性能开关：检测用户是否偏好减少动画
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     if (prefersReducedMotion) {
-      // 用户偏好减少动画，直接显示
-      card.classList.add('animated')
       return
     }
 
-    // 设置初始状态（从下方进入并缩放）
+    // 简化动画逻辑，让transition-group控制主要动画
     card.style.willChange = 'transform, opacity'
-
-    // 触发动画 - 使用CSS类来控制动画
-    requestAnimationFrame(() => {
-      card.classList.add('animated')
-
-      // 动画完成后清除优化属性
-      setTimeout(() => {
-        card.style.willChange = ''
-      }, 400)
-    })
   }
 })
 
@@ -434,7 +416,6 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .archive-card {
-  position: relative;
   width: 320px;
   height: 160px;
   border-radius: 12px;
@@ -444,27 +425,9 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(20px);
   border: 1px solid var(--divider-color);
   cursor: pointer;
-  /* 性能优化：只过渡必要的属性 */
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  /* 启用硬件加速 */
-  transform: translateZ(0) translateY(20px) scale(0.95);
-  will-change: transform, box-shadow, opacity;
-
-  /* 未渲染时的占位样式 */
-  opacity: 0;
+  /* 卡片基础样式 - 移除进场动画，让transition-group控制 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   min-height: 160px;
-}
-
-.archive-card.rendered {
-  /* 渲染后的样式 */
-  opacity: 1;
-}
-
-.archive-card.rendered.animated {
-  /* 进场动画完成后的样式 */
-  transform: translateZ(0) translateY(0) scale(1);
 }
 
 /* 上半背景区域 */

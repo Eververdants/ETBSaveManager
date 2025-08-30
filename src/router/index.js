@@ -4,6 +4,7 @@ import About from "../views/About.vue";
 import Settings from "../views/Settings.vue";
 import PluginMarket from "../views/PluginMarket.vue";
 import CreateArchive from "../views/CreateArchive.vue";
+import BatchCreateArchive from "../views/BatchCreateArchive.vue";
 import EditArchive from "../views/EditArchive.vue";
 import Log from "../views/Log.vue";
 
@@ -32,6 +33,11 @@ const routes = [
     path: "/create-archive",
     name: "CreateArchive",
     component: CreateArchive,
+  },
+  {
+    path: "/batch-create-archive",
+    name: "BatchCreateArchive",
+    component: BatchCreateArchive,
   },
   {
     path: "/edit-archive/:archiveData?",

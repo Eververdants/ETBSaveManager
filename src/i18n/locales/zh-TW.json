@@ -20,14 +20,12 @@
     "listDescription": "檢視並管理所有存檔",
     "createDescription": "建立新的遊戲存檔",
     "updated": "更新內容",
-    "updateDetails": "新增應用程式更新來源選擇功能。",
+    "updateDetails": "進行了性能優化，調整了部分樣式。",
     "thanks": "感謝所有為本專案提供回饋、建議與支援的朋友",
     "disclaimer": "本工具僅供學習交流使用"
   },
   "plugin": {
     "marketDescription": "瀏覽與安裝插件",
-    "marketTitle": "插件市集",
-    "marketSubtitle": "探索強大的插件來增強您的存檔管理體驗",
     "searchPlaceholder": "搜尋插件…",
     "description": "描述",
     "features": "功能特性",
@@ -36,6 +34,7 @@
     "version": "版本",
     "install": "安裝",
     "installed": "已安裝",
+    "plugin": "插件",
     "filter": "篩選",
     "sortBy": "排序方式",
     "mostPopular": "最受歡迎",
@@ -124,8 +123,15 @@
     "updateDownloaded": "請前往 GitHub 下載更新",
     "updateCheckSkipped": "已跳過更新檢查",
     "updateCheckInterval": "每天自動檢查一次更新",
-    "updateSource": "更新來源",
-    "updateSourceDescription": "選擇從哪裡獲取應用更新"
+    "updateSource": "更新源",
+    "updateSourceDescription": "選擇從哪裡獲取應用更新",
+    "performanceMonitor": "性能監控",
+    "performanceMonitorDescription": "顯示即時性能數據和圖表",
+    "developerOptions": "開發者選項",
+    "developerMode": "開發者模式",
+    "developerModeDescription": "啟用開發者模式以訪問高級功能",
+    "enableLogMenu": "啟用日誌功能",
+    "enableLogMenuDescription": "顯示日誌選單和日誌記錄功能"
   },
   "inventory": {
     "selectItem": "選擇物品",
@@ -294,6 +300,7 @@
       "singleplayer": "單人模式",
       "multiplayer": "多人模式"
     },
+    "singleplayerNotice": "單人模式下只能選擇普通難度",
     "difficulty": "難度",
     "actualDifficulty": "實際難度",
     "difficultyLevels": {

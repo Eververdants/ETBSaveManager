@@ -54,6 +54,14 @@
               <span class="segment-label">{{ $t(`editArchive.gameModes.${mode.value}`) }}</span>
             </div>
           </div>
+          
+          <!-- 单人模式提示 -->
+          <transition name="fade-slide" mode="out-in">
+            <div v-if="archiveData.gameMode === 'singleplayer'" key="singleplayer-notice" class="singleplayer-notice">
+              <font-awesome-icon :icon="['fas', 'info-circle']" class="notice-icon" />
+              <span>{{ $t('editArchive.singleplayerNotice') }}</span>
+            </div>
+          </transition>
         </div>
 
         <!-- 难度设置 -->
@@ -62,8 +70,11 @@
             <label class="section-title">{{ $t('editArchive.difficulty') }}</label>
             <div class="difficulty-grid">
               <div v-for="difficulty in difficultyLevels" :key="difficulty.value" class="difficulty-option"
-                :class="{ selected: archiveData.archiveDifficulty === difficulty.value }"
-                @click="archiveData.archiveDifficulty = difficulty.value">
+                :class="{ 
+                  selected: archiveData.archiveDifficulty === difficulty.value,
+                  disabled: archiveData.gameMode === 'singleplayer' && difficulty.value !== 'normal'
+                }"
+                @click="handleDifficultySelect('archive', difficulty.value)">
                 <div class="difficulty-icon">
                   <font-awesome-icon :icon="difficulty.icon" />
                 </div>
@@ -76,8 +87,11 @@
             <label class="section-title">{{ $t('editArchive.actualDifficulty') }}</label>
             <div class="difficulty-grid">
               <div v-for="difficulty in difficultyLevels" :key="`actual-${difficulty.value}`" class="difficulty-option"
-                :class="{ selected: archiveData.actualDifficulty === difficulty.value }"
-                @click="archiveData.actualDifficulty = difficulty.value">
+                :class="{ 
+                  selected: archiveData.actualDifficulty === difficulty.value,
+                  disabled: archiveData.gameMode === 'singleplayer' && difficulty.value !== 'normal'
+                }"
+                @click="handleDifficultySelect('actual', difficulty.value)">
                 <div class="difficulty-icon">
                   <font-awesome-icon :icon="difficulty.icon" />
                 </div>
@@ -163,7 +177,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
 import { gsap } from 'gsap'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -375,6 +389,19 @@ const selectLevel = (levelKey) => {
   archiveData.currentLevel = levelKey
 }
 
+const handleDifficultySelect = (type, difficulty) => {
+  // 单人模式下只能选择普通难度
+  if (archiveData.gameMode === 'singleplayer' && difficulty !== 'normal') {
+    return
+  }
+  
+  if (type === 'archive') {
+    archiveData.archiveDifficulty = difficulty
+  } else if (type === 'actual') {
+    archiveData.actualDifficulty = difficulty
+  }
+}
+
 const getSlotContent = (playerIndex, slotIndex) => {
   if (archiveData.players[playerIndex] && archiveData.players[playerIndex].inventory) {
     const item = archiveData.players[playerIndex].inventory[slotIndex]
@@ -483,6 +510,15 @@ const animateIn = () => {
     }
   })
 }
+
+// 监听游戏模式变化
+watch(() => archiveData.gameMode, (newMode) => {
+  if (newMode === 'singleplayer') {
+    // 当切换到单人模式时，自动设置难度为普通
+    archiveData.archiveDifficulty = 'normal'
+    archiveData.actualDifficulty = 'normal'
+  }
+})
 
 onMounted(() => {
   loadLevels()
@@ -806,6 +842,19 @@ onMounted(() => {
   box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.3);
 }
 
+.difficulty-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--bg-tertiary);
+  border-color: var(--divider-light);
+  color: var(--text-tertiary);
+}
+
+.difficulty-option.disabled:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 .difficulty-icon {
   font-size: 24px;
   margin-bottom: 4px;
@@ -1067,6 +1116,62 @@ onMounted(() => {
   .form-input {
     padding: 10px 12px;
     font-size: 14px;
+  }
+}
+
+.singleplayer-notice {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  margin-top: 12px;
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(0, 122, 255, 0.05));
+  border: 1px solid rgba(0, 122, 255, 0.2);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  animation: fade-slide-enter 0.3s ease-out;
+}
+
+.notice-icon {
+  margin-right: 8px;
+  color: #007aff;
+  font-size: 16px;
+}
+
+/* Vue过渡动画 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.fade-slide-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-slide-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+@keyframes fade-slide-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

@@ -34,7 +34,6 @@
           <div class="step-content" :data-step="currentStep">
             <!-- 步骤1: 选择层级 -->
             <div v-if="currentStep === 1" class="section-card">
-              <h2 class="section-title">{{ $t('createArchive.selectLevelTitle') }}</h2>
               <div class="level-grid">
                 <div v-for="(level, index) in availableLevels" :key="index" class="level-card"
                   :class="{ selected: selectedLevel === index }" @click="selectLevel(index)">
@@ -976,8 +975,9 @@ export default {
 <style scoped>
 /* SwiftUI 风格样式 */
 .create-archive-container {
-  min-height: 100vh;
-  padding: 24px 24px 80px 24px;
+  height: 100vh;
+  overflow: hidden;
+  padding: 10px 24px 80px 24px;
   background: var(--bg);
   font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', sans-serif;
   display: flex;
@@ -989,7 +989,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 48px;
+  margin-bottom: 15px;
   gap: 16px;
 }
 
@@ -1046,7 +1046,9 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  overflow: hidden;
+  height: calc(100vh - 150px);
 }
 
 /* 步骤内容 */
@@ -1067,6 +1069,31 @@ export default {
   backdrop-filter: blur(10px);
   border: 1px solid var(--divider-light);
   transition: all 0.3s ease;
+}
+
+/* 第一步选择层级的section-card样式，添加固定高度和内部滚动 */
+.step-content[data-step="1"] .section-card {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.step-content[data-step="1"] .section-card::-webkit-scrollbar {
+  width: 8px;
+}
+
+.step-content[data-step="1"] .section-card::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.step-content[data-step="1"] .section-card::-webkit-scrollbar-thumb {
+  background: var(--divider-color);
+  border-radius: 4px;
+}
+
+.step-content[data-step="1"] .section-card::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }
 
 .section-title,
@@ -1104,6 +1131,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
+  padding-bottom: 20px;
 }
 
 .level-card {

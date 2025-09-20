@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { gsap } from 'gsap'
 
@@ -50,28 +50,60 @@ const getCurrentTooltip = computed(() => {
   }
 })
 
+let tooltipTimer = null
+
 const handleMouseEnter = () => {
   isHovered.value = true
 
-  // 显示功能提示
-  gsap.to(tooltip.value, {
-    opacity: 1,
-    y: 0,
-    duration: 0.3,
-    ease: "power2.out"
-  })
+  // 清除之前的定时器
+  if (tooltipTimer) {
+    clearTimeout(tooltipTimer)
+    tooltipTimer = null
+  }
+
+  // 取消可能正在进行的隐藏动画
+  gsap.killTweensOf(tooltip.value)
+
+  // 设置延迟显示，避免快速移动时的闪烁
+  tooltipTimer = setTimeout(() => {
+    // 确保鼠标仍在按钮上且tooltip元素存在
+    if (isHovered.value && tooltip.value) {
+      // 显示功能提示
+      gsap.to(tooltip.value, {
+        opacity: 1,
+        y: 0,
+        duration: 0.3,
+        ease: "power2.out"
+      })
+    }
+  }, 100) // 100ms延迟
 }
 
 const handleMouseLeave = () => {
   isHovered.value = false
 
-  // 隐藏功能提示
-  gsap.to(tooltip.value, {
-    opacity: 0,
-    y: 10,
-    duration: 0.2,
-    ease: "power2.out"
-  })
+  // 清除之前的定时器
+  if (tooltipTimer) {
+    clearTimeout(tooltipTimer)
+    tooltipTimer = null
+  }
+
+  // 取消可能正在进行的显示动画
+  gsap.killTweensOf(tooltip.value)
+
+  // 设置延迟隐藏，避免快速移动时的闪烁
+  tooltipTimer = setTimeout(() => {
+    // 确保鼠标已离开按钮且tooltip元素存在
+    if (!isHovered.value && tooltip.value) {
+      // 隐藏功能提示
+      gsap.to(tooltip.value, {
+        opacity: 0,
+        y: 10,
+        duration: 0.2,
+        ease: "power2.out"
+      })
+    }
+  }, 150) // 150ms延迟
 }
 
 const handleWheel = (event) => {
@@ -194,32 +226,54 @@ const showScrollHint = () => {
 }
 
 onMounted(() => {
-  // 初始化状态
+  // 初始化状态 - 确保字体加载完成后再执行动画
   gsap.set(tooltip.value, { opacity: 0, y: 10 })
-  gsap.set(actionButton.value, {
-    scale: 0,
-    opacity: 0,
-    x: 0,
-    y: 0,
-    transformOrigin: "center center"
-  })
 
-  // 入场动画
-  setTimeout(() => {
-    gsap.to(actionButton.value, {
-      scale: 1,
-      opacity: 1,
-      duration: 0.5,
-      ease: "back.out(1.7)"
+  // 等待字体图标加载完成，避免布局抖动
+  const initializeAnimation = () => {
+    gsap.set(actionButton.value, {
+      scale: 0,
+      opacity: 0,
+      x: 0,
+      y: 0,
+      transformOrigin: "center center"
     })
-  }, 10)
+
+    // 入场动画 - 使用更稳定的时机
+    requestAnimationFrame(() => {
+      gsap.to(actionButton.value, {
+        scale: 1,
+        opacity: 1,
+        duration: 0.5,
+        ease: "back.out(1.7)"
+      })
+    })
+  }
+
+  // 确保字体和样式完全加载
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      setTimeout(initializeAnimation, 50) // 额外延迟确保布局稳定
+    })
+  } else {
+    // 降级处理
+    setTimeout(initializeAnimation, 100)
+  }
 
   // 显示滚动提示（仅在第一次使用时显示）
   if (!localStorage.getItem('fabScrollHintShown')) {
     setTimeout(() => {
       showScrollHint()
-    }, 1500)
+    }, 2000) // 延迟到动画完成后显示
     localStorage.setItem('fabScrollHintShown', 'true')
+  }
+})
+
+onUnmounted(() => {
+  // 清理定时器防止内存泄漏
+  if (tooltipTimer) {
+    clearTimeout(tooltipTimer)
+    tooltipTimer = null
   }
 })
 </script>
@@ -230,6 +284,8 @@ onMounted(() => {
   bottom: 30px;
   right: 30px;
   z-index: 1000;
+  /* 确保初始位置稳定 */
+  contain: layout style;
 }
 
 .action-button {
@@ -256,6 +312,10 @@ onMounted(() => {
 
   /* 防止继承父元素的字体大小 */
   font-size: 0 !important;
+
+  /* 确保初始布局稳定 */
+  contain: layout style paint;
+  will-change: transform, opacity;
 }
 
 .action-button:hover {
@@ -274,6 +334,10 @@ onMounted(() => {
   pointer-events: none;
   width: 24px !important;
   height: 24px !important;
+  /* 确保图标加载时不会改变尺寸 */
+  min-width: 24px !important;
+  min-height: 24px !important;
+  line-height: 1 !important;
 }
 
 .main-icon {

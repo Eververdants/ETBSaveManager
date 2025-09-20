@@ -20,14 +20,12 @@
     "listDescription": "View and manage all archives",
     "createDescription": "Create new game archive",
     "updated": "Update",
-    "updateDetails": "Added update source selection feature.",
+    "updateDetails": "Performance optimizations and partial style adjustments have been made.",
     "thanks": "Thanks to everyone who provided feedback, suggestions and support for this project",
     "disclaimer": "This tool is for educational and communication purposes only"
   },
   "plugin": {
     "marketDescription": "Browse and install plugins",
-    "marketTitle": "Plugin Market",
-    "marketSubtitle": "Discover powerful plugins to enhance your save management experience",
     "searchPlaceholder": "Search plugins...",
     "description": "Description",
     "features": "Features",
@@ -36,6 +34,7 @@
     "version": "Version",
     "install": "Install",
     "installed": "Installed",
+    "plugin": "Plugin",
     "filter": "Filter",
     "sortBy": "Sort by",
     "mostPopular": "Most Popular",
@@ -125,7 +124,14 @@
     "updateCheckSkipped": "Update check skipped",
     "updateCheckInterval": "Automatically check for updates once per day",
     "updateSource": "Update Source",
-    "updateSourceDescription": "Choose where to get app updates from"
+    "updateSourceDescription": "Choose where to get app updates from",
+    "performanceMonitor": "Performance Monitor",
+    "performanceMonitorDescription": "Display real-time performance data and charts",
+    "developerOptions": "Developer Options",
+    "developerMode": "Developer Mode",
+    "developerModeDescription": "Enable developer mode to access advanced features",
+    "enableLogMenu": "Enable Log Menu",
+    "enableLogMenuDescription": "Display log menu and logging functionality"
   },
   "inventory": {
     "selectItem": "Select Item",
@@ -294,8 +300,9 @@
     "gameMode": "Game Mode",
     "gameModes": {
       "singleplayer": "Single Player",
-      "multiplayer": "Multiplayer"
+      "multiplayer": "Multi Player"
     },
+    "singleplayerNotice": "In single player mode, only normal difficulty is available",
     "difficulty": "Difficulty",
     "actualDifficulty": "Actual Difficulty",
     "difficultyLevels": {

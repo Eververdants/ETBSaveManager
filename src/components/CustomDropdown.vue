@@ -148,10 +148,35 @@ const handleResize = () => {
   }
 };
 
-// 监听滚动，更新菜单位置
-const handleScroll = () => {
+// 使用 requestAnimationFrame 实现平滑跟随
+let scrollAnimationFrame = null;
+let isScrolling = false;
+
+const updatePositionDuringScroll = () => {
   if (isOpen.value) {
     updateMenuPosition();
+    if (isScrolling) {
+      scrollAnimationFrame = requestAnimationFrame(updatePositionDuringScroll);
+    }
+  }
+};
+
+const handleScroll = () => {
+  if (isOpen.value) {
+    isScrolling = true;
+    if (!scrollAnimationFrame) {
+      updatePositionDuringScroll();
+    }
+
+    // 使用 setTimeout 检测滚动结束
+    clearTimeout(handleScroll.timeout);
+    handleScroll.timeout = setTimeout(() => {
+      isScrolling = false;
+      if (scrollAnimationFrame) {
+        cancelAnimationFrame(scrollAnimationFrame);
+        scrollAnimationFrame = null;
+      }
+    }, 100);
   }
 };
 
@@ -164,14 +189,23 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   window.addEventListener('resize', handleResize);
-  window.addEventListener('scroll', handleScroll);
+  // 使用捕获阶段监听滚动事件，确保在其他组件滚动时也能更新位置
+  window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
   document.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
-  window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener('scroll', handleScroll, { capture: true });
   document.removeEventListener('click', handleClickOutside);
+
+  // 清理定时器和动画帧
+  if (scrollAnimationFrame) {
+    cancelAnimationFrame(scrollAnimationFrame);
+  }
+  if (handleScroll.timeout) {
+    clearTimeout(handleScroll.timeout);
+  }
 });
 </script>
 

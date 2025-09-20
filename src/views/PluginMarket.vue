@@ -1,11 +1,5 @@
 <template>
   <div class="plugin-market">
-    <!-- 页面标题 -->
-    <div class="market-header">
-      <h1 class="market-title">{{ $t('plugin.marketTitle') }}</h1>
-      <p class="market-subtitle">{{ $t('plugin.marketSubtitle') }}</p>
-    </div>
-
     <!-- 搜索栏 -->
     <div class="search-container">
       <div class="search-bar">
@@ -51,28 +45,40 @@
       </div>
 
       <!-- 插件卡片 -->
-      <div v-else v-for="plugin in filteredPlugins" :key="plugin.id" class="plugin-card"
+      <div v-else v-for="plugin in filteredPlugins" :key="plugin.id" class="plugin-card archive-card"
         @click="openPluginDetail(plugin)">
-        <div class="plugin-icon">
-          <font-awesome-icon :icon="['fas', plugin.icon]" />
-        </div>
-        <div class="plugin-content">
-          <h3 class="plugin-name">{{ plugin.name }}</h3>
-          <p class="plugin-description">{{ plugin.description }}</p>
-          <div class="plugin-meta">
-            <span class="plugin-author">{{ plugin.author }}</span>
-            <span class="plugin-version">v{{ plugin.version }}</span>
+        <div class="card-background">
+          <div class="plugin-icon">
+            <font-awesome-icon :icon="['fas', plugin.icon]" />
+          </div>
+          <div class="archive-info">
+            <h3 class="archive-name plugin-name">{{ plugin.name }}</h3>
+            <div class="game-mode-info">
+              <span class="mode-tag mode-single">
+                <span class="tag-short">{{ $t('plugin.plugin') }}</span>
+                <span class="tag-full">{{ $t('plugin.plugin') }}</span>
+              </span>
+              <span class="difficulty-tags">
+                <span class="difficulty-tag archive-difficulty difficulty-easy">
+                  <span class="tag-short">v{{ plugin.version }}</span>
+                  <span class="tag-full">{{ $t('plugin.version') }}: v{{ plugin.version }}</span>
+                </span>
+              </span>
+            </div>
           </div>
         </div>
-        <div class="plugin-actions">
-          <button v-if="plugin.installed" class="action-button installed" @click.stop="togglePlugin(plugin)">
-            <font-awesome-icon :icon="['fas', 'check']" />
-            {{ $t('plugin.installed') }}
-          </button>
-          <button v-else class="action-button install" @click.stop="installPlugin(plugin)">
-            <font-awesome-icon :icon="['fas', 'download']" />
-            {{ $t('plugin.install') }}
-          </button>
+        <div class="card-info">
+          <div class="level-info">
+            <span class="current-level plugin-description">{{ plugin.description }}</span>
+          </div>
+          <div class="action-buttons">
+            <button v-if="plugin.installed" class="action-btn installed" @click.stop="togglePlugin(plugin)">
+              <font-awesome-icon :icon="['fas', 'check']" />
+            </button>
+            <button v-else class="action-btn install" @click.stop="installPlugin(plugin)">
+              <font-awesome-icon :icon="['fas', 'download']" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -357,25 +363,6 @@ onMounted(async () => {
   min-height: 100vh;
 }
 
-/* 页面标题 */
-.market-header {
-  text-align: center;
-  margin-bottom: 48px;
-}
-
-.market-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.market-subtitle {
-  font-size: 16px;
-  color: var(--text-secondary);
-  font-weight: 400;
-}
-
 /* 搜索栏 */
 .search-container {
   display: flex;
@@ -433,6 +420,32 @@ onMounted(async () => {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* 本地安装按钮 */
+.local-install-button {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 18px;
+  background: rgba(128, 128, 128, 0.1);
+  color: rgba(128, 128, 128, 0.7);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.local-install-button:hover {
+  background: rgba(128, 128, 128, 0.2);
+  color: rgba(128, 128, 128, 0.9);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
 /* 分类标签 */
 .category-tabs {
   display: flex;
@@ -469,8 +482,11 @@ onMounted(async () => {
 /* 插件网格 */
 .plugins-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, 320px);
   gap: 24px;
+  justify-content: center;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .plugin-card {
@@ -609,6 +625,61 @@ onMounted(async () => {
 .plugin-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 6px;
+  align-items: center;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 24px;
+  font-weight: 500;
+  background: rgba(128, 128, 128, 0.1);
+  color: rgba(128, 128, 128, 0.7);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn.install {
+  background: rgba(52, 199, 89, 0.1);
+  color: rgba(52, 199, 89, 0.7);
+  border: 1px solid rgba(52, 199, 89, 0.2);
+}
+
+.action-btn.install:hover {
+  background: rgba(52, 199, 89, 0.2);
+  color: #34c759;
+  border: 1px solid rgba(52, 199, 89, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn.installed {
+  background: rgba(0, 122, 255, 0.1);
+  color: rgba(0, 122, 255, 0.7);
+  border: 1px solid rgba(0, 122, 255, 0.2);
+}
+
+.action-btn.installed:hover {
+  background: rgba(0, 122, 255, 0.2);
+  color: #007aff;
+  border: 1px solid rgba(0, 122, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .action-button {
@@ -947,8 +1018,8 @@ onMounted(async () => {
   }
 
   .plugins-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, 280px);
+    gap: 20px;
   }
 
   .search-container {
@@ -978,6 +1049,15 @@ onMounted(async () => {
 }
 
 @media (max-width: 480px) {
+  .plugin-market {
+    padding: 12px;
+  }
+
+  .plugins-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
   .plugin-card {
     padding: 16px;
   }

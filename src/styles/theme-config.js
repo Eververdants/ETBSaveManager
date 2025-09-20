@@ -198,25 +198,54 @@ export const colorValidator = {
   },
 };
 
-// 主题管理器
+// 主题管理器 - 只做响应式更新，不做初始化
 class ThemeManager {
   constructor() {
-    this.currentTheme = localStorage.getItem("theme") || "light";
+    // 从DOM获取当前主题，不再从localStorage初始化
+    this.currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     this.init();
   }
 
   init() {
-    this.applyTheme();
+    // 不再初始化主题，只做必要的同步
+    // 主题初始化已经在HTML的内联脚本中完成
+    this.syncThemeState();
   }
 
-  applyTheme() {
-    document.documentElement.setAttribute("data-theme", this.currentTheme);
+  syncThemeState() {
+    // 同步当前主题状态到DOM
+    const actualTheme = document.documentElement.getAttribute('data-theme');
+    if (actualTheme && actualTheme !== this.currentTheme) {
+      this.currentTheme = actualTheme;
+    }
   }
 
   setTheme(newTheme) {
     this.currentTheme = newTheme;
-    localStorage.setItem("theme", newTheme);
-    this.applyTheme();
+    try {
+      localStorage.setItem("theme", newTheme);
+    } catch (e) {
+      // localStorage不可用时忽略错误
+      console.warn('无法保存主题设置到localStorage:', e);
+    }
+    
+    // 更新DOM主题属性
+    document.documentElement.setAttribute('data-theme', newTheme);
+    
+    // 确保主题初始化标记存在
+    if (!document.documentElement.classList.contains('theme-initialized')) {
+      document.documentElement.classList.add('theme-initialized');
+    }
+  }
+
+  // 获取当前主题，优先使用系统主题（如果用户未设置）
+  getCurrentTheme() {
+    return this.currentTheme;
+  }
+
+  // 获取系统主题偏好
+  getSystemTheme() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 }
 

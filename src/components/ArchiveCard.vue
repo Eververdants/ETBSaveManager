@@ -1,5 +1,5 @@
 <template>
-  <div class="archive-card" :data-archive-id="archive.id">
+  <div class="archive-card" :data-archive-id="archive.id" @click="handleCardClick">
     <!-- 上半背景区域 -->
     <div class="card-background">
       <img :src="backgroundImage" :alt="currentLevelName" class="background-image" />
@@ -53,6 +53,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
+import gsap from 'gsap'
 
 // Props
 const props = defineProps({
@@ -67,7 +68,11 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['toggle-visibility', 'edit', 'delete'])
+const emit = defineEmits(['toggle-visibility', 'edit', 'delete', 'select'])
+
+// 防重复点击控制
+const clickTimeouts = new Map()
+const isProcessingClick = new Set()
 
 // Computed
 // 使用i18n翻译，避免硬编码
@@ -138,6 +143,31 @@ const editArchive = () => {
 
 const deleteArchive = () => {
   emit('delete', props.archive)
+}
+
+const handleCardClick = (event) => {
+  // 阻止事件冒泡
+  event.stopPropagation()
+
+  // 防止重复点击
+  if (isProcessingClick.has(props.archive.id)) {
+    return
+  }
+
+  isProcessingClick.add(props.archive.id)
+
+  // 清除之前的定时器
+  if (clickTimeouts.has(props.archive.id)) {
+    clearTimeout(clickTimeouts.get(props.archive.id))
+  }
+
+  // 直接触发选择事件，不执行动画
+  emit('select', props.archive)
+
+  // 延迟清理点击状态
+  setTimeout(() => {
+    isProcessingClick.delete(props.archive.id)
+  }, 300)
 }
 
 
@@ -211,8 +241,16 @@ const updateTagWidths = () => {
       const fullEl = el.querySelector('.tag-full')
 
       if (shortEl && fullEl) {
-        const shortWidth = shortEl.offsetWidth || shortEl.getBoundingClientRect().width
-        const fullWidth = fullEl.offsetWidth || fullEl.getBoundingClientRect().width
+        // 使用更高效的测量方法
+        const range = document.createRange()
+        range.selectNodeContents(shortEl)
+        const shortRect = range.getBoundingClientRect()
+        range.selectNodeContents(fullEl)
+        const fullRect = range.getBoundingClientRect()
+        range.detach()
+
+        const shortWidth = shortRect.width
+        const fullWidth = fullRect.width
 
         const shortWidthPx = `${Math.ceil(shortWidth) + 8}px`
         const fullWidthPx = `${Math.ceil(fullWidth) + 12}px`
@@ -244,8 +282,7 @@ const updateTagWidths = () => {
         resolve()
       })
     })
-  }
-  )
+  })
 }
 
 onMounted(async () => {
@@ -287,8 +324,8 @@ onMounted(async () => {
       })
     }, {
       root: container,
-      rootMargin: '100px', // 提前一点开始计算
-      threshold: 0.01
+      rootMargin: '100px', // 减少提前计算的范围以提高性能
+      threshold: 0.1 // 提高阈值以减少触发次数
     })
 
     // 开始观察当前卡片
@@ -300,7 +337,7 @@ onMounted(async () => {
       const windowHeight = window.innerHeight
       const cardTop = card.offsetTop
 
-      if (cardTop >= scrollTop && cardTop <= scrollTop + windowHeight + 100) {
+      if (cardTop >= scrollTop && cardTop <= scrollTop + windowHeight + 200) {
         if (!hasRendered.value) {
           renderCard()
         }
@@ -312,10 +349,17 @@ onMounted(async () => {
     // 初始检查
     checkVisibility()
 
-    // 滚动监听
+    // 滚动监听 - 使用防抖优化性能
     if (!hasRendered.value) {
+      let scrollTimer = null
       const handleScroll = () => {
-        checkVisibility()
+        // 使用防抖避免频繁检查
+        if (scrollTimer) {
+          clearTimeout(scrollTimer)
+        }
+        scrollTimer = setTimeout(() => {
+          checkVisibility()
+        }, 100)
       }
 
       window.addEventListener('scroll', handleScroll)
@@ -324,6 +368,9 @@ onMounted(async () => {
       window._scrollCleanup = window._scrollCleanup || []
       window._scrollCleanup.push(() => {
         window.removeEventListener('scroll', handleScroll)
+        if (scrollTimer) {
+          clearTimeout(scrollTimer)
+        }
       })
     }
   }
@@ -420,14 +467,20 @@ onBeforeUnmount(() => {
   height: 160px;
   border-radius: 12px;
   overflow: hidden;
+  position: relative;
+  cursor: pointer;
   background: var(--card-bg);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--divider-color);
   cursor: pointer;
-  /* 卡片基础样式 - 移除进场动画，让transition-group控制 */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  /* 性能优化：预声明将要改变的属性以提高性能 */
+  will-change: transform, box-shadow;
+  /* 卡片基础样式 - 使用更自然的过渡效果 */
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   min-height: 160px;
+  /* 确保卡片在动画过程中保持正确的布局 */
+  position: relative;
+  z-index: 1;
 }
 
 /* 上半背景区域 */
@@ -444,7 +497,8 @@ onBeforeUnmount(() => {
   object-fit: cover;
   /* 添加初始模糊效果 */
   filter: blur(1.5px);
-  transition: filter 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 性能优化：使用更简单的过渡效果 */
+  transition: filter 0.2s ease;
 }
 
 /* 悬浮时减少模糊效果 */
@@ -504,12 +558,13 @@ onBeforeUnmount(() => {
   font-size: 11px;
   font-weight: 500;
   border: 1px solid;
-  /* 减少模糊效果以提高清晰度 */
-  backdrop-filter: blur(2px);
-  transition: inline-size 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+  /* 移除模糊效果以提高性能 */
+  /* backdrop-filter: blur(2px); */
+  /* 性能优化：简化过渡效果 */
+  transition: inline-size 0.2s ease,
     opacity 0.2s ease,
-    background 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    background 0.2s ease,
+    border-color 0.2s ease;
   white-space: nowrap;
   overflow: hidden;
   position: relative;
@@ -538,7 +593,8 @@ onBeforeUnmount(() => {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 性能优化：使用更简单的过渡效果 */
+  transition: opacity 0.15s ease;
   white-space: nowrap;
 }
 
@@ -616,9 +672,9 @@ onBeforeUnmount(() => {
 
 /* 卡片悬浮时显示彩色标签和展开效果 */
 .archive-card:hover {
-  /* 性能优化：使用translate3d启用硬件加速 */
-  transform: translate3d(0, -4px, 0) scale3d(1.02, 1.02, 1);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  /* 性能优化：使用更简单的变换以提高性能 */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
 .archive-card:hover .mode-single {
@@ -681,12 +737,14 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 6px;
   align-items: center;
+  min-height: 24px;
+  /* 防止按钮高度变化导致布局抖动 */
 }
 
 .action-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
+  background: rgba(128, 128, 128, 0.1);
+  color: rgba(128, 128, 128, 0.7);
+  border: 1px solid rgba(128, 128, 128, 0.2);
   font-size: 12px;
   cursor: pointer;
   padding: 6px 12px;
@@ -698,7 +756,8 @@ onBeforeUnmount(() => {
   min-width: 32px;
   height: 24px;
   font-weight: 500;
-  backdrop-filter: blur(5px);
+  box-sizing: border-box;
+  /* 确保边框不增加元素尺寸 */
 }
 
 .action-btn:hover {
@@ -706,29 +765,7 @@ onBeforeUnmount(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* 三个胶囊按钮的不同颜色 - 未悬浮时柔和颜色 */
-.action-btn.edit {
-  background: rgba(128, 128, 128, 0.1);
-  color: rgba(128, 128, 128, 0.7);
-  border: 1px solid rgba(128, 128, 128, 0.2);
-  transition: all 0.3s ease;
-}
-
-.action-btn.copy {
-  background: rgba(128, 128, 128, 0.1);
-  color: rgba(128, 128, 128, 0.7);
-  border: 1px solid rgba(128, 128, 128, 0.2);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.action-btn.delete {
-  background: rgba(128, 128, 128, 0.1);
-  color: rgba(128, 128, 128, 0.7);
-  border: 1px solid rgba(128, 128, 128, 0.2);
-  transition: all 0.3s ease;
-}
+/* 三个胶囊按钮的不同颜色 - 基础样式已在.action-btn中定义 */
 
 /* Vue过渡动画 - 图标切换 */
 .icon-switch-enter-active,

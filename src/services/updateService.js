@@ -1,11 +1,7 @@
-/**
- * 简化版更新服务 - 仅检查更新和跳转下载
- */
-
 import { getCurrentUpdateSource } from '../config/updateConfig.js';
 
 // 版本信息
-const CURRENT_VERSION = '3.0.0-Alpha-4.1';
+const CURRENT_VERSION = '3.0.0-Alpha-4.2';
 
 // 简化版更新状态
 export const UpdateStatus = {

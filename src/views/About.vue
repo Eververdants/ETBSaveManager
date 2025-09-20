@@ -82,7 +82,7 @@ import { computed, ref, onMounted, nextTick } from 'vue';
 
 
 const { t, locale } = useI18n({ useScope: 'global' });
-const version = "3.0.0-Alpha-4.1";
+const version = "3.0.0-Alpha-4.2";
 
 const showChineseSocial = computed(() => ['zh-CN', 'zh-TW'].includes(locale.value));
 const showEasterEgg = ref(false);
@@ -145,8 +145,13 @@ const handleAppIconClick = () => {
   appIconClickCount++;
 
   if (appIconClickCount >= 5) {
-    // 触发添加日志菜单事件
-    window.dispatchEvent(new CustomEvent('add-log-menu'));
+    // 激活开发者模式
+    localStorage.setItem('developerMode', 'true');
+
+    // 触发自定义事件通知其他组件
+    window.dispatchEvent(new CustomEvent('developer-mode-changed', {
+      detail: { enabled: true }
+    }));
 
     // 显示提示
     const toast = document.createElement('div');
@@ -164,7 +169,7 @@ const handleAppIconClick = () => {
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       animation: fadeInOut 2s ease-in-out;
     `;
-    toast.textContent = '日志功能已激活！请在侧边栏查看';
+    toast.textContent = '开发者模式已激活！';
     document.body.appendChild(toast);
 
     setTimeout(() => {

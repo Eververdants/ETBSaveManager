@@ -99,6 +99,77 @@
       </div>
     </div>
 
+    <!-- 开发者选项设置组 -->
+    <div class="setting-group" v-if="developerOptionsEnabled">
+      <transition name="text-swift" mode="out-in">
+        <div class="section-header" :key="currentLanguage">{{ t('settings.developerOptions') }}</div>
+      </transition>
+
+      <!-- 开发者模式开关 -->
+      <div class="setting-item">
+        <div class="setting-icon">
+          <font-awesome-icon :icon="['fas', 'code']" />
+        </div>
+        <div class="setting-details">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">开发者模式</div>
+          </transition>
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-description" :key="currentLanguage">启用开发者模式以访问高级功能</div>
+          </transition>
+        </div>
+        <div class="setting-action">
+          <label class="switch">
+            <input type="checkbox" v-model="developerModeEnabled" @change="handleDeveloperModeToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 日志功能开关 -->
+      <div class="setting-item" v-if="developerModeEnabled">
+        <div class="setting-icon">
+          <font-awesome-icon :icon="['fas', 'file-alt']" />
+        </div>
+        <div class="setting-details">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">启用日志功能</div>
+          </transition>
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-description" :key="currentLanguage">显示日志菜单和日志记录功能</div>
+          </transition>
+        </div>
+        <div class="setting-action">
+          <label class="switch">
+            <input type="checkbox" v-model="logMenuEnabled" @change="handleLogMenuToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 性能监控开关 -->
+      <div class="setting-item" v-if="developerModeEnabled">
+        <div class="setting-icon">
+          <font-awesome-icon :icon="['fas', 'tachometer-alt']" />
+        </div>
+        <div class="setting-details">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">{{ t('settings.performanceMonitor') }}</div>
+          </transition>
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-description" :key="currentLanguage">{{ t('settings.performanceMonitorDescription') }}
+            </div>
+          </transition>
+        </div>
+        <div class="setting-action">
+          <label class="switch">
+            <input type="checkbox" v-model="performanceMonitorEnabled" @change="handlePerformanceMonitorToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <!-- 版本信息 -->
     <div class="version-info">
       <transition name="text-swift" mode="out-in">
@@ -161,9 +232,13 @@ export default {
       currentTheme: localStorage.getItem('theme') || 'light',
       currentLanguage: localStorage.getItem('language') || 'zh-CN',
       currentUpdateSource: localStorage.getItem('updateSource') || 'GITEE',
+      performanceMonitorEnabled: localStorage.getItem('performanceMonitor') !== 'false', // 默认开启
+      developerModeEnabled: localStorage.getItem('developerMode') === 'true', // 开发者模式状态
+      developerOptionsEnabled: localStorage.getItem('developerMode') === 'true', // 开发者选项是否显示
+      logMenuEnabled: localStorage.getItem('logMenuEnabled') === 'true', // 日志功能开关状态
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: '3.0.0-Alpha-4.1',
+      appVersion: '3.0.0-Alpha-4.2',
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
@@ -239,14 +314,8 @@ export default {
       return html;
     },
 
-    handleDropdownOpen(dropdownName) {
-      // 当一个新的下拉框打开时，关闭其他所有下拉框
-      // 如果点击的是已经打开的下拉框，则关闭它
-      if (this.activeDropdown === dropdownName) {
-        this.activeDropdown = null;
-      } else {
-        this.activeDropdown = dropdownName;
-      }
+    handleDropdownOpen(dropdown) {
+      this.activeDropdown = this.activeDropdown === dropdown ? null : dropdown;
     },
 
     handleThemeChange(option) {
@@ -383,6 +452,40 @@ export default {
         }, this.updateStatus === UpdateStatus.ERROR ? 8000 : 5000);
       }
     },
+    handlePerformanceMonitorToggle() {
+      localStorage.setItem('performanceMonitor', this.performanceMonitorEnabled);
+      // 触发自定义事件通知App.vue更新状态
+      window.dispatchEvent(new CustomEvent('performance-monitor-toggle', {
+        detail: { enabled: this.performanceMonitorEnabled }
+      }));
+    },
+
+    handleDeveloperModeToggle() {
+      localStorage.setItem('developerMode', this.developerModeEnabled);
+      this.developerOptionsEnabled = this.developerModeEnabled;
+
+      // 触发自定义事件通知其他组件
+      window.dispatchEvent(new CustomEvent('developer-mode-changed', {
+        detail: { enabled: this.developerModeEnabled }
+      }));
+
+      // 如果关闭开发者模式，同时关闭日志功能
+      if (!this.developerModeEnabled) {
+        this.logMenuEnabled = false;
+        localStorage.setItem('logMenuEnabled', 'false');
+        window.dispatchEvent(new CustomEvent('log-menu-toggle', {
+          detail: { enabled: false }
+        }));
+      }
+    },
+
+    handleLogMenuToggle() {
+      localStorage.setItem('logMenuEnabled', this.logMenuEnabled);
+      // 触发自定义事件通知其他组件
+      window.dispatchEvent(new CustomEvent('log-menu-toggle', {
+        detail: { enabled: this.logMenuEnabled }
+      }));
+    },
 
     closeUpdateMessage() {
       this.updateMessage = null;
@@ -468,6 +571,19 @@ export default {
       if (!clickedInsideDropdown) {
         this.activeDropdown = null;
       }
+    },
+
+    // 处理开发者模式变化事件
+    handleDeveloperModeChanged(event) {
+      const enabled = event.detail.enabled;
+      this.developerModeEnabled = enabled;
+      this.developerOptionsEnabled = enabled;
+
+      // 如果关闭开发者模式，重置相关设置
+      if (!enabled) {
+        this.logMenuEnabled = false;
+        localStorage.setItem('logMenuEnabled', 'false');
+      }
     }
   },
   async mounted() {
@@ -483,6 +599,9 @@ export default {
     // 添加点击外部关闭下拉框的事件监听
     document.addEventListener('click', this.handleClickOutside);
 
+    // 监听开发者模式变化事件
+    window.addEventListener('developer-mode-changed', this.handleDeveloperModeChanged);
+
     // 检查更新
     if (updateService.canCheckUpdate && updateService.canCheckUpdate()) {
       try {
@@ -496,6 +615,7 @@ export default {
   beforeUnmount() {
     // 移除事件监听
     document.removeEventListener('click', this.handleClickOutside);
+    window.removeEventListener('developer-mode-changed', this.handleDeveloperModeChanged);
   }
 };
 </script>
@@ -598,6 +718,52 @@ export default {
   opacity: 0.6;
   cursor: not-allowed;
   transition: opacity 0.25s ease;
+}
+
+/* 开关样式 */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked+.slider {
+  background-color: var(--accent-color);
+}
+
+input:checked+.slider:before {
+  transform: translateX(26px);
 }
 
 .version-info {
@@ -717,10 +883,13 @@ export default {
   max-width: 420px;
   min-width: 320px;
   backdrop-filter: blur(20px);
-  transition: all 0.3s cubic-bezier(0.65, 0, 0.35, 1);
   background: var(--card-bg);
   color: var(--text);
   border: 1px solid var(--divider-color);
+}
+
+.update-message:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
 }
 
 .update-message svg,
@@ -894,98 +1063,95 @@ export default {
   text-decoration: underline;
 }
 
-/* 更新提示动画 */
-.slide-enter-active,
+/* 更新提示动画 - 简洁自然的滑动效果 */
+.slide-enter-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
 .slide-leave-active {
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all 0.25s cubic-bezier(0.7, 0, 0.84, 0);
   will-change: transform, opacity;
 }
 
 .slide-enter-from {
   opacity: 0;
-  transform: translateX(100%) translateY(-20px) scale(0.8);
-  transform-origin: top right;
+  transform: translateX(100%) translateY(-10px);
 }
 
 .slide-enter-to {
   opacity: 1;
-  transform: translateX(0) translateY(0) scale(1);
-  transform-origin: top right;
+  transform: translateX(0) translateY(0);
 }
 
 .slide-leave-from {
   opacity: 1;
-  transform: translateX(0) translateY(0) scale(1);
-  transform-origin: top right;
+  transform: translateX(0) translateY(0);
 }
 
 .slide-leave-to {
   opacity: 0;
-  transform: translateX(100%) translateY(-20px) scale(0.8);
-  transform-origin: top right;
+  transform: translateX(100%) translateY(-5px);
 }
 
-/* 文字切换动画 */
-.text-swift-enter-active,
+/* 文字切换动画 - 简洁的淡入淡出 */
+.text-swift-enter-active {
+  transition: opacity 0.2s ease-out;
+}
+
 .text-swift-leave-active {
-  transition: all 0.3s ease;
+  transition: opacity 0.15s ease-in;
 }
 
 .text-swift-enter-from {
   opacity: 0;
-  transform: translateY(-8px);
 }
 
 .text-swift-enter-to {
   opacity: 1;
-  transform: translateY(0);
 }
 
 .text-swift-leave-from {
   opacity: 1;
-  transform: translateY(0);
 }
 
 .text-swift-leave-to {
   opacity: 0;
-  transform: translateY(8px);
 }
 
-/* 展开动画 */
-.expand-enter-active,
-.expand-leave-active {
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+/* 展开动画 - 简洁的高度变化 */
+.expand-enter-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   max-height: 300px;
   overflow: hidden;
-  will-change: max-height, opacity, transform;
+  will-change: max-height, opacity;
+}
+
+.expand-leave-active {
+  transition: all 0.25s ease-out;
+  max-height: 300px;
+  overflow: hidden;
+  will-change: max-height, opacity;
 }
 
 .expand-enter-from {
   opacity: 0;
   max-height: 0;
-  transform: scaleY(0.6);
-  transform-origin: top;
 }
 
 .expand-enter-to {
   opacity: 1;
   max-height: 300px;
-  transform: scaleY(1);
-  transform-origin: top;
 }
 
 .expand-leave-from {
   opacity: 1;
   max-height: 300px;
-  transform: scaleY(1);
-  transform-origin: top;
 }
 
 .expand-leave-to {
   opacity: 0;
   max-height: 0;
-  transform: scaleY(0.6);
-  transform-origin: top;
 }
 
 /* 更新检查中的动画 */

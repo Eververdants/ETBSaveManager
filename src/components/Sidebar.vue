@@ -42,9 +42,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, watch, reactive } from 'vue';
 import { useRoute } from 'vue-router';
-import { topMenuItems, bottomMenuItems, addBottomMenuItem } from '../config/sidebarMenu.js';
+import { topMenuItems as originalTopMenuItems, bottomMenuItems as originalBottomMenuItems, addBottomMenuItem } from '../config/sidebarMenu.js';
 import { gsap } from 'gsap';
 
 const emit = defineEmits(['sidebar-action', 'sidebar-expand']);
@@ -54,6 +54,10 @@ const isExpanded = ref(false);
 const isDarkTheme = ref(false);
 const sidebarRef = ref(null);
 const activeItemId = ref(null);
+
+// 创建响应式的菜单项数组
+const topMenuItems = reactive([...originalTopMenuItems]);
+const bottomMenuItems = reactive([...originalBottomMenuItems]);
 
 // 根据当前路由设置激活的菜单项
 const setActiveItemFromRoute = () => {
@@ -96,61 +100,79 @@ const detectTheme = () => {
 };
 
 // 组件挂载时设置初始激活项
-  onMounted(() => {
+onMounted(() => {
+  setActiveItemFromRoute();
+  detectTheme();
+
+  // 监听路由变化
+  watch(() => route.name, () => {
     setActiveItemFromRoute();
-    detectTheme();
+  });
 
-    // 监听路由变化
-    watch(() => route.name, () => {
-      setActiveItemFromRoute();
-    });
-
-    // 监听语言变化
-    watch(currentLanguage, () => {
-      // 强制重新渲染文本
-      nextTick(() => {
-        // 触发强制更新
-      });
-    });
-
-    // 监听标题栏的侧边栏切换事件
-    window.addEventListener('toggle-sidebar', (e) => {
-      const shouldCollapse = e.detail.collapsed;
-      if (shouldCollapse && isExpanded.value) {
-        handleMouseLeave();
-      } else if (!shouldCollapse && !isExpanded.value) {
-        handleMouseEnter();
-      }
-    });
-
-    // 监听日志菜单添加事件
-    window.addEventListener('add-log-menu', () => {
-      addLogMenuItem();
-    });
-
-    // 监听全局语言变化事件
-    window.addEventListener('language-changed', () => {
-      // 触发重新计算翻译
-      nextTick(() => {
-        // 强制更新DOM
-      });
+  // 监听语言变化
+  watch(currentLanguage, () => {
+    // 强制重新渲染文本
+    nextTick(() => {
+      // 触发强制更新
     });
   });
+
+  // 监听标题栏的侧边栏切换事件
+  window.addEventListener('toggle-sidebar', (e) => {
+    const shouldCollapse = e.detail.collapsed;
+    if (shouldCollapse && isExpanded.value) {
+      handleMouseLeave();
+    } else if (!shouldCollapse && !isExpanded.value) {
+      handleMouseEnter();
+    }
+  });
+
+  // 监听日志菜单开关事件
+  window.addEventListener('log-menu-toggle', (event) => {
+    if (event.detail.enabled) {
+      addLogMenuItem();
+    } else {
+      removeLogMenuItem();
+    }
+  });
+
+  // 监听开发者模式变化事件
+  window.addEventListener('developer-mode-changed', (event) => {
+    if (event.detail.enabled && localStorage.getItem('logMenuEnabled') === 'true') {
+      addLogMenuItem();
+    } else if (!event.detail.enabled) {
+      removeLogMenuItem();
+    }
+  });
+
+  // 监听全局语言变化事件
+  window.addEventListener('language-changed', () => {
+    // 触发重新计算翻译
+    nextTick(() => {
+      // 强制更新DOM
+    });
+  });
+
+  // 初始化时检查日志功能状态
+  if (localStorage.getItem('developerMode') === 'true' && localStorage.getItem('logMenuEnabled') === 'true') {
+    addLogMenuItem();
+  }
+});
 
 const t = computed(() => {
-    const globalI18n = window.$i18n;
-    return globalI18n ? globalI18n.t : (key) => key;
-  });
-  const currentLanguage = computed(() => {
-    const globalI18n = window.$i18n;
-    return globalI18n ? (globalI18n.locale.value || globalI18n.locale) : 'zh-CN';
-  });
+  const globalI18n = window.$i18n;
+  return globalI18n ? globalI18n.t : (key) => key;
+});
+const currentLanguage = computed(() => {
+  const globalI18n = window.$i18n;
+  return globalI18n ? (globalI18n.locale.value || globalI18n.locale) : 'zh-CN';
+});
 
-  // 安全的翻译函数
-  const safeT = (key) => {
-    const translateFn = t.value;
-    return typeof translateFn === 'function' ? translateFn(key) : key;
-  };
+// 安全的翻译函数
+const safeT = (key) => {
+  const translateFn = t.value;
+  return typeof translateFn === 'function' ? translateFn(key) : key;
+};
 
 // 添加日志菜单项
 const addLogMenuItem = () => {
@@ -170,14 +192,32 @@ const addLogMenuItem = () => {
       route: "Log",
     });
 
-    // 触发重新渲染并自动展开侧边栏
+    // 立即触发重新渲染，确保图标可见
     nextTick(() => {
       setActiveItemFromRoute();
-      // 自动展开侧边栏，让用户看到新添加的日志选项
-      if (!isExpanded.value) {
-        isExpanded.value = true;
-        emit('sidebar-expand', true);
-      }
+    });
+  }
+};
+
+// 移除日志菜单项
+const removeLogMenuItem = () => {
+  // 找到日志菜单项的索引
+  const logItemIndex = bottomMenuItems.findIndex(
+    item => item.action === 'openLog'
+  );
+
+  if (logItemIndex !== -1) {
+    // 移除日志菜单项
+    bottomMenuItems.splice(logItemIndex, 1);
+
+    // 如果当前激活的是日志项，需要重置激活状态
+    if (activeItemId.value === 6) {
+      activeItemId.value = null;
+    }
+
+    // 触发重新渲染
+    nextTick(() => {
+      setActiveItemFromRoute();
     });
   }
 };
@@ -676,6 +716,29 @@ const handleItemClick = (item, event) => {
   100% {
     transform: translateX(calc(-100% - 16px));
     /* 精确补偿：文本100% + 16px中文字符宽度 */
+  }
+}
+
+/* 通知动画 */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+
+  20% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -10px);
   }
 }
 

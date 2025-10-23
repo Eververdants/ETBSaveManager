@@ -357,13 +357,26 @@ export default {
         'LevelDash', 'Level188_Expanded', 'Poolrooms_Expanded', 'WaterPark_Level01_P',
         'WaterPark_Level02_P', 'WaterPark_Level03_P', 'LevelFun_Expanded',
         'Zone1_Modified', 'Zone2_Modified', 'Zone3_Baked', 'Zone4',
-        'Level52', 'TunnelLevel'
+        'Level52', 'TunnelLevel',
+        'Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat'
       ]
 
       levelMappings.forEach((levelKey, index) => {
+        // 检查是否存在对应的.png图片（新关卡）
+        const pngNewLevels = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat']
+        let imagePath
+        
+        if (pngNewLevels.includes(levelKey)) {
+          // 新关卡使用关卡名称.png
+          imagePath = `/images/${levelKey}.png`
+        } else {
+          // 原有关卡使用数字索引.jpg
+          imagePath = `/images/${index}.jpg`
+        }
+        
         availableLevels.push({
           name: t(`LevelName_Display.${levelKey}`),
-          image: `/images/${index}.jpg`,
+          image: imagePath,
           levelKey: levelKey
         })
       })

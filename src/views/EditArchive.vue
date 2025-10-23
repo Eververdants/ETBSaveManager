@@ -34,7 +34,7 @@
             <div v-for="(level, index) in availableLevels" :key="index" class="level-option"
               :class="{ selected: archiveData.currentLevel === level.levelKey }" @click="selectLevel(level.levelKey)">
               <div class="level-image-container">
-                <img :src="level.image" :alt="level.name" class="level-image" />
+                <img :src="level.image" :alt="level.name" class="level-image" @error="handleImageError" />
                 <div class="level-overlay">
                   <font-awesome-icon :icon="['fas', 'check']" class="check-icon"
                     v-if="archiveData.currentLevel === level.levelKey" />
@@ -343,6 +343,13 @@ const difficultyLevels = [
   { value: 'nightmare', icon: ['fas', 'skull'], label: 'nightmare' }
 ]
 
+// 图片加载错误处理
+const handleImageError = (event) => {
+  console.warn('Image failed to load:', event.target.src)
+  // 可以设置一个默认图片
+  event.target.src = '/images/default.jpg'
+}
+
 // 方法
 const loadLevels = () => {
   try {
@@ -357,31 +364,89 @@ const loadLevels = () => {
       'LevelDash', 'Level188_Expanded', 'Poolrooms_Expanded', 'WaterPark_Level01_P',
       'WaterPark_Level02_P', 'WaterPark_Level03_P', 'LevelFun_Expanded',
       'Zone1_Modified', 'Zone2_Modified', 'Zone3_Baked', 'Zone4',
-      'Level52', 'TunnelLevel'
+      'Level52', 'TunnelLevel',
+      'Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat'
     ]
 
     // 清空现有数据
     availableLevels.value = []
+    console.log('Loading levels, total count:', levelMappings.length)
 
     // 为每个层级生成数据
     levelMappings.forEach((levelKey, index) => {
+      try {
+        // 检查是否存在对应的.png图片（新关卡）
+        const pngNewLevels = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat']
+        let imagePath
+        
+        if (pngNewLevels.includes(levelKey)) {
+          // 新关卡使用关卡名称.png
+          imagePath = `/images/${levelKey}.png`
+        } else {
+          // 原有关卡使用数字索引.jpg
+          imagePath = `/images/${index}.jpg`
+        }
+        
+        // 获取翻译名称，如果失败则使用原始键名
+        let levelName
+        try {
+          levelName = t(`LevelName_Display.${levelKey}`)
+        } catch (translationError) {
+          console.warn(`Translation failed for level ${levelKey}:`, translationError)
+          levelName = levelKey
+        }
+        
+        availableLevels.value.push({
+          name: levelName,
+          image: imagePath,
+          levelKey: levelKey
+        })
+      } catch (itemError) {
+        console.error(`Error processing level ${levelKey}:`, itemError)
+      }
+    })
+    
+    console.log('Levels loaded successfully, count:', availableLevels.value.length)
+  } catch (error) {
+    console.error(t('editArchive.loadLevelsFailed'), error)
+    // 如果翻译加载失败，使用默认层级（包含所有层级）
+    const fallbackLevels = [
+      'Level0', 'TopFloor', 'MiddleFloor', 'GarageLevel2', 'BottomFloor',
+      'TheHub', 'Pipes1', 'ElectricalStation', 'Office', 'Hotel',
+      'Floor3', 'BoilerRoom', 'Pipes2', 'LevelFun', 'Poolrooms',
+      'LevelRun', 'TheEnd', 'Level922', 'Level94', 'AnimatedKingdom',
+      'LightsOut', 'OceanMap', 'CaveLevel', 'Level05', 'Level9',
+      'AbandonedBase', 'Level10', 'Level3999', 'Level07', 'Snackrooms',
+      'LevelDash', 'Level188_Expanded', 'Poolrooms_Expanded', 'WaterPark_Level01_P',
+      'WaterPark_Level02_P', 'WaterPark_Level03_P', 'LevelFun_Expanded',
+      'Zone1_Modified', 'Zone2_Modified', 'Zone3_Baked', 'Zone4',
+      'Level52', 'TunnelLevel',
+      'Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat'
+    ]
+    
+    availableLevels.value = []
+    
+    fallbackLevels.forEach((levelKey, index) => {
+      // 检查是否存在对应的.png图片（新关卡）
+      const pngNewLevels = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat']
+      let imagePath
+      
+      if (pngNewLevels.includes(levelKey)) {
+        // 新关卡使用关卡名称.png
+        imagePath = `/images/${levelKey}.png`
+      } else {
+        // 原有关卡使用数字索引.jpg
+        imagePath = `/images/${index}.jpg`
+      }
+      
       availableLevels.value.push({
-        name: t(`LevelName_Display.${levelKey}`),
-        image: `/images/${index}.jpg`,
+        name: levelKey, // 使用原始键名作为回退
+        image: imagePath,
         levelKey: levelKey
       })
     })
-  } catch (error) {
-    console.error(t('editArchive.loadLevelsFailed'), error)
-    // 如果翻译加载失败，使用默认层级
-    availableLevels.value = [
-      { name: t('LevelName_Display.Level0'), image: '/images/0.jpg', levelKey: 'Level0' },
-      { name: t('LevelName_Display.TopFloor'), image: '/images/1.jpg', levelKey: 'TopFloor' },
-      { name: t('LevelName_Display.MiddleFloor'), image: '/images/2.jpg', levelKey: 'MiddleFloor' },
-      { name: t('LevelName_Display.GarageLevel2'), image: '/images/3.jpg', levelKey: 'GarageLevel2' },
-      { name: t('LevelName_Display.BottomFloor'), image: '/images/4.jpg', levelKey: 'BottomFloor' },
-      { name: t('LevelName_Display.TheHub'), image: '/images/5.jpg', levelKey: 'TheHub' }
-    ]
+    
+    console.log('Levels loaded with fallback, count:', availableLevels.value.length)
   }
 }
 
@@ -521,12 +586,21 @@ watch(() => archiveData.gameMode, (newMode) => {
 })
 
 onMounted(() => {
+  console.log('EditArchive component mounted')
   loadLevels()
   animateIn()
   initArchiveData()
 
   // 如果有存档数据但没有玩家，不添加空玩家
   // 只有当用户手动添加玩家时才创建
+  
+  // 调试：检查可用层级数据
+  setTimeout(() => {
+    console.log('Available levels after mount:', availableLevels.value.length)
+    if (availableLevels.value.length > 0) {
+      console.log('First few levels:', availableLevels.value.slice(0, 3))
+    }
+  }, 1000)
 })
 
 // 在<script setup>中不需要return语句，所有变量都会自动暴露给模板

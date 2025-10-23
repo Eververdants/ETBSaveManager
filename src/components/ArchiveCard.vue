@@ -97,8 +97,17 @@ const backgroundImage = computed(() => {
     'Snackrooms', 'LevelDash', 'Level188_Expanded', 'Poolrooms_Expanded',
     'WaterPark_Level01_P', 'WaterPark_Level02_P', 'WaterPark_Level03_P',
     'LevelFun_Expanded', 'Zone1_Modified', 'Zone2_Modified', 'Zone3_Baked',
-    'Zone4', 'Level52', 'TunnelLevel'
+    'Zone4', 'Level52', 'TunnelLevel', 'Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat'
   ]
+  
+  // 新关卡使用关卡名称.png
+  const pngNewLevels = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat']
+  
+  if (pngNewLevels.includes(props.archive.currentLevel)) {
+    return `/images/${props.archive.currentLevel}.png`
+  }
+  
+  // 原有关卡使用数字索引.jpg
   const index = levelOrder.indexOf(props.archive.currentLevel)
   return index >= 0 ? `/images/${index}.jpg` : '/images/0.jpg'
 })

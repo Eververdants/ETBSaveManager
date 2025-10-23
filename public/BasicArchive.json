@@ -9,7 +9,7 @@
     "engine_version_major": 4,
     "engine_version_minor": 27,
     "engine_version_patch": 2,
-    "engine_version_build": 18319896,
+    "engine_version_build": 0,
     "engine_version": "++UE4+Release-4.27",
     "custom_version": [
       3,
@@ -249,6 +249,14 @@
         "Byte": {
           "Label": "E_Difficulty::NewEnumerator0"
         }
+      },
+      "LaddersFound_0": {
+        "tag": {
+          "data": {
+            "Other": "IntProperty"
+          }
+        },
+        "Int": 2
       },
       "CurrentLevel_0": {
         "tag": {

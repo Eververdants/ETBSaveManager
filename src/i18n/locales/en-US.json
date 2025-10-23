@@ -206,7 +206,12 @@
     "Zone3_Baked": "Level FUN+ (4)",
     "Zone4": "Level FUN+ (5)",
     "Level52": "Level 52 - School Hallway",
-    "TunnelLevel": "Level 55.1 - Tunnels"
+    "TunnelLevel": "Level 55.1 - Tunnels",
+    "Bunker": "Bunker",
+    "GraffitiLevel": "GraffitiLevel",
+    "Grassrooms_Expanded": "Grassrooms Expanded",
+    "Level974": "Level 974",
+    "LevelCheat": "LevelCheat"
   },
   "archiveCard": {
     "archiveDifficulty": "Archive Difficulty",

@@ -5,12 +5,22 @@ import { getI18n } from './i18n/loader.js';
 import Sidebar from './components/Sidebar.vue';
 import TitleBar from './components/TitleBar.vue';
 import PerformanceMonitor from "./components/PerformanceMonitor.vue";
+import { showPopup } from '@/services/popupService';
+
+// 示例调用 - 发行版禁用弹窗功能
+// showPopup({
+//   message: '这是一个提示！',
+//   direction: 'top-right', // 支持八个方向
+//   icon: ['fas', 'heart'],
+//   duration: 5000, // 5秒后自动关闭，0 为不自动关闭
+// });
 
 const i18n = getI18n();
 const router = useRouter();
 
 const sidebarExpanded = ref(false);
-const performanceMonitorEnabled = ref(localStorage.getItem('performanceMonitor') !== 'false');
+// 发行版禁用性能监控 - 设置为false确保默认不显示
+const performanceMonitorEnabled = ref(false);
 
 const handleSidebarExpand = (expanded) => {
   sidebarExpanded.value = expanded;
@@ -25,10 +35,10 @@ onMounted(() => {
     document.documentElement.setAttribute('data-theme', savedTheme);
   }
 
-  // 监听性能监控开关事件
-  window.addEventListener('performance-monitor-toggle', (event) => {
-    performanceMonitorEnabled.value = event.detail.enabled;
-  });
+  // 监听性能监控开关事件 - 发行版禁用
+  // window.addEventListener('performance-monitor-toggle', (event) => {
+  //   performanceMonitorEnabled.value = event.detail.enabled;
+  // });
 
   // 监听路由变更事件
   window.addEventListener('sidebar-route-change', (event) => {
@@ -60,8 +70,8 @@ onMounted(() => {
             <component :is="Component" />
           </transition>
         </router-view>
-        <!-- 性能监控组件 -->
-        <PerformanceMonitor v-if="performanceMonitorEnabled" class="performance-monitor" />
+        <!-- 性能监控组件 - 发行版禁用 -->
+        <!-- <PerformanceMonitor v-if="performanceMonitorEnabled" class="performance-monitor" /> -->
       </main>
     </div>
   </div>
@@ -84,7 +94,8 @@ onMounted(() => {
   transform: scale(0.9);
 }
 
-/* 性能监控组件样式 */
+/* 性能监控组件样式 - 发行版禁用 */
+/*
 .performance-monitor {
   position: fixed;
   top: 50px;
@@ -95,20 +106,19 @@ onMounted(() => {
   border: 1px solid #0f0;
   border-radius: 8px;
   backdrop-filter: blur(4px);
-  pointer-events: auto; /* 允许鼠标事件以触发悬浮效果 */
+  pointer-events: auto;
   transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
 }
 
-/* 鼠标悬浮时降低不透明度并移除模糊效果 */
 .performance-monitor:hover {
   opacity: 0.3;
   backdrop-filter: none;
 }
 
-/* 确保内部元素都支持鼠标穿透，但容器本身接收鼠标事件 */
 .performance-monitor * {
   pointer-events: none !important;
 }
+*/
 </style>
 <style>
 * {

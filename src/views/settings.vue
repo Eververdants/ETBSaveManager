@@ -238,7 +238,7 @@ export default {
       logMenuEnabled: localStorage.getItem('logMenuEnabled') === 'true', // 日志功能开关状态
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: '3.0.0-Alpha-4.2',
+      appVersion: '3.0.0-Alpha-5',
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,

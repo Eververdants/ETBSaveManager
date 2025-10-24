@@ -86,18 +86,27 @@ const handleMouseLeave = () => {
 };
 
 // 检测并应用主题
-const detectTheme = () => {
-  // 检查是否有全局主题管理器
-  if (window.themeManager && typeof window.themeManager.applyTheme === 'function') {
-    // 获取当前主题设置
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    // 应用主题
-    window.themeManager.applyTheme(savedTheme);
-  } else {
-    // 如果没有主题管理器，使用默认的亮色主题
-    document.documentElement.setAttribute('data-theme', 'light');
-  }
-};
+  const detectTheme = () => {
+    // 检查是否有全局主题管理器
+    if (window.themeManager && typeof window.themeManager.applyTheme === 'function') {
+      // 获取当前主题设置
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      // 应用主题
+      window.themeManager.applyTheme(savedTheme);
+    } else {
+      // 如果没有主题管理器，使用默认的亮色主题
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+    
+    // 主题切换后强制重绘，防止图层卡住
+    requestAnimationFrame(() => {
+      if (sidebarRef.value) {
+        sidebarRef.value.style.visibility = 'hidden';
+        sidebarRef.value.offsetHeight; // 触发重排
+        sidebarRef.value.style.visibility = 'visible';
+      }
+    });
+  };
 
 // 组件挂载时设置初始激活项
 onMounted(() => {

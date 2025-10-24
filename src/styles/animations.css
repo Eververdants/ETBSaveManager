@@ -78,34 +78,38 @@
 
 /* 移除全局页面过渡，只保留文字动画 */
 
-/* 页面切换过渡动画 */
+/* 页面切换过渡动画 - 优化硬件加速 */
 .page-enter-active {
   animation: pageSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .page-leave-active {
   animation: pageSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 @keyframes pageSlideIn {
   0% {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(20px) translateZ(0);
   }
   100% {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) translateZ(0);
   }
 }
 
 @keyframes pageSlideOut {
   0% {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) translateZ(0);
   }
   100% {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateX(-20px) translateZ(0);
   }
 }
 

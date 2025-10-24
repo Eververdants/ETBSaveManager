@@ -1,5 +1,5 @@
 <template>
-  <div class="archive-card" :data-archive-id="archive.id" @click="handleCardClick">
+  <div class="archive-card" :data-archive-id="archive.id" @click="handleCardClick" :class="{ 'archive-hidden': !archive.isVisible }">
     <!-- 上半背景区域 -->
     <div class="card-background">
       <img :src="backgroundImage" :alt="currentLevelName" class="background-image" />
@@ -104,7 +104,7 @@ const backgroundImage = computed(() => {
   const pngNewLevels = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat']
   
   if (pngNewLevels.includes(props.archive.currentLevel)) {
-    return `/images/${props.archive.currentLevel}.png`
+    return `/images/${props.archive.currentLevel}.jpg`
   }
   
   // 原有关卡使用数字索引.jpg
@@ -392,6 +392,13 @@ onMounted(async () => {
         clearTimeout(card._resizeTimer)
         card._resizeTimer = setTimeout(() => {
           updateTagWidths()
+          
+          // ResizeObserver触发时强制重绘，防止图层卡住
+          if (card && card.parentElement) {
+            card.parentElement.style.visibility = 'hidden';
+            card.parentElement.offsetHeight; // 触发重排
+            card.parentElement.style.visibility = 'visible';
+          }
         }, 100)
       }
     })
@@ -794,6 +801,25 @@ onBeforeUnmount(() => {
 
 .visibility-icon {
   display: inline-block;
+}
+
+/* 隐藏状态的存档样式 */
+.archive-hidden {
+  opacity: 0.6;
+  filter: grayscale(0.8);
+  transition: all 0.5s ease;
+}
+
+.archive-hidden .archive-name {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.archive-hidden .background-image {
+  filter: grayscale(1) brightness(0.7);
+}
+
+.archive-hidden .visibility-icon {
+  color: #ff3b30 !important;
 }
 
 /* 卡片悬浮时按钮显示颜色 */

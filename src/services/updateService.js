@@ -1,7 +1,7 @@
 import { getCurrentUpdateSource } from '../config/updateConfig.js';
 
 // 版本信息
-const CURRENT_VERSION = '3.0.0-Alpha-5';
+const CURRENT_VERSION = '3.0.0-Alpha-5.1';
 
 // 简化版更新状态
 export const UpdateStatus = {

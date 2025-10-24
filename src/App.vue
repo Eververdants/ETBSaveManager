@@ -27,13 +27,27 @@ const handleSidebarExpand = (expanded) => {
 };
 
 onMounted(() => {
-  // 应用保存的主题
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  if (window.themeManager) {
-    window.themeManager.setTheme(savedTheme);
-  } else {
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  }
+    // 强制启用硬件加速，防止图层合成问题
+    const forceHardwareAcceleration = () => {
+      const elements = document.querySelectorAll('.main-content, .sidebar, .archive-grid, .archive-card');
+      elements.forEach(el => {
+        if (el) {
+          el.style.transform = 'translateZ(0)';
+          el.style.willChange = 'transform';
+        }
+      });
+    };
+
+    // 应用保存的主题
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    if (window.themeManager) {
+      window.themeManager.setTheme(savedTheme);
+    } else {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    // 延迟执行硬件加速强制，确保DOM完全加载
+    setTimeout(forceHardwareAcceleration, 100);
 
   // 监听性能监控开关事件 - 发行版禁用
   // window.addEventListener('performance-monitor-toggle', (event) => {
@@ -54,6 +68,13 @@ onMounted(() => {
     if (mainContent) {
       mainContent.scrollTop = 0;
     }
+    
+    // 路由切换后强制重绘，防止图层卡住
+    requestAnimationFrame(() => {
+      document.body.style.display = 'none';
+      document.body.offsetHeight; // 触发重排
+      document.body.style.display = '';
+    });
   });
 });
 </script>
@@ -78,20 +99,23 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* 模态窗口动画 */
+/* 模态窗口动画 - 优化性能 */
 .modal-enter-active,
 .modal-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+  transform: translateZ(0); /* 强制硬件加速 */
+  backface-visibility: hidden; /* 防止图层闪烁 */
 }
 
 .modal-enter-from {
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(0.9) translateZ(0);
 }
 
 .modal-leave-to {
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(0.9) translateZ(0);
 }
 
 /* 性能监控组件样式 - 发行版禁用 */
@@ -131,9 +155,12 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', sans-serif;
   background: var(--bg);
   color: var(--text);
-  transition: all 0.3s ease;
+  transition: background 0.3s ease, color 0.3s ease;
   overflow: hidden;
   cursor: default;
+  /* 防止图层合成问题 */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 #app {

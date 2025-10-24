@@ -368,7 +368,7 @@ export default {
         
         if (pngNewLevels.includes(levelKey)) {
           // 新关卡使用关卡名称.png
-          imagePath = `/images/${levelKey}.png`
+          imagePath = `/images/${levelKey}.jpg`
         } else {
           // 原有关卡使用数字索引.jpg
           imagePath = `/images/${index}.jpg`
@@ -1640,7 +1640,7 @@ export default {
   padding: 12px 24px;
   position: fixed;
   bottom: 0;
-  left: 70px;
+  left: 0;
   /* 侧边栏收起时的宽度 */
   right: 0;
   background: var(--glass-bg);
@@ -1656,7 +1656,7 @@ export default {
 
 /* 侧边栏展开时调整底部操作按钮位置 */
 .sidebar-expanded .bottom-actions {
-  left: 220px;
+  left: 150px;
   /* 侧边栏展开时的宽度 */
 }
 

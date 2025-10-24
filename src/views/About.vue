@@ -82,7 +82,7 @@ import { computed, ref, onMounted, nextTick } from 'vue';
 
 
 const { t, locale } = useI18n({ useScope: 'global' });
-const version = "3.0.0-Alpha-5";
+const version = "3.0.0-Alpha-5.1";
 
 const showChineseSocial = computed(() => ['zh-CN', 'zh-TW'].includes(locale.value));
 const showEasterEgg = ref(false);

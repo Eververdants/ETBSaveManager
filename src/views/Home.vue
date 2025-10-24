@@ -91,6 +91,9 @@ const fabCurrentIndex = ref(0)
 const archives = ref([])
 const router = useRouter()
 
+// 可见存档列表（从MAINSAVE获取）
+const visibleSaves = ref(new Set())
+
 // 加载状态
 const loading = ref(true)
 const loadingProgress = ref(0)
@@ -98,6 +101,29 @@ const loadingProgress = ref(0)
 // 性能优化：批量更新和防抖
 let updateTimeout = null
 let animationFrame = null
+
+// 获取MAINSAVE中的可见存档列表
+const loadVisibleSaves = async () => {
+  try {
+    // 调用后端获取MAINSAVE文件内容
+    const response = await invoke('handle_file', { 
+      action: 'read',
+      filePath: 'MAINSAVE.sav' 
+    })
+    
+    if (response && response.success && response.data) {
+      // 解析SingleplayerSaves字段
+      const singleplayerSaves = response.data.SingleplayerSaves || []
+      visibleSaves.value = new Set(singleplayerSaves)
+    } else {
+      // 如果MAINSAVE不存在或读取失败，默认所有单人存档都可见
+      visibleSaves.value = new Set()
+    }
+  } catch (error) {
+    console.error('获取可见存档列表失败:', error)
+    visibleSaves.value = new Set()
+  }
+}
 
 // 加载真实存档数据（带进度模拟）
 const loadRealArchives = async () => {
@@ -123,19 +149,34 @@ const loadRealArchives = async () => {
       }
 
       // 将后端返回的数据格式转换为前端需要的格式
-      return response.map(item => ({
-        id: item.id,
-        name: item.name,
-        currentLevel: item.current_level,
-        gameMode: item.mode === '单人模式' ? 'singleplayer' :
+      return response.map(item => {
+        const gameMode = item.mode === '单人模式' ? 'singleplayer' :
           item.mode === '多人模式' ? 'multiplayer' :
-            item.mode.toLowerCase(),
-        archiveDifficulty: difficultyMap[item.difficulty] || item.difficulty.toLowerCase(),
-        actualDifficulty: difficultyMap[item.actual_difficulty] || item.actual_difficulty.toLowerCase(),
-        isVisible: !item.hidden,
-        path: item.path,
-        date: item.date
-      }))
+            item.mode.toLowerCase()
+        
+        // 直接使用后端返回的is_visible值，不再自己判断
+        const isVisible = item.is_visible === true
+        
+        // 调试输出
+        console.log(`存档 ${item.name} 可见性检查:`, {
+          name: item.name,
+          gameMode: gameMode,
+          backendIsVisible: item.is_visible,
+          frontendIsVisible: isVisible
+        })
+        
+        return {
+          id: item.id,
+          name: item.name,
+          currentLevel: item.current_level,
+          gameMode: gameMode,
+          archiveDifficulty: difficultyMap[item.difficulty] || item.difficulty.toLowerCase(),
+          actualDifficulty: difficultyMap[item.actual_difficulty] || item.actual_difficulty.toLowerCase(),
+          isVisible: isVisible,
+          path: item.path,
+          date: item.date
+        }
+      })
     }
     return []
   } catch (error) {
@@ -145,13 +186,22 @@ const loadRealArchives = async () => {
 }
 
 // 初始化真实存档数据
-const initializeArchives = async () => {
-  loading.value = true
-  // 确保在加载过程中不显示任何内容
-  archives.value = []
-  displayArchives.value = []
+const initializeArchives = async (silent = false) => {
+  if (!silent) {
+    loading.value = true
+  }
+  
+  // 确保在加载过程中不显示任何内容（非静默模式）
+  if (!silent) {
+    archives.value = []
+    displayArchives.value = []
+  }
 
   try {
+    // 先加载可见存档列表
+    await loadVisibleSaves()
+    
+    // 再加载存档数据
     const realArchives = await loadRealArchives()
     archives.value = realArchives
 
@@ -166,12 +216,16 @@ const initializeArchives = async () => {
     }
   } catch (error) {
     console.error('初始化存档失败:', error)
-    archives.value = []
-    displayArchives.value = []
+    if (!silent) {
+      archives.value = []
+      displayArchives.value = []
+    }
   } finally {
-    setTimeout(() => {
-      loading.value = false
-    }, 300) // 确保动画流畅
+    if (!silent) {
+      setTimeout(() => {
+        loading.value = false
+      }, 300) // 确保动画流畅
+    }
   }
 }
 
@@ -437,36 +491,93 @@ const handleToggleVisibility = async (updatedArchive) => {
   console.log('切换存档可见性:', updatedArchive.name)
 
   try {
-    // 调用后端API移动文件
-    if (updatedArchive.path) {
-      const newPath = await invoke('handle_file', { filePath: updatedArchive.path })
-      console.log('文件移动成功:', newPath)
-
-      // 更新存档路径和隐藏状态
-      updatedArchive.path = newPath
-      updatedArchive.hidden = !updatedArchive.hidden
+    // 立即更新前端状态，提供即时反馈
+    const originalVisibility = updatedArchive.isVisible
+    const newVisibility = !originalVisibility
+    
+    // 同步更新主存档列表 - 使用Vue的响应式更新
+    const archiveIndex = archives.value.findIndex(a => a.id === updatedArchive.id)
+    if (archiveIndex > -1) {
+      archives.value[archiveIndex].isVisible = newVisibility
+    }
+    
+    // 同步更新显示列表，确保视图立即更新 - 使用Vue的响应式更新
+    const displayIndex = displayArchives.value.findIndex(a => a.id === updatedArchive.id)
+    if (displayIndex > -1) {
+      displayArchives.value[displayIndex].isVisible = newVisibility
     }
 
-    // 找到并更新对应的存档
-    const index = archives.value.findIndex(a => a.id === updatedArchive.id)
-    if (index > -1) {
-      archives.value[index] = updatedArchive
+    // 显示成功提示
+    const action = newVisibility ? '显示' : '隐藏'
+    const successToast = document.createElement('div')
+    successToast.className = 'success-toast'
+    successToast.innerHTML = `
+      <div class="toast-content">
+        <span class="toast-icon">✓</span>
+        <span class="toast-text">${updatedArchive.name} 已${action}</span>
+      </div>
+    `
+    document.body.appendChild(successToast)
 
-      // 同步更新displayArchives，确保视图立即更新
-      const displayIndex = displayArchives.value.findIndex(a => a.id === updatedArchive.id)
-      if (displayIndex > -1) {
-        displayArchives.value[displayIndex] = updatedArchive
+    gsap.fromTo(successToast,
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.7)" }
+    )
+
+    setTimeout(() => {
+      gsap.to(successToast, {
+        opacity: 0, scale: 0.8, duration: 0.3, onComplete: () => {
+          document.body.removeChild(successToast)
+        }
+      })
+    }, 2000)
+
+    // 调用后端处理文件
+    if (updatedArchive.path) {
+      const result = await invoke('handle_file', {
+        filePath: updatedArchive.path,
+        action: 'toggle_visibility',
+        archiveName: updatedArchive.name
+      })
+
+      // 解析后端返回的JSON字符串
+      let resultObj;
+      try {
+        resultObj = typeof result === 'string' ? JSON.parse(result) : result;
+      } catch (e) {
+        console.error('解析后端返回结果失败:', e);
+        throw new Error('解析后端返回结果失败');
       }
 
-      // 重新应用筛选器
-      debouncedApplyFilters(archives.value, lastSearchFilters.value)
+      if (!resultObj || !resultObj.success) {
+        // 如果后端操作失败，恢复前端状态
+        
+        // 同步恢复主存档列表
+        if (archiveIndex > -1) {
+          archives.value[archiveIndex].isVisible = originalVisibility
+        }
+        
+        // 同步恢复显示列表
+        if (displayIndex > -1) {
+          displayArchives.value[displayIndex].isVisible = originalVisibility
+        }
+        
+        throw new Error(resultObj?.error || '操作失败')
+      }
+      
+      // 后端操作成功，立即重新加载数据以确保状态一致性
+      console.log('存档可见性切换成功，重新加载数据以确保状态一致性')
+      
+      // 立即重新加载存档列表，不显示动画
+      await initializeArchives(true) // true 表示静默加载，不显示动画
     }
   } catch (error) {
     console.error('切换可见性失败:', error)
+    
     // 使用更优雅的错误提示
     const errorToast = document.createElement('div')
     errorToast.className = 'error-toast'
-    errorToast.textContent = '切换可见性失败: ' + error
+    errorToast.textContent = '切换可见性失败: ' + error.message
     document.body.appendChild(errorToast)
 
     gsap.fromTo(errorToast,
@@ -481,14 +592,6 @@ const handleToggleVisibility = async (updatedArchive) => {
         }
       })
     }, 3000)
-
-    // 如果失败，恢复原来的状态
-    const index = archives.value.findIndex(a => a.id === updatedArchive.id)
-    if (index > -1) {
-      updatedArchive.isVisible = !updatedArchive.isVisible
-      archives.value[index] = updatedArchive
-      debouncedApplyFilters(archives.value, lastSearchFilters.value)
-    }
   }
 }
 
@@ -584,7 +687,10 @@ const refreshArchives = async () => {
   loadingProgress.value = 0
 
   try {
-    // 重新加载真实存档数据
+    // 先重新加载可见存档列表（关键修复：确保获取最新的可见性状态）
+    await loadVisibleSaves()
+    
+    // 再重新加载真实存档数据
     const realArchives = await loadRealArchives()
     archives.value = realArchives
 
@@ -777,6 +883,9 @@ let sidebarAnimationTimeout = null
 
 // 生命周期
 onMounted(async () => {
+  // 组件卸载标志
+  let isUnmounted = false
+  
   // 初始化性能监控
   performanceObserver()
 
@@ -797,6 +906,20 @@ onMounted(async () => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible')
+          
+          // 元素进入视图时强制重绘，防止图层卡住
+          requestAnimationFrame(() => {
+            // 检查元素和样式是否仍然存在
+            if (entry.target && entry.target.style) {
+              entry.target.style.transform = 'translateZ(0)';
+              setTimeout(() => {
+                // 再次检查，防止组件卸载后访问
+                if (entry.target && entry.target.style) {
+                  entry.target.style.transform = '';
+                }
+              }, 0);
+            }
+          });
         }
       })
     }, {
@@ -807,27 +930,58 @@ onMounted(async () => {
 
   // 监听窗口大小变化
   const handleResize = () => {
+    // 如果组件已卸载，直接返回
+    if (isUnmounted) return
+    
     if (animationFrame) cancelAnimationFrame(animationFrame)
     animationFrame = requestAnimationFrame(() => {
+      // 如果组件已卸载，直接返回
+      if (isUnmounted) return
+      
       // 重新计算布局
+      
+      // 窗口大小变化时强制重绘，防止图层卡住
+      if (archiveGrid.value && archiveGrid.value.style) {
+        archiveGrid.value.style.visibility = 'hidden';
+        archiveGrid.value.offsetHeight; // 触发重排
+        archiveGrid.value.style.visibility = 'visible';
+      }
+      
+      // 强制浏览器重绘整个视图
+      document.body.style.transform = 'translateZ(0)';
+      setTimeout(() => {
+        // 检查组件是否仍然挂载且document.body存在
+        if (!isUnmounted && document.body) {
+          document.body.style.transform = '';
+        }
+      }, 0);
     })
   }
 
   // 监听侧边栏展开/收起事件
   const handleSidebarExpand = (event) => {
+    // 如果组件已卸载，直接返回
+    if (isUnmounted) return
+    
     // 设置动画状态标志，暂时禁用卡片动画
     isSidebarAnimating = true
     if (sidebarAnimationTimeout) clearTimeout(sidebarAnimationTimeout)
 
     // 在侧边栏动画结束后重新启用卡片动画
     sidebarAnimationTimeout = setTimeout(() => {
-      isSidebarAnimating = false
+      // 检查组件是否仍然挂载
+      if (!isUnmounted) {
+        isSidebarAnimating = false
+      }
     }, 350) // 稍长于侧边栏动画时间(300ms)
 
     // 使用requestAnimationFrame延迟执行，避免阻塞UI
     requestAnimationFrame(() => {
+      // 如果组件已卸载，直接返回
+      if (isUnmounted) return
+      
       // 触发网格重新布局
-      if (archiveGrid.value) {
+      if (archiveGrid.value && archiveGrid.value.style) {
         // 强制浏览器重新计算样式，但不触发重排
         archiveGrid.value.style.visibility = 'hidden'
         archiveGrid.value.offsetHeight // 触发重排
@@ -841,6 +995,7 @@ onMounted(async () => {
 
   // 清理函数
   return () => {
+    isUnmounted = true
     if (updateTimeout) clearTimeout(updateTimeout)
     if (animationFrame) cancelAnimationFrame(animationFrame)
     if (intersectionObserver) intersectionObserver.disconnect()
@@ -848,6 +1003,8 @@ onMounted(async () => {
     if (longTaskObserver) longTaskObserver.disconnect()
     window.removeEventListener('resize', handleResize)
     window.removeEventListener('sidebar-expand', handleSidebarExpand)
+    // 清理引用，防止内存泄漏
+    archiveGrid.value = null
   }
 })
 

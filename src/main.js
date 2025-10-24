@@ -60,3 +60,32 @@ console.log("[i18n] current", currentLocale)
 disableInteractions()
 
 app.mount("#app")
+
+// 全局图层合成问题修复
+const fixCompositingLayerIssues = () => {
+  // 监听可能导致图层卡住的事件
+  const eventsThatMayCauseLayerIssues = ['resize', 'scroll', 'visibilitychange', 'focus'];
+  
+  eventsThatMayCauseLayerIssues.forEach(event => {
+    window.addEventListener(event, () => {
+      requestAnimationFrame(() => {
+        // 强制重绘整个文档
+        document.documentElement.style.transform = 'translateZ(0)';
+        setTimeout(() => {
+          document.documentElement.style.transform = '';
+        }, 0);
+      });
+    }, { passive: true });
+  });
+  
+  // 监听WebView的GPU进程恢复
+  if (window.chrome && window.chrome.gpu) {
+    window.chrome.gpu.onGpuProcessCrashed?.addListener?.(() => {
+      console.warn('GPU进程崩溃，执行恢复操作');
+      location.reload();
+    });
+  }
+};
+
+// 应用挂载后修复图层问题
+fixCompositingLayerIssues()

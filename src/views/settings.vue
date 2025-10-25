@@ -47,6 +47,34 @@
       </div>
     </div>
 
+    <!-- 高级设置组 -->
+    <div class="setting-group">
+      <transition name="text-swift" mode="out-in">
+        <div class="section-header" :key="currentLanguage">{{ t('settings.advancedSettings') }}</div>
+      </transition>
+
+      <!-- 禁用GPU加速开关 -->
+      <div class="setting-item">
+        <div class="setting-icon">
+          <font-awesome-icon :icon="['fas', 'microchip']" />
+        </div>
+        <div class="setting-details">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">{{ t('settings.disableGpuAcceleration') }}</div>
+          </transition>
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-description" :key="currentLanguage">{{ t('settings.disableGpuAccelerationDescription') }}</div>
+          </transition>
+        </div>
+        <div class="setting-action">
+          <label class="switch">
+            <input type="checkbox" v-model="gpuAccelerationDisabled" @change="handleGpuAccelerationToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <!-- 系统与更新设置组 -->
     <div class="setting-group">
       <transition name="text-swift" mode="out-in">
@@ -203,6 +231,19 @@
           </div>
         </transition>
 
+        <!-- 自定义操作按钮 -->
+        <transition name="expand" mode="out-in">
+          <div v-if="updateMessage.showActions" class="update-actions"
+            :key="'custom-actions-' + updateMessage.key">
+            <button v-for="(action, index) in updateMessage.actions" 
+              :key="index" 
+              :class="['update-btn', action.class]" 
+              @click="action.action">
+              {{ action.text }}
+            </button>
+          </div>
+        </transition>
+
         <!-- 更新详情 -->
         <transition name="expand" mode="out-in">
           <div v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE" class="update-details"
@@ -221,6 +262,7 @@ import { updateService, UpdateStatus } from '../services/updateService.js';
 import { getAllUpdateSources, getUserUpdateSource, setUserUpdateSource } from '../config/updateConfig.js';
 import CustomDropdown from '../components/CustomDropdown.vue';
 import { useI18n } from 'vue-i18n';
+import { invoke } from '@tauri-apps/api/core';
 
 export default {
   name: 'Settings',
@@ -236,9 +278,10 @@ export default {
       developerModeEnabled: localStorage.getItem('developerMode') === 'true', // 开发者模式状态
       developerOptionsEnabled: localStorage.getItem('developerMode') === 'true', // 开发者选项是否显示
       logMenuEnabled: localStorage.getItem('logMenuEnabled') === 'true', // 日志功能开关状态
+      gpuAccelerationDisabled: localStorage.getItem('gpuAccelerationDisabled') === 'true', // GPU加速开关状态
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: '3.0.0-Alpha-5.1',
+      appVersion: '3.0.0-Alpha-5.2',
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
@@ -487,6 +530,54 @@ export default {
       }));
     },
 
+    async handleGpuAccelerationToggle() {
+      try {
+        // 调用Tauri命令设置GPU加速状态
+        await invoke('set_gpu_acceleration', { 
+          disabled: this.gpuAccelerationDisabled 
+        });
+        
+        // 保存状态到localStorage
+        localStorage.setItem('gpuAccelerationDisabled', this.gpuAccelerationDisabled.toString());
+        
+        // 显示提示信息，告知用户需要手动重启应用
+        const message = this.gpuAccelerationDisabled 
+          ? 'GPU加速已禁用，请重启应用以应用更改' 
+          : 'GPU加速已启用，请重启应用以应用更改';
+          
+        this.updateMessage = {
+          text: message,
+          type: 'info',
+          icon: ['fas', 'info-circle'],
+          key: `gpu-info-${this.messageId++}`
+        };
+        
+        // 5秒后自动隐藏提示
+        setTimeout(() => {
+          this.closeUpdateMessage();
+        }, 5000);
+        
+      } catch (error) {
+        console.error('设置GPU加速失败:', error);
+        // 恢复开关状态
+        this.gpuAccelerationDisabled = !this.gpuAccelerationDisabled;
+        localStorage.setItem('gpuAccelerationDisabled', this.gpuAccelerationDisabled.toString());
+        
+        // 显示错误提示
+        this.updateMessage = {
+          text: '设置GPU加速失败: ' + error,
+          type: 'error',
+          icon: ['fas', 'times'],
+          key: `gpu-error-${this.messageId++}`
+        };
+        
+        // 3秒后自动隐藏提示
+        setTimeout(() => {
+          this.closeUpdateMessage();
+        }, 3000);
+      }
+    },
+
     closeUpdateMessage() {
       this.updateMessage = null;
       // 添加延迟确保动画完成
@@ -584,7 +675,37 @@ export default {
         this.logMenuEnabled = false;
         localStorage.setItem('logMenuEnabled', 'false');
       }
+    },
+
+    // 初始化GPU加速状态
+    async initializeGpuAccelerationStatus() {
+      try {
+        // 从localStorage获取状态
+        const localStorageState = localStorage.getItem('gpuAccelerationDisabled') === 'true';
+        
+        // 尝试从Tauri后端获取状态
+        try {
+          const backendState = await invoke('get_gpu_acceleration_status');
+          // 如果后端状态与localStorage不同，以后端状态为准
+          if (backendState !== localStorageState) {
+            this.gpuAccelerationDisabled = backendState;
+            localStorage.setItem('gpuAccelerationDisabled', backendState.toString());
+          }
+        } catch (error) {
+          console.warn('无法从后端获取GPU加速状态，使用localStorage状态:', error);
+          // 使用localStorage状态
+          this.gpuAccelerationDisabled = localStorageState;
+        }
+      } catch (error) {
+        console.error('初始化GPU加速状态失败:', error);
+        // 默认启用GPU加速
+        this.gpuAccelerationDisabled = false;
+      }
     }
+  },
+  beforeUnmount() {
+    // 清理倒计时
+    this.clearRestartCountdown();
   },
   async mounted() {
     // 应用保存的主题
@@ -601,6 +722,9 @@ export default {
 
     // 监听开发者模式变化事件
     window.addEventListener('developer-mode-changed', this.handleDeveloperModeChanged);
+
+    // 初始化GPU加速状态
+    this.initializeGpuAccelerationStatus();
 
     // 检查更新
     if (updateService.canCheckUpdate && updateService.canCheckUpdate()) {
@@ -1241,5 +1365,28 @@ input:checked+.slider:before {
 .setting-action .dropdown-option.selected {
   background: var(--dropdown-selected-bg);
   color: var(--dropdown-selected-text);
+}
+
+/* 重启按钮样式 */
+.restart-now-btn {
+  background: var(--accent-color) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.restart-now-btn:hover {
+  background: var(--accent-color-hover) !important;
+  filter: brightness(1.1);
+}
+
+.cancel-restart-btn {
+  background: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.cancel-restart-btn:hover {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
 }
 </style>

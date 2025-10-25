@@ -1,84 +1,93 @@
 <template>
-  <div class="archive-list-container" :class="{ 'no-scroll': showSearch }">
-    <!-- 加载状态和存档网格 - 布局切换动画 -->
-    <transition name="layout-switch" mode="out-in">
-      <div v-if="loading" key="loading" class="loading-state">
-        <div class="loading-content">
-          <div class="loading-spinner">
-            <div class="spinner-ring"></div>
-            <div class="spinner-ring"></div>
-            <div class="spinner-ring"></div>
-          </div>
-          <h3 class="loading-title">{{ $t('archiveSearch.loadingArchives') }}</h3>
-          <p class="loading-subtitle">{{ $t('archiveSearch.scanningFiles') }}</p>
-          <div class="loading-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: loadingProgress + '%' }"></div>
+  <div class="home-container">
+    <div class="archive-list-container" :class="{ 'no-scroll': showSearch }">
+      <!-- 加载状态和存档网格 - 布局切换动画 -->
+      <transition name="layout-switch" mode="out-in">
+        <div v-if="loading" key="loading" class="loading-state">
+          <div class="loading-content">
+            <div class="loading-spinner">
+              <div class="spinner-ring"></div>
+              <div class="spinner-ring"></div>
+              <div class="spinner-ring"></div>
+            </div>
+            <h3 class="loading-title">{{ $t('archiveSearch.loadingArchives') }}</h3>
+            <p class="loading-subtitle">{{ $t('archiveSearch.scanningFiles') }}</p>
+            <div class="loading-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" :style="{ width: loadingProgress + '%' }"></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div v-else key="grid" class="archive-grid-container">
-        <transition-group name="archive-card" tag="div" class="archive-grid" ref="archiveGrid"
-          @before-enter="beforeCardEnter" @enter="cardEnter" @leave="cardLeave">
-          <ArchiveCard v-for="(archive, index) in displayArchives" :key="archive.id" :archive="archive" :index="index"
-            :data-index="index" @toggle-visibility="handleToggleVisibility" @edit="handleEdit" @delete="deleteArchive"
-            @select="selectArchive" />
+        <div v-else key="grid" class="archive-grid-container">
+          <transition-group name="archive-card" tag="div" class="archive-grid" ref="archiveGrid"
+            @before-enter="beforeCardEnter" @enter="cardEnter" @leave="cardLeave">
+            <ArchiveCard v-for="(archive, index) in displayArchives" :key="archive.id" :archive="archive" :index="index"
+              :data-index="index" @toggle-visibility="handleToggleVisibility" @edit="handleEdit" @delete="deleteArchive"
+              @select="selectArchive" />
 
-          <div v-if="displayArchives.length === 0 && archives.length > 0 && hasActiveFilters" key="no-results"
-            class="empty-state">
-            <div class="empty-content">
-              <div class="empty-icon">🔍</div>
-              <h3 class="empty-title">{{ $t('archiveSearch.noResults') }}</h3>
-              <p class="empty-description">{{ $t('archiveSearch.noMatchingArchives') }}</p>
-              <p class="empty-hint">{{ $t('archiveSearch.adjustSearchOrClearFilters') }}</p>
-              <button class="empty-action" @click="clearAllFilters">
-                {{ $t('archiveSearch.clearFilters') }}
-              </button>
+            <div v-if="displayArchives.length === 0 && archives.length > 0 && hasActiveFilters" key="no-results"
+              class="empty-state">
+              <div class="empty-content">
+                <div class="empty-icon">🔍</div>
+                <h3 class="empty-title">{{ $t('archiveSearch.noResults') }}</h3>
+                <p class="empty-description">{{ $t('archiveSearch.noMatchingArchives') }}</p>
+                <p class="empty-hint">{{ $t('archiveSearch.adjustSearchOrClearFilters') }}</p>
+                <button class="empty-action" @click="clearAllFilters">
+                  {{ $t('archiveSearch.clearFilters') }}
+                </button>
+              </div>
             </div>
-          </div>
 
-          <div v-else-if="displayArchives.length === 0 && archives.length === 0" key="no-archives" class="empty-state">
-            <div class="empty-content">
-              <div class="empty-icon">📁</div>
-              <h3 class="empty-title">{{ $t('archiveSearch.noArchives') }}</h3>
-              <p class="empty-description">{{ $t('archiveSearch.createNewArchive') }}</p>
-              <button class="empty-action" @click="createNewArchive">
-                {{ $t('archiveSearch.createArchive') }}
-              </button>
+            <div v-else-if="displayArchives.length === 0 && archives.length === 0" key="no-archives" class="empty-state">
+              <div class="empty-content">
+                <div class="empty-icon">📁</div>
+                <h3 class="empty-title">{{ $t('archiveSearch.noArchives') }}</h3>
+                <p class="empty-description">{{ $t('archiveSearch.createNewArchive') }}</p>
+                <button class="empty-action" @click="createNewArchive">
+                  {{ $t('archiveSearch.createArchive') }}
+                </button>
+              </div>
             </div>
-          </div>
-        </transition-group>
-      </div>
-    </transition>
+          </transition-group>
+        </div>
+      </transition>
 
-    <!-- 搜索存档组件 -->
-    <transition name="search-panel" @before-enter="beforeSearchEnter" @enter="searchEnter" @leave="searchLeave">
-      <ArchiveSearchFilter v-show="showSearch && !loading" :archives="archives" :initial-filters="lastSearchFilters"
-        :visible="showSearch" @filtered="handleFilteredArchives" @filters-changed="updateLastFilters"
-        @close="toggleSearch" class="search-overlay" ref="archiveSearchFilter" />
-    </transition>
+      <!-- 搜索存档组件 -->
+      <transition name="search-panel" @before-enter="beforeSearchEnter" @enter="searchEnter" @leave="searchLeave">
+        <div v-show="showSearch && !loading" class="search-overlay">
+          <ArchiveSearchFilter :archives="archives" :initial-filters="lastSearchFilters"
+            :visible="showSearch" @filtered="handleFilteredArchives" @filters-changed="updateLastFilters"
+            @close="toggleSearch" ref="archiveSearchFilter" />
+        </div>
+      </transition>
 
-    <!-- 浮动操作按钮 -->
-    <FloatingActionButton :class="{ 'loading': loading }" :current-index="fabCurrentIndex"
-      @update:current-index="fabCurrentIndex = $event" @search-click="toggleSearch" @refresh-click="refreshArchives"
-      @folder-click="openSaveGamesFolder" />
-
-    <!-- 删除确认模态框 -->
-    <ConfirmModal v-model:show="showDeleteConfirm" :title="$t('confirmModal.deleteArchiveTitle')"
-      :message="$t('confirmModal.deleteArchiveMessage', { name: archiveToDelete?.name || '' })"
-      :description="$t('confirmModal.deleteArchiveDescription')" type="danger"
-      :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isDeleting"
-      @confirm="confirmDelete" @cancel="cancelDelete" />
+      <!-- 删除确认模态框 -->
+      <ConfirmModal v-model:show="showDeleteConfirm" :title="$t('confirmModal.deleteArchiveTitle')"
+        :message="$t('confirmModal.deleteArchiveMessage', { name: archiveToDelete?.name || '' })"
+        :description="$t('confirmModal.deleteArchiveDescription')" type="danger"
+        :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isDeleting"
+        @confirm="confirmDelete" @cancel="cancelDelete" />
+    </div>
+    
+    <!-- 浮动操作按钮 - 移到body层级确保不受任何父容器影响 -->
+    <Teleport to="body">
+      <FloatingActionButton :class="loading ? 'loading' : ''" :current-index="fabCurrentIndex"
+        @update:current-index="fabCurrentIndex = $event" @search-click="toggleSearch" @refresh-click="refreshArchives"
+        @folder-click="openSaveGamesFolder" />
+    </Teleport>
   </div>
 </template>
 
+
+
 <script setup>
-import { ref, onMounted, nextTick, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue'
 import { gsap } from 'gsap'
 import { useRouter } from 'vue-router'
 import { invoke } from '@tauri-apps/api/core'
+import { safeModifyBodyStyles, protectFloatingButtonPosition } from '../utils/floatingButtonProtection.js'
 import ArchiveCard from '../components/ArchiveCard.vue'
 import ArchiveSearchFilter from '../components/ArchiveSearchFilter.vue'
 import FloatingActionButton from '../components/FloatingActionButton.vue'
@@ -87,12 +96,23 @@ import ConfirmModal from '../components/ConfirmModal.vue'
 // FloatingActionButton当前索引状态
 const fabCurrentIndex = ref(0)
 
+// 浮动按钮位置检查定时器引用
+const fabPositionCheckerRef = ref(null)
+
 // 从后端加载的真实存档数据
 const archives = ref([])
 const router = useRouter()
 
 // 可见存档列表（从MAINSAVE获取）
 const visibleSaves = ref(new Set())
+
+// 在组件卸载时清理定时器
+onUnmounted(() => {
+  if (fabPositionCheckerRef.value) {
+    clearInterval(fabPositionCheckerRef.value)
+    fabPositionCheckerRef.value = null
+  }
+})
 
 // 加载状态
 const loading = ref(true)
@@ -157,14 +177,6 @@ const loadRealArchives = async () => {
         // 直接使用后端返回的is_visible值，不再自己判断
         const isVisible = item.is_visible === true
         
-        // 调试输出
-        console.log(`存档 ${item.name} 可见性检查:`, {
-          name: item.name,
-          gameMode: gameMode,
-          backendIsVisible: item.is_visible,
-          frontendIsVisible: isVisible
-        })
-        
         return {
           id: item.id,
           name: item.name,
@@ -209,6 +221,11 @@ const initializeArchives = async (silent = false) => {
     if (!hasActiveFilters.value) {
       displayArchives.value = realArchives
     }
+
+    // 确保浮动按钮位置正确
+    nextTick(() => {
+      enhancedProtectFloatingButton()
+    })
 
     // 如果没有找到存档，显示空列表
     if (realArchives.length === 0) {
@@ -255,6 +272,11 @@ const debouncedApplyFilters = (archives, filters) => {
   updateTimeout = setTimeout(() => {
     const filtered = applyFiltersImmediate(archives, filters)
     displayArchives.value = filtered
+    
+    // 确保浮动按钮位置正确
+     nextTick(() => {
+       enhancedProtectFloatingButton()
+     })
   }, 100)
 }
 
@@ -407,10 +429,32 @@ const archiveSearchFilter = ref(null)
 // 搜索相关方法
 const toggleSearch = () => {
   showSearch.value = !showSearch.value
+  
+  // 当打开搜索时，平滑滚动到顶部
   if (showSearch.value) {
-    document.body.style.overflow = 'hidden'
-  } else {
-    document.body.style.overflow = ''
+    nextTick(() => {
+      // 获取主内容容器
+      const mainContent = document.querySelector('.main-content')
+      const archiveListContainer = document.querySelector('.archive-list-container')
+      
+      // 平滑滚动到顶部
+      if (mainContent) {
+        mainContent.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        })
+      }
+      
+      if (archiveListContainer) {
+        archiveListContainer.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        })
+      }
+      
+      // 确保浮动按钮位置正确
+      protectFloatingButtonPosition()
+    })
   }
 }
 
@@ -424,6 +468,9 @@ const handleFilteredArchives = (filteredArchives) => {
     // 使用nextTick确保DOM更新完成后再设置值，以正确触发动画
     nextTick(() => {
       displayArchives.value = filteredArchives
+      
+      // 确保浮动按钮位置正确
+      enhancedProtectFloatingButton()
     })
   }
 }
@@ -454,6 +501,9 @@ const clearAllFilters = () => {
     // 延迟设置存档数据，确保空状态动画完成后再显示存档
     setTimeout(() => {
       displayArchives.value = [...archives.value]
+      
+      // 确保浮动按钮位置正确
+      enhancedProtectFloatingButton()
     }, 400) // 与空状态动画时长保持一致
   })
 }
@@ -464,8 +514,6 @@ const clickTimeouts = new Map()
 const isProcessingClick = new Set()
 
 const selectArchive = (archive) => {
-  console.log('选择存档:', archive.name)
-
   // 防止重复点击
   if (isProcessingClick.has(archive.id)) {
     return
@@ -488,8 +536,6 @@ const selectArchive = (archive) => {
 }
 
 const handleToggleVisibility = async (updatedArchive) => {
-  console.log('切换存档可见性:', updatedArchive.name)
-
   try {
     // 立即更新前端状态，提供即时反馈
     const originalVisibility = updatedArchive.isVisible
@@ -566,10 +612,12 @@ const handleToggleVisibility = async (updatedArchive) => {
       }
       
       // 后端操作成功，立即重新加载数据以确保状态一致性
-      console.log('存档可见性切换成功，重新加载数据以确保状态一致性')
       
       // 立即重新加载存档列表，不显示动画
       await initializeArchives(true) // true 表示静默加载，不显示动画
+      
+      // 确保浮动按钮位置正确
+      protectFloatingButtonPosition()
     }
   } catch (error) {
     console.error('切换可见性失败:', error)
@@ -596,7 +644,6 @@ const handleToggleVisibility = async (updatedArchive) => {
 }
 
 const handleEdit = (archive) => {
-  console.log('编辑存档:', archive)
   router.push({
     name: 'EditArchive',
     params: { archiveData: JSON.stringify(archive) }
@@ -604,7 +651,6 @@ const handleEdit = (archive) => {
 }
 
 const deleteArchive = (archive) => {
-  console.log('准备删除存档:', archive.name)
   archiveToDelete.value = archive
   showDeleteConfirm.value = true
 }
@@ -621,7 +667,6 @@ const confirmDelete = async () => {
       // 先调用后端删除实际文件
       if (archive.path) {
         await invoke('delete_file', { filePath: archive.path })
-        console.log('成功删除存档文件:', archive.path)
       }
 
       // 从前端数据中移除
@@ -629,6 +674,9 @@ const confirmDelete = async () => {
 
       // 重新应用筛选器
       debouncedApplyFilters(archives.value, lastSearchFilters.value)
+      
+      // 确保浮动按钮位置正确
+      protectFloatingButtonPosition()
 
       // 添加删除成功动画
       const successToast = document.createElement('div')
@@ -682,7 +730,6 @@ const createNewArchive = () => {
 
 // 刷新存档列表
 const refreshArchives = async () => {
-  console.log('正在刷新存档列表...')
   loading.value = true
   loadingProgress.value = 0
 
@@ -712,10 +759,48 @@ const resetPerformanceMode = () => {
   longTaskCount = 0
 }
 
+// 本地增强的浮动按钮保护函数，使用导入的全局函数
+const enhancedProtectFloatingButton = () => {
+  // 立即执行一次保护
+  protectFloatingButtonPosition()
+  
+  // 在下一个动画帧再次检查，确保DOM更新完成
+  requestAnimationFrame(() => {
+    protectFloatingButtonPosition()
+    
+    // 多重延迟检查，确保所有可能的布局变化都被处理
+    setTimeout(protectFloatingButtonPosition, 50)
+    setTimeout(protectFloatingButtonPosition, 100)
+    setTimeout(protectFloatingButtonPosition, 200)
+    setTimeout(protectFloatingButtonPosition, 300)
+    setTimeout(protectFloatingButtonPosition, 500)
+    setTimeout(protectFloatingButtonPosition, 1000)
+    
+    // 最终检查 - 确保位置完全正确
+    setTimeout(() => {
+      const container = document.querySelector('.floating-action-container')
+      if (container) {
+        const rect = container.getBoundingClientRect()
+        const expectedBottom = window.innerHeight - rect.bottom
+        const expectedRight = window.innerWidth - rect.right
+        
+        // 如果位置偏差超过5px，强制重置
+        if (Math.abs(expectedBottom - 30) > 5 || Math.abs(expectedRight - 30) > 5) {
+          container.style.setProperty('position', 'fixed', 'important')
+          container.style.setProperty('bottom', '30px', 'important')
+          container.style.setProperty('right', '30px', 'important')
+          container.style.setProperty('transform', 'none', 'important')
+          container.style.setProperty('margin', '0', 'important')
+          container.style.setProperty('top', 'auto', 'important')
+          container.style.setProperty('left', 'auto', 'important')
+        }
+      }
+    }, 1500)
+  })
+}
+
 // 打开存档文件夹
 const openSaveGamesFolder = async () => {
-  console.log('正在打开存档文件夹...')
-
   try {
     await invoke('open_save_games_folder')
 
@@ -742,6 +827,12 @@ const openSaveGamesFolder = async () => {
         }
       })
     }, 2000)
+    
+    // 确保浮动按钮位置不受影响
+    enhancedProtectFloatingButton()
+    
+    // 延迟再次检查，确保在所有动画完成后按钮位置仍然正确
+    setTimeout(enhancedProtectFloatingButton, 300)
 
   } catch (error) {
     console.error('打开文件夹失败:', error)
@@ -843,15 +934,7 @@ const searchEnter = (el, done) => {
       duration: 0.3,
       ease: "power2.out", // 使用更平滑的缓动函数
       force3D: true,
-      onComplete: () => {
-        // 清理优化属性
-        gsap.set(el, {
-          force3D: false,
-          willChange: 'auto'
-        })
-        document.body.style.overflow = ''
-        done()
-      }
+      onComplete: done
     })
   })
 }
@@ -863,14 +946,7 @@ const searchLeave = (el, done) => {
     duration: 0.25,
     ease: "power2.out", // 使用与进入动画相同的缓动函数
     force3D: true,
-    onComplete: () => {
-      // 清理优化属性
-      gsap.set(el, {
-        force3D: false,
-        willChange: 'auto'
-      })
-      done()
-    }
+    onComplete: done
   })
 }
 
@@ -888,6 +964,81 @@ onMounted(async () => {
   
   // 初始化性能监控
   performanceObserver()
+  
+  // 初始化浮动按钮样式保护
+   let fabObserver = null
+   const initFloatingButtonProtection = () => {
+     const fabElement = document.querySelector('.floating-action-container')
+     if (fabElement) {
+       // 初始化保护按钮位置
+       enhancedProtectFloatingButton()
+       
+       // 创建MutationObserver监控样式变化，但只监控关键定位属性
+       fabObserver = new MutationObserver((mutations) => {
+         mutations.forEach((mutation) => {
+           if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+             // 只检查关键定位属性
+             const currentStyles = fabElement.style;
+             const criticalStyles = ['position', 'bottom', 'right', 'top', 'left'];
+             let hasCriticalChanges = false;
+             
+             // 检查关键定位样式是否被意外修改
+             criticalStyles.forEach(prop => {
+               const currentValue = currentStyles.getPropertyValue(prop);
+               let expectedValue = '';
+               
+               // 根据屏幕尺寸确定期望值
+               if (prop === 'position') {
+                 expectedValue = 'fixed';
+               } else if (prop === 'bottom' || prop === 'right') {
+                 if (window.innerWidth <= 480) {
+                   expectedValue = prop === 'bottom' ? '15px' : '15px';
+                 } else if (window.innerWidth <= 768) {
+                   expectedValue = prop === 'bottom' ? '20px' : '20px';
+                 } else {
+                   expectedValue = '30px';
+                 }
+               } else if (prop === 'top' || prop === 'left') {
+                 expectedValue = 'auto';
+               }
+               
+               if (currentValue && currentValue !== expectedValue) {
+                 console.warn(`浮动按钮定位样式被意外修改: ${prop}`);
+                 hasCriticalChanges = true;
+               }
+             });
+             
+             // 只有检测到关键定位样式被修改时才恢复
+             if (hasCriticalChanges) {
+               console.log('恢复浮动按钮定位样式');
+               protectFloatingButtonPosition()
+             }
+           }
+         })
+       })
+       
+       // 开始观察
+       fabObserver.observe(fabElement, {
+         attributes: true,
+         attributeFilter: ['style'],
+         childList: false,
+         subtree: false
+       })
+       
+       console.log('浮动按钮样式保护已启用')
+     }
+   }
+   
+   // 延迟初始化以确保DOM已完全加载
+   setTimeout(initFloatingButtonProtection, 1000)
+   
+   // 定期检查浮动按钮位置，确保它始终正确
+   const fabPositionChecker = setInterval(() => {
+     protectFloatingButtonPosition()
+   }, 5000)
+   
+   // 将定时器保存到组件实例，以便在onUnmounted中清理
+   fabPositionCheckerRef.value = fabPositionChecker
 
   // 设置CSS变量用于动画控制
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -947,14 +1098,18 @@ onMounted(async () => {
         archiveGrid.value.style.visibility = 'visible';
       }
       
-      // 强制浏览器重绘整个视图
-      document.body.style.transform = 'translateZ(0)';
-      setTimeout(() => {
-        // 检查组件是否仍然挂载且document.body存在
-        if (!isUnmounted && document.body) {
-          document.body.style.transform = '';
-        }
-      }, 0);
+      // 使用全局保护工具安全修改body样式
+      safeModifyBodyStyles(() => {
+        document.body.style.transform = 'translateZ(0)';
+        setTimeout(() => {
+          if (!isUnmounted && document.body) {
+            document.body.style.transform = '';
+          }
+        }, 0);
+      });
+      
+      // 确保浮动按钮位置在窗口大小变化时正确
+      protectFloatingButtonPosition()
     })
   }
 
@@ -1001,6 +1156,7 @@ onMounted(async () => {
     if (intersectionObserver) intersectionObserver.disconnect()
     if (sidebarAnimationTimeout) clearTimeout(sidebarAnimationTimeout)
     if (longTaskObserver) longTaskObserver.disconnect()
+    if (fabObserver) fabObserver.disconnect()
     window.removeEventListener('resize', handleResize)
     window.removeEventListener('sidebar-expand', handleSidebarExpand)
     // 清理引用，防止内存泄漏
@@ -1015,16 +1171,22 @@ watch(archives, (newArchives) => {
 </script>
 
 <style scoped>
+.home-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
 .archive-list-container {
   flex: 1;
   overflow-y: auto;
   padding-top: 0;
-  position: relative;
   background: var(--bg-primary);
   margin-top: 0;
   padding-bottom: 80px;
   min-height: calc(100vh - 60px);
   box-sizing: border-box;
+  transform: none;
 }
 
 .archive-list-container.no-scroll {
@@ -1077,11 +1239,9 @@ watch(archives, (newArchives) => {
 
 /* 存档网格容器 */
 .archive-grid-container {
-  position: relative;
   width: 100%;
   max-width: none;
   margin: 0 auto;
-  transform-origin: top center;
   box-sizing: border-box;
 }
 
@@ -1094,8 +1254,6 @@ watch(archives, (newArchives) => {
   box-sizing: border-box;
   /* 默认6列布局，使用固定宽度避免重排 */
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  /* 添加containment属性优化性能 */
-  contain: layout style;
 }
 
 /* 卡片宽度自适应 - 移除过渡效果提升性能 */
@@ -1103,9 +1261,6 @@ watch(archives, (newArchives) => {
   width: 100%;
   min-width: auto;
   max-width: none;
-  /* 添加硬件加速 */
-  transform: translateZ(0);
-  will-change: transform;
   /* 减少box-shadow复杂度以提升滚动性能 */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -1364,18 +1519,21 @@ watch(archives, (newArchives) => {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  overflow-y: auto;
-  padding: 60px 20px 20px;
-}
-
-.search-overlay>.archive-search-filter {
-  max-width: 800px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  margin: 0;
+  overflow: hidden;
+  padding: 20px;
+  /* 确保覆盖层完全固定，不随页面滚动 */
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  /* 防止触摸穿透 */
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  /* 确保在所有设备上都能正确固定 */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* 动画优化 - 自然过渡 */
@@ -1404,6 +1562,35 @@ watch(archives, (newArchives) => {
   z-index: 0;
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* 确保删除动画期间卡片尺寸保持不变 */
+  width: 320px !important;
+  height: 160px !important;
+  min-width: 320px !important;
+  min-height: 160px !important;
+  max-width: 320px !important;
+  max-height: 160px !important;
+  /* 防止图片在动画期间变形 */
+  overflow: hidden !important;
+  /* 确保内部元素不会变形 */
+  box-sizing: border-box !important;
+}
+
+/* 确保删除动画期间卡片内部元素保持固定 */
+.archive-card-leave-active .card-background {
+  width: 100% !important;
+  height: 100px !important;
+  box-sizing: border-box !important;
+}
+
+.archive-card-leave-active .background-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  box-sizing: border-box !important;
+}
+
+.archive-card-leave-active .archive-info {
+  box-sizing: border-box !important;
 }
 
 .archive-card-move {

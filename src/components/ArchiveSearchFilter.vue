@@ -54,9 +54,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CustomDropdown from './CustomDropdown.vue'
+import { safeModifyBodyStyles, protectFloatingButtonPosition } from '../utils/floatingButtonProtection.js'
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -94,7 +95,79 @@ const props = defineProps({
 // 监听visible prop变化
 watch(() => props.visible, (newVal) => {
   showComponent.value = newVal
-})
+  
+  // 获取主内容容器
+  const mainContent = document.querySelector('.main-content')
+  const archiveListContainer = document.querySelector('.archive-list-container')
+  
+  // 当组件显示时，阻止背景滚动
+  if (newVal) {
+    // 保存当前滚动位置
+    if (mainContent) {
+      mainContent.dataset.scrollY = mainContent.scrollTop
+      mainContent.style.overflow = 'hidden'
+    }
+    
+    if (archiveListContainer) {
+      archiveListContainer.dataset.scrollY = archiveListContainer.scrollTop
+      archiveListContainer.style.overflow = 'hidden'
+    }
+    
+    // 使用全局保护工具安全修改body样式
+    safeModifyBodyStyles({
+      overflow: 'hidden',
+      position: 'fixed',
+      top: `-${window.scrollY}px`,
+      width: '100%',
+      height: '100vh'
+    });
+  } else {
+    // 恢复滚动位置
+    if (mainContent) {
+      mainContent.style.overflow = ''
+      if (mainContent.dataset.scrollY) {
+        // 使用平滑滚动恢复位置
+        const scrollPosition = parseInt(mainContent.dataset.scrollY)
+        mainContent.scrollTo({
+          top: scrollPosition,
+          behavior: 'smooth'
+        })
+      }
+    }
+    
+    if (archiveListContainer) {
+      archiveListContainer.style.overflow = ''
+      if (archiveListContainer.dataset.scrollY) {
+        // 使用平滑滚动恢复位置
+        const scrollPosition = parseInt(archiveListContainer.dataset.scrollY)
+        archiveListContainer.scrollTo({
+          top: scrollPosition,
+          behavior: 'smooth'
+        })
+      }
+    }
+    
+    // 使用全局保护工具安全修改body样式
+    safeModifyBodyStyles({
+      overflow: '',
+      position: '',
+      top: '',
+      width: '',
+      height: 'auto'
+    });
+    
+    // 使用全局保护工具确保浮动按钮位置正确
+    protectFloatingButtonPosition();
+    
+    const scrollY = document.body.style.top
+    if (scrollY) {
+      window.scrollTo({
+        top: parseInt(scrollY || '0') * -1,
+        behavior: 'smooth'
+      })
+    }
+  }
+}, { immediate: true }) // 添加immediate选项确保在组件创建时就执行
 
 // Emits
 const emit = defineEmits(['filtered', 'filters-changed'])
@@ -259,6 +332,28 @@ onMounted(() => {
   })
 })
 
+// 组件卸载时恢复背景滚动
+onUnmounted(() => {
+  // 恢复滚动位置
+  const scrollY = document.body.style.top
+  
+  // 使用全局保护工具安全修改body样式
+  safeModifyBodyStyles(() => {
+    document.body.style.overflow = ''
+    document.body.style.position = ''
+    document.body.style.top = ''
+    document.body.style.width = ''
+    document.body.style.height = 'auto'  // 改为auto而不是空字符串
+  });
+  
+  // 使用全局保护工具确保浮动按钮位置正确
+  protectFloatingButtonPosition();
+  
+  if (scrollY) {
+    window.scrollTo(0, parseInt(scrollY || '0') * -1)
+  }
+})
+
 // 动画控制方法 - 首次加载优化
 const beforeEnter = (el) => {
   // 使用 will-change 提前告知浏览器优化
@@ -304,9 +399,13 @@ const leave = (el, done) => {
 <style scoped>
 .archive-search-filter {
   width: 100%;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 0 20px;
-  max-width: none;
+  padding: 0;
+  height: auto;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .search-filter-wrapper {
@@ -318,22 +417,27 @@ const leave = (el, done) => {
 /* 一体化搜索筛选区域 - 移除性能消耗大的效果 */
 .unified-search-filter {
   display: flex;
-  gap: 2px;
+  flex-direction: column; /* 改为垂直布局，适应小屏幕 */
+  gap: 16px;
   background: var(--glass-bg, rgba(30, 30, 30, 0.95));
   border-radius: 16px;
-  padding: 16px 20px;
+  padding: 20px;
   border: var(--card-border, 1px solid rgba(255, 255, 255, 0.1));
   z-index: 100;
-  min-width: 800px;
-  max-width: 1200px;
-  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  max-height: 70vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  margin: 0 auto;
+  /* 确保在移动设备上也能正确滚动 */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* 搜索区域 */
 .search-section {
-  flex: 0 0 350px;
-  padding-right: 20px;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
 }
 
 .search-input-group {
@@ -411,15 +515,13 @@ const leave = (el, done) => {
 
 /* 筛选区域 */
 .filter-section {
-  flex: 1;
-  padding-left: 20px;
+  width: 100%;
 }
 
 .filter-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
-  flex-wrap: wrap;
-  align-items: flex-end;
 }
 
 .filter-item {

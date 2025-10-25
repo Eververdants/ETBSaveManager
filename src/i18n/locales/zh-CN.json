@@ -20,7 +20,7 @@
     "listDescription": "查看和管理所有存档",
     "createDescription": "创建新的游戏存档",
     "updated": "更新内容",
-    "updateDetails": "进行了性能优化，调整了部分样式。",
+    "updateDetails": "更改了层级预览图，添加了禁用GPU加速功能，修复了部分bug。",
     "thanks": "感谢所有为本项目提供反馈、建议与支持的朋友们",
     "disclaimer": "本工具仅供学习交流使用"
   },
@@ -92,11 +92,14 @@
   },
   "settings": {
     "appearanceAndLanguage": "外观与语言",
+    "advancedSettings": "高级设置",
     "systemAndUpdates": "应用更新",
     "theme": "主题",
     "themeDescription": "选择应用界面主题",
     "language": "语言",
     "languageDescription": "选择应用显示语言",
+    "disableGpuAcceleration": "禁用GPU加速",
+    "disableGpuAccelerationDescription": "禁用GPU加速可能会解决某些显卡兼容性问题，但可能降低渲染性能",
     "checkUpdates": "检查更新",
     "checkUpdatesDescription": "获取最新功能和修复",
     "checking": "检查中...",

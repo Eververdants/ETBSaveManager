@@ -72,11 +72,11 @@
 
 ---
 
-## 📥 安装方式（V3.0.0-Alpha-5.1 测试版）
+## 📥 安装方式（V3.0.0-Alpha-5.2 测试版）
 
 ### Windows
 
-1. 下载 [v3.0.0-Alpha-5.1](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-5.1) 的 Windows 安装包。
+1. 下载 [v3.0.0-Alpha-5.2](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-5.2) 的 Windows 安装包。
 
 2. 双击安装包进行安装。（如果你没有安装 WebView2，安装包应该会自动进行安装。如果没有，请点击[这里](https://developer.microsoft.com/microsoft-edge/webview2)下载并安装 WebView2）
 

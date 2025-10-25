@@ -45,24 +45,7 @@
           </div>
         </div>
 
-        <!-- 游戏模式 -->
-        <div class="form-section">
-          <label class="section-title">{{ $t('editArchive.gameMode') }}</label>
-          <div class="segmented-control">
-            <div v-for="mode in gameModes" :key="mode.value" class="segment"
-              :class="{ active: archiveData.gameMode === mode.value }" @click="archiveData.gameMode = mode.value">
-              <span class="segment-label">{{ $t(`editArchive.gameModes.${mode.value}`) }}</span>
-            </div>
-          </div>
-          
-          <!-- 单人模式提示 -->
-          <transition name="fade-slide" mode="out-in">
-            <div v-if="archiveData.gameMode === 'singleplayer'" key="singleplayer-notice" class="singleplayer-notice">
-              <font-awesome-icon :icon="['fas', 'info-circle']" class="notice-icon" />
-              <span>{{ $t('editArchive.singleplayerNotice') }}</span>
-            </div>
-          </transition>
-        </div>
+
 
         <!-- 难度设置 -->
         <div class="form-row">
@@ -71,8 +54,7 @@
             <div class="difficulty-grid">
               <div v-for="difficulty in difficultyLevels" :key="difficulty.value" class="difficulty-option"
                 :class="{ 
-                  selected: archiveData.archiveDifficulty === difficulty.value,
-                  disabled: archiveData.gameMode === 'singleplayer' && difficulty.value !== 'normal'
+                  selected: archiveData.archiveDifficulty === difficulty.value
                 }"
                 @click="handleDifficultySelect('archive', difficulty.value)">
                 <div class="difficulty-icon">
@@ -88,8 +70,7 @@
             <div class="difficulty-grid">
               <div v-for="difficulty in difficultyLevels" :key="`actual-${difficulty.value}`" class="difficulty-option"
                 :class="{ 
-                  selected: archiveData.actualDifficulty === difficulty.value,
-                  disabled: archiveData.gameMode === 'singleplayer' && difficulty.value !== 'normal'
+                  selected: archiveData.actualDifficulty === difficulty.value
                 }"
                 @click="handleDifficultySelect('actual', difficulty.value)">
                 <div class="difficulty-icon">
@@ -218,7 +199,7 @@ const handleSaveArchive = async () => {
     const saveData = {
       path: originalArchive.value.path,
       name: archiveData.name,
-      mode: archiveData.gameMode === 'singleplayer' ? 'Singleplayer' : 'Multiplayer',
+      mode: 'Multiplayer', // 始终设置为多人模式
       currentLevel: archiveData.currentLevel,
       difficulty: archiveData.archiveDifficulty.charAt(0).toUpperCase() + archiveData.archiveDifficulty.slice(1),
       actualDifficulty: archiveData.actualDifficulty.charAt(0).toUpperCase() + archiveData.actualDifficulty.slice(1),
@@ -256,7 +237,7 @@ const originalArchive = ref(null)
 const archiveData = reactive({
   name: '',
   currentLevel: 'Level0',
-  gameMode: 'singleplayer',
+  gameMode: 'multiplayer', // 默认设置为多人模式
   archiveDifficulty: 'normal',
   actualDifficulty: 'normal',
   players: []
@@ -272,7 +253,8 @@ const initArchiveData = () => {
       // 填充表单数据
       archiveData.name = data.name || ''
       archiveData.currentLevel = data.currentLevel || 'Level0'
-      archiveData.gameMode = data.gameMode || 'singleplayer'
+      // 强制设置为多人模式
+      archiveData.gameMode = 'multiplayer'
       archiveData.archiveDifficulty = data.archiveDifficulty || 'normal'
       archiveData.actualDifficulty = data.actualDifficulty || 'normal'
 
@@ -329,11 +311,7 @@ const editingSlot = ref({ playerIndex: 0, slotIndex: 0 })
 // 可用层级
 const availableLevels = ref([])
 
-// 游戏模式
-const gameModes = [
-  { value: 'singleplayer', label: 'singleplayer' },
-  { value: 'multiplayer', label: 'multiplayer' }
-]
+
 
 // 难度选项
 const difficultyLevels = [
@@ -375,17 +353,8 @@ const loadLevels = () => {
     // 为每个层级生成数据
     levelMappings.forEach((levelKey, index) => {
       try {
-        // 检查是否存在对应的.png图片（新关卡）
-        const pngNewLevels = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat']
-        let imagePath
-        
-        if (pngNewLevels.includes(levelKey)) {
-          // 新关卡使用关卡名称.png
-          imagePath = `/images/${levelKey}.png`
-        } else {
-          // 原有关卡使用数字索引.jpg
-          imagePath = `/images/${index}.jpg`
-        }
+        // 现在所有关卡都使用关卡名称作为图片文件名
+        const imagePath = `/images/${levelKey}.jpg`
         
         // 获取翻译名称，如果失败则使用原始键名
         let levelName

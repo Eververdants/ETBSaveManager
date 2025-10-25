@@ -68,24 +68,7 @@
                 </div>
               </div>
 
-              <!-- 游戏模式 -->
-              <div class="config-card">
-                <h3 class="form-section-title">{{ $t('createArchive.gameMode') }}</h3>
-                <div class="radio-group">
-                  <label class="radio-option" v-for="mode in gameModes" :key="mode.value">
-                    <input type="radio" v-model="selectedGameMode" :value="mode.value" class="radio-input" />
-                    <span class="radio-custom"></span>
-                    <span class="radio-label">{{ $t(`createArchive.gameModes.${mode.value}`) }}</span>
-                  </label>
-                </div>
-                <!-- 单人模式提示 -->
-                <transition name="fade-slide" mode="out-in">
-                  <div v-if="selectedGameMode === 'singleplayer'" class="singleplayer-notice" key="singleplayer-notice">
-                    <font-awesome-icon :icon="['fas', 'info-circle']" />
-                    <span>{{ $t('createArchive.singleplayerNotice') }}</span>
-                  </div>
-                </transition>
-              </div>
+
 
               <!-- 存档难度 -->
               <div class="config-card">
@@ -257,7 +240,7 @@ export default {
     const previousStepValue = ref(1)
     const selectedLevel = ref(-1)
     const archiveName = ref('')
-    const selectedGameMode = ref('singleplayer')
+    const selectedGameMode = ref('multiplayer') // 默认设置为多人模式
     const selectedDifficulty = ref('normal')
     const selectedActualDifficulty = ref('normal')
     const newSteamId = ref('')
@@ -271,9 +254,10 @@ export default {
     const availableLevels = reactive([])
     const players = reactive([])
 
+
+
     // 游戏模式选项
     const gameModes = [
-      { value: 'singleplayer', label: 'singleplayer' },
       { value: 'multiplayer', label: 'multiplayer' }
     ]
 
@@ -306,29 +290,14 @@ export default {
 
     // 方法
     const selectDifficulty = (difficulty) => {
-      // 如果是单人模式，只能选择普通难度
-      if (selectedGameMode.value === 'singleplayer' && difficulty !== 'normal') {
-        return
-      }
       selectedDifficulty.value = difficulty
     }
 
     const selectActualDifficulty = (difficulty) => {
-      // 如果是单人模式，只能选择普通难度
-      if (selectedGameMode.value === 'singleplayer' && difficulty !== 'normal') {
-        return
-      }
       selectedActualDifficulty.value = difficulty
     }
 
-    // 监听游戏模式变化
-    watch(selectedGameMode, (newMode) => {
-      // 如果切换到单人模式，自动设置难度为普通
-      if (newMode === 'singleplayer') {
-        selectedDifficulty.value = 'normal'
-        selectedActualDifficulty.value = 'normal'
-      }
-    })
+
 
     const switchToBatchCreate = () => {
       isSwitching.value = true
@@ -362,17 +331,8 @@ export default {
       ]
 
       levelMappings.forEach((levelKey, index) => {
-        // 检查是否存在对应的.png图片（新关卡）
-        const pngNewLevels = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat']
-        let imagePath
-        
-        if (pngNewLevels.includes(levelKey)) {
-          // 新关卡使用关卡名称.png
-          imagePath = `/images/${levelKey}.jpg`
-        } else {
-          // 原有关卡使用数字索引.jpg
-          imagePath = `/images/${index}.jpg`
-        }
+        // 现在所有关卡都使用关卡名称作为图片文件名
+        const imagePath = `/images/${levelKey}.jpg`
         
         availableLevels.push({
           name: t(`LevelName_Display.${levelKey}`),
@@ -445,7 +405,7 @@ export default {
       currentStep.value = 1
       selectedLevel.value = -1
       archiveName.value = ''
-      selectedGameMode.value = 'singleplayer'
+      selectedGameMode.value = 'multiplayer' // 默认设置为多人模式
       selectedDifficulty.value = 'normal'
       selectedActualDifficulty.value = 'normal'
       newSteamId.value = ''
@@ -490,7 +450,6 @@ export default {
           throw new Error(`HTTP错误! 状态: ${response.status}`)
         }
         const jsonData = await response.json()
-        console.log(`成功加载 ${filename}:`, jsonData)
         return jsonData
       } catch (error) {
         console.error(`读取 ${filename} 失败:`, error)
@@ -528,7 +487,7 @@ export default {
         const saveData = {
           archive_name: archiveName.value.trim() || "未命名存档",
           level: selectedLevelData.levelKey || "Level0",
-          game_mode: selectedGameMode.value || "singleplayer",
+          game_mode: "multiplayer", // 始终设置为多人模式
           difficulty: selectedDifficulty.value.charAt(0).toUpperCase() + selectedDifficulty.value.slice(1) || "Normal",
           actual_difficulty: selectedActualDifficulty.value.charAt(0).toUpperCase() + selectedActualDifficulty.value.slice(1) || "Normal",
           players: players.map(p => ({
@@ -537,8 +496,6 @@ export default {
           })),
           basic_archive: basicArchive || {} // 确保不是 null
         }
-
-        console.log('创建存档数据:', saveData)
 
         // 验证所有必需字段
         if (!saveData.archive_name) {
@@ -551,8 +508,6 @@ export default {
           isCreating.value = false
           return
         }
-
-        console.log('发送的存档数据:', JSON.stringify(saveData, null, 2))
 
         // 调用后端 API 创建存档
         const { invoke } = await import('@tauri-apps/api/core')
@@ -708,7 +663,7 @@ export default {
               gsap.to(successCard, {
                 x: 100,
                 opacity: 0,
-                duration: 0.3,
+                duration: 0.2,
                 ease: "power2.in",
                 onComplete: () => {
                   document.body.removeChild(successCard)
@@ -752,13 +707,13 @@ export default {
                   })
                 }
               })
-            }, 1000)
+            }, 500)
           }
         })
 
         tl.fromTo(successCard,
           { scale: 0, opacity: 0, rotation: -10 },
-          { scale: 1, opacity: 1, rotation: 0, duration: 0.8, ease: "back.out(1.7)" }
+          { scale: 1, opacity: 1, rotation: 0, duration: 0.5, ease: "back.out(1.7)" }
         )
 
         // 使用具体选择器避免错误
@@ -771,7 +726,7 @@ export default {
           tl.from(iconCircle, {
             scale: 0,
             rotation: -180,
-            duration: 0.6,
+            duration: 0.4,
             ease: "back.out(1.7)"
           }, "-=0.4")
         }
@@ -788,7 +743,7 @@ export default {
           tl.from(successTitle, {
             y: 20,
             opacity: 0,
-            duration: 0.4
+            duration: 0.3
           }, "-=0.2")
         }
 
@@ -796,7 +751,7 @@ export default {
           tl.from(successSubtitle, {
             y: 10,
             opacity: 0,
-            duration: 0.3
+            duration: 0.2
           }, "-=0.1")
         }
       } catch (error) {

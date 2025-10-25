@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar.vue';
 import TitleBar from './components/TitleBar.vue';
 import PerformanceMonitor from "./components/PerformanceMonitor.vue";
 import { showPopup } from '@/services/popupService';
+import { protectFloatingButtonPosition, safeModifyBodyStyles } from './utils/floatingButtonProtection.js';
 
 // 示例调用 - 发行版禁用弹窗功能
 // showPopup({
@@ -31,11 +32,16 @@ onMounted(() => {
     const forceHardwareAcceleration = () => {
       const elements = document.querySelectorAll('.main-content, .sidebar, .archive-grid, .archive-card');
       elements.forEach(el => {
-        if (el) {
+        if (el && !el.classList.contains('floating-action-container')) {
           el.style.transform = 'translateZ(0)';
           el.style.willChange = 'transform';
         }
       });
+    };
+    
+    // 确保浮动按钮固定定位的函数
+    const ensureFloatingButtonPosition = () => {
+      protectFloatingButtonPosition();
     };
 
     // 应用保存的主题
@@ -48,6 +54,12 @@ onMounted(() => {
 
     // 延迟执行硬件加速强制，确保DOM完全加载
     setTimeout(forceHardwareAcceleration, 100);
+    
+    // 延迟执行浮动按钮位置确保，确保组件已挂载
+    setTimeout(ensureFloatingButtonPosition, 200);
+    
+    // 定期检查并修复浮动按钮位置
+    setInterval(ensureFloatingButtonPosition, 1000);
 
   // 监听性能监控开关事件 - 发行版禁用
   // window.addEventListener('performance-monitor-toggle', (event) => {
@@ -71,10 +83,19 @@ onMounted(() => {
     
     // 路由切换后强制重绘，防止图层卡住
     requestAnimationFrame(() => {
-      document.body.style.display = 'none';
-      document.body.offsetHeight; // 触发重排
-      document.body.style.display = '';
+      // 使用全局保护工具安全修改body样式
+      safeModifyBodyStyles(() => {
+        document.body.style.display = 'none';
+        document.body.offsetHeight; // 触发重排
+        document.body.style.display = '';
+      });
     });
+    
+    // 路由切换后多重保护浮动按钮位置
+    setTimeout(ensureFloatingButtonPosition, 50);
+    setTimeout(ensureFloatingButtonPosition, 200);
+    setTimeout(ensureFloatingButtonPosition, 500);
+    setTimeout(ensureFloatingButtonPosition, 1000);
   });
 });
 </script>
@@ -158,9 +179,9 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
   overflow: hidden;
   cursor: default;
-  /* 防止图层合成问题 */
-  transform: translateZ(0);
-  will-change: transform;
+  /* 移除transform以防止影响固定定位元素 */
+  /* transform: translateZ(0); */
+  /* will-change: transform; */
 }
 
 #app {
@@ -187,6 +208,29 @@ body {
   scrollbar-width: none;
   -ms-overflow-style: none;
   /* IE 和 Edge */
+}
+
+/* 全局浮动按钮样式 - 确保固定定位 */
+.floating-action-container {
+  position: fixed !important;
+  bottom: 30px !important;
+  right: 30px !important;
+  z-index: 10000 !important;
+  
+  /* 确保相对于视口定位 */
+  top: auto !important;
+  left: auto !important;
+  
+  /* 防止任何变换影响 */
+  transform: none !important;
+  transform-origin: initial !important;
+  backface-visibility: visible !important;
+  perspective: none !important;
+  
+  /* 防止动画影响 */
+  animation: none !important;
+  transition: none !important;
+  will-change: auto !important;
 }
 
 .app-container {

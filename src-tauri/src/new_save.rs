@@ -52,9 +52,10 @@ pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
         fs::create_dir_all(&save_dir).map_err(|e| format!("创建保存目录失败: {}", e))?;
     }
 
+    // 强制设置为多人模式
     let file_name = format!(
         "{}_{}_{}.sav",
-        save_data.game_mode.to_uppercase(),
+        "MULTIPLAYER".to_string(), // 始终设置为多人模式
         save_data.archive_name,
         file_suffix
     );
@@ -302,39 +303,38 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> Result<(), Str
 
 // 更新 MAINSAVE.sav 文件，添加新创建的存档名称到 SingleplayerSaves 列表
 fn update_mainsave_sav(_save_data: &SaveData, new_save_filename: &str) -> Result<(), String> {
-    println!("🔄 开始更新 MAINSAVE.sav 文件...");
-
-    // 1. 构建 MAINSAVE.sav 文件路径
-    let app_data_dir = get_local_appdata_dir()?;
-    let save_games_dir = app_data_dir.join("EscapeTheBackrooms/Saved/SaveGames");
-    let mainsave_path = save_games_dir.join("MAINSAVE.sav");
-
+    println!("🔄 正在更新 MAINSAVE.sav 文件...");
+    
+    // 获取存档目录
+    let save_dir = get_local_appdata_dir()?.join("EscapeTheBackrooms/Saved/SaveGames");
+    let mainsave_path = save_dir.join("MAINSAVE.sav");
+    
     if !mainsave_path.exists() {
-        println!("⚠️ MAINSAVE.sav 文件不存在，跳过更新");
+        println!("⚠️ MAINSAVE.sav 不存在，跳过更新");
         return Ok(());
     }
-
-    // 2. 使用 uesave 读取 MAINSAVE.sav 文件
+    
+    // 使用 uesave 读取 MAINSAVE.sav 文件
     let file = fs::File::open(&mainsave_path)
         .map_err(|e| format!("打开 MAINSAVE.sav 文件失败: {}", e))?;
     let mut reader = BufReader::new(file);
     
     let mut mainsave = Save::read(&mut reader)
         .map_err(|e| format!("解析 MAINSAVE.sav 文件失败: {:?}", e))?;
-
-    // 3. 获取存档名称（不带 .sav 后缀）
+    
+    // 获取存档名称（不带 .sav 后缀）
     let archive_name = new_save_filename.trim_end_matches(".sav");
     println!("📄 要添加的存档名称: {}", archive_name);
-
-    // 4. 查找 SingleplayerSaves_0 字段
+    
+    // 查找 SingleplayerSaves_0 字段
     let singleplayer_saves_key = PropertyKey(0, "SingleplayerSaves".to_string());
     
     if let Some(singleplayer_saves_prop) = mainsave.root.properties.0.get_mut(&singleplayer_saves_key) {
-        // 5. 获取现有的 Str 数组
-        if let PropertyInner::Array(ValueArray::Base(ValueVec::Str(ref mut existing_saves))) = singleplayer_saves_prop.inner {
-            // 6. 检查是否已存在相同的存档名称
+        // 获取现有的 Str 数组
+        if let PropertyInner::Array(ValueArray::Base(ValueVec::Str(ref mut existing_saves))) = &mut singleplayer_saves_prop.inner {
+            // 检查是否已存在相同的存档名称
             if !existing_saves.contains(&archive_name.to_string()) {
-                // 7. 添加新的存档名称到列表
+                // 添加新的存档名称到列表
                 existing_saves.push(archive_name.to_string());
                 println!("✅ 已添加存档名称到 SingleplayerSaves 列表: {}", archive_name);
             } else {
@@ -358,9 +358,9 @@ fn update_mainsave_sav(_save_data: &SaveData, new_save_filename: &str) -> Result
         mainsave.root.properties.0.insert(singleplayer_saves_key, new_singleplayer_saves);
         println!("✅ 已创建新的 SingleplayerSaves_0 字段并添加存档名称: {}", archive_name);
     }
-
-    // 8. 保存修改后的 MAINSAVE.sav 文件
-    let temp_path = save_games_dir.join("MAINSAVE_temp.sav");
+    
+    // 保存修改后的 MAINSAVE.sav 文件
+    let temp_path = save_dir.join("MAINSAVE_temp.sav");
     let file = fs::File::create(&temp_path)
         .map_err(|e| format!("创建临时 MAINSAVE 文件失败: {}", e))?;
     let mut writer = BufWriter::new(file);
@@ -369,11 +369,11 @@ fn update_mainsave_sav(_save_data: &SaveData, new_save_filename: &str) -> Result
         .map_err(|e| format!("写入 MAINSAVE.sav 文件失败: {:?}", e))?;
     writer.flush()
         .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
-
-    // 9. 替换原始文件
+    
+    // 替换原始文件
     fs::rename(&temp_path, &mainsave_path)
         .map_err(|e| format!("替换 MAINSAVE.sav 文件失败: {}", e))?;
-
+    
     println!("✅ MAINSAVE.sav 文件更新完成");
     Ok(())
 }

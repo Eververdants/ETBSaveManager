@@ -20,7 +20,7 @@
     "listDescription": "檢視並管理所有存檔",
     "createDescription": "建立新的遊戲存檔",
     "updated": "更新內容",
-    "updateDetails": "進行了性能優化，調整了部分樣式。",
+    "updateDetails": "更改了層級預覽圖，添加了停用GPU加速功能，修復了部分bug。",
     "thanks": "感謝所有為本專案提供回饋、建議與支援的朋友",
     "disclaimer": "本工具僅供學習交流使用"
   },
@@ -92,11 +92,14 @@
   },
   "settings": {
     "appearanceAndLanguage": "外觀與語言",
+    "advancedSettings": "進階設定",
     "systemAndUpdates": "系統與更新",
     "theme": "主題",
     "themeDescription": "選擇應用程式介面主題",
     "language": "語言",
     "languageDescription": "選擇顯示語言",
+    "disableGpuAcceleration": "停用GPU加速",
+    "disableGpuAccelerationDescription": "停用GPU加速可能解決某些顯示卡相容性問題，但可能降低渲染效能",
     "checkUpdates": "檢查更新",
     "checkUpdatesDescription": "獲取最新功能與修正",
     "checking": "檢查中…",

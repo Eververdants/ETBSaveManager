@@ -9,10 +9,6 @@
       <div class="archive-info">
         <h3 class="archive-name">{{ archive.name }}</h3>
         <div class="game-mode-info">
-          <span class="mode-tag" :class="gameModeClass">
-            <span class="tag-short">{{ gameModeText }}</span>
-            <span class="tag-full">{{ gameModeText }}</span>
-          </span>
           <span class="difficulty-tags">
             <span class="difficulty-tag archive-difficulty" :class="archiveDifficultyClass">
               <span class="tag-short">{{ archiveDifficultyText }}</span>
@@ -87,33 +83,8 @@ const currentLevelName = computed(() => {
 })
 
 const backgroundImage = computed(() => {
-  // 定义固定的level顺序，与图片索引对应
-  const levelOrder = [
-    'Level0', 'TopFloor', 'MiddleFloor', 'GarageLevel2', 'BottomFloor', 'TheHub',
-    'Pipes1', 'ElectricalStation', 'Office', 'Hotel', 'Floor3', 'BoilerRoom',
-    'Pipes2', 'LevelFun', 'Poolrooms', 'LevelRun', 'TheEnd', 'Level922',
-    'Level94', 'AnimatedKingdom', 'LightsOut', 'OceanMap', 'CaveLevel',
-    'Level05', 'Level9', 'AbandonedBase', 'Level10', 'Level3999', 'Level07',
-    'Snackrooms', 'LevelDash', 'Level188_Expanded', 'Poolrooms_Expanded',
-    'WaterPark_Level01_P', 'WaterPark_Level02_P', 'WaterPark_Level03_P',
-    'LevelFun_Expanded', 'Zone1_Modified', 'Zone2_Modified', 'Zone3_Baked',
-    'Zone4', 'Level52', 'TunnelLevel', 'Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat'
-  ]
-  
-  // 新关卡使用关卡名称.png
-  const pngNewLevels = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat']
-  
-  if (pngNewLevels.includes(props.archive.currentLevel)) {
-    return `/images/${props.archive.currentLevel}.jpg`
-  }
-  
-  // 原有关卡使用数字索引.jpg
-  const index = levelOrder.indexOf(props.archive.currentLevel)
-  return index >= 0 ? `/images/${index}.jpg` : '/images/0.jpg'
-})
-
-const gameModeText = computed(() => {
-  return t(`createArchive.gameModes.${props.archive.gameMode}`) || props.archive.gameMode
+  // 现在所有关卡都使用关卡名称作为图片文件名
+  return `/images/${props.archive.currentLevel}.jpg`
 })
 
 const archiveDifficultyText = computed(() => {
@@ -122,10 +93,6 @@ const archiveDifficultyText = computed(() => {
 
 const actualDifficultyText = computed(() => {
   return t(`createArchive.difficultyLevels.${props.archive.actualDifficulty}`) || props.archive.actualDifficulty
-})
-
-const gameModeClass = computed(() => {
-  return props.archive.gameMode === 'multiplayer' ? 'mode-multiplayer' : 'mode-single'
 })
 
 const archiveDifficultyClass = computed(() => {
@@ -213,7 +180,6 @@ const updateTagWidths = () => {
 
     // 获取当前标签文本内容
     const currentTexts = {
-      mode: gameModeText.value,
       archiveDifficulty: archiveDifficultyText.value,
       actualDifficulty: actualDifficultyText.value
     }
@@ -232,7 +198,6 @@ const updateTagWidths = () => {
         }
       }
 
-      setCachedWidths('.mode-tag', 'mode')
       setCachedWidths('.difficulty-tag.archive-difficulty', 'archive')
       setCachedWidths('.difficulty-tag.actual-difficulty', 'actual')
       resolve()
@@ -277,7 +242,6 @@ const updateTagWidths = () => {
 
     // 延迟执行，避免阻塞渲染
     requestAnimationFrame(() => {
-      setWidths('.mode-tag', 'mode')
       setWidths('.difficulty-tag.archive-difficulty', 'archive')
       setWidths('.difficulty-tag.actual-difficulty', 'actual')
 
@@ -429,7 +393,7 @@ onMounted(async () => {
 // 当这些文案变动（含多语言切换）时，重测 - 添加防抖优化
 let tagWidthUpdateTimer = null
 
-watch([() => gameModeText.value, () => archiveDifficultyText.value, () => actualDifficultyText.value], async () => {
+watch([() => archiveDifficultyText.value, () => actualDifficultyText.value], async () => {
   // 使用防抖优化，避免频繁触发
   clearTimeout(tagWidthUpdateTimer)
   tagWidthUpdateTimer = setTimeout(async () => {
@@ -499,12 +463,31 @@ onBeforeUnmount(() => {
   z-index: 1;
 }
 
+/* 确保在删除动画期间卡片尺寸保持不变 */
+.archive-card.v-leave-active {
+  width: 320px !important;
+  height: 160px !important;
+  min-width: 320px !important;
+  min-height: 160px !important;
+  max-width: 320px !important;
+  max-height: 160px !important;
+  box-sizing: border-box !important;
+}
+
 /* 上半背景区域 */
 .card-background {
   position: relative;
   width: 100%;
   height: 100px;
   overflow: hidden;
+}
+
+/* 确保在删除动画期间背景容器保持固定尺寸 */
+.archive-card.v-leave-active .card-background {
+  width: 100% !important;
+  height: 100px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
 }
 
 .background-image {
@@ -515,6 +498,14 @@ onBeforeUnmount(() => {
   filter: blur(1.5px);
   /* 性能优化：使用更简单的过渡效果 */
   transition: filter 0.2s ease;
+}
+
+/* 确保在删除动画期间背景图片不会被拉伸 */
+.archive-card.v-leave-active .background-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  box-sizing: border-box !important;
 }
 
 /* 悬浮时减少模糊效果 */
@@ -564,7 +555,6 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 
-.mode-tag,
 .difficulty-tag {
   display: inline-flex;
   align-items: center;
@@ -586,20 +576,10 @@ onBeforeUnmount(() => {
   position: relative;
   inline-size: var(--w-short, auto);
   height: 20px;
-  line-height: 16px;
-}
-
-.mode-tag {
-  min-width: 40px;
-  height: 20px;
-  line-height: 16px;
-  padding: 0 16px;
-}
-
-.difficulty-tag {
+  line-height: 1;
+  /* 调整对齐方式确保垂直居中 */
+  vertical-align: top;
   min-width: 30px;
-  height: 20px;
-  line-height: 16px;
   padding: 0 16px;
 }
 
@@ -608,10 +588,15 @@ onBeforeUnmount(() => {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
   /* 性能优化：使用更简单的过渡效果 */
   transition: opacity 0.15s ease;
   white-space: nowrap;
+  /* 确保文字垂直居中 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 微调位置使文字更加居中 */
+  transform: translate(-50%, -50%) translateY(-1px);
 }
 
 .tag-short {
@@ -623,7 +608,6 @@ onBeforeUnmount(() => {
 }
 
 /* 悬浮时展开动画 */
-.archive-card:hover .mode-tag,
 .archive-card:hover .difficulty-tag {
   inline-size: var(--w-full, var(--w-short, auto));
   padding: 6px 20px;
@@ -636,20 +620,6 @@ onBeforeUnmount(() => {
 
 .archive-card:hover .tag-full {
   opacity: 1;
-}
-
-.mode-single {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-  border-color: rgba(255, 255, 255, 0.2);
-  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.mode-multiplayer {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-  border-color: rgba(255, 255, 255, 0.2);
-  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .difficulty-tags {
@@ -691,18 +661,6 @@ onBeforeUnmount(() => {
   /* 性能优化：使用更简单的变换以提高性能 */
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
-
-.archive-card:hover .mode-single {
-  background: rgba(52, 199, 89, 0.2);
-  color: #34c759;
-  border-color: rgba(52, 199, 89, 0.4);
-}
-
-.archive-card:hover .mode-multiplayer {
-  background: rgba(0, 122, 255, 0.2);
-  color: #007aff;
-  border-color: rgba(0, 122, 255, 0.4);
 }
 
 .archive-card:hover .difficulty-easy {

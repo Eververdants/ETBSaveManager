@@ -193,6 +193,7 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { gsap } from 'gsap';
+import { safeModifyBodyStyles, protectFloatingButtonPosition } from '../utils/floatingButtonProtection.js';
 
 // 使用国际化
 const { t } = useI18n({ useScope: 'global' });
@@ -305,12 +306,23 @@ const selectCategory = (categoryId) => {
 
 const openPluginDetail = (plugin) => {
   selectedPlugin.value = plugin;
-  document.body.style.overflow = 'hidden';
+  
+  // 使用全局保护工具安全修改body样式
+  safeModifyBodyStyles(() => {
+    document.body.style.overflow = 'hidden';
+  });
 };
 
 const closePluginDetail = () => {
   selectedPlugin.value = null;
-  document.body.style.overflow = '';
+  
+  // 使用全局保护工具安全修改body样式
+  safeModifyBodyStyles(() => {
+    document.body.style.overflow = '';
+  });
+  
+  // 使用全局保护工具确保浮动按钮位置正确
+  protectFloatingButtonPosition();
 };
 
 const installPlugin = (plugin) => {

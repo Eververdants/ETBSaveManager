@@ -1,6 +1,7 @@
 mod cli_handlers;
 mod encryption;
 mod get_file_path;
+mod gpu_settings;
 mod new_save;
 mod player_data;
 mod save_editor;
@@ -482,8 +483,20 @@ fn handle_new_save(save_data: new_save::SaveData) -> Result<(), String> {
     new_save::create_new_save(save_data)
 }
 
+#[tauri::command]
+fn restart_app(app: tauri::AppHandle) -> Result<(), String> {
+    // 使用Tauri 2.0的API重启应用
+    app.restart();
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // 获取GPU加速设置
+    let browser_args = gpu_settings::get_browser_args();
+    let args_string = browser_args.join(" ");
+    println!("应用GPU加速设置: {}", args_string);
+    
+    // 构建Tauri应用
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -503,7 +516,10 @@ pub fn run() {
             get_local_appdata,
             ensure_dir_exists,
             handle_new_save,
-            open_save_games_folder
+            open_save_games_folder,
+            gpu_settings::get_gpu_acceleration_status,
+            gpu_settings::set_gpu_acceleration,
+            restart_app
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

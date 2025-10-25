@@ -8,7 +8,8 @@ import { library } from "@fortawesome/fontawesome-svg-core"
 import { fas } from "@fortawesome/free-solid-svg-icons"
 import { fab } from "@fortawesome/free-brands-svg-icons"
 import "./styles/theme-config.js"
-import { disableInteractions } from "./utils/disableInteractions"
+import { initGlobalFloatingButtonProtection, protectFloatingButtonPosition, safeModifyBodyStyles } from "./utils/floatingButtonProtection.js"
+// import { disableInteractions } from "./utils/disableInteractions"
 
 // 导入翻译文件
 import zhCN from './i18n/locales/zh-CN.json'
@@ -57,9 +58,12 @@ const currentLocale = i18n.global.locale.value || i18n.global.locale
 console.log("[i18n] current", currentLocale)
 
 // 禁用所有快捷键、文字选中和图片拖拽
-disableInteractions()
+// disableInteractions()
 
 app.mount("#app")
+
+// 初始化全局浮动按钮保护
+initGlobalFloatingButtonProtection()
 
 // 全局图层合成问题修复
 const fixCompositingLayerIssues = () => {
@@ -89,3 +93,19 @@ const fixCompositingLayerIssues = () => {
 
 // 应用挂载后修复图层问题
 fixCompositingLayerIssues()
+
+// 定期强制重绘以防止GPU合成层问题
+setInterval(() => {
+  window.requestAnimationFrame(() => {
+    // 使用全局保护工具安全修改body样式
+    safeModifyBodyStyles(() => {
+      document.body.style.transform = 'translateZ(0)'; // 强制触发GPU合成层刷新
+      setTimeout(() => {
+        document.body.style.transform = '';
+      }, 0);
+    });
+    
+    // 使用全局保护工具确保浮动按钮位置正确
+    protectFloatingButtonPosition();
+  });
+}, 3000); // 每3秒执行一次

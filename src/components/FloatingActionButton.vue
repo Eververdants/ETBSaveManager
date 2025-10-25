@@ -1,24 +1,31 @@
 <template>
-  <div class="floating-action-container">
-    <div class="action-button" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" @wheel="handleWheel"
-      @click="handleClick" ref="actionButton">
-      <!-- 主要图标 -->
-      <div class="icon-wrapper main-icon" ref="mainIcon">
-        <font-awesome-icon :icon="['fas', getCurrentIcon]" />
-      </div>
+  <teleport to="body">
+    <div class="floating-action-container" ref="floatingActionContainer" :class="$attrs.class">
+      <div class="action-button" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" @wheel="handleWheel"
+        @click="handleClick" ref="actionButton">
+        <!-- 主要图标 -->
+        <div class="icon-wrapper main-icon" ref="mainIcon">
+          <font-awesome-icon :icon="['fas', getCurrentIcon]" />
+        </div>
 
-      <!-- 功能提示 -->
-      <div class="function-tooltip" ref="tooltip">
-        <span class="tooltip-text">{{ getCurrentTooltip }}</span>
+        <!-- 功能提示 -->
+        <div class="function-tooltip" ref="tooltip">
+          <span class="tooltip-text">{{ getCurrentTooltip }}</span>
+        </div>
       </div>
     </div>
-  </div>
+  </teleport>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { gsap } from 'gsap'
+
+// 禁用自动属性继承，因为我们使用teleport
+defineOptions({
+  inheritAttrs: false
+})
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -27,6 +34,7 @@ const emit = defineEmits(['search-click', 'folder-click', 'refresh-click'])
 const actionButton = ref(null)
 const mainIcon = ref(null)
 const tooltip = ref(null)
+const floatingActionContainer = ref(null)
 
 const icons = ['search', 'folder', 'refresh']
 const currentIndex = ref(0)
@@ -168,6 +176,44 @@ const handleClick = () => {
     }
   })
 
+  // 确保容器位置在点击后保持不变
+  const container = floatingActionContainer.value;
+  if (container) {
+    // 强制重置容器位置，防止任何可能的位移
+    container.style.setProperty('position', 'fixed', 'important');
+    container.style.setProperty('bottom', '30px', 'important');
+    container.style.setProperty('right', '30px', 'important');
+    container.style.setProperty('top', 'auto', 'important');
+    container.style.setProperty('left', 'auto', 'important');
+    container.style.setProperty('transform', 'none', 'important');
+    container.style.setProperty('margin', '0', 'important');
+    container.style.setProperty('padding', '0', 'important');
+    
+    // 延迟检查，确保在所有事件处理后位置仍然正确
+    setTimeout(() => {
+      container.style.setProperty('position', 'fixed', 'important');
+      container.style.setProperty('bottom', '30px', 'important');
+      container.style.setProperty('right', '30px', 'important');
+      container.style.setProperty('top', 'auto', 'important');
+      container.style.setProperty('left', 'auto', 'important');
+      container.style.setProperty('transform', 'none', 'important');
+      container.style.setProperty('margin', '0', 'important');
+      container.style.setProperty('padding', '0', 'important');
+    }, 100);
+    
+    // 额外的延迟检查，确保在所有布局变化后位置仍然正确
+    setTimeout(() => {
+      container.style.setProperty('position', 'fixed', 'important');
+      container.style.setProperty('bottom', '30px', 'important');
+      container.style.setProperty('right', '30px', 'important');
+      container.style.setProperty('top', 'auto', 'important');
+      container.style.setProperty('left', 'auto', 'important');
+      container.style.setProperty('transform', 'none', 'important');
+      container.style.setProperty('margin', '0', 'important');
+      container.style.setProperty('padding', '0', 'important');
+    }, 500);
+  }
+
   // 触发对应操作
   const currentAction = icons[currentIndex.value]
 
@@ -226,6 +272,61 @@ const showScrollHint = () => {
 }
 
 onMounted(() => {
+  // 确保浮动按钮容器样式不被外部修改
+  const container = floatingActionContainer.value;
+  if (container) {
+    // 使用内联样式确保最高优先级
+    container.style.setProperty('position', 'fixed', 'important');
+    container.style.setProperty('bottom', '30px', 'important');
+    container.style.setProperty('right', '30px', 'important');
+    container.style.setProperty('z-index', '10000', 'important');
+    container.style.setProperty('top', 'auto', 'important');
+    container.style.setProperty('left', 'auto', 'important');
+    container.style.setProperty('transform', 'none', 'important');
+    container.style.setProperty('isolation', 'isolate', 'important');
+    
+    // 添加样式变化监听，但只在检测到关键样式被修改时才恢复
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          // 获取当前样式
+          const currentStyles = container.style;
+          
+          // 只检查关键定位属性
+          const criticalStyles = ['position', 'bottom', 'right', 'top', 'left'];
+          let hasCriticalChanges = false;
+          
+          // 检查关键定位样式是否被意外修改
+          criticalStyles.forEach(prop => {
+            const currentValue = currentStyles.getPropertyValue(prop);
+            const expectedValue = prop === 'position' ? 'fixed' : 
+                                (prop === 'bottom' || prop === 'right') ? '30px' : 
+                                (prop === 'top' || prop === 'left') ? 'auto' : '';
+            
+            if (currentValue && currentValue !== expectedValue) {
+              hasCriticalChanges = true;
+            }
+          });
+          
+          // 只有检测到关键定位样式被修改时才恢复
+          if (hasCriticalChanges) {
+            console.log('检测到浮动按钮定位样式被修改，正在恢复...');
+            container.style.setProperty('position', 'fixed', 'important');
+            container.style.setProperty('bottom', '30px', 'important');
+            container.style.setProperty('right', '30px', 'important');
+            container.style.setProperty('top', 'auto', 'important');
+            container.style.setProperty('left', 'auto', 'important');
+          }
+        }
+      });
+    });
+    
+    observer.observe(container, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+  }
+  
   // 初始化状态 - 确保字体加载完成后再执行动画
   gsap.set(tooltip.value, { opacity: 0, y: 10 })
 
@@ -279,13 +380,40 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 浮动按钮容器 - 终极固定定位解决方案 */
 .floating-action-container {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 1000;
-  /* 确保初始位置稳定 */
-  contain: layout style;
+  /* 使用CSS的position: fixed并确保相对于视口定位 */
+  position: fixed !important;
+  bottom: 30px !important;
+  right: 30px !important;
+  z-index: 10000 !important;
+  
+  /* 确保相对于视口定位 */
+  top: auto !important;
+  left: auto !important;
+  
+  /* 防止任何变换影响 */
+  transform: none !important;
+  transform-origin: initial !important;
+  
+  /* 创建新的堆叠上下文 */
+  isolation: isolate;
+  
+  /* 确保不被裁剪 */
+  clip: auto !important;
+  clip-path: none !important;
+  
+  /* 移除所有可能影响定位的属性 */
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  
+  /* 禁用所有动画效果 */
+  animation: none !important;
+  transition: none !important;
+  will-change: auto !important;
+  backface-visibility: visible !important;
+  perspective: none !important;
 }
 
 .action-button {
@@ -415,8 +543,8 @@ onUnmounted(() => {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .floating-action-container {
-    bottom: 20px;
-    right: 20px;
+    bottom: 20px !important;
+    right: 20px !important;
     --fab-size: 56px;
   }
 
@@ -437,8 +565,8 @@ onUnmounted(() => {
 /* 更小屏幕的适配 */
 @media (max-width: 480px) {
   .floating-action-container {
-    bottom: 15px;
-    right: 15px;
+    bottom: 15px !important;
+    right: 15px !important;
     --fab-size: 50px;
   }
 

@@ -302,7 +302,7 @@ export default {
     // 表单数据
     const archivePrefix = ref('')
     const generateCount = ref(5)
-    const selectedGameMode = ref('singleplayer')
+    const selectedGameMode = ref('multiplayer')
     const selectedDifficulty = ref('normal')
     const selectedActualDifficulty = ref('normal')
     const levelMode = ref('single')
@@ -326,7 +326,6 @@ export default {
     
     // 游戏模式选项
     const gameModes = [
-      { value: 'singleplayer', label: 'singleplayer' },
       { value: 'multiplayer', label: 'multiplayer' }
     ]
     
@@ -385,17 +384,8 @@ export default {
       ]
       
       levelMappings.forEach((levelKey, index) => {
-        // 检查是否存在对应的.png图片（新关卡）
-        const pngNewLevels = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat']
-        let imagePath
-        
-        if (pngNewLevels.includes(levelKey)) {
-          // 新关卡使用关卡名称.png
-          imagePath = `/images/${levelKey}.png`
-        } else {
-          // 原有关卡使用数字索引.jpg
-          imagePath = `/images/${index}.jpg`
-        }
+        // 现在所有关卡都使用关卡名称作为图片文件名
+        const imagePath = `/images/${levelKey}.jpg`
         
         availableLevels.push({
           name: t(`LevelName_Display.${levelKey}`),
@@ -516,7 +506,7 @@ export default {
           const saveData = {
             archive_name: archiveName,
             level: levelData.levelKey,
-            game_mode: selectedGameMode.value,
+            game_mode: "multiplayer", // 始终设置为多人模式
             difficulty: selectedDifficulty.value.charAt(0).toUpperCase() + selectedDifficulty.value.slice(1),
             actual_difficulty: selectedActualDifficulty.value.charAt(0).toUpperCase() + selectedActualDifficulty.value.slice(1),
             players: steamIds.value.map(steamId => ({
@@ -584,7 +574,7 @@ export default {
     const resetForm = () => {
       archivePrefix.value = ''
       generateCount.value = 5
-      selectedGameMode.value = 'singleplayer'
+      selectedGameMode.value = 'multiplayer'
       selectedDifficulty.value = 'normal'
       selectedActualDifficulty.value = 'normal'
       levelMode.value = 'single'

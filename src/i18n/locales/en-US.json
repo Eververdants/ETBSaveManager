@@ -20,7 +20,7 @@
     "listDescription": "View and manage all archives",
     "createDescription": "Create new game archive",
     "updated": "Update",
-    "updateDetails": "Performance optimizations and partial style adjustments have been made.",
+    "updateDetails": "Changed level preview images, added disable GPU acceleration feature, and fixed some bugs.",
     "thanks": "Thanks to everyone who provided feedback, suggestions and support for this project",
     "disclaimer": "This tool is for educational and communication purposes only"
   },
@@ -92,11 +92,14 @@
   },
   "settings": {
     "appearanceAndLanguage": "Appearance & Language",
+    "advancedSettings": "Advanced Settings",
     "systemAndUpdates": "App Updates",
     "theme": "Theme",
     "themeDescription": "Choose application interface theme",
     "language": "Language",
     "languageDescription": "Choose application display language",
+    "disableGpuAcceleration": "Disable GPU Acceleration",
+    "disableGpuAccelerationDescription": "Disabling GPU acceleration may resolve some graphics card compatibility issues, but may reduce rendering performance",
     "checkUpdates": "Check Updates",
     "checkUpdatesDescription": "Get the latest features and fixes",
     "checking": "Checking...",

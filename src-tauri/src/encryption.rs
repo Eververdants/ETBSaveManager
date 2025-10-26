@@ -195,7 +195,7 @@ pub fn decrypt_file(
 }
 
 // 辅助函数：加密数据
-fn encrypt_data(master_key: &[u8; MASTER_KEY_LEN], plaintext: &[u8]) -> Result<Vec<u8>, String> {
+pub fn encrypt_data(master_key: &[u8; MASTER_KEY_LEN], plaintext: &[u8]) -> Result<Vec<u8>, String> {
     let mut rng = rand::thread_rng();
     let mut nonce = [0u8; 12];
     rng.fill(&mut nonce);
@@ -215,7 +215,7 @@ fn encrypt_data(master_key: &[u8; MASTER_KEY_LEN], plaintext: &[u8]) -> Result<V
     Ok(output)
 }
 
-fn decrypt_data(master_key: &[u8; MASTER_KEY_LEN], ciphertext: &[u8]) -> Result<Vec<u8>, String> {
+pub fn decrypt_data(master_key: &[u8; MASTER_KEY_LEN], ciphertext: &[u8]) -> Result<Vec<u8>, String> {
     if ciphertext.len() < 12 {
         return Err("无效的加密数据".into());
     }

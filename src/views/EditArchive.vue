@@ -90,7 +90,11 @@
           <div class="player-list">
             <div v-for="(player, index) in archiveData.players" :key="index" class="player-card"
               :class="{ active: activePlayerIndex === index }" @click="selectPlayer(index)">
-              <span class="player-id">{{ player.steamId }}</span>
+              <div class="player-info">
+                <span v-if="player.username" class="player-username">{{ player.username }}</span>
+                <span v-else-if="player.isOfflinePlayer" class="player-username">{{ player.steamId }}(本地)</span>
+                <span v-else class="player-id">{{ player.steamId }}</span>
+              </div>
               <button class="remove-player-btn" @click.stop="removePlayer(index)">
                 <font-awesome-icon :icon="['fas', 'trash']" />
               </button>
@@ -100,11 +104,18 @@
           <div class="add-player-section">
             <input v-model="newSteamId" type="text" class="form-input"
               :placeholder="$t('editArchive.steamIdPlaceholder')"
-              @input="newSteamId = newSteamId.replace(/[^0-9]/g, '')" @keyup.enter="addPlayer" />
+              @keyup.enter="addPlayer" />
             <button class="add-player-btn" @click="addPlayer">
               <font-awesome-icon :icon="['fas', 'plus']" />
             </button>
           </div>
+          
+          <!-- 玩家输入提示信息 -->
+          <transition name="message-fade" mode="out-in">
+            <div v-if="playerInputMessage" class="player-input-message" :class="playerInputMessageType" key="message">
+              {{ playerInputMessage }}
+            </div>
+          </transition>
 
           <!-- 无玩家提示 -->
           <div v-if="archiveData.players.length === 0" class="no-players-hint">
@@ -169,6 +180,7 @@ import { useRouter } from 'vue-router'
 import { invoke } from '@tauri-apps/api/core'
 import InventoryItemSelector from '../components/InventoryItemSelector.vue'
 import LazyImage from '../components/LazyImage.vue'
+import { showError } from '../services/popupService'
 
 const props = defineProps({
   archiveData: {
@@ -289,9 +301,33 @@ const loadPlayerData = async (archive) => {
             formattedInventory.push(null)
           }
 
+          // 检查是否为本地玩家ID并预处理
+          let playerSteamId = steamId;
+          let isOfflinePlayer = false;
+          let username = null;
+
+          // 检查是否为本地玩家格式 (包含横杠的ID)
+          if (steamId.includes('-')) {
+            const parts = steamId.split('-');
+            if (parts.length === 2 && parts[0].length === 5 && parts[1].length === 15) {
+              // 标准本地玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
+              playerSteamId = parts[0];
+              isOfflinePlayer = true;
+              username = `${parts[0]}(本地)`;
+            } else if (parts.length > 1) {
+              // 非标准但包含横杠的ID格式
+              // 使用横杠前的部分作为用户名
+              playerSteamId = parts[0];
+              isOfflinePlayer = true;
+              username = `${parts[0]}(本地)`;
+            }
+          }
+
           archiveData.players.push({
-            steamId: steamId,
-            inventory: formattedInventory.slice(0, 12)
+            steamId: playerSteamId,
+            inventory: formattedInventory.slice(0, 12),
+            username: username,
+            isOfflinePlayer: isOfflinePlayer
           })
         }
       })
@@ -300,6 +336,9 @@ const loadPlayerData = async (archive) => {
       if (archiveData.players.length > 0) {
         activePlayerIndex.value = 0
       }
+      
+      // 获取Steam用户名
+      await fetchSteamUsernames()
     }
   } catch (error) {
     console.error('加载玩家数据失败:', error)
@@ -308,10 +347,57 @@ const loadPlayerData = async (archive) => {
   }
 }
 
+// 获取Steam用户名
+const fetchSteamUsernames = async () => {
+  try {
+    // 只获取非离线玩家且格式有效的Steam ID
+    const steamIds = archiveData.players
+      .filter(player => !player.isOfflinePlayer && player.steamId && player.steamId.length === 17 && /^\d+$/.test(player.steamId))
+      .map(player => player.steamId);
+    
+    if (steamIds.length === 0) return;
+    
+    // 调用后端API获取用户名
+    const usernames = await invoke('get_steam_usernames_command', { steamIds });
+    
+    // 更新玩家数据中的用户名
+    archiveData.players.forEach(player => {
+      if (!player.isOfflinePlayer && usernames[player.steamId]) {
+        player.username = usernames[player.steamId];
+      }
+    });
+  } catch (error) {
+    console.error('获取Steam用户名失败:', error);
+    // 如果获取失败，保持用户名为null
+    // 但需要处理无效ID的情况，确保本地玩家能正确显示
+    archiveData.players.forEach(player => {
+      // 检查是否为本地玩家格式 (包含横杠的ID)
+      if (player.steamId && player.steamId.includes('-')) {
+        const parts = player.steamId.split('-');
+        if (parts.length === 2 && parts[0].length === 5 && parts[1].length === 15) {
+          // 标准本地玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
+          player.username = `${parts[0]}(本地)`;
+          player.isOfflinePlayer = true;
+        } else if (parts.length > 1) {
+          // 非标准但包含横杠的ID格式，如 ZENNODE-FB589726482C1B564393238FF63B5671
+          // 使用横杠前的部分作为用户名
+          player.username = `${parts[0]}(本地)`;
+          player.isOfflinePlayer = true;
+        }
+      } else if (player.steamId && player.steamId.length === 17 && /^\d+$/.test(player.steamId)) {
+        // 有效的17位数字Steam ID，但获取用户名失败，暂时显示为null
+        // 不做特殊处理，保持为null
+      }
+    });
+  }
+};
+
 const newSteamId = ref('')
 const activePlayerIndex = ref(archiveData.players.length > 0 ? 0 : -1)
 const showItemSelector = ref(false)
 const editingSlot = ref({ playerIndex: 0, slotIndex: 0 })
+const playerInputMessage = ref('') // 用于显示添加玩家时的提示信息
+const playerInputMessageType = ref('') // 用于标识提示信息类型(error/success)
 
 // 可用层级
 const availableLevels = ref([])
@@ -507,22 +593,167 @@ const handleItemSelect = (itemId) => {
   showItemSelector.value = false
 }
 
-const addPlayer = () => {
-  const steamId = newSteamId.value.trim()
-  if (steamId && /^\d+$/.test(steamId)) {
-    archiveData.players.push({
-      steamId: steamId,
-      inventory: Array(12).fill(null)
-    })
-    newSteamId.value = ''
-    activePlayerIndex.value = archiveData.players.length - 1
-  }
+    // 验证Steam ID格式
+    const validateSteamId = (steamId) => {
+      if (!steamId || steamId.trim() === '') {
+        return { valid: false, message: t('editArchive.steamIdRequired') }
+      }
+      
+      // 检查是否为离线玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
+      if (steamId.includes('-')) {
+        const parts = steamId.split('-')
+        if (parts.length === 2 && parts[0].length === 5 && parts[1].length === 15) {
+          return { valid: true, isOfflinePlayer: true, processedSteamId: parts[0] }
+        } else {
+          return { valid: false, message: t('editArchive.steamIdInvalid') }
+        }
+      }
+      
+      // 检查是否为纯数字
+      if (!/^\d+$/.test(steamId)) {
+        return { valid: false, message: t('editArchive.steamIdInvalid') }
+      }
+      
+      // 对于在线Steam ID，检查长度是否为17位
+      if (steamId.length !== 17) {
+        return { valid: false, message: t('editArchive.steamIdValidationError', { error: t('editArchive.steamIdLengthError') }) }
+      }
+      
+      return { valid: true, isOfflinePlayer: false, processedSteamId: steamId }
+    }
 
-  // 如果没有玩家时添加第一个玩家，自动选中
-  if (archiveData.players.length === 1) {
-    activePlayerIndex.value = 0
-  }
-}
+    // 存储当前的定时器ID，以便可以取消之前的定时器
+let messageTimeout = null;
+
+const addPlayer = async () => {
+       // 清空之前的提示信息
+       playerInputMessage.value = ''
+       playerInputMessageType.value = ''
+       
+       const steamId = newSteamId.value.trim()
+       if (!steamId) {
+         playerInputMessage.value = t('editArchive.steamIdRequired')
+         playerInputMessageType.value = 'error'
+         
+         // 3秒后自动清除错误提示
+         if (messageTimeout) clearTimeout(messageTimeout);
+         messageTimeout = setTimeout(() => {
+           playerInputMessage.value = ''
+           playerInputMessageType.value = ''
+         }, 3000)
+         return
+       }
+       
+       // 验证Steam ID
+       const validation = validateSteamId(steamId)
+       if (!validation.valid) {
+         // 使用输入框下方提示方式
+         playerInputMessage.value = validation.message
+         playerInputMessageType.value = 'error'
+         
+         // 3秒后自动清除错误提示
+         if (messageTimeout) clearTimeout(messageTimeout);
+         messageTimeout = setTimeout(() => {
+           playerInputMessage.value = ''
+           playerInputMessageType.value = ''
+         }, 3000)
+         return
+       }
+       
+       // 检查是否已存在相同的Steam ID
+       const isDuplicate = archiveData.players.some(player => player.steamId === validation.processedSteamId)
+       if (isDuplicate) {
+         const duplicateMessage = t('editArchive.steamIdDuplicate', { steamId: validation.processedSteamId })
+         playerInputMessage.value = duplicateMessage
+         playerInputMessageType.value = 'error'
+         
+         // 3秒后自动清除错误提示
+         if (messageTimeout) clearTimeout(messageTimeout);
+         messageTimeout = setTimeout(() => {
+           playerInputMessage.value = ''
+           playerInputMessageType.value = ''
+         }, 3000)
+         return
+       }
+       
+       // 创建新玩家对象
+       const newPlayer = {
+         steamId: validation.processedSteamId,
+         inventory: Array(12).fill(null),
+         username: null,
+         isOfflinePlayer: validation.isOfflinePlayer
+       }
+       
+       // 如果是离线玩家，直接设置用户名
+       if (validation.isOfflinePlayer) {
+         // 处理本地玩家格式
+         if (validation.processedSteamId.includes('-')) {
+           const parts = validation.processedSteamId.split('-');
+           if (parts.length > 1) {
+             newPlayer.username = `${parts[0]}(本地)`;
+           } else {
+             newPlayer.username = `${validation.processedSteamId}(本地)`;
+           }
+         } else {
+           newPlayer.username = `${validation.processedSteamId}(本地)`;
+         }
+       }
+       
+       archiveData.players.push(newPlayer)
+       
+       // 显示成功提示
+       playerInputMessage.value = t('editArchive.playerAddedSuccess')
+       playerInputMessageType.value = 'success'
+       
+       newSteamId.value = ''
+       activePlayerIndex.value = archiveData.players.length - 1
+       
+       // 如果不是离线玩家，获取Steam用户名
+       if (!validation.isOfflinePlayer) {
+         try {
+           const usernames = await invoke('get_steam_usernames_command', { steamIds: [validation.processedSteamId] })
+           if (usernames[validation.processedSteamId]) {
+             archiveData.players[archiveData.players.length - 1].username = usernames[validation.processedSteamId]
+           }
+         } catch (error) {
+           console.error('获取Steam用户名失败:', error)
+           // 检查是否为无效ID格式错误
+           if (error.toString().includes('无效的Steam ID格式')) {
+             // 提取横杠前的部分作为用户名显示
+             const parts = validation.processedSteamId.split('-')
+             if (parts.length > 1) {
+               archiveData.players[archiveData.players.length - 1].username = `${parts[0]}(本地)`
+               archiveData.players[archiveData.players.length - 1].isOfflinePlayer = true
+               // 显示成功提示而不是错误提示
+               playerInputMessage.value = t('editArchive.playerAddedSuccess')
+               playerInputMessageType.value = 'success'
+             } else {
+               // 显示获取用户名失败的提示
+               playerInputMessage.value = t('editArchive.failedToFetchSteamUsername', { error: error.message || error })
+               playerInputMessageType.value = 'error'
+             }
+           } else {
+             // 显示获取用户名失败的提示
+             playerInputMessage.value = t('editArchive.failedToFetchSteamUsername', { error: error.message || error })
+             playerInputMessageType.value = 'error'
+           }
+           
+           // 3秒后自动清除提示
+           if (messageTimeout) clearTimeout(messageTimeout);
+           messageTimeout = setTimeout(() => {
+             playerInputMessage.value = ''
+             playerInputMessageType.value = ''
+           }, 3000)
+         }
+       }
+       
+       // 3秒后自动清除成功提示
+       if (messageTimeout) clearTimeout(messageTimeout);
+       messageTimeout = setTimeout(() => {
+         playerInputMessage.value = ''
+         playerInputMessageType.value = ''
+       }, 3000)
+     }
 
 const removePlayer = (index) => {
   archiveData.players.splice(index, 1)
@@ -938,6 +1169,7 @@ onMounted(() => {
   border: 1px solid var(--divider-light);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   margin-top: 20px;
+  transition: margin-top 0.3s ease;
 }
 
 .inventory-grid {
@@ -1057,6 +1289,7 @@ onMounted(() => {
   background: var(--bg-secondary);
   border-radius: 12px;
   border: 2px dashed var(--divider-light);
+  transition: margin-top 0.3s ease;
 }
 
 .hint-icon {
@@ -1097,10 +1330,44 @@ onMounted(() => {
   background: rgba(0, 122, 255, 0.1);
 }
 
-.player-id {
+.player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.steam-id {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+}
+
+.username {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.username.loading {
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.loading-spinner {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid rgba(0, 122, 255, 0.2);
+  border-top: 1.5px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .remove-player-btn {
@@ -1125,6 +1392,7 @@ onMounted(() => {
   padding: 16px 0;
   margin-bottom: 12px;
   border-bottom: 1px solid var(--divider-light);
+  transition: margin-bottom 0.3s ease;
 }
 
 .add-player-btn {
@@ -1146,6 +1414,59 @@ onMounted(() => {
 .add-player-btn:hover {
   background: #30d158;
   transform: scale(0.95);
+}
+
+/* 玩家输入提示信息样式 */
+.player-input-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  transition: all 0.3s ease;
+  animation: slideDown 0.3s ease;
+}
+
+.player-input-message.error {
+  background: rgba(255, 59, 48, 0.1);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  color: #ff3b30;
+}
+
+.player-input-message.success {
+  background: rgba(52, 199, 89, 0.1);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+  color: #34c759;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 提示信息过渡动画 */
+.message-fade-enter-active {
+  transition: all 0.3s ease;
+}
+
+.message-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.message-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.message-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 @media (max-width: 768px) {

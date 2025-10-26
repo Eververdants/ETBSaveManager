@@ -2,7 +2,7 @@
   <div class="archive-card" :data-archive-id="archive.id" @click="handleCardClick" :class="{ 'archive-hidden': !archive.isVisible }">
     <!-- 上半背景区域 -->
     <div class="card-background">
-      <img :src="backgroundImage" :alt="currentLevelName" class="background-image" />
+      <LazyImage :src="backgroundImage" :alt="currentLevelName" image-class="background-image" />
       <div class="background-overlay"></div>
 
       <!-- 存档信息 -->
@@ -50,6 +50,7 @@
 <script setup>
 import { ref, computed, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
 import gsap from 'gsap'
+import LazyImage from './LazyImage.vue'
 
 // Props
 const props = defineProps({
@@ -378,15 +379,43 @@ onMounted(async () => {
 
   // 卡片进场动画 - 简化版本，避免与transition-group冲突
   const animateCard = () => {
-    // 性能开关：检测用户是否偏好减少动画
+    // 检查用户是否偏好减少动画
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    if (prefersReducedMotion) {
-      return
-    }
-
-    // 简化动画逻辑，让transition-group控制主要动画
-    card.style.willChange = 'transform, opacity'
+  
+    if (!card.value) return
+  
+    // 设置初始状态 - 优化性能
+    gsap.set(card.value, {
+      opacity: 0,
+      y: 30,
+      scale: 0.95,
+      /* 优化性能：减少GPU负载 */
+      force3D: false,
+      /* 使用更高效的渲染路径 */
+      immediateRender: false
+    })
+  
+    // 设置will-change以提高动画性能
+    card.value.style.willChange = 'transform, opacity'
+  
+    // 入场动画 - 优化性能
+    gsap.to(card.value, {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: prefersReducedMotion ? 0 : 0.5,
+      ease: "back.out(1.2)",
+      /* 优化性能：减少GPU负载 */
+      force3D: false,
+      /* 使用更高效的渲染路径 */
+      immediateRender: false,
+      onComplete: () => {
+        // 动画完成后清除will-change
+        if (card.value) {
+          card.value.style.willChange = 'auto'
+        }
+      }
+    })
   }
 })
 
@@ -443,28 +472,34 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .archive-card {
+  position: relative;
   width: 320px;
   height: 160px;
-  border-radius: 12px;
+  border-radius: var(--card-radius);
   overflow: hidden;
-  position: relative;
   cursor: pointer;
-  background: var(--card-bg);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--divider-color);
-  cursor: pointer;
-  /* 性能优化：预声明将要改变的属性以提高性能 */
-  will-change: transform, box-shadow;
-  /* 卡片基础样式 - 使用更自然的过渡效果 */
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform, box-shadow;
+  background: var(--card-bg);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  /* 优化性能：减少GPU负载 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  /* 优化性能：减少重绘 */
+  contain: layout style paint;
   min-height: 160px;
-  /* 确保卡片在动画过程中保持正确的布局 */
-  position: relative;
   z-index: 1;
 }
 
-/* 确保在删除动画期间卡片尺寸保持不变 */
+.archive-card:hover {
+  transform: translateZ(0) translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* 卡片删除动画期间的尺寸固定 */
 .archive-card.v-leave-active {
+  position: absolute;
   width: 320px !important;
   height: 160px !important;
   min-width: 320px !important;
@@ -472,6 +507,11 @@ onBeforeUnmount(() => {
   max-width: 320px !important;
   max-height: 160px !important;
   box-sizing: border-box !important;
+  /* 优化性能：减少GPU负载 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  /* 优化性能：减少重绘 */
+  contain: layout style paint;
 }
 
 /* 上半背景区域 */
@@ -490,27 +530,23 @@ onBeforeUnmount(() => {
   box-sizing: border-box !important;
 }
 
-.background-image {
+/* LazyImage容器样式 */
+.card-background .lazy-image-container {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   /* 添加初始模糊效果 */
   filter: blur(1.5px);
   /* 性能优化：使用更简单的过渡效果 */
   transition: filter 0.2s ease;
+  /* 确保容器不会超出边界 */
+  box-sizing: border-box;
+  /* 确保图片填充整个容器 */
+  display: block;
 }
 
-/* 确保在删除动画期间背景图片不会被拉伸 */
-.archive-card.v-leave-active .background-image {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  box-sizing: border-box !important;
-}
-
-/* 悬浮时减少模糊效果 */
-.archive-card:hover .background-image {
-  filter: blur(0.5px);
+/* 悬浮时移除模糊效果 */
+.archive-card:hover .lazy-image-container {
+  filter: blur(0);
 }
 
 .background-overlay {
@@ -738,8 +774,6 @@ onBeforeUnmount(() => {
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
-
-/* 三个胶囊按钮的不同颜色 - 基础样式已在.action-btn中定义 */
 
 /* Vue过渡动画 - 图标切换 */
 .icon-switch-enter-active,

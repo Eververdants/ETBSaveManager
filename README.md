@@ -74,9 +74,9 @@ If you need to use the stable version, please refer to the [v2.7.3 Release Page]
 
 ---
 
-## 📥 Installation (V3.0.0-Alpha-5.2 Test Version)
+## 📥 Installation (V3.0.0-Alpha-5.3 Test Version)
 
-1. Download the Windows installer for [v3.0.0-Alpha-5.2](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-5.2).
+1. Download the Windows installer for [v3.0.0-Alpha-5.3](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-5.3).
 
 2. Double-click the installer to begin installation. (If you don't have WebView2 installed, the installer should install it automatically. If not, please click [here](https://developer.microsoft.com/microsoft-edge/webview2) to download and install WebView2.)
 

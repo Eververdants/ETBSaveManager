@@ -22,7 +22,7 @@ fn get_local_appdata_dir() -> Result<std::path::PathBuf, String> {
 }
 
 // 物品ID到英文名的映射表
-fn map_item_id_to_name(id: i32) -> &'static str {
+pub fn map_item_id_to_name(id: i32) -> &'static str {
     match id {
         1 => "AlmondConcentrate",
         2 => "BugSpray",
@@ -47,6 +47,8 @@ fn map_item_id_to_name(id: i32) -> &'static str {
         21 => "WalkieTalkie",
         22 => "MothJelly",
         23 => "Crowbar",
+        24 => "Knife",
+        25 => "Toy",
         _ => "None",
     }
 }

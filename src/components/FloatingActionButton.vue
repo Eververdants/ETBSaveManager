@@ -29,14 +29,14 @@ defineOptions({
 
 const { t } = useI18n({ useScope: 'global' })
 
-const emit = defineEmits(['search-click', 'folder-click', 'refresh-click'])
+const emit = defineEmits(['search-click', 'folder-click', 'refresh-click', 'settings-click'])
 
 const actionButton = ref(null)
 const mainIcon = ref(null)
 const tooltip = ref(null)
 const floatingActionContainer = ref(null)
 
-const icons = ['search', 'folder', 'refresh']
+const icons = ['search', 'folder', 'refresh', 'settings']
 const currentIndex = ref(0)
 const isHovered = ref(false)
 
@@ -45,6 +45,7 @@ const getCurrentIcon = computed(() => {
     case 'search': return 'magnifying-glass'
     case 'folder': return 'folder'
     case 'refresh': return 'arrow-rotate-right'
+    case 'settings': return 'gear'
     default: return 'magnifying-glass'
   }
 })
@@ -54,6 +55,7 @@ const getCurrentTooltip = computed(() => {
     case 'search': return t('floatingButton.searchArchive')
     case 'folder': return t('floatingButton.openFolder')
     case 'refresh': return t('floatingButton.refreshList')
+    case 'settings': return '性能设置'
     default: return t('floatingButton.searchArchive')
   }
 })
@@ -76,12 +78,16 @@ const handleMouseEnter = () => {
   tooltipTimer = setTimeout(() => {
     // 确保鼠标仍在按钮上且tooltip元素存在
     if (isHovered.value && tooltip.value) {
-      // 显示功能提示
+      // 显示功能提示 - 优化性能
       gsap.to(tooltip.value, {
         opacity: 1,
         y: 0,
         duration: 0.3,
-        ease: "power2.out"
+        ease: "power2.out",
+        // 优化性能：减少GPU负载
+        force3D: false,
+        // 使用更高效的渲染路径
+        immediateRender: false
       })
     }
   }, 100) // 100ms延迟
@@ -103,12 +109,16 @@ const handleMouseLeave = () => {
   tooltipTimer = setTimeout(() => {
     // 确保鼠标已离开按钮且tooltip元素存在
     if (!isHovered.value && tooltip.value) {
-      // 隐藏功能提示
+      // 隐藏功能提示 - 优化性能
       gsap.to(tooltip.value, {
         opacity: 0,
         y: 10,
         duration: 0.2,
-        ease: "power2.out"
+        ease: "power2.out",
+        // 优化性能：减少GPU负载
+        force3D: false,
+        // 使用更高效的渲染路径
+        immediateRender: false
       })
     }
   }, 150) // 150ms延迟
@@ -132,46 +142,66 @@ const handleWheel = (event) => {
   const direction = event.deltaY > 0 ? 1 : -1
   const velocity = Math.abs(event.deltaY) / 100 // 根据滚动速度调整
 
-  // 显示滚动提示
+  // 显示滚动提示 - 优化性能
   gsap.to(tooltip.value, {
     opacity: 1,
     y: 0,
     duration: 0.2,
-    ease: "power2.out"
+    ease: "power2.out",
+    // 优化性能：减少GPU负载
+    force3D: false,
+    // 使用更高效的渲染路径
+    immediateRender: false
   })
 
-  // 创建滚轮滑动效果，带有惯性
+  // 创建滚轮滑动效果，带有惯性 - 优化性能
   gsap.to(mainIcon.value, {
     y: -direction * 40 * Math.min(velocity, 2),
     opacity: 0,
     duration: 0.15,
     ease: "power2.out",
+    // 优化性能：减少GPU负载
+    force3D: false,
+    // 使用更高效的渲染路径
+    immediateRender: false,
     onComplete: () => {
       // 瞬间切换图标位置到底部（不可见）
       gsap.set(mainIcon.value, { y: direction * 40, opacity: 0 })
 
-      // 平滑滑动到新位置，带有弹性
+      // 平滑滑动到新位置，带有弹性 - 优化性能
       gsap.to(mainIcon.value, {
         y: 0,
         opacity: 1,
         duration: 0.3,
-        ease: "back.out(1.2)"
+        ease: "back.out(1.2)",
+        // 优化性能：减少GPU负载
+        force3D: false,
+        // 使用更高效的渲染路径
+        immediateRender: false
       })
     }
   })
 }
 
 const handleClick = () => {
-  // 点击动画
+  // 点击动画 - 优化性能
   gsap.to(actionButton.value, {
     scale: 0.95,
     duration: 0.1,
     ease: "power2.out",
+    // 优化性能：减少GPU负载
+    force3D: false,
+    // 使用更高效的渲染路径
+    immediateRender: false,
     onComplete: () => {
       gsap.to(actionButton.value, {
         scale: 1,
         duration: 0.1,
-        ease: "power2.out"
+        ease: "power2.out",
+        // 优化性能：减少GPU负载
+        force3D: false,
+        // 使用更高效的渲染路径
+        immediateRender: false
       })
     }
   })
@@ -227,6 +257,9 @@ const handleClick = () => {
     case 'refresh':
       emit('refresh-click')
       break
+    case 'settings':
+      emit('settings-click')
+      break
     default:
       console.log(`执行操作: ${currentAction}`)
   }
@@ -245,7 +278,7 @@ const showScrollHint = () => {
   `
   document.body.appendChild(hint)
 
-  // 动画显示提示
+  // 动画显示提示 - 优化性能
   gsap.fromTo(hint,
     { opacity: 0, y: 20 },
     {
@@ -254,14 +287,22 @@ const showScrollHint = () => {
       duration: 0.5,
       ease: "power2.out",
       delay: 0.5,
+      // 优化性能：减少GPU负载
+      force3D: false,
+      // 使用更高效的渲染路径
+      immediateRender: false,
       onComplete: () => {
-        // 3秒后自动隐藏
+        // 3秒后自动隐藏 - 优化性能
         gsap.to(hint, {
           opacity: 0,
           y: 20,
           duration: 0.5,
           delay: 3,
           ease: "power2.in",
+          // 优化性能：减少GPU负载
+          force3D: false,
+          // 使用更高效的渲染路径
+          immediateRender: false,
           onComplete: () => {
             document.body.removeChild(hint)
           }
@@ -327,8 +368,15 @@ onMounted(() => {
     });
   }
   
-  // 初始化状态 - 确保字体加载完成后再执行动画
-  gsap.set(tooltip.value, { opacity: 0, y: 10 })
+  // 初始化状态 - 确保字体加载完成后再执行动画 - 优化性能
+  gsap.set(tooltip.value, { 
+    opacity: 0, 
+    y: 10,
+    // 优化性能：减少GPU负载
+    force3D: false,
+    // 使用更高效的渲染路径
+    immediateRender: false
+  })
 
   // 等待字体图标加载完成，避免布局抖动
   const initializeAnimation = () => {
@@ -337,16 +385,24 @@ onMounted(() => {
       opacity: 0,
       x: 0,
       y: 0,
-      transformOrigin: "center center"
+      transformOrigin: "center center",
+      // 优化性能：减少GPU负载
+      force3D: false,
+      // 使用更高效的渲染路径
+      immediateRender: false
     })
 
-    // 入场动画 - 使用更稳定的时机
+    // 入场动画 - 使用更稳定的时机 - 优化性能
     requestAnimationFrame(() => {
       gsap.to(actionButton.value, {
         scale: 1,
         opacity: 1,
         duration: 0.5,
-        ease: "back.out(1.7)"
+        ease: "back.out(1.7)",
+        // 优化性能：减少GPU负载
+        force3D: false,
+        // 使用更高效的渲染路径
+        immediateRender: false
       })
     })
   }

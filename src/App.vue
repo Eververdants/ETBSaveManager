@@ -74,21 +74,35 @@ onMounted(() => {
     }
   });
 
-  // 路由切换时滚动到顶部
+  // 路由切换时处理滚动位置
   router.afterEach((to, from) => {
     const mainContent = document.querySelector('.main-content');
     if (mainContent) {
-      mainContent.scrollTop = 0;
+      // 只在页面底部时才重置滚动位置
+      const scrollThreshold = 100; // 距离底部100px内视为底部
+      const isAtBottom = mainContent.scrollHeight - mainContent.scrollTop <= mainContent.clientHeight + scrollThreshold;
+      
+      // 如果在页面底部且切换到不同页面，则重置滚动位置
+      if (isAtBottom && to.name !== from.name) {
+        mainContent.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }
     }
     
     // 路由切换后强制重绘，防止图层卡住
     requestAnimationFrame(() => {
       // 使用全局保护工具安全修改body样式
-      safeModifyBodyStyles(() => {
-        document.body.style.display = 'none';
-        document.body.offsetHeight; // 触发重排
-        document.body.style.display = '';
+      const restoreStyles = safeModifyBodyStyles({
+        display: 'none'
       });
+      
+      // 触发重排
+      document.body.offsetHeight;
+      
+      // 恢复样式
+      restoreStyles();
     });
     
     // 路由切换后多重保护浮动按钮位置
@@ -252,5 +266,6 @@ body {
   transition: margin-left 0.3s cubic-bezier(0.65, 0, 0.35, 1);
   margin-top: 38px;
   height: calc(100vh - 38px);
+  scroll-behavior: smooth;
 }
 </style>

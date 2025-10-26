@@ -19,6 +19,8 @@ pub struct SaveData {
     pub actual_difficulty: String,
     pub players: Vec<PlayerData>,
     pub basic_archive: JsonValue, // 前端传来的完整 BasicArchive.json 内容
+    pub main_ending: bool, // 添加MainEnding参数，主线为false，支线为true
+    pub meg_unlocked: bool, // MEG解锁状态
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -35,6 +37,7 @@ pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
     println!("  存档难度: {}", save_data.difficulty);
     println!("  实际难度: {}", save_data.actual_difficulty);
     println!("  玩家数量: {}", save_data.players.len());
+    println!("  是否主线结局: {}", !save_data.main_ending); // 注意：前端传来的main_ending，主线为false，支线为true
 
     // 处理层级映射（Pipes1/Pipes2 -> Pipes）
     let processed_level = match save_data.level.as_str() {
@@ -104,12 +107,19 @@ pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
     // 5. 修改难度设置
     update_difficulty(&mut save, &save_data.actual_difficulty);
 
-    // 5. 更新玩家数据（如果有玩家信息）
+    // 5. 处理MainEnding参数，更新HasCompletedMainEnding字段
+    update_main_ending_status(&mut save, save_data.main_ending)?;
+
+    // 6. 处理MEGUnlocked参数
+    println!("MEGUnlocked参数: {}", save_data.meg_unlocked);
+    update_meg_status(&mut save, save_data.meg_unlocked)?;
+
+    // 7. 更新玩家数据（如果有玩家信息）
     if !save_data.players.is_empty() {
         update_player_data(&mut save, &save_data.players)?;
     }
 
-    // 6. 写出为 .sav 文件
+    // 8. 写出为 .sav 文件
     let file = fs::File::create(&save_path).map_err(|e| format!("创建输出文件失败: {}", e))?;
     let mut writer = BufWriter::new(file);
     save.write(&mut writer)
@@ -120,7 +130,7 @@ pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
 
     println!("💾 存档已成功保存至: {:?}", save_path);
 
-    // 7. 更新 MAINSAVE.sav 文件
+    // 9. 更新 MAINSAVE.sav 文件
     update_mainsave_sav(&save_data, &file_name)?;
 
     Ok(())
@@ -176,6 +186,97 @@ pub fn remove_current_level(save: &mut Save) -> bool {
         eprintln!("❌ 未找到 CurrentLevel_0 字段");
         false
     }
+}
+
+// 更新HasCompletedMainEnding字段
+fn update_main_ending_status(save: &mut Save, main_ending: bool) -> Result<(), String> {
+    // 根据前端传来的main_ending参数设置HasCompletedMainEnding字段
+    // 注意：前端传来的main_ending，主线为false，支线为true
+    // 所以HasCompletedMainEnding的值应该与main_ending相同
+    let has_completed_main_ending = main_ending;
+    
+    // 查找HasCompletedMainEnding字段
+    let has_completed_main_ending_key = PropertyKey(0, "HasCompletedMainEnding".to_string());
+    
+    // 创建或更新HasCompletedMainEnding字段
+    let has_completed_main_ending_prop = Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(uesave::PropertyType::BoolProperty),
+        },
+        inner: PropertyInner::Bool(has_completed_main_ending),
+    };
+    
+    // 插入或更新HasCompletedMainEnding字段
+    save.root.properties.0.insert(has_completed_main_ending_key, has_completed_main_ending_prop);
+    
+    if has_completed_main_ending {
+        println!("✅ 已设置HasCompletedMainEnding字段为true（支线结局）");
+    } else {
+        println!("✅ 已设置HasCompletedMainEnding字段为false（主线结局）");
+    }
+    
+    Ok(())
+}
+
+// 更新MEG状态字段
+fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> Result<(), String> {
+    // 根据前端传来的meg_unlocked参数设置IsMEGUnlocked和IsMEGPowerOn字段
+    // 如果meg_unlocked为false，则将三个字段都设置为false
+    // 如果meg_unlocked为true，则保持原样或设置为true
+    
+    // 查找IsMEGUnlocked字段
+    let is_meg_unlocked_key = PropertyKey(0, "IsMEGUnlocked".to_string());
+    
+    // 创建或更新IsMEGUnlocked字段
+    let is_meg_unlocked_prop = Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(uesave::PropertyType::BoolProperty),
+        },
+        inner: PropertyInner::Bool(meg_unlocked),
+    };
+    
+    // 插入或更新IsMEGUnlocked字段
+    save.root.properties.0.insert(is_meg_unlocked_key, is_meg_unlocked_prop);
+    
+    // 查找IsMEGPowerOn字段
+    let is_meg_power_on_key = PropertyKey(0, "IsMEGPowerOn".to_string());
+    
+    // 创建或更新IsMEGPowerOn字段
+    let is_meg_power_on_prop = Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(uesave::PropertyType::BoolProperty),
+        },
+        inner: PropertyInner::Bool(meg_unlocked),
+    };
+    
+    // 插入或更新IsMEGPowerOn字段
+    save.root.properties.0.insert(is_meg_power_on_key, is_meg_power_on_prop);
+    
+    // 查找IsMEGSecurityUnlocked字段
+    let is_meg_security_unlocked_key = PropertyKey(0, "IsMEGSecurityUnlocked".to_string());
+    
+    // 创建或更新IsMEGSecurityUnlocked字段
+    let is_meg_security_unlocked_prop = Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(uesave::PropertyType::BoolProperty),
+        },
+        inner: PropertyInner::Bool(meg_unlocked),
+    };
+    
+    // 插入或更新IsMEGSecurityUnlocked字段
+    save.root.properties.0.insert(is_meg_security_unlocked_key, is_meg_security_unlocked_prop);
+    
+    if meg_unlocked {
+        println!("✅ 已设置IsMEGUnlocked、IsMEGPowerOn和IsMEGSecurityUnlocked字段为true（MEG已解锁）");
+    } else {
+        println!("✅ 已设置IsMEGUnlocked、IsMEGPowerOn和IsMEGSecurityUnlocked字段为false（MEG已锁定）");
+    }
+    
+    Ok(())
 }
 
 // 更新难度字段

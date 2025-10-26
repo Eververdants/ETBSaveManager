@@ -15,13 +15,14 @@
     "cancel": "取消",
     "save": "儲存",
     "step": "{number}",
-    "back": "返回"
+    "back": "返回",
+    "later": "稍後"
   },
   "archive": {
     "listDescription": "檢視並管理所有存檔",
     "createDescription": "建立新的遊戲存檔",
     "updated": "更新內容",
-    "updateDetails": "新增了最新版本的物品選擇功能，更換了物品貼圖為最新版本樣式，優化了諸多問題與細節。",
+    "updateDetails": "創建存檔頁面的層級已按結局進行分類，添加了Steam API設定以便將Steam ID轉換為實際使用者名稱。",
     "thanks": "感謝所有為本專案提供回饋、建議與支援的朋友",
     "disclaimer": "本工具僅供學習交流使用"
   },
@@ -92,6 +93,16 @@
     "noLogs": "尚無日誌紀錄"
   },
   "settings": {
+    "goToDownload": "前往下載",
+    "updateNotesForVersion": "版本 {version} 更新說明",
+    "startupUpdateCheckFailed": "啟動時檢查更新失敗：",
+    "errorType": {
+      "rateLimit": "速率限制",
+      "networkConnection": "網路連線",
+      "resourceNotFound": "資源未找到",
+      "accessDenied": "存取受限"
+    },
+
     "appearanceAndLanguage": "外觀與語言",
     "advancedSettings": "進階設定",
     "systemAndUpdates": "系統與更新",
@@ -135,7 +146,41 @@
     "developerMode": "開發者模式",
     "developerModeDescription": "啟用開發者模式以訪問高級功能",
     "enableLogMenu": "啟用日誌功能",
-    "enableLogMenuDescription": "顯示日誌選單和日誌記錄功能"
+    "enableLogMenuDescription": "顯示日誌選單和日誌記錄功能",
+    "steamApi": {
+      "title": "Steam API",
+      "apiKey": "API 金鑰",
+      "apiKeyDescription": "Steam Web API金鑰，用於獲取玩家使用者名稱資訊",
+      "apiKeyPlaceholder": "請輸入Steam Web API金鑰",
+      "showApiKey": "顯示金鑰",
+      "hideApiKey": "隱藏金鑰",
+      "saveApiKey": "儲存金鑰",
+      "cacheStatus": "快取狀態",
+      "cacheStatusDescription": "Steam使用者名稱快取資訊",
+      "cacheEntries": "個快取條目",
+      "clearCache": "清空快取",
+      "viewCache": "檢視快取",
+      "cacheDetails": "快取詳情",
+      "cleanupExpired": "清理過期快取",
+      "cleanupExpiredDescription": "清理過期的快取條目",
+      "cleanupCompleted": "清理完成，已刪除 {count} 個過期條目",
+      "noExpiredEntries": "沒有過期的快取條目",
+      "noCacheEntries": "暫無快取條目",
+      "cacheTable": {
+        "steamId": "Steam ID",
+        "username": "使用者名稱",
+        "callCount": "呼叫次數",
+        "lastUpdated": "最後更新"
+      },
+      "cacheTitle": "Steam快取管理",
+      "cacheCount": "共 {count} 個快取條目",
+      "cacheViewError": "獲取快取條目失敗: {error}",
+      "cleanupError": "清理過期快取失敗: {error}",
+      "validatingKey": "正在驗證Steam API金鑰...",
+    "keyInvalid": "Steam API金鑰無效，請檢查後重試",
+    "keySaved": "Steam API金鑰已儲存並驗證通過",
+    "keyTestFailed": "API測試未通過，請檢查API金鑰"
+    }
   },
   "inventory": {
     "selectItem": "選擇物品",
@@ -276,8 +321,16 @@
     "steamIdInfo": "此步驟為可選；不填 Steam ID 也可直接建立存檔",
     "steamIdPlaceholder": "請輸入 Steam ID",
     "steamIdInvalid": "Steam ID 僅能包含數字！",
+    "steamIdDuplicate": "Steam ID {steamId} 已存在，請勿重複新增！",
     "steamIdRequired": "請輸入有效的 Steam ID",
+    "steamIdValidationError": "Steam ID驗證失敗: {error}",
+    "steamIdLengthError": "Steam ID必須是17位數字",
+    "steamApiKeyInvalid": "Steam API金鑰無效或已過期。請在設定中更新您的Steam API金鑰。",
+    "steamApiRateLimit": "Steam API呼叫頻率超限，請稍後再試。",
+    "steamApiKeyNotConfigured": "未配置Steam API金鑰。請在設定中新增您的Steam API金鑰。",
+    "offlinePlayer": "離線玩家",
     "add": "新增",
+    "batchCreate": "批量建立",
     "editInventoryFor": "編輯背包 - {steamId}",
     "editInventory": "編輯背包",
     "selectPlayerMessage": "請先選擇一位 Steam ID 玩家以編輯背包",
@@ -287,9 +340,19 @@
     "slot": "槽位 {number}",
     "archiveCreated": "存檔建立成功！",
     "archiveCreatedMessage": "您的新存檔已建立完成",
+    "archiveNameExists": "存檔名稱已存在，請選擇不同的名稱。",
+    "archiveCreatedError": "存檔建立失敗，請重試。",
     "canProceed": "可繼續",
     "cannotProceed": "請完成必填欄位",
-    "creating": "建立中..."
+    "noPlayersHint": "請新增玩家Steam ID以管理背包",
+    "creating": "建立中...",
+    "endings": {
+      "main": "主線",
+      "branch1": "支線#1",
+      "branch2": "支線#2",
+      "branch3": "支線#3",
+      "branch4": "支線#4"
+    }
   },
   "editArchive": {
     "title": "編輯存檔",
@@ -324,7 +387,10 @@
     "steamIdInfo": "此步驟為可選；不填 Steam ID 也可直接建立存檔",
     "steamIdPlaceholder": "請輸入 Steam ID",
     "steamIdInvalid": "Steam ID 僅能包含數字！",
+    "steamIdDuplicate": "Steam ID {steamId} 已存在，請勿重複新增！",
     "steamIdRequired": "請輸入有效的 Steam ID",
+    "steamIdValidationError": "Steam ID驗證失敗: {error}",
+    "steamIdLengthError": "Steam ID必須是17位數字",
     "add": "新增",
     "editInventoryFor": "編輯背包 - {steamId}",
     "editInventory": "編輯背包",
@@ -338,10 +404,19 @@
     "canProceed": "可繼續",
     "cannotProceed": "請完成必填欄位",
     "noPlayersHint": "請先新增玩家 Steam ID 以管理背包",
+    "loadingUsername": "載入用戶名中...",
     "saveFailed": "儲存失敗：",
     "parseFailed": "解析存檔資料失敗：",
     "loadLevelsFailed": "載入層級資料失敗：",
-    "savingArchiveData": "儲存存檔資料："
+    "savingArchiveData": "儲存存檔資料：",
+    "jsonEditor": "JSON編輯器",
+    "jsonEditorTitle": "存檔JSON編輯器",
+    "jsonEditorPlaceholder": "在此編輯JSON內容...",
+    "jsonConvertError": "轉換sav檔案失敗",
+    "jsonSyntaxError": "JSON語法錯誤，請檢查格式",
+    "jsonSaveError": "儲存JSON失敗",
+    "failedToFetchSteamUsername": "獲取Steam用戶名失敗：{error}",
+    "playerAddedSuccess": "玩家添加成功"
   },
   "archiveSearch": {
     "title": "搜尋存檔",
@@ -368,6 +443,53 @@
     "useFiltersAbove": "使用上方的搜尋與篩選功能",
     "loadingArchives": "正在載入存檔…",
     "scanningFiles": "正在掃描存檔檔案"
+  },
+  "batchCreate": {
+    "title": "批量建立存檔",
+    "subtitle": "一次性建立多個遊戲存檔",
+    "baseConfig": "基礎配置",
+    "levelConfig": "層級配置",
+    "difficultyConfig": "難度配置",
+    "playerConfig": "玩家配置",
+    "archivePrefix": "存檔前綴",
+    "prefixPlaceholder": "請輸入存檔名稱前綴",
+    "prefixError": "存檔前綴不可包含底線",
+    "generateCount": "生成數量",
+    "gameMode": "遊戲模式",
+    "gameModes": {
+      "singleplayer": "單人模式",
+      "multiplayer": "多人模式"
+    },
+    "levelMode": "層級選擇模式",
+    "singleLevel": "單個層級",
+    "multipleLevels": "多個層級",
+    "randomLevels": "隨機層級",
+    "selectSingleLevel": "選擇層級",
+    "chooseLevel": "請選擇層級",
+    "selectMultipleLevels": "選擇多個層級",
+    "randomLevelCount": "隨機層級數量",
+    "difficulty": "存檔難度",
+    "actualDifficulty": "實際難度",
+    "difficultyLevels": {
+      "easy": "簡單",
+      "normal": "普通",
+      "hard": "困難",
+      "nightmare": "噩夢"
+    },
+    "steamIds": "玩家Steam ID",
+    "steamIdPlaceholder": "請輸入Steam ID",
+    "add": "新增",
+    "inventorySettings": "背包設定",
+    "emptyInventory": "空背包",
+    "templateInventory": "模板背包",
+    "switchToSingle": "返回單個建立",
+    "startBatchCreate": "開始批量建立",
+    "resetForm": "重置表單",
+    "creating": "建立中...",
+    "createSuccess": "批量建立完成！",
+    "createSuccessMessage": "成功建立了 {count} 個存檔",
+    "createFailed": "建立失敗",
+    "createFailedMessage": "建立過程中出現錯誤"
   },
   "floatingButton": {
     "searchArchive": "搜尋存檔",

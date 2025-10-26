@@ -97,6 +97,10 @@ watch(() => props.src, () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 确保容器在过渡期间保持稳定 */
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .lazy-image-container img {
@@ -107,6 +111,14 @@ watch(() => props.src, () => {
   display: block;
   max-width: 100%;
   max-height: 100%;
+  /* 确保图片在过渡期间保持稳定 */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  /* 防止图片在过渡期间放大 */
+  box-sizing: border-box;
+  /* 确保图片在过渡期间不会超出容器 */
+  overflow: hidden;
 }
 
 /* 如果图片类包含item-image，则使用contain而不是cover */
@@ -118,6 +130,26 @@ watch(() => props.src, () => {
   max-height: 100%;
   margin: auto;
   display: block;
+}
+
+/* 如果图片类包含level-image，确保在过渡期间尺寸稳定 */
+.lazy-image-container img.level-image {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  /* 确保图片在过渡期间保持稳定 */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  /* 防止图片在过渡期间放大 */
+  box-sizing: border-box;
+  /* 确保图片在过渡期间不会超出容器 */
+  overflow: hidden;
+  /* 确保图片在过渡期间不会变形 */
+  min-width: 100%;
+  min-height: 100%;
 }
 
 .image-placeholder {

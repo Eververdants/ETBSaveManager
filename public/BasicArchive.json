@@ -250,13 +250,37 @@
           "Label": "E_Difficulty::NewEnumerator0"
         }
       },
-      "LaddersFound_0": {
+      "HasCompletedMainEnding_0": {
         "tag": {
           "data": {
-            "Other": "IntProperty"
+            "Other": "BoolProperty"
           }
         },
-        "Int": 2
+        "Bool": false
+      },
+      "IsMEGUnlocked_0": {
+        "tag": {
+          "data": {
+            "Other": "BoolProperty"
+          }
+        },
+        "Bool": true
+      },
+      "IsMEGPowerOn_0": {
+        "tag": {
+          "data": {
+            "Other": "BoolProperty"
+          }
+        },
+        "Bool": true
+      },
+      "IsMEGSecurityUnlocked_0": {
+        "tag": {
+          "data": {
+            "Other": "BoolProperty"
+          }
+        },
+        "Bool": true
       },
       "CurrentLevel_0": {
         "tag": {

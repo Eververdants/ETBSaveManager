@@ -2,10 +2,11 @@ import { createApp, h } from 'vue';
 import PromptPopup from '@/components/PromptPopup.vue';
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
-let popupInstance = null;
+let popupApp = null;
+let mountPoint = null;
 
 // 发行版开关 - 设置为false禁用弹窗功能
-const ENABLE_POPUP = false;
+const ENABLE_POPUP = true;
 
 export const showPopup = (options) => {
   // 如果弹窗功能被禁用，直接返回
@@ -14,28 +15,36 @@ export const showPopup = (options) => {
     return;
   }
   
-  if (popupInstance) {
-    popupInstance.unmount();
+  // 如果已有弹窗，先卸载
+  if (popupApp && mountPoint) {
+    popupApp.unmount();
+    document.body.removeChild(mountPoint);
   }
 
-  const mountPoint = document.createElement('div');
+  // 创建新的挂载点
+  mountPoint = document.createElement('div');
   document.body.appendChild(mountPoint);
 
-  const app = createApp({
+  // 创建应用实例
+  popupApp = createApp({
     render: () => h(PromptPopup, {
       ...options,
       onClose: () => {
-        app.unmount();
-        document.body.removeChild(mountPoint);
-        popupInstance = null;
+        if (popupApp && mountPoint) {
+          popupApp.unmount();
+          document.body.removeChild(mountPoint);
+          popupApp = null;
+          mountPoint = null;
+        }
       },
     }),
   });
   
   // 注册Font Awesome组件
-  app.component('font-awesome-icon', FontAwesomeIcon);
+  popupApp.component('font-awesome-icon', FontAwesomeIcon);
 
-  popupInstance = app.mount(mountPoint);
+  // 挂载应用
+  popupApp.mount(mountPoint);
 };
 
 // 快捷方法

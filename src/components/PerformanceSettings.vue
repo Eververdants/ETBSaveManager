@@ -1,101 +1,101 @@
 <template>
   <div class="performance-settings">
-    <h3 class="settings-title">性能设置</h3>
+    <h3 class="settings-title">{{ t('performanceSettings.title') }}</h3>
     
     <div class="setting-group">
       <div class="setting-item">
-        <label class="setting-label">性能模式</label>
+        <label class="setting-label">{{ t('performanceSettings.title') }}</label>
         <div class="setting-control">
           <select v-model="localPerformanceMode" class="setting-select" @change="updatePerformanceMode">
-            <option value="auto">自动 (推荐)</option>
-            <option value="normal">标准</option>
-            <option value="low">低性能</option>
+            <option value="auto">{{ t('common.auto') }} ({{ t('common.recommended') }})</option>
+            <option value="normal">{{ t('common.normal') }}</option>
+            <option value="low">{{ t('common.low') }}</option>
           </select>
           <div class="setting-description">
-            自动模式会根据设备性能和帧率自动调整动画效果
+            {{ t('performanceSettings.enablePerformanceMonitoringDescription') }}
           </div>
         </div>
       </div>
       
       <div class="setting-item">
-        <label class="setting-label">动画质量</label>
+        <label class="setting-label">{{ t('performanceSettings.updateInterval') }}</label>
         <div class="setting-control">
           <select v-model="localAnimationQuality" class="setting-select" @change="updateAnimationQuality">
-            <option value="high">高</option>
-            <option value="medium">中</option>
-            <option value="low">低</option>
-            <option value="disabled">禁用</option>
+            <option value="high">{{ t('common.high') }}</option>
+            <option value="medium">{{ t('common.medium') }}</option>
+            <option value="low">{{ t('common.low') }}</option>
+            <option value="disabled">{{ t('common.disabled') }}</option>
           </select>
           <div class="setting-description">
-            调整动画的复杂度和持续时间
+            {{ t('performanceSettings.updateIntervalDescription') }}
           </div>
         </div>
       </div>
       
       <div class="setting-item">
-        <label class="setting-label">硬件加速</label>
+        <label class="setting-label">{{ t('settings.disableGpuAcceleration') }}</label>
         <div class="setting-control">
           <label class="toggle-switch">
             <input type="checkbox" v-model="localHardwareAcceleration" @change="updateHardwareAcceleration">
             <span class="toggle-slider"></span>
           </label>
           <div class="setting-description">
-            启用GPU加速可以提高动画性能，但可能增加电池消耗
+            {{ t('settings.disableGpuAccelerationDescription') }}
           </div>
         </div>
       </div>
       
       <div class="setting-item">
-        <label class="setting-label">虚拟化列表</label>
+        <label class="setting-label">{{ t('performanceSettings.maxDataPoints') }}</label>
         <div class="setting-control">
           <label class="toggle-switch">
             <input type="checkbox" v-model="localVirtualizationEnabled" @change="updateVirtualization">
             <span class="toggle-slider"></span>
           </label>
           <div class="setting-description">
-            对大量存档启用虚拟化可以提高滚动性能
+            {{ t('performanceSettings.maxDataPointsDescription') }}
           </div>
         </div>
       </div>
     </div>
     
     <div class="setting-group">
-      <h4 class="group-title">设备信息</h4>
+      <h4 class="group-title">{{ t('performanceMonitor.title') }}</h4>
       <div class="device-info">
         <div class="info-item">
-          <span class="info-label">CPU核心数:</span>
+          <span class="info-label">{{ t('performanceMonitor.cpu') }}:</span>
           <span class="info-value">{{ deviceInfo.cpuCores }}</span>
         </div>
         <div class="info-item">
-          <span class="info-label">设备内存:</span>
+          <span class="info-label">{{ t('performanceMonitor.memory') }}:</span>
           <span class="info-value">{{ deviceInfo.deviceMemory }} GB</span>
         </div>
         <div class="info-item">
-          <span class="info-label">设备类型:</span>
-          <span class="info-value">{{ deviceInfo.isMobile ? '移动设备' : '桌面设备' }}</span>
+          <span class="info-label">{{ t('common.deviceType') }}:</span>
+          <span class="info-value">{{ deviceInfo.isMobile ? t('common.mobile') : t('common.desktop') }}</span>
         </div>
         <div class="info-item">
-          <span class="info-label">性能等级:</span>
+          <span class="info-label">{{ t('performanceSettings.title') }}:</span>
           <span class="info-value" :class="`perf-${deviceInfo.performanceLevel}`">
             {{ getPerformanceLevelText(deviceInfo.performanceLevel) }}
           </span>
         </div>
         <div class="info-item">
-          <span class="info-label">性能分数:</span>
+          <span class="info-label">{{ t('performanceSettings.title') }}:</span>
           <span class="info-value">{{ deviceInfo.performanceScore }}/100</span>
         </div>
       </div>
     </div>
     
     <div class="setting-group">
-      <h4 class="group-title">性能监控</h4>
+      <h4 class="group-title">{{ t('performanceMonitor.title') }}</h4>
       <div class="performance-stats">
         <div class="stat-item">
-          <span class="stat-label">当前帧率:</span>
+          <span class="stat-label">{{ t('performanceMonitor.fps') }}:</span>
           <span class="stat-value">{{ currentFPS }} FPS</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">长任务计数:</span>
+          <span class="stat-label">{{ t('common.taskCount') }}:</span>
           <span class="stat-value">{{ longTaskCount }}</span>
         </div>
       </div>
@@ -105,6 +105,7 @@
 
 <script>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { detectDevicePerformance } from '../utils/performance'
 
 export default {
@@ -134,6 +135,8 @@ export default {
     'update:virtualizationEnabled'
   ],
   setup(props, { emit }) {
+    const { t } = useI18n()
+    
     // 本地状态
     const localPerformanceMode = ref(props.performanceMode)
     const localAnimationQuality = ref(props.animationQuality)
@@ -188,10 +191,10 @@ export default {
     // 获取性能等级文本
     const getPerformanceLevelText = (level) => {
       switch (level) {
-        case 'high': return '高性能'
-        case 'medium': return '中等性能'
-        case 'low': return '低性能'
-        default: return '未知'
+        case 'high': return t('common.high')
+        case 'medium': return t('common.medium')
+        case 'low': return t('common.low')
+        default: return t('common.unknown')
       }
     }
     

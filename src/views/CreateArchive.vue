@@ -18,6 +18,19 @@
       </div>
     </div>
 
+    <!-- 结局选择器 - 只在第一步显示 -->
+    <transition name="ending-selector" appear>
+      <div v-if="currentStep === 1" class="ending-selector">
+        <div class="ending-tabs">
+          <div v-for="(ending, index) in endings" :key="index" class="ending-tab"
+            :class="{ active: selectedEnding === index }" @click="selectEnding(index)" :style="{ '--index': index }">
+            <span class="ending-icon">{{ ending.icon }}</span>
+            <span class="ending-label">{{ ending.label }}</span>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <!-- 切换到批量创建页面的按钮 -->
     <transition name="batch-switch">
       <button class="batch-create-button" @click="switchToBatchCreate" :class="{ 'shrink': isSwitching }">
@@ -27,7 +40,7 @@
     </transition>
 
     <!-- 主要内容区域 -->
-    <div class="content-wrapper">
+    <div class="content-wrapper" :class="{ 'no-ending-selector': currentStep !== 1 }">
       <!-- 步骤内容容器 -->
       <transition name="step-transition" mode="out-in" @enter="onStepEnter" @leave="onStepLeave">
         <div :key="currentStep" class="step-container">
@@ -35,7 +48,7 @@
             <!-- 步骤1: 选择层级 -->
             <div v-if="currentStep === 1" class="section-card">
               <div class="level-grid">
-                <div v-for="(level, index) in availableLevels" :key="index" class="level-card"
+                <div v-for="(level, index) in availableLevels" :key="level.levelKey" class="level-card"
                   :class="{ selected: selectedLevel === index }" @click="selectLevel(index)">
                   <div class="level-image-container">
                     <LazyImage :src="level.image" :alt="level.name" image-class="level-image" />
@@ -116,18 +129,41 @@
                 <div class="steam-id-input-group">
                   <input v-model="newSteamId" type="text" class="form-input"
                     :placeholder="$t('createArchive.steamIdPlaceholder')"
-                    @input="newSteamId = newSteamId.replace(/[^0-9]/g, '')" @keyup.enter="addSteamId" />
+                    @keyup.enter="addSteamId" />
                   <button @click="addSteamId" class="add-button">
                     <font-awesome-icon :icon="['fas', 'plus']" />
                     {{ $t('createArchive.add') }}
                   </button>
                 </div>
+                
+                <!-- 玩家输入提示信息 -->
+                <transition name="message-fade" mode="out-in">
+                  <div v-if="playerInputMessage" class="player-input-message" :class="playerInputMessageType" key="message">
+                    <font-awesome-icon :icon="playerInputMessageType === 'success' ? ['fas', 'check-circle'] : ['fas', 'exclamation-circle']" />
+                    {{ playerInputMessage }}
+                  </div>
+                </transition>
 
                 <!-- Steam ID 列表 -->
                 <div class="steam-id-list">
                   <div v-for="(player, index) in players" :key="index" class="steam-id-item"
                     :class="{ active: activePlayerIndex === index }" @click="selectPlayer(index)">
-                    <span class="steam-id-text">{{ player.steamId }}</span>
+                    <div class="player-info">
+                      <div class="player-id" :class="{ 'has-username': player.username }">
+                        <template v-if="player.username">
+                          {{ player.username }}
+                        </template>
+                        <template v-else>
+                          {{ player.steamId }}
+                        </template>
+                      </div>
+                      <div class="username" :class="{ loading: !player.username }">
+                        <template v-if="!player.username">
+                          <div class="loading-spinner"></div>
+                          {{ $t('createArchive.loadingUsername') }}
+                        </template>
+                      </div>
+                    </div>
                     <button @click.stop="removePlayer(index)" class="remove-button">
                       <font-awesome-icon :icon="['fas', 'times']" />
                     </button>
@@ -139,7 +175,7 @@
               <div class="inventory-card">
                 <h3 class="form-section-title">
                   <template v-if="activePlayerIndex !== -1">
-                    {{ $t('createArchive.editInventoryFor', { steamId: players[activePlayerIndex].steamId }) }}
+                    {{ $t('createArchive.editInventoryFor', { playerName: players[activePlayerIndex].username || players[activePlayerIndex].steamId }) }}
                   </template>
                   <template v-else>
                     {{ $t('createArchive.editInventory') }}
@@ -157,8 +193,9 @@
                       <div class="slot-content">
                         <transition name="item-fade" mode="out-in">
                           <img v-if="getSlotContent(activePlayerIndex, slot - 1)"
-        :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}.png`"
-        :alt="getSlotContent(activePlayerIndex, slot - 1)" class="item-image" :key="getSlotContent(activePlayerIndex, slot - 1)" />
+                            :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}.png`"
+                            :alt="getSlotContent(activePlayerIndex, slot - 1)" class="item-image"
+                            :key="getSlotContent(activePlayerIndex, slot - 1)" />
                           <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-icon" key="empty" />
                         </transition>
                       </div>
@@ -174,8 +211,9 @@
                       <div class="slot-content">
                         <transition name="item-fade" mode="out-in">
                           <img v-if="getSlotContent(activePlayerIndex, slot + 2)"
-        :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}.png`"
-        :alt="getSlotContent(activePlayerIndex, slot + 2)" class="item-image" :key="getSlotContent(activePlayerIndex, slot + 2)" />
+                            :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}.png`"
+                            :alt="getSlotContent(activePlayerIndex, slot + 2)" class="item-image"
+                            :key="getSlotContent(activePlayerIndex, slot + 2)" />
                           <font-awesome-icon v-else :icon="['fas', 'square']" class="slot-icon" key="empty" />
                         </transition>
                       </div>
@@ -201,11 +239,11 @@
       </button>
 
       <div class="step-info">
-        {{ $t('createArchive.step') }} 
+        {{ $t('createArchive.step') }}
         <transition name="step-info-change" mode="out-in">
           <span :key="currentStep">{{ currentStep }}</span>
         </transition>
-         / 3
+        / 3
       </div>
 
       <button @click="nextStep" class="action-button primary" :disabled="!canProceed">
@@ -232,6 +270,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import InventoryItemSelector from '../components/InventoryItemSelector.vue'
 import LazyImage from '../components/LazyImage.vue'
+import { showError } from '../services/popupService'
 
 export default {
   name: 'CreateArchive',
@@ -245,6 +284,7 @@ export default {
     const currentStep = ref(1)
     const previousStepValue = ref(1)
     const selectedLevel = ref(-1)
+    const selectedEnding = ref(0) // 默认选择第一个结局（主线）
     const archiveName = ref('')
     const selectedGameMode = ref('multiplayer') // 默认设置为多人模式
     const selectedDifficulty = ref('normal')
@@ -255,10 +295,48 @@ export default {
     const editingSlot = ref({ playerIndex: -1, slotIndex: -1 })
     const isSwitching = ref(false)
     const isCreating = ref(false) // 添加创建状态标志
+    
+    // 玩家输入提示信息
+    const playerInputMessage = ref('')
+    const playerInputMessageType = ref('') // 'success' 或 'error'
 
     // 动态加载层级数据
     const availableLevels = reactive([])
     const players = reactive([])
+
+    // 结局数据
+    const endings = reactive([
+      {
+        id: 0,
+        label: t('createArchive.endings.main'),
+        icon: '🏆',
+        levels: [] // 主线关卡列表，将由用户填写
+      },
+      {
+        id: 1,
+        label: t('createArchive.endings.branch1'),
+        icon: '🔍',
+        levels: [] // 支线1关卡列表，将由用户填写
+      },
+      {
+        id: 2,
+        label: t('createArchive.endings.branch2'),
+        icon: '🔬',
+        levels: [] // 支线2关卡列表，将由用户填写
+      },
+      {
+        id: 3,
+        label: t('createArchive.endings.branch3'),
+        icon: '🌟',
+        levels: [] // 支线3关卡列表，将由用户填写
+      },
+      {
+        id: 4,
+        label: t('createArchive.endings.branch4'),
+        icon: '🎭',
+        levels: [] // 支线4关卡列表，将由用户填写
+      }
+    ])
 
 
 
@@ -294,6 +372,11 @@ export default {
       }
     })
 
+    // 监听selectedEnding的变化
+    watch(selectedEnding, (newVal, oldVal) => {
+      console.log(`selectedEnding changed from ${oldVal} to ${newVal}`)
+    })
+
     // 方法
     const selectDifficulty = (difficulty) => {
       selectedDifficulty.value = difficulty
@@ -303,17 +386,34 @@ export default {
       selectedActualDifficulty.value = difficulty
     }
 
+    const selectEnding = async (index) => {
+      // 如果选择的是当前结局，不做任何操作
+      if (selectedEnding.value === index) {
+        return
+      }
+
+      // 更新选中的结局
+      selectedEnding.value = index
+      selectedLevel.value = -1 // 重置选中的层级
+
+      // 使用nextTick确保DOM更新后再加载层级
+      await nextTick()
+      loadLevelsForEnding(index)
+
+      // 强制触发视图更新
+      await nextTick()
+    }
+
 
 
     const switchToBatchCreate = () => {
       isSwitching.value = true
 
-      // 添加淡出动画
+      // 简化淡出动画，减少性能开销
       gsap.to('.create-archive-container', {
         opacity: 0,
-        scale: 0.95,
-        duration: 0.3,
-        ease: 'power2.in',
+        duration: 0.2,
+        ease: 'power1.in',
         onComplete: () => {
           router.push('/batch-create-archive')
         }
@@ -336,43 +436,143 @@ export default {
         'Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat'
       ]
 
-      levelMappings.forEach((levelKey, index) => {
+      // 初始化结局对应的层级列表
+      // 注意：这些层级列表需要您根据游戏实际情况填写
+      endings[0].levels = ['Level0', 'TopFloor', 'MiddleFloor', 'GarageLevel2', 'BottomFloor',
+        'TheHub', 'Pipes1', 'ElectricalStation', 'Office', 'Hotel',
+        'Floor3', 'BoilerRoom', 'Pipes2', 'LevelFun', 'Poolrooms',
+        'LevelRun', 'TheEnd', 'Level94', 'AnimatedKingdom',
+        'LightsOut', 'OceanMap', 'CaveLevel', 'Level05', 'Level9',
+        'AbandonedBase', 'Level10', 'Level3999', 'Level07', 'Snackrooms',
+        'LevelDash', 'Level188_Expanded', 'Poolrooms_Expanded', 'WaterPark_Level01_P',
+        'WaterPark_Level02_P', 'WaterPark_Level03_P', 'LevelFun_Expanded',
+        'Zone1_Modified', 'Zone2_Modified', 'Zone3_Baked', 'Zone4',
+        'Level52', 'TunnelLevel',] // 主线
+      endings[1].levels = ['Bunker', "GraffitiLevel", "Grassrooms_Expanded"] // 支线1
+      endings[2].levels = ['Bunker', 'TheHub', 'BottomFloor', 'Level922'] // 支线2
+      endings[3].levels = ['Bunker', "TheHub", "OceanMap", "LightsOut", "Level974"] // 支线3
+      endings[4].levels = ['Bunker', "Level3999"] // 支线4
+
+      // 加载默认结局（主线）的层级
+      loadLevelsForEnding(0)
+    }
+
+    const loadLevelsForEnding = async (endingIndex) => {
+      // 获取当前结局对应的层级键值列表
+      const endingLevels = endings[endingIndex].levels
+
+      // 创建新的层级列表
+      const newLevels = endingLevels.map((levelKey) => {
         // 现在所有关卡都使用关卡名称作为图片文件名
         const imagePath = `/images/${levelKey}.jpg`
 
-        availableLevels.push({
+        return {
           name: t(`LevelName_Display.${levelKey}`),
           image: imagePath,
           levelKey: levelKey
-        })
+        }
       })
+
+      // 直接替换层级列表，避免过渡动画
+      availableLevels.splice(0, availableLevels.length, ...newLevels)
     }
 
     const selectLevel = (index) => {
       selectedLevel.value = index
-      // 添加选中动画
+      // 简化选中动画，减少性能开销
       gsap.to(`.level-card:nth-child(${index + 1})`, {
-        scale: 1.05,
-        duration: 0.2,
-        ease: "power2.out",
+        scale: 1.02,
+        duration: 0.1,
+        ease: "power1.out",
         yoyo: true,
         repeat: 1
       })
     }
 
-    const addSteamId = () => {
-      const steamId = newSteamId.value.trim()
-      if (steamId && /^\d+$/.test(steamId)) {
-        players.push({
-          steamId: steamId,
-          inventory: Array(12).fill(null)
-        })
-        newSteamId.value = ''
-        if (activePlayerIndex.value === -1) {
-          activePlayerIndex.value = 0
+    // 验证Steam ID格式
+    const validateSteamId = (steamId) => {
+      if (!steamId || steamId.trim() === '') {
+        return { valid: false, message: t('createArchive.steamIdRequired') }
+      }
+      
+      // 检查是否为离线玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
+      if (steamId.includes('-')) {
+        const parts = steamId.split('-')
+        if (parts.length === 2 && parts[0].length === 5 && parts[1].length === 15) {
+          // 对于离线玩家，保留完整ID格式，但提取前5位用于显示
+          return { valid: true, isOfflinePlayer: true, processedSteamId: steamId, displayId: parts[0] }
+        } else {
+          return { valid: false, message: t('createArchive.steamIdInvalid') }
         }
-      } else if (steamId) {
-        alert(t('createArchive.steamIdInvalid'))
+      }
+      
+      // 检查是否为纯数字
+      if (!/^\d+$/.test(steamId)) {
+        return { valid: false, message: t('createArchive.steamIdInvalid') }
+      }
+      
+      // 对于在线Steam ID，检查长度是否为17位
+      if (steamId.length !== 17) {
+        return { valid: false, message: t('createArchive.steamIdValidationError', { error: t('createArchive.steamIdLengthError') }) }
+      }
+      
+      return { valid: true, isOfflinePlayer: false, processedSteamId: steamId }
+    }
+
+    // 显示玩家输入提示信息
+    const showPlayerMessage = (message, type = 'success') => {
+      playerInputMessage.value = message
+      playerInputMessageType.value = type
+      
+      // 3秒后自动清除提示
+      setTimeout(() => {
+        playerInputMessage.value = ''
+        playerInputMessageType.value = ''
+      }, 3000)
+    }
+
+    const addSteamId = async () => {
+      const steamId = newSteamId.value.trim()
+      if (!steamId) {
+        return
+      }
+      
+      // 验证Steam ID
+      const validation = validateSteamId(steamId)
+      if (!validation.valid) {
+        // 使用更友好的提示方式
+        showPlayerMessage(validation.message, 'error')
+        return
+      }
+      
+      // 检查是否已存在相同的Steam ID
+      const isDuplicate = players.some(player => player.steamId === validation.processedSteamId)
+      if (isDuplicate) {
+        const duplicateMessage = t('createArchive.steamIdDuplicate', { steamId: validation.processedSteamId })
+        showPlayerMessage(duplicateMessage, 'error')
+        return
+      }
+      
+      // 创建新玩家
+      const newPlayer = {
+        steamId: validation.processedSteamId, // 使用完整的ID格式
+        inventory: Array(12).fill(null),
+        username: validation.isOfflinePlayer ? `${validation.displayId}(本地)` : null, // 使用displayId显示
+        isOfflinePlayer: validation.isOfflinePlayer
+      }
+      
+      players.push(newPlayer)
+      newSteamId.value = ''
+      if (activePlayerIndex.value === -1) {
+        activePlayerIndex.value = 0
+      }
+      
+      // 显示成功提示
+      showPlayerMessage(t('createArchive.playerAddedSuccess'), 'success')
+      
+      // 如果不是离线玩家，获取Steam用户名
+      if (!validation.isOfflinePlayer) {
+        await fetchSteamUsernames()
       }
     }
 
@@ -417,6 +617,7 @@ export default {
       // 重置表单状态
       currentStep.value = 1
       selectedLevel.value = -1
+      selectedEnding.value = 0 // 重置为第一个结局（主线）
       archiveName.value = ''
       selectedGameMode.value = 'multiplayer' // 默认设置为多人模式
       selectedDifficulty.value = 'normal'
@@ -425,6 +626,8 @@ export default {
       activePlayerIndex.value = -1
       players.splice(0, players.length)
       isCreating.value = false
+      // 重新加载主线的层级
+      loadLevelsForEnding(0)
     }
 
     const nextStep = () => {
@@ -488,6 +691,59 @@ export default {
       showItemSelector.value = false
     }
 
+    const fetchSteamUsernames = async () => {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core')
+        // 只获取非离线玩家的Steam ID
+        const steamIds = players
+          .filter(p => !p.isOfflinePlayer)
+          .map(p => p.steamId)
+        
+        if (steamIds.length === 0) return
+        
+        const usernames = await invoke('get_steam_usernames_command', { steamIds })
+        
+        // 更新玩家用户名
+        players.forEach((player) => {
+          if (!player.isOfflinePlayer && usernames[player.steamId]) {
+            player.username = usernames[player.steamId]
+          }
+        })
+      } catch (error) {
+        console.error('获取Steam用户名失败:', error)
+        
+        // 分析错误类型并提供相应的提示
+        let errorMessage = error.toString()
+        let userFriendlyMessage = ''
+        
+        if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
+          userFriendlyMessage = t('createArchive.steamApiKeyInvalid')
+        } else if (errorMessage.includes('429') || errorMessage.includes('Too Many Requests')) {
+          userFriendlyMessage = t('createArchive.steamApiRateLimit')
+        } else if (errorMessage.includes('Steam API密钥未配置')) {
+          userFriendlyMessage = t('createArchive.steamApiKeyNotConfigured')
+        } else if (errorMessage.includes('无效的Steam ID格式')) {
+          userFriendlyMessage = t('createArchive.steamIdValidationError', { error: errorMessage })
+          
+          // 处理无效ID格式的情况，提取横杠前的部分作为用户名
+          players.forEach((player) => {
+            if (!player.isOfflinePlayer && player.steamId && player.steamId.includes('-')) {
+              const parts = player.steamId.split('-')
+              if (parts.length > 1) {
+                player.username = `${parts[0]}(本地)`
+                player.isOfflinePlayer = true
+              }
+            }
+          })
+        } else {
+          userFriendlyMessage = t('createArchive.steamIdValidationError', { error: errorMessage })
+        }
+        
+        // 显示错误提示
+        showError(userFriendlyMessage)
+      }
+    }
+
     const loadJsonFile = async (filename) => {
       try {
         const response = await fetch(`/${filename}`)
@@ -528,6 +784,13 @@ export default {
         }
 
 
+        // 判断是否为主线结局
+        const isMainEnding = selectedEnding.value === 0
+
+        // 判断是否需要锁定MEG
+        const megLevels = ['Level0', 'TopFloor', 'MiddleFloor', 'GarageLevel2', 'BottomFloor', 'TheHub']
+        const isMEGUnlocked = !megLevels.includes(selectedLevelData.levelKey)
+
         // 构建存档数据
         const saveData = {
           archive_name: archiveName.value.trim() || "未命名存档",
@@ -537,11 +800,13 @@ export default {
           actual_difficulty: selectedActualDifficulty.value.charAt(0).toUpperCase() + selectedActualDifficulty.value.slice(1) || "Normal",
           players: players.map(p => ({
             steam_id: p.steamId || "",
-            inventory: Array.isArray(p.inventory) 
+            inventory: Array.isArray(p.inventory)
               ? p.inventory.filter(item => item !== null && item !== undefined).map(item => getItemIdByName(item))
               : []
           })),
-          basic_archive: basicArchive || {} // 确保不是 null
+          basic_archive: basicArchive || {}, // 确保不是 null
+          main_ending: !isMainEnding, // 添加MainEnding参数，主线为false，支线为true
+          meg_unlocked: isMEGUnlocked // 添加MEGUnlocked参数，特定层级为false，其他为true
         }
 
         // 验证所有必需字段
@@ -702,16 +967,15 @@ export default {
 
         document.body.appendChild(successCard)
 
-        // 主动画时间线
+        // 主动画时间线 - 简化动画，减少性能开销
         const tl = gsap.timeline({
           onComplete: () => {
             setTimeout(() => {
               // 成功卡片消失动画
               gsap.to(successCard, {
-                x: 100,
                 opacity: 0,
-                duration: 0.2,
-                ease: "power2.in",
+                duration: 0.15,
+                ease: "power1.in",
                 onComplete: () => {
                   document.body.removeChild(successCard)
                   document.head.removeChild(style)
@@ -728,8 +992,8 @@ export default {
                   gsap.to(stepsWrapper, {
                     x: '150%',
                     opacity: 0,
-                    duration: 0.6,
-                    ease: "power2.in",
+                    duration: 0.3,
+                    ease: "power1.in",
                     onComplete: () => {
                       resetForm()
 
@@ -741,26 +1005,26 @@ export default {
                       gsap.to(stepsWrapper, {
                         x: '0%',
                         opacity: 1,
-                        duration: 0.7,
-                        ease: "power2.out",
+                        duration: 0.4,
+                        ease: "power1.out",
                         onComplete: () => {
                           // 延迟恢复按钮状态，确保用户看到明显的状态变化
                           setTimeout(() => {
                             isCreating.value = false
-                          }, 2000) // 延长禁用时间至2秒
+                          }, 1500) // 减少延迟时间至1.5秒
                         }
                       })
                     }
                   })
                 }
               })
-            }, 500)
+            }, 300) // 减少显示时间
           }
         })
 
         tl.fromTo(successCard,
-          { scale: 0, opacity: 0, rotation: -10 },
-          { scale: 1, opacity: 1, rotation: 0, duration: 0.5, ease: "back.out(1.7)" }
+          { scale: 0.8, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.3, ease: "power1.out" }
         )
 
         // 使用具体选择器避免错误
@@ -772,34 +1036,31 @@ export default {
         if (iconCircle) {
           tl.from(iconCircle, {
             scale: 0,
-            rotation: -180,
-            duration: 0.4,
-            ease: "back.out(1.7)"
-          }, "-=0.4")
+            duration: 0.2,
+            ease: "power1.out"
+          }, "-=0.2")
         }
 
         if (checkMark) {
           tl.from(checkMark, {
             scale: 0,
-            duration: 0.4,
-            ease: "back.out(2)"
-          }, "-=0.3")
+            duration: 0.2,
+            ease: "power1.out"
+          }, "-=0.1")
         }
 
         if (successTitle) {
           tl.from(successTitle, {
-            y: 20,
             opacity: 0,
-            duration: 0.3
-          }, "-=0.2")
+            duration: 0.15
+          }, "-=0.1")
         }
 
         if (successSubtitle) {
           tl.from(successSubtitle, {
-            y: 10,
             opacity: 0,
-            duration: 0.2
-          }, "-=0.1")
+            duration: 0.1
+          }, "-=0.05")
         }
       } catch (error) {
         console.error('创建存档失败:', error)
@@ -810,16 +1071,16 @@ export default {
 
     const createParticleExplosion = () => {
       const colors = ['#00d4aa', '#007aff', '#ff3b30', '#ff9500', '#af52de']
-      const particles = 50
+      const particles = 20 // 减少粒子数量
 
       for (let i = 0; i < particles; i++) {
         const particle = document.createElement('div')
         particle.className = 'particle'
 
         const color = colors[Math.floor(Math.random() * colors.length)]
-        const size = Math.random() * 8 + 4
-        const x = window.innerWidth / 2 + (Math.random() - 0.5) * 100
-        const y = window.innerHeight / 2 + (Math.random() - 0.5) * 100
+        const size = Math.random() * 6 + 3 // 减小粒子大小
+        const x = window.innerWidth / 2 + (Math.random() - 0.5) * 50 // 减小扩散范围
+        const y = window.innerHeight / 2 + (Math.random() - 0.5) * 50
 
         particle.style.cssText = `
           position: fixed;
@@ -836,15 +1097,15 @@ export default {
         document.body.appendChild(particle)
 
         const angle = Math.random() * Math.PI * 2
-        const distance = Math.random() * 200 + 100
+        const distance = Math.random() * 100 + 50 // 减小扩散距离
 
         gsap.to(particle, {
           x: Math.cos(angle) * distance,
           y: Math.sin(angle) * distance,
           scale: 0,
           opacity: 0,
-          duration: 1.5,
-          ease: "power2.out",
+          duration: 0.8, // 缩短动画时间
+          ease: "power1.out", // 使用更简单的缓动函数
           onComplete: () => {
             document.body.removeChild(particle)
           }
@@ -861,11 +1122,16 @@ export default {
     }
 
     // 初始化
-    onMounted(() => {
-      loadLevels()
+    onMounted(async () => {
+      await loadLevels()
 
       // 监听侧边栏展开/收起事件
       window.addEventListener('sidebar-expand', handleSidebarExpand)
+      
+      // 如果有玩家，获取他们的用户名
+      if (players.length > 0) {
+        await fetchSteamUsernames()
+      }
     })
 
     // 组件卸载时移除事件监听器
@@ -875,16 +1141,13 @@ export default {
 
     // 过渡动画钩子
     const onStepEnter = (el, done) => {
-      const isMovingForward = currentStep.value > previousStepValue.value
-      const direction = isMovingForward ? 1 : -1
-
+      // 简化动画，减少性能开销
       gsap.fromTo(el,
-        { x: 100 * direction, opacity: 0 },
+        { opacity: 0 },
         {
-          x: 0,
           opacity: 1,
-          duration: 0.4,
-          ease: "power2.out",
+          duration: 0.2,
+          ease: "power1.out",
           onComplete: () => {
             done()
             // 动画完成后滚动到顶部
@@ -898,14 +1161,11 @@ export default {
     }
 
     const onStepLeave = (el, done) => {
-      const isMovingForward = currentStep.value > previousStepValue.value
-      const direction = isMovingForward ? -1 : 1
-
+      // 简化动画，减少性能开销
       gsap.to(el, {
-        x: 100 * direction,
         opacity: 0,
-        duration: 0.3,
-        ease: "power2.in",
+        duration: 0.15,
+        ease: "power1.in",
         onComplete: done
       })
     }
@@ -914,7 +1174,9 @@ export default {
       currentStep,
       previousStep,
       selectedLevel,
+      selectedEnding,
       availableLevels,
+      endings,
       archiveName,
       selectedGameMode,
       selectedDifficulty,
@@ -924,6 +1186,8 @@ export default {
       newSteamId,
       players,
       activePlayerIndex,
+      playerInputMessage,
+      playerInputMessageType,
       isSidebarExpanded,
       isSwitching,
       isCreating,
@@ -931,6 +1195,7 @@ export default {
       editingSlot,
       canProceed,
       selectLevel,
+      selectEnding,
       addSteamId,
       removePlayer,
       selectPlayer,
@@ -947,7 +1212,8 @@ export default {
       onStepEnter,
       onStepLeave,
       selectDifficulty,
-      selectActualDifficulty
+      selectActualDifficulty,
+      fetchSteamUsernames
     }
   }
 }
@@ -956,7 +1222,8 @@ export default {
 <style scoped>
 /* SwiftUI 风格样式 */
 .create-archive-container {
-  height: calc(100vh - 38px); /* 减去App.vue中main-content的margin-top */
+  height: calc(100vh - 38px);
+  /* 减去App.vue中main-content的margin-top */
   overflow: hidden;
   padding: 10px 24px 0 24px;
   background: var(--bg);
@@ -1031,6 +1298,7 @@ export default {
   0% {
     opacity: 0.7;
   }
+
   100% {
     opacity: 1;
   }
@@ -1066,16 +1334,107 @@ export default {
   transition: all 0.3s ease;
 }
 
+/* 结局选择器动画 */
+.ending-selector-enter-active {
+  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ending-selector-leave-active {
+  transition: all 0.4s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+}
+
+.ending-selector-enter-from {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+}
+
+.ending-selector-leave-to {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+}
+
+/* 结局选择器样式 */
+.ending-selector {
+  margin-bottom: 20px;
+  overflow: hidden;
+  /* 确保动画不会溢出 */
+}
+
+.ending-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 20px;
+  position: relative;
+}
+
+.ending-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--divider-light);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.ending-tab.active {
+  background: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(var(--accent-color-rgb), 0.3) !important;
+  z-index: 10 !important;
+  position: relative !important;
+}
+
+/* 移除复杂的波纹效果，简化为简单的点击反馈 */
+.ending-tab:active {
+  transform: scale(0.98);
+}
+
+.ending-tab:hover {
+  background: var(--bg-tertiary);
+}
+
+.ending-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.ending-label {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 /* 内容包装器 */
 .content-wrapper {
-  max-width: 1200px;
+  width: 100%;
+  /* 使用100%宽度，自适应容器 */
   margin: 0 auto;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   overflow: hidden;
-  height: calc(100vh - 178px); /* 减去顶部区域(38px+70px)和底部操作栏高度(70px) */
+  height: calc(100vh - 248px);
+  /* 减去顶部区域(38px+70px+70px结局选择器)和底部操作栏高度(70px) */
+  padding: 0 20px;
+  /* 添加左右内边距，确保内容不会贴边 */
+  box-sizing: border-box;
+  /* 确保内边距包含在宽度内 */
+}
+
+/* 当不在第一步时，调整content-wrapper的高度 */
+.content-wrapper.no-ending-selector {
+  height: calc(100vh - 178px);
+  /* 减去顶部区域(38px+70px)和底部操作栏高度(70px)，不包含结局选择器 */
 }
 
 /* 步骤内容 */
@@ -1095,12 +1454,11 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid var(--divider-light);
-  transition: all 0.3s ease;
 }
 
 /* 第一步选择层级的section-card样式，添加固定高度和内部滚动 */
 .step-content[data-step="1"] .section-card {
-  max-height: calc(100vh - 200px);
+  height: calc(100vh - 270px);
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -1156,18 +1514,38 @@ export default {
 /* 层级网格 */
 .level-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  /* 增加最小宽度，提供更好的视觉效果 */
+  gap: 24px;
+  /* 增加间距 */
   padding-bottom: 20px;
+  width: 100%;
+  /* 确保网格使用全部可用宽度 */
+  /* 强制GPU加速，防止布局抖动 */
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .level-card {
+  width: 100%;
+  /* 宽度自适应 */
+  min-height: 200px;
+  /* 最小高度 */
+  aspect-ratio: 4/3;
+  /* 固定宽高比，确保卡片比例一致 */
   border-radius: 18px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
   background: var(--bg-secondary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  /* 强制GPU加速，防止布局抖动 */
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .level-card:hover {
@@ -1182,13 +1560,29 @@ export default {
 
 .level-image-container {
   position: relative;
-  aspect-ratio: 16/9;
+  flex: 1;
+  /* 占用剩余空间 */
   overflow: hidden;
+  min-height: 150px;
+  /* 最小高度 */
+  /* 确保容器在过渡期间保持稳定 */
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  /* 防止内容在过渡期间溢出 */
+  box-sizing: border-box;
+  /* 确保容器在过渡期间保持固定尺寸 */
+  min-width: 100%;
+  width: 100%;
 }
 
 .level-image {
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  /* 确保图片正确填充容器 */
+  background-color: var(--bg-tertiary);
+  /* 添加背景色，图片未加载时显示 */
 }
 
 .level-overlay {
@@ -1215,7 +1609,14 @@ export default {
 }
 
 .level-info {
-  padding: 16px;
+  padding: 12px 16px;
+  min-height: 50px;
+  /* 最小高度，确保文字区域大小一致 */
+  flex-shrink: 0;
+  /* 防止文字部分被压缩 */
+  display: flex;
+  align-items: center;
+  /* 垂直居中对齐 */
 }
 
 .level-name {
@@ -1223,11 +1624,17 @@ export default {
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* 文字过长时显示省略号 */
 }
 
 .level-description {
   font-size: 14px;
   color: var(--text-secondary);
+  display: none;
+  /* 暂时隐藏描述，确保名称显示 */
 }
 
 /* 表单元素 */
@@ -1460,13 +1867,15 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px; /* 增加内边距 */
+  padding: 16px 32px;
+  /* 增加内边距 */
   position: fixed;
   bottom: 0;
   left: 0;
   /* 侧边栏收起时的宽度 */
   right: 0;
-  height: 70px; /* 增加高度 */
+  height: 70px;
+  /* 增加高度 */
   background: var(--glass-bg);
   backdrop-filter: var(--glass-backdrop-filter);
   -webkit-backdrop-filter: var(--glass-backdrop-filter);
@@ -1497,16 +1906,21 @@ export default {
 .action-button {
   display: flex;
   align-items: center;
-  gap: 10px; /* 增加图标和文字之间的间距 */
-  padding: 14px 28px; /* 增加内边距 */
+  gap: 10px;
+  /* 增加图标和文字之间的间距 */
+  padding: 14px 28px;
+  /* 增加内边距 */
   border: none;
-  border-radius: 20px; /* 稍微增加圆角 */
+  border-radius: 20px;
+  /* 稍微增加圆角 */
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-width: 120px; /* 设置最小宽度 */
-  justify-content: center; /* 居中对齐内容 */
+  min-width: 120px;
+  /* 设置最小宽度 */
+  justify-content: center;
+  /* 居中对齐内容 */
 }
 
 .action-button.primary {
@@ -1600,9 +2014,121 @@ export default {
   border: 1px solid var(--accent-color);
 }
 
-.steam-id-text {
+.player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.player-id {
   font-size: 14px;
+  font-weight: 500;
   color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.player-id.has-username {
+  color: var(--accent-color);
+}
+
+.steam-id {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.username {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.username.loading {
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+/* 玩家输入提示信息样式 */
+.player-input-message {
+  margin-top: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: fadeIn 0.3s ease;
+}
+
+.player-input-message svg {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.player-input-message.success {
+  background: rgba(52, 199, 89, 0.1);
+  color: var(--success-color);
+  border: 1px solid rgba(52, 199, 89, 0.2);
+}
+
+.player-input-message.error {
+  background: rgba(255, 59, 48, 0.1);
+  color: var(--error-color);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 提示信息过渡动画 */
+.message-fade-enter-active,
+.message-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.message-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.message-fade-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.message-fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.message-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.loading-spinner {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid rgba(0, 122, 255, 0.2);
+  border-top: 1.5px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .remove-button {
@@ -1866,5 +2392,110 @@ export default {
 .step-info-change-leave-to {
   opacity: 0;
   transform: translateY(-10px) scale(0.9);
+}
+
+/* 层级卡片过渡动画 */
+.level-fade-enter-active {
+  transition: opacity 0.4s ease;
+  transition-delay: calc(var(--index) * 0.05s);
+  position: relative;
+  z-index: 1;
+}
+
+.level-fade-leave-active {
+  transition: opacity 0.2s ease;
+  position: absolute;
+  width: 100%;
+  /* 宽度自适应，与level-card一致 */
+  max-width: 100%;
+  /* 限制最大宽度 */
+  aspect-ratio: 4/3;
+  /* 固定宽高比，与level-card一致 */
+  max-height: calc(100vw * 0.75);
+  /* 限制最大高度，防止图片放大 */
+  z-index: 0;
+  /* 确保离开的元素在进入的元素之下 */
+  overflow: hidden;
+  /* 防止内容溢出 */
+  /* 强制GPU加速，防止布局抖动 */
+  will-change: opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.level-fade-move {
+  transition: transform 0.4s ease;
+}
+
+.level-fade-enter-from {
+  opacity: 0;
+}
+
+.level-fade-enter-to {
+  opacity: 1;
+}
+
+.level-fade-leave-from {
+  opacity: 1;
+}
+
+.level-fade-leave-to {
+  opacity: 0;
+}
+
+/* 确保level-grid在过渡期间保持布局 */
+.level-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  /* 增加最小宽度，提供更好的视觉效果 */
+  gap: 24px;
+  /* 增加间距 */
+  padding-bottom: 20px;
+  width: 100%;
+  /* 确保网格使用全部可用宽度 */
+  min-height: 300px;
+  /* 确保容器有最小高度 */
+  overflow: hidden;
+  /* 防止元素溢出 */
+}
+
+/* 响应式设计 */
+@media (max-width: 1400px) {
+  .content-wrapper {
+    padding: 0 16px;
+    /* 减少内边距 */
+  }
+}
+
+@media (max-width: 1200px) {
+  .level-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 0 12px;
+    /* 进一步减少内边距 */
+  }
+
+  .level-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-wrapper {
+    padding: 0 8px;
+    /* 最小内边距 */
+  }
+
+  .level-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
 }
 </style>

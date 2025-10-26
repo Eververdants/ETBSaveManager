@@ -1,27 +1,27 @@
 <template>
     <div class="perf-monitor" style="pointer-events: none;">
-        <h3>性能监控</h3>
+        <h3>{{ t('performanceMonitor.title') }}</h3>
         <div class="stats">
             <div class="stat-item">
-                <span>⚡ FPS: {{ fps }}</span>
+                <span>⚡ {{ t('performanceMonitor.fps') }}: {{ fps }}</span>
                 <div class="rating" :class="fpsRating.class">
                     {{ fpsRating.icon }}
                 </div>
             </div>
             <div class="stat-item">
-                <span>🧠 Memory: {{ formatMemory(memory.usedJSHeapSize) }} / {{ formatMemory(memory.totalJSHeapSize)
+                <span>🧠 {{ t('performanceMonitor.memory') }}: {{ formatMemory(memory.usedJSHeapSize) }} / {{ formatMemory(memory.totalJSHeapSize)
                 }}</span>
                 <div class="rating" :class="memoryRating.class">
                     {{ memoryRating.icon }}
                 </div>
             </div>
             <div class="stat-item">
-                <span>🖥️ CPU (估算): {{ cpuLoad.toFixed(1) }}%</span>
+                <span>🖥️ {{ t('performanceMonitor.cpu') }}: {{ cpuLoad.toFixed(1) }}%</span>
                 <div class="rating" :class="cpuRating.class">
                     {{ cpuRating.icon }}
                 </div>
             </div>
-            <div>⏱️ Load Time: {{ loadTime.toFixed(2) }} ms</div>
+            <div>⏱️ {{ t('performanceMonitor.renderTime') }}: {{ loadTime.toFixed(2) }} ms</div>
         </div>
 
         <div class="charts">
@@ -43,11 +43,16 @@ import {
     CategoryScale,
 } from "chart.js";
 import { markRaw } from "vue";
+import { useI18n } from "vue-i18n";
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale);
 
 export default {
     name: "PerformanceMonitor",
+    setup() {
+        const { t } = useI18n();
+        return { t };
+    },
     data() {
         return {
             fps: 0,

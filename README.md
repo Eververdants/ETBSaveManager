@@ -14,7 +14,7 @@ This is a desktop-level save management tool specifically designed for the game 
 
 This project uses assets extracted from Escape The Backrooms, which are stored in the `icons/ETB_UI` folder within the `public`directory. The names of the resources have not been modified.
 
-There is currently a trial version available, with the version number `V3.0.0-Alpha-3`.
+There is currently a trial version available, with the version number `V3.0.0-Alpha-6`.
 
 If you encounter any bugs while using the trial version, please provide a detailed description of the issue to the developer, or take a screenshot of the error messages shown in the DevTools, and submit an issue.
 
@@ -74,9 +74,9 @@ If you need to use the stable version, please refer to the [v2.7.3 Release Page]
 
 ---
 
-## 📥 Installation (V3.0.0-Alpha-5.3 Test Version)
+## 📥 Installation (V3.0.0-Alpha-6 Test Version)
 
-1. Download the Windows installer for [v3.0.0-Alpha-5.3](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-5.3).
+1. Download the Windows installer for [v3.0.0-Alpha-6](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-6).
 
 2. Double-click the installer to begin installation. (If you don't have WebView2 installed, the installer should install it automatically. If not, please click [here](https://developer.microsoft.com/microsoft-edge/webview2) to download and install WebView2.)
 

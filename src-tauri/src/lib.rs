@@ -6,6 +6,7 @@ mod new_save;
 mod player_data;
 mod save_editor;
 mod save_utils;
+mod steam_api;
 
 use encryption::*;
 use save_utils::SaveFileInfo;
@@ -607,7 +608,16 @@ pub fn run() {
             gpu_settings::set_gpu_acceleration,
             restart_app,
             convert_sav_to_json,
-            convert_json_to_sav
+            convert_json_to_sav,
+            steam_api::encrypt_steam_api_key,
+            steam_api::decrypt_steam_api_key,
+            steam_api::save_steam_api_key,
+            steam_api::test_steam_api_key,
+            steam_api::clear_steam_cache,
+            steam_api::get_steam_cache_count,
+            steam_api::get_all_steam_cache_entries,
+            steam_api::cleanup_expired_steam_cache,
+            steam_api::get_steam_usernames_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

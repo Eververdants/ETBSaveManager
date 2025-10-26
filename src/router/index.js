@@ -7,6 +7,7 @@ import CreateArchive from "../views/CreateArchive.vue";
 import BatchCreateArchive from "../views/BatchCreateArchive.vue";
 import EditArchive from "../views/EditArchive.vue";
 import Log from "../views/Log.vue";
+import SteamCache from "../views/SteamCache.vue";
 
 const routes = [
   {
@@ -49,6 +50,11 @@ const routes = [
     path: "/logs",
     name: "Log",
     component: Log,
+  },
+  {
+    path: "/steam-cache",
+    name: "SteamCache",
+    component: SteamCache,
   },
 ];
 

@@ -15,13 +15,21 @@
     "cancel": "Cancel",
     "save": "Save",
     "step": "{number}",
-    "back": "Back"
+    "back": "Back",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "loading": "Loading...",
+    "unknown": "Unknown",
+    "later": "Later"
   },
   "archive": {
     "listDescription": "View and manage all archives",
     "createDescription": "Create new game archive",
     "updated": "Update",
-    "updateDetails": "Added the latest version item selection feature, updated item textures to the latest version style, and optimized various issues and details.",
+    "updateDetails": "The levels in the create archive page have been categorized by endings, and Steam API settings have been added to convert Steam IDs to actual usernames.",
     "thanks": "Thanks to everyone who provided feedback, suggestions and support for this project",
     "disclaimer": "This tool is for educational and communication purposes only"
   },
@@ -92,6 +100,16 @@
     "noLogs": "No logs recorded"
   },
   "settings": {
+    "goToDownload": "Go to Download",
+    "updateNotesForVersion": "Update Notes for Version {version}",
+    "startupUpdateCheckFailed": "Startup update check failed:",
+    "errorType": {
+      "rateLimit": "Rate limit",
+      "networkConnection": "Network connection",
+      "resourceNotFound": "Resource not found",
+      "accessDenied": "Access denied"
+    },
+
     "appearanceAndLanguage": "Appearance & Language",
     "advancedSettings": "Advanced Settings",
     "systemAndUpdates": "App Updates",
@@ -135,7 +153,41 @@
     "developerMode": "Developer Mode",
     "developerModeDescription": "Enable developer mode to access advanced features",
     "enableLogMenu": "Enable Log Menu",
-    "enableLogMenuDescription": "Display log menu and logging functionality"
+    "enableLogMenuDescription": "Display log menu and logging functionality",
+    "steamApi": {
+      "title": "Steam API",
+      "apiKey": "API Key",
+      "apiKeyDescription": "Steam Web API key for fetching player username information",
+      "apiKeyPlaceholder": "Enter Steam Web API key",
+      "showApiKey": "Show Key",
+      "hideApiKey": "Hide Key",
+      "saveApiKey": "Save Key",
+      "cacheStatus": "Cache Status",
+      "cacheStatusDescription": "Steam username cache information",
+      "cacheEntries": "cache entries",
+      "clearCache": "Clear Cache",
+      "viewCache": "View Cache",
+      "cacheDetails": "Cache Details",
+      "cleanupExpired": "Clean Expired Cache",
+      "cleanupExpiredDescription": "Remove expired cache entries",
+      "cleanupCompleted": "Cleanup completed, removed {count} expired entries",
+      "noExpiredEntries": "No expired cache entries",
+      "noCacheEntries": "No cache entries available",
+      "cacheTable": {
+        "steamId": "Steam ID",
+        "username": "Username",
+        "callCount": "Call Count",
+        "lastUpdated": "Last Updated"
+      },
+      "cacheTitle": "Steam Cache Management",
+      "cacheCount": "Total {count} cache entries",
+      "cacheViewError": "Failed to get cache entries: {error}",
+      "cleanupError": "Failed to clean expired cache: {error}",
+      "validatingKey": "Validating Steam API key...",
+    "keyInvalid": "Steam API key is invalid, please check and try again",
+    "keySaved": "Steam API key saved and verified successfully",
+    "keyTestFailed": "API test failed, please check your API key"
+    }
   },
   "inventory": {
     "selectItem": "Select Item",
@@ -168,6 +220,11 @@
       "WalkieTalkie": "Walkie Talkie",
       "MothJelly": "Moth Jelly"
     }
+  },
+  "steam": {
+    "loadingUsername": "Loading username...",
+    "username": "Username",
+    "steamId": "Steam ID"
   },
   "LevelName_Display": {
     "Level0": "Level 0 - Tutorial Level",
@@ -260,7 +317,8 @@
     "gameMode": "Game Mode",
     "gameModes": {
       "singleplayer": "Single Player",
-      "multiplayer": "Multiplayer"
+      "multiplayer": "Multiplayer",
+      "cooperative": "Cooperative"
     },
     "singleplayerNotice": "In single player mode, only normal difficulty is available",
     "difficulty": "Difficulty",
@@ -272,12 +330,19 @@
       "nightmare": "Nightmare"
     },
     "playerManagement": "Player Management",
-    "steamIdInfo": "This step is optional, you can create an archive without adding Steam ID",
+    "steamIdInfo": "This step is optional. You can create an archive without adding Steam IDs.",
     "steamIdPlaceholder": "Enter Steam ID",
-    "steamIdInvalid": "Steam ID can only contain numbers!",
+    "steamIdInvalid": "Steam ID can only contain numbers or use offline format(xxxxx-xxxxxxxxxxxxxxx)!",
+    "steamIdDuplicate": "Steam ID {steamId} already exists, please do not add it repeatedly!",
     "steamIdRequired": "Please enter a valid Steam ID",
+    "steamIdValidationError": "Steam ID validation failed: {error}",
+    "steamIdLengthError": "Steam ID must be 17 digits",
+    "steamApiKeyInvalid": "Steam API key is invalid or expired. Please update your Steam API key in settings.",
+    "steamApiRateLimit": "Steam API rate limit exceeded. Please try again later.",
+    "steamApiKeyNotConfigured": "Steam API key not configured. Please add your Steam API key in settings.",
+    "offlinePlayer": "Offline Player",
     "add": "Add",
-    "editInventoryFor": "Edit Inventory - {steamId}",
+    "editInventoryFor": "Edit Inventory - {playerName}",
     "editInventory": "Edit Inventory",
     "selectPlayerMessage": "Please select a Steam ID player to edit inventory",
     "mainHand": "Main Hand",
@@ -291,7 +356,17 @@
     "canProceed": "Ready to proceed",
     "cannotProceed": "Please complete required fields",
     "noPlayersHint": "Please add a player Steam ID to manage inventory",
-    "creating": "Creating..."
+    "loadingUsername": "Loading username...",
+    "playerAddedSuccess": "Player added successfully",
+    "creating": "Creating...",
+    "batchCreate": "Batch Create",
+    "endings": {
+      "main": "Main Story",
+      "branch1": "Branch #1",
+      "branch2": "Branch #2",
+      "branch3": "Branch #3",
+      "branch4": "Branch #4"
+    }
   },
   "editArchive": {
     "title": "Edit Archive",
@@ -326,9 +401,12 @@
     "steamIdInfo": "This step is optional, you can save an archive without adding Steam ID",
     "steamIdPlaceholder": "Enter Steam ID",
     "steamIdInvalid": "Steam ID can only contain numbers!",
+    "steamIdDuplicate": "Steam ID {steamId} already exists, please do not add it repeatedly!",
     "steamIdRequired": "Please enter a valid Steam ID",
+    "steamIdValidationError": "Steam ID validation failed: {error}",
+    "steamIdLengthError": "Steam ID must be 17 digits",
     "add": "Add",
-    "editInventoryFor": "Edit Inventory - {steamId}",
+    "editInventoryFor": "Edit Inventory - {playerName}",
     "editInventory": "Edit Inventory",
     "selectPlayerMessage": "Please select a Steam ID player to edit inventory",
     "mainHand": "Main Hand",
@@ -340,6 +418,7 @@
     "canProceed": "Ready to proceed",
     "cannotProceed": "Please complete required fields",
     "noPlayersHint": "Please add a player Steam ID to manage inventory",
+    "loadingUsername": "Loading username...",
     "saveFailed": "Save failed:",
     "parseFailed": "Failed to parse archive data:",
     "loadLevelsFailed": "Error loading level data:",
@@ -349,7 +428,9 @@
     "jsonEditorPlaceholder": "Edit JSON content here...",
     "jsonConvertError": "Failed to convert sav file",
     "jsonSyntaxError": "JSON syntax error, please check format",
-    "jsonSaveError": "Failed to save JSON"
+    "jsonSaveError": "Failed to save JSON",
+    "failedToFetchSteamUsername": "Failed to fetch Steam username: {error}",
+    "playerAddedSuccess": "Player added successfully"
   },
   "archiveSearch": {
     "title": "Search Archives",
@@ -377,6 +458,53 @@
     "loadingArchives": "Loading archives...",
     "scanningFiles": "Scanning archive files"
   },
+  "batchCreate": {
+    "title": "Batch Create Archives",
+    "subtitle": "Create multiple game archives at once",
+    "baseConfig": "Base Configuration",
+    "levelConfig": "Level Configuration",
+    "difficultyConfig": "Difficulty Configuration",
+    "playerConfig": "Player Configuration",
+    "archivePrefix": "Archive Prefix",
+    "prefixPlaceholder": "Enter archive name prefix",
+    "prefixError": "Archive prefix cannot contain underscores",
+    "generateCount": "Generate Count",
+    "gameMode": "Game Mode",
+    "gameModes": {
+      "singleplayer": "Single Player",
+      "multiplayer": "Multiplayer"
+    },
+    "levelMode": "Level Selection Mode",
+    "singleLevel": "Single Level",
+    "multipleLevels": "Multiple Levels",
+    "randomLevels": "Random Levels",
+    "selectSingleLevel": "Select Level",
+    "chooseLevel": "Please select a level",
+    "selectMultipleLevels": "Select Multiple Levels",
+    "randomLevelCount": "Random Level Count",
+    "difficulty": "Archive Difficulty",
+    "actualDifficulty": "Actual Difficulty",
+    "difficultyLevels": {
+      "easy": "Easy",
+      "normal": "Normal",
+      "hard": "Hard",
+      "nightmare": "Nightmare"
+    },
+    "steamIds": "Player Steam IDs",
+    "steamIdPlaceholder": "Enter Steam ID",
+    "add": "Add",
+    "inventorySettings": "Inventory Settings",
+    "emptyInventory": "Empty Inventory",
+    "templateInventory": "Template Inventory",
+    "switchToSingle": "Back to Single Create",
+    "startBatchCreate": "Start Batch Create",
+    "resetForm": "Reset Form",
+    "creating": "Creating...",
+    "createSuccess": "Batch Create Complete!",
+    "createSuccessMessage": "Successfully created {count} archives",
+    "createFailed": "Create Failed",
+    "createFailedMessage": "An error occurred during creation"
+  },
   "floatingButton": {
     "searchArchive": "Search Archives",
     "openFolder": "Open Folder",
@@ -396,5 +524,78 @@
     "copyJson": "Copy JSON",
     "convertError": "Failed to convert sav file",
     "saveError": "Failed to save JSON"
+  },
+  "i18nDebugger": {
+    "title": "Internationalization Debugger",
+    "description": "Debug and view internationalization translations",
+    "currentLanguage": "Current Language",
+    "availableLanguages": "Available Languages",
+    "translationKeys": "Translation Keys",
+    "searchPlaceholder": "Search translation keys...",
+    "noResults": "No matching translation keys found",
+    "key": "Key",
+    "value": "Value",
+    "copyKey": "Copy Key",
+    "copyValue": "Copy Value",
+    "refresh": "Refresh"
+  },
+  "performanceSettings": {
+    "title": "Performance Settings",
+    "description": "Adjust application performance-related settings",
+    "enablePerformanceMonitoring": "Enable Performance Monitoring",
+    "enablePerformanceMonitoringDescription": "Display real-time performance data and charts",
+    "updateInterval": "Update Interval",
+    "updateIntervalDescription": "Performance data update frequency (milliseconds)",
+    "maxDataPoints": "Max Data Points",
+    "maxDataPointsDescription": "Maximum number of data points to display in the chart",
+    "enableLogging": "Enable Logging",
+    "enableLoggingDescription": "Record performance data to log files",
+    "logLevel": "Log Level",
+    "logLevelDescription": "Minimum level for performance logs",
+    "resetToDefaults": "Reset to Defaults",
+    "saveSettings": "Save Settings"
+  },
+  "performanceMonitor": {
+    "title": "Performance Monitor",
+    "description": "Real-time application performance monitoring",
+    "fps": "Frame Rate",
+    "cpu": "CPU Usage",
+    "memory": "Memory Usage",
+    "network": "Network Status",
+    "disk": "Disk I/O",
+    "renderTime": "Render Time",
+    "frameTime": "Frame Time",
+    "updateTime": "Update Time",
+    "drawTime": "Draw Time",
+    "gcTime": "Garbage Collection Time",
+    "pause": "Pause",
+    "resume": "Resume",
+    "reset": "Reset",
+    "export": "Export Data",
+    "close": "Close"
+  },
+  "steamCache": {
+    "title": "Steam Cache",
+    "description": "Manage Steam username cache",
+    "cacheStatus": "Cache Status",
+    "totalEntries": "Total Entries",
+    "expiredEntries": "Expired Entries",
+    "lastCleanup": "Last Cleanup",
+    "refreshCache": "Refresh Cache",
+    "clearCache": "Clear Cache",
+    "exportCache": "Export Cache",
+    "importCache": "Import Cache",
+    "cacheDetails": "Cache Details",
+    "steamId": "Steam ID",
+    "username": "Username",
+    "callCount": "Call Count",
+    "lastUpdated": "Last Updated",
+    "expiresAt": "Expires At",
+    "noCacheEntries": "No Cache Entries",
+    "cacheCleared": "Cache Cleared",
+    "cacheExported": "Cache Exported",
+    "cacheImported": "Cache Imported",
+    "invalidCacheFile": "Invalid Cache File",
+    "cacheRefreshed": "Cache Refreshed"
   }
 }

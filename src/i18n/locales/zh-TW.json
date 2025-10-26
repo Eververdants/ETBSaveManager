@@ -14,13 +14,14 @@
     "select": "請選擇",
     "cancel": "取消",
     "save": "儲存",
-    "step": "{number}"
+    "step": "{number}",
+    "back": "返回"
   },
   "archive": {
     "listDescription": "檢視並管理所有存檔",
     "createDescription": "建立新的遊戲存檔",
     "updated": "更新內容",
-    "updateDetails": "更改了層級預覽圖，添加了停用GPU加速功能，修復了部分bug。",
+    "updateDetails": "新增了最新版本的物品選擇功能，更換了物品貼圖為最新版本樣式，優化了諸多問題與細節。",
     "thanks": "感謝所有為本專案提供回饋、建議與支援的朋友",
     "disclaimer": "本工具僅供學習交流使用"
   },
@@ -156,12 +157,14 @@
       "GlowStick": "綠色螢光棒",
       "GlowstickRed": "紅色螢光棒",
       "GlowstickYellow": "黃色螢光棒",
+      "Knife": "刀具",
       "LiquidPain": "液態痛苦",
       "Juice": "果汁",
       "Rope": "繩索",
       "LiDAR": "雷射掃描儀",
       "Thermometer": "溫度計",
       "Ticket": "票",
+      "Toy": "泰迪熊",
       "WalkieTalkie": "無線電",
       "MothJelly": "飛蛾果凍"
     }
@@ -371,5 +374,19 @@
     "openFolder": "開啟資料夾",
     "refreshList": "重新整理",
     "scrollHint": "滾動切換功能"
+  },
+  "jsonEditor": {
+    "title": "JSON編輯器",
+    "fileInfo": "檔案資訊",
+    "fileName": "檔案名稱",
+    "filePath": "檔案路徑",
+    "editorTitle": "JSON編輯器",
+    "placeholder": "在此編輯JSON內容...",
+    "syntaxError": "JSON語法錯誤",
+    "formatJson": "格式化JSON",
+    "minifyJson": "壓縮JSON",
+    "copyJson": "複製JSON",
+    "convertError": "轉換sav檔案失敗",
+    "saveError": "儲存JSON失敗"
   }
 }

@@ -466,6 +466,92 @@ fn handle_edit_save(json_input: Value) -> Result<String, String> {
 }
 
 #[tauri::command]
+fn convert_sav_to_json(file_path: String) -> Result<Value, String> {
+    use std::path::Path;
+    use std::fs::File;
+    use std::io::BufReader;
+    
+    println!("🔄 开始转换sav文件到JSON: {}", file_path);
+    
+    let path = Path::new(&file_path);
+    if !path.exists() {
+        return Err(format!("文件不存在: {}", file_path));
+    }
+    
+    // 使用与parse_sav_file相同的方式读取文件
+    let file = File::open(path).map_err(|e| format!("打开文件失败: {}", e))?;
+    let mut reader = BufReader::new(file);
+    
+    // 使用uesave解析存档文件
+    let save = uesave::Save::read(&mut reader).map_err(|e| format!("解析存档失败: {:?}", e))?;
+    
+    // 转换为JSON值
+    let save_json = serde_json::to_value(&save).map_err(|e| format!("转换为JSON失败: {}", e))?;
+    
+    // 使用pretty格式输出，便于阅读和编辑
+    let json_string = serde_json::to_string_pretty(&save_json)
+        .map_err(|e| format!("JSON格式化失败: {}", e))?;
+    
+    println!("✅ sav文件成功转换为JSON，长度: {}字符", json_string.len());
+    
+    // 返回包含json字段的对象，符合前端期望
+    Ok(json!({
+        "success": true,
+        "json": json_string
+    }))
+}
+
+#[tauri::command]
+fn convert_json_to_sav(json_content: String, output_path: String) -> Result<Value, String> {
+    use std::fs::File;
+    use std::io::{BufWriter, Write};
+    use std::path::Path;
+    
+    println!("🔄 开始将JSON转换回sav文件: {}", output_path);
+    
+    // 验证输出目录是否存在
+    if let Some(parent) = Path::new(&output_path).parent() {
+        if !parent.exists() {
+            return Err(format!("输出目录不存在: {}", parent.display()));
+        }
+    }
+    
+    // 解析JSON内容
+    let json_value: serde_json::Value = serde_json::from_str(&json_content)
+        .map_err(|e| format!("JSON解析失败: {}", e))?;
+    
+    // 验证JSON结构是否包含必要的root字段
+    if !json_value.get("root").is_some() {
+        return Err("JSON数据缺少必要的root字段".to_string());
+    }
+    
+    // 从JSON重建Save对象 - 使用serde_json::from_value
+    let save: uesave::Save = serde_json::from_value(json_value.clone())
+        .map_err(|e| format!("从JSON重建Save对象失败: {}", e))?;
+    
+    // 创建输出文件
+    let file = File::create(&output_path)
+        .map_err(|e| format!("创建输出文件失败: {}", e))?;
+    let mut writer = BufWriter::new(file);
+    
+    // 写入sav文件 - 使用与save_editor相同的方式
+    save.write(&mut writer)
+        .map_err(|e| format!("写入sav文件失败: {:?}", e))?;
+    
+    // 确保数据完全写入磁盘
+    writer.flush()
+        .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
+    
+    println!("✅ JSON数据成功转换并保存到sav文件: {}", output_path);
+    
+    // 返回包含success字段的对象，符合前端期望
+    Ok(json!({
+        "success": true,
+        "message": "JSON数据成功转换并保存到sav文件"
+    }))
+}
+
+#[tauri::command]
 fn get_local_appdata() -> Result<String, String> {
     env::var("LOCALAPPDATA").map_err(|e| e.to_string())
 }
@@ -519,7 +605,9 @@ pub fn run() {
             open_save_games_folder,
             gpu_settings::get_gpu_acceleration_status,
             gpu_settings::set_gpu_acceleration,
-            restart_app
+            restart_app,
+            convert_sav_to_json,
+            convert_json_to_sav
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -14,13 +14,14 @@
     "select": "Please select",
     "cancel": "Cancel",
     "save": "Save",
-    "step": "{number}"
+    "step": "{number}",
+    "back": "Back"
   },
   "archive": {
     "listDescription": "View and manage all archives",
     "createDescription": "Create new game archive",
     "updated": "Update",
-    "updateDetails": "Changed level preview images, added disable GPU acceleration feature, and fixed some bugs.",
+    "updateDetails": "Added the latest version item selection feature, updated item textures to the latest version style, and optimized various issues and details.",
     "thanks": "Thanks to everyone who provided feedback, suggestions and support for this project",
     "disclaimer": "This tool is for educational and communication purposes only"
   },
@@ -156,12 +157,14 @@
       "GlowStick": "Green Glow Stick",
       "GlowstickRed": "Red Glow Stick",
       "GlowstickYellow": "Yellow Glow Stick",
+      "Knife": "Knife",
       "LiquidPain": "Liquid Sorrow",
       "Juice": "Juice",
       "Rope": "Rope",
       "LiDAR": "Scanner",
       "Thermometer": "Thermometer",
       "Ticket": "Ticket",
+      "Toy": "Teddy Bear",
       "WalkieTalkie": "Walkie Talkie",
       "MothJelly": "Moth Jelly"
     }
@@ -340,7 +343,13 @@
     "saveFailed": "Save failed:",
     "parseFailed": "Failed to parse archive data:",
     "loadLevelsFailed": "Error loading level data:",
-    "savingArchiveData": "Saving archive data:"
+    "savingArchiveData": "Saving archive data:",
+    "jsonEditor": "JSON Editor",
+    "jsonEditorTitle": "Archive JSON Editor",
+    "jsonEditorPlaceholder": "Edit JSON content here...",
+    "jsonConvertError": "Failed to convert sav file",
+    "jsonSyntaxError": "JSON syntax error, please check format",
+    "jsonSaveError": "Failed to save JSON"
   },
   "archiveSearch": {
     "title": "Search Archives",
@@ -373,5 +382,19 @@
     "openFolder": "Open Folder",
     "refreshList": "Refresh List",
     "scrollHint": "Scroll to switch functions"
+  },
+  "jsonEditor": {
+    "title": "JSON Editor",
+    "fileInfo": "File Info",
+    "fileName": "File Name",
+    "filePath": "File Path",
+    "editorTitle": "JSON Editor",
+    "placeholder": "Edit JSON content here...",
+    "syntaxError": "JSON syntax error",
+    "formatJson": "Format JSON",
+    "minifyJson": "Minify JSON",
+    "copyJson": "Copy JSON",
+    "convertError": "Failed to convert sav file",
+    "saveError": "Failed to save JSON"
   }
 }

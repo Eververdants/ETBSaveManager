@@ -68,8 +68,13 @@ const setActiveItemFromRoute = () => {
   if (activeItem) {
     activeItemId.value = activeItem.id;
   } else {
-    // 如果没有匹配的路由，默认激活首页
-    activeItemId.value = 1; // 首页的ID是1
+    // 如果当前路由是SteamCache，保持设置菜单项激活
+    if (route.name === 'SteamCache') {
+      activeItemId.value = 5; // 设置的ID是5
+    } else {
+      // 如果没有匹配的路由，默认激活首页
+      activeItemId.value = 1; // 首页的ID是1
+    }
   }
 };
 

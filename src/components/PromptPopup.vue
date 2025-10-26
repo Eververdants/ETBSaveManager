@@ -190,7 +190,7 @@ const resumeAutoClose = () => {
 <style scoped>
 .prompt-popup {
     position: fixed;
-    z-index: 9999;
+    z-index: 10001;
     padding: 20px 24px;
     border-radius: 20px;
     box-shadow: 

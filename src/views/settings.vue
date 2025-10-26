@@ -127,6 +127,79 @@
       </div>
     </div>
 
+    <!-- Steam API 设置组 -->
+    <div class="setting-group">
+      <transition name="text-swift" mode="out-in">
+        <div class="section-header" :key="currentLanguage">{{ t('settings.steamApi.title') }}</div>
+      </transition>
+
+      <!-- API Key 设置 -->
+      <div class="setting-item">
+        <div class="setting-icon">
+          <font-awesome-icon :icon="['fas', 'key']" />
+        </div>
+        <div class="setting-details">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">{{ t('settings.steamApi.apiKey') }}</div>
+          </transition>
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-description" :key="currentLanguage">{{ t('settings.steamApi.apiKeyDescription') }}</div>
+          </transition>
+        </div>
+        <div class="setting-action">
+          <div class="api-key-container">
+            <div class="api-key-input-wrapper">
+              <input 
+                v-model="steamApiKey" 
+                :type="showApiKey ? 'text' : 'password'"
+                class="api-key-input" 
+                :placeholder="t('settings.steamApi.apiKeyPlaceholder')"
+              />
+              <button 
+                class="toggle-visibility-btn" 
+                @click="showApiKey = !showApiKey"
+                :title="showApiKey ? t('settings.steamApi.hideApiKey') : t('settings.steamApi.showApiKey')"
+              >
+                <font-awesome-icon :icon="showApiKey ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
+              </button>
+            </div>
+            <button class="save-api-key-btn" @click="saveSteamApiKey">
+              <font-awesome-icon :icon="['fas', 'save']" />
+              {{ t('settings.steamApi.saveApiKey') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 缓存状态 -->
+      <div class="setting-item">
+        <div class="setting-icon">
+          <font-awesome-icon :icon="['fas', 'database']" />
+        </div>
+        <div class="setting-details">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">{{ t('settings.steamApi.cacheStatus') }}</div>
+          </transition>
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-description" :key="currentLanguage">{{ t('settings.steamApi.cacheStatusDescription') }}</div>
+          </transition>
+        </div>
+        <div class="setting-action">
+          <div class="cache-info">
+            <span class="cache-count">{{ cacheEntryCount }} {{ t('settings.steamApi.cacheEntries') }}</span>
+            <button class="view-cache-btn" @click="navigateToSteamCache">
+              <font-awesome-icon :icon="['fas', 'eye']" />
+              {{ t('settings.steamApi.viewCache') }}
+            </button>
+            <button class="clear-cache-btn" @click="clearSteamCache">
+              <font-awesome-icon :icon="['fas', 'trash']" />
+              {{ t('settings.steamApi.clearCache') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 开发者选项设置组 -->
     <div class="setting-group" v-if="developerOptionsEnabled">
       <transition name="text-swift" mode="out-in">
@@ -140,10 +213,10 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">开发者模式</div>
+            <div class="setting-title" :key="currentLanguage">{{ t('settings.developerMode') }}</div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">启用开发者模式以访问高级功能</div>
+            <div class="setting-description" :key="currentLanguage">{{ t('settings.developerModeDescription') }}</div>
           </transition>
         </div>
         <div class="setting-action">
@@ -161,10 +234,10 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">启用日志功能</div>
+            <div class="setting-title" :key="currentLanguage">{{ t('settings.enableLogging') }}</div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">显示日志菜单和日志记录功能</div>
+            <div class="setting-description" :key="currentLanguage">{{ t('settings.enableLoggingDescription') }}</div>
           </transition>
         </div>
         <div class="setting-action">
@@ -223,10 +296,10 @@
             :key="'actions-' + updateMessage.key">
             <button class="update-btn" @click="downloadAndInstall" :disabled="isProcessing">
               <font-awesome-icon :icon="['fas', 'external-link-alt']" />
-              前往下载
+              {{ t('settings.goToDownload') }}
             </button>
             <button class="update-btn secondary" @click="closeUpdateMessage">
-              稍后
+              {{ t('common.later') }}
             </button>
           </div>
         </transition>
@@ -248,7 +321,7 @@
         <transition name="expand" mode="out-in">
           <div v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE" class="update-details"
             :key="'details-' + updateMessage.key">
-            <h4>版本 {{ updateInfo.version }} 更新内容:</h4>
+            <h4>{{ t('settings.updateNotesForVersion', { version: updateInfo.version }) }}</h4>
             <div class="update-content" v-html="formatUpdateNotes(updateInfo.body)"></div>
           </div>
         </transition>
@@ -279,9 +352,13 @@ export default {
       developerOptionsEnabled: localStorage.getItem('developerMode') === 'true', // 开发者选项是否显示
       logMenuEnabled: localStorage.getItem('logMenuEnabled') === 'true', // 日志功能开关状态
       gpuAccelerationDisabled: localStorage.getItem('gpuAccelerationDisabled') === 'true', // GPU加速开关状态
+      // Steam API 相关
+      steamApiKey: '',
+      showApiKey: false,
+      cacheEntryCount: 0,
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: '3.0.0-Alpha-5.3',
+      appVersion: '3.0.0-Alpha-6',
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
@@ -299,9 +376,9 @@ export default {
     },
     languageOptions() {
       return [
-        { value: 'zh-CN', label: '简体中文' },
-        { value: 'zh-TW', label: '繁體中文' },
-        { value: 'en-US', label: 'English' }
+        { value: 'zh-CN', label: "简体中文" },
+        { value: 'zh-TW', label: "繁體中文" },
+        { value: 'en-US', label: "English" }
       ];
     },
     updateSourceOptions() {
@@ -318,7 +395,7 @@ export default {
   },
   methods: {
     formatUpdateNotes(body) {
-      if (!body) return '暂无更新说明';
+      if (!body) return this.t('settings.noUpdateNotes');
 
       let html = body;
 
@@ -396,7 +473,7 @@ export default {
         // 触发自定义事件通知其他组件
         window.dispatchEvent(new CustomEvent('language-changed', { detail: { lang } }));
       } catch (error) {
-        console.error('语言切换失败:', error);
+        console.error(this.t('settings.languageSwitchFailed'), error);
       }
     },
 
@@ -409,7 +486,7 @@ export default {
 
         // 显示成功提示
         this.updateMessage = {
-          text: `更新源已切换为 ${option.label}`,
+          text: this.t('settings.updateSourceChanged', { source: option.label }),
           type: 'success',
           icon: ['fas', 'check'],
           key: `source-changed-${this.messageId++}`
@@ -421,9 +498,9 @@ export default {
         }, 3000);
 
       } catch (error) {
-        console.error('更新源切换失败:', error);
+        console.error(this.t('settings.updateSourceChangeFailed'), error);
         this.updateMessage = {
-          text: '更新源切换失败，请重试',
+          text: this.t('settings.updateSourceChangeFailed'),
           type: 'error',
           icon: ['fas', 'times'],
           key: `source-error-${this.messageId++}`
@@ -447,7 +524,7 @@ export default {
           this.updateInfo = update;
           this.updateStatus = UpdateStatus.AVAILABLE;
           this.updateMessage = {
-            text: `发现新版本 ${update.version}，点击查看详情`,
+            text: this.t('settings.newVersionAvailable', { version: update.version }),
             type: 'info',
             icon: ['fas', 'external-link-alt'],
             key: `available-${this.messageId}`
@@ -467,13 +544,13 @@ export default {
 
         // 使用更详细的错误信息
         let errorText = this.$t('settings.updateFailed');
-        if (error.type === '速率限制' || error.message?.includes('rate limit') || error.message?.includes('429')) {
+        if (error.type === this.t('settings.errorType.rateLimit') || error.message?.includes('rate limit') || error.message?.includes('429')) {
           errorText = this.$t('settings.rateLimitError');
-        } else if (error.type === '网络连接') {
+        } else if (error.type === this.t('settings.errorType.networkConnection')) {
           errorText = this.$t('settings.networkError');
-        } else if (error.type === '资源未找到') {
+        } else if (error.type === this.t('settings.errorType.resourceNotFound')) {
           errorText = this.$t('settings.resourceNotFound');
-        } else if (error.type === '访问受限') {
+        } else if (error.type === this.t('settings.errorType.accessDenied')) {
           errorText = this.$t('settings.accessDenied');
         }
 
@@ -542,8 +619,8 @@ export default {
         
         // 显示提示信息，告知用户需要手动重启应用
         const message = this.gpuAccelerationDisabled 
-          ? 'GPU加速已禁用，请重启应用以应用更改' 
-          : 'GPU加速已启用，请重启应用以应用更改';
+          ? this.t('settings.gpuAccelerationDisabled') 
+          : this.t('settings.gpuAccelerationEnabled');
           
         this.updateMessage = {
           text: message,
@@ -558,14 +635,14 @@ export default {
         }, 5000);
         
       } catch (error) {
-        console.error('设置GPU加速失败:', error);
+        console.error(this.t('settings.gpuAccelerationChangeFailed'), error);
         // 恢复开关状态
         this.gpuAccelerationDisabled = !this.gpuAccelerationDisabled;
         localStorage.setItem('gpuAccelerationDisabled', this.gpuAccelerationDisabled.toString());
         
         // 显示错误提示
         this.updateMessage = {
-          text: '设置GPU加速失败: ' + error,
+          text: this.t('settings.gpuAccelerationChangeFailed') + ': ' + error,
           type: 'error',
           icon: ['fas', 'times'],
           key: `gpu-error-${this.messageId++}`
@@ -596,7 +673,7 @@ export default {
       try {
         this.updateStatus = UpdateStatus.AVAILABLE;
         this.updateMessage = {
-          text: '正在打开下载页面...',
+          text: this.t('settings.openingDownloadPage'),
           type: 'info',
           icon: ['fas', 'external-link-alt'],
           key: `downloading-${this.messageId}`
@@ -606,7 +683,7 @@ export default {
 
         // 成功打开下载页面
         this.updateMessage = {
-          text: '已打开下载页面，请手动下载安装',
+          text: this.t('settings.downloadPageOpened'),
           type: 'success',
           icon: ['fas', 'check'],
           key: `success-${this.messageId}`
@@ -618,11 +695,11 @@ export default {
         }, 3000);
 
       } catch (error) {
-        console.error('打开下载页面失败:', error);
+        console.error(this.t('settings.openDownloadPageFailed'), error);
         this.updateStatus = UpdateStatus.ERROR;
         this.messageId++;
         this.updateMessage = {
-          text: '打开下载页面失败，请稍后再试',
+          text: this.t('settings.openDownloadPageFailed'),
           type: 'error',
           icon: ['fas', 'times'],
           key: `error-${this.messageId}`
@@ -643,7 +720,7 @@ export default {
           window.$i18n.locale = savedLanguage;
         }
       } catch (error) {
-        console.error('初始化语言失败:', error);
+        console.error(this.t('settings.languageInitFailed'), error);
         this.currentLanguage = 'zh-CN';
       }
     },
@@ -692,15 +769,230 @@ export default {
             localStorage.setItem('gpuAccelerationDisabled', backendState.toString());
           }
         } catch (error) {
-          console.warn('无法从后端获取GPU加速状态，使用localStorage状态:', error);
+          console.warn(this.t('settings.gpuStatusFetchFailed'), error);
           // 使用localStorage状态
           this.gpuAccelerationDisabled = localStorageState;
         }
       } catch (error) {
-        console.error('初始化GPU加速状态失败:', error);
+        console.error(this.t('settings.gpuStatusInitFailed'), error);
         // 默认启用GPU加速
         this.gpuAccelerationDisabled = false;
       }
+    },
+
+    // 初始化Steam API设置
+    async initializeSteamApiSettings() {
+      try {
+        // 获取加密存储的API密钥
+        const encryptedApiKey = localStorage.getItem('steamApiKey');
+        if (encryptedApiKey) {
+          try {
+            // 调用后端解密API密钥
+            this.steamApiKey = await invoke('decrypt_steam_api_key', { encryptedKey: encryptedApiKey });
+          } catch (error) {
+            console.error(this.t('settings.steamApi.decryptKeyFailed'), error);
+            // 如果解密失败，清除存储的密钥
+            localStorage.removeItem('steamApiKey');
+          }
+        }
+
+        // 获取缓存条目数量
+        this.updateCacheEntryCount();
+      } catch (error) {
+        console.error(this.t('settings.steamApi.initFailed'), error);
+      }
+    },
+
+    // 保存Steam API密钥
+    async saveSteamApiKey() {
+      if (!this.steamApiKey.trim()) {
+        this.updateMessage = {
+          text: this.t('settings.steamApi.apiKeyPlaceholder'),
+          type: 'error',
+          icon: ['fas', 'times'],
+          key: `api-key-error-${this.messageId++}`
+        };
+        return;
+      }
+
+      try {
+        // 显示测试中提示
+        this.updateMessage = {
+          text: this.t('settings.steamApi.validatingKey'),
+          type: 'info',
+          icon: ['fas', 'spinner'],
+          spin: true,
+          key: `api-key-testing-${this.messageId++}`
+        };
+        
+        // 生成一个随机的Steam ID用于测试
+        const testSteamId = this.generateRandomSteamId();
+        console.log(this.t('settings.steamApi.testSteamId'), testSteamId, this.t('settings.steamApi.idLength'), testSteamId.length);
+        
+        // 测试API密钥是否有效
+        let apiTestPassed = false;
+        try {
+          console.log(this.t('settings.steamApi.startKeyTest'));
+          // 直接使用用户输入的API密钥进行测试，而不是从配置文件读取
+          const result = await invoke('test_steam_api_key', { apiKey: this.steamApiKey, steamId: testSteamId });
+          console.log(this.t('settings.steamApi.apiCallSuccess'), result);
+          // 如果成功，说明API密钥有效
+          apiTestPassed = true;
+        } catch (error) {
+          const errorMsg = error.toString();
+          console.log(this.t('settings.steamApi.apiCallFailed'), errorMsg);
+          
+          // 如果是403错误，说明API密钥无效
+          if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            console.log(this.t('settings.steamApi.detected403Error'));
+            this.updateMessage = {
+              text: this.t('settings.steamApi.keyInvalid'),
+              type: 'error',
+              icon: ['fas', 'times'],
+              key: `api-key-invalid-${this.messageId++}`
+            };
+            return; // 直接返回，不保存密钥
+          }
+          
+          // 如果是Steam ID格式错误，说明我们生成的ID有问题，但这不是API密钥的问题
+          if (errorMsg.includes(this.t('settings.steamApi.error.invalidSteamIdFormat')) || errorMsg.includes('Invalid Steam ID format')) {
+            console.log(this.t('settings.steamApi.detectedSteamIdFormatError'));
+            // 这是我们生成ID的问题，不是API密钥的问题，可以继续保存
+            apiTestPassed = true;
+          }
+          // 如果是Steam API返回的错误，说明API密钥有效，只是我们生成的ID不存在
+          else if (errorMsg.includes(this.t('settings.steamApi.error.steamApiError'))) {
+            console.log(this.t('settings.steamApi.detectedSteamApiError'));
+            apiTestPassed = true;
+          }
+          // 其他错误可能是网络问题，可以继续保存
+          else {
+            console.warn(this.t('settings.steamApi.otherError'), error);
+            apiTestPassed = true;
+          }
+        }
+        
+        // 只有API测试通过时才保存密钥
+        if (!apiTestPassed) {
+          console.log(this.t('settings.steamApi.apiTestFailed'));
+          this.updateMessage = {
+            text: this.t('settings.steamApi.keyTestFailed'),
+            type: 'error',
+            icon: ['fas', 'times'],
+            key: `api-key-test-failed-${this.messageId++}`
+          };
+          return;
+        }
+        
+        console.log(this.t('settings.steamApi.keyValidationPassed'));
+        // 调用后端保存API密钥到配置文件
+        await invoke('save_steam_api_key', { apiKey: this.steamApiKey });
+        console.log(this.t('settings.steamApi.keySavedToConfig'));
+        
+        // 同时保存到localStorage以保持兼容性
+        const encryptedApiKey = await invoke('encrypt_steam_api_key', { apiKey: this.steamApiKey });
+        localStorage.setItem('steamApiKey', encryptedApiKey);
+        console.log(this.t('settings.steamApi.keySavedToLocalStorage'));
+        
+        // 显示成功提示
+        this.updateMessage = {
+          text: this.t('settings.steamApi.keySaved'),
+          type: 'success',
+          icon: ['fas', 'check'],
+          key: `api-key-success-${this.messageId++}`
+        };
+        
+        // 3秒后自动隐藏提示
+        setTimeout(() => {
+          this.closeUpdateMessage();
+        }, 3000);
+      } catch (error) {
+        console.error(this.t('settings.steamApi.saveKeyFailed'), error);
+        this.updateMessage = {
+            text: this.t('settings.steamApi.saveKeyFailed') + ': ' + error,
+            type: 'error',
+            icon: ['fas', 'times'],
+            key: `api-key-error-${this.messageId++}`
+          };
+      }
+    },
+    
+    // 生成随机Steam ID用于测试
+    generateRandomSteamId() {
+      // Steam ID格式通常是7656119XXXXXXXXX (17位数字)
+      // 7656119是Steam ID的前缀，后面需要10位数字才能达到17位
+      const prefix = '7656119';
+      const randomSuffix = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
+      return prefix + randomSuffix;
+    },
+
+    // 清空Steam缓存
+    async clearSteamCache() {
+      try {
+        // 调用后端清空缓存
+        await invoke('clear_steam_cache');
+        
+        // 更新缓存条目数量
+        this.updateCacheEntryCount();
+        
+        // 显示成功提示
+        this.updateMessage = {
+          text: this.t('settings.steamApi.cacheCleared'),
+          type: 'success',
+          icon: ['fas', 'check'],
+          key: `cache-clear-success-${this.messageId++}`
+        };
+        
+        // 3秒后自动隐藏提示
+        setTimeout(() => {
+          this.closeUpdateMessage();
+        }, 3000);
+      } catch (error) {
+        console.error(this.t('settings.steamApi.clearCacheFailed'), error);
+        this.updateMessage = {
+            text: this.t('settings.steamApi.clearCacheFailed') + ': ' + error,
+            type: 'error',
+            icon: ['fas', 'times'],
+            key: `cache-clear-error-${this.messageId++}`
+          };
+      }
+    },
+
+    // 更新缓存条目数量
+    async updateCacheEntryCount() {
+      try {
+        // 调用后端获取缓存条目数量
+        this.cacheEntryCount = await invoke('get_steam_cache_count');
+      } catch (error) {
+        console.error(this.t('settings.steamApi.getCacheCountFailed'), error);
+        this.cacheEntryCount = 0;
+      }
+    },
+    
+    // 导航到Steam缓存页面
+    navigateToSteamCache() {
+      this.$router.push('/steam-cache');
+    },
+    
+    // 格式化日期
+    formatDate(timestamp) {
+      if (!timestamp) return this.t('common.unknown');
+      const date = new Date(timestamp * 1000);
+      return date.toLocaleString();
+    },
+    
+    // Steam ID脱敏处理
+    maskSteamId(steamId) {
+      if (!steamId) return '';
+      // Steam ID格式通常是7656119XXXXXXXXX (17位数字)
+      if (steamId.length >= 8) {
+        const start = steamId.substring(0, 4);
+        const end = steamId.substring(steamId.length - 4);
+        const middle = '*'.repeat(steamId.length - 8);
+        return start + middle + end;
+      }
+      // 如果长度不足8位，只显示前两位
+      return steamId.substring(0, 2) + '*'.repeat(steamId.length - 2);
     }
   },
   beforeUnmount() {
@@ -726,13 +1018,16 @@ export default {
     // 初始化GPU加速状态
     this.initializeGpuAccelerationStatus();
 
+    // 初始化Steam API设置
+    await this.initializeSteamApiSettings();
+
     // 检查更新
     if (updateService.canCheckUpdate && updateService.canCheckUpdate()) {
       try {
         await updateService.checkForUpdates();
         updateService.recordLastCheck && updateService.recordLastCheck();
       } catch (error) {
-        console.error('启动时检查更新失败:', error);
+        console.error(this.t('settings.startupUpdateCheckFailed'), error);
       }
     }
   },
@@ -1388,5 +1683,121 @@ input:checked+.slider:before {
 .cancel-restart-btn:hover {
   background: var(--bg-tertiary) !important;
   color: var(--text-primary) !important;
+}
+
+/* Steam API 相关样式 */
+.api-key-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.api-key-input-wrapper {
+  display: flex;
+  position: relative;
+}
+
+.api-key-input {
+  flex: 1;
+  padding: 8px 36px 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--input-bg);
+  color: var(--text);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.api-key-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+}
+
+.toggle-visibility-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.toggle-visibility-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.save-api-key-btn {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 100px;
+}
+
+.save-api-key-btn:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.cache-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cache-count {
+  font-size: 14px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.view-cache-btn, .clear-cache-btn {
+  background-color: var(--bg-tertiary);
+  color: var(--text);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.view-cache-btn:hover, .clear-cache-btn:hover {
+  background-color: var(--bg-quaternary);
+  transform: translateY(-1px);
+}
+
+.clear-cache-btn {
+  color: var(--error-color);
+  border-color: var(--error-color);
+}
+
+.clear-cache-btn:hover {
+  background-color: rgba(255, 59, 48, 0.1);
 }
 </style>

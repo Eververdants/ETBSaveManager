@@ -1,25 +1,21 @@
 <template>
   <div class="i18n-debugger" v-if="showDebugger">
     <div class="debug-header">
-      <h3>国际化调试工具</h3>
+      <h3>{{ t('i18nDebugger.title') }}</h3>
       <button @click="closeDebugger" class="close-btn">×</button>
     </div>
 
     <div class="debug-content">
       <!-- 基本信息 -->
       <div class="debug-section">
-        <h4>基本信息</h4>
+        <h4>{{ t('i18nDebugger.currentLanguage') }}</h4>
         <div class="info-grid">
           <div class="info-item">
-            <label>当前语言:</label>
+            <label>{{ t('i18nDebugger.currentLanguage') }}:</label>
             <span>{{ currentLanguage }}</span>
           </div>
           <div class="info-item">
-            <label>回退语言:</label>
-            <span>{{ fallbackLanguage }}</span>
-          </div>
-          <div class="info-item">
-            <label>可用语言:</label>
+            <label>{{ t('i18nDebugger.availableLanguages') }}:</label>
             <span>{{ availableLocales.join(', ') }}</span>
           </div>
         </div>
@@ -40,7 +36,7 @@
 
       <!-- 消息内容 -->
       <div class="debug-section">
-        <h4>消息内容</h4>
+        <h4>{{ t('i18nDebugger.translationKeys') }}</h4>
         <div class="message-tabs">
           <button v-for="locale in availableLocales" :key="locale" @click="selectedLocale = locale"
             :class="['tab-btn', { active: selectedLocale === locale }]">
@@ -54,14 +50,14 @@
 
       <!-- 快速测试 -->
       <div class="debug-section">
-        <h4>快速测试翻译</h4>
+        <h4>{{ t('i18nDebugger.description') }}</h4>
         <div class="test-input">
-          <input v-model="testKey" @keyup.enter="testTranslation" placeholder="输入翻译键，如: app.name" class="test-field" />
-          <button @click="testTranslation" class="test-btn">测试</button>
+          <input v-model="testKey" @keyup.enter="testTranslation" :placeholder="t('i18nDebugger.searchPlaceholder')" class="test-field" />
+          <button @click="testTranslation" class="test-btn">{{ t('common.confirm') }}</button>
         </div>
         <div class="test-result">
-          <div><strong>结果:</strong> {{ testResult }}</div>
-          <div><strong>键路径:</strong> {{ testKey }}</div>
+          <div><strong>{{ t('i18nDebugger.value') }}:</strong> {{ testResult }}</div>
+          <div><strong>{{ t('i18nDebugger.key') }}:</strong> {{ testKey }}</div>
         </div>
       </div>
     </div>

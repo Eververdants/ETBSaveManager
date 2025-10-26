@@ -34,12 +34,12 @@
             <div v-for="(level, index) in availableLevels" :key="index" class="level-option"
               :class="{ selected: archiveData.currentLevel === level.levelKey }" @click="selectLevel(level.levelKey)">
               <div class="level-image-container">
-                <img :src="level.image" :alt="level.name" class="level-image" @error="handleImageError" />
-                <div class="level-overlay">
-                  <font-awesome-icon :icon="['fas', 'check']" class="check-icon"
-                    v-if="archiveData.currentLevel === level.levelKey" />
-                </div>
+              <LazyImage :src="level.image" :alt="level.name" image-class="level-image" />
+              <div class="level-overlay">
+                <font-awesome-icon :icon="['fas', 'check']" class="check-icon"
+                  v-if="archiveData.currentLevel === level.levelKey" />
               </div>
+            </div>
               <span class="level-name">{{ level.name }}</span>
             </div>
           </div>
@@ -124,10 +124,12 @@
                 }" @click="editSlot(activePlayerIndex, slot - 1)">
                   <div class="slot-label">{{ $t(`editArchive.${getSlotLabel(slot - 1)}`) }}</div>
                   <div class="slot-content">
-                    <img v-if="getSlotContent(activePlayerIndex, slot - 1)"
-                      :src="`/icons/ETB_UI/${getSlotContent(activePlayerIndex, slot - 1)}.png`"
-                      :alt="getSlotContent(activePlayerIndex, slot - 1)" class="item-image" />
-                    <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-icon" />
+                    <transition name="item-fade" mode="out-in">
+                      <LazyImage v-if="getSlotContent(activePlayerIndex, slot - 1)"
+                        :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}`"
+                        :alt="getSlotContent(activePlayerIndex, slot - 1)" image-class="item-image" :key="getSlotContent(activePlayerIndex, slot - 1)" />
+                      <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-icon" key="empty" />
+                    </transition>
                   </div>
                 </div>
               </div>
@@ -139,10 +141,12 @@
                   @click="editSlot(activePlayerIndex, slot + 2)">
                   <div class="slot-number">{{ slot }}</div>
                   <div class="slot-content">
-                    <img v-if="getSlotContent(activePlayerIndex, slot + 2)"
-                      :src="`/icons/ETB_UI/${getSlotContent(activePlayerIndex, slot + 2)}.png`"
-                      :alt="getSlotContent(activePlayerIndex, slot + 2)" class="item-image" />
-                    <font-awesome-icon v-else :icon="['fas', 'square']" class="slot-icon" />
+                    <transition name="item-fade" mode="out-in">
+                      <LazyImage v-if="getSlotContent(activePlayerIndex, slot + 2)"
+                        :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}`"
+                        :alt="getSlotContent(activePlayerIndex, slot + 2)" image-class="item-image" :key="getSlotContent(activePlayerIndex, slot + 2)" />
+                      <font-awesome-icon v-else :icon="['fas', 'square']" class="slot-icon" key="empty" />
+                    </transition>
                   </div>
                 </div>
               </div>
@@ -164,6 +168,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { invoke } from '@tauri-apps/api/core'
 import InventoryItemSelector from '../components/InventoryItemSelector.vue'
+import LazyImage from '../components/LazyImage.vue'
 
 const props = defineProps({
   archiveData: {
@@ -321,13 +326,6 @@ const difficultyLevels = [
   { value: 'nightmare', icon: ['fas', 'skull'], label: 'nightmare' }
 ]
 
-// 图片加载错误处理
-const handleImageError = (event) => {
-  console.warn('Image failed to load:', event.target.src)
-  // 可以设置一个默认图片
-  event.target.src = '/images/default.jpg'
-}
-
 // 方法
 const loadLevels = () => {
   try {
@@ -444,6 +442,17 @@ const getSlotContent = (playerIndex, slotIndex) => {
   return null
 }
 
+// 获取物品图片文件名
+const getItemImageFile = (itemName) => {
+  if (!itemName || itemName === 'None') return null
+  
+  // 特殊处理Toy物品，它的图片文件名是Teddy_Bear.png而不是Toy.png
+  if (itemName === 'Toy') return 'Teddy_Bear.png'
+  
+  // 其他物品使用默认规则：物品名.png
+  return `${itemName}.png`
+}
+
 const getSlotLabel = (slotIndex) => {
   const labels = ['mainHand', 'offHand1', 'offHand2']
   return labels[slotIndex] || ''
@@ -476,7 +485,9 @@ const getItemIdByName = (itemName) => {
     'Ticket': 20,
     'WalkieTalkie': 21,
     'MothJelly': 22,
-    'Crowbar': 23
+    'Crowbar': 23,
+    'Knife': 24,
+    'Toy': 25
   }
   return itemMap[itemName] || -1
 }
@@ -527,6 +538,7 @@ const selectPlayer = (index) => {
   activePlayerIndex.value = index
 }
 
+// 关闭编辑页面
 const closeEdit = () => {
   router.push({ name: 'Home' })
 }
@@ -539,7 +551,17 @@ const animateIn = () => {
       // 确保初始位置正确，避免margin auto的冲突
       gsap.set(container, { opacity: 0, y: 20 })
       gsap.to(container,
-        { opacity: 1, y: 0, duration: 0.3, ease: 'power3.out', clearProps: 'transform' }
+        { 
+          opacity: 1, 
+          y: 0, 
+          duration: 0.3, 
+          ease: 'power3.out', 
+          clearProps: 'transform',
+          // 优化性能：减少GPU负载
+          force3D: false,
+          // 使用更高效的渲染路径
+          immediateRender: false
+        }
       )
     }
   })
@@ -783,7 +805,6 @@ onMounted(() => {
 .level-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
 
 .level-overlay {
@@ -953,6 +974,8 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .inventory-slot:hover {
@@ -993,12 +1016,18 @@ onMounted(() => {
   justify-content: center;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .item-image {
   width: 40px;
   height: 40px;
   object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  margin: auto;
 }
 
 .slot-icon {
@@ -1178,7 +1207,133 @@ onMounted(() => {
 .notice-icon {
   margin-right: 8px;
   color: #007aff;
-  font-size: 16px;
+}
+
+/* JSON编辑器样式 */
+.json-editor-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fade-in 0.3s ease-out;
+}
+
+.json-editor-content {
+  background: var(--card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--divider-light);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  animation: slide-up 0.3s ease-out;
+}
+
+.json-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--divider-light);
+}
+
+.json-editor-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.json-editor-body {
+  flex: 1;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.json-editor-textarea {
+  width: 100%;
+  height: 400px;
+  padding: 16px;
+  border: 1px solid var(--divider-light);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.json-editor-textarea:focus {
+  border-color: #007aff;
+}
+
+.json-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 59, 48, 0.1);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  border-radius: 8px;
+  color: #ff3b30;
+  font-size: 14px;
+  animation: fade-in 0.2s ease-out;
+}
+
+.json-editor-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid var(--divider-light);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Vue过渡动画 */
@@ -1216,6 +1371,22 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* 物品图片渐显渐隐动画 */
+.item-fade-enter-active,
+.item-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.item-fade-enter-from,
+.item-fade-leave-to {
+  opacity: 0;
+}
+
+.item-fade-enter-to,
+.item-fade-leave-from {
+  opacity: 1;
 }
 
 /* 所有主题颜色已通过CSS变量处理，无需额外媒体查询 */

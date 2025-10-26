@@ -55,13 +55,16 @@
       </transition>
 
       <!-- 搜索存档组件 -->
-      <transition name="search-panel" @before-enter="beforeSearchEnter" @enter="searchEnter" @leave="searchLeave">
-        <div v-show="showSearch && !loading" class="search-overlay">
-          <ArchiveSearchFilter :archives="archives" :initial-filters="lastSearchFilters"
-            :visible="showSearch" @filtered="handleFilteredArchives" @filters-changed="updateLastFilters"
-            @close="toggleSearch" ref="archiveSearchFilter" />
-        </div>
-      </transition>
+      <Teleport to="body">
+        <transition name="search-panel" @before-enter="beforeSearchEnter" @enter="searchEnter" @leave="searchLeave">
+          <div v-show="showSearch && !loading" class="search-overlay">
+            <!-- 使用Teleport将搜索组件传送到body层级，确保不受父容器影响 -->
+            <ArchiveSearchFilter :archives="archives" :initial-filters="lastSearchFilters"
+              :visible="showSearch" @filtered="handleFilteredArchives" @filters-changed="updateLastFilters"
+              @close="toggleSearch" ref="archiveSearchFilter" />
+          </div>
+        </transition>
+      </Teleport>
 
       <!-- 删除确认模态框 -->
       <ConfirmModal v-model:show="showDeleteConfirm" :title="$t('confirmModal.deleteArchiveTitle')"
@@ -69,13 +72,39 @@
         :description="$t('confirmModal.deleteArchiveDescription')" type="danger"
         :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isDeleting"
         @confirm="confirmDelete" @cancel="cancelDelete" />
+        
+      <!-- 性能设置模态框 -->
+      <Teleport to="body">
+        <transition name="modal">
+          <div v-if="showPerformanceSettings" class="modal-overlay" @click.self="showPerformanceSettings = false">
+            <div class="modal-container">
+              <div class="modal-header">
+                <h2 class="modal-title">性能设置</h2>
+                <button class="modal-close" @click="showPerformanceSettings = false">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+              <div class="modal-body">
+                <PerformanceSettings 
+                  v-model:performanceMode="performanceMode"
+                  v-model:animationQuality="animationQuality"
+                  v-model:hardwareAcceleration="hardwareAcceleration"
+                  v-model:virtualizationEnabled="virtualizationEnabled" />
+              </div>
+            </div>
+          </div>
+        </transition>
+      </Teleport>
     </div>
     
     <!-- 浮动操作按钮 - 移到body层级确保不受任何父容器影响 -->
     <Teleport to="body">
       <FloatingActionButton :class="loading ? 'loading' : ''" :current-index="fabCurrentIndex"
         @update:current-index="fabCurrentIndex = $event" @search-click="toggleSearch" @refresh-click="refreshArchives"
-        @folder-click="openSaveGamesFolder" />
+        @folder-click="openSaveGamesFolder" @settings-click="showPerformanceSettings = true" />
     </Teleport>
   </div>
 </template>
@@ -88,10 +117,12 @@ import { gsap } from 'gsap'
 import { useRouter } from 'vue-router'
 import { invoke } from '@tauri-apps/api/core'
 import { safeModifyBodyStyles, protectFloatingButtonPosition } from '../utils/floatingButtonProtection.js'
+import { detectDevicePerformance, getAnimationParams, createPerformanceMonitor } from '../utils/performance.js'
 import ArchiveCard from '../components/ArchiveCard.vue'
 import ArchiveSearchFilter from '../components/ArchiveSearchFilter.vue'
 import FloatingActionButton from '../components/FloatingActionButton.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
+import PerformanceSettings from '../components/PerformanceSettings.vue'
 
 // FloatingActionButton当前索引状态
 const fabCurrentIndex = ref(0)
@@ -105,6 +136,25 @@ const router = useRouter()
 
 // 可见存档列表（从MAINSAVE获取）
 const visibleSaves = ref(new Set())
+
+// 性能设置状态
+const showPerformanceSettings = ref(false)
+const performanceMode = ref('auto') // 'auto' | 'normal' | 'low'
+const animationQuality = ref('medium') // 'high' | 'medium' | 'low' | 'disabled'
+const hardwareAcceleration = ref(true)
+const virtualizationEnabled = ref(true)
+
+// 性能监控实例
+let performanceMonitor = null
+
+// 性能观察器清理函数
+let cleanupPerformanceObserver = null
+
+// 长任务监控 - 用于检测页面卡顿
+let longTaskObserver = null
+let longTaskCount = 0
+const LONG_TASK_THRESHOLD = 50 // 50ms
+const LONG_TASK_LIMIT = 3 // 连续3个长任务后降低质量，更快响应性能问题
 
 // 在组件卸载时清理定时器
 onUnmounted(() => {
@@ -294,13 +344,6 @@ const applyFiltersImmediate = (archives, filters) => {
     )
   }
 
-  // 按游戏模式筛选
-  if (filters.selectedGameMode) {
-    filtered = filtered.filter(archive =>
-      archive.gameMode === filters.selectedGameMode
-    )
-  }
-
   // 按存档难度筛选
   if (filters.selectedArchiveDifficulty) {
     filtered = filtered.filter(archive =>
@@ -333,9 +376,16 @@ const performanceObserver = () => {
     return
   }
 
+  // 获取设备性能信息
+  const devicePerf = detectDevicePerformance()
+  
+  // 根据设备性能调整阈值
+  const longTaskThreshold = devicePerf.isVeryLowEndDevice ? 30 : 50
+  const fpsThreshold = devicePerf.isVeryLowEndDevice ? 20 : 30
+  
   longTaskObserver = new PerformanceObserver((list) => {
     list.getEntries().forEach((entry) => {
-      if (entry.duration > LONG_TASK_THRESHOLD) {
+      if (entry.duration > longTaskThreshold) {
         longTaskCount++
         if (longTaskCount >= LONG_TASK_LIMIT) {
           // 触发降低动画质量
@@ -358,6 +408,8 @@ const performanceObserver = () => {
   let lastTime = performance.now()
   let frameCount = 0
   let fpsCheckTimer = null
+  let lowFpsCount = 0
+  let isLowPerfMode = false // 是否已切换到低性能模式
 
   const checkFPS = () => {
     const now = performance.now()
@@ -366,10 +418,27 @@ const performanceObserver = () => {
     if (now - lastTime >= 1000) { // 每秒检查一次
       const fps = Math.round((frameCount * 1000) / (now - lastTime))
 
-      // 如果FPS低于30，自动切换到低性能模式
-      if (fps < 30 && performanceMode.value !== 'low') {
-        console.warn(`检测到帧率过低 (${fps} FPS)，自动切换到低性能模式`)
-        performanceMode.value = 'low'
+      // 如果FPS低于阈值，自动切换到低性能模式
+      if (fps < fpsThreshold) {
+        lowFpsCount++
+        // 连续3次低FPS才切换，避免偶尔波动
+        if (lowFpsCount >= 3 && performanceMode.value !== 'low' && !isLowPerfMode) {
+          console.warn(`检测到帧率过低 (${fps} FPS)，自动切换到低性能模式`)
+          performanceMode.value = 'low'
+          isLowPerfMode = true
+        }
+      } else {
+        // FPS恢复后重置计数器
+        if (lowFpsCount > 0) {
+          lowFpsCount = Math.max(0, lowFpsCount - 1)
+        }
+        
+        // 如果FPS恢复到45以上，可以考虑恢复普通模式
+        if (fps > 45 && isLowPerfMode && lowFpsCount === 0) {
+          console.log(`帧率已恢复 (${fps} FPS)，恢复到自动性能模式`)
+          performanceMode.value = 'auto'
+          isLowPerfMode = false
+        }
       }
 
       // 重置计数器
@@ -387,6 +456,7 @@ const performanceObserver = () => {
   return () => {
     if (longTaskObserver) {
       longTaskObserver.disconnect()
+      longTaskObserver = null
     }
     if (fpsCheckTimer) {
       cancelAnimationFrame(fpsCheckTimer)
@@ -394,14 +464,7 @@ const performanceObserver = () => {
   }
 }
 
-// 长任务监控 - 用于检测页面卡顿
-let longTaskObserver = null
-let longTaskCount = 0
-const LONG_TASK_THRESHOLD = 50 // 50ms
-const LONG_TASK_LIMIT = 3 // 连续3个长任务后降低质量，更快响应性能问题
-
-// 性能模式控制
-const performanceMode = ref('normal') // 'normal' | 'low'
+// 获取动画参数的函数
 
 // 性能优化：虚拟化大列表
 const VIRTUALIZATION_THRESHOLD = 30 // 降低阈值以更早启用虚拟化
@@ -417,7 +480,6 @@ const archiveStats = computed(() => ({
 // 检查是否有激活的筛选条件
 const hasActiveFilters = computed(() => {
   return lastSearchFilters.value.searchQuery ||
-    lastSearchFilters.value.selectedGameMode ||
     lastSearchFilters.value.selectedArchiveDifficulty ||
     lastSearchFilters.value.selectedActualDifficulty ||
     lastSearchFilters.value.selectedVisibility
@@ -430,28 +492,9 @@ const archiveSearchFilter = ref(null)
 const toggleSearch = () => {
   showSearch.value = !showSearch.value
   
-  // 当打开搜索时，平滑滚动到顶部
+  // 当打开搜索时，不再滚动到顶部，保持在当前位置
   if (showSearch.value) {
     nextTick(() => {
-      // 获取主内容容器
-      const mainContent = document.querySelector('.main-content')
-      const archiveListContainer = document.querySelector('.archive-list-container')
-      
-      // 平滑滚动到顶部
-      if (mainContent) {
-        mainContent.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        })
-      }
-      
-      if (archiveListContainer) {
-        archiveListContainer.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        })
-      }
-      
       // 确保浮动按钮位置正确
       protectFloatingButtonPosition()
     })
@@ -787,15 +830,16 @@ const enhancedProtectFloatingButton = () => {
         // 如果位置偏差超过5px，强制重置
         if (Math.abs(expectedBottom - 30) > 5 || Math.abs(expectedRight - 30) > 5) {
           container.style.setProperty('position', 'fixed', 'important')
-          container.style.setProperty('bottom', '30px', 'important')
-          container.style.setProperty('right', '30px', 'important')
+          container.style.setProperty('bottom', `${expectedBottom}px`, 'important')
+          container.style.setProperty('right', `${expectedRight}px`, 'important')
           container.style.setProperty('transform', 'none', 'important')
           container.style.setProperty('margin', '0', 'important')
           container.style.setProperty('top', 'auto', 'important')
           container.style.setProperty('left', 'auto', 'important')
+          container.style.setProperty('z-index', '1000', 'important')
         }
       }
-    }, 1500)
+    }, 1000)
   })
 }
 
@@ -841,6 +885,9 @@ const openSaveGamesFolder = async () => {
 
 // 动画钩子函数
 const beforeCardEnter = (el) => {
+  // 获取动画参数
+  const params = getAnimationParams('cardEnter', performanceMode.value, animationQuality.value)
+  
   const index = parseInt(el.dataset.index) || 0
   el.style.setProperty('--index', index)
   el.style.opacity = 0
@@ -856,15 +903,16 @@ const cardEnter = (el, done) => {
     return
   }
 
+  // 获取动画参数
+  const params = getAnimationParams('cardEnter', performanceMode.value, animationQuality.value)
+  const devicePerf = detectDevicePerformance()
+  
   // 对于大量卡片情况，简化动画
   const index = parseInt(el.dataset.index) || 0
   const cardCount = displayArchives.value.length
 
-  // 根据性能模式调整动画
-  const isLowPerformance = performanceMode.value === 'low'
-
-  // 在低性能模式或卡片数量过多时，直接完成动画
-  if (isLowPerformance || cardCount > 200) {
+  // 在极低性能模式或卡片数量过多时，直接完成动画
+  if (devicePerf.isVeryLowEndDevice || cardCount > 200 || performanceMode.value === 'low') {
     el.style.opacity = 1
     el.style.transform = 'translateY(0)'
     el.style.removeProperty('--index')
@@ -873,20 +921,19 @@ const cardEnter = (el, done) => {
   }
 
   // 如果卡片数量超过100，减少动画延迟以提升性能
-  const delay = cardCount > 100 ? Math.min(index * 10, 150) : Math.min(index * 30, 300)
-  const duration = cardCount > 100 ? 0.2 : 0.3
-  const actualDelay = isLowPerformance ? Math.min(index * 5, 100) : delay
-
-  gsap.to(el, {
-    opacity: 1,
-    y: 0,
-    duration: duration,
-    delay: actualDelay / 1000,
-    ease: "ease-out",
-    onComplete: () => {
-      el.style.removeProperty('--index')
-      done()
-    }
+  const delay = cardCount > 100 ? Math.min(index * params.delay, 150) : Math.min(index * params.delay, 300)
+  const duration = cardCount > 100 ? 0.2 : params.duration
+  
+  // 移除延迟，使用 requestAnimationFrame 确保同步
+  requestAnimationFrame(() => {
+    gsap.to(el, {
+      opacity: 1,
+      y: 0,
+      duration: duration,
+      ease: params.ease,
+      force3D: params.force3D,
+      onComplete: done
+    })
   })
 }
 
@@ -899,53 +946,74 @@ const cardLeave = (el, done) => {
     return
   }
 
+  // 获取动画参数
+  const params = getAnimationParams('cardLeave', performanceMode.value, animationQuality.value)
+  const devicePerf = detectDevicePerformance()
+  
   // 对于大量卡片情况，简化动画
   const cardCount = displayArchives.value.length
-
-  // 根据性能模式调整动画
-  const isLowPerformance = performanceMode.value === 'low'
-  const duration = isLowPerformance ? 0.1 : (cardCount > 100 ? 0.15 : 0.25)
+  
+  // 在极低性能模式或卡片数量过多时，直接完成动画
+  if (devicePerf.isVeryLowEndDevice || cardCount > 200 || performanceMode.value === 'low') {
+    el.style.opacity = 0
+    el.style.transform = 'translateY(-10px)'
+    done()
+    return
+  }
+  
+  const duration = cardCount > 100 ? 0.15 : params.duration
 
   gsap.to(el, {
     opacity: 0,
     y: -10,
     duration: duration,
-    ease: "ease-in",
+    ease: params.ease,
     onComplete: done
   })
 }
 
 const beforeSearchEnter = (el) => {
+  // 获取动画参数
+  const params = getAnimationParams('search', performanceMode.value, animationQuality.value)
+  
   // 预设置初始状态，避免初始跳动
   gsap.set(el, {
     opacity: 0,
     y: -15,
-    force3D: true,
+    force3D: params.force3D,
     willChange: 'opacity, transform'
   })
 }
 
 const searchEnter = (el, done) => {
+  // 获取动画参数
+  const params = getAnimationParams('search', performanceMode.value, animationQuality.value)
+  const devicePerf = detectDevicePerformance()
+  
   // 移除延迟，使用 requestAnimationFrame 确保同步
   requestAnimationFrame(() => {
     gsap.to(el, {
       opacity: 1,
       y: 0,
-      duration: 0.3,
-      ease: "power2.out", // 使用更平滑的缓动函数
-      force3D: true,
+      duration: params.duration,
+      ease: params.ease,
+      force3D: params.force3D,
       onComplete: done
     })
   })
 }
 
 const searchLeave = (el, done) => {
+  // 获取动画参数
+  const params = getAnimationParams('search', performanceMode.value, animationQuality.value)
+  const devicePerf = detectDevicePerformance()
+                          
   gsap.to(el, {
     opacity: 0,
     y: -8,
-    duration: 0.25,
-    ease: "power2.out", // 使用与进入动画相同的缓动函数
-    force3D: true,
+    duration: params.duration,
+    ease: params.ease,
+    force3D: params.force3D,
     onComplete: done
   })
 }
@@ -962,8 +1030,43 @@ onMounted(async () => {
   // 组件卸载标志
   let isUnmounted = false
   
-  // 初始化性能监控
-  performanceObserver()
+  // 初始化性能监控并保存清理函数
+  cleanupPerformanceObserver = performanceObserver()
+  
+  // 创建性能监控器实例
+  performanceMonitor = createPerformanceMonitor({
+    onLowPerformance: () => {
+      performanceMode.value = 'low'
+      animationQuality.value = 'low'
+      console.log('检测到性能问题，已切换到低性能模式')
+    },
+    onPerformanceRecovery: () => {
+      if (performanceMode.value === 'low') {
+        performanceMode.value = 'auto'
+        animationQuality.value = 'medium'
+        console.log('性能已恢复，已切换到自动性能模式')
+      }
+    },
+    onFPSUpdate: (fps) => {
+      // 可以在这里更新UI显示当前FPS
+      if (fps < 30 && fps > 0) {
+        console.warn(`当前帧率较低: ${fps} FPS`)
+      }
+    }
+  })
+  
+  // 初始化性能监控器
+  performanceMonitor.start()
+  
+  // 检测设备性能并设置初始性能模式
+  const devicePerf = detectDevicePerformance()
+  if (devicePerf.isLowEndDevice) {
+    performanceMode.value = 'low'
+    animationQuality.value = 'low'
+  } else if (devicePerf.performanceLevel === 'high') {
+    performanceMode.value = 'auto'
+    animationQuality.value = 'high'
+  }
   
   // 初始化浮动按钮样式保护
    let fabObserver = null
@@ -1147,21 +1250,36 @@ onMounted(async () => {
 
   window.addEventListener('resize', handleResize)
   window.addEventListener('sidebar-expand', handleSidebarExpand)
+})
 
-  // 清理函数
-  return () => {
-    isUnmounted = true
-    if (updateTimeout) clearTimeout(updateTimeout)
-    if (animationFrame) cancelAnimationFrame(animationFrame)
-    if (intersectionObserver) intersectionObserver.disconnect()
-    if (sidebarAnimationTimeout) clearTimeout(sidebarAnimationTimeout)
-    if (longTaskObserver) longTaskObserver.disconnect()
-    if (fabObserver) fabObserver.disconnect()
-    window.removeEventListener('resize', handleResize)
-    window.removeEventListener('sidebar-expand', handleSidebarExpand)
-    // 清理引用，防止内存泄漏
-    archiveGrid.value = null
+// 组件卸载时清理资源
+onUnmounted(() => {
+  if (updateTimeout) clearTimeout(updateTimeout)
+  if (animationFrame) cancelAnimationFrame(animationFrame)
+  if (intersectionObserver) intersectionObserver.disconnect()
+  if (sidebarAnimationTimeout) clearTimeout(sidebarAnimationTimeout)
+  
+  // 停止性能监控
+  if (performanceMonitor) {
+    performanceMonitor.stop()
+    performanceMonitor = null
   }
+  
+  // 清理性能观察器
+  if (cleanupPerformanceObserver) {
+    cleanupPerformanceObserver()
+  }
+  
+  // 清理长任务观察器
+  if (longTaskObserver) {
+    longTaskObserver.disconnect()
+    longTaskObserver = null
+  }
+  
+  window.removeEventListener('resize', () => {})
+  window.removeEventListener('sidebar-expand', () => {})
+  // 清理引用，防止内存泄漏
+  archiveGrid.value = null
 })
 
 // 监听存档变化
@@ -1509,11 +1627,11 @@ watch(archives, (newArchives) => {
 
 /* 搜索面板样式 - 毛玻璃效果 */
 .search-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
   z-index: 1000;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(20px);
@@ -1534,6 +1652,23 @@ watch(archives, (newArchives) => {
   /* 确保在所有设备上都能正确固定 */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  /* 确保搜索面板保持在视口中央，不受页面滚动影响 */
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  /* 使用固定定位确保不随页面滚动 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* 确保内容居中 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 强制硬件加速 */
+  backface-visibility: hidden;
+  perspective: 1000;
+  transform: translateZ(0);
 }
 
 /* 动画优化 - 自然过渡 */

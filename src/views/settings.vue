@@ -281,7 +281,7 @@ export default {
       gpuAccelerationDisabled: localStorage.getItem('gpuAccelerationDisabled') === 'true', // GPU加速开关状态
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: '3.0.0-Alpha-5.2',
+      appVersion: '3.0.0-Alpha-5.3',
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,

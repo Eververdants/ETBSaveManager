@@ -14,13 +14,14 @@
     "select": "请选择",
     "cancel": "取消",
     "save": "保存",
-    "step": "{number}"
+    "step": "{number}",
+    "back": "返回"
   },
   "archive": {
     "listDescription": "查看和管理所有存档",
     "createDescription": "创建新的游戏存档",
     "updated": "更新内容",
-    "updateDetails": "更改了层级预览图，添加了禁用GPU加速功能，修复了部分bug。",
+    "updateDetails": "添加了最新版本的物品选择功能，更换了物品贴图为最新版本样式，优化了诸多问题和细节。",
     "thanks": "感谢所有为本项目提供反馈、建议与支持的朋友们",
     "disclaimer": "本工具仅供学习交流使用"
   },
@@ -156,12 +157,14 @@
       "GlowStick": "绿色荧光棒",
       "GlowstickRed": "红色荧光棒",
       "GlowstickYellow": "黄色荧光棒",
+      "Knife": "刀具",
       "LiquidPain": "液体痛苦",
       "Juice": "果汁",
       "Rope": "绳索",
       "LiDAR": "扫描仪",
       "Thermometer": "温度计",
       "Ticket": "票",
+      "Toy": "泰迪熊",
       "WalkieTalkie": "对讲机",
       "MothJelly": "飞蛾果冻"
     }
@@ -327,7 +330,13 @@
     "saveFailed": "保存失败：",
     "parseFailed": "解析存档数据失败：",
     "loadLevelsFailed": "加载层级数据失败：",
-    "savingArchiveData": "保存存档数据："
+    "savingArchiveData": "保存存档数据：",
+    "jsonEditor": "JSON编辑器",
+    "jsonEditorTitle": "存档JSON编辑器",
+    "jsonEditorPlaceholder": "在此编辑JSON内容...",
+    "jsonConvertError": "转换sav文件失败",
+    "jsonSyntaxError": "JSON语法错误，请检查格式",
+    "jsonSaveError": "保存JSON失败"
   },
   "archiveSearch": {
     "title": "搜索存档",
@@ -407,5 +416,19 @@
     "openFolder": "打开文件夹",
     "refreshList": "刷新列表",
     "scrollHint": "滚动切换功能"
+  },
+  "jsonEditor": {
+    "title": "JSON编辑器",
+    "fileInfo": "文件信息",
+    "fileName": "文件名",
+    "filePath": "文件路径",
+    "editorTitle": "JSON编辑器",
+    "placeholder": "在此编辑JSON内容...",
+    "syntaxError": "JSON语法错误",
+    "formatJson": "格式化JSON",
+    "minifyJson": "压缩JSON",
+    "copyJson": "复制JSON",
+    "convertError": "转换sav文件失败",
+    "saveError": "保存JSON失败"
   }
 }

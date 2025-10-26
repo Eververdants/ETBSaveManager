@@ -8,6 +8,7 @@ use uesave::{
     PropertyType, Save, StructType, StructValue, ValueArray, ValueVec,
 };
 use uuid;
+use crate::save_editor::map_item_id_to_name;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SaveData {
@@ -23,7 +24,7 @@ pub struct SaveData {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PlayerData {
     pub steam_id: String,
-    pub inventory: Vec<String>,
+    pub inventory: Vec<i32>, // 改为数字ID
 }
 
 pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
@@ -232,8 +233,10 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> Result<(), Str
     for player in players {
         // 创建背包物品列表
         let mut inventory_items = Vec::new();
-        for item in player.inventory.iter().take(12) {
-            inventory_items.push(item.clone());
+        for item_id in player.inventory.iter().take(12) {
+            // 将数字ID转换为物品名称
+            let item_name = map_item_id_to_name(*item_id);
+            inventory_items.push(item_name.to_string());
         }
         // 确保正好12个物品
         while inventory_items.len() < 12 {

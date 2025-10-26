@@ -38,7 +38,7 @@
                 <div v-for="(level, index) in availableLevels" :key="index" class="level-card"
                   :class="{ selected: selectedLevel === index }" @click="selectLevel(index)">
                   <div class="level-image-container">
-                    <img :src="level.image" :alt="level.name" class="level-image" />
+                    <LazyImage :src="level.image" :alt="level.name" image-class="level-image" />
                     <div class="level-overlay">
                       <font-awesome-icon :icon="['fas', 'check']" class="check-icon" v-if="selectedLevel === index" />
                     </div>
@@ -74,12 +74,10 @@
               <div class="config-card">
                 <h3 class="form-section-title">{{ $t('createArchive.difficulty') }}</h3>
                 <div class="difficulty-grid">
-                  <div v-for="difficulty in difficultyLevels" :key="difficulty.value" class="difficulty-option"
-                    :class="{ 
-                      selected: selectedDifficulty === difficulty.value,
-                      disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal'
-                    }"
-                    @click="selectDifficulty(difficulty.value)">
+                  <div v-for="difficulty in difficultyLevels" :key="difficulty.value" class="difficulty-option" :class="{
+                    selected: selectedDifficulty === difficulty.value,
+                    disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal'
+                  }" @click="selectDifficulty(difficulty.value)">
                     <div class="difficulty-icon">
                       <font-awesome-icon :icon="difficulty.icon" />
                     </div>
@@ -93,12 +91,10 @@
                 <h3 class="form-section-title">{{ $t('createArchive.actualDifficulty') }}</h3>
                 <div class="difficulty-grid">
                   <div v-for="difficulty in difficultyLevels" :key="`actual-${difficulty.value}`"
-                    class="difficulty-option" 
-                    :class="{ 
+                    class="difficulty-option" :class="{
                       selected: selectedActualDifficulty === difficulty.value,
                       disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal'
-                    }"
-                    @click="selectActualDifficulty(difficulty.value)">
+                    }" @click="selectActualDifficulty(difficulty.value)">
                     <div class="difficulty-icon">
                       <font-awesome-icon :icon="difficulty.icon" />
                     </div>
@@ -159,10 +155,12 @@
                     }" @click="editSlot(activePlayerIndex, slot - 1)">
                       <div class="slot-label">{{ $t(`createArchive.${getSlotLabel(slot - 1)}`) }}</div>
                       <div class="slot-content">
-                        <img v-if="getSlotContent(activePlayerIndex, slot - 1)"
-                          :src="`/icons/ETB_UI/${getSlotContent(activePlayerIndex, slot - 1)}.png`"
-                          :alt="getSlotContent(activePlayerIndex, slot - 1)" class="item-image" />
-                        <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-icon" />
+                        <transition name="item-fade" mode="out-in">
+                          <img v-if="getSlotContent(activePlayerIndex, slot - 1)"
+        :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}.png`"
+        :alt="getSlotContent(activePlayerIndex, slot - 1)" class="item-image" :key="getSlotContent(activePlayerIndex, slot - 1)" />
+                          <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-icon" key="empty" />
+                        </transition>
                       </div>
                     </div>
                   </div>
@@ -174,10 +172,12 @@
                       @click="editSlot(activePlayerIndex, slot + 2)">
                       <div class="slot-number">{{ slot }}</div>
                       <div class="slot-content">
-                        <img v-if="getSlotContent(activePlayerIndex, slot + 2)"
-                          :src="`/icons/ETB_UI/${getSlotContent(activePlayerIndex, slot + 2)}.png`"
-                          :alt="getSlotContent(activePlayerIndex, slot + 2)" class="item-image" />
-                        <font-awesome-icon v-else :icon="['fas', 'square']" class="slot-icon" />
+                        <transition name="item-fade" mode="out-in">
+                          <img v-if="getSlotContent(activePlayerIndex, slot + 2)"
+        :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}.png`"
+        :alt="getSlotContent(activePlayerIndex, slot + 2)" class="item-image" :key="getSlotContent(activePlayerIndex, slot + 2)" />
+                          <font-awesome-icon v-else :icon="['fas', 'square']" class="slot-icon" key="empty" />
+                        </transition>
                       </div>
                     </div>
                   </div>
@@ -201,7 +201,11 @@
       </button>
 
       <div class="step-info">
-        {{ $t('createArchive.step') }} {{ currentStep }} / 3
+        {{ $t('createArchive.step') }} 
+        <transition name="step-info-change" mode="out-in">
+          <span :key="currentStep">{{ currentStep }}</span>
+        </transition>
+         / 3
       </div>
 
       <button @click="nextStep" class="action-button primary" :disabled="!canProceed">
@@ -227,11 +231,13 @@ import { gsap } from 'gsap'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import InventoryItemSelector from '../components/InventoryItemSelector.vue'
+import LazyImage from '../components/LazyImage.vue'
 
 export default {
   name: 'CreateArchive',
   components: {
-    InventoryItemSelector
+    InventoryItemSelector,
+    LazyImage
   },
   setup() {
     const { t } = useI18n({ useScope: 'global' })
@@ -333,7 +339,7 @@ export default {
       levelMappings.forEach((levelKey, index) => {
         // 现在所有关卡都使用关卡名称作为图片文件名
         const imagePath = `/images/${levelKey}.jpg`
-        
+
         availableLevels.push({
           name: t(`LevelName_Display.${levelKey}`),
           image: imagePath,
@@ -388,6 +394,13 @@ export default {
       return null
     }
 
+    const getItemImageFile = (itemName) => {
+      if (!itemName || itemName === 'None' || itemName === null) return 'None'
+      // 特殊处理Toy物品，它的图片文件名是Teddy_Bear.png
+      if (itemName === 'Toy') return 'Teddy_Bear'
+      return itemName
+    }
+
     const getSlotLabel = (slotIndex) => {
       const labels = ['mainHand', 'offHand1', 'offHand2']
       return labels[slotIndex] || ''
@@ -431,6 +444,38 @@ export default {
     }
 
 
+
+    // 物品ID映射函数
+    const getItemIdByName = (itemName) => {
+      const itemMap = {
+        'AlmondConcentrate': 1,
+        'Lockpick': 2,
+        'Bandage': 3,
+        'Flashlight': 4,
+        'StaminaPills': 5,
+        'MedKit': 6,
+        'NutritionBar': 7,
+        'Coin': 8,
+        'Batteries': 9,
+        'Syringe': 10,
+        'Bone': 11,
+        'Key': 12,
+        'Code': 13,
+        'Glowstick': 14,
+        'OxygenMask': 15,
+        'Grapple': 16,
+        'Soda': 17,
+        'Beacon': 18,
+        'Radio': 19,
+        'Tea': 20,
+        'HealingPotion': 21,
+        'SpeedBoost': 22,
+        'InvisibilityPotion': 23,
+        'Knife': 24,
+        'Toy': 25
+      }
+      return itemMap[itemName] || 1 // 默认返回1
+    }
 
     const handleItemSelect = (itemId) => {
       if (editingSlot.value.playerIndex >= 0 && editingSlot.value.slotIndex >= 0) {
@@ -492,7 +537,9 @@ export default {
           actual_difficulty: selectedActualDifficulty.value.charAt(0).toUpperCase() + selectedActualDifficulty.value.slice(1) || "Normal",
           players: players.map(p => ({
             steam_id: p.steamId || "",
-            inventory: Array.isArray(p.inventory) ? p.inventory.filter(item => item !== null && item !== undefined) : []
+            inventory: Array.isArray(p.inventory) 
+              ? p.inventory.filter(item => item !== null && item !== undefined).map(item => getItemIdByName(item))
+              : []
           })),
           basic_archive: basicArchive || {} // 确保不是 null
         }
@@ -813,47 +860,12 @@ export default {
       isSidebarExpanded.value = event.detail
     }
 
-    // 初始化动画
+    // 初始化
     onMounted(() => {
       loadLevels()
 
       // 监听侧边栏展开/收起事件
       window.addEventListener('sidebar-expand', handleSidebarExpand)
-
-      // 页面入场动画 - 移除对.page-header的引用
-      const tl = gsap.timeline({ delay: 0.1 })
-
-      // 获取实际存在的元素
-      const stepIndicator = document.querySelector('.step-indicator')
-      const stepContent = document.querySelector('.step-content')
-      const bottomActions = document.querySelector('.bottom-actions')
-
-      if (stepIndicator) {
-        tl.from(stepIndicator, {
-          y: -20,
-          opacity: 0,
-          duration: 0.5,
-          ease: "power2.out"
-        })
-      }
-
-      if (stepContent) {
-        tl.from(stepContent, {
-          y: 20,
-          opacity: 0,
-          duration: 0.5,
-          ease: "power2.out"
-        }, "-=0.2")
-      }
-
-      if (bottomActions) {
-        tl.from(bottomActions, {
-          y: 30,
-          opacity: 0,
-          duration: 0.5,
-          ease: "power2.out"
-        }, "-=0.2")
-      }
     })
 
     // 组件卸载时移除事件监听器
@@ -923,6 +935,7 @@ export default {
       removePlayer,
       selectPlayer,
       getSlotContent,
+      getItemImageFile,
       getSlotLabel,
       editSlot,
       handleItemSelect,
@@ -943,13 +956,14 @@ export default {
 <style scoped>
 /* SwiftUI 风格样式 */
 .create-archive-container {
-  height: 100vh;
+  height: calc(100vh - 38px); /* 减去App.vue中main-content的margin-top */
   overflow: hidden;
-  padding: 10px 24px 80px 24px;
+  padding: 10px 24px 0 24px;
   background: var(--bg);
   font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', sans-serif;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 /* 步骤指示器 - 居中显示 */
@@ -993,11 +1007,55 @@ export default {
   justify-content: center;
   font-size: 14px;
   font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.step.active .step-number {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .step-label {
   font-size: 14px;
   font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.step.active .step-label {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* 数字切换过渡效果 */
+.number-change-enter-active,
+.number-change-leave-active {
+  transition: all 0.3s ease;
+}
+
+.number-change-enter-from {
+  opacity: 0;
+  transform: translateY(10px) scale(0.8);
+}
+
+.number-change-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.8);
+}
+
+.number-change-enter-to,
+.number-change-leave-from {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 .step-connector {
@@ -1005,6 +1063,7 @@ export default {
   height: 2px;
   background: var(--divider-color);
   border-radius: 1px;
+  transition: all 0.3s ease;
 }
 
 /* 内容包装器 */
@@ -1016,7 +1075,7 @@ export default {
   flex-direction: column;
   justify-content: flex-start;
   overflow: hidden;
-  height: calc(100vh - 150px);
+  height: calc(100vh - 178px); /* 减去顶部区域(38px+70px)和底部操作栏高度(70px) */
 }
 
 /* 步骤内容 */
@@ -1130,7 +1189,6 @@ export default {
 .level-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
 
 .level-overlay {
@@ -1397,19 +1455,83 @@ export default {
   font-weight: 500;
 }
 
-.difficulty-icon {
-  font-size: 24px;
-  color: var(--text-secondary);
+/* 底部操作按钮 - 毛玻璃样式 */
+.bottom-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px; /* 增加内边距 */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  /* 侧边栏收起时的宽度 */
+  right: 0;
+  height: 70px; /* 增加高度 */
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-backdrop-filter);
+  border-top: 1px solid var(--glass-border);
+  box-shadow: 0 -8px 32px var(--glass-shadow-light), 0 -2px 8px var(--glass-shadow-medium);
+  z-index: 100;
+  transition: left 0.3s ease, background 0.3s ease;
+  /* 与侧边栏展开/收起动画同步 */
 }
 
-.difficulty-option.selected .difficulty-icon {
-  color: var(--accent-color);
-}
-
-.difficulty-label {
-  font-size: 14px;
+/* 步骤信息样式 */
+.step-info {
+  font-size: 16px;
   font-weight: 500;
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+/* 侧边栏展开时调整底部操作按钮位置 */
+.sidebar-expanded .bottom-actions {
+  left: 150px;
+  /* 侧边栏展开时的宽度 */
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 增加图标和文字之间的间距 */
+  padding: 14px 28px; /* 增加内边距 */
+  border: none;
+  border-radius: 20px; /* 稍微增加圆角 */
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px; /* 设置最小宽度 */
+  justify-content: center; /* 居中对齐内容 */
+}
+
+.action-button.primary {
+  background: var(--accent-color);
+  color: white;
+}
+
+.action-button.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.action-button.secondary {
+  background: var(--bg-secondary);
   color: var(--text-primary);
+  border: 1px solid var(--divider-color);
+}
+
+.action-button.secondary:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Steam ID 管理 */
@@ -1582,132 +1704,11 @@ export default {
 }
 
 .item-image {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
-}
-
-/* 底部操作按钮 - 毛玻璃样式 */
-.bottom-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 24px;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  /* 侧边栏收起时的宽度 */
-  right: 0;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-backdrop-filter);
-  border-top: 1px solid var(--glass-border);
-  box-shadow: 0 -8px 32px var(--glass-shadow-light), 0 -2px 8px var(--glass-shadow-medium);
-  margin-top: auto;
-  z-index: 100;
-  transition: left 0.3s ease, background 0.3s ease;
-  /* 与侧边栏展开/收起动画同步 */
-}
-
-/* 侧边栏展开时调整底部操作按钮位置 */
-.sidebar-expanded .bottom-actions {
-  left: 150px;
-  /* 侧边栏展开时的宽度 */
-}
-
-.action-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 18px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.action-button.primary {
-  background: var(--accent-color);
-  color: white;
-}
-
-.action-button.primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-}
-
-.action-button.secondary {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--divider-color);
-}
-
-.action-button.secondary:hover:not(:disabled) {
-  background: var(--bg-tertiary);
-}
-
-.action-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.step-info {
-  font-size: 14px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-/* Steam ID管理卡片自适应布局 */
-.steam-id-card {
-  height: 60vh;
-  max-height: 600px;
-  min-height: 350px;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 100%;
-}
-
-.steam-id-input-group {
-  flex-shrink: 0;
-  margin-bottom: 16px;
-}
-
-.steam-id-list {
-  flex: 1;
-  overflow-y: auto;
-  border: 1px solid var(--divider-light);
-  border-radius: 12px;
-  padding: 8px;
-  background: var(--bg-tertiary);
-  min-height: 200px;
-}
-
-.steam-id-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.steam-id-list::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-  border-radius: 3px;
-}
-
-.steam-id-list::-webkit-scrollbar-thumb {
-  background: var(--divider-color);
-  border-radius: 3px;
-}
-
-.steam-id-list::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
-}
-
-/* 背包卡片自适应宽度 */
-.inventory-card {
-  width: 100%;
-  max-width: 100%;
-  min-width: 100%;
+  display: block;
+  margin: auto;
 }
 
 /* 空背包提示 */
@@ -1730,120 +1731,6 @@ export default {
 .empty-inventory-message p {
   font-size: 16px;
   margin: 0;
-}
-
-/* 确保卡片容器自适应 */
-.step-content[data-step="3"] .card {
-  width: 100%;
-  max-width: 100%;
-}
-
-/* 步骤3的网格布局优化 */
-.step-content[data-step="3"] .step-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  width: 100%;
-}
-
-@media (max-width: 768px) {
-  .step-content[data-step="3"] .step-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 响应式设计 - 优化不同屏幕尺寸 */
-@media (max-width: 1200px) {
-  .config-card {
-    flex: 1 1 300px;
-  }
-
-  /* 中等屏幕下底部操作按钮的调整 */
-  .bottom-actions {
-    left: 70px;
-    /* 保持与侧边栏的间距 */
-  }
-
-  .sidebar-expanded .bottom-actions {
-    left: 220px;
-    /* 侧边栏展开时保持间距 */
-  }
-}
-
-@media (max-width: 768px) {
-  .create-archive-container {
-    padding: 0 16px 80px 16px;
-  }
-
-  .step-indicator {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .step-connector {
-    width: 2px;
-    height: 20px;
-  }
-
-  .config-card {
-    flex: 1 1 100%;
-    min-width: 100%;
-  }
-
-  .level-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .difficulty-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .inventory-section {
-    grid-template-columns: 1fr;
-  }
-
-  .inventory-backpack {
-    grid-template-columns: repeat(3, 1fr);
-    justify-items: center;
-  }
-
-  .bottom-actions {
-    flex-direction: column;
-    gap: 8px;
-    padding: 8px 16px;
-    left: 0;
-    /* 在小屏幕上不需要考虑侧边栏 */
-  }
-
-  /* 小屏幕下侧边栏展开时的底部操作按钮 */
-  .sidebar-expanded .bottom-actions {
-    left: 0;
-    /* 在小屏幕上不需要考虑侧边栏 */
-  }
-}
-
-@media (max-width: 480px) {
-  .step {
-    padding: 8px 12px;
-  }
-
-  .step-label {
-    font-size: 12px;
-  }
-
-  .config-card,
-  .section-card {
-    padding: 16px;
-  }
-
-  .inventory-slot {
-    width: 50px;
-    height: 50px;
-  }
-
-  .slot-icon {
-    font-size: 16px;
-  }
 }
 
 /* 批量创建按钮样式 */
@@ -1914,6 +1801,22 @@ export default {
 }
 
 /* 响应式调整 */
+/* 物品图片渐显渐隐动画 */
+.item-fade-enter-active,
+.item-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.item-fade-enter-from,
+.item-fade-leave-to {
+  opacity: 0;
+}
+
+.item-fade-enter-to,
+.item-fade-leave-from {
+  opacity: 1;
+}
+
 @media (max-width: 768px) {
   .batch-create-button {
     top: 16px;
@@ -1937,5 +1840,31 @@ export default {
     right: 12px;
     padding: 8px 12px;
   }
+}
+
+/* 步骤信息过渡动画 */
+.step-info-change-enter-active,
+.step-info-change-leave-active {
+  transition: all 0.3s ease;
+}
+
+.step-info-change-enter-from {
+  opacity: 0;
+  transform: translateY(10px) scale(0.9);
+}
+
+.step-info-change-enter-to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.step-info-change-leave-from {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.step-info-change-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.9);
 }
 </style>

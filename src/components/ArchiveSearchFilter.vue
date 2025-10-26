@@ -23,12 +23,6 @@
           <div class="filter-section">
             <div class="filter-grid">
               <div class="filter-item">
-                <label class="filter-label">{{ $t('archiveSearch.gameMode') }}</label>
-                <CustomDropdown v-model="selectedGameMode" :options="gameModeOptions"
-                  :placeholder="$t('archiveSearch.gameMode')" @change="handleFilterChange" />
-              </div>
-
-              <div class="filter-item">
                 <label class="filter-label">{{ $t('archiveSearch.archiveDifficulty') }}</label>
                 <CustomDropdown v-model="selectedArchiveDifficulty" :options="difficultyOptions"
                   :placeholder="$t('archiveSearch.archiveDifficulty')" @change="handleFilterChange" />
@@ -74,7 +68,6 @@ const props = defineProps({
     type: Object,
     default: () => ({
       searchQuery: '',
-      selectedGameMode: '',
       selectedArchiveDifficulty: '',
       selectedActualDifficulty: '',
       selectedVisibility: ''
@@ -100,9 +93,9 @@ watch(() => props.visible, (newVal) => {
   const mainContent = document.querySelector('.main-content')
   const archiveListContainer = document.querySelector('.archive-list-container')
   
-  // 当组件显示时，阻止背景滚动
+  // 当组件显示时，阻止背景滚动但不改变滚动位置
   if (newVal) {
-    // 保存当前滚动位置
+    // 保存当前滚动位置但不改变它
     if (mainContent) {
       mainContent.dataset.scrollY = mainContent.scrollTop
       mainContent.style.overflow = 'hidden'
@@ -113,14 +106,17 @@ watch(() => props.visible, (newVal) => {
       archiveListContainer.style.overflow = 'hidden'
     }
     
-    // 使用全局保护工具安全修改body样式
+    // 使用全局保护工具安全修改body样式，但保持当前滚动位置
+    const currentScrollY = window.scrollY
     safeModifyBodyStyles({
       overflow: 'hidden',
       position: 'fixed',
-      top: `-${window.scrollY}px`,
+      top: `-${currentScrollY}px`,
       width: '100%',
       height: '100vh'
     });
+    
+    // 移除设置组件固定定位的代码，因为父容器search-overlay已经是固定定位
   } else {
     // 恢复滚动位置
     if (mainContent) {
@@ -174,7 +170,6 @@ const emit = defineEmits(['filtered', 'filters-changed'])
 
 // 响应式数据 - 使用initialFilters初始化
 const searchQuery = ref(props.initialFilters.searchQuery || '')
-const selectedGameMode = ref(props.initialFilters.selectedGameMode || '')
 const selectedArchiveDifficulty = ref(props.initialFilters.selectedArchiveDifficulty || '')
 const selectedActualDifficulty = ref(props.initialFilters.selectedActualDifficulty || '')
 const selectedVisibility = ref(props.initialFilters.selectedVisibility || '')
@@ -190,7 +185,6 @@ watch(searchQuery, () => {
 // 监听initialFilters变化，确保父组件更新筛选条件时子组件能正确响应
 watch(() => props.initialFilters, (newFilters) => {
   searchQuery.value = newFilters.searchQuery || ''
-  selectedGameMode.value = newFilters.selectedGameMode || ''
   selectedArchiveDifficulty.value = newFilters.selectedArchiveDifficulty || ''
   selectedActualDifficulty.value = newFilters.selectedActualDifficulty || ''
   selectedVisibility.value = newFilters.selectedVisibility || ''
@@ -205,6 +199,7 @@ const gameModeOptions = computed(() => [
   { value: 'multiplayer', label: t('createArchive.gameModes.multiplayer') }
 ])
 
+// 选项数据
 const difficultyOptions = computed(() => [
   { value: '', label: t('archiveSearch.allDifficulties') },
   { value: 'easy', label: t('createArchive.difficultyLevels.easy') },
@@ -222,7 +217,6 @@ const visibilityOptions = computed(() => [
 // 计算属性
 const hasActiveFilters = computed(() => {
   return searchQuery.value ||
-    selectedGameMode.value ||
     selectedArchiveDifficulty.value ||
     selectedActualDifficulty.value ||
     selectedVisibility.value
@@ -239,13 +233,6 @@ const filteredArchives = computed(() => {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(archive =>
       archive.name.toLowerCase().includes(query)
-    )
-  }
-
-  // 按游戏模式筛选
-  if (selectedGameMode.value) {
-    filtered = filtered.filter(archive =>
-      archive.gameMode === selectedGameMode.value
     )
   }
 
@@ -294,7 +281,6 @@ const clearSearch = () => {
 // 清除所有筛选条件
 const clearAllFilters = () => {
   searchQuery.value = ''
-  selectedGameMode.value = ''
   selectedArchiveDifficulty.value = ''
   selectedActualDifficulty.value = ''
   selectedVisibility.value = ''
@@ -305,7 +291,6 @@ const clearAllFilters = () => {
 const emitFiltersChanged = () => {
   emit('filters-changed', {
     searchQuery: searchQuery.value,
-    selectedGameMode: selectedGameMode.value,
     selectedArchiveDifficulty: selectedArchiveDifficulty.value,
     selectedActualDifficulty: selectedActualDifficulty.value,
     selectedVisibility: selectedVisibility.value
@@ -406,6 +391,11 @@ const leave = (el, done) => {
   max-height: 80vh;
   overflow-y: auto;
   box-sizing: border-box;
+  /* 移除固定定位，因为父容器search-overlay已经是固定定位 */
+  /* 强制硬件加速 */
+  backface-visibility: hidden;
+  perspective: 1000;
+  transform: translateZ(0);
 }
 
 .search-filter-wrapper {

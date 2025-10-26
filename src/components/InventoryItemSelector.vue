@@ -1,53 +1,60 @@
 <template>
-  <Transition name="modal-fade" appear>
-    <div v-if="visible" class="inventory-item-selector" @click.self="close">
-      <Transition name="modal-scale" appear>
-        <div class="selector-modal">
-          <div class="modal-header">
-            <h3>{{ $t('inventory.selectItem') }}</h3>
-            <button class="close-btn" @click="close">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </button>
-          </div>
-          
-          <div class="items-grid">
-            <TransitionGroup name="item-appear" appear>
-              <div 
-                v-for="item in availableItems" 
-                :key="item.id"
-                class="item-card"
-                :class="{ 'selected': selectedItem === item.id }"
-                @click="selectItem(item.id)"
-              >
-                <img 
-                  :src="`/icons/ETB_UI/${item.image}`" 
-                  :alt="$t(`inventory.items.${item.id}`)"
-                  class="item-image"
-                />
-                <span class="item-name">{{ $t(`inventory.items.${item.id}`) }}</span>
-              </div>
-              
-              <div key="remove" class="item-card remove-card" @click="selectItem(null)">
-                <div class="remove-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
+  <Teleport to="body">
+    <Transition name="modal-fade" appear>
+      <div v-if="visible" class="inventory-item-selector" @click.self="close">
+        <Transition name="modal-scale" appear>
+          <div class="selector-modal">
+            <div class="modal-header">
+              <h3>{{ $t('inventory.selectItem') }}</h3>
+              <button class="close-btn" @click="close">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="items-grid">
+              <TransitionGroup name="item-appear" appear>
+                <div 
+                  v-for="item in availableItems" 
+                  :key="item.id"
+                  class="item-card"
+                  :class="{ 'selected': selectedItem === item.id }"
+                  @click="selectItem(item.id)"
+                >
+                  <LazyImage 
+                    :src="`/icons/ETB_UI/${item.image}`" 
+                    :alt="$t(`inventory.items.${item.id}`)"
+                    image-class="item-image"
+                  />
+                  <span class="item-name">{{ $t(`inventory.items.${item.id}`) }}</span>
                 </div>
-                <span class="item-name">{{ $t('inventory.removeItem') }}</span>
-              </div>
-            </TransitionGroup>
+                
+                <div key="remove" class="item-card remove-card" @click="selectItem(null)">
+                  <div class="remove-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <span class="item-name">{{ $t('inventory.removeItem') }}</span>
+                </div>
+              </TransitionGroup>
+            </div>
           </div>
-        </div>
-      </Transition>
-    </div>
-  </Transition>
+        </Transition>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script>
+import LazyImage from './LazyImage.vue'
+
 export default {
   name: 'InventoryItemSelector',
+  components: {
+    LazyImage
+  },
   props: {
     visible: {
       type: Boolean,
@@ -77,12 +84,14 @@ export default {
         { id: 'GlowStick', image: 'GlowStick.png' },
         { id: 'GlowstickRed', image: 'GlowstickRed.png' },
         { id: 'GlowstickYellow', image: 'GlowstickYellow.png' },
+        { id: 'Knife', image: 'Knife.png' },
         { id: 'LiquidPain', image: 'LiquidPain.png' },
         { id: 'Juice', image: 'Juice.png' },
         { id: 'Rope', image: 'Rope.png' },
         { id: 'LiDAR', image: 'LiDAR.png' },
         { id: 'Thermometer', image: 'Thermometer.png' },
         { id: 'Ticket', image: 'Ticket.png' },
+        { id: 'Toy', image: 'Teddy_Bear.png' },
         { id: 'WalkieTalkie', image: 'WalkieTalkie.png' },
         { id: 'MothJelly', image: 'MothJelly.png' }
       ];
@@ -105,14 +114,17 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
   backdrop-filter: blur(4px);
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
 }
 
 .selector-modal {
@@ -126,6 +138,8 @@ export default {
   max-width: 600px;
   max-height: 80vh;
   overflow: hidden;
+  position: relative;
+  margin: auto;
 }
 
 /* 淡入淡出动画 */
@@ -238,7 +252,10 @@ export default {
   width: 48px;
   height: 48px;
   object-fit: contain;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .item-name {

@@ -222,7 +222,7 @@ onUnmounted(() => {
   padding: 8px 12px;
   background: var(--dropdown-bg);
   border: 1px solid var(--dropdown-border);
-  border-radius: 8px;
+  border-radius: var(--radius-dropdown);
   cursor: pointer;
   transition: all 0.2s ease;
   min-height: 36px;
@@ -259,7 +259,7 @@ onUnmounted(() => {
 .dropdown-menu {
   background: var(--dropdown-bg);
   border: 1px solid var(--dropdown-border);
-  border-radius: 8px;
+  border-radius: var(--radius-dropdown);
   box-shadow: 0 4px 12px var(--dropdown-shadow);
   overflow: hidden;
   backdrop-filter: blur(20px);

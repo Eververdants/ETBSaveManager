@@ -144,7 +144,7 @@ onUnmounted(() => {
 
 .modal-container {
   background: var(--bg-primary);
-  border-radius: 16px;
+  border-radius: var(--radius-modal);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   max-width: 400px;
   width: 100%;
@@ -174,7 +174,7 @@ onUnmounted(() => {
   font-size: 16px;
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   transition: all 0.2s ease;
 }
 
@@ -229,7 +229,7 @@ onUnmounted(() => {
 .btn {
   padding: 8px 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-button);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;

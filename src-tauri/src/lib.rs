@@ -318,12 +318,6 @@ fn handle_file(
         return Err("Base directory does not exist".to_string());
     }
 
-    // 创建 HiddenFiles 文件夹（如果不存在）
-    let hidden_dir = base_dir.join("HiddenFiles");
-    if !hidden_dir.exists() {
-        fs::create_dir(&hidden_dir).map_err(|e| format!("Failed to create HiddenFiles: {}", e))?;
-    }
-
     // 获取文件所在目录（不再用于可见性判断，但保留用于其他用途）
     let _file_parent = file_path.parent().ok_or("Invalid file path")?;
 

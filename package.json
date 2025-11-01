@@ -1,7 +1,7 @@
 {
   "name": "etbsavemanager",
   "private": true,
-  "version": "3.0.0-Alpha-6",
+  "version": "3.0.0-Alpha-6.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -33,7 +33,8 @@
     "vue": "^3.5.13",
     "vue-i18n": "^9.14.5",
     "vue-router": "^4.5.1",
-    "vue-toastification": "next"
+    "vue-toastification": "next",
+    "vuedraggable": "next"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",

@@ -4,9 +4,29 @@
  */
 
 export function disableInteractions() {
-  // 禁用所有快捷键
+  // 禁用所有快捷键（但允许在输入框中使用）
   document.addEventListener('keydown', (e) => {
-    // 禁用所有Ctrl、Alt、Shift组合键
+    // 如果当前焦点在输入框、文本域或内容可编辑元素上，允许正常输入
+    const target = e.target;
+    const isInputElement = target.tagName === 'INPUT' || 
+                          target.tagName === 'TEXTAREA' || 
+                          target.contentEditable === 'true';
+    
+    if (isInputElement) {
+      // 在输入框中，只允许基本的编辑操作，仍然阻止快捷键组合
+      if (e.ctrlKey || e.altKey || e.metaKey) {
+        // 允许复制粘贴等基本操作
+        const allowedShortcuts = ['KeyC', 'KeyV', 'KeyX', 'KeyA', 'KeyZ', 'KeyY'];
+        if (!allowedShortcuts.includes(e.code)) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+      }
+      return; // 允许其他输入操作
+    }
+    
+    // 禁用所有Ctrl、Alt、Shift组合键（非输入框）
     if (e.ctrlKey || e.altKey || e.shiftKey || e.metaKey) {
       e.preventDefault();
       e.stopPropagation();
@@ -20,7 +40,7 @@ export function disableInteractions() {
       return false;
     }
     
-    // 禁用其他特殊按键
+    // 禁用其他特殊按键（非输入框）
     const blockedKeys = [
       'Tab', 'Escape', 'Enter', 'Backspace', 'Delete', 'Insert',
       'Home', 'End', 'PageUp', 'PageDown', 'ArrowUp', 'ArrowDown',
@@ -34,11 +54,18 @@ export function disableInteractions() {
     }
   }, true);
 
-  // 禁用文字选中
+  // 禁用文字选中（但允许在输入框中选择）
   document.addEventListener('selectstart', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
+    const target = e.target;
+    const isInputElement = target.tagName === 'INPUT' || 
+                          target.tagName === 'TEXTAREA' || 
+                          target.contentEditable === 'true';
+    
+    if (!isInputElement) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
   }, true);
 
   // 禁用拖拽
@@ -64,11 +91,18 @@ export function disableInteractions() {
     return false;
   }, true);
 
-  // 禁用双击选中文本
+  // 禁用双击选中文本（但允许在输入框中双击）
   document.addEventListener('dblclick', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
+    const target = e.target;
+    const isInputElement = target.tagName === 'INPUT' || 
+                          target.tagName === 'TEXTAREA' || 
+                          target.contentEditable === 'true';
+    
+    if (!isInputElement) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
   }, true);
 
   // 禁用鼠标中键和右键
@@ -81,23 +115,44 @@ export function disableInteractions() {
     }
   }, true);
 
-  // 禁用复制、剪切、粘贴
+  // 禁用复制、剪切、粘贴（但允许在输入框中使用）
   document.addEventListener('copy', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
+    const target = e.target;
+    const isInputElement = target.tagName === 'INPUT' || 
+                          target.tagName === 'TEXTAREA' || 
+                          target.contentEditable === 'true';
+    
+    if (!isInputElement) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
   }, true);
 
   document.addEventListener('cut', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
+    const target = e.target;
+    const isInputElement = target.tagName === 'INPUT' || 
+                          target.tagName === 'TEXTAREA' || 
+                          target.contentEditable === 'true';
+    
+    if (!isInputElement) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
   }, true);
 
   document.addEventListener('paste', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
+    const target = e.target;
+    const isInputElement = target.tagName === 'INPUT' || 
+                          target.tagName === 'TEXTAREA' || 
+                          target.contentEditable === 'true';
+    
+    if (!isInputElement) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
   }, true);
 
   // 禁用选择文本的CSS样式

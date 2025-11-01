@@ -22,8 +22,17 @@ export const topMenuItems = [
     descriptionKey: "archive.createDescription",
     route: "CreateArchive",
   },
+  // 核心存档功能暂时隐藏
+  // {
+  //   id: 3,
+  //   textKey: "sidebar.coreArchive",
+  //   icon: ["fas", "database"],
+  //   action: "openCoreArchive",
+  //   descriptionKey: "archive.coreDescription",
+  //   route: "CoreArchive",
+  // },
   {
-    id: 3,
+    id: 4,
     textKey: "sidebar.pluginMarket",
     icon: ["fas", "store"],
     action: "openPluginMarket",
@@ -38,7 +47,7 @@ export const topMenuItems = [
  */
 export const bottomMenuItems = [
   {
-    id: 4,
+    id: 5,
     textKey: "sidebar.about",
     icon: ["fas", "info-circle"],
     action: "showAbout",
@@ -46,7 +55,7 @@ export const bottomMenuItems = [
     route: "About",
   },
   {
-    id: 5,
+    id: 6,
     textKey: "sidebar.settings",
     icon: ["fas", "cog"],
     action: "openSettings",

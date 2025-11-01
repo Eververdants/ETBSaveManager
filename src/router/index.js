@@ -6,6 +6,7 @@ import PluginMarket from "../views/PluginMarket.vue";
 import CreateArchive from "../views/CreateArchive.vue";
 import BatchCreateArchive from "../views/BatchCreateArchive.vue";
 import EditArchive from "../views/EditArchive.vue";
+import CoreArchive from "../views/CoreArchive.vue";
 import Log from "../views/Log.vue";
 import SteamCache from "../views/SteamCache.vue";
 
@@ -45,6 +46,11 @@ const routes = [
     name: "EditArchive",
     component: EditArchive,
     props: true,
+  },
+  {
+    path: "/core-archive",
+    name: "CoreArchive",
+    component: CoreArchive,
   },
   {
     path: "/logs",

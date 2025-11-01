@@ -541,7 +541,7 @@ onUnmounted(() => {
   backdrop-filter: var(--glass-backdrop-filter);
   color: var(--text-primary);
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-tooltip);
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
@@ -577,12 +577,11 @@ onUnmounted(() => {
   backdrop-filter: var(--glass-backdrop-filter);
   color: var(--text-primary);
   padding: 12px 16px;
-  border-radius: var(--card-radius);
+  border-radius: var(--radius-xl);
   font-size: 14px;
   font-weight: 500;
   box-shadow: var(--card-shadow);
   border: var(--card-border);
-  border-radius: 20px;
 }
 
 .scroll-hint-icon {

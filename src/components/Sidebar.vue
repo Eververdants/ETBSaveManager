@@ -91,27 +91,27 @@ const handleMouseLeave = () => {
 };
 
 // 检测并应用主题
-  const detectTheme = () => {
-    // 检查是否有全局主题管理器
-    if (window.themeManager && typeof window.themeManager.applyTheme === 'function') {
-      // 获取当前主题设置
-      const savedTheme = localStorage.getItem('theme') || 'light';
-      // 应用主题
-      window.themeManager.applyTheme(savedTheme);
-    } else {
-      // 如果没有主题管理器，使用默认的亮色主题
-      document.documentElement.setAttribute('data-theme', 'light');
+const detectTheme = () => {
+  // 检查是否有全局主题管理器
+  if (window.themeManager && typeof window.themeManager.applyTheme === 'function') {
+    // 获取当前主题设置
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    // 应用主题
+    window.themeManager.applyTheme(savedTheme);
+  } else {
+    // 如果没有主题管理器，使用默认的亮色主题
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+
+  // 主题切换后强制重绘，防止图层卡住
+  requestAnimationFrame(() => {
+    if (sidebarRef.value) {
+      sidebarRef.value.style.visibility = 'hidden';
+      sidebarRef.value.offsetHeight; // 触发重排
+      sidebarRef.value.style.visibility = 'visible';
     }
-    
-    // 主题切换后强制重绘，防止图层卡住
-    requestAnimationFrame(() => {
-      if (sidebarRef.value) {
-        sidebarRef.value.style.visibility = 'hidden';
-        sidebarRef.value.offsetHeight; // 触发重排
-        sidebarRef.value.style.visibility = 'visible';
-      }
-    });
-  };
+  });
+};
 
 // 组件挂载时设置初始激活项
 onMounted(() => {
@@ -412,11 +412,11 @@ const handleItemClick = (item, event) => {
   background: var(--sidebar-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
   z-index: 1000;
   overflow: hidden;
   border-right: 1px solid var(--sidebar-border-color);
-  border-radius: 0 18px 18px 0;
+  border-radius: 0 var(--radius-sidebar) var(--radius-sidebar) 0;
   font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', sans-serif;
   transition: background 0.25s ease, border-right 0.25s ease, box-shadow 0.25s ease, width 0.3s ease;
 }
@@ -454,12 +454,12 @@ const handleItemClick = (item, event) => {
 .sidebar-item {
   display: flex;
   align-items: center;
-  padding: 12px 0;
+  padding: var(--space-3) 0;
   cursor: pointer;
   transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
   white-space: nowrap;
-  border-radius: 18px;
-  margin: 0 15px;
+  border-radius: var(--radius-sidebar);
+  margin: 0 var(--space-4);
   position: relative;
   justify-content: flex-start;
   color: var(--sidebar-text-color);
@@ -470,7 +470,7 @@ const handleItemClick = (item, event) => {
 /* 侧边栏项悬停状态样式 */
 .sidebar-item:hover {
   background: var(--sidebar-hover-bg);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
   transition: all 0.2s ease, background-color 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -493,12 +493,12 @@ const handleItemClick = (item, event) => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 15px 0;
+  padding: var(--space-4) 0;
   overflow-x: hidden;
   overflow-y: hidden;
   scrollbar-width: none;
-  gap: 15px;
-  /* 统一间距为15px */
+  gap: var(--space-4);
+  /* 使用统一的间距变量 */
 
   .sidebar.expanded & {
     overflow-y: auto;
@@ -511,7 +511,7 @@ const handleItemClick = (item, event) => {
 
     &::-webkit-scrollbar-thumb {
       background: var(--color-border);
-      border-radius: 3px;
+      border-radius: var(--radius-xs);
     }
 
     &::-webkit-scrollbar-track {
@@ -525,7 +525,7 @@ const handleItemClick = (item, event) => {
 .sidebar-section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 
@@ -535,7 +535,7 @@ const handleItemClick = (item, event) => {
   overflow-x: hidden;
   overflow-y: hidden;
   scrollbar-width: none;
-  padding-top: 8px;
+  padding-top: var(--space-2);
 }
 
 .sidebar.expanded .top-section {
@@ -559,14 +559,14 @@ const handleItemClick = (item, event) => {
 
 .sidebar.expanded .top-section::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   transform: translateZ(0);
   backface-visibility: hidden;
   will-change: transform, opacity;
   opacity: 0.6;
   width: 6px !important;
-  margin: 2px !important;
+  margin: var(--space-1) !important;
 }
 
 .sidebar.expanded .top-section:hover::-webkit-scrollbar-thumb {
@@ -605,8 +605,8 @@ const handleItemClick = (item, event) => {
 .bottom-section {
   flex-shrink: 0;
   margin-top: auto;
-  padding: 15px 0;
-  /* 统一上下内边距为15px，与左右边距一致 */
+  padding: var(--space-4) 0;
+  /* 使用统一的间距变量 */
 }
 
 .bottom-section .sidebar-item:last-child {
@@ -645,7 +645,8 @@ const handleItemClick = (item, event) => {
   transition: all 0.3s ease;
   flex: 1;
   overflow: hidden;
-  padding-right: 20px;
+  padding-right: var(--space-5);
+  /* 使用统一的间距变量 */
 }
 
 /* 侧边栏文本样式 */
@@ -716,8 +717,8 @@ const handleItemClick = (item, event) => {
   top: 0;
   white-space: nowrap;
   width: max-content;
-  margin-left: 16px;
-  /* 精确间隔，匹配中文字符宽度 */
+  margin-left: var(--space-4);
+  /* 使用统一的间距变量 */
 }
 
 
@@ -728,8 +729,8 @@ const handleItemClick = (item, event) => {
   }
 
   100% {
-    transform: translateX(calc(-100% - 16px));
-    /* 精确补偿：文本100% + 16px中文字符宽度 */
+    transform: translateX(calc(-100% - var(--space-4)));
+    /* 使用统一的间距变量 */
   }
 }
 
@@ -765,12 +766,12 @@ const handleItemClick = (item, event) => {
 .sidebar-item {
   display: flex;
   align-items: center;
-  padding: 12px 0;
+  padding: var(--space-3) 0;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  border-radius: 18px;
-  margin: 0 15px;
+  border-radius: var(--radius-sidebar);
+  margin: 0 var(--space-4);
   position: relative;
   justify-content: flex-start;
   color: var(--sidebar-text-color);
@@ -782,7 +783,7 @@ const handleItemClick = (item, event) => {
 /* 侧边栏项悬停状态样式 */
 .sidebar-item:hover {
   background: var(--sidebar-hover-bg);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
 }
 
 

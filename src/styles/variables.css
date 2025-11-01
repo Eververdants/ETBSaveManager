@@ -1,3 +1,29 @@
+/* 统一圆角设计系统 */
+:root {
+    /* 基础圆角值 - 基于8px网格系统 */
+    --radius-xs: 4px;    /* 小元素：标签、按钮等 */
+    --radius-sm: 8px;    /* 小型组件：输入框、小卡片 */
+    --radius-md: 12px;   /* 中型组件：表单元素、按钮 */
+    --radius-lg: 16px;   /* 大型组件：卡片、面板 */
+    --radius-xl: 20px;   /* 特大组件：模态框、大卡片 */
+    --radius-2xl: 24px;  /* 超大组件：特殊容器 */
+    
+    /* 特殊圆角值 */
+    --radius-pill: 9999px;  /* 胶囊形状：标签、按钮 */
+    --radius-circle: 50%;   /* 圆形：头像、图标按钮 */
+    
+    /* 组件特定圆角 */
+    --radius-sidebar: 16px;  /* 侧边栏项目 */
+    --radius-card: 16px;     /* 普通卡片 */
+    --radius-modal: 20px;    /* 模态框 */
+    --radius-dropdown: 12px; /* 下拉菜单 */
+    --radius-button: 12px;   /* 按钮 */
+    --radius-input: 12px;    /* 输入框 */
+    --radius-tag: 8px;       /* 标签 */
+    --radius-tooltip: 8px;   /* 提示框 */
+    --radius-image: 12px;    /* 图片容器 */
+}
+
 /* 主色调 */
 :root {
     --primary-color: #6366f1;
@@ -230,6 +256,55 @@
     --Card-text-primary: var(--text-primary);
     --Card-text-secondary: var(--text-secondary);
     --Card-surface-overlay: rgba(0, 0, 0, 0.2);
+}
+
+/* 统一间距系统 - 基于8px网格 */
+:root {
+    /* 基础间距单位 */
+    --space-1: 4px;    /* 极小间距 */
+    --space-2: 8px;    /* 小间距 */
+    --space-3: 12px;   /* 中小间距 */
+    --space-4: 16px;   /* 中等间距 */
+    --space-5: 20px;   /* 中大间距 */
+    --space-6: 24px;   /* 大间距 */
+    --space-8: 32px;   /* 特大间距 */
+    --space-10: 40px;  /* 超大间距 */
+    --space-12: 48px;  /* 极大间距 */
+    --space-16: 64px;  /* 最大间距 */
+    
+    /* 组件特定间距 */
+    --spacing-component-padding: var(--space-4);
+    --spacing-component-margin: var(--space-4);
+    --spacing-section-gap: var(--space-6);
+    --spacing-list-gap: var(--space-3);
+    --spacing-form-gap: var(--space-4);
+    --spacing-button-padding: var(--space-3) var(--space-4);
+    --spacing-input-padding: var(--space-3);
+    --spacing-card-padding: var(--space-5);
+    --spacing-modal-padding: var(--space-6);
+}
+
+/* 统一阴影系统 */
+:root {
+    /* 基础阴影 */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+    --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
+    
+    /* 特殊阴影 */
+    --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+    --shadow-outline: 0 0 0 3px rgba(66, 153, 225, 0.5);
+    
+    /* 组件特定阴影 */
+    --shadow-card: var(--shadow-md);
+    --shadow-modal: var(--shadow-xl);
+    --shadow-dropdown: var(--shadow-lg);
+    --shadow-button: var(--shadow-sm);
+    --shadow-button-hover: var(--shadow-md);
+    --shadow-tooltip: var(--shadow-lg);
 }
 
 [data-theme="dark"] {

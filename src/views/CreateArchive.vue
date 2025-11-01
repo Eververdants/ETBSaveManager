@@ -374,7 +374,8 @@ export default {
 
     // 监听selectedEnding的变化
     watch(selectedEnding, (newVal, oldVal) => {
-      console.log(`selectedEnding changed from ${oldVal} to ${newVal}`)
+      // 移除控制台输出，避免在切换结局时显示调试信息
+      // console.log(`selectedEnding changed from ${oldVal} to ${newVal}`)
     })
 
     // 方法
@@ -1448,10 +1449,10 @@ export default {
 .steam-id-card,
 .inventory-card {
   background: var(--bg-secondary);
-  border-radius: 18px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-card);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  box-shadow: var(--shadow-card);
   backdrop-filter: blur(10px);
   border: 1px solid var(--divider-light);
 }
@@ -1534,12 +1535,12 @@ export default {
   /* 最小高度 */
   aspect-ratio: 4/3;
   /* 固定宽高比，确保卡片比例一致 */
-  border-radius: 18px;
+  border-radius: var(--radius-card);
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: var(--bg-secondary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--bg-tertiary);
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   /* 强制GPU加速，防止布局抖动 */
@@ -1550,7 +1551,7 @@ export default {
 
 .level-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-lg);
 }
 
 .level-card.selected {
@@ -1639,7 +1640,7 @@ export default {
 
 /* 表单元素 */
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .form-label {
@@ -1647,14 +1648,14 @@ export default {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .error-message {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
   font-size: 14px;
   color: var(--error-color);
 }
@@ -1706,9 +1707,9 @@ export default {
 
 .form-input {
   width: 100%;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--divider-color);
-  border-radius: 12px;
+  border-radius: var(--radius-input);
   font-size: 16px;
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -1725,16 +1726,16 @@ export default {
 .radio-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .radio-option {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   cursor: pointer;
-  padding: 12px;
-  border-radius: 12px;
+  padding: var(--space-3);
+  border-radius: var(--radius-input);
   transition: all 0.3s ease;
 }
 
@@ -1781,17 +1782,17 @@ export default {
 .difficulty-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .difficulty-option {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 20px;
+  gap: var(--space-2);
+  padding: var(--space-5);
   border: 1px solid var(--divider-color);
-  border-radius: 12px;
+  border-radius: var(--radius-input);
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -1810,11 +1811,11 @@ export default {
 .singleplayer-notice {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   background: var(--bg-secondary);
   border: 1px solid var(--divider-light);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--text-secondary);
   font-size: 14px;
 }
@@ -1867,7 +1868,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px;
+  padding: var(--space-4) var(--space-8);
   /* 增加内边距 */
   position: fixed;
   bottom: 0;
@@ -1880,7 +1881,7 @@ export default {
   backdrop-filter: var(--glass-backdrop-filter);
   -webkit-backdrop-filter: var(--glass-backdrop-filter);
   border-top: 1px solid var(--glass-border);
-  box-shadow: 0 -8px 32px var(--glass-shadow-light), 0 -2px 8px var(--glass-shadow-medium);
+  box-shadow: var(--shadow-lg);
   z-index: 100;
   transition: left 0.3s ease, background 0.3s ease;
   /* 与侧边栏展开/收起动画同步 */
@@ -1891,9 +1892,9 @@ export default {
   font-size: 16px;
   font-weight: 500;
   color: var(--text-secondary);
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   background: var(--bg-secondary);
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   transition: all 0.3s ease;
 }
 
@@ -1951,19 +1952,19 @@ export default {
 /* Steam ID 管理 */
 .steam-id-input-group {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
 }
 
 .steam-id-info {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding: 12px 16px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
   background: rgba(0, 122, 255, 0.1);
   border: 1px solid rgba(0, 122, 255, 0.2);
-  border-radius: 12px;
+  border-radius: var(--radius-input);
   color: var(--accent-color);
   font-size: 14px;
 }
@@ -1971,12 +1972,12 @@ export default {
 .add-button {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
   background: var(--accent-color);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-input);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -1991,16 +1992,16 @@ export default {
 .steam-id-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .steam-id-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   background: var(--bg-primary);
-  border-radius: 12px;
+  border-radius: var(--radius-input);
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -2017,7 +2018,7 @@ export default {
 .player-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   flex: 1;
 }
 
@@ -2043,7 +2044,7 @@ export default {
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 
 .username.loading {
@@ -2053,13 +2054,13 @@ export default {
 
 /* 玩家输入提示信息样式 */
 .player-input-message {
-  margin-top: 8px;
-  padding: 10px 16px;
-  border-radius: 8px;
+  margin-top: var(--space-2);
+  padding: var(--space-2-5) var(--space-4);
+  border-radius: var(--radius-sm);
   font-size: 14px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   animation: fadeIn 0.3s ease;
 }
 
@@ -2150,7 +2151,7 @@ export default {
 .inventory-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: var(--space-6);
   justify-content: center;
   max-width: 1200px;
   margin: 0 auto;
@@ -2159,7 +2160,7 @@ export default {
 .inventory-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: var(--space-5);
   justify-content: center;
   align-items: flex-start;
   width: 100%;
@@ -2168,7 +2169,7 @@ export default {
 .inventory-column {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
   text-align: center;
 }
@@ -2176,7 +2177,7 @@ export default {
 .inventory-backpack {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--space-2);
   justify-items: center;
   justify-content: center;
   margin: 0 auto;
@@ -2187,7 +2188,7 @@ export default {
   width: 60px;
   height: 60px;
   border: 1px solid var(--divider-color);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2209,13 +2210,13 @@ export default {
 .slot-label {
   font-size: 10px;
   color: var(--text-secondary);
-  margin-bottom: 2px;
+  margin-bottom: var(--space-0-5);
 }
 
 .slot-number {
   font-size: 10px;
   color: var(--text-secondary);
-  margin-bottom: 2px;
+  margin-bottom: var(--space-0-5);
 }
 
 .slot-content {
@@ -2243,14 +2244,14 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
+  padding: var(--space-15) var(--space-5);
   color: var(--text-secondary);
   text-align: center;
 }
 
 .empty-inventory-message .fa-info-circle {
   font-size: 48px;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   opacity: 0.5;
 }
 
@@ -2262,17 +2263,17 @@ export default {
 /* 批量创建按钮样式 */
 .batch-create-button {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: var(--space-5);
+  right: var(--space-5);
   z-index: 100;
   /* display: flex; */
   display: none;
   align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
   background: var(--bg-secondary);
   border: 1px solid var(--divider-light);
-  border-radius: 25px;
+  border-radius: var(--radius-lg);
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 500;
@@ -2280,19 +2281,19 @@ export default {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .batch-create-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-lg);
   background: var(--bg-tertiary);
   border-color: var(--accent-color);
 }
 
 .batch-create-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .batch-create-button.shrink {
@@ -2345,9 +2346,9 @@ export default {
 
 @media (max-width: 768px) {
   .batch-create-button {
-    top: 16px;
-    right: 16px;
-    padding: 10px 16px;
+    top: var(--space-4);
+    right: var(--space-4);
+    padding: var(--space-2-5) var(--space-4);
     font-size: 13px;
   }
 
@@ -2362,9 +2363,9 @@ export default {
 
 @media (max-width: 480px) {
   .batch-create-button {
-    top: 12px;
-    right: 12px;
-    padding: 8px 12px;
+    top: var(--space-3);
+    right: var(--space-3);
+    padding: var(--space-2) var(--space-3);
   }
 }
 
@@ -2449,9 +2450,9 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   /* 增加最小宽度，提供更好的视觉效果 */
-  gap: 24px;
+  gap: var(--space-6);
   /* 增加间距 */
-  padding-bottom: 20px;
+  padding-bottom: var(--space-5);
   width: 100%;
   /* 确保网格使用全部可用宽度 */
   min-height: 300px;
@@ -2463,7 +2464,7 @@ export default {
 /* 响应式设计 */
 @media (max-width: 1400px) {
   .content-wrapper {
-    padding: 0 16px;
+    padding: 0 var(--space-4);
     /* 减少内边距 */
   }
 }
@@ -2471,31 +2472,31 @@ export default {
 @media (max-width: 1200px) {
   .level-grid {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 20px;
+    gap: var(--space-5);
   }
 }
 
 @media (max-width: 768px) {
   .content-wrapper {
-    padding: 0 12px;
+    padding: 0 var(--space-3);
     /* 进一步减少内边距 */
   }
 
   .level-grid {
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
+    gap: var(--space-4);
   }
 }
 
 @media (max-width: 480px) {
   .content-wrapper {
-    padding: 0 8px;
+    padding: 0 var(--space-2);
     /* 最小内边距 */
   }
 
   .level-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 12px;
+    gap: var(--space-3);
   }
 }
 </style>

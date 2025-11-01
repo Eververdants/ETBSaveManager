@@ -163,7 +163,7 @@ onMounted(() => {
   z-index: 1000;
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid #0f0;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   backdrop-filter: blur(4px);
   pointer-events: auto;
   transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
@@ -180,12 +180,14 @@ onMounted(() => {
 */
 </style>
 <style>
+/* 全局基础样式重置 */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* 全局圆角应用 */
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', sans-serif;
   background: var(--bg);
@@ -201,6 +203,46 @@ body {
 #app {
   height: 100vh;
   overflow: hidden;
+}
+
+/* 全局按钮圆角 */
+button, .btn, [role="button"] {
+  border-radius: var(--radius-button);
+}
+
+/* 全局输入框圆角 */
+input, textarea, select {
+  border-radius: var(--radius-input);
+}
+
+/* 全局卡片圆角 */
+.card, .archive-card, .level-card, .modal-card, .dropdown-content {
+  border-radius: var(--radius-card);
+}
+
+/* 全局标签圆角 */
+.tag, .badge, .label {
+  border-radius: var(--radius-tag);
+}
+
+/* 全局模态框圆角 */
+.modal, .dialog, .popup {
+  border-radius: var(--radius-modal);
+}
+
+/* 全局下拉菜单圆角 */
+.dropdown, .menu, .context-menu {
+  border-radius: var(--radius-dropdown);
+}
+
+/* 全局提示框圆角 */
+.tooltip, .popover {
+  border-radius: var(--radius-tooltip);
+}
+
+/* 全局图片容器圆角 */
+.image-container, .avatar, .icon-container {
+  border-radius: var(--radius-image);
 }
 
 /* 隐藏所有滚动条但保留滚动功能 */
@@ -245,6 +287,9 @@ body {
   animation: none !important;
   transition: none !important;
   will-change: auto !important;
+  
+  /* 应用圆角 */
+  border-radius: var(--radius-pill);
 }
 
 .app-container {

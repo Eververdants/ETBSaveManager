@@ -130,7 +130,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 0 0 12px;
+  padding: 0 0 0 var(--space-3);
   background: var(--titlebar-bg);
   backdrop-filter: blur(10px);
   z-index: 1100;
@@ -152,6 +152,14 @@ onMounted(() => {
   transition: color 0.25s ease;
 }
 
+.titlebar-controls {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-left: auto;
+  margin-right: 0;
+}
+
 .titlebar-button {
   width: 38px;
   height: 38px;
@@ -176,95 +184,6 @@ onMounted(() => {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: color 0.25s ease;
-}
-
-.titlebar-button:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(5px);
-  transition: all 0.2s ease, background-color 0.25s ease, backdrop-filter 0.25s ease;
-}
-
-.titlebar-button:active {
-  background-color: rgba(255, 255, 255, 0.25);
-  transition: all 0.2s ease, background-color 0.25s ease;
-}
-
-.titlebar-button.close:hover {
-  background-color: #ff5f57;
-  color: white;
-  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease;
-}
-
-.titlebar-button.close:active {
-  background-color: #e5484d;
-  transition: all 0.2s ease, background-color 0.25s ease;
-}
-
-.sidebar-toggle {
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
-  -webkit-app-region: no-drag;
-  font-size: 14px;
-}
-
-.sidebar-toggle:hover {
-  background: var(--sidebar-hover-bg);
-  transform: scale(1.1);
-}
-
-.sidebar-toggle.collapsed {
-  transform: rotate(90deg);
-}
-
-.title-section h1 {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0;
-  padding: 0;
-  line-height: 1;
-}
-
-.titlebar-controls {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  margin-left: auto;
-  margin-right: 0;
-}
-
-.titlebar-button {
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  -webkit-app-region: no-drag !important;
-  pointer-events: auto !important;
-  user-select: none;
-  position: relative;
-  z-index: 1001;
-}
-
-.titlebar-button svg {
-  font-size: 12px;
-  color: var(--text);
-  pointer-events: none;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 .titlebar-button#titlebar-minimize svg {
@@ -291,6 +210,31 @@ onMounted(() => {
 
 .titlebar-button.close:active {
   background-color: #e5484d;
+}
+
+.sidebar-toggle {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xs);
+  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+  -webkit-app-region: no-drag;
+  font-size: 14px;
+}
+
+.sidebar-toggle:hover {
+  background: var(--sidebar-hover-bg);
+  transform: scale(1.1);
+}
+
+.sidebar-toggle.collapsed {
+  transform: rotate(90deg);
 }
 
 

@@ -358,7 +358,7 @@ export default {
       cacheEntryCount: 0,
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: '3.0.0-Alpha-6',
+      appVersion: '3.0.0-Alpha-6.1',
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
@@ -1043,7 +1043,7 @@ export default {
 /* 设置界面样式 */
 .settings-container {
   height: 100%;
-  padding: 32px 24px;
+  padding: var(--space-8) var(--space-6);
   background-color: var(--bg-primary);
   overflow-y: auto;
   transition: background-color 0.25s ease;
@@ -1051,18 +1051,18 @@ export default {
 
 .setting-group {
   background-color: var(--bg-secondary);
-  border-radius: 12px;
-  margin-bottom: 24px;
+  border-radius: var(--radius-card);
+  margin-bottom: var(--space-6);
   overflow: hidden;
   /* 统一阴影效果 */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
   /* 添加毛玻璃效果 */
   backdrop-filter: blur(20px);
   transition: background-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .section-header {
-  padding: 16px 20px 12px;
+  padding: var(--space-4) var(--space-5) var(--space-3);
   font-size: 20px;
   font-weight: 600;
   color: var(--text-primary);
@@ -1075,7 +1075,7 @@ export default {
 .setting-item {
   display: flex;
   align-items: center;
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-5);
   transition: background-color 0.2s ease;
   position: relative;
   /* 添加更平滑的过渡 */
@@ -1094,11 +1094,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 12px;
+  margin-right: var(--space-3);
   color: var(--accent-color);
   transition: color 0.25s ease;
   /* 添加圆角背景 */
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background-color: rgba(0, 122, 255, 0.1);
 }
 
@@ -1106,8 +1106,8 @@ export default {
   background-color: var(--accent-color);
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
@@ -1116,21 +1116,21 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--space-1-5);
   /* 添加微妙的阴影 */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .check-update-btn:hover:not(:disabled) {
   background-color: var(--accent-hover);
   transform: translateY(-1px);
   /* 增强悬停阴影 */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
 }
 
 .check-update-btn:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .check-update-btn:disabled {
@@ -1187,14 +1187,14 @@ input:checked+.slider:before {
 
 .version-info {
   text-align: center;
-  padding: 40px 20px;
+  padding: var(--space-10) var(--space-5);
   color: var(--text-tertiary);
   transition: color 0.25s ease;
 }
 
 .version-text {
   font-size: 15px;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   transition: color 0.25s ease;
 }
 
@@ -1207,15 +1207,15 @@ input:checked+.slider:before {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .settings-container {
-    padding: 16px 16px;
+    padding: var(--space-4) var(--space-4);
   }
 
   .setting-item {
-    padding: 12px 16px;
+    padding: var(--space-3) var(--space-4);
   }
 
   .setting-item:not(:last-child)::after {
-    left: 16px;
+    left: var(--space-4);
   }
 
   .setting-title {
@@ -1233,7 +1233,7 @@ input:checked+.slider:before {
 
 @media (max-width: 480px) {
   .settings-container {
-    padding: 12px 12px;
+    padding: var(--space-3) var(--space-3);
   }
 
   .setting-item {
@@ -1243,12 +1243,12 @@ input:checked+.slider:before {
   }
 
   .setting-icon {
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2);
   }
 
   .setting-action {
     margin-left: 0;
-    margin-top: 12px;
+    margin-top: var(--space-3);
     align-self: stretch;
     width: 100%;
   }
@@ -1276,7 +1276,7 @@ input:checked+.slider:before {
 .setting-action {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   margin-left: auto;
 }
 
@@ -1290,10 +1290,10 @@ input:checked+.slider:before {
   position: fixed;
   top: 70px;
   /* 考虑标题栏高度 */
-  right: 20px;
+  right: var(--space-5);
   padding: 1rem 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
   z-index: 10000;
   /* 提高z-index确保在最上层 */
   display: flex;
@@ -1308,7 +1308,7 @@ input:checked+.slider:before {
 }
 
 .update-message:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-xl);
 }
 
 .update-message svg,
@@ -1348,7 +1348,7 @@ input:checked+.slider:before {
   color: white;
   border: 1px solid var(--primary-color);
   padding: 0.5rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
@@ -1608,9 +1608,9 @@ input:checked+.slider:before {
 }
 
 .setting-action .dropdown-display {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   font-size: 14px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--dropdown-bg);
   border: 1px solid var(--dropdown-border);
   color: var(--dropdown-text);
@@ -1624,7 +1624,7 @@ input:checked+.slider:before {
 
 .setting-action .dropdown-icon {
   font-size: 10px;
-  margin-left: 6px;
+  margin-left: var(--space-1-5);
 }
 
 .setting-action .dropdown-menu {
@@ -1635,8 +1635,8 @@ input:checked+.slider:before {
   width: 100%;
   background: var(--dropdown-bg);
   border: 1px solid var(--dropdown-border);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px var(--dropdown-shadow);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
   z-index: 1001;
   backdrop-filter: blur(20px);
@@ -1645,7 +1645,7 @@ input:checked+.slider:before {
 }
 
 .setting-action .dropdown-option {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   font-size: 14px;
   color: var(--dropdown-text);
   transition: all 0.2s ease;
@@ -1689,7 +1689,7 @@ input:checked+.slider:before {
 .api-key-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
 }
 
@@ -1700,9 +1700,9 @@ input:checked+.slider:before {
 
 .api-key-input {
   flex: 1;
-  padding: 8px 36px 8px 12px;
+  padding: var(--space-2) 36px var(--space-2) var(--space-3);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background-color: var(--input-bg);
   color: var(--text);
   font-size: 14px;
@@ -1718,15 +1718,15 @@ input:checked+.slider:before {
 
 .toggle-visibility-btn {
   position: absolute;
-  right: 8px;
+  right: var(--space-2);
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
+  padding: var(--space-1);
+  border-radius: var(--radius-xs);
   transition: all 0.2s ease;
 }
 
@@ -1739,8 +1739,8 @@ input:checked+.slider:before {
   background-color: var(--accent-color);
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -1748,7 +1748,7 @@ input:checked+.slider:before {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--space-1-5);
   min-width: 100px;
 }
 
@@ -1760,7 +1760,7 @@ input:checked+.slider:before {
 .cache-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -1774,8 +1774,8 @@ input:checked+.slider:before {
   background-color: var(--bg-tertiary);
   color: var(--text);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  padding: var(--space-1-5) var(--space-3);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -1783,7 +1783,7 @@ input:checked+.slider:before {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--space-1-5);
   white-space: nowrap;
 }
 

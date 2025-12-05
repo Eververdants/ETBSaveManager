@@ -1,11 +1,11 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "ETB Save Manager",
-  "version": "3.0.0-Alpha-6.1",
+  "version": "3.0.0-Alpha-6.2",
   "identifier": "com.admin.etbsavemanager",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://localhost:1430",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },

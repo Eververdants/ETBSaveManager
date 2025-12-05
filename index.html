@@ -17,6 +17,11 @@
         function setTheme(theme) {
           document.documentElement.setAttribute('data-theme', theme);
           document.documentElement.classList.add('theme-initialized');
+          
+          // 同步到全局主题管理器
+          if (window.themeManager) {
+            window.themeManager.currentTheme = theme;
+          }
         }
         
         try {

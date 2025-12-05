@@ -20,12 +20,51 @@
           </div>
         </div>
 
-        <div v-else key="grid" class="archive-grid-container">
-          <transition-group name="archive-card" tag="div" class="archive-grid" ref="archiveGrid"
+        <div v-else key="grid" class="archive-grid-container" ref="archiveGrid">
+          <!-- 虚拟滚动容器 -->
+          <div v-if="isVirtualizationEnabled" class="virtual-scroll-container" 
+               :style="{ height: `${displayArchives.length * cardHeight}px` }">
+            <div class="virtual-scroll-content" 
+                 :style="{ transform: `translateY(${virtualScrollOffset}px)` }">
+              <transition-group name="archive-card" tag="div" class="archive-grid"
+                @before-enter="beforeCardEnter" @enter="cardEnter" @leave="cardLeave">
+                <ArchiveCard v-for="(archive, index) in visibleArchives" 
+                             :key="archive.id" 
+                             :archive="archive" 
+                             :index="startIndex + index"
+                             :data-index="startIndex + index" 
+                             @toggle-visibility="handleToggleVisibility" 
+                             @edit="handleEdit" 
+                             @delete="deleteArchive"
+                             @select="selectArchive" />
+              </transition-group>
+            </div>
+          </div>
+          
+          <!-- 传统的分批渲染（当虚拟滚动未启用时） -->
+          <transition-group v-else name="archive-card" tag="div" class="archive-grid"
             @before-enter="beforeCardEnter" @enter="cardEnter" @leave="cardLeave">
-            <ArchiveCard v-for="(archive, index) in displayArchives" :key="archive.id" :archive="archive" :index="index"
-              :data-index="index" @toggle-visibility="handleToggleVisibility" @edit="handleEdit" @delete="deleteArchive"
-              @select="selectArchive" />
+            <!-- 优先渲染前50个，然后延迟加载剩余的 -->
+            <ArchiveCard v-for="(archive, index) in priorityArchives" 
+                         :key="archive.id" 
+                         :archive="archive" 
+                         :index="index"
+                         :data-index="index" 
+                         @toggle-visibility="handleToggleVisibility" 
+                         @edit="handleEdit" 
+                         @delete="deleteArchive"
+                         @select="selectArchive" />
+            
+            <!-- 延迟加载剩余存档（使用懒加载避免一次性渲染大量DOM） -->
+            <ArchiveCard v-for="(archive, index) in remainingArchives" 
+                         :key="archive.id" 
+                         :archive="archive" 
+                         :index="index + priorityArchives.length"
+                         :data-index="index + priorityArchives.length" 
+                         @toggle-visibility="handleToggleVisibility" 
+                         @edit="handleEdit" 
+                         @delete="deleteArchive"
+                         @select="selectArchive" />
 
             <div v-if="displayArchives.length === 0 && archives.length > 0 && hasActiveFilters" key="no-results"
               class="empty-state">
@@ -40,7 +79,8 @@
               </div>
             </div>
 
-            <div v-else-if="displayArchives.length === 0 && archives.length === 0" key="no-archives" class="empty-state">
+            <div v-else-if="displayArchives.length === 0 && archives.length === 0" key="no-archives"
+              class="empty-state">
               <div class="empty-content">
                 <div class="empty-icon">📁</div>
                 <h3 class="empty-title">{{ $t('archiveSearch.noArchives') }}</h3>
@@ -59,9 +99,9 @@
         <transition name="search-panel" @before-enter="beforeSearchEnter" @enter="searchEnter" @leave="searchLeave">
           <div v-show="showSearch && !loading" class="search-overlay">
             <!-- 使用Teleport将搜索组件传送到body层级，确保不受父容器影响 -->
-            <ArchiveSearchFilter :archives="archives" :initial-filters="lastSearchFilters"
-              :visible="showSearch" @filtered="handleFilteredArchives" @filters-changed="updateLastFilters"
-              @close="toggleSearch" ref="archiveSearchFilter" />
+            <ArchiveSearchFilter :archives="archives" :initial-filters="lastSearchFilters" :visible="showSearch"
+              @filtered="handleFilteredArchives" @filters-changed="updateLastFilters" @close="toggleSearch"
+              ref="archiveSearchFilter" />
           </div>
         </transition>
       </Teleport>
@@ -72,7 +112,7 @@
         :description="$t('confirmModal.deleteArchiveDescription')" type="danger"
         :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isDeleting"
         @confirm="confirmDelete" @cancel="cancelDelete" />
-        
+
       <!-- 性能设置模态框 -->
       <Teleport to="body">
         <transition name="modal">
@@ -81,17 +121,16 @@
               <div class="modal-header">
                 <h2 class="modal-title">性能设置</h2>
                 <button class="modal-close" @click="showPerformanceSettings = false">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
                 </button>
               </div>
               <div class="modal-body">
-                <PerformanceSettings 
-                  v-model:performanceMode="performanceMode"
-                  v-model:animationQuality="animationQuality"
-                  v-model:hardwareAcceleration="hardwareAcceleration"
+                <PerformanceSettings v-model:performanceMode="performanceMode"
+                  v-model:animationQuality="animationQuality" v-model:hardwareAcceleration="hardwareAcceleration"
                   v-model:virtualizationEnabled="virtualizationEnabled" />
               </div>
             </div>
@@ -99,13 +138,11 @@
         </transition>
       </Teleport>
     </div>
-    
-    <!-- 浮动操作按钮 - 移到body层级确保不受任何父容器影响 -->
-    <Teleport to="body">
-      <FloatingActionButton :class="loading ? 'loading' : ''" :current-index="fabCurrentIndex"
-        @update:current-index="fabCurrentIndex = $event" @search-click="toggleSearch" @refresh-click="refreshArchives"
-        @folder-click="openSaveGamesFolder" @settings-click="showPerformanceSettings = true" />
-    </Teleport>
+
+    <!-- 浮动操作按钮 - 完全由组件内部控制显示/隐藏 -->
+    <FloatingActionButton :class="loading ? 'loading' : ''" :current-index="fabCurrentIndex"
+      @update:current-index="fabCurrentIndex = $event" @search-click="toggleSearch" @refresh-click="refreshArchives"
+      @folder-click="openSaveGamesFolder" />
   </div>
 </template>
 
@@ -144,6 +181,127 @@ const animationQuality = ref('medium') // 'high' | 'medium' | 'low' | 'disabled'
 const hardwareAcceleration = ref(true)
 const virtualizationEnabled = ref(true)
 
+// 虚拟滚动配置
+const virtualScrollThreshold = ref(20) // 超过20个存档时启用虚拟滚动
+const cardHeight = ref(320) // 卡片高度（包含间距）
+const containerHeight = ref(600) // 容器高度
+
+// 批处理渲染配置 - 优化性能
+const batchSize = ref(Math.min(50, virtualScrollThreshold.value * 2)) // 根据虚拟滚动阈值动态调整
+const lazyLoadMore = ref(false) // 是否启用懒加载更多
+
+// 计算属性：虚拟滚动 - 只渲染可见区域的存档
+const visibleArchives = computed(() => {
+  if (!isVirtualizationEnabled.value || displayArchives.value.length <= virtualScrollThreshold.value) {
+    return displayArchives.value
+  }
+  
+  const container = document.querySelector('.archive-grid-container')
+  if (!container) return displayArchives.value
+  
+  const containerRect = container.getBoundingClientRect()
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0
+  const windowHeight = window.innerHeight
+  const viewportStart = scrollTop - 200 // 提前200px开始渲染
+  const viewportEnd = scrollTop + windowHeight + 200 // 延后200px结束渲染
+  
+  const startIndex = Math.floor(Math.max(0, viewportStart) / cardHeight.value)
+  const endIndex = Math.ceil(Math.min(viewportEnd / cardHeight.value, displayArchives.value.length))
+  
+  console.log(`虚拟滚动 - 显示范围: ${startIndex} 到 ${endIndex}, 总数: ${displayArchives.value.length}`)
+  
+  return displayArchives.value.slice(startIndex, endIndex)
+})
+
+// 计算虚拟滚动偏移量
+const virtualScrollOffset = computed(() => {
+  if (!isVirtualizationEnabled.value || displayArchives.value.length <= virtualScrollThreshold.value) return 0
+  
+  const container = document.querySelector('.archive-grid-container')
+  if (!container) return 0
+  
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0
+  const startIndex = Math.floor(scrollTop / cardHeight.value)
+  
+  return startIndex * cardHeight.value
+})
+
+// 计算当前滚动位置的起始索引
+const startIndex = computed(() => {
+  if (!isVirtualizationEnabled.value || displayArchives.value.length <= virtualScrollThreshold.value) return 0
+  
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0
+  return Math.floor(scrollTop / cardHeight.value)
+})
+
+// 计算属性：判断是否启用虚拟滚动
+const isVirtualizationEnabled = computed(() => {
+  return virtualizationEnabled.value && displayArchives.value.length > virtualScrollThreshold.value
+})
+
+// 计算属性：分批处理存档以减少重渲染（当虚拟滚动未启用时使用）
+const priorityArchives = computed(() => {
+  if (isVirtualizationEnabled.value) {
+    return visibleArchives.value
+  }
+  
+  // 优先显示前50个存档
+  const priorityCount = Math.min(batchSize.value, displayArchives.value.length)
+  return displayArchives.value.slice(0, priorityCount)
+})
+
+const remainingArchives = computed(() => {
+  if (isVirtualizationEnabled.value) {
+    return []
+  }
+  
+  // 剩余的存档延迟加载
+  const priorityCount = Math.min(batchSize.value, displayArchives.value.length)
+  return displayArchives.value.slice(priorityCount)
+})
+
+// 动态计算容器高度
+const updateContainerHeight = () => {
+  nextTick(() => {
+    const container = document.querySelector('.archive-grid-container')
+    if (container) {
+      containerHeight.value = container.clientHeight || 600
+    }
+  })
+}
+
+// 滚动监听和懒加载
+let scrollListener = null
+
+// 防抖函数
+const debounce = (fn, wait = 100) => {
+  let timeout
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout)
+      fn(...args)
+    }
+    clearTimeout(timeout)
+    timeout = setTimeout(later, wait)
+  }
+}
+
+const handleScroll = () => {
+  if (!lazyLoadMore.value && displayArchives.value.length > batchSize.value) {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const scrollHeight = document.documentElement.scrollHeight
+    const clientHeight = document.documentElement.clientHeight
+    
+    // 当滚动到60%时开始懒加载更多内容（降低阈值以更早触发）
+    if (scrollTop + clientHeight >= scrollHeight * 0.6) {
+      lazyLoadMore.value = true
+    }
+  }
+}
+
+// 防抖的滚动处理
+const debouncedScrollHandler = debounce(handleScroll, 50)
+
 // 性能监控实例
 let performanceMonitor = null
 
@@ -162,6 +320,26 @@ onUnmounted(() => {
     clearInterval(fabPositionCheckerRef.value)
     fabPositionCheckerRef.value = null
   }
+  
+  // 清理滚动监听
+  if (scrollListener) {
+    window.removeEventListener('scroll', debouncedScrollHandler)
+    scrollListener = null
+  }
+  
+  // 清理定时器
+  if (updateTimeout) {
+    clearTimeout(updateTimeout)
+    updateTimeout = null
+  }
+  
+  if (animationFrame) {
+    cancelAnimationFrame(animationFrame)
+    animationFrame = null
+  }
+  
+  // 清理懒加载状态
+  lazyLoadMore.value = false
 })
 
 // 加载状态
@@ -176,11 +354,11 @@ let animationFrame = null
 const loadVisibleSaves = async () => {
   try {
     // 调用后端获取MAINSAVE文件内容
-    const response = await invoke('handle_file', { 
+    const response = await invoke('handle_file', {
       action: 'read',
-      filePath: 'MAINSAVE.sav' 
+      filePath: 'MAINSAVE.sav'
     })
-    
+
     if (response && response.success && response.data) {
       // 解析SingleplayerSaves字段
       const singleplayerSaves = response.data.SingleplayerSaves || []
@@ -223,10 +401,10 @@ const loadRealArchives = async () => {
         const gameMode = item.mode === '单人模式' ? 'singleplayer' :
           item.mode === '多人模式' ? 'multiplayer' :
             item.mode.toLowerCase()
-        
+
         // 直接使用后端返回的is_visible值，不再自己判断
         const isVisible = item.is_visible === true
-        
+
         return {
           id: item.id,
           name: item.name,
@@ -252,7 +430,7 @@ const initializeArchives = async (silent = false) => {
   if (!silent) {
     loading.value = true
   }
-  
+
   // 确保在加载过程中不显示任何内容（非静默模式）
   if (!silent) {
     archives.value = []
@@ -262,7 +440,7 @@ const initializeArchives = async (silent = false) => {
   try {
     // 先加载可见存档列表
     await loadVisibleSaves()
-    
+
     // 再加载存档数据
     const realArchives = await loadRealArchives()
     archives.value = realArchives
@@ -306,6 +484,10 @@ const showDeleteConfirm = ref(false)
 const archiveToDelete = ref(null)
 const isDeleting = ref(false)
 
+// 渲染优化配置
+const renderCache = new Map()
+const lastUpdateTime = ref(0)
+
 // 筛选状态持久化（内存中，不保存到本地存储）
 const lastSearchFilters = ref({
   searchQuery: '',
@@ -316,19 +498,23 @@ const lastSearchFilters = ref({
 })
 
 // 性能优化：防抖处理筛选
-const debouncedApplyFilters = (archives, filters) => {
-  if (updateTimeout) clearTimeout(updateTimeout)
+const debouncedApplyFilters = debounce((archives, filters) => {
+  const now = Date.now()
+  
+  // 防止过于频繁的更新
+  if (now - lastUpdateTime.value < 50) {
+    return
+  }
 
-  updateTimeout = setTimeout(() => {
-    const filtered = applyFiltersImmediate(archives, filters)
-    displayArchives.value = filtered
-    
-    // 确保浮动按钮位置正确
-     nextTick(() => {
-       enhancedProtectFloatingButton()
-     })
-  }, 100)
-}
+  const filtered = applyFiltersImmediate(archives, filters)
+  displayArchives.value = filtered
+  lastUpdateTime.value = now
+
+  // 确保浮动按钮位置正确
+  nextTick(() => {
+    enhancedProtectFloatingButton()
+  })
+}, 100)
 
 // 立即应用筛选逻辑
 const applyFiltersImmediate = (archives, filters) => {
@@ -378,11 +564,11 @@ const performanceObserver = () => {
 
   // 获取设备性能信息
   const devicePerf = detectDevicePerformance()
-  
+
   // 根据设备性能调整阈值
   const longTaskThreshold = devicePerf.isVeryLowEndDevice ? 30 : 50
   const fpsThreshold = devicePerf.isVeryLowEndDevice ? 20 : 30
-  
+
   longTaskObserver = new PerformanceObserver((list) => {
     list.getEntries().forEach((entry) => {
       if (entry.duration > longTaskThreshold) {
@@ -432,7 +618,7 @@ const performanceObserver = () => {
         if (lowFpsCount > 0) {
           lowFpsCount = Math.max(0, lowFpsCount - 1)
         }
-        
+
         // 如果FPS恢复到45以上，可以考虑恢复普通模式
         if (fps > 45 && isLowPerfMode && lowFpsCount === 0) {
           console.log(`帧率已恢复 (${fps} FPS)，恢复到自动性能模式`)
@@ -466,10 +652,6 @@ const performanceObserver = () => {
 
 // 获取动画参数的函数
 
-// 性能优化：虚拟化大列表
-const VIRTUALIZATION_THRESHOLD = 30 // 降低阈值以更早启用虚拟化
-const isVirtualizationEnabled = computed(() => archives.value.length > VIRTUALIZATION_THRESHOLD)
-
 // 计算属性优化
 const archiveStats = computed(() => ({
   total: archives.value.length,
@@ -491,7 +673,7 @@ const archiveSearchFilter = ref(null)
 // 搜索相关方法
 const toggleSearch = () => {
   showSearch.value = !showSearch.value
-  
+
   // 当打开搜索时，不再滚动到顶部，保持在当前位置
   if (showSearch.value) {
     nextTick(() => {
@@ -511,7 +693,7 @@ const handleFilteredArchives = (filteredArchives) => {
     // 使用nextTick确保DOM更新完成后再设置值，以正确触发动画
     nextTick(() => {
       displayArchives.value = filteredArchives
-      
+
       // 确保浮动按钮位置正确
       enhancedProtectFloatingButton()
     })
@@ -544,7 +726,7 @@ const clearAllFilters = () => {
     // 延迟设置存档数据，确保空状态动画完成后再显示存档
     setTimeout(() => {
       displayArchives.value = [...archives.value]
-      
+
       // 确保浮动按钮位置正确
       enhancedProtectFloatingButton()
     }, 400) // 与空状态动画时长保持一致
@@ -583,13 +765,13 @@ const handleToggleVisibility = async (updatedArchive) => {
     // 立即更新前端状态，提供即时反馈
     const originalVisibility = updatedArchive.isVisible
     const newVisibility = !originalVisibility
-    
+
     // 同步更新主存档列表 - 使用Vue的响应式更新
     const archiveIndex = archives.value.findIndex(a => a.id === updatedArchive.id)
     if (archiveIndex > -1) {
       archives.value[archiveIndex].isVisible = newVisibility
     }
-    
+
     // 同步更新显示列表，确保视图立即更新 - 使用Vue的响应式更新
     const displayIndex = displayArchives.value.findIndex(a => a.id === updatedArchive.id)
     if (displayIndex > -1) {
@@ -640,31 +822,31 @@ const handleToggleVisibility = async (updatedArchive) => {
 
       if (!resultObj || !resultObj.success) {
         // 如果后端操作失败，恢复前端状态
-        
+
         // 同步恢复主存档列表
         if (archiveIndex > -1) {
           archives.value[archiveIndex].isVisible = originalVisibility
         }
-        
+
         // 同步恢复显示列表
         if (displayIndex > -1) {
           displayArchives.value[displayIndex].isVisible = originalVisibility
         }
-        
+
         throw new Error(resultObj?.error || '操作失败')
       }
-      
+
       // 后端操作成功，立即重新加载数据以确保状态一致性
-      
+
       // 立即重新加载存档列表，不显示动画
       await initializeArchives(true) // true 表示静默加载，不显示动画
-      
+
       // 确保浮动按钮位置正确
       protectFloatingButtonPosition()
     }
   } catch (error) {
     console.error('切换可见性失败:', error)
-    
+
     // 使用更优雅的错误提示
     const errorToast = document.createElement('div')
     errorToast.className = 'error-toast'
@@ -717,7 +899,7 @@ const confirmDelete = async () => {
 
       // 重新应用筛选器
       debouncedApplyFilters(archives.value, lastSearchFilters.value)
-      
+
       // 确保浮动按钮位置正确
       protectFloatingButtonPosition()
 
@@ -779,7 +961,7 @@ const refreshArchives = async () => {
   try {
     // 先重新加载可见存档列表（关键修复：确保获取最新的可见性状态）
     await loadVisibleSaves()
-    
+
     // 再重新加载真实存档数据
     const realArchives = await loadRealArchives()
     archives.value = realArchives
@@ -806,11 +988,11 @@ const resetPerformanceMode = () => {
 const enhancedProtectFloatingButton = () => {
   // 立即执行一次保护
   protectFloatingButtonPosition()
-  
+
   // 在下一个动画帧再次检查，确保DOM更新完成
   requestAnimationFrame(() => {
     protectFloatingButtonPosition()
-    
+
     // 多重延迟检查，确保所有可能的布局变化都被处理
     setTimeout(protectFloatingButtonPosition, 50)
     setTimeout(protectFloatingButtonPosition, 100)
@@ -818,7 +1000,7 @@ const enhancedProtectFloatingButton = () => {
     setTimeout(protectFloatingButtonPosition, 300)
     setTimeout(protectFloatingButtonPosition, 500)
     setTimeout(protectFloatingButtonPosition, 1000)
-    
+
     // 最终检查 - 确保位置完全正确
     setTimeout(() => {
       const container = document.querySelector('.floating-action-container')
@@ -826,7 +1008,7 @@ const enhancedProtectFloatingButton = () => {
         const rect = container.getBoundingClientRect()
         const expectedBottom = window.innerHeight - rect.bottom
         const expectedRight = window.innerWidth - rect.right
-        
+
         // 如果位置偏差超过5px，强制重置
         if (Math.abs(expectedBottom - 30) > 5 || Math.abs(expectedRight - 30) > 5) {
           container.style.setProperty('position', 'fixed', 'important')
@@ -871,10 +1053,10 @@ const openSaveGamesFolder = async () => {
         }
       })
     }, 2000)
-    
+
     // 确保浮动按钮位置不受影响
     enhancedProtectFloatingButton()
-    
+
     // 延迟再次检查，确保在所有动画完成后按钮位置仍然正确
     setTimeout(enhancedProtectFloatingButton, 300)
 
@@ -887,7 +1069,7 @@ const openSaveGamesFolder = async () => {
 const beforeCardEnter = (el) => {
   // 获取动画参数
   const params = getAnimationParams('cardEnter', performanceMode.value, animationQuality.value)
-  
+
   const index = parseInt(el.dataset.index) || 0
   el.style.setProperty('--index', index)
   el.style.opacity = 0
@@ -906,7 +1088,7 @@ const cardEnter = (el, done) => {
   // 获取动画参数
   const params = getAnimationParams('cardEnter', performanceMode.value, animationQuality.value)
   const devicePerf = detectDevicePerformance()
-  
+
   // 对于大量卡片情况，简化动画
   const index = parseInt(el.dataset.index) || 0
   const cardCount = displayArchives.value.length
@@ -923,7 +1105,7 @@ const cardEnter = (el, done) => {
   // 如果卡片数量超过100，减少动画延迟以提升性能
   const delay = cardCount > 100 ? Math.min(index * params.delay, 150) : Math.min(index * params.delay, 300)
   const duration = cardCount > 100 ? 0.2 : params.duration
-  
+
   // 移除延迟，使用 requestAnimationFrame 确保同步
   requestAnimationFrame(() => {
     gsap.to(el, {
@@ -949,10 +1131,10 @@ const cardLeave = (el, done) => {
   // 获取动画参数
   const params = getAnimationParams('cardLeave', performanceMode.value, animationQuality.value)
   const devicePerf = detectDevicePerformance()
-  
+
   // 对于大量卡片情况，简化动画
   const cardCount = displayArchives.value.length
-  
+
   // 在极低性能模式或卡片数量过多时，直接完成动画
   if (devicePerf.isVeryLowEndDevice || cardCount > 200 || performanceMode.value === 'low') {
     el.style.opacity = 0
@@ -960,7 +1142,7 @@ const cardLeave = (el, done) => {
     done()
     return
   }
-  
+
   const duration = cardCount > 100 ? 0.15 : params.duration
 
   gsap.to(el, {
@@ -975,7 +1157,7 @@ const cardLeave = (el, done) => {
 const beforeSearchEnter = (el) => {
   // 获取动画参数
   const params = getAnimationParams('search', performanceMode.value, animationQuality.value)
-  
+
   // 预设置初始状态，避免初始跳动
   gsap.set(el, {
     opacity: 0,
@@ -989,7 +1171,7 @@ const searchEnter = (el, done) => {
   // 获取动画参数
   const params = getAnimationParams('search', performanceMode.value, animationQuality.value)
   const devicePerf = detectDevicePerformance()
-  
+
   // 移除延迟，使用 requestAnimationFrame 确保同步
   requestAnimationFrame(() => {
     gsap.to(el, {
@@ -1007,7 +1189,7 @@ const searchLeave = (el, done) => {
   // 获取动画参数
   const params = getAnimationParams('search', performanceMode.value, animationQuality.value)
   const devicePerf = detectDevicePerformance()
-                          
+
   gsap.to(el, {
     opacity: 0,
     y: -8,
@@ -1029,10 +1211,10 @@ let sidebarAnimationTimeout = null
 onMounted(async () => {
   // 组件卸载标志
   let isUnmounted = false
-  
+
   // 初始化性能监控并保存清理函数
   cleanupPerformanceObserver = performanceObserver()
-  
+
   // 创建性能监控器实例
   performanceMonitor = createPerformanceMonitor({
     onLowPerformance: () => {
@@ -1054,10 +1236,10 @@ onMounted(async () => {
       }
     }
   })
-  
+
   // 初始化性能监控器
   performanceMonitor.start()
-  
+
   // 检测设备性能并设置初始性能模式
   const devicePerf = detectDevicePerformance()
   if (devicePerf.isLowEndDevice) {
@@ -1067,81 +1249,84 @@ onMounted(async () => {
     performanceMode.value = 'auto'
     animationQuality.value = 'high'
   }
-  
+
   // 初始化浮动按钮样式保护
-   let fabObserver = null
-   const initFloatingButtonProtection = () => {
-     const fabElement = document.querySelector('.floating-action-container')
-     if (fabElement) {
-       // 初始化保护按钮位置
-       enhancedProtectFloatingButton()
-       
-       // 创建MutationObserver监控样式变化，但只监控关键定位属性
-       fabObserver = new MutationObserver((mutations) => {
-         mutations.forEach((mutation) => {
-           if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-             // 只检查关键定位属性
-             const currentStyles = fabElement.style;
-             const criticalStyles = ['position', 'bottom', 'right', 'top', 'left'];
-             let hasCriticalChanges = false;
-             
-             // 检查关键定位样式是否被意外修改
-             criticalStyles.forEach(prop => {
-               const currentValue = currentStyles.getPropertyValue(prop);
-               let expectedValue = '';
-               
-               // 根据屏幕尺寸确定期望值
-               if (prop === 'position') {
-                 expectedValue = 'fixed';
-               } else if (prop === 'bottom' || prop === 'right') {
-                 if (window.innerWidth <= 480) {
-                   expectedValue = prop === 'bottom' ? '15px' : '15px';
-                 } else if (window.innerWidth <= 768) {
-                   expectedValue = prop === 'bottom' ? '20px' : '20px';
-                 } else {
-                   expectedValue = '30px';
-                 }
-               } else if (prop === 'top' || prop === 'left') {
-                 expectedValue = 'auto';
-               }
-               
-               if (currentValue && currentValue !== expectedValue) {
-                 console.warn(`浮动按钮定位样式被意外修改: ${prop}`);
-                 hasCriticalChanges = true;
-               }
-             });
-             
-             // 只有检测到关键定位样式被修改时才恢复
-             if (hasCriticalChanges) {
-               console.log('恢复浮动按钮定位样式');
-               protectFloatingButtonPosition()
-             }
-           }
-         })
-       })
-       
-       // 开始观察
-       fabObserver.observe(fabElement, {
-         attributes: true,
-         attributeFilter: ['style'],
-         childList: false,
-         subtree: false
-       })
-       
-       console.log('浮动按钮样式保护已启用')
-     }
-   }
-   
-   // 延迟初始化以确保DOM已完全加载
-   setTimeout(initFloatingButtonProtection, 1000)
-   
-   // 定期检查浮动按钮位置，确保它始终正确
-   const fabPositionChecker = setInterval(() => {
-     protectFloatingButtonPosition()
-   }, 5000)
-   
-   // 将定时器保存到组件实例，以便在onUnmounted中清理
-   fabPositionCheckerRef.value = fabPositionChecker
+  let fabObserver = null
+  const initFloatingButtonProtection = () => {
+    const fabElement = document.querySelector('.floating-action-container')
+    if (fabElement) {
+      // 初始化保护按钮位置
+      enhancedProtectFloatingButton()
+
+      // 创建MutationObserver监控样式变化，但只监控关键定位属性
+      fabObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+            // 只检查关键定位属性
+            const currentStyles = fabElement.style;
+            const criticalStyles = ['position', 'bottom', 'right', 'top', 'left'];
+            let hasCriticalChanges = false;
+
+            // 检查关键定位样式是否被意外修改
+            criticalStyles.forEach(prop => {
+              const currentValue = currentStyles.getPropertyValue(prop);
+              let expectedValue = '';
+
+              // 根据屏幕尺寸确定期望值
+              if (prop === 'position') {
+                expectedValue = 'fixed';
+              } else if (prop === 'bottom' || prop === 'right') {
+                if (window.innerWidth <= 480) {
+                  expectedValue = prop === 'bottom' ? '15px' : '15px';
+                } else if (window.innerWidth <= 768) {
+                  expectedValue = prop === 'bottom' ? '20px' : '20px';
+                } else {
+                  expectedValue = '30px';
+                }
+              } else if (prop === 'top' || prop === 'left') {
+                expectedValue = 'auto';
+              }
+
+              if (currentValue && currentValue !== expectedValue) {
+                console.warn(`浮动按钮定位样式被意外修改: ${prop}`);
+                hasCriticalChanges = true;
+              }
+            });
+
+            // 只有检测到关键定位样式被修改时才恢复
+            if (hasCriticalChanges) {
+              console.log('恢复浮动按钮定位样式');
+              protectFloatingButtonPosition()
+            }
+          }
+        })
+      })
+
+      // 开始观察
+      fabObserver.observe(fabElement, {
+        attributes: true,
+        attributeFilter: ['style'],
+        childList: false,
+        subtree: false
+      })
+
+      console.log('浮动按钮样式保护已启用')
+    }
+  }
+
+  // 延迟初始化以确保DOM已完全加载
+  setTimeout(initFloatingButtonProtection, 1000)
+
+  // 定期检查浮动按钮位置，确保它始终正确
+  const fabPositionChecker = setInterval(() => {
+    protectFloatingButtonPosition()
+  }, 5000)
+
+  // 将定时器保存到组件实例，以便在onUnmounted中清理
+  fabPositionCheckerRef.value = fabPositionChecker
+  
+  // 添加滚动监听器用于懒加载
+  scrollListener = window.addEventListener('scroll', debouncedScrollHandler)
 
   // 设置CSS变量用于动画控制
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -1154,13 +1339,21 @@ onMounted(async () => {
   await initializeArchives()
   displayArchives.value = [...archives.value]
 
+  // 更新虚拟滚动容器高度
+  updateContainerHeight()
+
+  // 监听窗口大小变化时更新容器高度
+  window.addEventListener('resize', () => {
+    updateContainerHeight()
+  })
+
   // 初始化 Intersection Observer
   if ('IntersectionObserver' in window) {
     intersectionObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible')
-          
+
           // 元素进入视图时强制重绘，防止图层卡住
           requestAnimationFrame(() => {
             // 检查元素和样式是否仍然存在
@@ -1186,21 +1379,21 @@ onMounted(async () => {
   const handleResize = () => {
     // 如果组件已卸载，直接返回
     if (isUnmounted) return
-    
+
     if (animationFrame) cancelAnimationFrame(animationFrame)
     animationFrame = requestAnimationFrame(() => {
       // 如果组件已卸载，直接返回
       if (isUnmounted) return
-      
+
       // 重新计算布局
-      
+
       // 窗口大小变化时强制重绘，防止图层卡住
       if (archiveGrid.value && archiveGrid.value.style) {
         archiveGrid.value.style.visibility = 'hidden';
         archiveGrid.value.offsetHeight; // 触发重排
         archiveGrid.value.style.visibility = 'visible';
       }
-      
+
       // 使用全局保护工具安全修改body样式
       safeModifyBodyStyles(() => {
         document.body.style.transform = 'translateZ(0)';
@@ -1210,7 +1403,7 @@ onMounted(async () => {
           }
         }, 0);
       });
-      
+
       // 确保浮动按钮位置在窗口大小变化时正确
       protectFloatingButtonPosition()
     })
@@ -1220,7 +1413,7 @@ onMounted(async () => {
   const handleSidebarExpand = (event) => {
     // 如果组件已卸载，直接返回
     if (isUnmounted) return
-    
+
     // 设置动画状态标志，暂时禁用卡片动画
     isSidebarAnimating = true
     if (sidebarAnimationTimeout) clearTimeout(sidebarAnimationTimeout)
@@ -1237,7 +1430,7 @@ onMounted(async () => {
     requestAnimationFrame(() => {
       // 如果组件已卸载，直接返回
       if (isUnmounted) return
-      
+
       // 触发网格重新布局
       if (archiveGrid.value && archiveGrid.value.style) {
         // 强制浏览器重新计算样式，但不触发重排
@@ -1258,26 +1451,36 @@ onUnmounted(() => {
   if (animationFrame) cancelAnimationFrame(animationFrame)
   if (intersectionObserver) intersectionObserver.disconnect()
   if (sidebarAnimationTimeout) clearTimeout(sidebarAnimationTimeout)
-  
+
   // 停止性能监控
   if (performanceMonitor) {
     performanceMonitor.stop()
     performanceMonitor = null
   }
-  
+
   // 清理性能观察器
   if (cleanupPerformanceObserver) {
     cleanupPerformanceObserver()
   }
-  
+
   // 清理长任务观察器
   if (longTaskObserver) {
     longTaskObserver.disconnect()
     longTaskObserver = null
   }
+
+  // 清理滚动监听器
+  if (scrollListener) {
+    window.removeEventListener('scroll', debouncedScrollHandler)
+    scrollListener = null
+  }
+
+  window.removeEventListener('resize', () => { })
+  window.removeEventListener('sidebar-expand', () => { })
   
-  window.removeEventListener('resize', () => {})
-  window.removeEventListener('sidebar-expand', () => {})
+  // 清理懒加载状态
+  lazyLoadMore.value = false
+  
   // 清理引用，防止内存泄漏
   archiveGrid.value = null
 })
@@ -1361,6 +1564,25 @@ watch(archives, (newArchives) => {
   max-width: none;
   margin: 0 auto;
   box-sizing: border-box;
+  position: relative;
+}
+
+/* 虚拟滚动容器样式 */
+.virtual-scroll-container {
+  position: relative;
+  overflow: visible;
+  width: 100%;
+}
+
+.virtual-scroll-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  will-change: transform;
+  /* 提升虚拟滚动性能 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* 存档网格 - 使用固定列数避免重排，提升性能 */

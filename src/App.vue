@@ -23,6 +23,10 @@ const sidebarExpanded = ref(false);
 // 发行版禁用性能监控 - 设置为false确保默认不显示
 const performanceMonitorEnabled = ref(false);
 
+// 组件缓存管理
+const cachedComponents = ref(['Home', 'Settings', 'CreateArchive', 'PluginMarket', 'CoreArchive', 'Log'])
+const excludedComponents = ref(['BatchCreateArchive', 'EditArchive', 'SteamCache'])
+
 const handleSidebarExpand = (expanded) => {
   sidebarExpanded.value = expanded;
 };
@@ -121,9 +125,12 @@ onMounted(() => {
       <Sidebar @sidebar-expand="handleSidebarExpand" />
       <main class="main-content"
         :class="{ 'sidebar-collapsed': !sidebarExpanded, 'sidebar-expanded': sidebarExpanded }">
-        <router-view v-slot="{ Component }">
+        <router-view v-slot="{ Component, route }">
           <transition name="page" mode="out-in">
-            <component :is="Component" />
+            <!-- 使用keep-alive缓存常用组件 -->
+            <keep-alive :include="cachedComponents" :exclude="excludedComponents">
+              <component :is="Component" :key="route.fullPath" />
+            </keep-alive>
           </transition>
         </router-view>
         <!-- 性能监控组件 - 发行版禁用 -->
@@ -283,13 +290,17 @@ input, textarea, select {
   backface-visibility: visible !important;
   perspective: none !important;
   
-  /* 防止动画影响 */
+  /* 防止动画影响 - 但保留transform过渡 */
   animation: none !important;
-  transition: none !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   will-change: auto !important;
   
   /* 应用圆角 */
   border-radius: var(--radius-pill);
+  
+  /* 确保初始状态可见 */
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .app-container {
@@ -310,7 +321,7 @@ input, textarea, select {
   margin-left: var(--sidebar-width, 70px);
   transition: margin-left 0.3s cubic-bezier(0.65, 0, 0.35, 1);
   margin-top: 38px;
-  height: calc(100vh - 38px);
+  height: 100vh;
   scroll-behavior: smooth;
 }
 </style>

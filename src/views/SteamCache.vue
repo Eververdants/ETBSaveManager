@@ -2,7 +2,7 @@
   <div class="steam-cache-container">
     <div class="page-header">
       <button class="back-btn" @click="goBack">
-        <i class="fas fa-arrow-left"></i>
+        <font-awesome-icon :icon="['fas', 'arrow-left']" />
         {{ t('common.back') }}
       </button>
       <h1>{{ t('settings.steamApi.cacheTitle') }}</h1>
@@ -11,7 +11,7 @@
     <div class="cache-content">
       <div class="cache-actions">
         <button class="cleanup-expired-btn" @click="cleanupExpiredCache" :disabled="isCleaning">
-          <i class="fas fa-trash-alt"></i>
+          <font-awesome-icon :icon="['fas', 'trash']" />
           {{ t('settings.steamApi.cleanupExpired') }}
         </button>
         <div class="cache-count-info">

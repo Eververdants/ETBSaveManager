@@ -1,0 +1,279 @@
+[
+  {
+    "version": "3.0.0-Alpha-6.2",
+    "date": "2025-12-05",
+    "title": "新增更新公告頁面與隱藏層級選擇",
+    "type": "feature",
+    "categories": {
+      "newFeatures": [
+        "新增更新公告頁面，可查看歷史更新內容",
+        "建立存檔頁面新增隱藏層級選擇"
+      ],
+      "improvements": [
+        "調整了關於頁面的更新公告板塊樣式",
+        "調整了設定頁面的 Steam API 板塊樣式"
+      ],
+      "bugFixes": [
+        "修復了存檔列表頁面浮動按鈕多一個設定圖示的問題"
+      ],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-6.1",
+    "date": "2025-10-27",
+    "title": "存檔卡片樣式優化與輸入框故障修復",
+    "type": "patch",
+    "categories": {
+      "newFeatures": [],
+      "improvements": [
+        "優化了存檔卡片的外觀顯示效果"
+      ],
+      "bugFixes": [
+        "修復了輸入框不支援刪除、複製、貼上和復原操作的問題"
+      ],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-6",
+    "date": "2025-10-26",
+    "title": "SteamAPIKey集成與關卡分組功能",
+    "type": "feature",
+    "categories": {
+      "newFeatures": [
+        "新增 SteamAPIKey 設定功能，可將 SteamID 轉換為真實使用者名稱",
+        "建立存檔頁面新增關卡分組功能，按遊戲結局分類顯示"
+      ],
+      "improvements": [],
+      "bugFixes": [],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-5.3",
+    "date": "2025-10-26",
+    "title": "新增物品與圖示更新",
+    "type": "patch",
+    "categories": {
+      "newFeatures": [
+        "新增遊戲內物品：小刀 & 泰迪熊"
+      ],
+      "improvements": [
+        "更新所有物品圖示至最新遊戲版本"
+      ],
+      "bugFixes": [
+        "修復了物品選擇彈窗顯示在頁面頂部的問題"
+      ],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-5.2",
+    "date": "2025-10-25",
+    "title": "GPU加速開關與捲動修復",
+    "type": "enhancement",
+    "categories": {
+      "newFeatures": [
+        "設定 → 進階選項中新增「停用GPU加速」開關，切換至CPU渲染以緩解Win11 24H2圖形刷新問題"
+      ],
+      "improvements": [
+        "更新所有關卡預覽圖片至最新遊戲內容",
+        "優化搜尋元件的樣式設計",
+        "優化「存檔建立成功」提示的樣式"
+      ],
+      "bugFixes": [
+        "修復存檔列表頁面浮動按鈕隨捲動偏移的問題",
+        "修復搜尋元件（搜尋框+篩選下拉選單）捲動時位置偏移的問題"
+      ],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-5.1",
+    "date": "2025-10-25",
+    "title": "全新存檔即時識別",
+    "type": "major",
+    "categories": {
+      "newFeatures": [],
+      "improvements": [
+        "全新存檔開箱即用：重新設計核心邏輯，匹配最新遊戲命名和驗證規則，無需手動複製",
+        "壓縮最新關卡預覽圖片，減小套件體積"
+      ],
+      "bugFixes": [],
+      "performance": [
+        "提升首次載入速度"
+      ]
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-5",
+    "date": "2025-10-23",
+    "title": "首日支援5張新官方地圖",
+    "type": "feature",
+    "categories": {
+      "newFeatures": [
+        "新增對遊戲最新5張官方地圖的支援，可直接選擇和編輯"
+      ],
+      "improvements": [],
+      "bugFixes": [],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-4.2",
+    "date": "2025-09-20",
+    "title": "效能提升與UI優化",
+    "type": "improvement",
+    "categories": {
+      "newFeatures": [],
+      "improvements": [
+        "卡片列表效能提升：虛擬捲動 + 記憶體池技術，超長列表不再卡頓",
+        "精簡搜尋篩選組合欄：將輸入框和下拉篩選合併為更簡潔的元件"
+      ],
+      "bugFixes": [],
+      "performance": [
+        "大幅提升大列表情況下的流暢度"
+      ]
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-4.1",
+    "date": "2025-08-30",
+    "title": "更新來源選擇與下載優化",
+    "type": "improvement",
+    "categories": {
+      "newFeatures": [
+        "新增更新來源選擇功能，可根據網路環境選擇合適的更新來源"
+      ],
+      "improvements": [
+        "優化更新下載流程，體驗更流暢快速"
+      ],
+      "bugFixes": [],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-4",
+    "date": "2025-08-30",
+    "title": "新功能與問題修復",
+    "type": "feature",
+    "categories": {
+      "newFeatures": [
+        "新增卡片刪除動畫，操作更流暢自然（感謝Bilibili用戶Bychuau建議）",
+        "單人模式限制：建立存檔頁面選擇單人模式時強制普通難度，並提示用戶單人模式僅限普通難度（感謝Bilibili用戶Bed_RUN建議）"
+      ],
+      "improvements": [],
+      "bugFixes": [
+        "修復設定深色主題後重啟應用變回淺色的問題",
+        "修復建立存檔按鈕可多次點擊的問題",
+        "修復搜尋頁面背景不適配的問題",
+        "調整確認刪除彈窗背景，不再遮擋標題欄"
+      ],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-3",
+    "date": "2025-08-27",
+    "title": "完整國際化支援與UI重構",
+    "type": "major",
+    "categories": {
+      "newFeatures": [
+        "完整的多語言支援：內建簡中/繁中/英文，更多語言即將推出",
+        "淺色/深色主題手動切換（暫不支援跟隨系統）",
+        "玩家物品欄編輯器：可直接在存檔編輯器中新增、移除和修改物品堆疊",
+        "UI全面重構：響應式佈局、全新導航、統一配色方案，動畫更流暢，互動更快速"
+      ],
+      "improvements": [],
+      "bugFixes": [],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-2.1",
+    "date": "2025-07-15",
+    "title": "擴充市場介面完成",
+    "type": "feature",
+    "categories": {
+      "newFeatures": [
+        "新增擴充市場介面，可瀏覽擴充功能（暫不支援安裝）"
+      ],
+      "improvements": [
+        "更新「存檔列表」配色方案",
+        "調整側邊欄配色方案",
+        "優化搜尋元件和關卡選擇介面的顏色顯示"
+      ],
+      "bugFixes": [],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-2",
+    "date": "2025-07-11",
+    "title": "建立新存檔功能完成",
+    "type": "feature",
+    "categories": {
+      "newFeatures": [
+        "完成建立新存檔功能",
+        "可對現有存檔進行實際編輯操作",
+        "新增左側邊欄導航選單",
+        "「存檔列表」「關於」「使用教學」頁面已完成"
+      ],
+      "improvements": [],
+      "bugFixes": [],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-1.2",
+    "date": "2025-07-09",
+    "title": "編輯功能完成",
+    "type": "feature",
+    "categories": {
+      "newFeatures": [
+        "完成存檔檔案編輯功能",
+        "新增左側邊欄導航選單",
+        "「存檔列表」「關於」「使用教學」頁面已完成"
+      ],
+      "improvements": [],
+      "bugFixes": [],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-1.1",
+    "date": "2025-07-04",
+    "title": "新增側邊欄導航選單",
+    "type": "improvement",
+    "categories": {
+      "newFeatures": [
+        "新增左側邊欄導航選單"
+      ],
+      "improvements": [
+        "持續優化介面互動和視覺細節"
+      ],
+      "bugFixes": [],
+      "performance": []
+    }
+  },
+  {
+    "version": "3.0.0-Alpha-1",
+    "date": "2025-07-03",
+    "title": "首個Alpha預覽版",
+    "type": "major",
+    "categories": {
+      "newFeatures": [
+        "使用Vue.js完全重新設計的UI介面，更現代的外觀和流暢動畫",
+        "相比v2.7.3新增當前關卡顯示",
+        "引入搜尋功能，更高效查找存檔",
+        "顯著提升的編輯能力（目前為單一介面）",
+        "卡片式存檔顯示，更清晰的用戶體驗",
+        "集成FontAwesome圖示增強視覺效果"
+      ],
+      "improvements": [],
+      "bugFixes": [],
+      "performance": []
+    }
+  }
+]

@@ -75,17 +75,30 @@
     "name": "逃離後室存檔工具"
   },
   "about": {
-    "description": "關於應用程式資訊",
+    "description": "關於應用信息",
     "version": "版本",
     "tagline": "專為逃離後室設計的存檔管理工具",
-    "appInfo": "應用程式資訊",
+    "appInfo": "應用信息",
     "author": "作者",
-    "license": "開源授權",
-    "releaseNotes": "更新日誌",
+    "license": "開源協議",
     "acknowledgements": "致謝",
-    "contact": "聯絡方式",
+    "contact": "聯繫方式",
     "authorName": "Eververdants",
-    "licenseName": "MIT License"
+    "licenseName": "MIT License",
+    "developerModeActivated": "開發者模式已啟用！",
+    "releaseNotes": "更新公告"
+  },
+  "noReleaseNotes": "暫無更新公告",
+  "featured": "精選",
+  "viewAllVersions": "查看全部版本",
+  "back": "返回",
+  "releaseNotes": "更新公告",
+  "versions": "個版本",
+  "categories": {
+    "newFeatures": "新功能",
+    "improvements": "改進",
+    "bugFixes": "錯誤修復",
+    "performance": "效能優化"
   },
   "logs": {
     "title": "系統日誌",
@@ -161,8 +174,12 @@
     "developerOptions": "開發者選項",
     "developerMode": "開發者模式",
     "developerModeDescription": "啟用開發者模式以訪問高級功能",
+    "enableLogging": "啟用日誌記錄",
+    "enableLoggingDescription": "記錄性能數據到日誌文件",
     "enableLogMenu": "啟用日誌功能",
     "enableLogMenuDescription": "顯示日誌選單和日誌記錄功能",
+    "testArchiveDisplay": "測試存檔顯示",
+    "testArchiveDisplayDescription": "在側邊欄中顯示測試存檔按鈕",
     "steamApi": {
       "title": "Steam API",
       "apiKey": "API 金鑰",
@@ -193,9 +210,22 @@
       "cacheViewError": "獲取快取條目失敗: {error}",
       "cleanupError": "清理過期快取失敗: {error}",
       "validatingKey": "正在驗證Steam API金鑰...",
-    "keyInvalid": "Steam API金鑰無效，請檢查後重試",
-    "keySaved": "Steam API金鑰已儲存並驗證通過",
-    "keyTestFailed": "API測試未通過，請檢查API金鑰"
+      "testSteamId": "測試Steam ID",
+      "idLength": "ID長度",
+      "startKeyTest": "開始金鑰測試",
+      "apiCallSuccess": "API呼叫成功",
+      "keyValidationPassed": "金鑰驗證通過",
+      "keySavedToConfig": "金鑰已儲存到設定",
+      "keySavedToLocalStorage": "金鑰已儲存到本地儲存",
+      "apiCallFailed": "API呼叫失敗",
+      "keyInvalid": "Steam API金鑰無效，請檢查後重試",
+      "keySaved": "Steam API金鑰已儲存並驗證通過",
+      "keyTestFailed": "API測試未通過，請檢查API金鑰",
+      "error": {
+        "invalidSteamIdFormat": "Steam ID格式無效",
+        "steamApiError": "Steam API錯誤"
+      },
+      "otherError": "其他錯誤"
     }
   },
   "inventory": {

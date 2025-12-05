@@ -1,6 +1,6 @@
 <template>
   <teleport to="body">
-    <div class="floating-action-container" ref="floatingActionContainer" :class="$attrs.class">
+    <div v-if="isVisible" class="floating-action-container" ref="floatingActionContainer" :class="$attrs.class">
       <div class="action-button" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" @wheel="handleWheel"
         @click="handleClick" ref="actionButton">
         <!-- 主要图标 -->
@@ -18,8 +18,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { gsap } from 'gsap'
 
 // 禁用自动属性继承，因为我们使用teleport
@@ -28,15 +29,114 @@ defineOptions({
 })
 
 const { t } = useI18n({ useScope: 'global' })
+const route = useRoute()
 
-const emit = defineEmits(['search-click', 'folder-click', 'refresh-click', 'settings-click'])
+const emit = defineEmits(['search-click', 'folder-click', 'refresh-click'])
+
+// 检查当前是否在Home页面（存档列表页面）
+const isHomePage = computed(() => {
+  return route.name === 'Home'
+})
+
+// 显示状态控制
+const isVisible = ref(isHomePage.value)
+
+// 监听路由变化，动态显示/隐藏按钮
+watch(isHomePage, (newValue, oldValue) => {
+  console.log(`路由变化检测：${oldValue} -> ${newValue}`)
+  if (newValue !== oldValue) {
+    if (newValue) {
+      // 切换到Home页面，立即显示按钮
+      isVisible.value = true
+      // 确保DOM更新后再执行动画
+      nextTick(() => {
+        // 减少延迟时间，立即执行动画
+        setTimeout(() => {
+          console.log('切换到Home页面，显示浮动按钮')
+          showFloatingButton()
+        }, 10) // 减少到10ms
+      })
+    } else {
+      // 切换到其他页面，隐藏按钮
+      console.log('切换到其他页面，隐藏浮动按钮')
+      hideFloatingButton()
+    }
+  }
+})
+
+// 显示浮动按钮动画
+const showFloatingButton = () => {
+  console.log('showFloatingButton被调用')
+  
+  if (!floatingActionContainer.value) {
+    console.log('容器不存在，延迟100ms后重试')
+    setTimeout(showFloatingButton, 100)
+    return
+  }
+  
+  console.log('开始执行显示动画')
+  
+  try {
+    // 设置初始状态（如果尚未设置）
+    floatingActionContainer.value.style.visibility = 'hidden'
+    floatingActionContainer.value.style.opacity = '0'
+    floatingActionContainer.value.style.transform = 'scale(0.8) translateY(20px)'
+    
+    // 使用requestAnimationFrame确保流畅的动画
+    requestAnimationFrame(() => {
+      // 修正CSS中定义的容器类名
+      floatingActionContainer.value.classList.add('floating-action-container')
+      
+      // 显示元素并应用动画 - 依赖CSS过渡
+      floatingActionContainer.value.style.visibility = 'visible'
+      floatingActionContainer.value.style.opacity = '1'
+      floatingActionContainer.value.style.transform = 'scale(1) translateY(0)'
+    })
+    
+    console.log('CSS过渡动画执行完成')
+    
+  } catch (error) {
+    console.error('显示动画执行失败:', error)
+    // 最终备用方案：直接显示
+    floatingActionContainer.value.style.setProperty('opacity', '1', 'important')
+    floatingActionContainer.value.style.setProperty('visibility', 'visible', 'important')
+    floatingActionContainer.value.style.setProperty('transform', 'scale(1) translateY(0)', 'important')
+  }
+}
+
+
+// 隐藏浮动按钮动画
+const hideFloatingButton = () => {
+  if (!floatingActionContainer.value) return
+  
+  console.log('开始执行隐藏动画')
+  
+  try {
+    // 使用CSS过渡效果 - 直接修改样式，由CSS处理过渡
+    floatingActionContainer.value.style.opacity = '0'
+    floatingActionContainer.value.style.transform = 'scale(0.8) translateY(20px)'
+    floatingActionContainer.value.style.visibility = 'hidden'
+    
+    // 动画完成后设置标志位
+    setTimeout(() => {
+      isVisible.value = false
+    }, 400) // 等待动画完成（400ms，与CSS过渡时间一致）
+    
+    console.log('CSS过渡隐藏动画执行完成')
+    
+  } catch (error) {
+    console.error('隐藏动画执行失败:', error)
+    // 备用方案：直接隐藏
+    isVisible.value = false
+  }
+}
 
 const actionButton = ref(null)
 const mainIcon = ref(null)
 const tooltip = ref(null)
 const floatingActionContainer = ref(null)
 
-const icons = ['search', 'folder', 'refresh', 'settings']
+const icons = ['search', 'folder', 'refresh']
 const currentIndex = ref(0)
 const isHovered = ref(false)
 
@@ -45,7 +145,6 @@ const getCurrentIcon = computed(() => {
     case 'search': return 'magnifying-glass'
     case 'folder': return 'folder'
     case 'refresh': return 'arrow-rotate-right'
-    case 'settings': return 'gear'
     default: return 'magnifying-glass'
   }
 })
@@ -55,7 +154,6 @@ const getCurrentTooltip = computed(() => {
     case 'search': return t('floatingButton.searchArchive')
     case 'folder': return t('floatingButton.openFolder')
     case 'refresh': return t('floatingButton.refreshList')
-    case 'settings': return '性能设置'
     default: return t('floatingButton.searchArchive')
   }
 })
@@ -257,9 +355,6 @@ const handleClick = () => {
     case 'refresh':
       emit('refresh-click')
       break
-    case 'settings':
-      emit('settings-click')
-      break
     default:
       console.log(`执行操作: ${currentAction}`)
   }
@@ -325,6 +420,8 @@ onMounted(() => {
     container.style.setProperty('left', 'auto', 'important');
     container.style.setProperty('transform', 'none', 'important');
     container.style.setProperty('isolation', 'isolate', 'important');
+    container.style.setProperty('visibility', 'visible', 'important');
+    container.style.setProperty('opacity', '1', 'important');
     
     // 添加样式变化监听，但只在检测到关键样式被修改时才恢复
     const observer = new MutationObserver((mutations) => {
@@ -334,15 +431,25 @@ onMounted(() => {
           const currentStyles = container.style;
           
           // 只检查关键定位属性
-          const criticalStyles = ['position', 'bottom', 'right', 'top', 'left'];
+          const criticalStyles = ['position', 'bottom', 'right', 'top', 'left', 'opacity', 'visibility'];
           let hasCriticalChanges = false;
           
           // 检查关键定位样式是否被意外修改
           criticalStyles.forEach(prop => {
             const currentValue = currentStyles.getPropertyValue(prop);
-            const expectedValue = prop === 'position' ? 'fixed' : 
-                                (prop === 'bottom' || prop === 'right') ? '30px' : 
-                                (prop === 'top' || prop === 'left') ? 'auto' : '';
+            let expectedValue = '';
+            
+            if (prop === 'position') {
+              expectedValue = 'fixed';
+            } else if (prop === 'bottom' || prop === 'right') {
+              expectedValue = '30px';
+            } else if (prop === 'top' || prop === 'left') {
+              expectedValue = 'auto';
+            } else if (prop === 'opacity') {
+              expectedValue = '1';
+            } else if (prop === 'visibility') {
+              expectedValue = 'visible';
+            }
             
             if (currentValue && currentValue !== expectedValue) {
               hasCriticalChanges = true;
@@ -357,6 +464,8 @@ onMounted(() => {
             container.style.setProperty('right', '30px', 'important');
             container.style.setProperty('top', 'auto', 'important');
             container.style.setProperty('left', 'auto', 'important');
+            container.style.setProperty('opacity', '1', 'important');
+            container.style.setProperty('visibility', 'visible', 'important');
           }
         }
       });
@@ -368,60 +477,42 @@ onMounted(() => {
     });
   }
   
-  // 初始化状态 - 确保字体加载完成后再执行动画 - 优化性能
-  gsap.set(tooltip.value, { 
-    opacity: 0, 
+  // 初始化tooltip状态
+  gsap.set(tooltip.value, {
+    opacity: 0,
     y: 10,
+    visibility: 'hidden',
     // 优化性能：减少GPU负载
     force3D: false,
     // 使用更高效的渲染路径
-    immediateRender: false
+    immediateRender: true
   })
 
-  // 等待字体图标加载完成，避免布局抖动
-  const initializeAnimation = () => {
-    gsap.set(actionButton.value, {
-      scale: 0,
-      opacity: 0,
-      x: 0,
-      y: 0,
-      transformOrigin: "center center",
-      // 优化性能：减少GPU负载
-      force3D: false,
-      // 使用更高效的渲染路径
-      immediateRender: false
-    })
-
-    // 入场动画 - 使用更稳定的时机 - 优化性能
-    requestAnimationFrame(() => {
-      gsap.to(actionButton.value, {
-        scale: 1,
-        opacity: 1,
-        duration: 0.5,
-        ease: "back.out(1.7)",
-        // 优化性能：减少GPU负载
-        force3D: false,
-        // 使用更高效的渲染路径
-        immediateRender: false
-      })
-    })
+  // 立即显示按钮（如果当前在Home页面）
+  const initializeFloatingButton = () => {
+    console.log('初始化浮动按钮 - isVisible:', isVisible.value, 'isHomePage:', isHomePage.value)
+    if (isVisible.value && isHomePage.value) {
+      console.log('执行显示动画')
+      
+      // 直接调用显示动画函数，确保动画效果
+      showFloatingButton()
+      
+      console.log('浮动按钮淡入动画已启动')
+    } else {
+      console.log('不满足显示条件，跳过初始化')
+    }
   }
 
-  // 确保字体和样式完全加载
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(() => {
-      setTimeout(initializeAnimation, 50) // 额外延迟确保布局稳定
-    })
-  } else {
-    // 降级处理
-    setTimeout(initializeAnimation, 100)
-  }
+  // 确保DOM完全加载后再初始化
+  nextTick(() => {
+    initializeFloatingButton()
+  })
 
   // 显示滚动提示（仅在第一次使用时显示）
-  if (!localStorage.getItem('fabScrollHintShown')) {
+  if (!localStorage.getItem('fabScrollHintShown') && isVisible.value && isHomePage.value) {
     setTimeout(() => {
       showScrollHint()
-    }, 2000) // 延迟到动画完成后显示
+    }, 1000) // 减少延迟时间
     localStorage.setItem('fabScrollHintShown', 'true')
   }
 })
@@ -450,7 +541,7 @@ onUnmounted(() => {
   
   /* 防止任何变换影响 */
   transform: none !important;
-  transform-origin: initial !important;
+  transform-origin: center center !important;
   
   /* 创建新的堆叠上下文 */
   isolation: isolate;
@@ -464,12 +555,21 @@ onUnmounted(() => {
   padding: 0 !important;
   border: none !important;
   
-  /* 禁用所有动画效果 */
-  animation: none !important;
-  transition: none !important;
-  will-change: auto !important;
-  backface-visibility: visible !important;
-  perspective: none !important;
+  /* 保留will-change用于动画性能优化 */
+  will-change: transform, opacity, scale;
+  backface-visibility: hidden !important;
+  perspective: 1000px !important;
+  
+  /* 确保GPU加速 */
+  transform: translateZ(0);
+  
+  /* 添加完整的过渡属性，确保所有变化都有过渡 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* 确保初始状态正确 - 初始隐藏 */
+  visibility: hidden;
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
 }
 
 .action-button {
@@ -500,6 +600,9 @@ onUnmounted(() => {
   /* 确保初始布局稳定 */
   contain: layout style paint;
   will-change: transform, opacity;
+  
+  /* 添加完整的过渡属性，确保所有变化都有过渡 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .action-button:hover {
@@ -549,6 +652,10 @@ onUnmounted(() => {
   z-index: 1001;
   box-shadow: var(--card-shadow);
   border: var(--card-border);
+  
+  /* 确保tooltip初始状态正确 */
+  visibility: hidden;
+  opacity: 0;
 }
 
 .function-tooltip::after {

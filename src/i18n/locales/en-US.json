@@ -11,6 +11,7 @@
     "archiveDataEdit": "Archive Data Edit",
     "archiveDataEditDesc": "Edit game core archive data",
     "pluginMarket": "Plugin Market",
+    "testArchive": "Test Archive",
     "howToUse": "How to Use",
     "about": "About",
     "settings": "Settings",
@@ -37,6 +38,7 @@
     "listDescription": "View and manage all archives",
     "createDescription": "Create new game archive",
     "coreDescription": "Edit game core archive data",
+    "testDescription": "Temporary archive testing and management features",
     "updated": "Update",
     "updateDetails": "Adjusted the style of archive cards and fixed some bugs.",
     "thanks": "Thanks to everyone who provided feedback, suggestions and support for this project",
@@ -92,7 +94,20 @@
     "acknowledgements": "Acknowledgements",
     "contact": "Contact",
     "authorName": "Eververdants",
-    "licenseName": "MIT License"
+    "licenseName": "MIT License",
+    "developerModeActivated": "Developer mode activated!"
+  },
+  "noReleaseNotes": "No release notes available",
+  "featured": "Featured",
+  "viewAllVersions": "View all {count} versions",
+  "back": "Back",
+  "releaseNotes": "Release Notes",
+  "versions": "versions",
+  "categories": {
+    "newFeatures": "New Features",
+    "improvements": "Improvements",
+    "bugFixes": "Bug Fixes",
+    "performance": "Performance"
   },
   "logs": {
     "title": "System Logs",
@@ -118,7 +133,13 @@
       "resourceNotFound": "Resource not found",
       "accessDenied": "Access denied"
     },
-
+    "enableLogging": "Enable Logging",
+    "enableLoggingDescription": "Record performance data to log files",
+    "logLevel": "Log Level",
+    "logLevelDescription": "Minimum level for performance logs",
+    "resetToDefaults": "Reset to Defaults",
+    "saveSettings": "Save Settings",
+    "noUpdateNotes": "No update notes available",
     "appearanceAndLanguage": "Appearance & Language",
     "advancedSettings": "Advanced Settings",
     "systemAndUpdates": "App Updates",
@@ -170,6 +191,8 @@
     "developerModeDescription": "Enable developer mode to access advanced features",
     "enableLogMenu": "Enable Log Menu",
     "enableLogMenuDescription": "Display log menu and logging functionality",
+    "testArchiveDisplay": "Test Archive Display",
+    "testArchiveDisplayDescription": "Show test archive button in sidebar",
     "steamApi": {
       "title": "Steam API",
       "apiKey": "API Key",
@@ -200,9 +223,22 @@
       "cacheViewError": "Failed to get cache entries: {error}",
       "cleanupError": "Failed to clean expired cache: {error}",
       "validatingKey": "Validating Steam API key...",
-    "keyInvalid": "Steam API key is invalid, please check and try again",
-    "keySaved": "Steam API key saved and verified successfully",
-    "keyTestFailed": "API test failed, please check your API key"
+      "testSteamId": "Test Steam ID",
+      "idLength": "ID Length",
+      "startKeyTest": "Start Key Test",
+      "apiCallSuccess": "API Call Success",
+      "keyValidationPassed": "Key Validation Passed",
+      "keySavedToConfig": "Key Saved to Config",
+      "keySavedToLocalStorage": "Key Saved to Local Storage",
+      "apiCallFailed": "API Call Failed",
+      "keyInvalid": "Steam API key is invalid, please check and try again",
+      "keySaved": "Steam API key saved and verified successfully",
+      "keyTestFailed": "API test failed, please check your API key",
+      "error": {
+        "invalidSteamIdFormat": "Invalid Steam ID format",
+        "steamApiError": "Steam API error"
+      },
+      "otherError": "Other error"
     }
   },
   "inventory": {

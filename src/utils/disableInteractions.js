@@ -195,7 +195,7 @@ export function enableInteractions() {
   console.log('交互已恢复');
 }
 
-// 自动应用
-if (typeof window !== 'undefined') {
-  disableInteractions();
-}
+// // 自动应用
+// if (typeof window !== 'undefined') {
+//   disableInteractions();
+// }

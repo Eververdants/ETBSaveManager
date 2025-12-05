@@ -128,18 +128,19 @@
                 </div>
                 <div class="steam-id-input-group">
                   <input v-model="newSteamId" type="text" class="form-input"
-                    :placeholder="$t('createArchive.steamIdPlaceholder')"
-                    @keyup.enter="addSteamId" />
+                    :placeholder="$t('createArchive.steamIdPlaceholder')" @keyup.enter="addSteamId" />
                   <button @click="addSteamId" class="add-button">
                     <font-awesome-icon :icon="['fas', 'plus']" />
                     {{ $t('createArchive.add') }}
                   </button>
                 </div>
-                
+
                 <!-- 玩家输入提示信息 -->
                 <transition name="message-fade" mode="out-in">
-                  <div v-if="playerInputMessage" class="player-input-message" :class="playerInputMessageType" key="message">
-                    <font-awesome-icon :icon="playerInputMessageType === 'success' ? ['fas', 'check-circle'] : ['fas', 'exclamation-circle']" />
+                  <div v-if="playerInputMessage" class="player-input-message" :class="playerInputMessageType"
+                    key="message">
+                    <font-awesome-icon
+                      :icon="playerInputMessageType === 'success' ? ['fas', 'check-circle'] : ['fas', 'exclamation-circle']" />
                     {{ playerInputMessage }}
                   </div>
                 </transition>
@@ -175,7 +176,10 @@
               <div class="inventory-card">
                 <h3 class="form-section-title">
                   <template v-if="activePlayerIndex !== -1">
-                    {{ $t('createArchive.editInventoryFor', { playerName: players[activePlayerIndex].username || players[activePlayerIndex].steamId }) }}
+                    {{ $t('createArchive.editInventoryFor', {
+                      playerName: players[activePlayerIndex].username ||
+                        players[activePlayerIndex].steamId
+                    }) }}
                   </template>
                   <template v-else>
                     {{ $t('createArchive.editInventory') }}
@@ -295,7 +299,7 @@ export default {
     const editingSlot = ref({ playerIndex: -1, slotIndex: -1 })
     const isSwitching = ref(false)
     const isCreating = ref(false) // 添加创建状态标志
-    
+
     // 玩家输入提示信息
     const playerInputMessage = ref('')
     const playerInputMessageType = ref('') // 'success' 或 'error'
@@ -335,6 +339,12 @@ export default {
         label: t('createArchive.endings.branch4'),
         icon: '🎭',
         levels: [] // 支线4关卡列表，将由用户填写
+      },
+      {
+        id: 5,
+        label: t('createArchive.endings.hidden'),
+        icon: '🔒',
+        levels: [] // 隐藏层级关卡列表，将由用户填写
       }
     ])
 
@@ -453,6 +463,7 @@ export default {
       endings[2].levels = ['Bunker', 'TheHub', 'BottomFloor', 'Level922'] // 支线2
       endings[3].levels = ['Bunker', "TheHub", "OceanMap", "LightsOut", "Level974"] // 支线3
       endings[4].levels = ['Bunker', "Level3999"] // 支线4
+      endings[5].levels = ['Bunker', 'TheHub', 'Level188_Expanded', 'LevelCheat'] // 隐藏层级
 
       // 加载默认结局（主线）的层级
       loadLevelsForEnding(0)
@@ -495,7 +506,7 @@ export default {
       if (!steamId || steamId.trim() === '') {
         return { valid: false, message: t('createArchive.steamIdRequired') }
       }
-      
+
       // 检查是否为离线玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
       if (steamId.includes('-')) {
         const parts = steamId.split('-')
@@ -506,17 +517,17 @@ export default {
           return { valid: false, message: t('createArchive.steamIdInvalid') }
         }
       }
-      
+
       // 检查是否为纯数字
       if (!/^\d+$/.test(steamId)) {
         return { valid: false, message: t('createArchive.steamIdInvalid') }
       }
-      
+
       // 对于在线Steam ID，检查长度是否为17位
       if (steamId.length !== 17) {
         return { valid: false, message: t('createArchive.steamIdValidationError', { error: t('createArchive.steamIdLengthError') }) }
       }
-      
+
       return { valid: true, isOfflinePlayer: false, processedSteamId: steamId }
     }
 
@@ -524,7 +535,7 @@ export default {
     const showPlayerMessage = (message, type = 'success') => {
       playerInputMessage.value = message
       playerInputMessageType.value = type
-      
+
       // 3秒后自动清除提示
       setTimeout(() => {
         playerInputMessage.value = ''
@@ -537,7 +548,7 @@ export default {
       if (!steamId) {
         return
       }
-      
+
       // 验证Steam ID
       const validation = validateSteamId(steamId)
       if (!validation.valid) {
@@ -545,7 +556,7 @@ export default {
         showPlayerMessage(validation.message, 'error')
         return
       }
-      
+
       // 检查是否已存在相同的Steam ID
       const isDuplicate = players.some(player => player.steamId === validation.processedSteamId)
       if (isDuplicate) {
@@ -553,7 +564,7 @@ export default {
         showPlayerMessage(duplicateMessage, 'error')
         return
       }
-      
+
       // 创建新玩家
       const newPlayer = {
         steamId: validation.processedSteamId, // 使用完整的ID格式
@@ -561,16 +572,16 @@ export default {
         username: validation.isOfflinePlayer ? `${validation.displayId}(本地)` : null, // 使用displayId显示
         isOfflinePlayer: validation.isOfflinePlayer
       }
-      
+
       players.push(newPlayer)
       newSteamId.value = ''
       if (activePlayerIndex.value === -1) {
         activePlayerIndex.value = 0
       }
-      
+
       // 显示成功提示
       showPlayerMessage(t('createArchive.playerAddedSuccess'), 'success')
-      
+
       // 如果不是离线玩家，获取Steam用户名
       if (!validation.isOfflinePlayer) {
         await fetchSteamUsernames()
@@ -699,11 +710,11 @@ export default {
         const steamIds = players
           .filter(p => !p.isOfflinePlayer)
           .map(p => p.steamId)
-        
+
         if (steamIds.length === 0) return
-        
+
         const usernames = await invoke('get_steam_usernames_command', { steamIds })
-        
+
         // 更新玩家用户名
         players.forEach((player) => {
           if (!player.isOfflinePlayer && usernames[player.steamId]) {
@@ -712,11 +723,11 @@ export default {
         })
       } catch (error) {
         console.error('获取Steam用户名失败:', error)
-        
+
         // 分析错误类型并提供相应的提示
         let errorMessage = error.toString()
         let userFriendlyMessage = ''
-        
+
         if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
           userFriendlyMessage = t('createArchive.steamApiKeyInvalid')
         } else if (errorMessage.includes('429') || errorMessage.includes('Too Many Requests')) {
@@ -725,7 +736,7 @@ export default {
           userFriendlyMessage = t('createArchive.steamApiKeyNotConfigured')
         } else if (errorMessage.includes('无效的Steam ID格式')) {
           userFriendlyMessage = t('createArchive.steamIdValidationError', { error: errorMessage })
-          
+
           // 处理无效ID格式的情况，提取横杠前的部分作为用户名
           players.forEach((player) => {
             if (!player.isOfflinePlayer && player.steamId && player.steamId.includes('-')) {
@@ -739,7 +750,7 @@ export default {
         } else {
           userFriendlyMessage = t('createArchive.steamIdValidationError', { error: errorMessage })
         }
-        
+
         // 显示错误提示
         showError(userFriendlyMessage)
       }
@@ -1128,7 +1139,7 @@ export default {
 
       // 监听侧边栏展开/收起事件
       window.addEventListener('sidebar-expand', handleSidebarExpand)
-      
+
       // 如果有玩家，获取他们的用户名
       if (players.length > 0) {
         await fetchSteamUsernames()
@@ -1885,6 +1896,7 @@ export default {
   z-index: 100;
   transition: left 0.3s ease, background 0.3s ease;
   /* 与侧边栏展开/收起动画同步 */
+  transform: translateY(-55%);
 }
 
 /* 步骤信息样式 */
@@ -2086,6 +2098,7 @@ export default {
     opacity: 0;
     transform: translateY(-5px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -2128,8 +2141,13 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .remove-button {

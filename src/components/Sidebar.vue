@@ -4,7 +4,7 @@
     <div class="sidebar-content">
       <!-- 顶部区域 -->
       <div class="sidebar-section top-section">
-        <div class="sidebar-item" v-for="item in topMenuItems" :key="item.id"
+        <div class="sidebar-item" v-for="item in filteredTopMenuItems" :key="item.id"
           :class="['sidebar-item', { active: item.id === activeItemId }]" @click="handleItemClick(item, $event)"
           @mousedown="handleMouseDown" @mouseenter="handleMouseEnterItem" @mouseleave="handleMouseLeaveItem"
           @mouseup="handleMouseUp">
@@ -59,24 +59,35 @@ const activeItemId = ref(null);
 const topMenuItems = reactive([...originalTopMenuItems]);
 const bottomMenuItems = reactive([...originalBottomMenuItems]);
 
+// 过滤后的顶部菜单项
+const filteredTopMenuItems = computed(() => {
+  return [...topMenuItems];
+});
+
 // 根据当前路由设置激活的菜单项
 const setActiveItemFromRoute = () => {
   // 查找与当前路由匹配的菜单项
   const allMenuItems = [...topMenuItems, ...bottomMenuItems];
-  const activeItem = allMenuItems.find(item => item.route === route.name);
+
+  // 特殊处理：更新公告页面激活"关于"按钮
+  let activeItem = null;
+  if (route.name === 'ReleaseNotes') {
+    // 查找"关于"菜单项
+    activeItem = allMenuItems.find(item => item.route === 'About');
+  } else {
+    // 常规路由匹配
+    activeItem = allMenuItems.find(item => item.route === route.name);
+  }
 
   if (activeItem) {
     activeItemId.value = activeItem.id;
   } else {
-    // 如果当前路由是SteamCache，保持设置菜单项激活
-    if (route.name === 'SteamCache') {
-      activeItemId.value = 5; // 设置的ID是5
-    } else {
-      // 如果没有匹配的路由，默认激活首页
-      activeItemId.value = 1; // 首页的ID是1
-    }
+    // 如果没有匹配的路由，默认激活首页
+    activeItemId.value = 1; // 首页的ID是1
   }
 };
+
+
 
 // 鼠标进入侧边栏事件处理函数
 const handleMouseEnter = () => {
@@ -159,6 +170,17 @@ onMounted(() => {
     }
   });
 
+  // 监听测试存档显示开关事件（与日志菜单相同的动态模式）
+  window.addEventListener('test-archive-toggle', (event) => {
+    if (event.detail.enabled) {
+      // 只有在明确启用时才添加测试存档菜单项
+      addTestArchiveMenuItem();
+    } else {
+      // 关闭时移除测试存档菜单项
+      removeTestArchiveMenuItem();
+    }
+  });
+
   // 监听全局语言变化事件
   window.addEventListener('language-changed', () => {
     // 触发重新计算翻译
@@ -166,6 +188,13 @@ onMounted(() => {
       // 强制更新DOM
     });
   });
+
+  // 初始化时检查测试存档功能状态
+  const testArchiveEnabled = localStorage.getItem('testArchiveEnabled');
+  // 只有在明确启用时才添加测试存档菜单项（与Settings.vue的默认值逻辑保持一致）
+  if (testArchiveEnabled === 'true') {
+    addTestArchiveMenuItem();
+  }
 
   // 初始化时检查日志功能状态
   if (localStorage.getItem('developerMode') === 'true' && localStorage.getItem('logMenuEnabled') === 'true') {
@@ -196,9 +225,14 @@ const addLogMenuItem = () => {
   );
 
   if (!existingLogItem) {
+    // 生成一个唯一的ID，确保不与其他菜单项冲突
+    const allItems = [...topMenuItems, ...bottomMenuItems];
+    const maxId = Math.max(...allItems.map(item => item.id));
+    const uniqueLogId = maxId + 1;
+
     // 使用textKey属性，保持与其他菜单项一致
     bottomMenuItems.push({
-      id: 6,
+      id: uniqueLogId,
       textKey: "sidebar.logs",
       icon: ["fas", "bug"],
       action: "openLog",
@@ -221,11 +255,68 @@ const removeLogMenuItem = () => {
   );
 
   if (logItemIndex !== -1) {
+    const logItemId = bottomMenuItems[logItemIndex].id;
+
     // 移除日志菜单项
     bottomMenuItems.splice(logItemIndex, 1);
 
     // 如果当前激活的是日志项，需要重置激活状态
-    if (activeItemId.value === 6) {
+    if (activeItemId.value === logItemId) {
+      activeItemId.value = null;
+    }
+
+    // 触发重新渲染
+    nextTick(() => {
+      setActiveItemFromRoute();
+    });
+  }
+};
+
+// 添加测试存档菜单项
+const addTestArchiveMenuItem = () => {
+  // 检查是否已存在测试存档菜单项
+  const existingTestArchiveItem = [...topMenuItems, ...bottomMenuItems].find(
+    item => item.action === 'openTestArchive'
+  );
+
+  if (!existingTestArchiveItem) {
+    // 生成一个唯一的ID，确保不与其他菜单项冲突
+    const allItems = [...topMenuItems, ...bottomMenuItems];
+    const maxId = Math.max(...allItems.map(item => item.id));
+    const uniqueTestArchiveId = maxId + 1;
+
+    // 使用textKey属性，保持与其他菜单项一致
+    topMenuItems.push({
+      id: uniqueTestArchiveId,
+      textKey: "sidebar.testArchive",
+      icon: ["fas", "flask"],
+      action: "openTestArchive",
+      descriptionKey: "archive.testDescription",
+      route: "TestArchive",
+    });
+
+    // 立即触发重新渲染，确保图标可见
+    nextTick(() => {
+      setActiveItemFromRoute();
+    });
+  }
+};
+
+// 移除测试存档菜单项
+const removeTestArchiveMenuItem = () => {
+  // 找到测试存档菜单项的索引
+  const testArchiveItemIndex = topMenuItems.findIndex(
+    item => item.action === 'openTestArchive'
+  );
+
+  if (testArchiveItemIndex !== -1) {
+    const testArchiveItemId = topMenuItems[testArchiveItemIndex].id;
+
+    // 移除测试存档菜单项
+    topMenuItems.splice(testArchiveItemIndex, 1);
+
+    // 如果当前激活的是测试存档项，需要重置激活状态
+    if (activeItemId.value === testArchiveItemId) {
       activeItemId.value = null;
     }
 

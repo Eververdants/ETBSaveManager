@@ -86,6 +86,179 @@ const consoleCommand = ref('');
 const commandHistory = ref([]);
 const historyIndex = ref(-1);
 
+// 安全参数解析函数
+const parseSafeArguments = (argsStr) => {
+  const args = [];
+  let current = '';
+  let inString = false;
+  let stringChar = '';
+  let escapeNext = false;
+  
+  for (let i = 0; i < argsStr.length; i++) {
+    const char = argsStr[i];
+    
+    if (escapeNext) {
+      if (char === 'n') {
+        current += '\n';
+      } else if (char === 't') {
+        current += '\t';
+      } else if (char === 'r') {
+        current += '\r';
+      } else if (char === '\\') {
+        current += '\\';
+      } else if (char === '"') {
+        current += '"';
+      } else if (char === "'") {
+        current += "'";
+      } else {
+        current += char;
+      }
+      escapeNext = false;
+      continue;
+    }
+    
+    if (char === '\\') {
+      escapeNext = true;
+      continue;
+    }
+    
+    if ((char === '"' || char === "'" || char === '`') && !inString) {
+      inString = true;
+      stringChar = char;
+      continue;
+    }
+    
+    if (char === stringChar && inString) {
+      inString = false;
+      stringChar = '';
+      continue;
+    }
+    
+    if (char === ',' && !inString) {
+      if (current.trim()) {
+        args.push(parseValue(current.trim()));
+      }
+      current = '';
+      continue;
+    }
+    
+    current += char;
+  }
+  
+  if (current.trim()) {
+    args.push(parseValue(current.trim()));
+  }
+  
+  return args;
+};
+
+// 安全表达式处理函数
+ const processSafeExpression = (expression) => {
+   try {
+     // 允许的字符：数字、运算符、括号、引号、空白字符、字母（用于翻译函数t()）
+     const allowedPattern = /^[\d\s\+\-\*\/\(\)\.\,\?\:\!\=\'\"\`\[\]\{\}a-zA-Z_]+$/;
+     if (!allowedPattern.test(expression)) {
+       throw new Error('表达式包含不允许的字符');
+     }
+     
+     // 移除危险关键词
+     const dangerousKeywords = ['eval', 'Function', 'constructor', 'prototype', 'import', 'require', 'window', 'document', 'fetch', 'XMLHttpRequest'];
+     const lowerExpression = expression.toLowerCase();
+     for (const keyword of dangerousKeywords) {
+       if (lowerExpression.includes(keyword)) {
+         throw new Error(`不允许使用关键词: ${keyword}`);
+       }
+     }
+     
+     // 只允许简单的数学计算和基本操作
+     if (/^[\d\s\+\-\*\/\(\)\.]+$/.test(expression)) {
+       // 纯数学表达式
+       return Function(`"use strict"; return (${expression})`)();
+     }
+     
+     // 翻译函数调用
+     if (expression.includes('t(')) {
+       const match = expression.match(/t\(['"`]([^'"`]+)['"`]\)/);
+       if (match) {
+         const key = match[1];
+         return t(key);
+       }
+     }
+     
+     // 字符串字面量
+     if ((expression.startsWith('"') && expression.endsWith('"')) ||
+         (expression.startsWith("'") && expression.endsWith("'")) ||
+         (expression.startsWith('`') && expression.endsWith('`'))) {
+       return parseValue(expression);
+     }
+     
+     // 简单变量或常量
+     if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(expression)) {
+       return expression;
+     }
+     
+     // JSON对象或数组
+     if ((expression.startsWith('{') && expression.endsWith('}')) ||
+         (expression.startsWith('[') && expression.endsWith(']'))) {
+       return JSON.parse(expression);
+     }
+     
+     // 数字
+     if (!isNaN(expression)) {
+       return Number(expression);
+     }
+     
+     throw new Error('不支持的表达式类型');
+   } catch (error) {
+     throw new Error(`表达式处理错误: ${error.message}`);
+   }
+ };
+
+ // 解析单个值
+ const parseValue = (value) => {
+  // 移除字符串两端的引号
+  if ((value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'")) ||
+      (value.startsWith('`') && value.endsWith('`'))) {
+    return value.slice(1, -1);
+  }
+  
+  // 数字
+  if (!isNaN(value)) {
+    return Number(value);
+  }
+  
+  // 布尔值
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  
+  // undefined
+  if (value === 'undefined') return undefined;
+  
+  // null
+  if (value === 'null') return null;
+  
+  // 尝试解析JSON
+  if (value.startsWith('{') && value.endsWith('}')) {
+    try {
+      return JSON.parse(value);
+    } catch {
+      // 忽略解析错误
+    }
+  }
+  
+  if (value.startsWith('[') && value.endsWith(']')) {
+    try {
+      return JSON.parse(value);
+    } catch {
+      // 忽略解析错误
+    }
+  }
+  
+  // 默认为字符串
+  return value;
+};
+
 // 获取过滤后的日志
 const filteredLogs = computed(() => {
   let result = logs.value;
@@ -192,23 +365,18 @@ JavaScript 支持:
             result = '用法: t("key")';
           }
         } else if (cmd.includes('console.log')) {
-          // 处理 console.log
+          // 安全处理 console.log
           try {
-            // 创建一个安全的 console 对象
-            const safeConsole = {
-              log: (...args) => {
-                result = args.map(arg => 
-                  typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-                ).join(' ');
-              }
-            };
-            
-            // 替换 console.log 并执行
-            const safeCmd = cmd.replace(/console\.log/g, 'safeConsole.log');
-            eval(safeCmd);
-            
-            if (!result) {
-              result = 'console.log 已执行';
+            const match = cmd.match(/console\.log\((.*)\)$/);
+            if (match) {
+              const argsStr = match[1].trim();
+              // 使用安全的参数解析
+              const args = parseSafeArguments(argsStr);
+              result = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+              ).join(' ');
+            } else {
+              result = 'console.log 用法: console.log("文本") 或 console.log(变量)';
             }
           } catch (e) {
             result = `错误: ${e.message}`;
@@ -229,30 +397,9 @@ JavaScript 支持:
               } else {
                 result = this.$t('app.name'); // 默认测试
               }
-            } else if (cmd.startsWith('console.log(')) {
-              // 处理console.log
-              const match = cmd.match(/console\.log\((.*)\)$/);
-              if (match) {
-                const args = match[1];
-                const func = new Function('t', `
-                  const console = {
-                    log: (...args) => args.map(arg => 
-                      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-                    ).join(' ')
-                  };
-                  return console.log(${args});
-                `);
-                result = func(this.$t.bind(this));
-              }
             } else {
-              // 处理普通表达式
-              const func = new Function('t', `
-                return (${cmd});
-              `);
-              result = func(this.$t.bind(this));
-              if (result === undefined) {
-                result = 'undefined';
-              }
+              // 处理其他类型的表达式
+              result = processSafeExpression(cmd);
             }
           } catch (e) {
             result = `错误: ${e.message}`;

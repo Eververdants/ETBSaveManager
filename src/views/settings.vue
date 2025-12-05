@@ -63,7 +63,8 @@
             <div class="setting-title" :key="currentLanguage">{{ t('settings.disableGpuAcceleration') }}</div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.disableGpuAccelerationDescription') }}</div>
+            <div class="setting-description" :key="currentLanguage">{{ t('settings.disableGpuAccelerationDescription')
+            }}</div>
           </transition>
         </div>
         <div class="setting-action">
@@ -149,24 +150,16 @@
         <div class="setting-action">
           <div class="api-key-container">
             <div class="api-key-input-wrapper">
-              <input 
-                v-model="steamApiKey" 
-                :type="showApiKey ? 'text' : 'password'"
-                class="api-key-input" 
-                :placeholder="t('settings.steamApi.apiKeyPlaceholder')"
-              />
-              <button 
-                class="toggle-visibility-btn" 
-                @click="showApiKey = !showApiKey"
-                :title="showApiKey ? t('settings.steamApi.hideApiKey') : t('settings.steamApi.showApiKey')"
-              >
+              <input v-model="steamApiKey" :type="showApiKey ? 'text' : 'password'" class="api-key-input"
+                :placeholder="t('settings.steamApi.apiKeyPlaceholder')" />
+              <button class="toggle-visibility-btn" @click="showApiKey = !showApiKey"
+                :title="showApiKey ? t('settings.steamApi.hideApiKey') : t('settings.steamApi.showApiKey')">
                 <font-awesome-icon :icon="showApiKey ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
               </button>
+              <button class="save-api-key-btn" @click="saveSteamApiKey" :title="t('settings.steamApi.saveApiKey')">
+                <font-awesome-icon :icon="['fas', 'save']" />
+              </button>
             </div>
-            <button class="save-api-key-btn" @click="saveSteamApiKey">
-              <font-awesome-icon :icon="['fas', 'save']" />
-              {{ t('settings.steamApi.saveApiKey') }}
-            </button>
           </div>
         </div>
       </div>
@@ -181,19 +174,27 @@
             <div class="setting-title" :key="currentLanguage">{{ t('settings.steamApi.cacheStatus') }}</div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.steamApi.cacheStatusDescription') }}</div>
+            <div class="setting-description" :key="currentLanguage">{{ t('settings.steamApi.cacheStatusDescription') }}
+            </div>
           </transition>
         </div>
         <div class="setting-action">
           <div class="cache-info">
-            <span class="cache-count">{{ cacheEntryCount }} {{ t('settings.steamApi.cacheEntries') }}</span>
+            <transition name="text-swift" mode="out-in">
+              <span class="cache-count" :key="currentLanguage + '-' + cacheEntryCount">{{ cacheEntryCount }} {{
+                t('settings.steamApi.cacheEntries') }}</span>
+            </transition>
             <button class="view-cache-btn" @click="navigateToSteamCache">
               <font-awesome-icon :icon="['fas', 'eye']" />
-              {{ t('settings.steamApi.viewCache') }}
+              <transition name="text-swift" mode="out-in">
+                <span :key="currentLanguage + '-viewCache'">{{ t('settings.steamApi.viewCache') }}</span>
+              </transition>
             </button>
             <button class="clear-cache-btn" @click="clearSteamCache">
               <font-awesome-icon :icon="['fas', 'trash']" />
-              {{ t('settings.steamApi.clearCache') }}
+              <transition name="text-swift" mode="out-in">
+                <span :key="currentLanguage + '-clearCache'">{{ t('settings.steamApi.clearCache') }}</span>
+              </transition>
             </button>
           </div>
         </div>
@@ -269,6 +270,28 @@
           </label>
         </div>
       </div>
+
+      <!-- 测试存档显示开关 -->
+      <div class="setting-item" v-if="developerModeEnabled">
+        <div class="setting-icon">
+          <font-awesome-icon :icon="['fas', 'flask']" />
+        </div>
+        <div class="setting-details">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">{{ t('settings.testArchiveDisplay') }}</div>
+          </transition>
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-description" :key="currentLanguage">{{ t('settings.testArchiveDisplayDescription') }}
+            </div>
+          </transition>
+        </div>
+        <div class="setting-action">
+          <label class="switch">
+            <input type="checkbox" v-model="testArchiveEnabled" @change="handleTestArchiveToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
     </div>
 
     <!-- 版本信息 -->
@@ -306,11 +329,8 @@
 
         <!-- 自定义操作按钮 -->
         <transition name="expand" mode="out-in">
-          <div v-if="updateMessage.showActions" class="update-actions"
-            :key="'custom-actions-' + updateMessage.key">
-            <button v-for="(action, index) in updateMessage.actions" 
-              :key="index" 
-              :class="['update-btn', action.class]" 
+          <div v-if="updateMessage.showActions" class="update-actions" :key="'custom-actions-' + updateMessage.key">
+            <button v-for="(action, index) in updateMessage.actions" :key="index" :class="['update-btn', action.class]"
               @click="action.action">
               {{ action.text }}
             </button>
@@ -347,10 +367,11 @@ export default {
       currentTheme: localStorage.getItem('theme') || 'light',
       currentLanguage: localStorage.getItem('language') || 'zh-CN',
       currentUpdateSource: localStorage.getItem('updateSource') || 'GITEE',
-      performanceMonitorEnabled: localStorage.getItem('performanceMonitor') !== 'false', // 默认开启
+      performanceMonitorEnabled: localStorage.getItem('performanceMonitor') === 'true', // 性能监控开关状态，默认关闭
       developerModeEnabled: localStorage.getItem('developerMode') === 'true', // 开发者模式状态
       developerOptionsEnabled: localStorage.getItem('developerMode') === 'true', // 开发者选项是否显示
-      logMenuEnabled: localStorage.getItem('logMenuEnabled') === 'true', // 日志功能开关状态
+      logMenuEnabled: localStorage.getItem('logMenuEnabled') === 'true', // 日志功能开关状态，默认关闭
+      testArchiveEnabled: localStorage.getItem('testArchiveEnabled') === 'true', // 测试存档显示开关状态，默认关闭
       gpuAccelerationDisabled: localStorage.getItem('gpuAccelerationDisabled') === 'true', // GPU加速开关状态
       // Steam API 相关
       steamApiKey: '',
@@ -358,7 +379,7 @@ export default {
       cacheEntryCount: 0,
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: '3.0.0-Alpha-6.1',
+      appVersion: '3.0.0-Alpha-6.2',
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
@@ -589,11 +610,23 @@ export default {
         detail: { enabled: this.developerModeEnabled }
       }));
 
-      // 如果关闭开发者模式，同时关闭日志功能
+      // 如果关闭开发者模式，同时关闭所有相关设置
       if (!this.developerModeEnabled) {
+        // 关闭日志功能
         this.logMenuEnabled = false;
         localStorage.setItem('logMenuEnabled', 'false');
         window.dispatchEvent(new CustomEvent('log-menu-toggle', {
+          detail: { enabled: false }
+        }));
+
+        // 关闭性能监控
+        this.performanceMonitorEnabled = false;
+        localStorage.setItem('performanceMonitor', 'false');
+
+        // 关闭测试存档显示
+        this.testArchiveEnabled = false;
+        localStorage.setItem('testArchiveEnabled', 'false');
+        window.dispatchEvent(new CustomEvent('test-archive-toggle', {
           detail: { enabled: false }
         }));
       }
@@ -607,39 +640,47 @@ export default {
       }));
     },
 
+    handleTestArchiveToggle() {
+      localStorage.setItem('testArchiveEnabled', this.testArchiveEnabled);
+      // 触发自定义事件通知侧边栏更新状态
+      window.dispatchEvent(new CustomEvent('test-archive-toggle', {
+        detail: { enabled: this.testArchiveEnabled }
+      }));
+    },
+
     async handleGpuAccelerationToggle() {
       try {
         // 调用Tauri命令设置GPU加速状态
-        await invoke('set_gpu_acceleration', { 
-          disabled: this.gpuAccelerationDisabled 
+        await invoke('set_gpu_acceleration', {
+          disabled: this.gpuAccelerationDisabled
         });
-        
+
         // 保存状态到localStorage
         localStorage.setItem('gpuAccelerationDisabled', this.gpuAccelerationDisabled.toString());
-        
+
         // 显示提示信息，告知用户需要手动重启应用
-        const message = this.gpuAccelerationDisabled 
-          ? this.t('settings.gpuAccelerationDisabled') 
+        const message = this.gpuAccelerationDisabled
+          ? this.t('settings.gpuAccelerationDisabled')
           : this.t('settings.gpuAccelerationEnabled');
-          
+
         this.updateMessage = {
           text: message,
           type: 'info',
           icon: ['fas', 'info-circle'],
           key: `gpu-info-${this.messageId++}`
         };
-        
+
         // 5秒后自动隐藏提示
         setTimeout(() => {
           this.closeUpdateMessage();
         }, 5000);
-        
+
       } catch (error) {
         console.error(this.t('settings.gpuAccelerationChangeFailed'), error);
         // 恢复开关状态
         this.gpuAccelerationDisabled = !this.gpuAccelerationDisabled;
         localStorage.setItem('gpuAccelerationDisabled', this.gpuAccelerationDisabled.toString());
-        
+
         // 显示错误提示
         this.updateMessage = {
           text: this.t('settings.gpuAccelerationChangeFailed') + ': ' + error,
@@ -647,7 +688,7 @@ export default {
           icon: ['fas', 'times'],
           key: `gpu-error-${this.messageId++}`
         };
-        
+
         // 3秒后自动隐藏提示
         setTimeout(() => {
           this.closeUpdateMessage();
@@ -747,10 +788,25 @@ export default {
       this.developerModeEnabled = enabled;
       this.developerOptionsEnabled = enabled;
 
-      // 如果关闭开发者模式，重置相关设置
+      // 如果关闭开发者模式，重置所有相关设置
       if (!enabled) {
+        // 关闭日志功能
         this.logMenuEnabled = false;
         localStorage.setItem('logMenuEnabled', 'false');
+        window.dispatchEvent(new CustomEvent('log-menu-toggle', {
+          detail: { enabled: false }
+        }));
+
+        // 关闭性能监控
+        this.performanceMonitorEnabled = false;
+        localStorage.setItem('performanceMonitor', 'false');
+
+        // 关闭测试存档显示
+        this.testArchiveEnabled = false;
+        localStorage.setItem('testArchiveEnabled', 'false');
+        window.dispatchEvent(new CustomEvent('test-archive-toggle', {
+          detail: { enabled: false }
+        }));
       }
     },
 
@@ -759,7 +815,7 @@ export default {
       try {
         // 从localStorage获取状态
         const localStorageState = localStorage.getItem('gpuAccelerationDisabled') === 'true';
-        
+
         // 尝试从Tauri后端获取状态
         try {
           const backendState = await invoke('get_gpu_acceleration_status');
@@ -824,11 +880,11 @@ export default {
           spin: true,
           key: `api-key-testing-${this.messageId++}`
         };
-        
+
         // 生成一个随机的Steam ID用于测试
         const testSteamId = this.generateRandomSteamId();
         console.log(this.t('settings.steamApi.testSteamId'), testSteamId, this.t('settings.steamApi.idLength'), testSteamId.length);
-        
+
         // 测试API密钥是否有效
         let apiTestPassed = false;
         try {
@@ -841,7 +897,7 @@ export default {
         } catch (error) {
           const errorMsg = error.toString();
           console.log(this.t('settings.steamApi.apiCallFailed'), errorMsg);
-          
+
           // 如果是403错误，说明API密钥无效
           if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
             console.log(this.t('settings.steamApi.detected403Error'));
@@ -853,7 +909,7 @@ export default {
             };
             return; // 直接返回，不保存密钥
           }
-          
+
           // 如果是Steam ID格式错误，说明我们生成的ID有问题，但这不是API密钥的问题
           if (errorMsg.includes(this.t('settings.steamApi.error.invalidSteamIdFormat')) || errorMsg.includes('Invalid Steam ID format')) {
             console.log(this.t('settings.steamApi.detectedSteamIdFormatError'));
@@ -871,7 +927,7 @@ export default {
             apiTestPassed = true;
           }
         }
-        
+
         // 只有API测试通过时才保存密钥
         if (!apiTestPassed) {
           console.log(this.t('settings.steamApi.apiTestFailed'));
@@ -883,17 +939,17 @@ export default {
           };
           return;
         }
-        
+
         console.log(this.t('settings.steamApi.keyValidationPassed'));
         // 调用后端保存API密钥到配置文件
         await invoke('save_steam_api_key', { apiKey: this.steamApiKey });
         console.log(this.t('settings.steamApi.keySavedToConfig'));
-        
+
         // 同时保存到localStorage以保持兼容性
         const encryptedApiKey = await invoke('encrypt_steam_api_key', { apiKey: this.steamApiKey });
         localStorage.setItem('steamApiKey', encryptedApiKey);
         console.log(this.t('settings.steamApi.keySavedToLocalStorage'));
-        
+
         // 显示成功提示
         this.updateMessage = {
           text: this.t('settings.steamApi.keySaved'),
@@ -901,7 +957,7 @@ export default {
           icon: ['fas', 'check'],
           key: `api-key-success-${this.messageId++}`
         };
-        
+
         // 3秒后自动隐藏提示
         setTimeout(() => {
           this.closeUpdateMessage();
@@ -909,14 +965,14 @@ export default {
       } catch (error) {
         console.error(this.t('settings.steamApi.saveKeyFailed'), error);
         this.updateMessage = {
-            text: this.t('settings.steamApi.saveKeyFailed') + ': ' + error,
-            type: 'error',
-            icon: ['fas', 'times'],
-            key: `api-key-error-${this.messageId++}`
-          };
+          text: this.t('settings.steamApi.saveKeyFailed') + ': ' + error,
+          type: 'error',
+          icon: ['fas', 'times'],
+          key: `api-key-error-${this.messageId++}`
+        };
       }
     },
-    
+
     // 生成随机Steam ID用于测试
     generateRandomSteamId() {
       // Steam ID格式通常是7656119XXXXXXXXX (17位数字)
@@ -931,10 +987,10 @@ export default {
       try {
         // 调用后端清空缓存
         await invoke('clear_steam_cache');
-        
+
         // 更新缓存条目数量
         this.updateCacheEntryCount();
-        
+
         // 显示成功提示
         this.updateMessage = {
           text: this.t('settings.steamApi.cacheCleared'),
@@ -942,7 +998,7 @@ export default {
           icon: ['fas', 'check'],
           key: `cache-clear-success-${this.messageId++}`
         };
-        
+
         // 3秒后自动隐藏提示
         setTimeout(() => {
           this.closeUpdateMessage();
@@ -950,11 +1006,11 @@ export default {
       } catch (error) {
         console.error(this.t('settings.steamApi.clearCacheFailed'), error);
         this.updateMessage = {
-            text: this.t('settings.steamApi.clearCacheFailed') + ': ' + error,
-            type: 'error',
-            icon: ['fas', 'times'],
-            key: `cache-clear-error-${this.messageId++}`
-          };
+          text: this.t('settings.steamApi.clearCacheFailed') + ': ' + error,
+          type: 'error',
+          icon: ['fas', 'times'],
+          key: `cache-clear-error-${this.messageId++}`
+        };
       }
     },
 
@@ -968,19 +1024,19 @@ export default {
         this.cacheEntryCount = 0;
       }
     },
-    
+
     // 导航到Steam缓存页面
     navigateToSteamCache() {
       this.$router.push('/steam-cache');
     },
-    
+
     // 格式化日期
     formatDate(timestamp) {
       if (!timestamp) return this.t('common.unknown');
       const date = new Date(timestamp * 1000);
       return date.toLocaleString();
     },
-    
+
     // Steam ID脱敏处理
     maskSteamId(steamId) {
       if (!steamId) return '';
@@ -1696,6 +1752,7 @@ input:checked+.slider:before {
 .api-key-input-wrapper {
   display: flex;
   position: relative;
+  gap: var(--space-2);
 }
 
 .api-key-input {
@@ -1708,6 +1765,7 @@ input:checked+.slider:before {
   font-size: 14px;
   transition: all 0.2s ease;
   width: 100%;
+  min-width: 0;
 }
 
 .api-key-input:focus {
@@ -1718,7 +1776,7 @@ input:checked+.slider:before {
 
 .toggle-visibility-btn {
   position: absolute;
-  right: var(--space-2);
+  right: calc(var(--space-2) + 55px);
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -1740,7 +1798,7 @@ input:checked+.slider:before {
   color: white;
   border: none;
   border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -1748,8 +1806,10 @@ input:checked+.slider:before {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1-5);
-  min-width: 100px;
+  gap: 0;
+  min-width: 44px;
+  height: 40px;
+  flex-shrink: 0;
 }
 
 .save-api-key-btn:hover {
@@ -1760,22 +1820,36 @@ input:checked+.slider:before {
 .cache-info {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   flex-wrap: wrap;
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .cache-count {
   font-size: 14px;
   color: var(--text-secondary);
   white-space: nowrap;
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg-quaternary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
-.view-cache-btn, .clear-cache-btn {
-  background-color: var(--bg-tertiary);
-  color: var(--text);
-  border: 1px solid var(--border-color);
+.view-cache-btn,
+.clear-cache-btn {
+  background-color: var(--accent-color);
+  color: white;
+  border: 1px solid var(--accent-color);
   border-radius: var(--radius-sm);
-  padding: var(--space-1-5) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -1783,21 +1857,51 @@ input:checked+.slider:before {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1-5);
+  gap: var(--space-1);
   white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 122, 255, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
-.view-cache-btn:hover, .clear-cache-btn:hover {
-  background-color: var(--bg-quaternary);
-  transform: translateY(-1px);
+.view-cache-btn::before,
+.clear-cache-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.view-cache-btn:hover::before,
+.clear-cache-btn:hover::before {
+  left: 100%;
+}
+
+.view-cache-btn:hover,
+.clear-cache-btn:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 122, 255, 0.25);
 }
 
 .clear-cache-btn {
-  color: var(--error-color);
+  background-color: var(--error-color);
   border-color: var(--error-color);
+  box-shadow: 0 2px 4px rgba(255, 59, 48, 0.15);
+}
+
+.clear-cache-btn::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
 }
 
 .clear-cache-btn:hover {
-  background-color: rgba(255, 59, 48, 0.1);
+  background-color: var(--error-hover, #e53e3e);
+  border-color: var(--error-hover, #e53e3e);
+  box-shadow: 0 4px 8px rgba(255, 59, 48, 0.25);
 }
 </style>

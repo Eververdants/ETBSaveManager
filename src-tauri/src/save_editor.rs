@@ -1,25 +1,13 @@
+use crate::common::{add_save_to_mainsave, extract_archive_name};
 use serde_json::Value as JsonValue;
 use std::fs::{self, File};
-use std::io::{BufReader, BufWriter, Write};
+use std::io::{BufReader, BufWriter};
 use std::path::Path;
 use uesave::{
     Properties, Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
     PropertyType, PropertyValue, Save, StructValue, ValueArray, ValueVec,
-};use uuid;
-// 获取本地应用数据目录的函数
-fn get_local_appdata_dir() -> Result<std::path::PathBuf, String> {
-    #[cfg(target_os = "windows")]
-    {
-        let local_appdata =
-            std::env::var("LOCALAPPDATA").map_err(|e| format!("获取 LOCALAPPDATA 失败: {}", e))?;
-        Ok(std::path::PathBuf::from(local_appdata))
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        Err("仅支持 Windows 系统".to_string())
-    }
-}
+};
+use uuid;
 
 // 物品ID到英文名的映射表
 pub fn map_item_id_to_name(id: i32) -> &'static str {
@@ -88,7 +76,7 @@ pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
         }
     } else {
         println!("⚠️ 未找到 CurrentLevel_0 字段，正在创建新的...");
-        
+
         // 创建新的 CurrentLevel_0 字段，使用正确的NameProperty结构
         let new_current_level = Property {
             tag: PropertyTagPartial {
@@ -97,11 +85,17 @@ pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
             },
             inner: PropertyInner::Name(new_level_name.clone()),
         };
-        
+
         let current_level_key = PropertyKey(0, "CurrentLevel".to_string());
-        save.root.properties.0.insert(current_level_key, new_current_level);
-        
-        println!("✅ 已创建新的 CurrentLevel_0 字段，值为: {}", new_level_name);
+        save.root
+            .properties
+            .0
+            .insert(current_level_key, new_current_level);
+
+        println!(
+            "✅ 已创建新的 CurrentLevel_0 字段，值为: {}",
+            new_level_name
+        );
         true
     }
 }
@@ -140,7 +134,12 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
 
     // 确保难度首字母大写
     let capitalized_difficulty = difficulty[..1].to_uppercase() + &difficulty[1..];
-    let new_filename = format!("{}_{}_{}.sav", mode.to_uppercase(), name, capitalized_difficulty);
+    let new_filename = format!(
+        "{}_{}_{}.sav",
+        mode.to_uppercase(),
+        name,
+        capitalized_difficulty
+    );
     let output_path = Path::new(output_dir).join(&new_filename);
 
     println!("📂 正在读取原始存档文件: {:?}", original_path);
@@ -171,7 +170,10 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
             inner: PropertyInner::Bool(true),
         };
         let unlocked_fun_key = PropertyKey(0, "UnlockedFun".to_string());
-        save.root.properties.0.insert(unlocked_fun_key, unlocked_fun_prop);
+        save.root
+            .properties
+            .0
+            .insert(unlocked_fun_key, unlocked_fun_prop);
         println!("✅ 已创建UnlockedFun_0字段");
         "Pipes".to_string()
     } else {
@@ -206,7 +208,7 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
     }
 
     println!("🔍 实际传入的难度值: '{}'", actual_difficulty);
-    
+
     // 如果不是Normal难度，则创建新的难度字段
     if actual_difficulty != "Normal" {
         println!("🆕 创建新的难度字段");
@@ -252,7 +254,7 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
 
     // 查找或创建 PlayerData_0 属性
     let player_data_key = PropertyKey(0, "PlayerData".to_string());
-    
+
     if let Some(player_data_prop) = save.root.properties.0.get_mut(&player_data_key) {
         println!("🎯 成功找到 PlayerData_0 字段");
 
@@ -265,7 +267,7 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
 
             // 收集需要处理的所有Steam ID（包括现有和新增的）
             let mut steam_ids_to_process = Vec::new();
-            
+
             // 首先收集现有的Steam ID
             for entry in map_value.iter() {
                 if let PropertyValue::Str(s) = &entry.key {
@@ -274,12 +276,15 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
                     }
                 }
             }
-            
+
             // 然后检查前端传来的Steam ID，添加不存在的
             if let Some(player_inventory) = json_data["playerInventory"].as_object() {
                 for steam_id in player_inventory.keys() {
                     let trimmed_id = steam_id.trim();
-                    if !steam_ids_to_process.iter().any(|id| id.trim() == trimmed_id) {
+                    if !steam_ids_to_process
+                        .iter()
+                        .any(|id| id.trim() == trimmed_id)
+                    {
                         steam_ids_to_process.push(trimmed_id.to_string());
                         println!("🆕 发现新增Steam ID: '{}'", trimmed_id);
                     }
@@ -289,8 +294,11 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
             // 处理每个Steam ID
             for steam_id in steam_ids_to_process {
                 println!("🆔 处理玩家 Steam ID: '{}'", steam_id);
-                println!("📦 该Steam ID对应的背包数据: {:?}", json_data["playerInventory"][&steam_id]);
-                
+                println!(
+                    "📦 该Steam ID对应的背包数据: {:?}",
+                    json_data["playerInventory"][&steam_id]
+                );
+
                 // 查找或创建玩家条目
                 let player_entry = map_value.iter_mut().find(|entry| {
                     if let PropertyValue::Str(s) = &entry.key {
@@ -303,7 +311,9 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
                 match player_entry {
                     Some(entry) => {
                         // 更新现有玩家
-                        if let PropertyValue::Struct(StructValue::Struct(ref mut player_struct)) = &mut entry.value {
+                        if let PropertyValue::Struct(StructValue::Struct(ref mut player_struct)) =
+                            &mut entry.value
+                        {
                             update_player_data(player_struct, &steam_id, json_data);
                         }
                     }
@@ -323,20 +333,20 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
         }
     } else {
         println!("⚠️ 没有找到 PlayerData_0 字段，正在创建...");
-        
+
         // 创建新的 PlayerData_0 字段
         let mut map_value = Vec::new();
-        
+
         // 收集所有需要处理的Steam ID
         let mut steam_ids_to_process = Vec::new();
-        
+
         // 检查前端传来的Steam ID
         if let Some(player_inventory) = json_data["playerInventory"].as_object() {
             for steam_id in player_inventory.keys() {
                 steam_ids_to_process.push(steam_id.trim().to_string());
             }
         }
-        
+
         // 如果没有Steam ID，添加一个默认的
         if steam_ids_to_process.is_empty() {
             steam_ids_to_process.push("76561199536995340".to_string()); // 默认Steam ID
@@ -367,7 +377,10 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
             inner: PropertyInner::Map(map_value),
         };
 
-        save.root.properties.0.insert(player_data_key, player_data_prop);
+        save.root
+            .properties
+            .0
+            .insert(player_data_key, player_data_prop);
         println!("✅ 已成功创建 PlayerData_0 字段");
     }
 
@@ -379,7 +392,9 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
             player_struct,
             "Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4",
         ) {
-            if let PropertyInner::Array(ValueArray::Base(ref mut value_vec)) = &mut inventory_prop.inner {
+            if let PropertyInner::Array(ValueArray::Base(ref mut value_vec)) =
+                &mut inventory_prop.inner
+            {
                 if let ValueVec::Name(ref mut str_values) = value_vec {
                     str_values.clear();
                     if let Some(items) = json_data["playerInventory"][steam_id].as_array() {
@@ -399,10 +414,9 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
 
         // === 修改理智值 ===
         println!("🧠 正在查找理智值属性: Sanity_6_A5AFAB454F51CC63745A669BD7E629F6_0");
-        if let Some(sanity_prop) = get_property_by_name_mut(
-            player_struct,
-            "Sanity_6_A5AFAB454F51CC63745A669BD7E629F6",
-        ) {
+        if let Some(sanity_prop) =
+            get_property_by_name_mut(player_struct, "Sanity_6_A5AFAB454F51CC63745A669BD7E629F6")
+        {
             if let PropertyInner::Float(ref mut val) = sanity_prop.inner {
                 let new_sanity = json_data["playerSanity"][steam_id]
                     .as_f64()
@@ -433,19 +447,21 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
             // 填充12个空槽位
             inventory_items.resize(12, "None".to_string());
         }
-        
+
         // 确保正好12个槽位
         inventory_items.truncate(12);
         while inventory_items.len() < 12 {
             inventory_items.push("None".to_string());
         }
-        
+
         println!("✅ 最终背包物品: {:?}", inventory_items);
 
         let inventory_prop = Property {
             tag: PropertyTagPartial {
                 id: None,
-                data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(PropertyType::NameProperty))),
+                data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(
+                    PropertyType::NameProperty,
+                ))),
             },
             inner: PropertyInner::Array(ValueArray::Base(ValueVec::Name(inventory_items))),
         };
@@ -467,7 +483,10 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
 
         // 插入属性 - 使用正确的属性名称格式（与test3.json完全一致）
         properties.0.insert(
-            PropertyKey(0, "Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4".to_string()),
+            PropertyKey(
+                0,
+                "Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4".to_string(),
+            ),
             inventory_prop,
         );
         properties.0.insert(
@@ -499,306 +518,8 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
     Ok(output_path.to_str().unwrap_or("Invalid path").to_string())
 }
 
-// 编辑存档后更新 MAINSAVE.sav 文件
+// 编辑存档后更新 MAINSAVE.sav 文件（使用公共模块）
 fn update_mainsave_after_edit(new_filename: &str) -> Result<(), String> {
-    println!("🔄 正在更新 MAINSAVE.sav 文件...");
-    
-    // 获取存档目录
-    let save_dir = get_local_appdata_dir()?.join("EscapeTheBackrooms/Saved/SaveGames");
-    let mainsave_path = save_dir.join("MAINSAVE.sav");
-    
-    if !mainsave_path.exists() {
-        println!("⚠️ MAINSAVE.sav 不存在，跳过更新");
-        return Ok(());
-    }
-    
-    // 使用 uesave 读取 MAINSAVE.sav 文件
-    let file = fs::File::open(&mainsave_path)
-        .map_err(|e| format!("打开 MAINSAVE.sav 文件失败: {}", e))?;
-    let mut reader = BufReader::new(file);
-    
-    let mut mainsave = Save::read(&mut reader)
-        .map_err(|e| format!("解析 MAINSAVE.sav 文件失败: {:?}", e))?;
-    
-    // 获取存档名称（不带 .sav 后缀）
-    let archive_name = new_filename.trim_end_matches(".sav");
-    println!("📄 要添加的存档名称: {}", archive_name);
-    
-    // 查找 SingleplayerSaves_0 字段
-    let singleplayer_saves_key = PropertyKey(0, "SingleplayerSaves".to_string());
-    
-    if let Some(singleplayer_saves_prop) = mainsave.root.properties.0.get_mut(&singleplayer_saves_key) {
-        // 获取现有的 Str 数组
-        if let PropertyInner::Array(ValueArray::Base(ValueVec::Str(ref mut existing_saves))) = &mut singleplayer_saves_prop.inner {
-            // 检查是否已存在相同的存档名称
-            if !existing_saves.contains(&archive_name.to_string()) {
-                // 添加新的存档名称到列表
-                existing_saves.push(archive_name.to_string());
-                println!("✅ 已添加存档名称到 SingleplayerSaves 列表: {}", archive_name);
-            } else {
-                println!("ℹ️ 存档名称已存在于 SingleplayerSaves 列表中: {}", archive_name);
-            }
-        } else {
-            return Err("SingleplayerSaves_0 字段结构不符合预期".to_string());
-        }
-    } else {
-        // 如果 SingleplayerSaves_0 字段不存在，创建它
-        let saves_list = vec![archive_name.to_string()];
-        
-        let new_singleplayer_saves = Property {
-            tag: PropertyTagPartial {
-                id: None,
-                data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(PropertyType::StrProperty))),
-            },
-            inner: PropertyInner::Array(ValueArray::Base(ValueVec::Str(saves_list))),
-        };
-        
-        mainsave.root.properties.0.insert(singleplayer_saves_key, new_singleplayer_saves);
-        println!("✅ 已创建新的 SingleplayerSaves_0 字段并添加存档名称: {}", archive_name);
-    }
-    
-    // 保存修改后的 MAINSAVE.sav 文件
-    let temp_path = save_dir.join("MAINSAVE_temp.sav");
-    let file = fs::File::create(&temp_path)
-        .map_err(|e| format!("创建临时 MAINSAVE 文件失败: {}", e))?;
-    let mut writer = BufWriter::new(file);
-    
-    mainsave.write(&mut writer)
-        .map_err(|e| format!("写入 MAINSAVE.sav 文件失败: {:?}", e))?;
-    writer.flush()
-        .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
-    
-    // 替换原始文件
-    fs::rename(&temp_path, &mainsave_path)
-        .map_err(|e| format!("替换 MAINSAVE.sav 文件失败: {}", e))?;
-    
-    println!("✅ MAINSAVE.sav 文件更新完成");
-    Ok(())
-}
-
-// 隐藏存档 - 从 MAINSAVE.sav 文件的 SingleplayerSaves 列表中移除存档名称
-pub fn hide_archive_in_mainsave(filename_to_hide: &str) -> Result<(), String> {
-    println!("👻 正在从 MAINSAVE.sav 文件中隐藏存档: {}", filename_to_hide);
-    
-    // 获取存档目录
-    let save_dir = get_local_appdata_dir()?.join("EscapeTheBackrooms/Saved/SaveGames");
-    let mainsave_path = save_dir.join("MAINSAVE.sav");
-    
-    if !mainsave_path.exists() {
-        println!("⚠️ MAINSAVE.sav 不存在，跳过隐藏操作");
-        return Ok(());
-    }
-    
-    // 使用 uesave 读取 MAINSAVE.sav 文件
-    let file = fs::File::open(&mainsave_path)
-        .map_err(|e| format!("打开 MAINSAVE.sav 文件失败: {}", e))?;
-    let mut reader = BufReader::new(file);
-    
-    let mut mainsave = Save::read(&mut reader)
-        .map_err(|e| format!("解析 MAINSAVE.sav 文件失败: {:?}", e))?;
-    
-    // 获取要隐藏的存档名称（不带 .sav 后缀）
-    let archive_name_to_hide = filename_to_hide.trim_end_matches(".sav");
-    println!("📄 要隐藏的存档名称: {}", archive_name_to_hide);
-    
-    // 查找 SingleplayerSaves 字段
-    let singleplayer_saves_key = PropertyKey(0, "SingleplayerSaves".to_string());
-    
-    let mut found_and_removed = false;
-    
-    if let Some(singleplayer_saves_prop) = mainsave.root.properties.0.get_mut(&singleplayer_saves_key) {
-        // 获取现有的 Str 数组
-        if let PropertyInner::Array(ValueArray::Base(ValueVec::Str(ref mut existing_saves))) = &mut singleplayer_saves_prop.inner {
-            // 查找并删除指定的存档名称
-            let original_len = existing_saves.len();
-            existing_saves.retain(|save_name| save_name != archive_name_to_hide);
-            
-            if existing_saves.len() < original_len {
-                found_and_removed = true;
-                println!("✅ 已从 SingleplayerSaves 列表中隐藏: {}", archive_name_to_hide);
-                println!("📋 当前SingleplayerSaves列表: {:?}", existing_saves);
-            } else {
-                println!("ℹ️ 未在 SingleplayerSaves 列表中找到: {}", archive_name_to_hide);
-            }
-        } else {
-            return Err("SingleplayerSaves 字段结构不符合预期".to_string());
-        }
-    } else {
-        println!("ℹ️ SingleplayerSaves 字段不存在，无需隐藏");
-        return Ok(());
-    }
-    
-    // 只有在实际隐藏了存档记录的情况下才保存文件
-    if found_and_removed {
-        // 保存修改后的 MAINSAVE.sav 文件
-        let temp_path = save_dir.join("MAINSAVE_temp.sav");
-        let file = fs::File::create(&temp_path)
-            .map_err(|e| format!("创建临时 MAINSAVE 文件失败: {}", e))?;
-        let mut writer = BufWriter::new(file);
-        
-        mainsave.write(&mut writer)
-            .map_err(|e| format!("写入 MAINSAVE.sav 文件失败: {:?}", e))?;
-        writer.flush()
-            .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
-        
-        // 替换原始文件
-        fs::rename(&temp_path, &mainsave_path)
-            .map_err(|e| format!("替换 MAINSAVE.sav 文件失败: {}", e))?;
-        
-        println!("✅ MAINSAVE.sav 文件更新完成（已隐藏存档）");
-    }
-    
-    Ok(())
-}
-
-// 显示存档 - 向 MAINSAVE.sav 文件的 SingleplayerSaves 列表中添加存档名称
-pub fn show_archive_in_mainsave(filename_to_show: &str) -> Result<(), String> {
-    println!("👁️ 正在向 MAINSAVE.sav 文件中显示存档: {}", filename_to_show);
-    
-    // 获取存档目录
-    let save_dir = get_local_appdata_dir()?.join("EscapeTheBackrooms/Saved/SaveGames");
-    let mainsave_path = save_dir.join("MAINSAVE.sav");
-    
-    if !mainsave_path.exists() {
-        println!("⚠️ MAINSAVE.sav 不存在，跳过显示操作");
-        return Ok(());
-    }
-    
-    // 使用 uesave 读取 MAINSAVE.sav 文件
-    let file = fs::File::open(&mainsave_path)
-        .map_err(|e| format!("打开 MAINSAVE.sav 文件失败: {}", e))?;
-    let mut reader = BufReader::new(file);
-    
-    let mut mainsave = Save::read(&mut reader)
-        .map_err(|e| format!("解析 MAINSAVE.sav 文件失败: {:?}", e))?;
-    
-    // 获取要显示的存档名称（不带 .sav 后缀）
-    let archive_name_to_show = filename_to_show.trim_end_matches(".sav");
-    println!("📄 要显示的存档名称: {}", archive_name_to_show);
-    
-    // 查找 SingleplayerSaves 字段
-    let singleplayer_saves_key = PropertyKey(0, "SingleplayerSaves".to_string());
-    
-    if let Some(singleplayer_saves_prop) = mainsave.root.properties.0.get_mut(&singleplayer_saves_key) {
-        // 获取现有的 Str 数组
-        if let PropertyInner::Array(ValueArray::Base(ValueVec::Str(ref mut existing_saves))) = &mut singleplayer_saves_prop.inner {
-            // 检查是否已存在相同的存档名称
-            if !existing_saves.contains(&archive_name_to_show.to_string()) {
-                // 添加新的存档名称到列表
-            existing_saves.push(archive_name_to_show.to_string());
-            println!("✅ 已添加存档名称到 SingleplayerSaves 列表: {}", archive_name_to_show);
-            println!("📋 当前SingleplayerSaves列表: {:?}", existing_saves);
-            } else {
-                println!("ℹ️ 存档名称已存在于 SingleplayerSaves 列表中: {}", archive_name_to_show);
-            }
-        } else {
-            return Err("SingleplayerSaves 字段结构不符合预期".to_string());
-        }
-    } else {
-        // 如果 SingleplayerSaves 字段不存在，创建它
-        let saves_list = vec![archive_name_to_show.to_string()];
-        
-        let new_singleplayer_saves = Property {
-            tag: PropertyTagPartial {
-                id: None,
-                data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(PropertyType::StrProperty))),
-            },
-            inner: PropertyInner::Array(ValueArray::Base(ValueVec::Str(saves_list))),
-        };
-        
-        mainsave.root.properties.0.insert(singleplayer_saves_key, new_singleplayer_saves);
-        println!("✅ 已创建新的 SingleplayerSaves 字段并添加存档名称: {}", archive_name_to_show);
-    }
-    
-    // 保存修改后的 MAINSAVE.sav 文件
-    let temp_path = save_dir.join("MAINSAVE_temp.sav");
-    let file = fs::File::create(&temp_path)
-        .map_err(|e| format!("创建临时 MAINSAVE 文件失败: {}", e))?;
-    let mut writer = BufWriter::new(file);
-    
-    mainsave.write(&mut writer)
-        .map_err(|e| format!("写入 MAINSAVE.sav 文件失败: {:?}", e))?;
-    writer.flush()
-        .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
-    
-    // 替换原始文件
-    fs::rename(&temp_path, &mainsave_path)
-        .map_err(|e| format!("替换 MAINSAVE.sav 文件失败: {}", e))?;
-    
-    println!("✅ MAINSAVE.sav 文件更新完成（已显示存档）");
-    Ok(())
-}
-
-// 删除存档后更新 MAINSAVE.sav 文件（从列表中移除）
-pub fn update_mainsave_after_delete(filename_to_remove: &str) -> Result<(), String> {
-    println!("🗑️ 正在从 MAINSAVE.sav 文件中删除存档记录...");
-    
-    // 获取存档目录
-    let save_dir = get_local_appdata_dir()?.join("EscapeTheBackrooms/Saved/SaveGames");
-    let mainsave_path = save_dir.join("MAINSAVE.sav");
-    
-    if !mainsave_path.exists() {
-        println!("⚠️ MAINSAVE.sav 不存在，跳过更新");
-        return Ok(());
-    }
-    
-    // 使用 uesave 读取 MAINSAVE.sav 文件
-    let file = fs::File::open(&mainsave_path)
-        .map_err(|e| format!("打开 MAINSAVE.sav 文件失败: {}", e))?;
-    let mut reader = BufReader::new(file);
-    
-    let mut mainsave = Save::read(&mut reader)
-        .map_err(|e| format!("解析 MAINSAVE.sav 文件失败: {:?}", e))?;
-    
-    // 获取要删除的存档名称（不带 .sav 后缀）
-    let archive_name_to_remove = filename_to_remove.trim_end_matches(".sav");
-    println!("📄 要删除的存档名称: {}", archive_name_to_remove);
-    
-    // 查找 SingleplayerSaves 字段
-    let singleplayer_saves_key = PropertyKey(0, "SingleplayerSaves".to_string());
-    
-    let mut found_and_removed = false;
-    
-    if let Some(singleplayer_saves_prop) = mainsave.root.properties.0.get_mut(&singleplayer_saves_key) {
-        // 获取现有的 Str 数组
-        if let PropertyInner::Array(ValueArray::Base(ValueVec::Str(ref mut existing_saves))) = &mut singleplayer_saves_prop.inner {
-            // 查找并删除指定的存档名称
-            let original_len = existing_saves.len();
-            existing_saves.retain(|save_name| save_name != archive_name_to_remove);
-            
-            if existing_saves.len() < original_len {
-                found_and_removed = true;
-                println!("✅ 已从 SingleplayerSaves 列表中删除: {}", archive_name_to_remove);
-            } else {
-                println!("ℹ️ 未在 SingleplayerSaves 列表中找到: {}", archive_name_to_remove);
-            }
-        } else {
-            return Err("SingleplayerSaves 字段结构不符合预期".to_string());
-        }
-    } else {
-        println!("ℹ️ SingleplayerSaves 字段不存在，无需删除");
-        return Ok(());
-    }
-    
-    // 只有在实际删除了存档记录的情况下才保存文件
-    if found_and_removed {
-        // 保存修改后的 MAINSAVE.sav 文件
-        let temp_path = save_dir.join("MAINSAVE_temp.sav");
-        let file = fs::File::create(&temp_path)
-            .map_err(|e| format!("创建临时 MAINSAVE 文件失败: {}", e))?;
-        let mut writer = BufWriter::new(file);
-        
-        mainsave.write(&mut writer)
-            .map_err(|e| format!("写入 MAINSAVE.sav 文件失败: {:?}", e))?;
-        writer.flush()
-            .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
-        
-        // 替换原始文件
-        fs::rename(&temp_path, &mainsave_path)
-            .map_err(|e| format!("替换 MAINSAVE.sav 文件失败: {}", e))?;
-        
-        println!("✅ MAINSAVE.sav 文件更新完成（已删除存档记录）");
-    }
-    
-    Ok(())
+    let archive_name = extract_archive_name(new_filename);
+    add_save_to_mainsave(archive_name)
 }

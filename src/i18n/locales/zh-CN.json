@@ -32,7 +32,8 @@
     "search": "搜索",
     "loading": "加载中...",
     "unknown": "未知",
-    "later": "稍后"
+    "later": "稍后",
+    "close": "关闭"
   },
   "archive": {
     "listDescription": "查看和管理所有存档",
@@ -152,6 +153,14 @@
     "gpuAccelerationDisabled": "GPU加速已禁用",
     "gpuAccelerationEnabled": "GPU加速已启用",
     "gpuAccelerationChangeFailed": "更改GPU加速设置失败",
+    "gpuAccelerationDisabledRestartPrompt": "GPU加速已禁用，需要重新启动应用才能生效。是否立即重启？",
+    "gpuAccelerationEnabledRestartPrompt": "GPU加速已启用，需要重新启动应用才能生效。是否立即重启？",
+    "gpuAccelerationChangedNeedRestart": "GPU加速设置已更改，请稍后重启应用以使更改生效",
+    "gpuAccelerationNoChange": "GPU加速设置未发生变化",
+    "restartConfirmTitle": "确认重启",
+    "restartNow": "立即重启",
+    "restartLater": "稍后重启",
+    "restartFailed": "重启应用失败",
     "gpuStatusFetchFailed": "获取GPU加速状态失败",
     "gpuStatusInitFailed": "初始化GPU加速状态失败",
     "updateSourceChanged": "更新源已更改为 {source}",
@@ -212,11 +221,69 @@
       "cleanupCompleted": "清理完成，已删除 {count} 个过期条目",
       "noExpiredEntries": "没有过期的缓存条目",
       "noCacheEntries": "暂无缓存条目",
+      
+      "showRawSteamId": "显示原始SteamID",
+      "hideRawSteamId": "隐藏原始SteamID",
+      "showingRawSteamId": "已显示原始SteamID",
+      "hidingRawSteamId": "已隐藏原始SteamID",
+      
+      "search": "搜索",
+      "sortByLabel": "排序方式",
+      "sortOrderLabel": "排序顺序",
+      "searchPlaceholder": "搜索SteamID或用户名...",
+      "sortBy": {
+        "lastUpdated": "最后更新时间",
+        "username": "用户名",
+        "callCount": "调用次数",
+        "steamId": "Steam ID"
+      },
+      "sortOrder": {
+        "desc": "降序",
+        "asc": "升序"
+      },
+      "minCallCount": "最小调用次数",
+      "clearFilters": "清除筛选",
+      "showStats": "显示统计",
+      "filtersCleared": "筛选条件已清除",
+      
+      "paginationInfo": "第 {current} 页，共 {total} 页，共 {count} 条记录",
+      "pageSize": "每页显示",
+      
+      "viewDetail": "查看详情",
+      "refreshEntry": "刷新条目",
+      "deleteEntry": "删除条目",
+      "entryRefreshed": "已刷新用户 {username} 的缓存",
+      "entryDeleted": "条目已删除",
+      "refreshError": "刷新失败: {error}",
+      "deleteError": "删除失败: {error}",
+      
+      "batchRefresh": "批量刷新",
+      "batchDelete": "批量删除",
+      "selectedCount": "已选择 {count} 项",
+      "batchRefreshCompleted": "批量刷新完成，已处理 {count} 个条目",
+      "batchDeleteCompleted": "批量删除完成，已删除 {count} 个条目",
+      "batchRefreshError": "批量刷新失败: {error}",
+      "batchDeleteError": "批量删除失败: {error}",
+      
+      "confirmDelete": "确认删除",
+      "confirmDeleteMessage": "确定要删除用户 {username} 的缓存条目吗？",
+      "confirmBatchDelete": "确认批量删除",
+      "confirmBatchDeleteMessage": "确定要删除选中的 {count} 个缓存条目吗？此操作不可撤销。",
+      
+      "cacheDetail": "缓存详情",
+      "systemStats": "系统统计",
+      "totalCacheSize": "总缓存大小",
+      "averageCallCount": "平均调用次数",
+      "cacheHitRate": "缓存命中率",
+      "mostActiveUsers": "最活跃用户",
+      "calls": "次调用",
+      "statsError": "获取统计信息失败: {error}",
       "cacheTable": {
         "steamId": "Steam ID",
         "username": "用户名",
         "callCount": "调用次数",
-        "lastUpdated": "最后更新"
+        "lastUpdated": "最后更新",
+        "actions": "操作"
       },
       "cacheTitle": "Steam缓存管理",
       "cacheCount": "共 {count} 个缓存条目",
@@ -449,6 +516,8 @@
     "add": "添加",
     "editInventoryFor": "编辑背包 - {playerName}",
     "editInventory": "编辑背包",
+    "playerSanity": "玩家理智",
+    "customSanity": "自定义理智",
     "selectPlayerMessage": "请先选择一个Steam ID玩家来编辑背包",
     "mainHand": "主手",
     "offHand1": "副手1",
@@ -471,7 +540,12 @@
     "jsonSyntaxError": "JSON语法错误，请检查格式",
     "jsonSaveError": "保存JSON失败",
     "failedToFetchSteamUsername": "获取Steam用户名失败：{error}",
-    "playerAddedSuccess": "玩家添加成功"
+    "playerAddedSuccess": "玩家添加成功",
+    "playersCount": "位玩家",
+    "selectPlayerHint": "请从左侧选择一个玩家来编辑",
+    "inventory": "背包物品",
+    "setMinSanity": "设为最低",
+    "setMaxSanity": "设为最高"
   },
   "archiveSearch": {
     "title": "搜索存档",
@@ -619,5 +693,36 @@
     "cacheImported": "缓存已导入",
     "invalidCacheFile": "无效的缓存文件",
     "cacheRefreshed": "缓存已刷新"
+  },
+  "createMode": {
+    "title": "选择创建模式",
+    "subtitle": "选择适合您需求的存档创建方式",
+    "singleArchive": "单存档创建",
+    "multiArchive": "多存档创建",
+    "confirm": "确认选择",
+    "classic": {
+      "title": "经典模式",
+      "desc": "逐步配置单个存档，支持完整的自定义选项"
+    },
+    "quick": {
+      "title": "快速模式",
+      "desc": "快速批量创建多个存档，简化配置流程"
+    },
+    "blueprint": {
+      "title": "蓝图模式",
+      "desc": "用节点图自由拼装任意逻辑"
+    }
+  },
+  "quickCreate": {
+    "title": "快速创建",
+    "subtitle": "快速批量创建多个游戏存档",
+    "comingSoon": "功能开发中",
+    "comingSoonDesc": "快速创建模式正在开发中，敬请期待"
+  },
+  "blueprintCreate": {
+    "title": "蓝图创建",
+    "subtitle": "使用预设蓝图模板批量生成存档",
+    "comingSoon": "功能开发中",
+    "comingSoonDesc": "蓝图创建模式正在开发中，敬请期待"
   }
 }

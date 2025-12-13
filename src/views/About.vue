@@ -98,7 +98,7 @@ import { useRouter } from 'vue-router';
 
 const { t, locale } = useI18n({ useScope: 'global' });
 const router = useRouter();
-const version = "3.0.0-Alpha-6.2"; // TODO: 从 package.json 动态获取
+const version = "3.0.0-Alpha-6.3"; // TODO: 从 package.json 动态获取
 
 const showChineseSocial = computed(() => ['zh-CN', 'zh-TW'].includes(locale.value));
 const showEasterEgg = ref(false);

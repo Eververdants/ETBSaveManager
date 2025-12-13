@@ -1,0 +1,162 @@
+/**
+ * ============================================
+ * ☀️ 亮色主题 (Light Theme)
+ * ============================================
+ * 定义亮色主题下的所有颜色变量
+ */
+
+:root,
+[data-theme="light"] {
+  /* ==========================================
+   * 背景层级 (Background Hierarchy)
+   * ========================================== */
+  --bg: var(--color-gray-50);
+  --bg-primary: var(--color-gray-50);
+  --bg-secondary: var(--color-white);
+  --bg-tertiary: var(--color-gray-100);
+  --bg-elevated: var(--color-white);
+
+  /* ==========================================
+   * 文本层级 (Text Hierarchy)
+   * ========================================== */
+  --text: var(--color-gray-950);
+  --text-color: var(--color-gray-950);
+  --text-primary: var(--color-gray-950);
+  --text-secondary: var(--color-gray-800);
+  --text-tertiary: var(--color-gray-500);
+  --text-disabled: var(--color-gray-400);
+  --text-inverse: var(--color-white);
+
+  /* ==========================================
+   * 表面/卡片 (Surface/Card)
+   * ========================================== */
+  --surface-color: var(--color-white);
+  --surface-hover: var(--color-gray-50);
+  --card-bg: var(--color-white);
+
+  /* ==========================================
+   * 边框/分割线 (Border/Divider)
+   * ========================================== */
+  --border-color: rgba(60, 60, 67, 0.1);
+  --border-light: rgba(60, 60, 67, 0.05);
+  --divider-color: rgba(60, 60, 67, 0.1);
+  --divider-light: rgba(60, 60, 67, 0.05);
+
+  /* ==========================================
+   * 主色调 (Primary Colors)
+   * ========================================== */
+  --primary: var(--color-blue-apple);
+  --primary-color: var(--color-brand-primary);
+  --secondary-color: var(--color-brand-secondary);
+  --accent-color: var(--color-blue-apple);
+  --accent-hover: #0051d5;
+
+  /* ==========================================
+   * 状态颜色 (Status Colors)
+   * ========================================== */
+  --success-color: var(--color-green-apple);
+  --error-color: var(--color-red-apple);
+  --warning-color: var(--color-orange-apple);
+  --info-color: var(--color-blue-apple);
+
+  /* ==========================================
+   * 侧边栏 (Sidebar)
+   * ========================================== */
+  --sidebar-bg: rgba(240, 240, 245, 0.8);
+  --sidebar-text-color: var(--color-gray-950);
+  --sidebar-border-color: rgba(210, 210, 215, 0.9);
+  --sidebar-hover-bg: rgba(220, 220, 225, 0.9);
+  --sidebar-item-hover-bg: rgba(220, 220, 225, 0.9);
+  --sidebar-active-bg: rgba(0, 122, 255, 0.1);
+  --sidebar-active-color: var(--color-blue-apple);
+  --sidebar-active-border: rgba(0, 122, 255, 0.5);
+  --sidebar-active-hover-bg: rgba(0, 122, 255, 0.15);
+
+  /* ==========================================
+   * 标题栏 (Titlebar)
+   * ========================================== */
+  --titlebar-bg: rgba(248, 249, 250, 0.8);
+  --titlebar-border: rgba(125, 125, 125, 0.3);
+  --titlebar-button-hover: rgba(255, 255, 255, 0.1);
+
+  /* ==========================================
+   * 滚动条 (Scrollbar)
+   * ========================================== */
+  --scrollbar-track: rgba(200, 200, 205, 0.3);
+  --scrollbar-thumb: rgba(180, 180, 185, 0.5);
+  --scrollbar-thumb-hover: rgba(160, 160, 165, 0.7);
+
+  /* ==========================================
+   * 下拉菜单 (Dropdown)
+   * ========================================== */
+  --dropdown-bg: rgba(255, 255, 255, 0.8);
+  --dropdown-border: rgba(60, 60, 67, 0.1);
+  --dropdown-border-hover: rgba(99, 102, 241, 0.5);
+  --dropdown-text: #000000;
+  --dropdown-icon: rgba(60, 60, 67, 0.6);
+  --dropdown-shadow: rgba(0, 0, 0, 0.08);
+  --dropdown-shadow-hover: rgba(0, 0, 0, 0.15);
+  --dropdown-hover-bg: rgba(0, 0, 0, 0.05);
+  --dropdown-selected-bg: var(--color-blue-apple);
+  --dropdown-selected-text: var(--color-white);
+
+  /* ==========================================
+   * 搜索遮罩 (Search Overlay)
+   * ========================================== */
+  --search-overlay-bg: rgba(0, 0, 0, 0.5);
+  --search-overlay-backdrop: blur(8px);
+
+  /* ==========================================
+   * 毛玻璃效果 (Glass Effect)
+   * ========================================== */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-border-light: rgba(60, 60, 67, 0.1);
+  --glass-shadow-light: rgba(0, 0, 0, 0.1);
+  --glass-shadow-medium: rgba(0, 0, 0, 0.05);
+  --glass-backdrop-filter: blur(20px);
+
+  /* ==========================================
+   * 卡片样式 (Card Styles)
+   * ========================================== */
+  --card-shadow: 0 2px 8px var(--glass-shadow-light);
+  --card-shadow-hover: 0 4px 12px var(--glass-shadow-medium);
+  --card-border: 1px solid var(--glass-border-light);
+  --card-radius: 16px;
+  --card-padding: 16px;
+  --card-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  --card-active-indicator: var(--accent-color);
+  --card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --card-hover-transform: translateY(-2px);
+
+  /* ==========================================
+   * 兼容旧版卡片变量 (Legacy Card Variables)
+   * ========================================== */
+  --Card-bg-primary: var(--bg-secondary);
+  --Card-bg-secondary: var(--bg-tertiary);
+  --Card-border-color: var(--divider-color);
+  --Card-shadow-normal: var(--card-shadow);
+  --Card-shadow-hover: var(--card-shadow-hover);
+  --Card-accent-primary: var(--accent-color);
+  --Card-accent-secondary: var(--accent-hover);
+  --Card-text-primary: var(--text-primary);
+  --Card-text-secondary: var(--text-secondary);
+  --Card-surface-overlay: rgba(0, 0, 0, 0.2);
+
+  /* ==========================================
+   * About 页面 (About Page)
+   * ========================================== */
+  --about-glass-bg: var(--bg-secondary);
+  --about-glass-border: var(--divider-color);
+  --about-glass-shadow: rgba(0, 0, 0, 0.08);
+  --about-list-bg: var(--bg-secondary);
+  --about-hover-bg: var(--bg-tertiary);
+  --about-border-light: var(--divider-color);
+  --about-header-bg: var(--bg-secondary);
+  --about-header-border: var(--divider-color);
+
+  /* ==========================================
+   * 浮动按钮 (FAB)
+   * ========================================== */
+  --fab-size: 60px;
+}

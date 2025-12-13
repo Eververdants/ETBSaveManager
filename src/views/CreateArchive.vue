@@ -31,11 +31,19 @@
       </div>
     </transition>
 
-    <!-- 切换到批量创建页面的按钮 -->
+    <!-- 切换到批量创建页面的按钮（已废弃） -->
     <transition name="batch-switch">
       <button class="batch-create-button" @click="switchToBatchCreate" :class="{ 'shrink': isSwitching }">
         <font-awesome-icon :icon="['fas', 'layer-group']" />
         <span class="button-text">{{ $t('createArchive.batchCreate') }}</span>
+      </button>
+    </transition>
+
+    <!-- 模式选择按钮 - 只在第一步显示 -->
+    <transition name="mode-button">
+      <button v-if="currentStep === 1" class="mode-select-button" @click="goToSelectMode">
+        <font-awesome-icon :icon="['fas', 'th-large']" />
+        <span class="button-text">{{ $t('createMode.title') }}</span>
       </button>
     </transition>
 
@@ -431,6 +439,11 @@ export default {
       })
     }
 
+    // 跳转到模式选择页面
+    const goToSelectMode = () => {
+      router.push('/select-create-mode')
+    }
+
     const loadLevels = async () => {
       // 层级名称映射
       const levelMappings = [
@@ -476,7 +489,7 @@ export default {
       // 创建新的层级列表
       const newLevels = endingLevels.map((levelKey) => {
         // 现在所有关卡都使用关卡名称作为图片文件名
-        const imagePath = `/images/${levelKey}.jpg`
+        const imagePath = `/images/ETB/${levelKey}.jpg`
 
         return {
           name: t(`LevelName_Display.${levelKey}`),
@@ -582,9 +595,12 @@ export default {
       // 显示成功提示
       showPlayerMessage(t('createArchive.playerAddedSuccess'), 'success')
 
-      // 如果不是离线玩家，获取Steam用户名
+      // 如果不是离线玩家，延迟批量获取用户名，避免频繁调用API
       if (!validation.isOfflinePlayer) {
-        await fetchSteamUsernames()
+        // 延迟500ms批量获取，提高缓存命中率
+        setTimeout(async () => {
+          await fetchSteamUsernames()
+        }, 500)
       }
     }
 
@@ -1173,6 +1189,12 @@ export default {
     }
 
     const onStepLeave = (el, done) => {
+      // 检查 el 是否有效，避免在组件卸载时出现空引用错误
+      if (!el || !el.parentNode) {
+        done()
+        return
+      }
+
       // 简化动画，减少性能开销
       gsap.to(el, {
         opacity: 0,
@@ -1221,6 +1243,7 @@ export default {
       createArchive,
       resetForm,
       switchToBatchCreate,
+      goToSelectMode,
       onStepEnter,
       onStepLeave,
       selectDifficulty,
@@ -2515,6 +2538,89 @@ export default {
   .level-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: var(--space-3);
+  }
+}
+
+/* 模式选择按钮样式 */
+.mode-select-button {
+  position: absolute;
+  top: var(--space-5);
+  right: var(--space-5);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: var(--bg-secondary);
+  border: 1px solid var(--divider-light);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-md);
+}
+
+.mode-select-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: var(--bg-tertiary);
+  border-color: var(--accent-color);
+}
+
+.mode-select-button:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-md);
+}
+
+/* 模式选择按钮动画 */
+.mode-button-enter-active,
+.mode-button-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mode-button-enter-from {
+  opacity: 0;
+  transform: translateX(20px) scale(0.8);
+}
+
+.mode-button-enter-to {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.mode-button-leave-from {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.mode-button-leave-to {
+  opacity: 0;
+  transform: translateX(20px) scale(0.8);
+}
+
+/* 响应式设计 - 模式选择按钮 */
+@media (max-width: 768px) {
+  .mode-select-button {
+    top: var(--space-4);
+    right: var(--space-4);
+    padding: var(--space-2-5) var(--space-4);
+    font-size: 13px;
+  }
+
+  .mode-select-button .button-text {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .mode-select-button {
+    top: var(--space-3);
+    right: var(--space-3);
+    padding: var(--space-2) var(--space-3);
   }
 }
 </style>

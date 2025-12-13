@@ -63,7 +63,20 @@ import {
   faTimes,
   faTrash,
   faUsers,
-  faWindowMaximize
+  faWindowMaximize,
+  faChartPie,
+  faThLarge,
+  faDraftingCompass,
+  faTimesCircle,
+  faRocket,
+  faSort,
+  faArrowsUpDown,
+  faHashtag,
+  faUser,
+  faBrain,
+  faSuitcase,
+  faChevronUp,
+  faChevronDown
 } from "@fortawesome/free-solid-svg-icons"
 
 // Brand icons
@@ -135,7 +148,20 @@ library.add(
   // Brand icons
   faBilibili,
   faGithub,
-  faTiktok
+  faTiktok,
+  faChartPie,
+  faThLarge,
+  faDraftingCompass,
+  faTimesCircle,
+  faRocket,
+  faSort,
+  faArrowsUpDown,
+  faHashtag,
+  faUser,
+  faBrain,
+  faSuitcase,
+  faChevronUp,
+  faChevronDown
 )
 import "./styles/theme-config.js"
 import { initGlobalFloatingButtonProtection, protectFloatingButtonPosition, safeModifyBodyStyles } from "./utils/floatingButtonProtection.js"

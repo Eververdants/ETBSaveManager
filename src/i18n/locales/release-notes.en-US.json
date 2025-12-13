@@ -1,5 +1,25 @@
 [
   {
+    "version": "3.0.0-Alpha-6.3",
+    "date": "2025-12-14",
+    "title": "Cache Viewer Polish and Sanity Editing Returns",
+    "type": "improvement",
+    "categories": {
+      "newFeatures": [
+        "Added 'Select Mode' button in create-save page (Quick mode TBD, Blueprint mode may be deprecated)",
+        "Window title now updates on language switch",
+        "Sanity editing returns — edit page only"
+      ],
+      "improvements": [
+        "Adjusted cache viewer styling",
+        "Minor visual tweaks on create-save page",
+        "Removed 'Loading save' notification"
+      ],
+      "bugFixes": [],
+      "performance": []
+    }
+  },
+  {
     "version": "3.0.0-Alpha-6.2",
     "date": "2025-12-05",
     "title": "Added Update Notes Page and Hidden Level Selection",

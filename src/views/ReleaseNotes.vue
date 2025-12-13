@@ -167,22 +167,18 @@ const loadReleaseNotes = async () => {
 
     console.log('✅ [ReleaseNotes.vue] 更新公告数据加载成功', {
       '语言': locale.value,
-      '数量': releaseNotes.length,
-      '最新版本': releaseNotes[0]?.version,
-      '版本列表': releaseNotes.slice(0, 3).map(note => note.version),
-      '公告类型': [...new Set(releaseNotes.map(note => note.type))]
+      '数量': releaseNotes.value.length,
+      '最新版本': releaseNotes.value[0]?.version,
+      '版本列表': releaseNotes.value.slice(0, 3).map(note => note.version),
+      '公告类型': [...new Set(releaseNotes.value.map(note => note.type))]
     })
-
-    releaseNotes.value = releaseNotes
   } catch (error) {
     console.error('❌ [ReleaseNotes.vue] 加载更新公告数据失败:', error)
     console.error('🔍 [ReleaseNotes.vue] 错误详情:', {
       '错误信息': error.message,
       '错误堆栈': error.stack,
       '当前状态': {
-        'locale': locale.value,
-        'i18n': !!i18n.global,
-        'releaseNotes': i18n.global?.releaseNotes?.[locale.value]
+        'locale': locale.value
       }
     })
     releaseNotes.value = []

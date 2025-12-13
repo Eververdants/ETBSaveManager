@@ -306,7 +306,7 @@ const selectCategory = (categoryId) => {
 
 const openPluginDetail = (plugin) => {
   selectedPlugin.value = plugin;
-  
+
   // 使用全局保护工具安全修改body样式
   safeModifyBodyStyles(() => {
     document.body.style.overflow = 'hidden';
@@ -315,12 +315,12 @@ const openPluginDetail = (plugin) => {
 
 const closePluginDetail = () => {
   selectedPlugin.value = null;
-  
+
   // 使用全局保护工具安全修改body样式
   safeModifyBodyStyles(() => {
     document.body.style.overflow = '';
   });
-  
+
   // 使用全局保护工具确保浮动按钮位置正确
   protectFloatingButtonPosition();
 };

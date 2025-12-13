@@ -14,7 +14,8 @@
     "howToUse": "使用說明",
     "about": "關於",
     "settings": "設定",
-    "logs": "日誌"
+    "logs": "日誌",
+    "testArchive": "測試存檔"
   },
   "common": {
     "light": "淺色",
@@ -24,7 +25,8 @@
     "save": "儲存",
     "step": "{number}",
     "back": "返回",
-    "later": "稍後"
+    "later": "稍後",
+    "close": "關閉"
   },
   "archive": {
     "listDescription": "檢視並管理所有存檔",
@@ -137,6 +139,14 @@
     "gpuAccelerationDisabled": "GPU加速已停用",
     "gpuAccelerationEnabled": "GPU加速已啟用",
     "gpuAccelerationChangeFailed": "更改GPU加速設定失敗",
+    "gpuAccelerationDisabledRestartPrompt": "GPU加速已停用，需要重新啟動應用程式才能生效。是否立即重啟？",
+    "gpuAccelerationEnabledRestartPrompt": "GPU加速已啟用，需要重新啟動應用程式才能生效。是否立即重啟？",
+    "gpuAccelerationChangedNeedRestart": "GPU加速設定已更改，請稍後重啟應用程式以使更改生效",
+    "gpuAccelerationNoChange": "GPU加速設定未發生變化",
+    "restartConfirmTitle": "確認重啟",
+    "restartNow": "立即重啟",
+    "restartLater": "稍後重啟",
+    "restartFailed": "重啟應用程式失敗",
     "gpuStatusFetchFailed": "獲取GPU加速狀態失敗",
     "gpuStatusInitFailed": "初始化GPU加速狀態失敗",
     "updateSourceChanged": "更新源已更改為 {source}",
@@ -199,12 +209,6 @@
       "cleanupCompleted": "清理完成，已刪除 {count} 個過期條目",
       "noExpiredEntries": "沒有過期的快取條目",
       "noCacheEntries": "暫無快取條目",
-      "cacheTable": {
-        "steamId": "Steam ID",
-        "username": "使用者名稱",
-        "callCount": "呼叫次數",
-        "lastUpdated": "最後更新"
-      },
       "cacheTitle": "Steam快取管理",
       "cacheCount": "共 {count} 個快取條目",
       "cacheViewError": "獲取快取條目失敗: {error}",
@@ -225,7 +229,64 @@
         "invalidSteamIdFormat": "Steam ID格式無效",
         "steamApiError": "Steam API錯誤"
       },
-      "otherError": "其他錯誤"
+      "otherError": "其他錯誤",
+      "showRawSteamId": "顯示原始Steam ID",
+      "search": "搜尋",
+      "searchPlaceholder": "搜尋快取條目...",
+      "sortByLabel": "排序方式",
+      "sortBy": {
+        "lastUpdated": "最後更新",
+        "username": "用戶名",
+        "callCount": "呼叫次數",
+        "steamId": "Steam ID"
+      },
+      "sortOrderLabel": "排序順序",
+      "sortOrder": {
+        "desc": "降序",
+        "asc": "升序"
+      },
+      "minCallCount": "最小呼叫次數",
+      "clearFilters": "清除篩選",
+      "showStats": "顯示統計",
+      "hideRawSteamId": "隱藏原始Steam ID",
+      "showingRawSteamId": "正在顯示原始Steam ID",
+      "hidingRawSteamId": "正在隱藏原始Steam ID",
+      "filtersCleared": "篩選已清除",
+      "paginationInfo": "第 {current} 頁，共 {total} 頁，共 {count} 條記錄",
+      "pageSize": "頁面大小",
+      "viewDetail": "檢視詳情",
+      "refreshEntry": "重新整理條目",
+      "deleteEntry": "刪除條目",
+      "entryRefreshed": "已重新整理用戶 {username} 的快取",
+      "entryDeleted": "條目已刪除",
+      "refreshError": "重新整理失敗：{error}",
+      "deleteError": "刪除失敗：{error}",
+      "batchRefresh": "批量重新整理",
+      "batchDelete": "批量刪除",
+      "selectedCount": "已選擇 {count} 項",
+      "batchRefreshCompleted": "批量重新整理完成，已處理 {count} 個條目",
+      "batchDeleteCompleted": "批量刪除完成，已刪除 {count} 個條目",
+      "batchRefreshError": "批量重新整理失敗：{error}",
+      "batchDeleteError": "批量刪除失敗：{error}",
+      "confirmDelete": "確認刪除",
+      "confirmDeleteMessage": "確定要刪除用戶 {username} 的快取條目嗎？",
+      "confirmBatchDelete": "確認批量刪除",
+      "confirmBatchDeleteMessage": "確定要刪除選中的 {count} 個快取條目嗎？此操作無法撤銷。",
+      "cacheDetail": "快取詳情",
+      "systemStats": "系統統計",
+      "totalCacheSize": "總快取大小",
+      "averageCallCount": "平均呼叫次數",
+      "cacheHitRate": "快取命中率",
+      "mostActiveUsers": "最活躍用戶",
+      "calls": "次呼叫",
+      "statsError": "獲取統計失敗：{error}",
+      "cacheTable": {
+        "steamId": "Steam ID",
+        "username": "用戶名",
+        "callCount": "呼叫次數",
+        "lastUpdated": "最後更新",
+        "actions": "操作"
+      }
     }
   },
   "inventory": {
@@ -333,6 +394,77 @@
     "confirm": "刪除",
     "cancel": "取消"
   },
+  "editArchive": {
+    "title": "編輯存檔",
+    "steps": {
+      "selectLevel": "選擇層級",
+      "configureArchive": "設定存檔",
+      "editInventory": "編輯背包"
+    },
+    "step": "步驟",
+    "next": "下一步",
+    "previous": "上一步",
+    "saveArchive": "儲存存檔",
+    "selectLevelTitle": "選擇遊戲層級",
+    "archiveName": "存檔名稱",
+    "archiveNamePlaceholder": "請輸入存檔名稱",
+    "archiveNameError": "存檔名稱不可包含底線",
+    "gameMode": "遊戲模式",
+    "gameModes": {
+      "singleplayer": "單人模式",
+      "multiplayer": "多人模式"
+    },
+    "singleplayerNotice": "單人模式下只能選擇普通難度",
+    "difficulty": "難度",
+    "actualDifficulty": "實際難度",
+    "difficultyLevels": {
+      "easy": "簡單",
+      "normal": "普通",
+      "hard": "困難",
+      "nightmare": "噩夢"
+    },
+    "playerManagement": "玩家管理",
+    "steamIdInfo": "此步驟為可選；不填 Steam ID 也可直接建立存檔",
+    "steamIdPlaceholder": "請輸入 Steam ID",
+    "steamIdInvalid": "Steam ID 僅能包含數字！",
+    "steamIdDuplicate": "Steam ID {steamId} 已存在，請勿重複新增！",
+    "steamIdRequired": "請輸入有效的 Steam ID",
+    "steamIdValidationError": "Steam ID驗證失敗: {error}",
+    "steamIdLengthError": "Steam ID必須是17位數字",
+    "add": "新增",
+    "editInventoryFor": "編輯背包 - {steamId}",
+    "editInventory": "編輯背包",
+    "playerSanity": "玩家理智",
+    "customSanity": "自定義理智",
+    "selectPlayerMessage": "請先選擇一位 Steam ID 玩家以編輯背包",
+    "mainHand": "主手",
+    "offHand1": "副手1",
+    "offHand2": "副手2",
+    "slot": "槽位 {number}",
+    "archiveSaved": "存檔儲存成功！",
+    "archiveSavedMessage": "您的存檔已儲存完成",
+    "canProceed": "可繼續",
+    "cannotProceed": "請完成必填欄位",
+    "noPlayersHint": "請先新增玩家 Steam ID 以管理背包",
+    "loadingUsername": "載入用戶名中...",
+    "saveFailed": "儲存失敗：",
+    "parseFailed": "解析存檔資料失敗：",
+    "loadLevelsFailed": "載入層級資料失敗：",
+    "savingArchiveData": "儲存存檔資料：",
+    "jsonEditor": "JSON編輯器",
+    "jsonEditorTitle": "存檔JSON編輯器",
+    "jsonEditorPlaceholder": "在此編輯JSON內容...",
+    "jsonConvertError": "轉換sav檔案失敗",
+    "jsonSyntaxError": "JSON語法錯誤，請檢查格式",
+    "jsonSaveError": "儲存JSON失敗",
+    "failedToFetchSteamUsername": "獲取Steam用戶名失敗：{error}",
+    "playerAddedSuccess": "玩家添加成功",
+    "playersCount": "位玩家",
+    "selectPlayerHint": "請從左側選擇一個玩家來編輯",
+    "inventory": "背包物品",
+    "setMinSanity": "設為最低",
+    "setMaxSanity": "設為最高"
+  },
   "createArchive": {
     "title": "建立新存檔",
     "steps": {
@@ -392,6 +524,7 @@
     "cannotProceed": "請完成必填欄位",
     "noPlayersHint": "請新增玩家Steam ID以管理背包",
     "creating": "建立中...",
+    "selectMode": "選擇模式",
     "endings": {
       "main": "主線",
       "branch1": "支線#1",
@@ -400,8 +533,20 @@
       "branch4": "支線#4"
     }
   },
-  "editArchive": {
-    "title": "編輯存檔",
+  "archiveMode": {
+    "title": "選擇建立模式",
+    "subtitle": "選擇適合您需求的存檔建立方式",
+    "singleArchive": "單存檔建立",
+    "multiArchive": "多存檔建立",
+    "comingSoon": "功能開發中，敬請期待...",
+    "classic": {
+      "name": "經典模式",
+      "description": "逐步設定，精細控制每個存檔細節，適合需要完全自訂的場景"
+    },
+    "quick": {
+      "name": "快速模式",
+      "description": "快速批量產生多個存檔，適合需要大量測試存檔的場景"
+    },
     "steps": {
       "selectLevel": "選擇層級",
       "configureArchive": "設定存檔",
@@ -462,7 +607,12 @@
     "jsonSyntaxError": "JSON語法錯誤，請檢查格式",
     "jsonSaveError": "儲存JSON失敗",
     "failedToFetchSteamUsername": "獲取Steam用戶名失敗：{error}",
-    "playerAddedSuccess": "玩家添加成功"
+    "playerAddedSuccess": "玩家添加成功",
+    "playersCount": "位玩家",
+    "selectPlayerHint": "請從左側選擇一個玩家來編輯",
+    "inventory": "背包物品",
+    "setMinSanity": "設為最低",
+    "setMaxSanity": "設為最高"
   },
   "archiveSearch": {
     "title": "搜尋存檔",
@@ -557,5 +707,36 @@
     "copyJson": "複製JSON",
     "convertError": "轉換sav檔案失敗",
     "saveError": "儲存JSON失敗"
+  },
+  "createMode": {
+    "title": "選擇建立模式",
+    "subtitle": "選擇適合您需求的存檔建立方式",
+    "singleArchive": "單存檔建立",
+    "multiArchive": "多存檔建立",
+    "confirm": "確認選擇",
+    "classic": {
+      "title": "經典模式",
+      "desc": "逐步配置單個存檔，支援完整的自訂選項"
+    },
+    "quick": {
+      "title": "快速模式",
+      "desc": "快速批量建立多個存檔，簡化配置流程"
+    },
+    "blueprint": {
+      "title": "藍圖模式",
+      "desc": "用節點圖自由拼裝任意邏輯"
+    }
+  },
+  "quickCreate": {
+    "title": "快速建立",
+    "subtitle": "快速批量建立多個遊戲存檔",
+    "comingSoon": "功能開發中",
+    "comingSoonDesc": "快速建立模式正在開發中，敬請期待"
+  },
+  "blueprintCreate": {
+    "title": "藍圖建立",
+    "subtitle": "使用預設藍圖範本批量產生存檔",
+    "comingSoon": "功能開發中",
+    "comingSoonDesc": "藍圖建立模式正在開發中，敬請期待"
   }
 }

@@ -7,18 +7,14 @@
 
     <div class="controls">
       <div class="button-group">
-        <button 
-          @click="generateRandomArchives" 
-          :disabled="isCreating"
-          class="primary-btn"
-        >
+        <button @click="generateRandomArchives" :disabled="isCreating" class="primary-btn">
           {{ isCreating ? '创建中...' : '生成100个随机临时存档' }}
         </button>
         <button @click="clearAllArchives" class="danger-btn">
           清空所有存档
         </button>
       </div>
-      
+
       <div class="filter-group">
         <label>
           <input type="checkbox" v-model="showSavedOnly" />
@@ -35,14 +31,10 @@
         <div class="progress-header">
           <span class="progress-text">创建进度：{{ progress }}%</span>
           <span class="progress-status">
-            {{ progress < 100 ? '正在创建存档...' : '创建完成！' }}
-          </span>
+            {{ progress < 100 ? '正在创建存档...' : '创建完成！' }} </span>
         </div>
         <div class="progress-bar">
-          <div 
-            class="progress-fill" 
-            :style="{ width: progress + '%' }"
-          ></div>
+          <div class="progress-fill" :style="{ width: progress + '%' }"></div>
         </div>
         <div class="progress-stats">
           <span>预计创建：100 个存档</span>
@@ -67,29 +59,18 @@
     </div>
 
     <div class="archives-grid">
-      <div 
-        v-for="archive in filteredArchives" 
-        :key="archive.id"
-        class="archive-card"
-        :class="{ 
-          'saved': archive.isSaved, 
-          'selected': selectedArchives.includes(archive.id) 
-        }"
-      >
+      <div v-for="archive in filteredArchives" :key="archive.id" class="archive-card" :class="{
+        'saved': archive.isSaved,
+        'selected': selectedArchives.includes(archive.id)
+      }">
         <div class="archive-header">
           <h3>{{ archive.archive_name }}</h3>
           <div class="archive-actions">
-            <button 
-              @click="toggleArchiveSelection(archive.id)"
-              class="select-btn"
-              :class="{ 'selected': selectedArchives.includes(archive.id) }"
-            >
+            <button @click="toggleArchiveSelection(archive.id)" class="select-btn"
+              :class="{ 'selected': selectedArchives.includes(archive.id) }">
               {{ selectedArchives.includes(archive.id) ? '✓' : '○' }}
             </button>
-            <button 
-              @click="deleteArchive(archive.id)"
-              class="delete-btn"
-            >
+            <button @click="deleteArchive(archive.id)" class="delete-btn">
               🗑️
             </button>
           </div>
@@ -115,20 +96,13 @@
         </div>
 
         <div class="archive-status">
-          <span 
-            class="status-badge"
-            :class="archive.isSaved ? 'saved' : 'temp'"
-          >
+          <span class="status-badge" :class="archive.isSaved ? 'saved' : 'temp'">
             {{ archive.isSaved ? '已保存' : '临时' }}
           </span>
         </div>
 
         <div class="archive-controls">
-          <button 
-            @click="toggleSaveStatus(archive)"
-            class="save-btn"
-            :class="{ 'saved': archive.isSaved }"
-          >
+          <button @click="toggleSaveStatus(archive)" class="save-btn" :class="{ 'saved': archive.isSaved }">
             {{ archive.isSaved ? '取消保存' : '标记保存' }}
           </button>
           <button @click="viewArchiveDetails(archive)" class="details-btn">
@@ -208,11 +182,7 @@
                 <div class="inventory-detail">
                   <span class="inventory-label">背包物品：</span>
                   <div class="inventory-items">
-                    <span 
-                      v-for="(item, itemIndex) in player.inventory" 
-                      :key="itemIndex"
-                      class="inventory-item"
-                    >
+                    <span v-for="(item, itemIndex) in player.inventory" :key="itemIndex" class="inventory-item">
                       {{ getItemNameById(item) }}
                     </span>
                     <span v-if="!player.inventory || player.inventory.length === 0" class="empty-inventory">
@@ -260,7 +230,7 @@ const availableLevels = ref([
 const difficultyLevels = ['easy', 'normal', 'hard', 'extreme']
 
 // 计算属性
-const savedArchives = computed(() => 
+const savedArchives = computed(() =>
   tempArchives.value.filter(archive => archive.isSaved)
 )
 
@@ -274,26 +244,26 @@ const filteredArchives = computed(() => {
 // 生成随机存档
 const generateRandomArchives = async () => {
   if (isCreating.value) return
-  
+
   isCreating.value = true
   progress.value = 0
-  
+
   try {
     const { invoke } = await import('@tauri-apps/api/core')
     const archives = []
     let successCount = 0
     let errorCount = 0
-    
+
     for (let i = 0; i < 100; i++) {
       progress.value = Math.round((i / 100) * 100)
-      
+
       // 生成随机存档数据
-       const archiveData = await generateRandomArchiveData(i)
-      
+      const archiveData = await generateRandomArchiveData(i)
+
       try {
         // 调用后端Rust API创建存档
         await invoke('handle_new_save', { saveData: archiveData })
-        
+
         // 创建成功后添加到本地列表
         const archive = {
           ...archiveData,
@@ -304,13 +274,13 @@ const generateRandomArchives = async () => {
         }
         archives.push(archive)
         successCount++
-        
+
         console.log(`成功创建存档: ${archiveData.archive_name}`)
-        
+
       } catch (apiError) {
         errorCount++
         console.error(`创建存档 ${archiveData.archive_name} 失败:`, apiError)
-        
+
         // 即使API调用失败，也添加到列表中作为失败记录
         const failedArchive = {
           ...archiveData,
@@ -322,13 +292,13 @@ const generateRandomArchives = async () => {
         }
         archives.push(failedArchive)
       }
-      
+
       // 添加小延迟让用户看到进度，并避免API调用过频
       await new Promise(resolve => setTimeout(resolve, 50))
     }
-    
+
     tempArchives.value = [...tempArchives.value, ...archives]
-    
+
     // 显示创建结果统计
     let resultMessage = `创建完成！`
     if (successCount > 0) {
@@ -338,9 +308,9 @@ const generateRandomArchives = async () => {
       resultMessage += ` 失败 ${errorCount} 个存档`
     }
     alert(resultMessage)
-    
+
     console.log(`批量创建存档完成: 成功${successCount}个, 失败${errorCount}个`)
-    
+
   } catch (error) {
     console.error('生成存档时出错:', error)
     alert(`生成存档时出错: ${error.message}`)
@@ -354,21 +324,21 @@ const generateRandomArchives = async () => {
 const generateRandomArchiveData = async (index) => {
   const randomLevel = availableLevels.value[Math.floor(Math.random() * availableLevels.value.length)]
   const randomDifficulty = difficultyLevels[Math.floor(Math.random() * difficultyLevels.length)]
-  
+
   // 随机生成1-4个玩家
   const playerCount = Math.floor(Math.random() * 4) + 1
   const players = []
-  
+
   for (let i = 0; i < playerCount; i++) {
     // 生成随机背包物品（0-6个物品）
     const inventorySize = Math.floor(Math.random() * 7)
     const inventory = []
-    
+
     for (let j = 0; j < inventorySize; j++) {
       const randomItemId = Math.floor(Math.random() * 25) + 1
       inventory.push(randomItemId)
     }
-    
+
     players.push({
       steam_id: generateRandomSteamId(),
       inventory: inventory
@@ -377,7 +347,7 @@ const generateRandomArchiveData = async (index) => {
 
   // 判断是否为主线结局 (0-9为支线，10+为主线)
   const isMainEnding = index >= 10
-  
+
   // 判断是否需要锁定MEG
   const megLevels = ['Level0', 'TopFloor', 'MiddleFloor', 'GarageLevel2', 'BottomFloor', 'TheHub']
   const isMEGUnlocked = !megLevels.includes(randomLevel.levelKey)
@@ -390,7 +360,7 @@ const generateRandomArchiveData = async (index) => {
   } catch (error) {
     console.error('加载BasicArchive.json失败:', error)
   }
-  
+
   return {
     archive_name: `测试存档_${index + 1}_${randomLevel.levelKey}`,
     level: randomLevel.levelKey,
@@ -635,12 +605,10 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent);
   animation: progress-shine 2s infinite;
 }
 
@@ -648,6 +616,7 @@ onMounted(() => {
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -747,7 +716,8 @@ onMounted(() => {
   gap: 8px;
 }
 
-.select-btn, .delete-btn {
+.select-btn,
+.delete-btn {
   background: none;
   border: none;
   padding: 4px 8px;
@@ -762,7 +732,8 @@ onMounted(() => {
   color: white;
 }
 
-.select-btn:hover, .delete-btn:hover {
+.select-btn:hover,
+.delete-btn:hover {
   background: var(--bg-tertiary);
 }
 
@@ -818,7 +789,8 @@ onMounted(() => {
   gap: 8px;
 }
 
-.save-btn, .details-btn {
+.save-btn,
+.details-btn {
   flex: 1;
   padding: 8px 12px;
   border: none;
@@ -1013,7 +985,9 @@ onMounted(() => {
 }
 
 /* 按钮样式 */
-.primary-btn, .secondary-btn, .danger-btn {
+.primary-btn,
+.secondary-btn,
+.danger-btn {
   padding: 12px 20px;
   border: none;
   border-radius: 8px;
@@ -1061,21 +1035,21 @@ onMounted(() => {
   .archives-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .stats {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .button-group {
     flex-direction: column;
   }
-  
+
   .filter-group {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .bulk-actions {
     position: static;
     transform: none;
@@ -1083,7 +1057,7 @@ onMounted(() => {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .detail-grid {
     grid-template-columns: 1fr;
   }

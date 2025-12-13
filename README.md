@@ -51,32 +51,18 @@ My email: **`llzgd@outlook.com`**
 
 ---
 
-## 📚 2.7.3 Version Review (For Reference)
-
-If you need to use the stable version, please refer to the [v2.7.3 Release Page](https://github.com/Eververdants/ETBSaveManager).
-
-### Main Features (2.7.3)
-
-- ✅ Create, Edit, Delete, Refresh Saves
-- ✅ Hide Saves Functionality
-- ✅ Open Save Directory
-- ✅ Level Preview Images
-- ✅ Multi-Language Interface Support
-
----
-
 ## 🧰 Tech Stack
 
 - **Frontend**: Vue.js + JavaScript + CSS
 - **Build Tool**: Vite
 - **Cross-Platform Framework**: Tauri + Rust
-- **Cross-Platform**: Windows / macOS / Linux
+- **Cross-Platform**: Windows 
 
 ---
 
-## 📥 Installation (V3.0.0-Alpha-6.2 Test Version)
+## 📥 Installation (V3.0.0-Alpha-6.3 Test Version)
 
-1. Download the Windows installer for [v3.0.0-Alpha-6.2](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-6.2).
+1. Download the Windows installer for [v3.0.0-Alpha-6.3](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-6.3).
 
 2. Double-click the installer to begin installation. (If you don't have WebView2 installed, the installer should install it automatically. If not, please click [here](https://developer.microsoft.com/microsoft-edge/webview2) to download and install WebView2.)
 

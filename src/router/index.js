@@ -56,9 +56,15 @@ const routes = [
     meta: { keepAlive: true }
   },
   {
+    path: "/select-create-mode",
+    name: "SelectCreateMode",
+    component: () => import("../views/SelectCreateMode.vue"),
+    meta: { keepAlive: false, priority: 2 }
+  },
+  {
     path: "/create-archive",
     name: "CreateArchive",
-    component: () => import("../views/CreateArchive.vue"),
+    component: () => import("../views/CreateArchive/index.vue"),
     meta: { 
       keepAlive: true,
       priority: 2
@@ -68,6 +74,18 @@ const routes = [
     path: "/batch-create-archive",
     name: "BatchCreateArchive",
     component: () => import("../views/BatchCreateArchive.vue"),
+    meta: { keepAlive: false, priority: 3 }
+  },
+  {
+    path: "/quick-create-archive",
+    name: "QuickCreateArchive",
+    component: () => import("../views/QuickCreateArchive.vue"),
+    meta: { keepAlive: false, priority: 3 }
+  },
+  {
+    path: "/blueprint-create-archive",
+    name: "BlueprintCreateArchive",
+    component: () => import("../views/BlueprintCreateArchive.vue"),
     meta: { keepAlive: false, priority: 3 }
   },
   {

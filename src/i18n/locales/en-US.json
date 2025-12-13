@@ -20,7 +20,7 @@
   "common": {
     "light": "Light",
     "dark": "Dark",
-    "select": "Please select",
+    "select": "Select",
     "cancel": "Cancel",
     "save": "Save",
     "step": "{number}",
@@ -32,7 +32,8 @@
     "search": "Search",
     "loading": "Loading...",
     "unknown": "Unknown",
-    "later": "Later"
+    "later": "Later",
+    "close": "Close"
   },
   "archive": {
     "listDescription": "View and manage all archives",
@@ -152,6 +153,14 @@
     "gpuAccelerationDisabled": "GPU acceleration disabled",
     "gpuAccelerationEnabled": "GPU acceleration enabled",
     "gpuAccelerationChangeFailed": "Failed to change GPU acceleration setting",
+    "gpuAccelerationDisabledRestartPrompt": "GPU acceleration has been disabled. The application needs to be restarted for the changes to take effect. Restart now?",
+    "gpuAccelerationEnabledRestartPrompt": "GPU acceleration has been enabled. The application needs to be restarted for the changes to take effect. Restart now?",
+    "gpuAccelerationChangedNeedRestart": "GPU acceleration settings have been changed. Please restart the application later for the changes to take effect",
+    "gpuAccelerationNoChange": "GPU acceleration settings have not changed",
+    "restartConfirmTitle": "Confirm Restart",
+    "restartNow": "Restart Now",
+    "restartLater": "Restart Later",
+    "restartFailed": "Failed to restart application",
     "gpuStatusFetchFailed": "Failed to fetch GPU acceleration status",
     "gpuStatusInitFailed": "Failed to initialize GPU acceleration status",
     "updateSourceChanged": "Update source changed to {source}",
@@ -212,11 +221,70 @@
       "cleanupCompleted": "Cleanup completed, removed {count} expired entries",
       "noExpiredEntries": "No expired cache entries",
       "noCacheEntries": "No cache entries available",
+      
+      "showRawSteamId": "Show Raw SteamID",
+      "hideRawSteamId": "Hide Raw SteamID",
+      "showingRawSteamId": "Showing raw SteamID",
+      "hidingRawSteamId": "Hiding raw SteamID",
+      
+      "search": "Search",
+      "searchPlaceholder": "Search SteamID or username...",
+      "sortByLabel": "Sort By",
+      "sortBy": {
+        "lastUpdated": "Last Updated",
+        "username": "Username",
+        "callCount": "Call Count",
+        "steamId": "Steam ID"
+      },
+      "sortOrderLabel": "Sort Order",
+      "sortOrder": {
+        "desc": "Descending",
+        "asc": "Ascending"
+      },
+      "minCallCount": "Min Call Count",
+      "clearFilters": "Clear Filters",
+      "showStats": "Show Statistics",
+      "filtersCleared": "Filters cleared",
+      
+      "paginationInfo": "Page {current} of {total}, {count} total records",
+      "pageSize": "Page Size",
+      
+      "viewDetail": "View Details",
+      "refreshEntry": "Refresh Entry",
+      "deleteEntry": "Delete Entry",
+      "entryRefreshed": "Refreshed cache for user {username}",
+      "entryDeleted": "Entry deleted",
+      "refreshError": "Refresh failed: {error}",
+      "deleteError": "Delete failed: {error}",
+      
+      "batchRefresh": "Batch Refresh",
+      "batchDelete": "Batch Delete",
+      "selectedCount": "{count} selected",
+      "batchRefreshCompleted": "Batch refresh completed, processed {count} entries",
+      "batchDeleteCompleted": "Batch delete completed, deleted {count} entries",
+      "batchRefreshError": "Batch refresh failed: {error}",
+      "batchDeleteError": "Batch delete failed: {error}",
+      
+      "confirmDelete": "Confirm Delete",
+      "confirmDeleteMessage": "Are you sure you want to delete the cache entry for user {username}?",
+      "confirmBatchDelete": "Confirm Batch Delete",
+      "confirmBatchDeleteMessage": "Are you sure you want to delete the selected {count} cache entries? This action cannot be undone.",
+      
+      "cacheDetail": "Cache Details",
+      "systemStats": "System Statistics",
+      "totalCacheSize": "Total Cache Size",
+      "averageCallCount": "Average Call Count",
+      "cacheHitRate": "Cache Hit Rate",
+      "mostActiveUsers": "Most Active Users",
+      "calls": "calls",
+      "statsError": "Failed to get statistics: {error}",
+      
       "cacheTable": {
         "steamId": "Steam ID",
         "username": "Username",
         "callCount": "Call Count",
-        "lastUpdated": "Last Updated"
+        "lastUpdated": "Last Updated",
+        "actions": "Actions"
       },
       "cacheTitle": "Steam Cache Management",
       "cacheCount": "Total {count} cache entries",
@@ -460,6 +528,8 @@
     "add": "Add",
     "editInventoryFor": "Edit Inventory - {playerName}",
     "editInventory": "Edit Inventory",
+    "playerSanity": "Player Sanity",
+    "customSanity": "Custom Sanity",
     "selectPlayerMessage": "Please select a Steam ID player to edit inventory",
     "mainHand": "Main Hand",
     "offHand1": "Off-hand 1",
@@ -482,7 +552,12 @@
     "jsonSyntaxError": "JSON syntax error, please check format",
     "jsonSaveError": "Failed to save JSON",
     "failedToFetchSteamUsername": "Failed to fetch Steam username: {error}",
-    "playerAddedSuccess": "Player added successfully"
+    "playerAddedSuccess": "Player added successfully",
+    "playersCount": "players",
+    "selectPlayerHint": "Select a player from the left to edit",
+    "inventory": "Inventory",
+    "setMinSanity": "Set to minimum",
+    "setMaxSanity": "Set to maximum"
   },
   "archiveSearch": {
     "title": "Search Archives",
@@ -636,5 +711,36 @@
     "cacheImported": "Cache Imported",
     "invalidCacheFile": "Invalid Cache File",
     "cacheRefreshed": "Cache Refreshed"
+  },
+  "createMode": {
+    "title": "Select Create Mode",
+    "subtitle": "Choose the archive creation method that suits your needs",
+    "singleArchive": "Single Archive",
+    "multiArchive": "Multiple Archives",
+    "confirm": "Confirm",
+    "classic": {
+      "title": "Classic Mode",
+      "desc": "Step-by-step configuration for a single archive with full customization options"
+    },
+    "quick": {
+      "title": "Quick Mode",
+      "desc": "Quickly create multiple archives with simplified configuration"
+    },
+    "blueprint": {
+      "title": "Blueprint Mode",
+      "desc": "Wire up any logic you want using a node graph."
+    }
+  },
+  "quickCreate": {
+    "title": "Quick Create",
+    "subtitle": "Quickly create multiple game archives",
+    "comingSoon": "Coming Soon",
+    "comingSoonDesc": "Quick create mode is under development, stay tuned"
+  },
+  "blueprintCreate": {
+    "title": "Blueprint Create",
+    "subtitle": "Batch generate archives using preset blueprint templates",
+    "comingSoon": "Coming Soon",
+    "comingSoonDesc": "Blueprint create mode is under development, stay tuned"
   }
 }

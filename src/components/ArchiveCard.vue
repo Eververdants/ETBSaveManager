@@ -1,11 +1,7 @@
 <template>
-  <transition
-    appear
-    @before-enter="animateCard"
-    @leave="animateCardLeave"
-    :css="false"
-  >
-    <div class="archive-card" :data-archive-id="archive.id" @click="handleCardClick" :class="{ 'archive-hidden': !archive.isVisible }">
+  <transition appear @before-enter="animateCard" :css="false">
+    <div class="archive-card" :data-archive-id="archive.id" @click="handleCardClick"
+      :class="{ 'archive-hidden': !archive.isVisible }">
       <!-- 上半背景区域 -->
       <div class="card-background">
         <LazyImage :src="backgroundImage" :alt="currentLevelName" image-class="background-image" />
@@ -95,7 +91,7 @@ const currentLevelName = computed(() => {
 
 const backgroundImage = computed(() => {
   // 现在所有关卡都使用关卡名称作为图片文件名
-  return `/images/${props.archive.currentLevel}.jpg`
+  return `/images/ETB/${props.archive.currentLevel}.jpg`
 })
 
 const archiveDifficultyText = computed(() => {
@@ -163,87 +159,77 @@ let intersectionObserver = null
 const hasRendered = ref(false)
 const cardElement = ref(null)
 
+// 全局共享的测量元素（避免重复创建/销毁）
+let sharedMeasureElement = null
+const getMeasureElement = () => {
+  if (!sharedMeasureElement) {
+    sharedMeasureElement = document.createElement('div')
+    sharedMeasureElement.style.cssText = 'position:absolute;visibility:hidden;height:auto;width:auto;white-space:nowrap;padding:0;margin:0;font-size:12px;font-weight:500;pointer-events:none'
+    document.body.appendChild(sharedMeasureElement)
+  }
+  return sharedMeasureElement
+}
+
+// 文本宽度缓存
+const textWidthCache = new Map()
+const measureTextWidth = (text) => {
+  if (textWidthCache.has(text)) {
+    return textWidthCache.get(text)
+  }
+  const el = getMeasureElement()
+  el.textContent = text
+  const width = el.offsetWidth
+  textWidthCache.set(text, width)
+  return width
+}
+
 // 优化后的标签宽度计算函数
 const updateTagWidths = () => {
   if (!cardElement.value) return
 
-  // 使用CSS自定义属性直接设置宽度，减少DOM操作
   const difficultyTag = cardElement.value.querySelector('.difficulty-tag.archive-difficulty')
   const actualTag = cardElement.value.querySelector('.difficulty-tag.actual-difficulty')
 
-  // 创建一个临时元素用于测量文本宽度
-  const measureElement = document.createElement('div')
-  measureElement.style.position = 'absolute'
-  measureElement.style.visibility = 'hidden'
-  measureElement.style.height = 'auto'
-  measureElement.style.width = 'auto'
-  measureElement.style.whiteSpace = 'nowrap'
-  measureElement.style.padding = '0'
-  measureElement.style.margin = '0'
-  measureElement.style.fontSize = '12px' // 与标签字体大小一致
-  measureElement.style.fontWeight = '500' // 与标签字体粗细一致
-  document.body.appendChild(measureElement)
+  // 批量读取 DOM
+  const tags = [
+    { el: difficultyTag, short: difficultyTag?.querySelector('.tag-short')?.textContent || '', full: difficultyTag?.querySelector('.tag-full')?.textContent || '' },
+    { el: actualTag, short: actualTag?.querySelector('.tag-short')?.textContent || '', full: actualTag?.querySelector('.tag-full')?.textContent || '' }
+  ]
 
-  const measureTextWidth = (text) => {
-    measureElement.textContent = text
-    return measureElement.offsetWidth
-  }
-
-  try {
-    if (difficultyTag) {
-      const shortText = difficultyTag.querySelector('.tag-short')?.textContent || ''
-      const fullText = difficultyTag.querySelector('.tag-full')?.textContent || ''
-      
-      // 精确测量文本宽度，而不是简单估算
-      const shortWidth = Math.max(30, measureTextWidth(shortText) + 16)
-      const fullWidth = Math.max(shortWidth, measureTextWidth(fullText) + 5)
-      
-      difficultyTag.style.setProperty('--w-short', `${shortWidth}px`)
-      difficultyTag.style.setProperty('--w-full', `${fullWidth}px`)
-    }
-
-    if (actualTag) {
-      const shortText = actualTag.querySelector('.tag-short')?.textContent || ''
-      const fullText = actualTag.querySelector('.tag-full')?.textContent || ''
-      
-      const shortWidth = Math.max(30, measureTextWidth(shortText) + 16)
-      const fullWidth = Math.max(shortWidth, measureTextWidth(fullText) + 5)
-      
-      actualTag.style.setProperty('--w-short', `${shortWidth}px`)
-      actualTag.style.setProperty('--w-full', `${fullWidth}px`)
-    }
-  } finally {
-    // 清理临时元素
-    document.body.removeChild(measureElement)
-  }
+  // 批量写入 DOM（使用 requestAnimationFrame 避免强制同步布局）
+  requestAnimationFrame(() => {
+    tags.forEach(({ el, short, full }) => {
+      if (!el) return
+      const shortWidth = Math.max(30, measureTextWidth(short) + 16)
+      const fullWidth = Math.max(shortWidth, measureTextWidth(full) + 5)
+      el.style.setProperty('--w-short', `${shortWidth}px`)
+      el.style.setProperty('--w-full', `${fullWidth}px`)
+    })
+  })
 }
 
-// 卡片入场动画
+// 卡片入场动画（简化版，减少性能开销）
 const animateCard = (el, done) => {
   // 检查用户是否偏好减少动画
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  // 设置初始状态
-  gsap.set(el, {
-    opacity: 0,
-    y: 15,
-    scale: 0.97,
-    filter: 'blur(2px)',
-    force3D: true
-  })
+  if (prefersReducedMotion) {
+    done?.()
+    return
+  }
 
-  // 入场动画
-  gsap.to(el, {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    filter: 'blur(0px)',
-    duration: prefersReducedMotion ? 0 : 0.3,
-    ease: "power2.out",
-    onComplete: done,
-    force3D: true,
-    willChange: 'transform, opacity, filter'
-  })
+  // 简化动画：只使用 opacity 和 transform，避免 filter
+  gsap.fromTo(el, 
+    { opacity: 0, y: 10 },
+    { 
+      opacity: 1, 
+      y: 0, 
+      duration: 0.2,
+      ease: "power2.out",
+      onComplete: done,
+      force3D: true
+    }
+  )
 }
 
 // 卡片退场动画
@@ -264,95 +250,39 @@ const animateCardLeave = (el, done) => {
   })
 }
 
-onMounted(async () => {
-  await nextTick()
-  
-  // 获取卡片元素
-  cardElement.value = document.querySelector(`[data-archive-id="${props.archive.id}"]`)
-  if (!cardElement.value) return
+onMounted(() => {
+  // 使用 requestIdleCallback 延迟非关键初始化
+  const initCard = () => {
+    cardElement.value = document.querySelector(`[data-archive-id="${props.archive.id}"]`)
+    if (!cardElement.value) return
 
-  // 简化的渲染流程
-  const renderCard = () => {
-    // 计算标签宽度
+    // 直接计算标签宽度，不再使用 IntersectionObserver（简化逻辑）
     updateTagWidths()
     hasRendered.value = true
   }
 
-  // 使用IntersectionObserver进行可见性检测
-  if ('IntersectionObserver' in window) {
-    const container = document.querySelector('.archive-grid') || document.body
-
-    intersectionObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !hasRendered.value) {
-          renderCard()
-          intersectionObserver.unobserve(cardElement.value)
-        }
-      })
-    }, {
-      root: container,
-      rootMargin: '50px',
-      threshold: 0.1
-    })
-
-    intersectionObserver.observe(cardElement.value)
+  // 优先使用 requestIdleCallback，降低初始化优先级
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(initCard, { timeout: 100 })
   } else {
-    // 降级处理：直接渲染
-    renderCard()
+    // 降级：使用 setTimeout
+    setTimeout(initCard, 16)
   }
-
-  // 使用ResizeObserver监听尺寸变化
-  if (cardElement.value) {
-    resizeObserver = new ResizeObserver(() => {
-      if (hasRendered.value) {
-        clearTimeout(cardElement.value._resizeTimer)
-        cardElement.value._resizeTimer = setTimeout(updateTagWidths, 100)
-      }
-    })
-    resizeObserver.observe(cardElement.value)
-  }
-
-  // 字体加载完成后重新计算
-  document.fonts?.ready?.then(() => {
-    if (hasRendered.value) {
-      setTimeout(updateTagWidths, 100)
-    }
-  })
 })
 
 // 当文案变动时，重测 - 添加防抖优化
 let tagWidthUpdateTimer = null
 
-watch([() => archiveDifficultyText.value, () => actualDifficultyText.value], async () => {
+watch([() => archiveDifficultyText.value, () => actualDifficultyText.value], () => {
   clearTimeout(tagWidthUpdateTimer)
-  tagWidthUpdateTimer = setTimeout(() => {
-    updateTagWidths()
-  }, 100)
+  tagWidthUpdateTimer = setTimeout(updateTagWidths, 100)
 })
 
 onBeforeUnmount(() => {
-  // 清理ResizeObserver
-  if (resizeObserver) {
-    resizeObserver.disconnect()
-    resizeObserver = null
-  }
-
-  // 清理IntersectionObserver
-  if (intersectionObserver) {
-    if (cardElement.value) {
-      intersectionObserver.unobserve(cardElement.value)
-    }
-    intersectionObserver.disconnect()
-    intersectionObserver = null
-  }
-
   // 清理定时器
-  if (cardElement.value && cardElement.value._resizeTimer) {
-    clearTimeout(cardElement.value._resizeTimer)
-  }
-
   if (tagWidthUpdateTimer) {
     clearTimeout(tagWidthUpdateTimer)
+    tagWidthUpdateTimer = null
   }
 })
 </script>
@@ -366,8 +296,8 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-card);
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
-              box-shadow 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    box-shadow 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform, box-shadow;
   background: var(--card-bg);
   border: var(--card-border);
@@ -394,12 +324,10 @@ onBeforeUnmount(() => {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0) 30%,
-    rgba(255, 255, 255, 0.02) 50%,
-    rgba(255, 255, 255, 0) 70%
-  );
+  background: linear-gradient(45deg,
+      rgba(255, 255, 255, 0) 30%,
+      rgba(255, 255, 255, 0.02) 50%,
+      rgba(255, 255, 255, 0) 70%);
   transform: rotate(45deg) translate(-100%, -100%);
   transition: transform 0.8s ease;
   pointer-events: none;
@@ -414,6 +342,7 @@ onBeforeUnmount(() => {
   0% {
     box-shadow: var(--card-shadow);
   }
+
   100% {
     box-shadow: 0 4px 12px -5px rgba(0, 0, 0, 0.2);
   }
@@ -424,7 +353,7 @@ onBeforeUnmount(() => {
   box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.4), 0 4px 8px -4px rgba(0, 0, 0, 0.3);
   z-index: 2;
   /* 简化光泽效果，减少性能开销 */
-  background: linear-gradient(145deg, var(--card-bg) 0%, rgba(255,255,255,0.03) 50%, var(--card-bg) 100%);
+  background: linear-gradient(145deg, var(--card-bg) 0%, rgba(255, 255, 255, 0.03) 50%, var(--card-bg) 100%);
   /* 优化缩放后的文字渲染 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -667,7 +596,7 @@ onBeforeUnmount(() => {
 
 /* 悬浮时下半信息区域变化 */
 .archive-card:hover .card-info {
-  background-color: rgba(255,255,255,0.02);
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
 .level-info {
@@ -704,9 +633,9 @@ onBeforeUnmount(() => {
   cursor: pointer;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-button);
-  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
-              box-shadow 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              background-color 0.3s ease, color 0.3s ease;
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    box-shadow 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    background-color 0.3s ease, color 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -717,9 +646,9 @@ onBeforeUnmount(() => {
   position: relative;
   overflow: hidden;
   /* 简化按钮内部光泽效果，减少性能开销 */
-  background-image: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.03) 100%);
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.03) 100%);
   /* 简化内阴影效果 */
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
   /* 使用will-change优化动画性能，但只针对会变化的属性 */
   will-change: transform, box-shadow;
   /* 添加硬件加速 */
@@ -751,7 +680,7 @@ onBeforeUnmount(() => {
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
   transform: translate(-50%, -50%);
   transition: width 0.5s ease, height 0.5s ease;
   z-index: 1;
@@ -771,7 +700,7 @@ onBeforeUnmount(() => {
   left: -100%;
   width: 40%;
   height: 100%;
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
   transition: left 0.4s ease;
   z-index: 2;
   pointer-events: none;
@@ -784,9 +713,9 @@ onBeforeUnmount(() => {
 /* 操作按钮悬浮状态 - 简化版本 */
 .action-btn:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255,255,255,0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   /* 简化光泽变化 */
-  background-image: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.03) 100%);
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.03) 100%);
   /* 优化缩放后的文字渲染 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -965,6 +894,7 @@ onBeforeUnmount(() => {
 
 /* 触摸设备优化 */
 @media (hover: none) and (pointer: coarse) {
+
   /* 增大触摸区域 */
   .action-btn {
     min-width: 40px;
@@ -1000,7 +930,9 @@ onBeforeUnmount(() => {
 }
 
 /* 高分辨率屏幕优化 */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+
   .archive-name,
   .current-level {
     text-rendering: optimizeLegibility;

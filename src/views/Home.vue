@@ -1,98 +1,60 @@
 <template>
   <div class="home-container">
     <div class="archive-list-container" :class="{ 'no-scroll': showSearch }">
-      <!-- 加载状态和存档网格 - 布局切换动画 -->
-      <transition name="layout-switch" mode="out-in">
-        <div v-if="loading" key="loading" class="loading-state">
-          <div class="loading-content">
-            <div class="loading-spinner">
-              <div class="spinner-ring"></div>
-              <div class="spinner-ring"></div>
-              <div class="spinner-ring"></div>
-            </div>
-            <h3 class="loading-title">{{ $t('archiveSearch.loadingArchives') }}</h3>
-            <p class="loading-subtitle">{{ $t('archiveSearch.scanningFiles') }}</p>
-            <div class="loading-progress">
-              <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: loadingProgress + '%' }"></div>
-              </div>
+      <!-- 存档网格 -->
+      <div class="archive-grid-container" ref="archiveGrid">
+        <!-- 虚拟滚动容器 -->
+        <div v-if="isVirtualizationEnabled" class="virtual-scroll-container"
+          :style="{ height: `${displayArchives.length * cardHeight}px` }">
+          <div class="virtual-scroll-content" :style="{ transform: `translateY(${virtualScrollOffset}px)` }">
+            <div class="archive-grid">
+              <ArchiveCard v-for="(archive, index) in visibleArchives" :key="archive.id" :archive="archive"
+                :index="startIndex + index" :data-index="startIndex + index" @toggle-visibility="handleToggleVisibility"
+                @edit="handleEdit" @delete="handleVirtualScrollDelete" @select="selectArchive" />
             </div>
           </div>
         </div>
 
-        <div v-else key="grid" class="archive-grid-container" ref="archiveGrid">
-          <!-- 虚拟滚动容器 -->
-          <div v-if="isVirtualizationEnabled" class="virtual-scroll-container" 
-               :style="{ height: `${displayArchives.length * cardHeight}px` }">
-            <div class="virtual-scroll-content" 
-                 :style="{ transform: `translateY(${virtualScrollOffset}px)` }">
-              <transition-group name="archive-card" tag="div" class="archive-grid"
-                @before-enter="beforeCardEnter" @enter="cardEnter" @leave="cardLeave">
-                <ArchiveCard v-for="(archive, index) in visibleArchives" 
-                             :key="archive.id" 
-                             :archive="archive" 
-                             :index="startIndex + index"
-                             :data-index="startIndex + index" 
-                             @toggle-visibility="handleToggleVisibility" 
-                             @edit="handleEdit" 
-                             @delete="deleteArchive"
-                             @select="selectArchive" />
-              </transition-group>
+        <!-- 传统的分批渲染（当虚拟滚动未启用时） -->
+        <transition-group v-else name="archive-card" tag="div" class="archive-grid" @before-enter="beforeCardEnter"
+          @enter="cardEnter" @leave="cardLeave">
+          <!-- 优先渲染前50个，然后延迟加载剩余的 -->
+          <ArchiveCard v-for="(archive, index) in priorityArchives" :key="archive.id" :archive="archive" :index="index"
+            :data-index="index" @toggle-visibility="handleToggleVisibility" @edit="handleEdit" @delete="deleteArchive"
+            @select="selectArchive" />
+
+          <!-- 延迟加载剩余存档（使用懒加载避免一次性渲染大量DOM） -->
+          <ArchiveCard v-for="(archive, index) in remainingArchives" :key="archive.id" :archive="archive"
+            :index="index + priorityArchives.length" :data-index="index + priorityArchives.length"
+            @toggle-visibility="handleToggleVisibility" @edit="handleEdit" @delete="deleteArchive"
+            @select="selectArchive" />
+
+          <div v-if="displayArchives.length === 0 && archives.length > 0 && hasActiveFilters" key="no-results"
+            class="empty-state">
+            <div class="empty-content">
+              <div class="empty-icon">🔍</div>
+              <h3 class="empty-title">{{ $t('archiveSearch.noResults') }}</h3>
+              <p class="empty-description">{{ $t('archiveSearch.noMatchingArchives') }}</p>
+              <p class="empty-hint">{{ $t('archiveSearch.adjustSearchOrClearFilters') }}</p>
+              <button class="empty-action" @click="clearAllFilters">
+                {{ $t('archiveSearch.clearFilters') }}
+              </button>
             </div>
           </div>
-          
-          <!-- 传统的分批渲染（当虚拟滚动未启用时） -->
-          <transition-group v-else name="archive-card" tag="div" class="archive-grid"
-            @before-enter="beforeCardEnter" @enter="cardEnter" @leave="cardLeave">
-            <!-- 优先渲染前50个，然后延迟加载剩余的 -->
-            <ArchiveCard v-for="(archive, index) in priorityArchives" 
-                         :key="archive.id" 
-                         :archive="archive" 
-                         :index="index"
-                         :data-index="index" 
-                         @toggle-visibility="handleToggleVisibility" 
-                         @edit="handleEdit" 
-                         @delete="deleteArchive"
-                         @select="selectArchive" />
-            
-            <!-- 延迟加载剩余存档（使用懒加载避免一次性渲染大量DOM） -->
-            <ArchiveCard v-for="(archive, index) in remainingArchives" 
-                         :key="archive.id" 
-                         :archive="archive" 
-                         :index="index + priorityArchives.length"
-                         :data-index="index + priorityArchives.length" 
-                         @toggle-visibility="handleToggleVisibility" 
-                         @edit="handleEdit" 
-                         @delete="deleteArchive"
-                         @select="selectArchive" />
 
-            <div v-if="displayArchives.length === 0 && archives.length > 0 && hasActiveFilters" key="no-results"
-              class="empty-state">
-              <div class="empty-content">
-                <div class="empty-icon">🔍</div>
-                <h3 class="empty-title">{{ $t('archiveSearch.noResults') }}</h3>
-                <p class="empty-description">{{ $t('archiveSearch.noMatchingArchives') }}</p>
-                <p class="empty-hint">{{ $t('archiveSearch.adjustSearchOrClearFilters') }}</p>
-                <button class="empty-action" @click="clearAllFilters">
-                  {{ $t('archiveSearch.clearFilters') }}
-                </button>
-              </div>
+          <div v-else-if="dataLoadComplete && displayArchives.length === 0 && archives.length === 0" key="no-archives"
+            class="empty-state">
+            <div class="empty-content">
+              <div class="empty-icon">📁</div>
+              <h3 class="empty-title">{{ $t('archiveSearch.noArchives') }}</h3>
+              <p class="empty-description">{{ $t('archiveSearch.createNewArchive') }}</p>
+              <button class="empty-action" @click="createNewArchive">
+                {{ $t('archiveSearch.createArchive') }}
+              </button>
             </div>
-
-            <div v-else-if="displayArchives.length === 0 && archives.length === 0" key="no-archives"
-              class="empty-state">
-              <div class="empty-content">
-                <div class="empty-icon">📁</div>
-                <h3 class="empty-title">{{ $t('archiveSearch.noArchives') }}</h3>
-                <p class="empty-description">{{ $t('archiveSearch.createNewArchive') }}</p>
-                <button class="empty-action" @click="createNewArchive">
-                  {{ $t('archiveSearch.createArchive') }}
-                </button>
-              </div>
-            </div>
-          </transition-group>
-        </div>
-      </transition>
+          </div>
+        </transition-group>
+      </div>
 
       <!-- 搜索存档组件 -->
       <Teleport to="body">
@@ -151,7 +113,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue'
 import { gsap } from 'gsap'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { invoke } from '@tauri-apps/api/core'
 import { safeModifyBodyStyles, protectFloatingButtonPosition } from '../utils/floatingButtonProtection.js'
 import { detectDevicePerformance, getAnimationParams, createPerformanceMonitor } from '../utils/performance.js'
@@ -167,12 +129,19 @@ const fabCurrentIndex = ref(0)
 // 浮动按钮位置检查定时器引用
 const fabPositionCheckerRef = ref(null)
 
+// 页面进入标记，用于避免重复刷新
+const isPageActive = ref(false)
+
 // 从后端加载的真实存档数据
 const archives = ref([])
 const router = useRouter()
+const route = useRoute()
 
 // 可见存档列表（从MAINSAVE获取）
 const visibleSaves = ref(new Set())
+
+// 数据加载完成状态跟踪
+const dataLoadComplete = ref(false)
 
 // 性能设置状态
 const showPerformanceSettings = ref(false)
@@ -181,13 +150,13 @@ const animationQuality = ref('medium') // 'high' | 'medium' | 'low' | 'disabled'
 const hardwareAcceleration = ref(true)
 const virtualizationEnabled = ref(true)
 
-// 虚拟滚动配置
-const virtualScrollThreshold = ref(20) // 超过20个存档时启用虚拟滚动
-const cardHeight = ref(320) // 卡片高度（包含间距）
+// 虚拟滚动配置 - 降低阈值以更早启用虚拟滚动
+const virtualScrollThreshold = ref(12) // 超过12个存档时启用虚拟滚动（降低阈值提升性能）
+const cardHeight = ref(180) // 卡片高度（包含间距），调整为实际高度
 const containerHeight = ref(600) // 容器高度
 
 // 批处理渲染配置 - 优化性能
-const batchSize = ref(Math.min(50, virtualScrollThreshold.value * 2)) // 根据虚拟滚动阈值动态调整
+const batchSize = ref(24) // 首批渲染24个卡片
 const lazyLoadMore = ref(false) // 是否启用懒加载更多
 
 // 计算属性：虚拟滚动 - 只渲染可见区域的存档
@@ -195,41 +164,42 @@ const visibleArchives = computed(() => {
   if (!isVirtualizationEnabled.value || displayArchives.value.length <= virtualScrollThreshold.value) {
     return displayArchives.value
   }
-  
+
   const container = document.querySelector('.archive-grid-container')
   if (!container) return displayArchives.value
-  
+
   const containerRect = container.getBoundingClientRect()
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0
   const windowHeight = window.innerHeight
   const viewportStart = scrollTop - 200 // 提前200px开始渲染
   const viewportEnd = scrollTop + windowHeight + 200 // 延后200px结束渲染
-  
+
   const startIndex = Math.floor(Math.max(0, viewportStart) / cardHeight.value)
   const endIndex = Math.ceil(Math.min(viewportEnd / cardHeight.value, displayArchives.value.length))
-  
-  console.log(`虚拟滚动 - 显示范围: ${startIndex} 到 ${endIndex}, 总数: ${displayArchives.value.length}`)
-  
-  return displayArchives.value.slice(startIndex, endIndex)
+
+  const visibleRange = displayArchives.value.slice(startIndex, endIndex)
+  console.log(`虚拟滚动 - 显示范围: ${startIndex} 到 ${endIndex}, 总数: ${displayArchives.value.length}, 可见: ${visibleRange.length}`)
+
+  return visibleRange
 })
 
 // 计算虚拟滚动偏移量
 const virtualScrollOffset = computed(() => {
   if (!isVirtualizationEnabled.value || displayArchives.value.length <= virtualScrollThreshold.value) return 0
-  
+
   const container = document.querySelector('.archive-grid-container')
   if (!container) return 0
-  
+
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0
   const startIndex = Math.floor(scrollTop / cardHeight.value)
-  
+
   return startIndex * cardHeight.value
 })
 
 // 计算当前滚动位置的起始索引
 const startIndex = computed(() => {
   if (!isVirtualizationEnabled.value || displayArchives.value.length <= virtualScrollThreshold.value) return 0
-  
+
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0
   return Math.floor(scrollTop / cardHeight.value)
 })
@@ -244,7 +214,7 @@ const priorityArchives = computed(() => {
   if (isVirtualizationEnabled.value) {
     return visibleArchives.value
   }
-  
+
   // 优先显示前50个存档
   const priorityCount = Math.min(batchSize.value, displayArchives.value.length)
   return displayArchives.value.slice(0, priorityCount)
@@ -254,7 +224,7 @@ const remainingArchives = computed(() => {
   if (isVirtualizationEnabled.value) {
     return []
   }
-  
+
   // 剩余的存档延迟加载
   const priorityCount = Math.min(batchSize.value, displayArchives.value.length)
   return displayArchives.value.slice(priorityCount)
@@ -291,7 +261,7 @@ const handleScroll = () => {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop
     const scrollHeight = document.documentElement.scrollHeight
     const clientHeight = document.documentElement.clientHeight
-    
+
     // 当滚动到60%时开始懒加载更多内容（降低阈值以更早触发）
     if (scrollTop + clientHeight >= scrollHeight * 0.6) {
       lazyLoadMore.value = true
@@ -320,31 +290,30 @@ onUnmounted(() => {
     clearInterval(fabPositionCheckerRef.value)
     fabPositionCheckerRef.value = null
   }
-  
+
   // 清理滚动监听
   if (scrollListener) {
     window.removeEventListener('scroll', debouncedScrollHandler)
     scrollListener = null
   }
-  
+
   // 清理定时器
   if (updateTimeout) {
     clearTimeout(updateTimeout)
     updateTimeout = null
   }
-  
+
   if (animationFrame) {
     cancelAnimationFrame(animationFrame)
     animationFrame = null
   }
-  
+
   // 清理懒加载状态
   lazyLoadMore.value = false
 })
 
 // 加载状态
-const loading = ref(true)
-const loadingProgress = ref(0)
+const loading = ref(false)
 
 // 性能优化：批量更新和防抖
 let updateTimeout = null
@@ -373,19 +342,11 @@ const loadVisibleSaves = async () => {
   }
 }
 
-// 加载真实存档数据（带进度模拟）
+// 加载真实存档数据
 const loadRealArchives = async () => {
   try {
-    // 模拟加载进度
-    const progressInterval = setInterval(() => {
-      loadingProgress.value = Math.min(loadingProgress.value + Math.random() * 15, 90)
-    }, 200)
-
     // 调用后端的 load_all_saves 命令
     const response = await invoke('load_all_saves')
-
-    clearInterval(progressInterval)
-    loadingProgress.value = 100
 
     if (response && Array.isArray(response)) {
       // 中文难度到英文的映射
@@ -435,6 +396,7 @@ const initializeArchives = async (silent = false) => {
   if (!silent) {
     archives.value = []
     displayArchives.value = []
+    dataLoadComplete.value = false // 重置加载完成状态
   }
 
   try {
@@ -455,6 +417,9 @@ const initializeArchives = async (silent = false) => {
       enhancedProtectFloatingButton()
     })
 
+    // 数据加载完成，设置状态
+    dataLoadComplete.value = true
+
     // 如果没有找到存档，显示空列表
     if (realArchives.length === 0) {
       console.warn('未找到可加载的存档')
@@ -465,6 +430,8 @@ const initializeArchives = async (silent = false) => {
       archives.value = []
       displayArchives.value = []
     }
+    // 即使出错也设置为加载完成，这样可以显示错误状态
+    dataLoadComplete.value = true
   } finally {
     if (!silent) {
       setTimeout(() => {
@@ -500,7 +467,7 @@ const lastSearchFilters = ref({
 // 性能优化：防抖处理筛选
 const debouncedApplyFilters = debounce((archives, filters) => {
   const now = Date.now()
-  
+
   // 防止过于频繁的更新
   if (now - lastUpdateTime.value < 50) {
     return
@@ -880,65 +847,150 @@ const deleteArchive = (archive) => {
   showDeleteConfirm.value = true
 }
 
+// 专门处理虚拟滚动模式下的删除动画
+const handleVirtualScrollDelete = async (archive) => {
+  // 虚拟滚动模式下，先播放动画再弹出确认框
+  console.log('虚拟滚动删除存档:', archive.name)
+
+  // 1. 找到对应的DOM元素并添加删除动画
+  const cardElement = document.querySelector(`[data-archive-id="${archive.id}"]`)
+
+  if (cardElement) {
+    console.log('为卡片添加删除动画:', archive.id)
+
+    // 添加动画类并执行GSAP动画
+    cardElement.classList.add('archive-card-leave')
+
+    gsap.to(cardElement, {
+      opacity: 0,
+      scale: 0.9,
+      y: -20,
+      duration: 0.3,
+      ease: "power2.in",
+      onComplete: () => {
+        console.log('卡片删除动画完成:', archive.id)
+      }
+    })
+  }
+
+  // 2. 弹出确认框（不自动确认，让用户决定）
+  archiveToDelete.value = archive
+  showDeleteConfirm.value = true
+}
+
 const confirmDelete = async () => {
   if (!archiveToDelete.value) return
+  if (isDeleting.value) return
 
   isDeleting.value = true
-  const archive = archiveToDelete.value
-  const index = archives.value.findIndex(a => a.id === archive.id)
+  console.log('开始删除存档:', archiveToDelete.value.name)
 
-  if (index > -1) {
-    try {
-      // 先调用后端删除实际文件
-      if (archive.path) {
-        await invoke('delete_file', { filePath: archive.path })
-      }
+  try {
+    // 从真实存档列表中找到对应的存档
+    const archiveIndex = archives.value.findIndex(a => a.id === archiveToDelete.value.id)
 
-      // 从前端数据中移除
-      archives.value.splice(index, 1)
+    if (archiveIndex === -1) {
+      throw new Error('未找到要删除的存档数据')
+    }
 
-      // 重新应用筛选器
-      debouncedApplyFilters(archives.value, lastSearchFilters.value)
+    const archiveData = archives.value[archiveIndex]
+    console.log('找到要删除的存档数据:', archiveData.name)
 
-      // 确保浮动按钮位置正确
-      protectFloatingButtonPosition()
+    // 先调用后端删除实际文件
+    if (archiveData.path) {
+      console.log('调用后端删除文件:', archiveData.path)
+      await invoke('delete_file', { filePath: archiveData.path })
+      console.log('文件删除成功')
+    }
 
-      // 添加删除成功动画
-      const successToast = document.createElement('div')
-      successToast.className = 'success-toast'
-      successToast.innerHTML = `
-        <div class="toast-content">
-          <span class="toast-icon">✓</span>
-          <span class="toast-text">${archive.name} 已删除</span>
-        </div>
-      `
-      document.body.appendChild(successToast)
+    // 删除数据 - 让Vue的transition-group处理动画
+    console.log('从数据中移除存档')
+    archives.value.splice(archiveIndex, 1)
 
-      gsap.fromTo(successToast,
-        { opacity: 0, scale: 0.8 },
-        { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.7)" }
-      )
+    // 重新应用筛选器
+    console.log('重新应用筛选器')
+    debouncedApplyFilters(archives.value, lastSearchFilters.value)
 
-      setTimeout(() => {
-        gsap.to(successToast, {
-          opacity: 0, scale: 0.8, duration: 0.3, onComplete: () => {
+    // 确保浮动按钮位置正确
+    console.log('保护浮动按钮位置')
+    protectFloatingButtonPosition()
+
+    // 添加删除成功动画
+    const successToast = document.createElement('div')
+    successToast.className = 'success-toast'
+    successToast.innerHTML = `
+      <div class="toast-content">
+        <span class="toast-icon">✓</span>
+        <span class="toast-text">${archiveData.name} 已删除</span>
+      </div>
+    `
+    document.body.appendChild(successToast)
+
+    gsap.fromTo(successToast,
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.7)" }
+    )
+
+    setTimeout(() => {
+      gsap.to(successToast, {
+        opacity: 0, scale: 0.8, duration: 0.3, onComplete: () => {
+          if (document.body.contains(successToast)) {
             document.body.removeChild(successToast)
           }
-        })
-      }, 2500)
+        }
+      })
+    }, 2500)
 
-      setTimeout(() => {
-        closeDeleteModal()
-      }, 300)
-
-    } catch (error) {
-      console.error('删除存档失败:', error)
+    // 延迟关闭模态框
+    setTimeout(() => {
+      console.log('关闭删除确认模态框')
       closeDeleteModal()
-    }
+    }, 600)
+
+  } catch (error) {
+    console.error('删除存档失败:', error)
+
+    // 添加错误提示
+    const errorToast = document.createElement('div')
+    errorToast.className = 'error-toast'
+    errorToast.innerHTML = `
+      <div class="toast-content">
+        <span class="toast-icon">✗</span>
+        <span class="toast-text">删除失败: ${error.message || error}</span>
+      </div>
+    `
+    document.body.appendChild(errorToast)
+
+    setTimeout(() => {
+      gsap.to(errorToast, {
+        opacity: 0, duration: 0.3, onComplete: () => {
+          if (document.body.contains(errorToast)) {
+            document.body.removeChild(errorToast)
+          }
+        }
+      })
+    }, 3000)
+
+    closeDeleteModal()
   }
 }
 
 const cancelDelete = () => {
+  // 恢复虚拟滚动模式下被隐藏的卡片
+  if (archiveToDelete.value) {
+    const cardElement = document.querySelector(`[data-archive-id="${archiveToDelete.value.id}"]`)
+    if (cardElement) {
+      // 恢复卡片显示
+      cardElement.classList.remove('archive-card-leave')
+      gsap.to(cardElement, {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        duration: 0.3,
+        ease: "power2.out"
+      })
+    }
+  }
   closeDeleteModal()
 }
 
@@ -956,7 +1008,6 @@ const createNewArchive = () => {
 // 刷新存档列表
 const refreshArchives = async () => {
   loading.value = true
-  loadingProgress.value = 0
 
   try {
     // 先重新加载可见存档列表（关键修复：确保获取最新的可见性状态）
@@ -975,6 +1026,24 @@ const refreshArchives = async () => {
     setTimeout(() => {
       loading.value = false
     }, 300)
+  }
+}
+
+// 静默刷新存档列表（不显示加载界面）
+const refreshArchivesSilent = async () => {
+  try {
+    // 先重新加载可见存档列表
+    await loadVisibleSaves()
+
+    // 再重新加载真实存档数据
+    const realArchives = await loadRealArchives()
+    archives.value = realArchives
+
+    // 重新应用当前筛选器
+    debouncedApplyFilters(archives.value, lastSearchFilters.value)
+
+  } catch (error) {
+    console.error('刷新存档失败:', error)
   }
 }
 
@@ -1065,91 +1134,42 @@ const openSaveGamesFolder = async () => {
   }
 }
 
-// 动画钩子函数
+// 动画钩子函数 - 简化版本，提升性能
 const beforeCardEnter = (el) => {
-  // 获取动画参数
-  const params = getAnimationParams('cardEnter', performanceMode.value, animationQuality.value)
-
-  const index = parseInt(el.dataset.index) || 0
-  el.style.setProperty('--index', index)
-  el.style.opacity = 0
-  el.style.transform = 'translateY(20px)'
+  el.style.opacity = '0'
+  el.style.transform = 'translateY(10px)'
 }
 
 const cardEnter = (el, done) => {
-  // 如果正在侧边栏动画期间，跳过动画直接完成
-  if (typeof isSidebarAnimating !== 'undefined' && isSidebarAnimating) {
-    el.style.opacity = 1
-    el.style.transform = 'translateY(0)'
-    done()
-    return
-  }
-
-  // 获取动画参数
-  const params = getAnimationParams('cardEnter', performanceMode.value, animationQuality.value)
-  const devicePerf = detectDevicePerformance()
-
-  // 对于大量卡片情况，简化动画
-  const index = parseInt(el.dataset.index) || 0
   const cardCount = displayArchives.value.length
-
-  // 在极低性能模式或卡片数量过多时，直接完成动画
-  if (devicePerf.isVeryLowEndDevice || cardCount > 200 || performanceMode.value === 'low') {
-    el.style.opacity = 1
+  
+  // 卡片数量超过30个时，直接显示不做动画
+  if (cardCount > 30 || performanceMode.value === 'low') {
+    el.style.opacity = '1'
     el.style.transform = 'translateY(0)'
-    el.style.removeProperty('--index')
     done()
     return
   }
 
-  // 如果卡片数量超过100，减少动画延迟以提升性能
-  const delay = cardCount > 100 ? Math.min(index * params.delay, 150) : Math.min(index * params.delay, 300)
-  const duration = cardCount > 100 ? 0.2 : params.duration
-
-  // 移除延迟，使用 requestAnimationFrame 确保同步
-  requestAnimationFrame(() => {
-    gsap.to(el, {
-      opacity: 1,
-      y: 0,
-      duration: duration,
-      ease: params.ease,
-      force3D: params.force3D,
-      onComplete: done
-    })
+  // 简化动画：只使用 opacity 和 transform
+  gsap.to(el, {
+    opacity: 1,
+    y: 0,
+    duration: 0.15,
+    ease: "power2.out",
+    force3D: true,
+    onComplete: done
   })
 }
 
 const cardLeave = (el, done) => {
-  // 如果正在侧边栏动画期间，跳过动画直接完成
-  if (typeof isSidebarAnimating !== 'undefined' && isSidebarAnimating) {
-    el.style.opacity = 0
-    el.style.transform = 'translateY(-20px)'
-    done()
-    return
-  }
-
-  // 获取动画参数
-  const params = getAnimationParams('cardLeave', performanceMode.value, animationQuality.value)
-  const devicePerf = detectDevicePerformance()
-
-  // 对于大量卡片情况，简化动画
-  const cardCount = displayArchives.value.length
-
-  // 在极低性能模式或卡片数量过多时，直接完成动画
-  if (devicePerf.isVeryLowEndDevice || cardCount > 200 || performanceMode.value === 'low') {
-    el.style.opacity = 0
-    el.style.transform = 'translateY(-10px)'
-    done()
-    return
-  }
-
-  const duration = cardCount > 100 ? 0.15 : params.duration
-
+  // 简化删除动画
   gsap.to(el, {
     opacity: 0,
-    y: -10,
-    duration: duration,
-    ease: params.ease,
+    scale: 0.95,
+    duration: 0.2,
+    ease: "power2.in",
+    force3D: true,
     onComplete: done
   })
 }
@@ -1324,7 +1344,7 @@ onMounted(async () => {
 
   // 将定时器保存到组件实例，以便在onUnmounted中清理
   fabPositionCheckerRef.value = fabPositionChecker
-  
+
   // 添加滚动监听器用于懒加载
   scrollListener = window.addEventListener('scroll', debouncedScrollHandler)
 
@@ -1335,12 +1355,43 @@ onMounted(async () => {
     prefersReducedMotion ? '0.2s' : '0.4s'
   )
 
-  // 加载存档数据
-  await initializeArchives()
+  // 加载存档数据（静默模式，不显示加载界面）
+  await initializeArchives(true)
   displayArchives.value = [...archives.value]
 
   // 更新虚拟滚动容器高度
   updateContainerHeight()
+
+  // 监听路由变化，进入页面时自动刷新
+  let lastRoutePath = route.path
+
+  // 立即刷新一次（进入页面时，静默模式）
+  isPageActive.value = true
+  await refreshArchivesSilent()
+
+  // 监听路由变化，如果从其他页面切换到当前页面则刷新
+  const unwatchRoute = watch(() => route.path, async (newPath, oldPath) => {
+    if (newPath === '/' && oldPath !== '/') {
+      // 从其他页面切换到存档列表页面
+      if (!isPageActive.value) {
+        console.log('从其他页面切换到存档列表页面，执行自动刷新')
+        isPageActive.value = true
+        await refreshArchivesSilent()
+      }
+    } else if (newPath !== '/' && oldPath === '/') {
+      // 离开页面时标记为非活跃状态
+      isPageActive.value = false
+    }
+  }, { immediate: false })
+
+  // 保存路由监听清理函数
+  const cleanupRouteWatcher = () => {
+    try {
+      unwatchRoute()
+    } catch (error) {
+      console.warn('清理路由监听时出错:', error)
+    }
+  }
 
   // 监听窗口大小变化时更新容器高度
   window.addEventListener('resize', () => {
@@ -1443,6 +1494,9 @@ onMounted(async () => {
 
   window.addEventListener('resize', handleResize)
   window.addEventListener('sidebar-expand', handleSidebarExpand)
+
+  // 将路由监听清理函数保存到全局对象，以便onUnmounted中访问
+  window.cleanupRouteWatcher = cleanupRouteWatcher
 })
 
 // 组件卸载时清理资源
@@ -1475,12 +1529,22 @@ onUnmounted(() => {
     scrollListener = null
   }
 
+  // 清理路由监听器
+  if (window.cleanupRouteWatcher) {
+    try {
+      window.cleanupRouteWatcher()
+      delete window.cleanupRouteWatcher
+    } catch (error) {
+      console.warn('清理路由监听时出错:', error)
+    }
+  }
+
   window.removeEventListener('resize', () => { })
   window.removeEventListener('sidebar-expand', () => { })
-  
+
   // 清理懒加载状态
   lazyLoadMore.value = false
-  
+
   // 清理引用，防止内存泄漏
   archiveGrid.value = null
 })
@@ -1504,7 +1568,7 @@ watch(archives, (newArchives) => {
   padding-top: 0;
   background: var(--bg-primary);
   margin-top: 0;
-  padding-bottom: 80px;
+  padding-bottom: 100px;
   min-height: calc(100vh - 60px);
   box-sizing: border-box;
   transform: none;
@@ -1654,118 +1718,7 @@ watch(archives, (newArchives) => {
   }
 }
 
-/* 加载状态 - 现代化设计 */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  color: var(--text-secondary);
-}
 
-.loading-content {
-  text-align: center;
-  padding: 48px;
-  background: var(--card-bg);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-/* 深色模式下的加载状态优化 */
-@media (prefers-color-scheme: dark) {
-  .loading-content {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-}
-
-.loading-spinner {
-  position: relative;
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 24px;
-}
-
-.spinner-ring {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border: 3px solid transparent;
-  border-radius: 50%;
-  border-top-color: var(--primary-color);
-  animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-}
-
-.spinner-ring:nth-child(1) {
-  animation-delay: -0.45s;
-  border-top-color: var(--primary-color);
-}
-
-.spinner-ring:nth-child(2) {
-  animation-delay: -0.3s;
-  border-top-color: var(--primary-light);
-}
-
-.spinner-ring:nth-child(3) {
-  animation-delay: -0.15s;
-  border-top-color: var(--primary-dark);
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.loading-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.loading-subtitle {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  margin-bottom: 24px;
-}
-
-.loading-progress {
-  width: 200px;
-  margin: 0 auto;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
-  border-radius: 2px;
-  transition: width 0.3s ease;
-  animation: shimmer 1.5s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-
-  100% {
-    transform: translateX(100%);
-  }
-}
 
 /* 空状态设计 */
 .empty-state {
@@ -1894,10 +1847,17 @@ watch(archives, (newArchives) => {
 }
 
 /* 动画优化 - 自然过渡 */
-.archive-card-enter-active,
-.archive-card-leave-active,
-.archive-card-move {
+.archive-card-enter-active {
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.archive-card-leave-active {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.archive-card-move {
+  /* 移动动画 - 当其他卡片被删除时，剩余卡片会平滑移动到新位置 */
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .archive-card-enter-from {
@@ -1915,17 +1875,8 @@ watch(archives, (newArchives) => {
 }
 
 .archive-card-leave-active {
-  position: absolute;
-  z-index: 0;
-  pointer-events: none;
+  /* position, z-index, pointer-events 由 JS 动态设置 */
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  /* 确保删除动画期间卡片尺寸保持不变 */
-  width: 320px !important;
-  height: 160px !important;
-  min-width: 320px !important;
-  min-height: 160px !important;
-  max-width: 320px !important;
-  max-height: 160px !important;
   /* 防止图片在动画期间变形 */
   overflow: hidden !important;
   /* 确保内部元素不会变形 */
@@ -1951,7 +1902,8 @@ watch(archives, (newArchives) => {
 }
 
 .archive-card-move {
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* 移动动画 - 当其他卡片被删除时，剩余卡片会平滑移动到新位置 */
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* 空状态过渡动画 */
@@ -2033,15 +1985,7 @@ watch(archives, (newArchives) => {
   position: relative;
 }
 
-/* 加载动画 */
-.loading-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 200px);
-  width: 100%;
-  box-sizing: border-box;
-}
+
 
 /* 头部动画 - 简洁淡入 */
 .header-slide-enter-active {
@@ -2126,8 +2070,6 @@ watch(archives, (newArchives) => {
   .archive-card-enter-active,
   .archive-card-leave-active,
   .archive-card-move,
-  .loading-fade-enter-active,
-  .loading-fade-leave-active,
   .header-slide-enter-active,
   .search-panel-enter-active,
   .search-panel-leave-active {
@@ -2264,7 +2206,6 @@ watch(archives, (newArchives) => {
         var(--bg-secondary-dark) 100%);
   }
 
-  .loading-content,
   .empty-content,
   .stat-item {
     background: rgba(255, 255, 255, 0.05);

@@ -1,0 +1,226 @@
+/**
+ * ============================================
+ * 🧩 组件专用颜色 (Component Colors)
+ * ============================================
+ * 为特定组件定义的颜色变量
+ * 便于组件级别的主题定制
+ */
+
+/* ==========================================
+ * 标题栏颜色 (TitleBar)
+ * ========================================== */
+:root {
+  --titlebar-close-bg: #ff5f57;
+  --titlebar-close-bg-hover: #ff5f57;
+  --titlebar-close-bg-active: #e5484d;
+  --titlebar-minimize-bg-hover: rgba(255, 255, 255, 0.15);
+  --titlebar-maximize-bg-hover: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] {
+  --titlebar-close-bg: #ff5f57;
+  --titlebar-close-bg-hover: #ff5f57;
+  --titlebar-close-bg-active: #e5484d;
+}
+
+/* ==========================================
+ * 日志页面颜色 (Log Page)
+ * ========================================== */
+:root {
+  /* 背景 */
+  --log-bg: #1e1e1e;
+  --log-bg-secondary: #252526;
+  --log-bg-tertiary: #3c3c3c;
+  --log-bg-hover: #4a4a4a;
+  
+  /* 边框 */
+  --log-border: #3e3e42;
+  
+  /* 文本 */
+  --log-text: #d4d4d4;
+  --log-text-secondary: #cccccc;
+  --log-text-muted: #6a9955;
+  
+  /* 按钮 */
+  --log-btn-primary: #0e639c;
+  --log-btn-primary-hover: #1177bb;
+  --log-btn-secondary: #3c3c3c;
+  --log-btn-secondary-hover: #4a4a4a;
+  
+  /* 日志级别 */
+  --log-level-error: #f48771;
+  --log-level-warn: #dcdcaa;
+  --log-level-info: #9cdcfe;
+  --log-level-debug: #6a9955;
+  
+  /* 命令/提示符 */
+  --log-command: #4ec9b0;
+  
+  /* 滚动条 */
+  --log-scrollbar-track: #1e1e1e;
+  --log-scrollbar-thumb: #424242;
+  --log-scrollbar-thumb-hover: #4f4f4f;
+}
+
+/* ==========================================
+ * 按钮颜色 (Buttons)
+ * ========================================== */
+:root {
+  /* 主要按钮 */
+  --btn-primary-bg: var(--color-info);
+  --btn-primary-bg-hover: var(--color-info-hover);
+  --btn-primary-text: var(--color-white);
+  
+  /* 成功按钮 */
+  --btn-success-bg: var(--color-success);
+  --btn-success-bg-hover: var(--color-success-hover);
+  --btn-success-text: var(--color-white);
+  
+  /* 危险按钮 */
+  --btn-danger-bg: var(--color-error);
+  --btn-danger-bg-hover: var(--color-error-hover);
+  --btn-danger-text: var(--color-white);
+  
+  /* 警告按钮 */
+  --btn-warning-bg: var(--color-warning);
+  --btn-warning-bg-hover: var(--color-warning-hover);
+  --btn-warning-text: var(--color-white);
+  
+  /* 信息按钮 (青色) */
+  --btn-info-bg: var(--color-cyan-bootstrap);
+  --btn-info-bg-hover: var(--color-cyan-bootstrap-dark);
+  --btn-info-text: var(--color-white);
+  
+  /* 次要按钮 */
+  --btn-secondary-bg: var(--color-gray-200);
+  --btn-secondary-bg-hover: var(--color-gray-300);
+  --btn-secondary-text: var(--color-gray-800);
+  
+  /* 轮廓按钮 */
+  --btn-outline-border: var(--color-info);
+  --btn-outline-text: var(--color-info);
+  --btn-outline-bg-hover: var(--color-info-bg);
+}
+
+[data-theme="dark"] {
+  /* 次要按钮 - 暗色主题 */
+  --btn-secondary-bg: var(--color-gray-700);
+  --btn-secondary-bg-hover: var(--color-gray-600);
+  --btn-secondary-text: var(--color-gray-200);
+}
+
+/* ==========================================
+ * 弹窗/提示框颜色 (Popup/Toast)
+ * ========================================== */
+:root {
+  /* 成功弹窗 */
+  --popup-success-bg: var(--color-white);
+  --popup-success-border: var(--color-success-border);
+  --popup-success-icon-bg: linear-gradient(135deg, var(--color-green-apple) 0%, var(--color-green-bootstrap) 100%);
+  --popup-success-shadow: rgba(52, 199, 89, 0.25);
+  
+  /* 错误弹窗 */
+  --popup-error-bg: var(--color-white);
+  --popup-error-border: var(--color-error-border);
+  --popup-error-icon-bg: linear-gradient(135deg, var(--color-red-apple) 0%, var(--color-red-bootstrap) 100%);
+  --popup-error-shadow: rgba(255, 59, 48, 0.25);
+  
+  /* 警告弹窗 */
+  --popup-warning-bg: var(--color-white);
+  --popup-warning-border: var(--color-warning-border);
+  --popup-warning-icon-bg: linear-gradient(135deg, var(--color-orange-apple) 0%, #fd7e14 100%);
+  --popup-warning-shadow: rgba(255, 149, 0, 0.25);
+  
+  /* 信息弹窗 */
+  --popup-info-bg: var(--color-white);
+  --popup-info-border: var(--color-info-border);
+  --popup-info-icon-bg: linear-gradient(135deg, var(--color-blue-apple) 0%, #0056b3 100%);
+  --popup-info-shadow: rgba(0, 122, 255, 0.25);
+}
+
+[data-theme="dark"] {
+  --popup-success-bg: var(--color-gray-950);
+  --popup-error-bg: var(--color-gray-950);
+  --popup-warning-bg: var(--color-gray-950);
+  --popup-info-bg: var(--color-gray-950);
+}
+
+/* ==========================================
+ * 发布说明组件颜色 (Release Notes)
+ * ========================================== */
+:root {
+  --release-note-bg: var(--color-gray-50);
+  --release-note-border: #e1e5e9;
+  --release-note-highlight: var(--color-highlight);
+  --release-note-highlight-text: #333333;
+  
+  /* 展开更多按钮 */
+  --release-show-more-bg: #f0f2f5;
+  --release-show-more-bg-hover: #e9ecef;
+  --release-show-more-text: #333333;
+  
+  /* 返回按钮 */
+  --release-back-btn-bg: #f8f9fa;
+  --release-back-btn-border: #dee2e6;
+  --release-back-btn-bg-hover: #e9ecef;
+}
+
+[data-theme="dark"] {
+  --release-note-bg: var(--color-gray-900);
+  --release-note-border: var(--color-gray-700);
+  --release-note-highlight-text: var(--color-gray-900);
+  
+  --release-show-more-bg: var(--color-gray-800);
+  --release-show-more-bg-hover: var(--color-gray-700);
+  --release-show-more-text: var(--color-gray-200);
+  
+  --release-back-btn-bg: var(--color-gray-800);
+  --release-back-btn-border: var(--color-gray-700);
+  --release-back-btn-bg-hover: var(--color-gray-700);
+}
+
+/* ==========================================
+ * Steam 缓存页面颜色 (Steam Cache)
+ * ========================================== */
+:root {
+  /* 刷新按钮 */
+  --steam-refresh-bg: var(--color-green-bootstrap);
+  --steam-refresh-bg-hover: var(--color-green-bootstrap-dark);
+  --steam-refresh-shadow: rgba(40, 167, 69, 0.2);
+  --steam-refresh-shadow-hover: rgba(40, 167, 69, 0.3);
+  
+  /* 删除按钮 */
+  --steam-delete-bg: var(--color-red-bootstrap);
+  --steam-delete-bg-hover: var(--color-red-bootstrap-dark);
+  --steam-delete-shadow: rgba(220, 53, 69, 0.2);
+  --steam-delete-shadow-hover: rgba(220, 53, 69, 0.3);
+  
+  /* 详情按钮 */
+  --steam-detail-bg: var(--color-cyan-bootstrap);
+  --steam-detail-bg-hover: var(--color-cyan-bootstrap-dark);
+  
+  /* 切换按钮 */
+  --steam-toggle-bg: #4a90e2;
+  --steam-toggle-bg-hover: #357abd;
+  --steam-toggle-shadow: rgba(74, 144, 226, 0.3);
+  
+  /* 清理过期按钮 */
+  --steam-cleanup-bg: #ff6b35;
+  --steam-cleanup-bg-hover: #e55a2b;
+  --steam-cleanup-shadow: rgba(255, 107, 53, 0.3);
+  
+  /* 统计按钮 */
+  --steam-stats-border: var(--color-green-bootstrap);
+  --steam-stats-text: var(--color-green-bootstrap);
+  --steam-stats-bg-hover: var(--color-green-bootstrap);
+}
+
+/* ==========================================
+ * 插件市场颜色 (Plugin Market)
+ * ========================================== */
+:root {
+  --plugin-rating-star: var(--color-star);
+  --plugin-install-text-hover: var(--color-success);
+  --plugin-installed-text-hover: var(--color-info);
+  --plugin-installed-bg-hover: var(--color-green-bootstrap);
+}

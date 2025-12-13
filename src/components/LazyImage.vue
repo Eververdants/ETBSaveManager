@@ -45,46 +45,47 @@ const emit = defineEmits(['load', 'error'])
 
 const imageLoaded = ref(false)
 
-// 预加载图片
-const preloadImage = (url) => {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => resolve(img)
-    img.onerror = () => reject(new Error(`Failed to load image: ${url}`))
-    img.src = url
-  })
+// 全局图片缓存（已加载的图片URL）
+const loadedImages = new Set()
+
+// 检查图片是否已缓存
+const isImageCached = (url) => {
+  if (loadedImages.has(url)) return true
+  // 检查浏览器缓存
+  const img = new Image()
+  img.src = url
+  return img.complete && img.naturalWidth > 0
 }
 
 // 处理图片加载完成
 const handleImageLoad = () => {
+  loadedImages.add(props.src)
   imageLoaded.value = true
   emit('load')
 }
 
 // 处理图片加载错误
 const handleImageError = (event) => {
-  console.warn('Image failed to load:', props.src)
   // 即使加载失败也显示图片，避免布局问题
   imageLoaded.value = true
   emit('error', event)
 }
 
-// 组件挂载时预加载图片（如果需要）
-onMounted(async () => {
-  if (props.preload) {
-    try {
-      await preloadImage(props.src)
-      imageLoaded.value = true
-    } catch (error) {
-      console.error('Preload failed:', error)
-      // 预加载失败时不影响正常显示
-    }
+// 组件挂载时检查缓存
+onMounted(() => {
+  // 如果图片已缓存，直接显示
+  if (isImageCached(props.src)) {
+    imageLoaded.value = true
   }
 })
 
-// 监听src变化，重置加载状态
-watch(() => props.src, () => {
-  imageLoaded.value = false
+// 监听src变化，检查新图片是否已缓存
+watch(() => props.src, (newSrc) => {
+  if (isImageCached(newSrc)) {
+    imageLoaded.value = true
+  } else {
+    imageLoaded.value = false
+  }
 })
 </script>
 
@@ -186,7 +187,7 @@ watch(() => props.src, () => {
 
 .lazy-image-container img {
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.15s ease;
 }
 
 .lazy-image-container.loaded img {

@@ -74,6 +74,15 @@ const setActiveItemFromRoute = () => {
   if (route.name === 'ReleaseNotes') {
     // 查找"关于"菜单项
     activeItem = allMenuItems.find(item => item.route === 'About');
+  } else if (route.name === 'SelectCreateMode') {
+    // 选择创建模式页面应该激活"创建存档"按钮
+    activeItem = allMenuItems.find(item => item.route === 'CreateArchive');
+  } else if (['CreateArchive', 'QuickCreateArchive', 'BlueprintCreateArchive', 'BatchCreateArchive'].includes(route.name)) {
+    // 所有创建模式相关页面都应该激活"创建存档"按钮
+    activeItem = allMenuItems.find(item => item.route === 'CreateArchive');
+  } else if (route.name === 'SteamCache') {
+    // SteamID缓存页面应该激活"设置"按钮
+    activeItem = allMenuItems.find(item => item.route === 'Settings');
   } else {
     // 常规路由匹配
     activeItem = allMenuItems.find(item => item.route === route.name);

@@ -526,8 +526,8 @@ onUnmounted(() => {
   max-height: 100vh;
   padding: 0;
   margin: 0;
-  background: #1e1e1e;
-  color: #d4d4d4;
+  background: var(--log-bg);
+  color: var(--log-text);
   font-family: 'Consolas', 'Monaco', 'Lucida Console', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
   display: flex;
   flex-direction: column;
@@ -539,8 +539,8 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 8px 16px;
-  background: #252526;
-  border-bottom: 1px solid #3e3e42;
+  background: var(--log-bg-secondary);
+  border-bottom: 1px solid var(--log-border);
   flex-shrink: 0;
   height: 40px;
 }
@@ -548,7 +548,7 @@ onUnmounted(() => {
 .header h1 {
   font-size: 14px;
   font-weight: bold;
-  color: #cccccc;
+  color: var(--log-text-secondary);
   margin: 0;
 }
 
@@ -564,7 +564,7 @@ onUnmounted(() => {
   border-radius: 2px;
   font-size: 12px;
   cursor: pointer;
-  background: #0e639c;
+  background: var(--log-btn-primary);
   color: white;
   transition: background-color 0.2s;
   display: flex;
@@ -573,23 +573,23 @@ onUnmounted(() => {
 }
 
 .btn:hover {
-  background: #1177bb;
+  background: var(--log-btn-primary-hover);
 }
 
 .btn-secondary {
-  background: #3c3c3c;
+  background: var(--log-btn-secondary);
 }
 
 .btn-secondary:hover {
-  background: #4a4a4a;
+  background: var(--log-btn-secondary-hover);
 }
 
 .log-controls {
   display: flex;
   gap: 8px;
   padding: 8px 16px;
-  background: #252526;
-  border-bottom: 1px solid #3e3e42;
+  background: var(--log-bg-secondary);
+  border-bottom: 1px solid var(--log-border);
   flex-shrink: 0;
   height: 36px;
   align-items: center;
@@ -604,16 +604,16 @@ onUnmounted(() => {
 
 .filter-group label {
   font-size: 12px;
-  color: #cccccc;
+  color: var(--log-text-secondary);
 }
 
 select,
 .search-input {
   padding: 4px 8px;
-  border: 1px solid #3e3e42;
+  border: 1px solid var(--log-border);
   border-radius: 2px;
-  background: #3c3c3c;
-  color: #cccccc;
+  background: var(--log-bg-tertiary);
+  color: var(--log-text-secondary);
   font-size: 12px;
   font-family: inherit;
 }
@@ -627,7 +627,7 @@ select,
   overflow-y: auto;
   overflow-x: hidden;
   padding: 8px 16px;
-  background: #1e1e1e;
+  background: var(--log-bg);
   font-size: 13px;
   line-height: 1.4;
   max-width: 100%;
@@ -647,7 +647,7 @@ select,
 }
 
 .log-time {
-  color: #6a9955;
+  color: var(--log-text-muted);
   min-width: 100px;
   flex-shrink: 0;
 }
@@ -659,24 +659,24 @@ select,
 }
 
 .log-level.error {
-  color: #f48771;
+  color: var(--log-level-error);
 }
 
 .log-level.warn {
-  color: #dcdcaa;
+  color: var(--log-level-warn);
 }
 
 .log-level.info {
-  color: #9cdcfe;
+  color: var(--log-level-info);
 }
 
 .log-level.debug {
-  color: #6a9955;
+  color: var(--log-text-muted);
 }
 
 .log-message {
   flex: 1;
-  color: #d4d4d4;
+  color: var(--log-text);
   word-break: break-word;
   white-space: pre-wrap;
   min-width: 0;
@@ -692,16 +692,16 @@ select,
 }
 
 .log-command {
-  color: #4ec9b0;
+  color: var(--log-command);
   font-weight: bold;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .log-result {
-  color: #d4d4d4;
+  color: var(--log-text);
   margin-left: 16px;
-  border-left: 1px solid #3e3e42;
+  border-left: 1px solid var(--log-border);
   padding-left: 8px;
   white-space: pre-wrap;
   word-break: break-word;
@@ -709,14 +709,14 @@ select,
 
 .no-logs {
   text-align: center;
-  color: #6a9955;
+  color: var(--log-text-muted);
   padding: 2rem;
   font-style: italic;
 }
 
 .console-section {
-  background: #1e1e1e;
-  border-top: 1px solid #3e3e42;
+  background: var(--log-bg);
+  border-top: 1px solid var(--log-border);
   padding: 8px 16px;
   flex-shrink: 0;
   height: 40px;
@@ -730,7 +730,7 @@ select,
 }
 
 .console-prompt {
-  color: #4ec9b0;
+  color: var(--log-command);
   font-family: inherit;
   font-weight: normal;
   user-select: none;
@@ -742,7 +742,7 @@ select,
   padding: 0;
   border: none;
   background: transparent;
-  color: #d4d4d4;
+  color: var(--log-text);
   font-family: inherit;
   font-size: 13px;
   outline: none;
@@ -750,7 +750,7 @@ select,
 }
 
 .console-input::placeholder {
-  color: #6a9955;
+  color: var(--log-text-muted);
   opacity: 0.7;
   font-size: 12px;
 }
@@ -761,15 +761,15 @@ select,
 }
 
 .log-container::-webkit-scrollbar-track {
-  background: #1e1e1e;
+  background: var(--log-scrollbar-track);
 }
 
 .log-container::-webkit-scrollbar-thumb {
-  background: #424242;
+  background: var(--log-scrollbar-thumb);
 }
 
 .log-container::-webkit-scrollbar-thumb:hover {
-  background: #4f4f4f;
+  background: var(--log-scrollbar-thumb-hover);
 }
 
 /* 响应式设计 */

@@ -78,33 +78,29 @@
 
 /* 移除全局页面过渡，只保留文字动画 */
 
-/* 页面切换过渡动画 - 避免影响固定定位元素 */
-.page-enter-active {
-  animation: pageFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: opacity;
+/* 页面切换过渡动画 - 统一的淡入淡出效果 */
+.page-fade-enter-active {
+  transition: opacity 0.2s ease;
 }
 
+.page-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.page-fade-enter-from,
+.page-fade-leave-to {
+  opacity: 0;
+}
+
+/* 保留旧的 page 类名以兼容 */
+.page-enter-active,
 .page-leave-active {
-  animation: pageFadeOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: opacity;
+  transition: opacity 0.2s ease;
 }
 
-@keyframes pageFadeIn {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes pageFadeOut {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
 }
 
 /* 页面内容淡入动画 */

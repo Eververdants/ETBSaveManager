@@ -34,12 +34,12 @@
             <div v-for="(level, index) in availableLevels" :key="index" class="level-option"
               :class="{ selected: archiveData.currentLevel === level.levelKey }" @click="selectLevel(level.levelKey)">
               <div class="level-image-container">
-              <LazyImage :src="level.image" :alt="level.name" image-class="level-image" />
-              <div class="level-overlay">
-                <font-awesome-icon :icon="['fas', 'check']" class="check-icon"
-                  v-if="archiveData.currentLevel === level.levelKey" />
+                <LazyImage :src="level.image" :alt="level.name" image-class="level-image" />
+                <div class="level-overlay">
+                  <font-awesome-icon :icon="['fas', 'check']" class="check-icon"
+                    v-if="archiveData.currentLevel === level.levelKey" />
+                </div>
               </div>
-            </div>
               <span class="level-name">{{ level.name }}</span>
             </div>
           </div>
@@ -52,11 +52,9 @@
           <div class="form-section half-width">
             <label class="section-title">{{ $t('editArchive.difficulty') }}</label>
             <div class="difficulty-grid">
-              <div v-for="difficulty in difficultyLevels" :key="difficulty.value" class="difficulty-option"
-                :class="{ 
-                  selected: archiveData.archiveDifficulty === difficulty.value
-                }"
-                @click="handleDifficultySelect('archive', difficulty.value)">
+              <div v-for="difficulty in difficultyLevels" :key="difficulty.value" class="difficulty-option" :class="{
+                selected: archiveData.archiveDifficulty === difficulty.value
+              }" @click="handleDifficultySelect('archive', difficulty.value)">
                 <div class="difficulty-icon">
                   <font-awesome-icon :icon="difficulty.icon" />
                 </div>
@@ -69,10 +67,9 @@
             <label class="section-title">{{ $t('editArchive.actualDifficulty') }}</label>
             <div class="difficulty-grid">
               <div v-for="difficulty in difficultyLevels" :key="`actual-${difficulty.value}`" class="difficulty-option"
-                :class="{ 
+                :class="{
                   selected: archiveData.actualDifficulty === difficulty.value
-                }"
-                @click="handleDifficultySelect('actual', difficulty.value)">
+                }" @click="handleDifficultySelect('actual', difficulty.value)">
                 <div class="difficulty-icon">
                   <font-awesome-icon :icon="difficulty.icon" />
                 </div>
@@ -86,81 +83,150 @@
         <div class="form-section">
           <label class="section-title">{{ $t('editArchive.playerManagement') }}</label>
 
-          <!-- Steam ID 列表 -->
-          <div class="player-list">
-            <div v-for="(player, index) in archiveData.players" :key="index" class="player-card"
-              :class="{ active: activePlayerIndex === index }" @click="selectPlayer(index)">
-              <div class="player-info">
-                <span v-if="player.username" class="player-username">{{ player.username }}</span>
-                <span v-else-if="player.isOfflinePlayer" class="player-username">{{ player.steamId }}(本地)</span>
-                <span v-else class="player-id">{{ player.steamId }}</span>
+          <div class="player-management-layout">
+            <!-- 左侧：玩家列表 -->
+            <div class="player-list-panel">
+              <div class="player-list-header">
+                <span class="player-count">{{ archiveData.players.length }} {{ $t('editArchive.playersCount') }}</span>
               </div>
-              <button class="remove-player-btn" @click.stop="removePlayer(index)">
-                <font-awesome-icon :icon="['fas', 'trash']" />
-              </button>
+
+              <!-- Steam ID 列表 -->
+              <div class="player-list">
+                <div v-for="(player, index) in archiveData.players" :key="index" class="player-card"
+                  :class="{ active: activePlayerIndex === index }" @click="selectPlayer(index)">
+                  <div class="player-avatar">
+                    <font-awesome-icon :icon="['fas', 'user']" />
+                  </div>
+                  <div class="player-info">
+                    <span v-if="player.username" class="player-username">{{ player.username }}</span>
+                    <span v-else-if="player.isOfflinePlayer" class="player-username">{{ player.steamId }}(本地)</span>
+                    <span v-else class="player-id">{{ player.steamId }}</span>
+                    <span class="player-sanity-badge" :class="getSanityClass(player.sanity ?? 100)">
+                      {{ (player.sanity ?? 100) }}%
+                    </span>
+                  </div>
+                  <button class="remove-player-btn" @click.stop="removePlayer(index)">
+                    <font-awesome-icon :icon="['fas', 'trash']" />
+                  </button>
+                </div>
+              </div>
+
+              <div class="add-player-section">
+                <input v-model="newSteamId" type="text" class="form-input add-player-input"
+                  :placeholder="$t('editArchive.steamIdPlaceholder')" @keyup.enter="addPlayer" />
+                <button class="add-player-btn" @click="addPlayer">
+                  <font-awesome-icon :icon="['fas', 'plus']" />
+                </button>
+              </div>
+
+              <!-- 玩家输入提示信息 -->
+              <transition name="message-fade" mode="out-in">
+                <div v-if="playerInputMessage" class="player-input-message" :class="playerInputMessageType"
+                  key="message">
+                  {{ playerInputMessage }}
+                </div>
+              </transition>
+
+              <!-- 无玩家提示 -->
+              <div v-if="archiveData.players.length === 0" class="no-players-hint">
+                <font-awesome-icon :icon="['fas', 'users']" class="hint-icon" />
+                <p>{{ $t('editArchive.noPlayersHint') }}</p>
+              </div>
             </div>
-          </div>
 
-          <div class="add-player-section">
-            <input v-model="newSteamId" type="text" class="form-input"
-              :placeholder="$t('editArchive.steamIdPlaceholder')"
-              @keyup.enter="addPlayer" />
-            <button class="add-player-btn" @click="addPlayer">
-              <font-awesome-icon :icon="['fas', 'plus']" />
-            </button>
-          </div>
-          
-          <!-- 玩家输入提示信息 -->
-          <transition name="message-fade" mode="out-in">
-            <div v-if="playerInputMessage" class="player-input-message" :class="playerInputMessageType" key="message">
-              {{ playerInputMessage }}
-            </div>
-          </transition>
+            <!-- 右侧：玩家详情 -->
+            <div class="player-detail-panel" v-if="activePlayerIndex !== -1 && archiveData.players.length > 0">
+              <!-- 玩家理智值管理 -->
+              <div class="sanity-section">
+                <div class="sanity-header">
+                  <h3 class="sanity-title">
+                    <font-awesome-icon :icon="['fas', 'brain']" class="title-icon" />
+                    {{ $t('editArchive.playerSanity') }}
+                  </h3>
+                  <div class="player-name-tag">{{ getCurrentPlayerDisplayName() }}</div>
+                </div>
 
-          <!-- 无玩家提示 -->
-          <div v-if="archiveData.players.length === 0" class="no-players-hint">
-            <font-awesome-icon :icon="['fas', 'users']" class="hint-icon" />
-            <p>{{ $t('editArchive.noPlayersHint') }}</p>
-          </div>
+                <div class="sanity-controls">
+                  <div class="sanity-display">
+                    <div class="sanity-value-large">{{ currentPlayerSanity }}<span class="sanity-percent">%</span></div>
+                    <div class="sanity-bar">
+                      <div class="sanity-bar-fill" :style="{ width: `${currentPlayerSanity}%` }"
+                        :class="getSanityClass(currentPlayerSanity)"></div>
+                    </div>
+                  </div>
 
-          <!-- 玩家背包管理 -->
-          <div v-if="activePlayerIndex !== -1 && archiveData.players.length > 0" class="inventory-section">
-            <div class="inventory-grid">
-              <!-- 主手和副手位置 -->
-              <div class="inventory-column">
-                <div v-for="slot in 3" :key="`weapon-${slot - 1}`" class="inventory-slot weapon-slot" :class="{
-                  'main-hand': slot === 1,
-                  'off-hand': slot > 1,
-                  'empty': !getSlotContent(activePlayerIndex, slot - 1)
-                }" @click="editSlot(activePlayerIndex, slot - 1)">
-                  <div class="slot-label">{{ $t(`editArchive.${getSlotLabel(slot - 1)}`) }}</div>
-                  <div class="slot-content">
-                    <transition name="item-fade" mode="out-in">
-                      <LazyImage v-if="getSlotContent(activePlayerIndex, slot - 1)"
-                        :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}`"
-                        :alt="getSlotContent(activePlayerIndex, slot - 1)" image-class="item-image" :key="getSlotContent(activePlayerIndex, slot - 1)" />
-                      <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-icon" key="empty" />
-                    </transition>
+                  <div class="sanity-adjust-row">
+                    <div class="sanity-slider-group">
+                      <CustomSlider v-model="currentPlayerSanity" :min="0" :max="100" :step="1" />
+                    </div>
+                    <div class="sanity-quick-actions">
+                      <button class="sanity-btn set-min" @click="setMinSanity()"
+                        :title="$t('editArchive.setMinSanity')">
+                        <font-awesome-icon :icon="['fas', 'skull']" />
+                      </button>
+                      <button class="sanity-btn set-max" @click="setMaxSanity()"
+                        :title="$t('editArchive.setMaxSanity')">
+                        <font-awesome-icon :icon="['fas', 'heart']" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- 背包格子 -->
-              <div class="inventory-backpack">
-                <div v-for="slot in 9" :key="`backpack-${slot + 2}`" class="inventory-slot backpack-slot"
-                  :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
-                  @click="editSlot(activePlayerIndex, slot + 2)">
-                  <div class="slot-number">{{ slot }}</div>
-                  <div class="slot-content">
-                    <transition name="item-fade" mode="out-in">
-                      <LazyImage v-if="getSlotContent(activePlayerIndex, slot + 2)"
-                        :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}`"
-                        :alt="getSlotContent(activePlayerIndex, slot + 2)" image-class="item-image" :key="getSlotContent(activePlayerIndex, slot + 2)" />
-                      <font-awesome-icon v-else :icon="['fas', 'square']" class="slot-icon" key="empty" />
-                    </transition>
+              <!-- 玩家背包管理 -->
+              <div class="inventory-section">
+                <div class="inventory-header">
+                  <h3 class="inventory-title">
+                    <font-awesome-icon :icon="['fas', 'suitcase']" class="title-icon" />
+                    {{ $t('editArchive.inventory') }}
+                  </h3>
+                </div>
+                <div class="inventory-grid">
+                  <!-- 主手和副手位置 -->
+                  <div class="inventory-column">
+                    <div v-for="slot in 3" :key="`weapon-${slot - 1}`" class="inventory-slot weapon-slot" :class="{
+                      'main-hand': slot === 1,
+                      'off-hand': slot > 1,
+                      'empty': !getSlotContent(activePlayerIndex, slot - 1)
+                    }" @click="editSlot(activePlayerIndex, slot - 1)">
+                      <div class="slot-label">{{ $t(`editArchive.${getSlotLabel(slot - 1)}`) }}</div>
+                      <div class="slot-content">
+                        <transition name="item-fade" mode="out-in">
+                          <LazyImage v-if="getSlotContent(activePlayerIndex, slot - 1)"
+                            :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}`"
+                            :alt="getSlotContent(activePlayerIndex, slot - 1)" image-class="item-image"
+                            :key="getSlotContent(activePlayerIndex, slot - 1)" />
+                          <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-icon" key="empty" />
+                        </transition>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 背包格子 -->
+                  <div class="inventory-backpack">
+                    <div v-for="slot in 9" :key="`backpack-${slot + 2}`" class="inventory-slot backpack-slot"
+                      :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
+                      @click="editSlot(activePlayerIndex, slot + 2)">
+                      <div class="slot-number">{{ slot }}</div>
+                      <div class="slot-content">
+                        <transition name="item-fade" mode="out-in">
+                          <LazyImage v-if="getSlotContent(activePlayerIndex, slot + 2)"
+                            :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}`"
+                            :alt="getSlotContent(activePlayerIndex, slot + 2)" image-class="item-image"
+                            :key="getSlotContent(activePlayerIndex, slot + 2)" />
+                          <font-awesome-icon v-else :icon="['fas', 'square']" class="slot-icon" key="empty" />
+                        </transition>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- 未选择玩家时的提示 -->
+            <div class="player-detail-panel empty-state" v-else-if="archiveData.players.length > 0">
+              <font-awesome-icon :icon="['fas', 'hand-pointer']" class="empty-icon" />
+              <p>{{ $t('editArchive.selectPlayerHint') }}</p>
             </div>
           </div>
         </div>
@@ -180,6 +246,7 @@ import { useRouter } from 'vue-router'
 import { invoke } from '@tauri-apps/api/core'
 import InventoryItemSelector from '../components/InventoryItemSelector.vue'
 import LazyImage from '../components/LazyImage.vue'
+import CustomSlider from '../components/CustomSlider.vue'
 import { showError } from '../services/popupService'
 
 const props = defineProps({
@@ -209,7 +276,7 @@ const handleSaveArchive = async () => {
       playerInventory[steamId] = player.inventory.map(itemId => ({
         item: { id: getItemIdByName(itemId) }
       }))
-      playerSanity[steamId] = 100 // 默认理智值
+      playerSanity[steamId] = player.sanity ?? 100 // 使用玩家保存的理智值，默认100
     })
 
     // 构造要保存的数据
@@ -327,7 +394,8 @@ const loadPlayerData = async (archive) => {
             steamId: playerSteamId,
             inventory: formattedInventory.slice(0, 12),
             username: username,
-            isOfflinePlayer: isOfflinePlayer
+            isOfflinePlayer: isOfflinePlayer,
+            sanity: playerData.sanities[index] ?? 100 // 添加理智值，默认100
           })
         }
       })
@@ -336,7 +404,7 @@ const loadPlayerData = async (archive) => {
       if (archiveData.players.length > 0) {
         activePlayerIndex.value = 0
       }
-      
+
       // 获取Steam用户名
       await fetchSteamUsernames()
     }
@@ -354,12 +422,12 @@ const fetchSteamUsernames = async () => {
     const steamIds = archiveData.players
       .filter(player => !player.isOfflinePlayer && player.steamId && player.steamId.length === 17 && /^\d+$/.test(player.steamId))
       .map(player => player.steamId);
-    
+
     if (steamIds.length === 0) return;
-    
+
     // 调用后端API获取用户名
     const usernames = await invoke('get_steam_usernames_command', { steamIds });
-    
+
     // 更新玩家数据中的用户名
     archiveData.players.forEach(player => {
       if (!player.isOfflinePlayer && usernames[player.steamId]) {
@@ -398,6 +466,9 @@ const showItemSelector = ref(false)
 const editingSlot = ref({ playerIndex: 0, slotIndex: 0 })
 const playerInputMessage = ref('') // 用于显示添加玩家时的提示信息
 const playerInputMessageType = ref('') // 用于标识提示信息类型(error/success)
+
+// 理智值相关
+const currentPlayerSanity = ref(100) // 当前选中的玩家理智值
 
 // 可用层级
 const availableLevels = ref([])
@@ -438,8 +509,8 @@ const loadLevels = () => {
     levelMappings.forEach((levelKey, index) => {
       try {
         // 现在所有关卡都使用关卡名称作为图片文件名
-        const imagePath = `/images/${levelKey}.jpg`
-        
+        const imagePath = `/images/ETB/${levelKey}.jpg`
+
         // 获取翻译名称，如果失败则使用原始键名
         let levelName
         try {
@@ -448,7 +519,7 @@ const loadLevels = () => {
           console.warn(`Translation failed for level ${levelKey}:`, translationError)
           levelName = levelKey
         }
-        
+
         availableLevels.value.push({
           name: levelName,
           image: imagePath,
@@ -458,7 +529,7 @@ const loadLevels = () => {
         console.error(`Error processing level ${levelKey}:`, itemError)
       }
     })
-    
+
     console.log('Levels loaded successfully, count:', availableLevels.value.length)
   } catch (error) {
     console.error(t('editArchive.loadLevelsFailed'), error)
@@ -476,29 +547,29 @@ const loadLevels = () => {
       'Level52', 'TunnelLevel',
       'Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat'
     ]
-    
+
     availableLevels.value = []
-    
+
     fallbackLevels.forEach((levelKey, index) => {
       // 检查是否存在对应的.png图片（新关卡）
       const pngNewLevels = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat']
       let imagePath
-      
+
       if (pngNewLevels.includes(levelKey)) {
         // 新关卡使用关卡名称.png
-        imagePath = `/images/${levelKey}.png`
+        imagePath = `/images/ETB/${levelKey}.png`
       } else {
         // 原有关卡使用数字索引.jpg
-        imagePath = `/images/${index}.jpg`
+        imagePath = `/images/ETB/${index}.jpg`
       }
-      
+
       availableLevels.value.push({
         name: levelKey, // 使用原始键名作为回退
         image: imagePath,
         levelKey: levelKey
       })
     })
-    
+
     console.log('Levels loaded with fallback, count:', availableLevels.value.length)
   }
 }
@@ -512,7 +583,7 @@ const handleDifficultySelect = (type, difficulty) => {
   if (archiveData.gameMode === 'singleplayer' && difficulty !== 'normal') {
     return
   }
-  
+
   if (type === 'archive') {
     archiveData.archiveDifficulty = difficulty
   } else if (type === 'actual') {
@@ -531,10 +602,10 @@ const getSlotContent = (playerIndex, slotIndex) => {
 // 获取物品图片文件名
 const getItemImageFile = (itemName) => {
   if (!itemName || itemName === 'None') return null
-  
+
   // 特殊处理Toy物品，它的图片文件名是Teddy_Bear.png而不是Toy.png
   if (itemName === 'Toy') return 'Teddy_Bear.png'
-  
+
   // 其他物品使用默认规则：物品名.png
   return `${itemName}.png`
 }
@@ -593,167 +664,168 @@ const handleItemSelect = (itemId) => {
   showItemSelector.value = false
 }
 
-    // 验证Steam ID格式
-    const validateSteamId = (steamId) => {
-      if (!steamId || steamId.trim() === '') {
-        return { valid: false, message: t('editArchive.steamIdRequired') }
-      }
-      
-      // 检查是否为离线玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
-      if (steamId.includes('-')) {
-        const parts = steamId.split('-')
-        if (parts.length === 2 && parts[0].length === 5 && parts[1].length === 15) {
-          return { valid: true, isOfflinePlayer: true, processedSteamId: parts[0] }
-        } else {
-          return { valid: false, message: t('editArchive.steamIdInvalid') }
-        }
-      }
-      
-      // 检查是否为纯数字
-      if (!/^\d+$/.test(steamId)) {
-        return { valid: false, message: t('editArchive.steamIdInvalid') }
-      }
-      
-      // 对于在线Steam ID，检查长度是否为17位
-      if (steamId.length !== 17) {
-        return { valid: false, message: t('editArchive.steamIdValidationError', { error: t('editArchive.steamIdLengthError') }) }
-      }
-      
-      return { valid: true, isOfflinePlayer: false, processedSteamId: steamId }
-    }
+// 验证Steam ID格式
+const validateSteamId = (steamId) => {
+  if (!steamId || steamId.trim() === '') {
+    return { valid: false, message: t('editArchive.steamIdRequired') }
+  }
 
-    // 存储当前的定时器ID，以便可以取消之前的定时器
+  // 检查是否为离线玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
+  if (steamId.includes('-')) {
+    const parts = steamId.split('-')
+    if (parts.length === 2 && parts[0].length === 5 && parts[1].length === 15) {
+      return { valid: true, isOfflinePlayer: true, processedSteamId: parts[0] }
+    } else {
+      return { valid: false, message: t('editArchive.steamIdInvalid') }
+    }
+  }
+
+  // 检查是否为纯数字
+  if (!/^\d+$/.test(steamId)) {
+    return { valid: false, message: t('editArchive.steamIdInvalid') }
+  }
+
+  // 对于在线Steam ID，检查长度是否为17位
+  if (steamId.length !== 17) {
+    return { valid: false, message: t('editArchive.steamIdValidationError', { error: t('editArchive.steamIdLengthError') }) }
+  }
+
+  return { valid: true, isOfflinePlayer: false, processedSteamId: steamId }
+}
+
+// 存储当前的定时器ID，以便可以取消之前的定时器
 let messageTimeout = null;
 
 const addPlayer = async () => {
-       // 清空之前的提示信息
-       playerInputMessage.value = ''
-       playerInputMessageType.value = ''
-       
-       const steamId = newSteamId.value.trim()
-       if (!steamId) {
-         playerInputMessage.value = t('editArchive.steamIdRequired')
-         playerInputMessageType.value = 'error'
-         
-         // 3秒后自动清除错误提示
-         if (messageTimeout) clearTimeout(messageTimeout);
-         messageTimeout = setTimeout(() => {
-           playerInputMessage.value = ''
-           playerInputMessageType.value = ''
-         }, 3000)
-         return
-       }
-       
-       // 验证Steam ID
-       const validation = validateSteamId(steamId)
-       if (!validation.valid) {
-         // 使用输入框下方提示方式
-         playerInputMessage.value = validation.message
-         playerInputMessageType.value = 'error'
-         
-         // 3秒后自动清除错误提示
-         if (messageTimeout) clearTimeout(messageTimeout);
-         messageTimeout = setTimeout(() => {
-           playerInputMessage.value = ''
-           playerInputMessageType.value = ''
-         }, 3000)
-         return
-       }
-       
-       // 检查是否已存在相同的Steam ID
-       const isDuplicate = archiveData.players.some(player => player.steamId === validation.processedSteamId)
-       if (isDuplicate) {
-         const duplicateMessage = t('editArchive.steamIdDuplicate', { steamId: validation.processedSteamId })
-         playerInputMessage.value = duplicateMessage
-         playerInputMessageType.value = 'error'
-         
-         // 3秒后自动清除错误提示
-         if (messageTimeout) clearTimeout(messageTimeout);
-         messageTimeout = setTimeout(() => {
-           playerInputMessage.value = ''
-           playerInputMessageType.value = ''
-         }, 3000)
-         return
-       }
-       
-       // 创建新玩家对象
-       const newPlayer = {
-         steamId: validation.processedSteamId,
-         inventory: Array(12).fill(null),
-         username: null,
-         isOfflinePlayer: validation.isOfflinePlayer
-       }
-       
-       // 如果是离线玩家，直接设置用户名
-       if (validation.isOfflinePlayer) {
-         // 处理本地玩家格式
-         if (validation.processedSteamId.includes('-')) {
-           const parts = validation.processedSteamId.split('-');
-           if (parts.length > 1) {
-             newPlayer.username = `${parts[0]}(本地)`;
-           } else {
-             newPlayer.username = `${validation.processedSteamId}(本地)`;
-           }
-         } else {
-           newPlayer.username = `${validation.processedSteamId}(本地)`;
-         }
-       }
-       
-       archiveData.players.push(newPlayer)
-       
-       // 显示成功提示
-       playerInputMessage.value = t('editArchive.playerAddedSuccess')
-       playerInputMessageType.value = 'success'
-       
-       newSteamId.value = ''
-       activePlayerIndex.value = archiveData.players.length - 1
-       
-       // 如果不是离线玩家，获取Steam用户名
-       if (!validation.isOfflinePlayer) {
-         try {
-           const usernames = await invoke('get_steam_usernames_command', { steamIds: [validation.processedSteamId] })
-           if (usernames[validation.processedSteamId]) {
-             archiveData.players[archiveData.players.length - 1].username = usernames[validation.processedSteamId]
-           }
-         } catch (error) {
-           console.error('获取Steam用户名失败:', error)
-           // 检查是否为无效ID格式错误
-           if (error.toString().includes('无效的Steam ID格式')) {
-             // 提取横杠前的部分作为用户名显示
-             const parts = validation.processedSteamId.split('-')
-             if (parts.length > 1) {
-               archiveData.players[archiveData.players.length - 1].username = `${parts[0]}(本地)`
-               archiveData.players[archiveData.players.length - 1].isOfflinePlayer = true
-               // 显示成功提示而不是错误提示
-               playerInputMessage.value = t('editArchive.playerAddedSuccess')
-               playerInputMessageType.value = 'success'
-             } else {
-               // 显示获取用户名失败的提示
-               playerInputMessage.value = t('editArchive.failedToFetchSteamUsername', { error: error.message || error })
-               playerInputMessageType.value = 'error'
-             }
-           } else {
-             // 显示获取用户名失败的提示
-             playerInputMessage.value = t('editArchive.failedToFetchSteamUsername', { error: error.message || error })
-             playerInputMessageType.value = 'error'
-           }
-           
-           // 3秒后自动清除提示
-           if (messageTimeout) clearTimeout(messageTimeout);
-           messageTimeout = setTimeout(() => {
-             playerInputMessage.value = ''
-             playerInputMessageType.value = ''
-           }, 3000)
-         }
-       }
-       
-       // 3秒后自动清除成功提示
-       if (messageTimeout) clearTimeout(messageTimeout);
-       messageTimeout = setTimeout(() => {
-         playerInputMessage.value = ''
-         playerInputMessageType.value = ''
-       }, 3000)
-     }
+  // 清空之前的提示信息
+  playerInputMessage.value = ''
+  playerInputMessageType.value = ''
+
+  const steamId = newSteamId.value.trim()
+  if (!steamId) {
+    playerInputMessage.value = t('editArchive.steamIdRequired')
+    playerInputMessageType.value = 'error'
+
+    // 3秒后自动清除错误提示
+    if (messageTimeout) clearTimeout(messageTimeout);
+    messageTimeout = setTimeout(() => {
+      playerInputMessage.value = ''
+      playerInputMessageType.value = ''
+    }, 3000)
+    return
+  }
+
+  // 验证Steam ID
+  const validation = validateSteamId(steamId)
+  if (!validation.valid) {
+    // 使用输入框下方提示方式
+    playerInputMessage.value = validation.message
+    playerInputMessageType.value = 'error'
+
+    // 3秒后自动清除错误提示
+    if (messageTimeout) clearTimeout(messageTimeout);
+    messageTimeout = setTimeout(() => {
+      playerInputMessage.value = ''
+      playerInputMessageType.value = ''
+    }, 3000)
+    return
+  }
+
+  // 检查是否已存在相同的Steam ID
+  const isDuplicate = archiveData.players.some(player => player.steamId === validation.processedSteamId)
+  if (isDuplicate) {
+    const duplicateMessage = t('editArchive.steamIdDuplicate', { steamId: validation.processedSteamId })
+    playerInputMessage.value = duplicateMessage
+    playerInputMessageType.value = 'error'
+
+    // 3秒后自动清除错误提示
+    if (messageTimeout) clearTimeout(messageTimeout);
+    messageTimeout = setTimeout(() => {
+      playerInputMessage.value = ''
+      playerInputMessageType.value = ''
+    }, 3000)
+    return
+  }
+
+  // 创建新玩家对象
+  const newPlayer = {
+    steamId: validation.processedSteamId,
+    inventory: Array(12).fill(null),
+    username: null,
+    isOfflinePlayer: validation.isOfflinePlayer,
+    sanity: 100 // 新玩家默认理智值为100
+  }
+
+  // 如果是离线玩家，直接设置用户名
+  if (validation.isOfflinePlayer) {
+    // 处理本地玩家格式
+    if (validation.processedSteamId.includes('-')) {
+      const parts = validation.processedSteamId.split('-');
+      if (parts.length > 1) {
+        newPlayer.username = `${parts[0]}(本地)`;
+      } else {
+        newPlayer.username = `${validation.processedSteamId}(本地)`;
+      }
+    } else {
+      newPlayer.username = `${validation.processedSteamId}(本地)`;
+    }
+  }
+
+  archiveData.players.push(newPlayer)
+
+  // 显示成功提示
+  playerInputMessage.value = t('editArchive.playerAddedSuccess')
+  playerInputMessageType.value = 'success'
+
+  newSteamId.value = ''
+  activePlayerIndex.value = archiveData.players.length - 1
+
+  // 如果不是离线玩家，获取Steam用户名
+  if (!validation.isOfflinePlayer) {
+    try {
+      const usernames = await invoke('get_steam_usernames_command', { steamIds: [validation.processedSteamId] })
+      if (usernames[validation.processedSteamId]) {
+        archiveData.players[archiveData.players.length - 1].username = usernames[validation.processedSteamId]
+      }
+    } catch (error) {
+      console.error('获取Steam用户名失败:', error)
+      // 检查是否为无效ID格式错误
+      if (error.toString().includes('无效的Steam ID格式')) {
+        // 提取横杠前的部分作为用户名显示
+        const parts = validation.processedSteamId.split('-')
+        if (parts.length > 1) {
+          archiveData.players[archiveData.players.length - 1].username = `${parts[0]}(本地)`
+          archiveData.players[archiveData.players.length - 1].isOfflinePlayer = true
+          // 显示成功提示而不是错误提示
+          playerInputMessage.value = t('editArchive.playerAddedSuccess')
+          playerInputMessageType.value = 'success'
+        } else {
+          // 显示获取用户名失败的提示
+          playerInputMessage.value = t('editArchive.failedToFetchSteamUsername', { error: error.message || error })
+          playerInputMessageType.value = 'error'
+        }
+      } else {
+        // 显示获取用户名失败的提示
+        playerInputMessage.value = t('editArchive.failedToFetchSteamUsername', { error: error.message || error })
+        playerInputMessageType.value = 'error'
+      }
+
+      // 3秒后自动清除提示
+      if (messageTimeout) clearTimeout(messageTimeout);
+      messageTimeout = setTimeout(() => {
+        playerInputMessage.value = ''
+        playerInputMessageType.value = ''
+      }, 3000)
+    }
+  }
+
+  // 3秒后自动清除成功提示
+  if (messageTimeout) clearTimeout(messageTimeout);
+  messageTimeout = setTimeout(() => {
+    playerInputMessage.value = ''
+    playerInputMessageType.value = ''
+  }, 3000)
+}
 
 const removePlayer = (index) => {
   archiveData.players.splice(index, 1)
@@ -767,6 +839,67 @@ const removePlayer = (index) => {
 
 const selectPlayer = (index) => {
   activePlayerIndex.value = index
+  // 同步当前玩家理智值到本地变量
+  if (index !== -1 && archiveData.players[index]) {
+    currentPlayerSanity.value = archiveData.players[index].sanity ?? 100
+  } else {
+    currentPlayerSanity.value = 100
+  }
+}
+
+// 理智值相关方法
+const getCurrentPlayerDisplayName = () => {
+  if (activePlayerIndex.value === -1 || !archiveData.players[activePlayerIndex.value]) {
+    return ''
+  }
+
+  const player = archiveData.players[activePlayerIndex.value]
+  if (player.username) {
+    return player.username
+  }
+
+  return `玩家 ${player.steamId.substring(0, 8)}...`
+}
+
+
+
+const adjustSanity = (delta) => {
+  if (activePlayerIndex.value === -1) return
+
+  const player = archiveData.players[activePlayerIndex.value]
+  const currentSanity = player.sanity ?? 100
+  const newSanity = Math.max(0, Math.min(100, currentSanity + delta))
+
+  player.sanity = newSanity
+  currentPlayerSanity.value = newSanity
+}
+
+const setMaxSanity = () => {
+  if (activePlayerIndex.value === -1) return
+
+  archiveData.players[activePlayerIndex.value].sanity = 100
+  currentPlayerSanity.value = 100
+}
+
+const setMinSanity = () => {
+  if (activePlayerIndex.value === -1) return
+
+  archiveData.players[activePlayerIndex.value].sanity = 0
+  currentPlayerSanity.value = 0
+}
+
+
+
+const getSanityClass = (sanityValue) => {
+  if (sanityValue >= 80) {
+    return 'sanity-high'
+  } else if (sanityValue >= 50) {
+    return 'sanity-medium'
+  } else if (sanityValue >= 20) {
+    return 'sanity-low'
+  } else {
+    return 'sanity-critical'
+  }
 }
 
 // 关闭编辑页面
@@ -782,11 +915,11 @@ const animateIn = () => {
       // 确保初始位置正确，避免margin auto的冲突
       gsap.set(container, { opacity: 0, y: 20 })
       gsap.to(container,
-        { 
-          opacity: 1, 
-          y: 0, 
-          duration: 0.3, 
-          ease: 'power3.out', 
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.3,
+          ease: 'power3.out',
           clearProps: 'transform',
           // 优化性能：减少GPU负载
           force3D: false,
@@ -807,6 +940,19 @@ watch(() => archiveData.gameMode, (newMode) => {
   }
 })
 
+// 监听当前玩家理智值变化，实时更新到存档数据中
+watch(currentPlayerSanity, (newSanity, oldSanity) => {
+  if (activePlayerIndex.value !== -1 && archiveData.players.length > 0) {
+    // 确保理智值在有效范围内
+    const validSanity = Math.max(0, Math.min(100, Number(newSanity) ?? 100))
+
+    // 立即更新玩家数据
+    if (archiveData.players[activePlayerIndex.value]) {
+      archiveData.players[activePlayerIndex.value].sanity = validSanity
+    }
+  }
+})
+
 onMounted(() => {
   console.log('EditArchive component mounted')
   loadLevels()
@@ -815,7 +961,7 @@ onMounted(() => {
 
   // 如果有存档数据但没有玩家，不添加空玩家
   // 只有当用户手动添加玩家时才创建
-  
+
   // 调试：检查可用层级数据
   setTimeout(() => {
     console.log('Available levels after mount:', availableLevels.value.length)
@@ -1163,13 +1309,10 @@ onMounted(() => {
 }
 
 .inventory-section {
-  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-primary) 100%);
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 16px;
   border: 1px solid var(--divider-light);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin-top: 20px;
-  transition: margin-top 0.3s ease;
 }
 
 .inventory-grid {
@@ -1278,28 +1421,91 @@ onMounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+/* 玩家管理布局 */
+.player-management-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  min-height: 400px;
+}
+
+.player-list-panel {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--divider-light);
+  display: flex;
+  flex-direction: column;
+}
+
+.player-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--divider-light);
+}
+
+.player-count {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.player-detail-panel {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--divider-light);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.player-detail-panel.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.player-detail-panel.empty-state .empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.player-detail-panel.empty-state p {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.8;
+}
+
 .no-players-hint {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 32px 16px;
   text-align: center;
   color: var(--text-secondary);
-  background: var(--bg-secondary);
-  border-radius: 12px;
+  background: var(--card-bg);
+  border-radius: 10px;
   border: 2px dashed var(--divider-light);
-  transition: margin-top 0.3s ease;
+  flex: 1;
+  margin-top: 12px;
 }
 
 .hint-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-  opacity: 0.6;
+  font-size: 36px;
+  margin-bottom: 12px;
+  opacity: 0.5;
 }
 
 .no-players-hint p {
-  font-size: 16px;
+  font-size: 14px;
   margin: 0;
   opacity: 0.8;
 }
@@ -1307,113 +1513,325 @@ onMounted(() => {
 .player-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px 0;
+  gap: 8px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 280px;
+  padding-right: 4px;
+}
+
+.player-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.player-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.player-list::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 2px;
 }
 
 .player-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 10px 12px;
   background: var(--card-bg);
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
 .player-card:hover {
-  background: var(--bg-secondary);
+  background: var(--hover-bg);
+  border-color: var(--divider-light);
 }
 
 .player-card.active {
   background: rgba(0, 122, 255, 0.1);
+  border-color: rgba(0, 122, 255, 0.3);
+}
+
+.player-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.player-card.active .player-avatar {
+  background: rgba(0, 122, 255, 0.2);
+  color: var(--primary);
 }
 
 .player-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
+  min-width: 0;
 }
 
-.steam-id {
-  font-size: 14px;
+.player-username,
+.player-id {
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.username {
-  font-size: 13px;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.player-sanity-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: fit-content;
 }
 
-.username.loading {
-  color: var(--text-tertiary);
-  font-style: italic;
+.player-sanity-badge.sanity-high {
+  background: rgba(52, 199, 89, 0.15);
+  color: #34c759;
 }
 
-.loading-spinner {
-  width: 12px;
-  height: 12px;
-  border: 1.5px solid rgba(0, 122, 255, 0.2);
-  border-top: 1.5px solid var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.player-sanity-badge.sanity-medium {
+  background: rgba(255, 204, 0, 0.15);
+  color: #ffcc00;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.player-sanity-badge.sanity-low {
+  background: rgba(255, 149, 0, 0.15);
+  color: #ff9500;
+}
+
+.player-sanity-badge.sanity-critical {
+  background: rgba(255, 59, 48, 0.15);
+  color: #ff3b30;
 }
 
 .remove-player-btn {
   background: none;
   border: none;
-  color: #ff3b30;
-  font-size: 14px;
+  color: var(--text-tertiary);
+  font-size: 12px;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 50%;
+  padding: 6px;
+  border-radius: 6px;
   transition: all 0.2s ease;
+  opacity: 0;
+}
+
+.player-card:hover .remove-player-btn {
+  opacity: 1;
 }
 
 .remove-player-btn:hover {
   background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
 }
 
 .add-player-section {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
-  padding: 16px 0;
-  margin-bottom: 12px;
-  border-bottom: 1px solid var(--divider-light);
-  transition: margin-bottom 0.3s ease;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--divider-light);
+}
+
+.add-player-input {
+  flex: 1;
+  padding: 10px 12px !important;
+  font-size: 13px !important;
 }
 
 .add-player-btn {
-  background: #34c759;
+  background: var(--primary);
   color: white;
   border: none;
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 10px;
+  padding: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
-  height: 44px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 40px;
+  height: 40px;
 }
 
 .add-player-btn:hover {
-  background: #30d158;
+  background: var(--primary-hover);
   transform: scale(0.95);
+}
+
+/* 理智值管理样式 */
+.sanity-section {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--divider-light);
+}
+
+.sanity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sanity-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sanity-title .title-icon {
+  color: var(--primary);
+  font-size: 14px;
+}
+
+.player-name-tag {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.sanity-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sanity-display {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sanity-value-large {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 80px;
+}
+
+.sanity-percent {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.sanity-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sanity-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+.sanity-bar-fill.sanity-high {
+  background: linear-gradient(90deg, #34c759, #30d158);
+}
+
+.sanity-bar-fill.sanity-medium {
+  background: linear-gradient(90deg, #ffcc00, #ffd60a);
+}
+
+.sanity-bar-fill.sanity-low {
+  background: linear-gradient(90deg, #ff9500, #ff9f0a);
+}
+
+.sanity-bar-fill.sanity-critical {
+  background: linear-gradient(90deg, #ff3b30, #ff453a);
+}
+
+.sanity-adjust-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sanity-slider-group {
+  flex: 1;
+}
+
+.sanity-quick-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sanity-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.sanity-btn.set-min {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+}
+
+.sanity-btn.set-min:hover {
+  background: rgba(255, 59, 48, 0.2);
+}
+
+.sanity-btn.set-max {
+  background: rgba(52, 199, 89, 0.1);
+  color: #34c759;
+}
+
+.sanity-btn.set-max:hover {
+  background: rgba(52, 199, 89, 0.2);
+}
+
+/* 背包管理样式 */
+.inventory-header {
+  margin-bottom: 16px;
+}
+
+.inventory-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inventory-title .title-icon {
+  color: var(--primary);
+  font-size: 14px;
 }
 
 /* 玩家输入提示信息样式 */
@@ -1444,6 +1862,7 @@ onMounted(() => {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1469,6 +1888,20 @@ onMounted(() => {
   transform: translateY(-10px);
 }
 
+@media (max-width: 900px) {
+  .player-management-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .player-list-panel {
+    max-height: none;
+  }
+
+  .player-list {
+    max-height: 200px;
+  }
+}
+
 @media (max-width: 768px) {
   .content-wrapper {
     padding: 16px;
@@ -1491,6 +1924,20 @@ onMounted(() => {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
   }
+
+  .sanity-display {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .sanity-value-large {
+    font-size: 28px;
+  }
+
+  .sanity-bar {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1509,6 +1956,19 @@ onMounted(() => {
   .form-input {
     padding: 10px 12px;
     font-size: 14px;
+  }
+
+  .player-detail-panel {
+    padding: 16px;
+  }
+
+  .sanity-adjust-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sanity-quick-actions {
+    justify-content: center;
   }
 }
 
@@ -1641,6 +2101,7 @@ onMounted(() => {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -1651,6 +2112,7 @@ onMounted(() => {
     transform: translateY(20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1688,6 +2150,7 @@ onMounted(() => {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

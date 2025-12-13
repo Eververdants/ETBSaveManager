@@ -4,14 +4,10 @@
     <div class="batch-header">
       <h1 class="page-title">{{ $t('batchCreate.title') }}</h1>
       <p class="page-subtitle">{{ $t('batchCreate.subtitle') }}</p>
-      
+
       <transition name="fade">
-        <button 
-          v-if="!isSwitching"
-          @click="switchToSingleCreate" 
-          class="switch-to-single-btn"
-          :class="{ 'shrink': isSwitching }"
-        >
+        <button v-if="!isSwitching" @click="switchToSingleCreate" class="switch-to-single-btn"
+          :class="{ 'shrink': isSwitching }">
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
           {{ $t('batchCreate.switchToSingle') }}
         </button>
@@ -24,7 +20,7 @@
         <!-- 基础配置 -->
         <div class="config-card">
           <h3 class="form-section-title">{{ $t('batchCreate.baseConfig') }}</h3>
-          
+
           <!-- 存档前缀 -->
           <div class="form-group">
             <label class="form-label">{{ $t('batchCreate.archivePrefix') }}</label>
@@ -68,7 +64,7 @@
         <!-- 层级配置 -->
         <div class="config-card">
           <h3 class="form-section-title">{{ $t('batchCreate.levelConfig') }}</h3>
-          
+
           <!-- 层级选择模式 -->
           <div class="form-group">
             <label class="form-label">{{ $t('batchCreate.levelMode') }}</label>
@@ -124,7 +120,7 @@
                 <font-awesome-icon :icon="['fas', 'minus']" />
               </button>
               <span class="count-display">{{ randomLevelCount }}</span>
-              <button @click="increaseRandomCount" class="count-btn" 
+              <button @click="increaseRandomCount" class="count-btn"
                 :disabled="randomLevelCount >= availableLevels.length">
                 <font-awesome-icon :icon="['fas', 'plus']" />
               </button>
@@ -135,7 +131,7 @@
         <!-- 难度配置 -->
         <div class="config-card">
           <h3 class="form-section-title">{{ $t('batchCreate.difficultyConfig') }}</h3>
-          
+
           <!-- 存档难度 -->
           <div class="form-group">
             <label class="form-label">{{ $t('batchCreate.difficulty') }}</label>
@@ -155,8 +151,8 @@
           <div class="form-group">
             <label class="form-label">{{ $t('batchCreate.actualDifficulty') }}</label>
             <div class="difficulty-grid">
-              <div v-for="difficulty in difficultyLevels" :key="`actual-${difficulty.value}`"
-                class="difficulty-option" :class="{ selected: selectedActualDifficulty === difficulty.value }"
+              <div v-for="difficulty in difficultyLevels" :key="`actual-${difficulty.value}`" class="difficulty-option"
+                :class="{ selected: selectedActualDifficulty === difficulty.value }"
                 @click="selectedActualDifficulty = difficulty.value">
                 <div class="difficulty-icon">
                   <font-awesome-icon :icon="difficulty.icon" />
@@ -170,7 +166,7 @@
         <!-- 玩家配置 -->
         <div class="config-card">
           <h3 class="form-section-title">{{ $t('batchCreate.playerConfig') }}</h3>
-          
+
           <!-- 玩家Steam ID -->
           <div class="form-group">
             <label class="form-label">{{ $t('batchCreate.steamIds') }}</label>
@@ -183,7 +179,7 @@
                 {{ $t('batchCreate.add') }}
               </button>
             </div>
-            
+
             <!-- Steam ID 列表 -->
             <div class="steam-id-list">
               <div v-for="(steamId, index) in steamIds" :key="index" class="steam-id-item">
@@ -222,7 +218,7 @@
           {{ $t('batchCreate.preview') }}
           <span class="preview-count">({{ previewArchives.length }})</span>
         </h3>
-        
+
         <div class="preview-list">
           <div v-for="(archive, index) in previewArchives.slice(0, 10)" :key="index" class="preview-item">
             <div class="archive-name">{{ archive.name }}</div>
@@ -245,11 +241,11 @@
           <h3>{{ $t('batchCreate.creatingArchives') }}</h3>
           <p>{{ $t('batchCreate.progressText', { current: createdCount, total: generateCount }) }}</p>
         </div>
-        
+
         <div class="progress-bar">
           <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
         </div>
-        
+
         <div class="progress-details">
           <div class="current-archive">{{ currentArchiveName }}</div>
           <div class="progress-percentage">{{ Math.round(progressPercentage) }}%</div>
@@ -275,11 +271,8 @@
     </div>
 
     <!-- 物品选择器（用于模板库存） -->
-    <InventoryItemSelector 
-      v-if="inventoryMode === 'template'"
-      :visible="showItemSelector" 
-      @select="handleTemplateInventory"
-      @update:visible="showItemSelector = $event" />
+    <InventoryItemSelector v-if="inventoryMode === 'template'" :visible="showItemSelector"
+      @select="handleTemplateInventory" @update:visible="showItemSelector = $event" />
   </div>
 </template>
 
@@ -298,7 +291,7 @@ export default {
   setup() {
     const { t } = useI18n({ useScope: 'global' })
     const router = useRouter()
-    
+
     // 表单数据
     const archivePrefix = ref('')
     const generateCount = ref(5)
@@ -313,22 +306,22 @@ export default {
     const newSteamId = ref('')
     const inventoryMode = ref('empty')
     const templateInventory = ref(Array(12).fill(null))
-    
+
     // 状态管理
     const isCreating = ref(false)
     const createdCount = ref(0)
     const currentArchiveName = ref('')
     const showItemSelector = ref(false)
     const isSwitching = ref(false)
-    
+
     // 动态数据
     const availableLevels = reactive([])
-    
+
     // 游戏模式选项
     const gameModes = [
       { value: 'multiplayer', label: 'multiplayer' }
     ]
-    
+
     // 难度选项
     const difficultyLevels = [
       { value: 'easy', label: 'easy', icon: ['fas', 'smile'] },
@@ -336,37 +329,37 @@ export default {
       { value: 'hard', label: 'hard', icon: ['fas', 'frown'] },
       { value: 'nightmare', label: 'nightmare', icon: ['fas', 'skull'] }
     ]
-    
+
     // 计算属性
     const canCreate = computed(() => {
-      return archivePrefix.value.trim() !== '' && 
-             !archivePrefix.value.includes('_') &&
-             (levelMode.value !== 'single' || selectedSingleLevel.value !== -1) &&
-             (levelMode.value !== 'multiple' || selectedMultipleLevels.value.length > 0)
+      return archivePrefix.value.trim() !== '' &&
+        !archivePrefix.value.includes('_') &&
+        (levelMode.value !== 'single' || selectedSingleLevel.value !== -1) &&
+        (levelMode.value !== 'multiple' || selectedMultipleLevels.value.length > 0)
     })
-    
+
     const progressPercentage = computed(() => {
       return generateCount.value > 0 ? (createdCount.value / generateCount.value) * 100 : 0
     })
-    
+
     const previewArchives = computed(() => {
       const archives = []
       const levels = getSelectedLevels()
-      
+
       for (let i = 0; i < generateCount.value; i++) {
         const level = levels[i % levels.length]
         const levelName = level ? availableLevels[level]?.name || 'Unknown' : 'Unknown'
-        
+
         archives.push({
           name: `${archivePrefix.value}_${String(i + 1).padStart(3, '0')}`,
           level: levelName,
           mode: selectedGameMode.value
         })
       }
-      
+
       return archives
     })
-    
+
     // 方法
     const loadLevels = async () => {
       const levelMappings = [
@@ -382,11 +375,11 @@ export default {
         'Level52', 'TunnelLevel',
         'Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat'
       ]
-      
+
       levelMappings.forEach((levelKey, index) => {
         // 现在所有关卡都使用关卡名称作为图片文件名
-        const imagePath = `/images/${levelKey}.jpg`
-        
+        const imagePath = `/images/ETB/${levelKey}.jpg`
+
         availableLevels.push({
           name: t(`LevelName_Display.${levelKey}`),
           image: imagePath,
@@ -394,7 +387,7 @@ export default {
         })
       })
     }
-    
+
     const getSelectedLevels = () => {
       switch (levelMode.value) {
         case 'single':
@@ -407,34 +400,34 @@ export default {
           return [0]
       }
     }
-    
+
     const getRandomLevels = () => {
       const indices = Array.from({ length: availableLevels.length }, (_, i) => i)
       const shuffled = indices.sort(() => Math.random() - 0.5)
       return shuffled.slice(0, Math.min(randomLevelCount.value, availableLevels.length))
     }
-    
+
     const increaseCount = () => {
       if (generateCount.value < 50) generateCount.value++
     }
-    
+
     const decreaseCount = () => {
       if (generateCount.value > 1) generateCount.value--
     }
-    
+
     const increaseRandomCount = () => {
       if (randomLevelCount.value < availableLevels.length) randomLevelCount.value++
     }
-    
+
     const decreaseRandomCount = () => {
       if (randomLevelCount.value > 1) randomLevelCount.value--
     }
-    
+
     const switchToSingleCreate = () => {
       if (isSwitching.value) return;
-      
+
       isSwitching.value = true;
-      
+
       // 使用GSAP创建淡出动画
       gsap.to('.batch-create-container', {
         opacity: 0,
@@ -458,17 +451,17 @@ export default {
         alert(t('batchCreate.steamIdInvalid'))
       }
     }
-    
+
     const removeSteamId = (index) => {
       steamIds.value.splice(index, 1)
     }
-    
+
     const handleTemplateInventory = (itemId) => {
       // 这里简化处理，实际可以打开完整的库存编辑器
       templateInventory.value[0] = itemId
       showItemSelector.value = false
     }
-    
+
     const loadJsonFile = async (filename) => {
       try {
         const response = await fetch(`/${filename}`)
@@ -479,30 +472,30 @@ export default {
         return null
       }
     }
-    
+
     const startBatchCreate = async () => {
       if (!canCreate.value || isCreating.value) return
-      
+
       isCreating.value = true
       createdCount.value = 0
-      
+
       try {
         const basicArchive = await loadJsonFile('BasicArchive.json')
         if (!basicArchive) {
           alert(t('batchCreate.loadTemplateFailed'))
           return
         }
-        
+
         const levels = getSelectedLevels()
         const { invoke } = await import('@tauri-apps/api/core')
-        
+
         for (let i = 0; i < generateCount.value; i++) {
           const levelIndex = levels[i % levels.length]
           const levelData = availableLevels[levelIndex] || availableLevels[0]
-          
+
           const archiveName = `${archivePrefix.value}_${String(i + 1).padStart(3, '0')}`
           currentArchiveName.value = archiveName
-          
+
           const saveData = {
             archive_name: archiveName,
             level: levelData.levelKey,
@@ -515,17 +508,17 @@ export default {
             })),
             basic_archive: basicArchive
           }
-          
+
           await invoke('handle_new_save', { saveData })
           createdCount.value++
-          
+
           // 添加小延迟避免过快
           await new Promise(resolve => setTimeout(resolve, 100))
         }
-        
+
         // 创建成功动画
         createSuccessAnimation()
-        
+
       } catch (error) {
         console.error('批量创建失败:', error)
         alert(t('batchCreate.createFailed') + ': ' + (error.message || '未知错误'))
@@ -534,12 +527,12 @@ export default {
         resetForm()
       }
     }
-    
+
     const createSuccessAnimation = () => {
       // 成功动画效果
       const container = document.querySelector('.batch-create-container')
       if (!container) return
-      
+
       const successCard = document.createElement('div')
       successCard.className = 'success-card batch-success'
       successCard.innerHTML = `
@@ -553,12 +546,13 @@ export default {
           <p class="success-subtitle">${t('batchCreate.successMessage', { count: generateCount.value })}</p>
         </div>
       `
-      
+
       document.body.appendChild(successCard)
-      
+
       gsap.fromTo(successCard,
         { scale: 0, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)",
+        {
+          scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)",
           onComplete: () => {
             setTimeout(() => {
               gsap.to(successCard, {
@@ -570,7 +564,7 @@ export default {
         }
       )
     }
-    
+
     const resetForm = () => {
       archivePrefix.value = ''
       generateCount.value = 5
@@ -586,23 +580,23 @@ export default {
       inventoryMode.value = 'empty'
       templateInventory.value = Array(12).fill(null)
     }
-    
+
     // 侧边栏状态
     const isSidebarExpanded = ref(false)
     const handleSidebarExpand = (event) => {
       isSidebarExpanded.value = event.detail
     }
-    
+
     // 生命周期
     onMounted(() => {
       loadLevels()
       window.addEventListener('sidebar-expand', handleSidebarExpand)
-      
+
       // 入场动画
       gsap.from('.batch-header', { y: -20, opacity: 0, duration: 0.5 })
       gsap.from('.config-card', { y: 20, opacity: 0, duration: 0.5, stagger: 0.1 })
     })
-    
+
     return {
       isSwitching,
       isSidebarExpanded,
@@ -715,7 +709,8 @@ export default {
   margin-bottom: 8px;
 }
 
-.form-input, .form-select {
+.form-input,
+.form-select {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid var(--divider-color);
@@ -726,7 +721,8 @@ export default {
   transition: all 0.3s ease;
 }
 
-.form-input:focus, .form-select:focus {
+.form-input:focus,
+.form-select:focus {
   outline: none;
   border-color: var(--accent-color);
   box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
@@ -804,12 +800,12 @@ export default {
   transition: all 0.2s ease;
 }
 
-.level-checkbox input:checked + .checkbox-custom {
+.level-checkbox input:checked+.checkbox-custom {
   background: var(--accent-color);
   border-color: var(--accent-color);
 }
 
-.level-checkbox input:checked + .checkbox-custom::after {
+.level-checkbox input:checked+.checkbox-custom::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -1154,26 +1150,26 @@ export default {
   .batch-create-container {
     padding: 16px 16px 80px 16px;
   }
-  
+
   .config-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .level-checkbox-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .bottom-actions {
     left: 0;
     flex-direction: column;
     gap: 8px;
     padding: 8px 16px;
   }
-  
+
   .sidebar-expanded .bottom-actions {
     left: 0;
   }
-  
+
   .switch-to-single-btn {
     position: static;
     margin-top: 16px;
@@ -1185,16 +1181,16 @@ export default {
   .page-title {
     font-size: 24px;
   }
-  
+
   .config-card {
     padding: 16px;
   }
-  
+
   .progress-card {
     min-width: 300px;
     margin: 16px;
   }
-  
+
   .switch-to-single-btn {
     padding: 10px 16px;
     font-size: 13px;

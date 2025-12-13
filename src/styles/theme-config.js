@@ -236,6 +236,29 @@ class ThemeManager {
     if (!document.documentElement.classList.contains('theme-initialized')) {
       document.documentElement.classList.add('theme-initialized');
     }
+    
+    // 强制触发主题背景更新
+    this.forceBackgroundUpdate(newTheme);
+  }
+
+  forceBackgroundUpdate(theme) {
+    // 强制更新html和body的背景色
+    const root = document.documentElement;
+    const body = document.body;
+    
+    if (theme === 'dark') {
+      root.style.backgroundColor = '#1c1c1e';
+      if (body) body.style.backgroundColor = '#1c1c1e';
+    } else {
+      root.style.backgroundColor = '#f8f9fa';
+      if (body) body.style.backgroundColor = '#f8f9fa';
+    }
+    
+    // 延迟移除内联样式，让CSS变量接管
+    setTimeout(() => {
+      root.style.backgroundColor = '';
+      if (body) body.style.backgroundColor = '';
+    }, 50);
   }
 
   // 获取当前主题，优先使用系统主题（如果用户未设置）

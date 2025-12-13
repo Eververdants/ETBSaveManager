@@ -12,7 +12,8 @@
                 <div class="popup-text-container">
                     <span class="popup-message">{{ message }}</span>
                 </div>
-                <button class="close-btn" @click="closePopup" @mouseenter="hoverClose = true" @mouseleave="hoverClose = false">
+                <button class="close-btn" @click="closePopup" @mouseenter="hoverClose = true"
+                    @mouseleave="hoverClose = false">
                     <font-awesome-icon :icon="['fas', 'times']" class="close-icon" />
                 </button>
             </div>
@@ -62,7 +63,7 @@ const popupClass = computed(() => [`popup-${props.direction}`, `popup-${props.ty
 // 根据类型自动设置图标
 const computedIcon = computed(() => {
     if (props.icon) return props.icon;
-    
+
     const typeIcons = {
         success: ['fas', 'check-circle'],
         error: ['fas', 'times-circle'],
@@ -70,7 +71,7 @@ const computedIcon = computed(() => {
         info: ['fas', 'info-circle'],
         default: null
     };
-    
+
     return typeIcons[props.type] || typeIcons.default;
 });
 
@@ -193,7 +194,7 @@ const resumeAutoClose = () => {
     z-index: 10001;
     padding: 20px 24px;
     border-radius: 20px;
-    box-shadow: 
+    box-shadow:
         0 20px 60px rgba(0, 0, 0, 0.15),
         0 0 0 1px rgba(255, 255, 255, 0.1) inset,
         0 0 0 1px rgba(0, 0, 0, 0.05) inset;
@@ -244,7 +245,7 @@ const resumeAutoClose = () => {
     justify-content: center;
     border-radius: 14px;
     background: linear-gradient(135deg, var(--primary, #007aff) 0%, rgba(0, 122, 255, 0.95) 100%);
-    box-shadow: 
+    box-shadow:
         0 6px 16px rgba(0, 122, 255, 0.3),
         0 0 0 1px rgba(255, 255, 255, 0.15) inset;
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -252,14 +253,14 @@ const resumeAutoClose = () => {
 
 .popup-icon-wrapper:hover {
     transform: scale(1.08) rotate(2deg);
-    box-shadow: 
+    box-shadow:
         0 8px 20px rgba(0, 122, 255, 0.4),
         0 0 0 1px rgba(255, 255, 255, 0.2) inset;
 }
 
 .popup-icon {
     font-size: 20px;
-    color: #ffffff;
+    color: var(--color-white);
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
     transition: transform 0.2s ease;
 }
@@ -393,45 +394,45 @@ const resumeAutoClose = () => {
     .prompt-popup {
         background: var(--card-bg, #1c1c1e);
         border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 
+        box-shadow:
             0 20px 60px rgba(0, 0, 0, 0.6),
             0 0 0 1px rgba(255, 255, 255, 0.08) inset;
     }
-    
+
     .prompt-popup::before {
         background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
     }
-    
+
     .popup-message {
         color: var(--text, #f2f2f7);
     }
-    
+
     .close-btn {
         background: rgba(255, 255, 255, 0.06);
         color: var(--text-secondary, #8e8e93);
     }
-    
+
     .close-btn:hover {
         background: rgba(255, 255, 255, 0.12);
         color: var(--text, #f2f2f7);
     }
-    
+
     .popup-success {
         border: 1px solid rgba(52, 199, 89, 0.35);
     }
-    
+
     .popup-error {
         border: 1px solid rgba(255, 59, 48, 0.35);
     }
-    
+
     .popup-warning {
         border: 1px solid rgba(255, 149, 0, 0.35);
     }
-    
+
     .popup-info {
         border: 1px solid rgba(0, 122, 255, 0.35);
     }
-    
+
     .progress-bar-container {
         background: rgba(255, 255, 255, 0.05);
     }
@@ -444,21 +445,21 @@ const resumeAutoClose = () => {
         min-width: 240px;
         margin: 0 16px;
     }
-    
+
     .popup-content {
         gap: 10px;
         padding-right: 20px;
     }
-    
+
     .popup-icon-wrapper {
         width: 28px;
         height: 28px;
     }
-    
+
     .popup-icon {
         font-size: 14px;
     }
-    
+
     .popup-message {
         font-size: 13px;
     }
@@ -473,9 +474,11 @@ const resumeAutoClose = () => {
     0% {
         box-shadow: 0 0 0 rgba(0, 122, 255, 0);
     }
+
     50% {
         box-shadow: 0 0 20px rgba(0, 122, 255, 0.2);
     }
+
     100% {
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     }
@@ -483,82 +486,104 @@ const resumeAutoClose = () => {
 
 /* Type-specific styles */
 .popup-success {
-    background: var(--card-bg, #ffffff);
-    border: 1px solid rgba(52, 199, 89, 0.3);
-    box-shadow: 
+    background: var(--popup-success-bg);
+    border: 1px solid var(--color-success-border);
+    box-shadow:
         0 20px 60px rgba(52, 199, 89, 0.12),
         0 0 0 1px rgba(52, 199, 89, 0.1) inset;
     animation: subtlePulse 2s ease-in-out infinite;
 }
 
 .popup-success .popup-icon-wrapper {
-    background: linear-gradient(135deg, #34c759 0%, #28a745 100%);
-    box-shadow: 
-        0 6px 16px rgba(52, 199, 89, 0.25),
+    background: var(--popup-success-icon-bg);
+    box-shadow:
+        0 6px 16px var(--popup-success-shadow),
         0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
 
 .popup-error {
-    background: var(--card-bg, #ffffff);
-    border: 1px solid rgba(255, 59, 48, 0.3);
-    box-shadow: 
+    background: var(--popup-error-bg);
+    border: 1px solid var(--color-error-border);
+    box-shadow:
         0 20px 60px rgba(255, 59, 48, 0.12),
         0 0 0 1px rgba(255, 59, 48, 0.1) inset;
     animation: subtleShake 0.5s ease-in-out infinite;
 }
 
 .popup-error .popup-icon-wrapper {
-    background: linear-gradient(135deg, #ff3b30 0%, #dc3545 100%);
-    box-shadow: 
-        0 6px 16px rgba(255, 59, 48, 0.25),
+    background: var(--popup-error-icon-bg);
+    box-shadow:
+        0 6px 16px var(--popup-error-shadow),
         0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
 
 .popup-warning {
-    background: var(--card-bg, #ffffff);
-    border: 1px solid rgba(255, 149, 0, 0.3);
-    box-shadow: 
+    background: var(--popup-warning-bg);
+    border: 1px solid var(--color-warning-border);
+    box-shadow:
         0 20px 60px rgba(255, 149, 0, 0.12),
         0 0 0 1px rgba(255, 149, 0, 0.1) inset;
     animation: subtleGlow 1.5s ease-in-out infinite alternate;
 }
 
 .popup-warning .popup-icon-wrapper {
-    background: linear-gradient(135deg, #ff9500 0%, #fd7e14 100%);
-    box-shadow: 
-        0 6px 16px rgba(255, 149, 0, 0.25),
+    background: var(--popup-warning-icon-bg);
+    box-shadow:
+        0 6px 16px var(--popup-warning-shadow),
         0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
 
 .popup-info {
-    background: var(--card-bg, #ffffff);
-    border: 1px solid rgba(0, 122, 255, 0.3);
-    box-shadow: 
+    background: var(--popup-info-bg);
+    border: 1px solid var(--color-info-border);
+    box-shadow:
         0 20px 60px rgba(0, 122, 255, 0.12),
         0 0 0 1px rgba(0, 122, 255, 0.1) inset;
 }
 
 .popup-info .popup-icon-wrapper {
-    background: linear-gradient(135deg, #007aff 0%, #0056b3 100%);
-    box-shadow: 
-        0 6px 16px rgba(0, 122, 255, 0.25),
+    background: var(--popup-info-icon-bg);
+    box-shadow:
+        0 6px 16px var(--popup-info-shadow),
         0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
 
 /* Subtle animations */
 @keyframes subtlePulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.01); }
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.01);
+    }
 }
 
 @keyframes subtleShake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-1px); }
-    75% { transform: translateX(1px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-1px);
+    }
+
+    75% {
+        transform: translateX(1px);
+    }
 }
 
 @keyframes subtleGlow {
-    0% { box-shadow: 0 20px 60px rgba(255, 149, 0, 0.12), 0 0 0 1px rgba(255, 149, 0, 0.1) inset; }
-    100% { box-shadow: 0 20px 60px rgba(255, 149, 0, 0.18), 0 0 0 1px rgba(255, 149, 0, 0.15) inset; }
+    0% {
+        box-shadow: 0 20px 60px rgba(255, 149, 0, 0.12), 0 0 0 1px rgba(255, 149, 0, 0.1) inset;
+    }
+
+    100% {
+        box-shadow: 0 20px 60px rgba(255, 149, 0, 0.18), 0 0 0 1px rgba(255, 149, 0, 0.15) inset;
+    }
 }
 </style>

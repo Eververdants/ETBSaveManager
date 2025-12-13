@@ -1,356 +1,180 @@
-/* 统一圆角设计系统 */
+/**
+ * ============================================
+ * 📐 设计系统变量 (Design System Variables)
+ * ============================================
+ * 
+ * 本文件包含非颜色相关的设计变量：
+ * - 圆角系统
+ * - 间距系统
+ * - 阴影系统
+ * - 过渡动画
+ * - 其他全局样式
+ * 
+ * 颜色变量已迁移至 themes/ 目录
+ */
+
+/* 导入主题颜色系统 */
+@import './themes/index.css';
+
+/* ==========================================
+ * 圆角系统 (Border Radius System)
+ * 基于 8px 网格系统
+ * ========================================== */
 :root {
-    /* 基础圆角值 - 基于8px网格系统 */
-    --radius-xs: 4px;    /* 小元素：标签、按钮等 */
-    --radius-sm: 8px;    /* 小型组件：输入框、小卡片 */
-    --radius-md: 12px;   /* 中型组件：表单元素、按钮 */
-    --radius-lg: 16px;   /* 大型组件：卡片、面板 */
-    --radius-xl: 20px;   /* 特大组件：模态框、大卡片 */
-    --radius-2xl: 24px;  /* 超大组件：特殊容器 */
-    
-    /* 特殊圆角值 */
-    --radius-pill: 9999px;  /* 胶囊形状：标签、按钮 */
-    --radius-circle: 50%;   /* 圆形：头像、图标按钮 */
-    
-    /* 组件特定圆角 */
-    --radius-sidebar: 16px;  /* 侧边栏项目 */
-    --radius-card: 16px;     /* 普通卡片 */
-    --radius-modal: 20px;    /* 模态框 */
-    --radius-dropdown: 12px; /* 下拉菜单 */
-    --radius-button: 12px;   /* 按钮 */
-    --radius-input: 12px;    /* 输入框 */
-    --radius-tag: 8px;       /* 标签 */
-    --radius-tooltip: 8px;   /* 提示框 */
-    --radius-image: 12px;    /* 图片容器 */
+  /* 基础圆角值 */
+  --radius-xs: 4px;     /* 小元素：标签、按钮等 */
+  --radius-sm: 8px;     /* 小型组件：输入框、小卡片 */
+  --radius-md: 12px;    /* 中型组件：表单元素、按钮 */
+  --radius-lg: 16px;    /* 大型组件：卡片、面板 */
+  --radius-xl: 20px;    /* 特大组件：模态框、大卡片 */
+  --radius-2xl: 24px;   /* 超大组件：特殊容器 */
+
+  /* 特殊圆角值 */
+  --radius-pill: 9999px;  /* 胶囊形状：标签、按钮 */
+  --radius-circle: 50%;   /* 圆形：头像、图标按钮 */
+
+  /* 组件特定圆角 */
+  --radius-sidebar: 16px;
+  --radius-card: 16px;
+  --radius-modal: 20px;
+  --radius-dropdown: 12px;
+  --radius-button: 12px;
+  --radius-input: 12px;
+  --radius-tag: 8px;
+  --radius-tooltip: 8px;
+  --radius-image: 12px;
 }
 
-/* 主色调 */
+/* ==========================================
+ * 间距系统 (Spacing System)
+ * 基于 8px 网格
+ * ========================================== */
 :root {
-    --primary-color: #6366f1;
-    --secondary-color: #8b5cf6;
+  /* 基础间距单位 */
+  --space-1: 4px;     /* 极小间距 */
+  --space-2: 8px;     /* 小间距 */
+  --space-3: 12px;    /* 中小间距 */
+  --space-4: 16px;    /* 中等间距 */
+  --space-5: 20px;    /* 中大间距 */
+  --space-6: 24px;    /* 大间距 */
+  --space-8: 32px;    /* 特大间距 */
+  --space-10: 40px;   /* 超大间距 */
+  --space-12: 48px;   /* 极大间距 */
+  --space-16: 64px;   /* 最大间距 */
 
-    /* 下拉组件增强 */
-    --dropdown-border-hover: rgba(99, 102, 241, 0.5);
-    --dropdown-transition-duration: 0.3s;
+  /* 组件特定间距 */
+  --spacing-component-padding: var(--space-4);
+  --spacing-component-margin: var(--space-4);
+  --spacing-section-gap: var(--space-6);
+  --spacing-list-gap: var(--space-3);
+  --spacing-form-gap: var(--space-4);
+  --spacing-button-padding: var(--space-3) var(--space-4);
+  --spacing-input-padding: var(--space-3);
+  --spacing-card-padding: var(--space-5);
+  --spacing-modal-padding: var(--space-6);
 }
 
-/* 新增：Swift UI风格颜色系统 */
+/* ==========================================
+ * 阴影系统 (Shadow System)
+ * ========================================== */
 :root {
-    /* 背景层级 */
-    --bg-primary: #f8f9fa;
-    --bg-secondary: #ffffff;
-    --bg-tertiary: #f2f2f7;
+  /* 基础阴影 */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
 
-    /* 文本层级 */
-    --text-primary: #1c1c1e;
-    --text-secondary: #3a3a3c;
-    --text-tertiary: #8e8e93;
+  /* 特殊阴影 */
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-outline: 0 0 0 3px rgba(66, 153, 225, 0.5);
 
-    /* 强调色 */
-    --accent-color: #007aff;
-    --accent-hover: #0051d5;
-    --success-color: #34c759;
-    --error-color: #ff3b30;
-
-    /* 分割线 */
-    --divider-color: rgba(60, 60, 67, 0.1);
-    --divider-light: rgba(60, 60, 67, 0.05);
+  /* 组件特定阴影 */
+  --shadow-card: var(--shadow-md);
+  --shadow-modal: var(--shadow-xl);
+  --shadow-dropdown: var(--shadow-lg);
+  --shadow-button: var(--shadow-sm);
+  --shadow-button-hover: var(--shadow-md);
+  --shadow-tooltip: var(--shadow-lg);
 }
 
-/* 明亮主题 */
-[data-theme="light"] {
-    --dropdown-bg: #ffffff;
-    --dropdown-border: #e4e4e7;
-    --dropdown-text: #374151;
-    --dropdown-icon: #4b5563;
-    --dropdown-shadow: rgba(0, 0, 0, 0.1);
-    --dropdown-shadow-hover: rgba(0, 0, 0, 0.15);
-    --dropdown-hover-bg: #f8fafc;
-    --dropdown-selected-bg: #eef2ff;
-}
-
-/* 暗黑主题 */
-[data-theme="dark"] {
-    --dropdown-bg: #1f2937;
-    --dropdown-border: #374151;
-    --dropdown-text: #f3f4f6;
-    --dropdown-icon: #9ca3af;
-    --dropdown-shadow: rgba(255, 255, 255, 0.1);
-    --dropdown-shadow-hover: rgba(255, 255, 255, 0.15);
-    --dropdown-hover-bg: #374151;
-    --dropdown-selected-bg: #4f46e5;
-}
-
-/* Light theme variables */
+/* ==========================================
+ * 过渡动画 (Transitions)
+ * ========================================== */
 :root {
-    --bg: #f8f9fa;
-    --card-bg: #ffffff;
-    --text: #1c1c1e;
-    --text-color: #1c1c1e;
-    --surface-color: #ffffff;
-    --surface-hover: #f8f9fa;
-    --border-color: rgba(60, 60, 67, 0.1);
-    --primary: #007aff;
+  /* 过渡时长 */
+  --transition-fast: 0.15s;
+  --transition-normal: 0.25s;
+  --transition-slow: 0.35s;
 
-    --sidebar-bg: rgba(240, 240, 245, 0.8);
-    --sidebar-item-hover-bg: rgba(220, 220, 225, 0.9);
-    --sidebar-text-color: #1c1c1e;
-    --sidebar-border-color: rgba(210, 210, 215, 0.9);
+  /* 缓动函数 */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-spring: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-    --sidebar-hover-bg: rgba(220, 220, 225, 0.9);
-    --sidebar-active-bg: rgba(0, 122, 255, 0.1);
-    --sidebar-active-color: #007aff;
-    --sidebar-active-border: rgba(0, 122, 255, 0.5);
-    --sidebar-active-hover-bg: rgba(0, 122, 255, 0.15);
-
-    /* Titlebar colors */
-    --titlebar-bg: rgba(248, 249, 250, 0.8);
-    --titlebar-border: rgba(125, 125, 125, 0.3);
-    --titlebar-button-hover: rgba(255, 255, 255, 0.1);
-
-    /* Scrollbar colors */
-    --scrollbar-track: rgba(200, 200, 205, 0.3);
-    --scrollbar-thumb: rgba(180, 180, 185, 0.5);
-    --scrollbar-thumb-hover: rgba(160, 160, 165, 0.7);
-
-    /* Dropdown colors */
-    --dropdown-bg: rgba(255, 255, 255, 0.8);
-    --dropdown-border: rgba(60, 60, 67, 0.1);
-    --dropdown-hover-bg: rgba(0, 0, 0, 0.05);
-    --dropdown-selected-bg: #007aff;
-    --dropdown-selected-text: #ffffff;
-    --dropdown-shadow: rgba(0, 0, 0, 0.08);
-    --dropdown-text: #000000;
-    --dropdown-icon: rgba(60, 60, 67, 0.6);
-    
-    /* Search overlay variables */
-    --search-overlay-bg: rgba(0, 0, 0, 0.5);
-    --search-overlay-backdrop: blur(8px);
+  /* 组件过渡 */
+  --dropdown-transition-duration: 0.3s;
 }
 
-/* Dark theme variables with Swift UI style */
-[data-theme="dark"] {
-    --bg: #1c1c1e;
-    --card-bg: #2c2c2e;
-    --text: #f5f5f7;
-    --text-color: #f5f5f7;
-    --surface-color: #2c2c2e;
-    --surface-hover: #3a3a3c;
-    --border-color: rgba(84, 84, 88, 0.3);
-    --primary: #0a84ff;
-
-    --sidebar-bg: rgba(40, 40, 45, 0.8);
-    --sidebar-item-hover-bg: rgba(70, 70, 75, 0.9);
-    --sidebar-text-color: #f5f5f7;
-    --sidebar-border-color: rgba(80, 80, 85, 0.9);
-
-    --sidebar-hover-bg: rgba(70, 70, 75, 0.9);
-    --sidebar-active-bg: rgba(10, 132, 255, 0.1);
-    --sidebar-active-color: #0a84ff;
-    --sidebar-active-border: rgba(10, 132, 255, 0.5);
-    --sidebar-active-hover-bg: rgba(10, 132, 255, 0.15);
-
-    /* Titlebar colors */
-    --titlebar-bg: rgba(28, 28, 30, 0.8);
-    --titlebar-border: rgba(125, 125, 125, 0.3);
-    --titlebar-button-hover: rgba(255, 255, 255, 0.1);
-
-    /* Scrollbar colors for dark theme */
-    --scrollbar-track: rgba(60, 60, 65, 0.3);
-    --scrollbar-thumb: rgba(100, 100, 105, 0.5);
-    --scrollbar-thumb-hover: rgba(120, 120, 125, 0.7);
-
-    /* Dropdown colors */
-    --dropdown-bg: rgba(28, 28, 30, 0.8);
-    --dropdown-border: rgba(84, 84, 88, 0.3);
-    --dropdown-hover-bg: rgba(255, 255, 255, 0.05);
-    --dropdown-selected-bg: #0a84ff;
-    --dropdown-selected-text: #ffffff;
-    --dropdown-shadow: rgba(0, 0, 0, 0.3);
-    --dropdown-text: #ffffff;
-    --dropdown-icon: rgba(235, 235, 245, 0.6);
-    
-    /* Search overlay variables */
-    --search-overlay-bg: rgba(0, 0, 0, 0.7);
-    --search-overlay-backdrop: blur(12px);
+/* ==========================================
+ * 全局按钮样式 (Global Button Styles)
+ * ========================================== */
+button {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
 }
 
-/* About页面专用颜色变量 - 与设置页面统一 */
-[data-theme="light"] {
-    --about-glass-bg: var(--bg-secondary);
-    --about-glass-border: var(--divider-color);
-    --about-glass-shadow: rgba(0, 0, 0, 0.08);
-    --about-list-bg: var(--bg-secondary);
-    --about-hover-bg: var(--bg-tertiary);
-    --about-border-light: var(--divider-color);
-    --about-header-bg: var(--bg-secondary);
-    --about-header-border: var(--divider-color);
+button:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-[data-theme="dark"] {
-    --about-glass-bg: var(--bg-secondary);
-    --about-glass-border: var(--divider-color);
-    --about-glass-shadow: rgba(0, 0, 0, 0.3);
-    --about-list-bg: var(--bg-secondary);
-    --about-hover-bg: var(--bg-tertiary);
-    --about-border-light: var(--divider-color);
-    --about-header-bg: var(--bg-secondary);
-    --about-header-border: var(--divider-color);
+/* 针对所有可能的按钮类型 */
+button,
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-outline,
+[class*="btn-"],
+[class*="button"] {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+  cursor: pointer !important;
 }
 
-/* 新增：确保设置界面使用Swift UI颜色 */
-[data-theme="light"] {
-    --bg-primary: #f8f9fa;
-    --bg-secondary: #ffffff;
-    --bg-tertiary: #f2f2f7;
-    --text-primary: #1c1c1e;
-    --text-secondary: #3a3a3c;
-    --text-tertiary: #8e8e93;
-    --accent-color: #007aff;
-    --accent-hover: #0051d5;
-    --success-color: #34c759;
-    --error-color: #ff3b30;
-    --divider-color: rgba(60, 60, 67, 0.1);
-    --divider-light: rgba(60, 60, 67, 0.05);
-
-    /* 毛玻璃样式变量 */
-    --glass-bg: rgba(255, 255, 255, 0.8);
-    --glass-border: rgba(255, 255, 255, 0.2);
-    --glass-shadow-light: rgba(0, 0, 0, 0.1);
-    --glass-shadow-medium: rgba(0, 0, 0, 0.05);
-    --glass-backdrop-filter: blur(20px);
-    --glass-border-light: rgba(60, 60, 67, 0.1);
-
-    /* 卡片样式变量 */
-    --card-bg: var(--bg-secondary);
-    --card-shadow: 0 2px 8px var(--glass-shadow-light);
-    --card-shadow-hover: 0 4px 12px var(--glass-shadow-medium);
-    --card-border: 1px solid var(--glass-border-light);
-    --card-radius: 16px;
-    --card-padding: 16px;
-    --card-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    --card-active-indicator: var(--accent-color);
-    --card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --card-hover-transform: translateY(-2px);
-    --fab-size: 60px;
-
-    /* LG Card 样式变量（兼容旧版卡片） */
-    --Card-bg-primary: var(--bg-secondary);
-    --Card-bg-secondary: var(--bg-tertiary);
-    --Card-border-color: var(--divider-color);
-    --Card-shadow-normal: var(--card-shadow);
-    --Card-shadow-hover: var(--card-shadow-hover);
-    --Card-accent-primary: var(--accent-color);
-    --Card-accent-secondary: var(--accent-hover);
-    --Card-text-primary: var(--text-primary);
-    --Card-text-secondary: var(--text-secondary);
-
-    /* LG Card 样式变量（兼容旧版卡片） */
-    --Card-bg-primary: var(--bg-secondary);
-    --Card-bg-secondary: var(--bg-tertiary);
-    --Card-border-color: var(--divider-color);
-    --Card-shadow-normal: var(--card-shadow);
-    --Card-shadow-hover: var(--card-shadow-hover);
-    --Card-accent-primary: var(--accent-color);
-    --Card-accent-secondary: var(--accent-hover);
-    --Card-text-primary: var(--text-primary);
-    --Card-text-secondary: var(--text-secondary);
-    --Card-surface-overlay: rgba(0, 0, 0, 0.2);
+button:focus,
+.btn:focus,
+.btn-primary:focus,
+.btn-secondary:focus,
+.btn-outline:focus,
+[class*="btn-"]:focus,
+[class*="button"]:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-/* 统一间距系统 - 基于8px网格 */
-:root {
-    /* 基础间距单位 */
-    --space-1: 4px;    /* 极小间距 */
-    --space-2: 8px;    /* 小间距 */
-    --space-3: 12px;   /* 中小间距 */
-    --space-4: 16px;   /* 中等间距 */
-    --space-5: 20px;   /* 中大间距 */
-    --space-6: 24px;   /* 大间距 */
-    --space-8: 32px;   /* 特大间距 */
-    --space-10: 40px;  /* 超大间距 */
-    --space-12: 48px;  /* 极大间距 */
-    --space-16: 64px;  /* 最大间距 */
-    
-    /* 组件特定间距 */
-    --spacing-component-padding: var(--space-4);
-    --spacing-component-margin: var(--space-4);
-    --spacing-section-gap: var(--space-6);
-    --spacing-list-gap: var(--space-3);
-    --spacing-form-gap: var(--space-4);
-    --spacing-button-padding: var(--space-3) var(--space-4);
-    --spacing-input-padding: var(--space-3);
-    --spacing-card-padding: var(--space-5);
-    --spacing-modal-padding: var(--space-6);
-}
-
-/* 统一阴影系统 */
-:root {
-    /* 基础阴影 */
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
-    --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
-    
-    /* 特殊阴影 */
-    --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
-    --shadow-outline: 0 0 0 3px rgba(66, 153, 225, 0.5);
-    
-    /* 组件特定阴影 */
-    --shadow-card: var(--shadow-md);
-    --shadow-modal: var(--shadow-xl);
-    --shadow-dropdown: var(--shadow-lg);
-    --shadow-button: var(--shadow-sm);
-    --shadow-button-hover: var(--shadow-md);
-    --shadow-tooltip: var(--shadow-lg);
-}
-
-[data-theme="dark"] {
-    --bg-primary: #1c1c1e;
-    --bg-secondary: #2c2c2e;
-    --bg-tertiary: #3a3a3c;
-    --text-primary: #f5f5f7;
-    --text-secondary: #ebebf5;
-    --text-tertiary: #8e8e93;
-    --accent-color: #0a84ff;
-    --accent-hover: #0096ff;
-    --success-color: #30d158;
-    --error-color: #ff453a;
-    --divider-color: rgba(84, 84, 88, 0.3);
-    --divider-light: rgba(84, 84, 88, 0.1);
-
-    /* 毛玻璃样式变量 */
-    --glass-bg: rgba(28, 28, 30, 0.8);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-shadow-light: rgba(0, 0, 0, 0.3);
-    --glass-shadow-medium: rgba(0, 0, 0, 0.2);
-    --glass-backdrop-filter: blur(20px);
-    --glass-border-light: rgba(84, 84, 88, 0.3);
-
-    /* 卡片样式变量 */
-    --card-bg: var(--bg-secondary);
-    --card-shadow: 0 2px 8px var(--glass-shadow-light);
-    --card-shadow-hover: 0 4px 12px var(--glass-shadow-medium);
-    --card-border: 1px solid var(--glass-border-light);
-    --card-radius: 16px;
-    --card-padding: 16px;
-    --card-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    --card-active-indicator: var(--accent-color);
-    --card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --card-hover-transform: translateY(-2px);
-    --fab-size: 60px;
-
-    /* LG Card 样式变量（兼容旧版卡片） */
-    --Card-bg-primary: var(--bg-secondary);
-    --Card-bg-secondary: var(--bg-tertiary);
-    --Card-border-color: var(--divider-color);
-    --Card-shadow-normal: var(--card-shadow);
-    --Card-shadow-hover: var(--card-shadow-hover);
-    --Card-accent-primary: var(--accent-color);
-    --Card-accent-secondary: var(--accent-hover);
-    --Card-text-primary: var(--text-primary);
-    --Card-text-secondary: var(--text-secondary);
-    --Card-surface-overlay: rgba(0, 0, 0, 0.2);
+/* 确保点击反馈仍然有效 */
+button:active,
+.btn:active,
+.btn-primary:active,
+.btn-secondary:active,
+.btn-outline:active,
+[class*="btn-"]:active,
+[class*="button"]:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
 }

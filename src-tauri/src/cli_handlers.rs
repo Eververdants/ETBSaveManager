@@ -1,26 +1,36 @@
 use chrono::{DateTime, Local};
+use memmap2::Mmap;
 use serde_json::Value;
 use std::fs::File;
-use std::io::{Cursor, Read};
+use std::io::Cursor;
 use std::path::Path;
 use uesave::Save;
 
-/// 解析 .sav 文件为 Save 对象
+/// 解析 .sav 文件为 Save 对象（使用内存映射优化大文件读取）
 pub fn parse_sav_file(path: &Path) -> Result<Save, String> {
-    let mut file = File::open(path).map_err(|e| format!("打开文件失败: {}", e))?;
+    let file = File::open(path).map_err(|e| format!("打开文件失败: {}", e))?;
 
-    // 读取整个文件到内存中
-    let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer)
-        .map_err(|e| format!("读取文件内容失败: {}", e))?;
+    // 获取文件大小，小文件直接读取，大文件使用内存映射
+    let metadata = file
+        .metadata()
+        .map_err(|e| format!("获取文件元信息失败: {}", e))?;
+    let file_size = metadata.len();
 
-    // 使用 Cursor 将内存数据包装成一个 Read 实现
-    let mut reader = Cursor::new(&buffer);
+    // 小于 64KB 的文件直接读取，避免 mmap 开销
+    if file_size < 65536 {
+        use std::io::Read;
+        let mut file = file;
+        let mut buffer = Vec::with_capacity(file_size as usize);
+        file.read_to_end(&mut buffer)
+            .map_err(|e| format!("读取文件内容失败: {}", e))?;
+        let mut reader = Cursor::new(&buffer);
+        return Save::read(&mut reader).map_err(|e| format!("解析存档失败: {:?}", e));
+    }
 
-    // 使用 uesave::Save::read 来解析存档文件
-    let save = Save::read(&mut reader).map_err(|e| format!("解析存档失败: {:?}", e))?;
-
-    Ok(save)
+    // 大文件使用内存映射，避免额外的内存拷贝
+    let mmap = unsafe { Mmap::map(&file) }.map_err(|e| format!("内存映射失败: {}", e))?;
+    let mut reader = Cursor::new(&mmap[..]);
+    Save::read(&mut reader).map_err(|e| format!("解析存档失败: {:?}", e))
 }
 
 /// 获取文件最后修改时间，格式为 "YYYY-MM-DD"
@@ -43,7 +53,7 @@ pub fn extract_current_level(json: &Value) -> String {
     // 如果当前层级是 Pipes，检查 UnlockedFun_0
     if current_level == "Pipes" {
         let unlocked_fun = &json["root"]["properties"]["UnlockedFun_0"]["Bool"];
-        
+
         match unlocked_fun {
             Value::Bool(true) => "Pipes2".to_string(),
             Value::Bool(false) => "Pipes1".to_string(),

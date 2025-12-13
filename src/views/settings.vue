@@ -64,7 +64,7 @@
           </transition>
           <transition name="text-swift" mode="out-in">
             <div class="setting-description" :key="currentLanguage">{{ t('settings.disableGpuAccelerationDescription')
-            }}</div>
+              }}</div>
           </transition>
         </div>
         <div class="setting-action">
@@ -367,11 +367,11 @@ export default {
       currentTheme: localStorage.getItem('theme') || 'light',
       currentLanguage: localStorage.getItem('language') || 'zh-CN',
       currentUpdateSource: localStorage.getItem('updateSource') || 'GITEE',
-      performanceMonitorEnabled: localStorage.getItem('performanceMonitor') === 'true', // 性能监控开关状态，默认关闭
+      performanceMonitorEnabled: localStorage.getItem('performanceMonitor') !== 'false', // 默认开启
       developerModeEnabled: localStorage.getItem('developerMode') === 'true', // 开发者模式状态
       developerOptionsEnabled: localStorage.getItem('developerMode') === 'true', // 开发者选项是否显示
-      logMenuEnabled: localStorage.getItem('logMenuEnabled') === 'true', // 日志功能开关状态，默认关闭
-      testArchiveEnabled: localStorage.getItem('testArchiveEnabled') === 'true', // 测试存档显示开关状态，默认关闭
+      logMenuEnabled: localStorage.getItem('logMenuEnabled') === 'true', // 日志功能开关状态
+      testArchiveEnabled: localStorage.getItem('testArchiveEnabled') !== 'false', // 测试存档显示开关状态，默认开启
       gpuAccelerationDisabled: localStorage.getItem('gpuAccelerationDisabled') === 'true', // GPU加速开关状态
       // Steam API 相关
       steamApiKey: '',
@@ -379,7 +379,7 @@ export default {
       cacheEntryCount: 0,
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: '3.0.0-Alpha-6.2',
+      appVersion: '3.0.0-Alpha-6.3',
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
@@ -469,19 +469,49 @@ export default {
         document.documentElement.setAttribute('data-theme', theme);
       }
 
+      // 强制触发背景更新以确保立即可见
+      this.forceThemeBackgroundUpdate(theme);
+
       // 选择后关闭下拉框
       this.activeDropdown = null;
     },
 
-    handleLanguageChange(option) {
+    forceThemeBackgroundUpdate(theme) {
+      // 额外的背景更新保障，确保主题切换立即生效
+      const root = document.documentElement;
+      const body = document.body;
+
+      if (theme === 'dark') {
+        root.style.setProperty('--bg', '#1c1c1e');
+        root.style.setProperty('--bg-primary', '#1c1c1e');
+        root.style.setProperty('--bg-secondary', '#2c2c2e');
+        if (body) {
+          body.style.backgroundColor = '#1c1c1e';
+          body.style.setProperty('--bg', '#1c1c1e');
+        }
+      } else {
+        root.style.setProperty('--bg', '#f8f9fa');
+        root.style.setProperty('--bg-primary', '#f8f9fa');
+        root.style.setProperty('--bg-secondary', '#ffffff');
+        if (body) {
+          body.style.backgroundColor = '#f8f9fa';
+          body.style.setProperty('--bg', '#f8f9fa');
+        }
+      }
+
+      // 强制重绘
+      void document.body.offsetHeight;
+    },
+
+    async handleLanguageChange(option) {
       const lang = option.value;
-      this.setLanguage(lang);
+      await this.setLanguage(lang);
 
       // 选择后关闭下拉框
       this.activeDropdown = null;
     },
 
-    setLanguage(lang) {
+    async setLanguage(lang) {
       this.currentLanguage = lang;
       try {
         // 使用全局 i18n 实例设置语言
@@ -491,10 +521,29 @@ export default {
           window.$i18n.locale = lang;
         }
         localStorage.setItem('language', lang);
+
         // 触发自定义事件通知其他组件
         window.dispatchEvent(new CustomEvent('language-changed', { detail: { lang } }));
+
+        // 更新窗口标题为语言文件中的 app.name
+        await this.updateWindowTitle();
       } catch (error) {
         console.error(this.t('settings.languageSwitchFailed'), error);
+      }
+    },
+
+    async updateWindowTitle() {
+      try {
+        // 获取当前语言文件中的应用名称
+        const appName = this.t('app.name');
+
+        // 调用后端设置窗口标题
+        await invoke('set_window_title', { title: appName });
+
+        console.log('窗口标题已更新为:', appName);
+      } catch (error) {
+        console.error('更新窗口标题失败:', error);
+        // 不抛出错误，语言切换不应该因为标题更新失败而失败
       }
     },
 

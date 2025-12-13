@@ -133,7 +133,7 @@ onMounted(() => {
   padding: 0 0 0 var(--space-3);
   background: var(--titlebar-bg);
   backdrop-filter: blur(10px);
-  z-index: 1100;
+  z-index: 999999999999999999;
   -webkit-app-region: drag;
   user-select: none;
   border-bottom: 1px solid var(--titlebar-border);

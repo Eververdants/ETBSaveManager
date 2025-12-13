@@ -1,14 +1,14 @@
-use std::fs;
-use std::io::{BufWriter, Write, BufReader};
-
+use crate::common::{add_save_to_mainsave, extract_archive_name, get_local_appdata_dir};
+use crate::save_editor::map_item_id_to_name;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use std::fs;
+use std::io::{BufWriter, Write};
 use uesave::{
     Properties, Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
     PropertyType, Save, StructType, StructValue, ValueArray, ValueVec,
 };
 use uuid;
-use crate::save_editor::map_item_id_to_name;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SaveData {
@@ -19,8 +19,8 @@ pub struct SaveData {
     pub actual_difficulty: String,
     pub players: Vec<PlayerData>,
     pub basic_archive: JsonValue, // 前端传来的完整 BasicArchive.json 内容
-    pub main_ending: bool, // 添加MainEnding参数，主线为false，支线为true
-    pub meg_unlocked: bool, // MEG解锁状态
+    pub main_ending: bool,        // 添加MainEnding参数，主线为false，支线为true
+    pub meg_unlocked: bool,       // MEG解锁状态
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -98,7 +98,10 @@ pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
                 inner: PropertyInner::Bool(true),
             };
             let unlocked_fun_key = PropertyKey(0, "UnlockedFun".to_string());
-            save.root.properties.0.insert(unlocked_fun_key, unlocked_fun_prop);
+            save.root
+                .properties
+                .0
+                .insert(unlocked_fun_key, unlocked_fun_prop);
             println!("✅ 已创建 UnlockedFun_0 字段，值为 true (Pipes2)");
         }
         _ => {}
@@ -194,10 +197,10 @@ fn update_main_ending_status(save: &mut Save, main_ending: bool) -> Result<(), S
     // 注意：前端传来的main_ending，主线为false，支线为true
     // 所以HasCompletedMainEnding的值应该与main_ending相同
     let has_completed_main_ending = main_ending;
-    
+
     // 查找HasCompletedMainEnding字段
     let has_completed_main_ending_key = PropertyKey(0, "HasCompletedMainEnding".to_string());
-    
+
     // 创建或更新HasCompletedMainEnding字段
     let has_completed_main_ending_prop = Property {
         tag: PropertyTagPartial {
@@ -206,16 +209,19 @@ fn update_main_ending_status(save: &mut Save, main_ending: bool) -> Result<(), S
         },
         inner: PropertyInner::Bool(has_completed_main_ending),
     };
-    
+
     // 插入或更新HasCompletedMainEnding字段
-    save.root.properties.0.insert(has_completed_main_ending_key, has_completed_main_ending_prop);
-    
+    save.root.properties.0.insert(
+        has_completed_main_ending_key,
+        has_completed_main_ending_prop,
+    );
+
     if has_completed_main_ending {
         println!("✅ 已设置HasCompletedMainEnding字段为true（支线结局）");
     } else {
         println!("✅ 已设置HasCompletedMainEnding字段为false（主线结局）");
     }
-    
+
     Ok(())
 }
 
@@ -224,10 +230,10 @@ fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> Result<(), String> 
     // 根据前端传来的meg_unlocked参数设置IsMEGUnlocked和IsMEGPowerOn字段
     // 如果meg_unlocked为false，则将三个字段都设置为false
     // 如果meg_unlocked为true，则保持原样或设置为true
-    
+
     // 查找IsMEGUnlocked字段
     let is_meg_unlocked_key = PropertyKey(0, "IsMEGUnlocked".to_string());
-    
+
     // 创建或更新IsMEGUnlocked字段
     let is_meg_unlocked_prop = Property {
         tag: PropertyTagPartial {
@@ -236,13 +242,16 @@ fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> Result<(), String> 
         },
         inner: PropertyInner::Bool(meg_unlocked),
     };
-    
+
     // 插入或更新IsMEGUnlocked字段
-    save.root.properties.0.insert(is_meg_unlocked_key, is_meg_unlocked_prop);
-    
+    save.root
+        .properties
+        .0
+        .insert(is_meg_unlocked_key, is_meg_unlocked_prop);
+
     // 查找IsMEGPowerOn字段
     let is_meg_power_on_key = PropertyKey(0, "IsMEGPowerOn".to_string());
-    
+
     // 创建或更新IsMEGPowerOn字段
     let is_meg_power_on_prop = Property {
         tag: PropertyTagPartial {
@@ -251,13 +260,16 @@ fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> Result<(), String> 
         },
         inner: PropertyInner::Bool(meg_unlocked),
     };
-    
+
     // 插入或更新IsMEGPowerOn字段
-    save.root.properties.0.insert(is_meg_power_on_key, is_meg_power_on_prop);
-    
+    save.root
+        .properties
+        .0
+        .insert(is_meg_power_on_key, is_meg_power_on_prop);
+
     // 查找IsMEGSecurityUnlocked字段
     let is_meg_security_unlocked_key = PropertyKey(0, "IsMEGSecurityUnlocked".to_string());
-    
+
     // 创建或更新IsMEGSecurityUnlocked字段
     let is_meg_security_unlocked_prop = Property {
         tag: PropertyTagPartial {
@@ -266,16 +278,23 @@ fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> Result<(), String> 
         },
         inner: PropertyInner::Bool(meg_unlocked),
     };
-    
+
     // 插入或更新IsMEGSecurityUnlocked字段
-    save.root.properties.0.insert(is_meg_security_unlocked_key, is_meg_security_unlocked_prop);
-    
+    save.root
+        .properties
+        .0
+        .insert(is_meg_security_unlocked_key, is_meg_security_unlocked_prop);
+
     if meg_unlocked {
-        println!("✅ 已设置IsMEGUnlocked、IsMEGPowerOn和IsMEGSecurityUnlocked字段为true（MEG已解锁）");
+        println!(
+            "✅ 已设置IsMEGUnlocked、IsMEGPowerOn和IsMEGSecurityUnlocked字段为true（MEG已解锁）"
+        );
     } else {
-        println!("✅ 已设置IsMEGUnlocked、IsMEGPowerOn和IsMEGSecurityUnlocked字段为false（MEG已锁定）");
+        println!(
+            "✅ 已设置IsMEGUnlocked、IsMEGPowerOn和IsMEGSecurityUnlocked字段为false（MEG已锁定）"
+        );
     }
-    
+
     Ok(())
 }
 
@@ -360,7 +379,9 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> Result<(), Str
         let inventory_prop = Property {
             tag: PropertyTagPartial {
                 id: None,
-                data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(PropertyType::NameProperty))),
+                data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(
+                    PropertyType::NameProperty,
+                ))),
             },
             inner: PropertyInner::Array(ValueArray::Base(ValueVec::Name(inventory_items))),
         };
@@ -371,7 +392,10 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> Result<(), Str
             sanity_prop,
         );
         player_struct_properties.0.insert(
-            PropertyKey(0, "Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4".to_string()),
+            PropertyKey(
+                0,
+                "Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4".to_string(),
+            ),
             inventory_prop,
         );
 
@@ -399,7 +423,10 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> Result<(), Str
         inner: PropertyInner::Map(map_entries),
     };
 
-    save.root.properties.0.insert(PropertyKey(0, "PlayerData".to_string()), player_data_prop);
+    save.root
+        .properties
+        .0
+        .insert(PropertyKey(0, "PlayerData".to_string()), player_data_prop);
     println!("✅ 已创建 PlayerData_0 Map");
 
     Ok(())
@@ -407,91 +434,6 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> Result<(), Str
 
 // 更新 MAINSAVE.sav 文件，添加新创建的存档名称到 SingleplayerSaves 列表
 fn update_mainsave_sav(_save_data: &SaveData, new_save_filename: &str) -> Result<(), String> {
-    println!("🔄 正在更新 MAINSAVE.sav 文件...");
-    
-    // 获取存档目录
-    let save_dir = get_local_appdata_dir()?.join("EscapeTheBackrooms/Saved/SaveGames");
-    let mainsave_path = save_dir.join("MAINSAVE.sav");
-    
-    if !mainsave_path.exists() {
-        println!("⚠️ MAINSAVE.sav 不存在，跳过更新");
-        return Ok(());
-    }
-    
-    // 使用 uesave 读取 MAINSAVE.sav 文件
-    let file = fs::File::open(&mainsave_path)
-        .map_err(|e| format!("打开 MAINSAVE.sav 文件失败: {}", e))?;
-    let mut reader = BufReader::new(file);
-    
-    let mut mainsave = Save::read(&mut reader)
-        .map_err(|e| format!("解析 MAINSAVE.sav 文件失败: {:?}", e))?;
-    
-    // 获取存档名称（不带 .sav 后缀）
-    let archive_name = new_save_filename.trim_end_matches(".sav");
-    println!("📄 要添加的存档名称: {}", archive_name);
-    
-    // 查找 SingleplayerSaves_0 字段
-    let singleplayer_saves_key = PropertyKey(0, "SingleplayerSaves".to_string());
-    
-    if let Some(singleplayer_saves_prop) = mainsave.root.properties.0.get_mut(&singleplayer_saves_key) {
-        // 获取现有的 Str 数组
-        if let PropertyInner::Array(ValueArray::Base(ValueVec::Str(ref mut existing_saves))) = &mut singleplayer_saves_prop.inner {
-            // 检查是否已存在相同的存档名称
-            if !existing_saves.contains(&archive_name.to_string()) {
-                // 添加新的存档名称到列表
-                existing_saves.push(archive_name.to_string());
-                println!("✅ 已添加存档名称到 SingleplayerSaves 列表: {}", archive_name);
-            } else {
-                println!("ℹ️ 存档名称已存在于 SingleplayerSaves 列表中: {}", archive_name);
-            }
-        } else {
-            return Err("SingleplayerSaves_0 字段结构不符合预期".to_string());
-        }
-    } else {
-        // 如果 SingleplayerSaves_0 字段不存在，创建它
-        let saves_list = vec![archive_name.to_string()];
-        
-        let new_singleplayer_saves = Property {
-            tag: PropertyTagPartial {
-                id: None,
-                data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(PropertyType::StrProperty))),
-            },
-            inner: PropertyInner::Array(ValueArray::Base(ValueVec::Str(saves_list))),
-        };
-        
-        mainsave.root.properties.0.insert(singleplayer_saves_key, new_singleplayer_saves);
-        println!("✅ 已创建新的 SingleplayerSaves_0 字段并添加存档名称: {}", archive_name);
-    }
-    
-    // 保存修改后的 MAINSAVE.sav 文件
-    let temp_path = save_dir.join("MAINSAVE_temp.sav");
-    let file = fs::File::create(&temp_path)
-        .map_err(|e| format!("创建临时 MAINSAVE 文件失败: {}", e))?;
-    let mut writer = BufWriter::new(file);
-    
-    mainsave.write(&mut writer)
-        .map_err(|e| format!("写入 MAINSAVE.sav 文件失败: {:?}", e))?;
-    writer.flush()
-        .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
-    
-    // 替换原始文件
-    fs::rename(&temp_path, &mainsave_path)
-        .map_err(|e| format!("替换 MAINSAVE.sav 文件失败: {}", e))?;
-    
-    println!("✅ MAINSAVE.sav 文件更新完成");
-    Ok(())
-}
-
-fn get_local_appdata_dir() -> Result<std::path::PathBuf, String> {
-    #[cfg(target_os = "windows")]
-    {
-        let local_appdata =
-            std::env::var("LOCALAPPDATA").map_err(|e| format!("获取 LOCALAPPDATA 失败: {}", e))?;
-        Ok(std::path::PathBuf::from(local_appdata))
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        Err("仅支持 Windows 系统".to_string())
-    }
+    let archive_name = extract_archive_name(new_save_filename);
+    add_save_to_mainsave(archive_name)
 }

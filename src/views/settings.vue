@@ -292,6 +292,30 @@
           </label>
         </div>
       </div>
+
+      <!-- 重置教程按钮 -->
+      <div class="setting-item" v-if="developerModeEnabled">
+        <div class="setting-icon">
+          <font-awesome-icon :icon="['fas', 'graduation-cap']" />
+        </div>
+        <div class="setting-details">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">{{ t('settings.resetTutorial') }}</div>
+          </transition>
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-description" :key="currentLanguage">{{ t('settings.resetTutorialDescription') }}
+            </div>
+          </transition>
+        </div>
+        <div class="setting-action">
+          <button class="reset-tutorial-btn" @click="handleResetTutorial">
+            <font-awesome-icon :icon="['fas', 'redo']" />
+            <transition name="text-swift" mode="out-in">
+              <span :key="currentLanguage">{{ t('settings.resetTutorialButton') }}</span>
+            </transition>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 版本信息 -->
@@ -379,7 +403,7 @@ export default {
       cacheEntryCount: 0,
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: '3.0.0-Alpha-6.3',
+      appVersion: '3.0.0-Alpha-7',
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
@@ -695,6 +719,24 @@ export default {
       window.dispatchEvent(new CustomEvent('test-archive-toggle', {
         detail: { enabled: this.testArchiveEnabled }
       }));
+    },
+
+    handleResetTutorial() {
+      // 清除快速创建教程完成标记
+      localStorage.removeItem('quick_create_tutorial_completed');
+      
+      // 显示成功提示
+      this.updateMessage = {
+        text: this.t('settings.tutorialReset'),
+        type: 'success',
+        icon: ['fas', 'check'],
+        key: `tutorial-reset-${this.messageId++}`
+      };
+
+      // 3秒后自动隐藏提示
+      setTimeout(() => {
+        this.closeUpdateMessage();
+      }, 3000);
     },
 
     async handleGpuAccelerationToggle() {
@@ -1952,5 +1994,45 @@ input:checked+.slider:before {
   background-color: var(--error-hover, #e53e3e);
   border-color: var(--error-hover, #e53e3e);
   box-shadow: 0 4px 8px rgba(255, 59, 48, 0.25);
+}
+
+/* 重置教程按钮 */
+.reset-tutorial-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-warning);
+  color: white;
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-default);
+  position: relative;
+  overflow: hidden;
+}
+
+.reset-tutorial-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.reset-tutorial-btn:hover::before {
+  left: 100%;
+}
+
+.reset-tutorial-btn:hover {
+  background-color: var(--color-warning-hover, #e58600);
+  border-color: var(--color-warning-hover, #e58600);
+  box-shadow: 0 4px 8px rgba(255, 149, 0, 0.25);
+  transform: translateY(-1px);
 }
 </style>

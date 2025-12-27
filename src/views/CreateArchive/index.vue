@@ -2,6 +2,20 @@
   <div class="create-archive-container" :class="{ 'sidebar-expanded': isSidebarExpanded }">
     <!-- 步骤指示器 -->
     <div class="step-indicator">
+      <!-- 左侧按钮区域 -->
+      <div class="step-indicator-left">
+        <!-- 返回快速模式按钮 - 只在快速模式下显示 -->
+        <button v-if="isQuickMode" class="back-to-quick-mode-btn" @click="goBackToQuickMode">
+          <font-awesome-icon :icon="['fas', 'arrow-left']" />
+          <span>{{ $t('createArchive.backToQuickMode') }}</span>
+        </button>
+        <!-- 选择创建模式按钮 - 只在非快速模式下显示 -->
+        <button v-else class="mode-select-button" @click="goToSelectMode">
+          <font-awesome-icon :icon="['fas', 'th-large']" />
+          <span>{{ $t('createMode.title') }}</span>
+        </button>
+      </div>
+      
       <div class="step" :class="{ active: currentStep >= 1, completed: currentStep > 1 }">
         <span class="step-number">{{ $t('common.step', { number: 1 }) }}</span>
         <span class="step-label">{{ $t('createArchive.steps.selectLevel') }}</span>
@@ -16,15 +30,10 @@
         <span class="step-number">{{ $t('common.step', { number: 3 }) }}</span>
         <span class="step-label">{{ $t('createArchive.steps.editInventory') }}</span>
       </div>
+      
+      <!-- 右侧占位，保持居中 -->
+      <div class="step-indicator-right"></div>
     </div>
-
-    <!-- 模式选择按钮 - 只在第一步显示 -->
-    <transition name="mode-button">
-      <button v-if="currentStep === 1" class="mode-select-button" @click="goToSelectMode">
-        <font-awesome-icon :icon="['fas', 'th-large']" />
-        <span class="button-text">{{ $t('createMode.title') }}</span>
-      </button>
-    </transition>
 
     <!-- 主要内容区域 -->
     <div class="content-wrapper" :class="{ 'no-ending-selector': currentStep !== 1 }">
@@ -70,6 +79,10 @@
           {{ $t('createArchive.creating') }}
           <font-awesome-icon :icon="['fas', 'spinner']" spin />
         </template>
+        <template v-else-if="currentStep === 3 && isQuickMode">
+          {{ $t('createArchive.finish') }}
+          <font-awesome-icon :icon="['fas', 'check']" />
+        </template>
         <template v-else>
           {{ currentStep === 3 ? $t('createArchive.createArchive') : $t('createArchive.next') }}
           <font-awesome-icon :icon="['fas', currentStep === 3 ? 'check' : 'arrow-right']" />
@@ -87,7 +100,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted, onActivated, nextTick, watch } from 'vue'
 import { gsap } from 'gsap'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import InventoryItemSelector from '@/components/InventoryItemSelector.vue'
 import { showError } from '@/services/popupService'
 import Step1SelectLevel from './Step1SelectLevel.vue'
@@ -105,6 +118,10 @@ export default {
   setup() {
     const { t } = useI18n({ useScope: 'global' })
     const router = useRouter()
+    const route = useRoute()
+    
+    // 检测是否从快速模式进入
+    const isQuickMode = computed(() => route.query.quickMode === 'true')
     const currentStep = ref(1)
     const previousStepValue = ref(1)
     const selectedLevel = ref(-1)
@@ -124,14 +141,24 @@ export default {
     const availableLevels = reactive([])
     const players = reactive([])
 
-    // 结局数据
-    const endings = reactive([
-      { id: 0, label: t('createArchive.endings.main'), icon: '🏆', levels: [] },
-      { id: 1, label: t('createArchive.endings.branch1'), icon: '🔍', levels: [] },
-      { id: 2, label: t('createArchive.endings.branch2'), icon: '🔬', levels: [] },
-      { id: 3, label: t('createArchive.endings.branch3'), icon: '🌟', levels: [] },
-      { id: 4, label: t('createArchive.endings.branch4'), icon: '🎭', levels: [] },
-      { id: 5, label: t('createArchive.endings.hidden'), icon: '🔒', levels: [] }
+    // 结局数据 - 存储 levels 数据
+    const endingLevelsData = reactive({
+      0: [],
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+      5: []
+    })
+    
+    // 结局数据 - 使用 computed 实现语言响应式
+    const endings = computed(() => [
+      { id: 0, label: t('createArchive.endings.main'), icon: '🏆', levels: endingLevelsData[0] },
+      { id: 1, label: t('createArchive.endings.branch1'), icon: '🔍', levels: endingLevelsData[1] },
+      { id: 2, label: t('createArchive.endings.branch2'), icon: '🔬', levels: endingLevelsData[2] },
+      { id: 3, label: t('createArchive.endings.branch3'), icon: '🌟', levels: endingLevelsData[3] },
+      { id: 4, label: t('createArchive.endings.branch4'), icon: '🎭', levels: endingLevelsData[4] },
+      { id: 5, label: t('createArchive.endings.hidden'), icon: '🔒', levels: endingLevelsData[5] }
     ])
 
     const gameModes = [{ value: 'multiplayer', label: 'multiplayer' }]
@@ -168,9 +195,16 @@ export default {
     }
 
     const goToSelectMode = () => { router.push('/select-create-mode') }
+    
+    const goBackToQuickMode = () => {
+      // 清除 sessionStorage 中的状态数据
+      sessionStorage.removeItem('quickModeArchiveConfig')
+      sessionStorage.removeItem('quickModeCurrentState')
+      router.push('/quick-create-archive')
+    }
 
     const loadLevels = async () => {
-      endings[0].levels = ['Level0', 'TopFloor', 'MiddleFloor', 'GarageLevel2', 'BottomFloor',
+      endingLevelsData[0] = ['Level0', 'TopFloor', 'MiddleFloor', 'GarageLevel2', 'BottomFloor',
         'TheHub', 'Pipes1', 'ElectricalStation', 'Office', 'Hotel',
         'Floor3', 'BoilerRoom', 'Pipes2', 'LevelFun', 'Poolrooms',
         'LevelRun', 'TheEnd', 'Level94', 'AnimatedKingdom',
@@ -180,16 +214,16 @@ export default {
         'WaterPark_Level02_P', 'WaterPark_Level03_P', 'LevelFun_Expanded',
         'Zone1_Modified', 'Zone2_Modified', 'Zone3_Baked', 'Zone4',
         'Level52', 'TunnelLevel']
-      endings[1].levels = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded']
-      endings[2].levels = ['Bunker', 'TheHub', 'BottomFloor', 'Level922']
-      endings[3].levels = ['Bunker', 'TheHub', 'OceanMap', 'LightsOut', 'Level974']
-      endings[4].levels = ['Bunker', 'Level3999']
-      endings[5].levels = ['Bunker', 'TheHub', 'Level188_Expanded', 'LevelCheat']
+      endingLevelsData[1] = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded']
+      endingLevelsData[2] = ['Bunker', 'TheHub', 'BottomFloor', 'Level922']
+      endingLevelsData[3] = ['Bunker', 'TheHub', 'OceanMap', 'LightsOut', 'Level974']
+      endingLevelsData[4] = ['Bunker', 'Level3999']
+      endingLevelsData[5] = ['Bunker', 'TheHub', 'Level188_Expanded', 'LevelCheat']
       loadLevelsForEnding(0)
     }
 
     const loadLevelsForEnding = async (endingIndex) => {
-      const endingLevels = endings[endingIndex].levels
+      const endingLevels = endings.value[endingIndex].levels
       const newLevels = endingLevels.map((levelKey) => ({
         name: t(`LevelName_Display.${levelKey}`),
         image: `/images/ETB/${levelKey}.jpg`,
@@ -312,8 +346,42 @@ export default {
         previousStepValue.value = currentStep.value
         currentStep.value++
       } else if (currentStep.value === 3) {
-        createArchive()
+        // 如果是快速模式，将配置数据传回快速模式页面
+        if (isQuickMode.value) {
+          finishAndReturnToQuickMode()
+        } else {
+          createArchive()
+        }
       }
+    }
+
+    /**
+     * 完成配置并返回快速模式
+     * 将当前配置的存档数据传回快速模式页面
+     */
+    const finishAndReturnToQuickMode = () => {
+      const selectedLevelData = availableLevels[selectedLevel.value]
+      
+      // 构建存档配置数据
+      const archiveConfig = {
+        name: archiveName.value.trim() || '未命名存档',
+        level: selectedLevelData?.levelKey || null,
+        difficulty: selectedDifficulty.value,
+        actualDifficulty: selectedActualDifficulty.value,
+        players: players.map(p => ({
+          steamId: p.steamId,
+          inventory: [...p.inventory],
+          username: p.username,
+          isOfflinePlayer: p.isOfflinePlayer
+        })),
+        ending: selectedEnding.value
+      }
+      
+      // 将配置数据存储到 sessionStorage，供快速模式页面读取
+      sessionStorage.setItem('quickModeArchiveConfig', JSON.stringify(archiveConfig))
+      
+      // 跳转回快速模式页面
+      router.push('/quick-create-archive')
     }
 
     const previousStep = () => {
@@ -582,10 +650,10 @@ export default {
       archiveName, selectedGameMode, selectedDifficulty, selectedActualDifficulty,
       gameModes, difficultyLevels, newSteamId, players, activePlayerIndex,
       playerInputMessage, playerInputMessageType, isSidebarExpanded, isSwitching, isCreating,
-      showItemSelector, editingSlot, canProceed, selectLevel, selectEnding, addSteamId,
+      showItemSelector, editingSlot, canProceed, isQuickMode, selectLevel, selectEnding, addSteamId,
       removePlayer, selectPlayer, editSlot, handleItemSelect, nextStep, previousStep,
-      createArchive, resetForm, goToSelectMode, onStepEnter, onStepLeave, stepDirection,
-      selectDifficulty, selectActualDifficulty, fetchSteamUsernames
+      createArchive, resetForm, goToSelectMode, goBackToQuickMode, onStepEnter, onStepLeave, stepDirection,
+      selectDifficulty, selectActualDifficulty, fetchSteamUsernames, finishAndReturnToQuickMode
     }
   }
 }
@@ -609,6 +677,76 @@ export default {
   justify-content: center;
   margin-bottom: 15px;
   gap: 16px;
+  position: relative;
+}
+
+/* 左右两侧占位区域 */
+.step-indicator-left,
+.step-indicator-right {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 180px;
+}
+
+.step-indicator-left {
+  left: 0;
+}
+
+.step-indicator-right {
+  right: 0;
+}
+
+/* 返回快速模式按钮 */
+.back-to-quick-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--divider-light);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-to-quick-mode-btn:hover {
+  background: var(--bg-hover);
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  transform: translateX(-2px);
+}
+
+.back-to-quick-mode-btn svg {
+  font-size: 12px;
+}
+
+/* 选择创建模式按钮 */
+.mode-select-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--divider-light);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-select-button:hover {
+  background: var(--bg-hover);
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  transform: translateX(-2px);
+}
+
+.mode-select-button svg {
+  font-size: 12px;
 }
 
 .step {
@@ -659,41 +797,6 @@ export default {
   height: 2px;
   background: var(--divider-color);
   border-radius: 1px;
-}
-
-.mode-select-button {
-  position: absolute;
-  top: 70px;
-  right: 24px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 12px;
-  border: none;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  z-index: 10;
-}
-
-.mode-select-button:hover {
-  background: var(--bg-tertiary);
-  transform: translateY(-2px);
-}
-
-.mode-button-enter-active,
-.mode-button-leave-active {
-  transition: all 0.3s ease;
-}
-
-.mode-button-enter-from,
-.mode-button-leave-to {
-  opacity: 0;
-  transform: translateX(20px);
 }
 
 .content-wrapper {

@@ -178,3 +178,81 @@ button:active,
   transform: scale(0.98);
   transition: transform 0.1s ease;
 }
+
+
+/* ==========================================
+ * Toast 通知样式 (Toast Notification Styles)
+ * ========================================== */
+.success-toast,
+.error-toast,
+.refresh-toast,
+.folder-toast,
+.info-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2000;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 300px;
+  max-width: 400px;
+}
+
+.success-toast {
+  background: linear-gradient(135deg, rgb(16, 185, 129), rgb(5, 150, 105));
+  color: white;
+}
+
+.error-toast {
+  background: linear-gradient(135deg, rgb(239, 68, 68), rgb(220, 38, 38));
+  color: white;
+}
+
+.refresh-toast {
+  background: linear-gradient(135deg, rgb(59, 130, 246), rgb(37, 99, 235));
+  color: white;
+}
+
+.folder-toast {
+  background: linear-gradient(135deg, rgb(139, 92, 246), rgb(124, 58, 237));
+  color: white;
+}
+
+.info-toast {
+  background: linear-gradient(135deg, rgb(59, 130, 246), rgb(37, 99, 235));
+  color: white;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.toast-text {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* 响应式 Toast */
+@media (max-width: 600px) {
+  .success-toast,
+  .error-toast,
+  .refresh-toast,
+  .folder-toast,
+  .info-toast {
+    left: 16px;
+    right: 16px;
+    top: 16px;
+    min-width: auto;
+  }
+}

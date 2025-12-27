@@ -1,6 +1,7 @@
 # 🕳️ E.T.B. Save Manager - 3.0 Development Edition
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-3.0.0--Alpha--7-green.svg)](https://github.com/Eververdants/ETBSaveManager/releases)
 
 <p align="center">
   <img src="./src-tauri/icons/128x128.png" alt="icon">
@@ -12,13 +13,13 @@
 
 This is a desktop-level save management tool specifically designed for the game "Escape The Backrooms", built using Vue.js + JavaScript + CSS for the frontend, and Vite as the build tool. Version 3.0 represents a complete upgrade, offering an entirely new user experience and enhanced functionalities.
 
-This project uses assets extracted from Escape The Backrooms, which are stored in the `icons/ETB_UI` folder within the `public`directory. The names of the resources have not been modified.
+This project uses assets extracted from Escape The Backrooms, which are stored in the `icons/ETB_UI` folder within the `public` directory. The names of the resources have not been modified.
 
-There is currently a trial version available, with the version number `V3.0.0-Alpha-6.1`.
+**Current trial version: `V3.0.0-Alpha-7`**
 
 If you encounter any bugs while using the trial version, please provide a detailed description of the issue to the developer, or take a screenshot of the error messages shown in the DevTools, and submit an issue.
 
-Due to the high development complexity and intricate logic involved, the `"Hierarchy Information Editing"` feature will be postponed to a future version. Originally, this feature was planned to be introduced in the `"Create New Archive"` and `"Edit Archive"` interfaces
+Due to the high development complexity and intricate logic involved, the `"Hierarchy Information Editing"` feature will be postponed to a future version. Originally, this feature was planned to be introduced in the `"Create New Archive"` and `"Edit Archive"` interfaces.
 
 My email: **`llzgd@outlook.com`**
 
@@ -40,12 +41,12 @@ My email: **`llzgd@outlook.com`**
 
 | Feature                                       | Status            | Progress | Description                                                                             |
 | --------------------------------------------- | ----------------- | -------- | --------------------------------------------------------------------------------------- |
-| 🎨 More modern UI interface                   | ✅ Completed | 100%      | Refactor the entire interface using modern design principles to enhance user experience |
+| 🎨 More modern UI interface                   | ✅ Completed      | 100%     | Refactor the entire interface using modern design principles to enhance user experience |
 | 🔍 Search functionality                       | ✅ Completed      | 100%     | Support quick search of archives by keywords such as name, hierarchy, etc.              |
-| 🎨 Color themes                               | ⏳ In development | 90%       | Users can customize the application's color themes                                      |
-| 🌐 Multi-language switching                   | ✅ Completed | 100%       | Provide more convenient multi-language switching support                                |
+| 🎨 Color themes                               | ⏳ In development | 90%      | Users can customize the application's color themes                                      |
+| 🌐 Multi-language switching                   | ✅ Completed      | 100%     | Support Simplified Chinese, Traditional Chinese, and English                            |
 | 💾 Archive data editing                       | ✅ Completed      | 100%     | Allow users to directly edit archive data within the tool                               |
-| ➕ Expansion of new archive creation features | ✅ Completed      | 100%     | Add more options and settings to enhance the function of creating new archives          |
+| ➕ Expansion of new archive creation features | ✅ Completed      | 100%     | Support quick create, blueprint create, batch create, and more                          |
 | 📄 Expansion content pack                     | ⏳ In development | 10%      | Selectable additional features for use                                                  |
 | 🌐 Cross-platform support                     | ✅ Basic support  | 100%     | Supports Windows/macOS/Linux                                                            |
 
@@ -56,13 +57,13 @@ My email: **`llzgd@outlook.com`**
 - **Frontend**: Vue.js + JavaScript + CSS
 - **Build Tool**: Vite
 - **Cross-Platform Framework**: Tauri + Rust
-- **Cross-Platform**: Windows 
+- **Cross-Platform**: Windows
 
 ---
 
-## 📥 Installation (V3.0.0-Alpha-6.3 Test Version)
+## 📥 Installation (V3.0.0-Alpha-7 Test Version)
 
-1. Download the Windows installer for [v3.0.0-Alpha-6.3](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-6.3).
+1. Download the Windows installer for [v3.0.0-Alpha-7](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-7).
 
 2. Double-click the installer to begin installation. (If you don't have WebView2 installed, the installer should install it automatically. If not, please click [here](https://developer.microsoft.com/microsoft-edge/webview2) to download and install WebView2.)
 
@@ -103,7 +104,7 @@ npm run tauri dev
 
 ### Multi-Language Switching
 
-- Provides support for Simplified Chinese, English, and other languages
+- Provides support for Simplified Chinese, Traditional Chinese, English, and other languages
 - Easy switching of interface language
 
 ### Save Data Editing
@@ -113,7 +114,10 @@ npm run tauri dev
 
 ### Expanded New Save Creation
 
-- Add more options
+- **Quick Create**: Simplified process for fast save generation
+- **Blueprint Create**: Create saves based on preset templates
+- **Batch Create**: Create multiple saves at once
+- **Standard Create**: Full customization options
 
 ### Expansion Content Pack
 

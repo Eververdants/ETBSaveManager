@@ -76,8 +76,22 @@ import {
   faBrain,
   faSuitcase,
   faChevronUp,
-  faChevronDown
-} from "@fortawesome/free-solid-svg-icons"
+  faChevronDown,
+  faKeyboard,
+  faPaste,
+  faFileImport,
+  faClipboardList,
+  faSlidersH,
+  faTrashAlt,
+  faCheckDouble,
+  faExchangeAlt,
+  faCopy,
+  faGraduationCap,
+  faPlayCircle,
+  faPlay,
+  faClock,
+  faUndo
+} from "@fortawesome/free-solid-svg-icons";
 
 // Brand icons
 import {
@@ -161,8 +175,22 @@ library.add(
   faBrain,
   faSuitcase,
   faChevronUp,
-  faChevronDown
-)
+  faChevronDown,
+  faKeyboard,
+  faPaste,
+  faFileImport,
+  faClipboardList,
+  faSlidersH,
+  faTrashAlt,
+  faCheckDouble,
+  faExchangeAlt,
+  faCopy,
+  faGraduationCap,
+  faPlayCircle,
+  faPlay,
+  faClock,
+  faUndo
+);
 import "./styles/theme-config.js"
 import { initGlobalFloatingButtonProtection, protectFloatingButtonPosition, safeModifyBodyStyles } from "./utils/floatingButtonProtection.js"
 import { disableInteractions } from "./utils/disableInteractions"
@@ -172,63 +200,14 @@ import zhCN from './i18n/locales/zh-CN.json'
 import enUS from './i18n/locales/en-US.json'
 import zhTW from './i18n/locales/zh-TW.json'
 
-// 初始化更新公告数据，使用Vite配置的内联数据
-const initializeReleaseNotesData = (i18nInstance) => {
-  // 使用Vite配置的内联数据
-  let releaseNotesZhCN, releaseNotesEnUS, releaseNotesZhTW;
-  
-  try {
-    // 直接使用全局常量对象，避免JSON.parse错误
-    releaseNotesZhCN = Array.isArray(__RELEASE_NOTES_ZH_CN__) ? __RELEASE_NOTES_ZH_CN__ : [];
-    releaseNotesEnUS = Array.isArray(__RELEASE_NOTES_EN_US__) ? __RELEASE_NOTES_EN_US__ : [];
-    releaseNotesZhTW = Array.isArray(__RELEASE_NOTES_ZH_TW__) ? __RELEASE_NOTES_ZH_TW__ : [];
-    
-    console.log('[main.js] 从全局常量获取更新公告数据:', {
-      'zh-CN长度': releaseNotesZhCN.length,
-      'en-US长度': releaseNotesEnUS.length,
-      'zh-TW长度': releaseNotesZhTW.length,
-      '示例数据': releaseNotesZhCN[0] || '无数据'
-    });
-  } catch (error) {
-    console.error('[main.js] 处理更新公告数据失败:', error);
-    releaseNotesZhCN = [];
-    releaseNotesEnUS = [];
-    releaseNotesZhTW = [];
+// 初始化更新公告数据（简化版，数据由 useReleaseNotes composable 按需加载）
+const initializeReleaseNotesData = () => {
+  // 验证全局常量是否可用
+  const hasData = typeof __RELEASE_NOTES_ZH_CN__ !== 'undefined'
+  if (!hasData) {
+    console.warn('[main.js] 公告数据全局常量未定义')
   }
-  
-  console.log('[main.js] 正在初始化更新公告数据...');
-  console.log('[main.js] 中文版本数量:', releaseNotesZhCN.length);
-  console.log('[main.js] 英文版本数量:', releaseNotesEnUS.length);
-  console.log('[main.js] 繁体版本数量:', releaseNotesZhTW.length);
-  
-  // 验证数据结构
-  if (releaseNotesZhCN.length > 0) {
-    console.log('[main.js] 最新中文版本:', releaseNotesZhCN[0].version);
-    console.log('[main.js] 最新版本标题:', releaseNotesZhCN[0].title);
-  }
-  
-  // 将数据直接挂载到i18n实例，确保数据被保留
-  if (i18nInstance && !i18nInstance.global.releaseNotes) {
-    i18nInstance.global.releaseNotes = {};
-  }
-  if (i18nInstance) {
-    i18nInstance.global.releaseNotes['zh-CN'] = releaseNotesZhCN;
-    i18nInstance.global.releaseNotes['en-US'] = releaseNotesEnUS;
-    i18nInstance.global.releaseNotes['zh-TW'] = releaseNotesZhTW;
-  }
-  
-  // 强制保留数据的引用，防止Tree Shaking
-  window.__RELEASE_NOTES_ZH_CN__ = releaseNotesZhCN;
-  window.__RELEASE_NOTES_EN_US__ = releaseNotesEnUS;
-  window.__RELEASE_NOTES_ZH_TW__ = releaseNotesZhTW;
-  
-  // 访问数据以确保不被优化
-  console.log('[main.js] 数据验证:', {
-    zh: releaseNotesZhCN[0]?.version,
-    en: releaseNotesEnUS[0]?.version,
-    tw: releaseNotesZhTW[0]?.version
-  });
-};
+}
 
 const app = createApp(App)
 
@@ -262,8 +241,8 @@ app.use(router)
 app.use(i18n)
 app.component("font-awesome-icon", FontAwesomeIcon)
 
-// 初始化更新公告数据，确保数据被正确打包
-initializeReleaseNotesData(i18n)
+// 初始化更新公告数据
+initializeReleaseNotesData()
 
 // 将i18n实例暴露到全局window对象
 window.$i18n = i18n.global
@@ -271,18 +250,6 @@ window.$i18n = i18n.global
 // 打印一下看看
 const currentLocale = i18n.global.locale.value || i18n.global.locale
 console.log("[i18n] current", currentLocale)
-
-// 输出更新公告数据到控制台以便调试
-console.log('[main.js] i18n 全局属性:', Object.keys(i18n.global))
-console.log('[main.js] 更新公告数据:', {
-  'zh-CN长度': i18n.global.releaseNotes?.['zh-CN']?.length || 0,
-  'en-US长度': i18n.global.releaseNotes?.['en-US']?.length || 0,
-  'zh-TW长度': i18n.global.releaseNotes?.['zh-TW']?.length || 0,
-  '示例数据': {
-    'zh-CN': i18n.global.releaseNotes?.['zh-CN']?.[0] || null,
-    'en-US': i18n.global.releaseNotes?.['en-US']?.[0] || null
-  }
-})
 
 // 禁用所有快捷键、文字选中和图片拖拽
 disableInteractions()

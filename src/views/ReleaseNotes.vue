@@ -7,7 +7,7 @@
           {{ $t('back') }}
         </button>
         <h1 class="page-title">{{ $t('releaseNotes') }}</h1>
-        <div class="version-count">{{ releaseNotes.length }} {{ $t('versions') }}</div>
+        <div class="version-count">{{ totalCount }} {{ $t('versions') }}</div>
       </div>
     </header>
 
@@ -59,7 +59,7 @@
           </div>
         </div>
 
-        <div v-if="releaseNotes.length === 0" class="no-notes">
+        <div v-if="totalCount === 0" class="no-notes">
           <font-awesome-icon :icon="['fas', 'info-circle']" size="3x" />
           <p>{{ $t('noReleaseNotes') }}</p>
         </div>
@@ -69,125 +69,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { watch } from 'vue';
+import { useReleaseNotes } from '@/composables';
 
 const router = useRouter();
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
-// 翻译文本的computed
-const $t = (key) => {
-  return t(key);
-};
+// 使用公告数据 composable
+const { releaseNotes, totalCount, formatDate } = useReleaseNotes();
 
-const releaseNotes = ref([]);
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString(locale.value || 'en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-};
-
-// 监听语言变化，重新加载发布说明
-const reloadReleaseNotes = () => {
-  loadReleaseNotes();
-};
-
-// 使用Vue的watch来监听locale变化
-watch(locale, (newLocale, oldLocale) => {
-  if (newLocale !== oldLocale) {
-    reloadReleaseNotes();
-  }
-});
+const $t = (key) => t(key);
 
 const goBack = () => {
   router.go(-1);
 };
-
-// 加载更新公告数据
-const loadReleaseNotes = async () => {
-  try {
-    console.log('🔄 [ReleaseNotes.vue] 开始加载更新公告数据...', {
-      '当前语言': locale.value,
-      '全局常量可用性': typeof __RELEASE_NOTES_ZH_CN__ !== 'undefined'
-    })
-
-    // 从全局常量获取数据，而不是导入的JSON文件
-    let allReleaseNotes = [];
-
-    if (typeof __RELEASE_NOTES_ZH_CN__ !== 'undefined') {
-      // 直接使用全局常量对象，避免JSON.parse错误
-      const zhData = Array.isArray(__RELEASE_NOTES_ZH_CN__) ? __RELEASE_NOTES_ZH_CN__ : [];
-      const enData = Array.isArray(__RELEASE_NOTES_EN_US__) ? __RELEASE_NOTES_EN_US__ : [];
-      const twData = Array.isArray(__RELEASE_NOTES_ZH_TW__) ? __RELEASE_NOTES_ZH_TW__ : [];
-
-      // 根据当前语言选择对应的数据
-      switch (locale.value) {
-        case 'zh-CN':
-          allReleaseNotes = zhData || [];
-          break;
-        case 'zh-TW':
-          allReleaseNotes = twData || [];
-          break;
-        case 'en-US':
-        default:
-          allReleaseNotes = enData || [];
-          break;
-      }
-    } else {
-      console.warn('[ReleaseNotes.vue] 全局常量未定义，使用备用方案');
-      // 备用方案：尝试从静态导入获取数据（如果tree-shaking允许）
-      try {
-        import('../i18n/locales/release-notes.zh-CN.json').then(module => {
-          const fallbackData = locale.value === 'zh-CN' ? module.default : [];
-          releaseNotes.value = fallbackData;
-          console.log('📋 [ReleaseNotes.vue] 使用备用数据源:', fallbackData.length);
-        });
-        return;
-      } catch (error) {
-        console.error('[ReleaseNotes.vue] 备用方案失败:', error);
-        allReleaseNotes = [];
-      }
-    }
-
-    // 设置响应式数据
-    releaseNotes.value = allReleaseNotes;
-
-    console.log('📋 [ReleaseNotes.vue] 从全局常量获取的数据:', {
-      '长度': allReleaseNotes.length,
-      '第一个版本': allReleaseNotes[0]?.version,
-      '当前语言': locale.value,
-      '数据源': 'Vite全局常量'
-    });
-
-    console.log('✅ [ReleaseNotes.vue] 更新公告数据加载成功', {
-      '语言': locale.value,
-      '数量': releaseNotes.value.length,
-      '最新版本': releaseNotes.value[0]?.version,
-      '版本列表': releaseNotes.value.slice(0, 3).map(note => note.version),
-      '公告类型': [...new Set(releaseNotes.value.map(note => note.type))]
-    })
-  } catch (error) {
-    console.error('❌ [ReleaseNotes.vue] 加载更新公告数据失败:', error)
-    console.error('🔍 [ReleaseNotes.vue] 错误详情:', {
-      '错误信息': error.message,
-      '错误堆栈': error.stack,
-      '当前状态': {
-        'locale': locale.value
-      }
-    })
-    releaseNotes.value = []
-  }
-}
-
-onMounted(() => {
-  loadReleaseNotes();
-});
 </script>
 
 <style scoped>

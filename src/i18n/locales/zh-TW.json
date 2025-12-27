@@ -190,6 +190,10 @@
     "enableLogMenuDescription": "顯示日誌選單和日誌記錄功能",
     "testArchiveDisplay": "測試存檔顯示",
     "testArchiveDisplayDescription": "在側邊欄中顯示測試存檔按鈕",
+    "resetTutorial": "重置教學",
+    "resetTutorialDescription": "重置快速建立存檔的新手引導教學，下次訪問時將重新顯示",
+    "resetTutorialButton": "重置",
+    "tutorialReset": "教學已重置，下次訪問快速建立頁面時將顯示引導",
     "steamApi": {
       "title": "Steam API",
       "apiKey": "API 金鑰",
@@ -476,6 +480,8 @@
     "next": "下一步",
     "previous": "上一步",
     "createArchive": "建立存檔",
+    "finish": "完成",
+    "backToQuickMode": "返回快速模式",
     "selectLevelTitle": "選擇遊戲層級",
     "archiveName": "存檔名稱",
     "archiveNamePlaceholder": "請輸入存檔名稱",
@@ -645,6 +651,8 @@
     "title": "批量建立存檔",
     "subtitle": "一次性建立多個遊戲存檔",
     "baseConfig": "基礎配置",
+    "selectLevel": "選擇層級",
+    "selected": "已選擇",
     "levelConfig": "層級配置",
     "difficultyConfig": "難度配置",
     "playerConfig": "玩家配置",
@@ -730,8 +738,154 @@
   "quickCreate": {
     "title": "快速建立",
     "subtitle": "快速批量建立多個遊戲存檔",
-    "comingSoon": "功能開發中",
-    "comingSoonDesc": "快速建立模式正在開發中，敬請期待"
+    "switchMode": "切換模式",
+    "inputArea": {
+      "title": "智慧輸入",
+      "pasteNames": "貼上名稱",
+      "importFile": "匯入檔案",
+      "manualAdd": "手動新增",
+      "emptyHint": "貼上存檔名稱清單，或點擊上方按鈕新增",
+      "supportedFormats": "支援 .txt / .csv / .json 檔案，或 Ctrl+V 貼上",
+      "sequenceHint": "支援序號展開：存檔_{'{'} 1-10 {'}'} → 產生10個存檔",
+      "importFailed": "匯入失敗",
+      "recognized": "已識別 {count} 個名稱",
+      "clear": "清空"
+    },
+    "configArea": {
+      "title": "統一配置",
+      "level": "關卡路線",
+      "difficulty": "存檔難度",
+      "actualDifficulty": "實際難度",
+      "inventory": "物品欄範本",
+      "noUnify": "不統一設定",
+      "setAllTo": "全部設為",
+      "useTemplate": "使用範本",
+      "smartRules": "智慧規則",
+      "autoAssignLevel": "根據名稱自動分配關卡",
+      "autoDetectDifficulty": "根據名稱自動識別難度",
+      "autoRenameDuplicates": "自動重新命名重複項"
+    },
+    "cardFlow": {
+      "title": "存檔預覽",
+      "selectAll": "全選",
+      "invertSelection": "反選",
+      "selected": "已選擇 {count}/{total}",
+      "emptyHint": "新增名稱後，存檔卡片將顯示在此處",
+      "batchEdit": "批量編輯",
+      "gridView": "網格檢視",
+      "listView": "清單檢視",
+      "virtualScrollHint": "已啟用虛擬捲動以優化效能"
+    },
+    "card": {
+      "level": "關卡",
+      "difficulty": "難度",
+      "actualDifficulty": "實際難度",
+      "inventory": "物品欄",
+      "inherit": "繼承",
+      "notSet": "未設定",
+      "emptyInventory": "空",
+      "customInventory": "自訂",
+      "missingParams": "缺少必要參數",
+      "modified": "已單獨修改",
+      "copy": "複製",
+      "remove": "移除"
+    },
+    "preview": {
+      "total": "總計",
+      "uniform": "統一配置",
+      "individual": "單獨設定",
+      "missing": "缺少參數",
+      "create": "建立所選項（{count}）",
+      "creating": "建立中...",
+      "estimatedTime": "預計耗時：{time}",
+      "saveTemplate": "儲存為範本",
+      "noArchives": "請先新增存檔",
+      "hasMissingParams": "有 {count} 個存檔缺少必要參數"
+    },
+    "result": {
+      "success": "成功建立 {count} 個存檔",
+      "partialSuccess": "成功建立 {success} 個存檔，{failed} 個失敗",
+      "failed": "建立失敗",
+      "error": "建立過程中發生錯誤",
+      "successTitle": "建立完成",
+      "partialTitle": "部分建立成功",
+      "successCount": "成功",
+      "failedCount": "失敗",
+      "errorDetails": "錯誤詳情",
+      "continueEditing": "繼續編輯",
+      "viewArchives": "查看存檔",
+      "editArchive": "編輯此存檔"
+    },
+    "draft": {
+      "title": "發現未儲存的草稿",
+      "message": "偵測到上次編輯的 {count} 個存檔草稿，是否恢復？",
+      "savedAt": "儲存時間",
+      "recover": "恢復草稿",
+      "ignore": "忽略",
+      "recovered": "草稿已恢復",
+      "justNow": "剛剛",
+      "minutesAgo": "{count} 分鐘前",
+      "hoursAgo": "{count} 小時前"
+    },
+    "largeData": {
+      "title": "大量資料提示",
+      "largeMessage": "您已新增 {count} 個存檔，超過了建議的 {threshold} 個。大量存檔可能會影響介面回應速度。",
+      "veryLargeMessage": "您已新增 {count} 個名稱，超過了建議的 {threshold} 個。建議分批處理以獲得更好的體驗。",
+      "tip1": "建議分批建立，每批不超過 100 個存檔",
+      "tip2": "建立過程中請勿關閉頁面，以免遺失進度",
+      "understand": "我知道了"
+    },
+    "batchEdit": {
+      "title": "批量編輯",
+      "keepOriginal": "保留原值",
+      "selectToChange": "選擇要更改的項",
+      "apply": "套用",
+      "selectedCount": "已選擇 {count} 個存檔",
+      "hint": "選擇「保留原值」以保持欄位不變，或選擇一個值將其套用於所有選中的存檔"
+    },
+    "editModal": {
+      "title": "編輯存檔",
+      "archiveName": "存檔名稱",
+      "archiveNamePlaceholder": "請輸入存檔名稱",
+      "level": "關卡",
+      "difficulty": "存檔難度",
+      "actualDifficulty": "實際難度",
+      "inventory": "物品欄範本",
+      "inheritFromUniform": "繼承統一配置"
+    },
+    "template": {
+      "saveTitle": "儲存範本",
+      "noArchives": "沒有可儲存的存檔",
+      "saved": "範本儲存成功",
+      "saveFailed": "儲存範本失敗",
+      "loadTitle": "載入範本",
+      "loaded": "範本載入成功",
+      "loadFailed": "載入範本失敗",
+      "invalidFormat": "無效的範本格式"
+    },
+    "tutorial": {
+      "skip": "跳過",
+      "prev": "上一步",
+      "next": "下一步",
+      "start": "開始體驗",
+      "watchVideo": "查看影片教學",
+      "step1": {
+        "title": "智慧輸入區",
+        "description": "在這裡貼上存檔名稱列表，或從檔案匯入。系統會自動識別名稱中的序號和關鍵字，並高亮顯示。"
+      },
+      "step2": {
+        "title": "統一配置區",
+        "description": "設定統一的關卡、難度和背包範本。啟用智慧規則可以根據名稱自動分配配置。"
+      },
+      "step3": {
+        "title": "存檔預覽區",
+        "description": "預覽所有存檔卡片，可以單獨編輯、複製或刪除。支援批量選擇和批量編輯。"
+      },
+      "step4": {
+        "title": "建立操作區",
+        "description": "查看統計摘要，確認無誤後點擊建立按鈕批量產生存檔。"
+      }
+    }
   },
   "blueprintCreate": {
     "title": "藍圖建立",

@@ -1,5 +1,23 @@
 [
   {
+    "version": "3.0.0-Alpha-7",
+    "date": "2025-12-28",
+    "title": "Quick Mode Ready and Performance Boost",
+    "type": "feature",
+    "categories": {
+      "newFeatures": [
+        "Fully implemented create-save 'Quick Mode' page and functionality"
+      ],
+      "improvements": [
+        "Optimized save-list performance"
+      ],
+      "bugFixes": [
+        "Fixed several localization issues"
+      ],
+      "performance": []
+    }
+  },
+  {
     "version": "3.0.0-Alpha-6.3",
     "date": "2025-12-14",
     "title": "Cache Viewer Polish and Sanity Editing Returns",

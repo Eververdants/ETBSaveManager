@@ -224,3 +224,36 @@
   --plugin-installed-text-hover: var(--color-info);
   --plugin-installed-bg-hover: var(--color-green-bootstrap);
 }
+
+/* ==========================================
+ * 自定义复选框/单选框 (Custom Checkbox/Radio)
+ * ========================================== */
+:root {
+  /* 复选框/单选框尺寸 */
+  --checkbox-size: 16px;
+  --radio-size: 16px;
+  
+  /* 未选中状态 */
+  --checkbox-bg: var(--bg-tertiary);
+  --checkbox-border: var(--divider-medium);
+  --checkbox-border-hover: var(--accent-color);
+  
+  /* 选中状态 */
+  --checkbox-checked-bg: var(--accent-color);
+  --checkbox-checked-border: var(--accent-color);
+  --checkbox-checkmark-color: var(--color-white);
+  
+  /* 焦点状态 */
+  --checkbox-focus-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
+  
+  /* 禁用状态 */
+  --checkbox-disabled-bg: var(--bg-disabled);
+  --checkbox-disabled-border: var(--divider-light);
+  --checkbox-disabled-checkmark: var(--text-disabled);
+}
+
+[data-theme="dark"] {
+  --checkbox-bg: var(--bg-tertiary);
+  --checkbox-border: rgba(255, 255, 255, 0.15);
+  --checkbox-border-hover: var(--accent-color);
+}

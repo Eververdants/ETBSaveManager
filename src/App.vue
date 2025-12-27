@@ -11,13 +11,6 @@ import {
   safeModifyBodyStyles,
 } from "./utils/floatingButtonProtection.js";
 
-// 示例调用 - 发行版禁用弹窗功能
-// showPopup({
-//   message: '这是一个提示！',
-//   direction: 'top-right', // 支持八个方向
-//   icon: ['fas', 'heart'],
-//   duration: 5000, // 5秒后自动关闭，0 为不自动关闭
-// });
 
 const i18n = getI18n();
 const router = useRouter();
@@ -71,7 +64,7 @@ onMounted(() => {
   } else {
     document.documentElement.setAttribute("data-theme", savedTheme);
   }
-  
+
   // 强制更新body背景色，确保主题立即生效
   const updateBodyBackground = (theme) => {
     const body = document.body;
@@ -83,7 +76,7 @@ onMounted(() => {
         body.style.backgroundColor = '#f8f9fa';
         body.style.setProperty('--bg', '#f8f9fa');
       }
-      
+
       // 延迟清除内联样式，让CSS变量接管
       setTimeout(() => {
         body.style.backgroundColor = '';
@@ -91,7 +84,7 @@ onMounted(() => {
       }, 100);
     }
   };
-  
+
   updateBodyBackground(savedTheme);
 
   // 延迟执行硬件加速强制，确保DOM完全加载
@@ -160,20 +153,14 @@ onMounted(() => {
     <TitleBar />
     <div class="content-wrapper">
       <Sidebar @sidebar-expand="handleSidebarExpand" />
-      <main
-        class="main-content"
-        :class="{
-          'sidebar-collapsed': !sidebarExpanded,
-          'sidebar-expanded': sidebarExpanded,
-        }"
-      >
+      <main class="main-content" :class="{
+        'sidebar-collapsed': !sidebarExpanded,
+        'sidebar-expanded': sidebarExpanded,
+      }">
         <router-view v-slot="{ Component, route }">
           <transition name="page-fade" mode="out-in">
             <!-- 使用keep-alive缓存常用组件 -->
-            <keep-alive
-              :include="cachedComponents"
-              :exclude="excludedComponents"
-            >
+            <keep-alive :include="cachedComponents" :exclude="excludedComponents">
               <component :is="Component" :key="route.fullPath" />
             </keep-alive>
           </transition>
@@ -192,8 +179,10 @@ onMounted(() => {
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: opacity, transform;
-  transform: translateZ(0); /* 强制硬件加速 */
-  backface-visibility: hidden; /* 防止图层闪烁 */
+  transform: translateZ(0);
+  /* 强制硬件加速 */
+  backface-visibility: hidden;
+  /* 防止图层闪烁 */
 }
 
 .modal-enter-from {

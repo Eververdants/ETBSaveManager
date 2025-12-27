@@ -291,7 +291,8 @@ onBeforeUnmount(() => {
 /* 组件根容器 */
 .archive-card {
   position: relative;
-  width: 320px;
+  width: 100%;
+  min-width: 320px;
   height: 160px;
   border-radius: var(--radius-card);
   overflow: hidden;
@@ -363,11 +364,8 @@ onBeforeUnmount(() => {
 /* 卡片删除动画期间的尺寸固定 */
 .archive-card.v-leave-active {
   position: absolute;
-  width: 320px !important;
   height: 160px !important;
-  min-width: 320px !important;
   min-height: 160px !important;
-  max-width: 320px !important;
   max-height: 160px !important;
   box-sizing: border-box !important;
   transform: translateZ(0);

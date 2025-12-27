@@ -27,6 +27,7 @@
     "fs:allow-read-dir",
     "fs:allow-exists",
     "fs:allow-resource-read-recursive",
-    "core:path:default"
+    "core:path:default",
+    "fs:allow-app-write"
   ]
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="custom-dropdown" ref="dropdownRef">
+  <div class="custom-dropdown" :class="{ disabled: disabled }" ref="dropdownRef">
     <div class="dropdown-display" @click="toggleDropdown">
       <transition name="text-swift" mode="out-in">
         <span :key="(selectedLabel || placeholder) + '-' + $i18n.locale" class="dropdown-text">{{ selectedLabel ||
@@ -29,7 +29,7 @@ import { gsap } from 'gsap';
 
 const props = defineProps({
   modelValue: {
-    type: [String, Number, Boolean],
+    type: [String, Number, Boolean, null],
     default: null
   },
   options: {
@@ -39,6 +39,10 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: '请选择'
+  },
+  disabled: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -56,7 +60,7 @@ const selectedLabel = computed(() => {
 });
 
 const toggleDropdown = () => {
-  if (isAnimating.value) return;
+  if (isAnimating.value || props.disabled) return;
   isOpen.value = !isOpen.value;
 };
 
@@ -213,6 +217,11 @@ onUnmounted(() => {
 .custom-dropdown {
   position: relative;
   width: 100%;
+}
+
+.custom-dropdown.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .dropdown-display {

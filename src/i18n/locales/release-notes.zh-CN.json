@@ -1,5 +1,23 @@
 [
   {
+    "version": "3.0.0-Alpha-7",
+    "date": "2025-12-28",
+    "title": "快速模式实装与性能优化",
+    "type": "feature",
+    "categories": {
+      "newFeatures": [
+        "创建存档「快速模式」页面与功能完整实现"
+      ],
+      "improvements": [
+        "优化存档列表性能"
+      ],
+      "bugFixes": [
+        "修复部分语言本地化问题"
+      ],
+      "performance": []
+    }
+  },
+  {
     "version": "3.0.0-Alpha-6.3",
     "date": "2025-12-14",
     "title": "缓存查看器优化与理智值编辑回归",

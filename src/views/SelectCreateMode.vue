@@ -17,7 +17,7 @@
             <!-- 经典模式 -->
             <div class="mode-card" :class="{ selected: selectedMode === 'classic' }" @click="goToMode('classic')">
               <div class="mode-card-image">
-                <img src="/images/CA_Single.jpg" alt="Classic Mode" />
+                <LazyImage :src="classicModeImage" alt="Classic Mode" :image-class="'mode-card-img'" />
                 <div class="mode-card-overlay">
                   <font-awesome-icon v-if="selectedMode === 'classic'" :icon="['fas', 'check-circle']"
                     class="check-icon" />
@@ -38,7 +38,7 @@
             <!-- 快速模式 -->
             <div class="mode-card" :class="{ selected: selectedMode === 'quick' }" @click="goToMode('quick')">
               <div class="mode-card-image">
-                <img src="/images/CA_Single.jpg" alt="Quick Mode" />
+                <LazyImage :src="quickModeImage" alt="Quick Mode" :image-class="'mode-card-img'" />
                 <div class="mode-card-overlay">
                   <font-awesome-icon v-if="selectedMode === 'quick'" :icon="['fas', 'check-circle']"
                     class="check-icon" />
@@ -53,7 +53,7 @@
             <!-- 蓝图模式 -->
             <div class="mode-card" :class="{ selected: selectedMode === 'blueprint' }" @click="goToMode('blueprint')">
               <div class="mode-card-image">
-                <img src="/images/CA_Single.jpg" alt="Blueprint Mode" />
+                <LazyImage :src="quickModeImage" alt="Blueprint Mode" :image-class="'mode-card-img'" />
                 <div class="mode-card-overlay">
                   <font-awesome-icon v-if="selectedMode === 'blueprint'" :icon="['fas', 'check-circle']"
                     class="check-icon" />
@@ -82,17 +82,65 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import LazyImage from '@/components/LazyImage.vue'
 
 export default {
   name: 'SelectCreateMode',
+  components: {
+    LazyImage
+  },
   setup() {
     const router = useRouter()
     const { t } = useI18n({ useScope: 'global' })
     const selectedMode = ref(null)
     const isPressing = ref(false)
+    const currentTheme = ref('dark')
+
+    // 获取当前主题
+    const updateTheme = () => {
+      const theme = document.documentElement.getAttribute('data-theme') || 'dark'
+      currentTheme.value = theme
+    }
+
+    // 根据主题计算图片路径
+    const classicModeImage = computed(() => {
+      return currentTheme.value === 'light' 
+        ? '/images/CAL_JD.jpg' 
+        : '/images/CAD_JD.jpg'
+    })
+
+    const quickModeImage = computed(() => {
+      return currentTheme.value === 'light' 
+        ? '/images/CAL_KS.jpg' 
+        : '/images/CAD_KS.jpg'
+    })
+
+    // 监听主题变化
+    let themeObserver = null
+
+    onMounted(() => {
+      updateTheme()
+      themeObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.attributeName === 'data-theme') {
+            updateTheme()
+          }
+        })
+      })
+      themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme']
+      })
+    })
+
+    onUnmounted(() => {
+      if (themeObserver) {
+        themeObserver.disconnect()
+      }
+    })
 
     const goBack = () => {
       router.back()
@@ -121,6 +169,9 @@ export default {
     return {
       selectedMode,
       isPressing,
+      currentTheme,
+      classicModeImage,
+      quickModeImage,
       goBack,
       goToMode,
       handleMouseDown,
@@ -139,8 +190,6 @@ export default {
   overflow: hidden;
   position: relative;
 }
-
-
 
 .mode-page-content {
   flex: 1;
@@ -242,14 +291,14 @@ export default {
   overflow: hidden;
 }
 
-.mode-card-image img {
+.mode-card-image .lazy-image-container img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
 
-.mode-card:hover .mode-card-image img {
+.mode-card:hover .mode-card-image .lazy-image-container img {
   transform: scale(1.05);
 }
 

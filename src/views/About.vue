@@ -45,7 +45,7 @@
             <span>{{ latestRelease.categories.newFeatures[0] }}</span>
           </div>
           <button class="view-all-btn" @click="goToReleaseNotes">
-            {{ $t('viewAllVersions', { count: releaseNotes.length }) }}
+            {{ $t('viewAllVersions', { count: totalCount }) }}
           </button>
         </div>
         <div v-else class="no-release-notes">
@@ -93,28 +93,25 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { computed, ref, onMounted, nextTick } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useReleaseNotes } from '@/composables';
 
 const { t, locale } = useI18n({ useScope: 'global' });
 const router = useRouter();
-const version = "3.0.0-Alpha-6.3"; // TODO: 从 package.json 动态获取
+const version = "3.0.0-Alpha-7"; // TODO: 从 package.json 动态获取
+
+// 使用公告数据 composable
+const { releaseNotes, latestRelease, totalCount, formatShortDate } = useReleaseNotes();
 
 const showChineseSocial = computed(() => ['zh-CN', 'zh-TW'].includes(locale.value));
 const showEasterEgg = ref(false);
 const iconLoaded = ref(false);
 const easterEggImageLoaded = ref(false);
 
-// 更新公告相关数据
-const releaseNotes = ref([]);
-const latestRelease = computed(() => {
-  return releaseNotes.value.length > 0 ? releaseNotes.value[0] : null;
-});
-
 // 翻译文本的computed
 const $t = (key, values) => {
   const text = t(key);
-  // 简单的模板替换
   if (values && typeof values === 'object') {
     return text.replace(/\{(\w+)\}/g, (match, param) => {
       return values[param] || match;
@@ -130,101 +127,18 @@ const handleImageLoad = () => {
   iconLoaded.value = true;
 };
 
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString(locale.value || 'en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
-};
+// 使用 composable 提供的日期格式化
+const formatDate = (dateString) => formatShortDate(dateString);
 
 const goToReleaseNotes = () => {
   router.push({ name: 'ReleaseNotes' });
 };
 
-const loadReleaseNotes = async () => {
-  try {
-    console.log('🔄 [About.vue] 开始加载更新公告数据...', {
-      '当前语言': locale.value,
-      '全局常量可用性检查': {
-        'zh-CN': typeof __RELEASE_NOTES_ZH_CN__ !== 'undefined',
-        'en-US': typeof __RELEASE_NOTES_EN_US__ !== 'undefined',
-        'zh-TW': typeof __RELEASE_NOTES_ZH_TW__ !== 'undefined'
-      }
-    })
-
-    // 从 Vite 全局常量中获取更新公告数据
-    let releaseNotesData = []
-    const currentLocale = locale.value
-
-    // 根据当前语言选择对应的全局常量
-    const releaseNotesMap = {
-      'zh-CN': __RELEASE_NOTES_ZH_CN__,
-      'en-US': __RELEASE_NOTES_EN_US__,
-      'zh-TW': __RELEASE_NOTES_ZH_TW__
-    }
-
-    if (releaseNotesMap[currentLocale]) {
-      try {
-        // 直接使用 JavaScript 对象，不需要 JSON.parse
-        const data = releaseNotesMap[currentLocale]
-        releaseNotesData = Array.isArray(data) ? data : []
-        console.log('✅ [About.vue] 从 Vite 全局常量成功获取数据:', {
-          '语言': currentLocale,
-          '数据长度': releaseNotesData.length,
-          '数据类型': typeof data,
-          '第一个版本信息': releaseNotesData[0] || '无数据'
-        })
-      } catch (parseError) {
-        console.error('❌ [About.vue] 处理全局常量数据失败:', parseError)
-        releaseNotesData = []
-      }
-    } else {
-      console.warn('⚠️ [About.vue] 未找到对应语言的全局常量，使用空数组')
-      console.warn('🔍 [About.vue] 详细检查:', {
-        '当前语言': currentLocale,
-        '可用常量': Object.keys(releaseNotesMap).filter(key => typeof releaseNotesMap[key] !== 'undefined'),
-        '常量类型检查': {
-          'zh-CN': typeof __RELEASE_NOTES_ZH_CN__,
-          'en-US': typeof __RELEASE_NOTES_EN_US__,
-          'zh-TW': typeof __RELEASE_NOTES_ZH_TW__
-        }
-      })
-    }
-
-    if (releaseNotesData.length > 0) {
-      console.log('✅ [About.vue] 更新公告数据加载成功:', {
-        '语言': currentLocale,
-        '数量': releaseNotesData.length,
-        '最新版本': releaseNotesData[0]?.version,
-        '版本列表': releaseNotesData.slice(0, 3).map(note => note.version)
-      })
-    } else {
-      console.warn('⚠️ [About.vue] 使用空数组 - 无可用数据')
-    }
-
-    releaseNotes.value = releaseNotesData
-  } catch (error) {
-    console.error('❌ [About.vue] 加载更新公告数据失败:', error)
-    console.error('🔍 [About.vue] 错误详情:', {
-      '错误信息': error.message,
-      '错误堆栈': error.stack,
-      '当前语言': locale.value
-    })
-    releaseNotes.value = []
-  }
-};
-
 onMounted(() => {
-  // 确保图片已经缓存，直接触发加载完成状态
   const img = new Image();
   img.onload = handleImageLoad;
-  img.onerror = handleImageLoad; // 即使加载失败也显示图标
+  img.onerror = handleImageLoad;
   img.src = '/app-icon.png';
-
-  // 加载更新公告数据
-  loadReleaseNotes();
 });
 
 const handleEasterEgg = () => {

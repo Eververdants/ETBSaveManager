@@ -142,27 +142,32 @@ fn open_save_games_folder() -> Result<(), String> {
 
     let save_games_path = get_save_games_dir()?;
 
+    println!("尝试打开存档文件夹: {}", save_games_path.display());
+
     if !save_games_path.exists() {
         return Err(format!("存档目录不存在: {}", save_games_path.display()));
     }
 
-    let path_str = save_games_path.to_str().ok_or("无效路径")?;
-
     #[cfg(target_os = "windows")]
-    Command::new("explorer")
-        .arg(path_str)
-        .spawn()
-        .map_err(|e| format!("无法打开文件夹: {}", e))?;
+    {
+        // 使用 explorer /e,<path> 格式确保以资源管理器模式打开指定文件夹
+        let path_str = save_games_path.to_str().ok_or("路径包含无效字符")?;
+
+        Command::new("explorer")
+            .args(["/e,", path_str])
+            .spawn()
+            .map_err(|e| format!("无法打开文件夹: {}", e))?;
+    }
 
     #[cfg(target_os = "macos")]
     Command::new("open")
-        .arg(path_str)
+        .arg(&save_games_path)
         .spawn()
         .map_err(|e| format!("无法打开文件夹: {}", e))?;
 
     #[cfg(target_os = "linux")]
     Command::new("xdg-open")
-        .arg(path_str)
+        .arg(&save_games_path)
         .spawn()
         .map_err(|e| format!("无法打开文件夹: {}", e))?;
 
@@ -405,6 +410,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             load_all_saves,
             delete_file,

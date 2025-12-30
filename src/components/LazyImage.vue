@@ -1,92 +1,101 @@
 <template>
-  <div class="lazy-image-container" :class="{ 'loaded': imageLoaded }">
+  <div class="lazy-image-container" :class="{ loaded: imageLoaded }">
     <!-- 加载占位符 -->
     <div v-if="!imageLoaded" class="image-placeholder">
       <div class="placeholder-spinner"></div>
     </div>
 
     <!-- 实际图片 -->
-    <img :src="src" :alt="alt" :class="imageClass" :style="imageStyle" @load="handleImageLoad"
-      @error="handleImageError" />
+    <img
+      :src="src"
+      :alt="alt"
+      :class="imageClass"
+      :style="imageStyle"
+      @load="handleImageLoad"
+      @error="handleImageError"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch } from "vue";
 
 const props = defineProps({
   src: {
     type: String,
-    required: true
+    required: true,
   },
   alt: {
     type: String,
-    default: ''
+    default: "",
   },
   imageClass: {
     type: String,
-    default: ''
+    default: "",
   },
   imageStyle: {
     type: [String, Object],
-    default: ''
+    default: "",
   },
   placeholder: {
     type: String,
-    default: 'default' // 'default', 'skeleton', 'blur'
+    default: "default", // 'default', 'skeleton', 'blur'
   },
   preload: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
-const emit = defineEmits(['load', 'error'])
+const emit = defineEmits(["load", "error"]);
 
-const imageLoaded = ref(false)
+const imageLoaded = ref(false);
 
 // 全局图片缓存（已加载的图片URL）
-const loadedImages = new Set()
+const loadedImages = new Set();
 
 // 检查图片是否已缓存
 const isImageCached = (url) => {
-  if (loadedImages.has(url)) return true
+  if (loadedImages.has(url)) return true;
   // 检查浏览器缓存
-  const img = new Image()
-  img.src = url
-  return img.complete && img.naturalWidth > 0
-}
+  const img = new Image();
+  img.src = url;
+  return img.complete && img.naturalWidth > 0;
+};
 
 // 处理图片加载完成
 const handleImageLoad = () => {
-  loadedImages.add(props.src)
-  imageLoaded.value = true
-  emit('load')
-}
+  loadedImages.add(props.src);
+  imageLoaded.value = true;
+  emit("load");
+};
 
 // 处理图片加载错误
 const handleImageError = (event) => {
   // 即使加载失败也显示图片，避免布局问题
-  imageLoaded.value = true
-  emit('error', event)
-}
+  imageLoaded.value = true;
+  emit("error", event);
+};
 
 // 组件挂载时检查缓存
 onMounted(() => {
   // 如果图片已缓存，直接显示
   if (isImageCached(props.src)) {
-    imageLoaded.value = true
+    imageLoaded.value = true;
   }
-})
+});
 
 // 监听src变化，检查新图片是否已缓存
-watch(() => props.src, (newSrc) => {
-  if (isImageCached(newSrc)) {
-    imageLoaded.value = true
-  } else {
-    imageLoaded.value = false
+watch(
+  () => props.src,
+  (newSrc) => {
+    if (isImageCached(newSrc)) {
+      imageLoaded.value = true;
+    } else {
+      imageLoaded.value = false;
+    }
   }
-})
+);
 </script>
 
 <style scoped>

@@ -1,9 +1,19 @@
 <template>
-  <div class="custom-slider" ref="sliderRef" :class="{ 'dragging': isDragging }" :style="sliderStyle">
+  <div
+    class="custom-slider"
+    ref="sliderRef"
+    :class="{ dragging: isDragging }"
+    :style="sliderStyle"
+  >
     <div class="slider-track" @click="handleTrackClick">
       <div class="slider-fill" :style="{ width: `${percentage}%` }"></div>
-      <div class="slider-thumb" :style="{ left: `calc(${percentage}% - 12px)` }" @mousedown="startDrag"
-        @touchstart="startDragTouch" ref="thumbRef">
+      <div
+        class="slider-thumb"
+        :style="{ left: `calc(${percentage}% - 12px)` }"
+        @mousedown="startDrag"
+        @touchstart="startDragTouch"
+        ref="thumbRef"
+      >
         <div class="thumb-indicator">
           <span class="thumb-value">{{ displayValue }}%</span>
         </div>
@@ -18,29 +28,29 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { gsap } from 'gsap';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { gsap } from "gsap";
 
 const props = defineProps({
   modelValue: {
     type: Number,
-    default: 50
+    default: 50,
   },
   min: {
     type: Number,
-    default: 0
+    default: 0,
   },
   max: {
     type: Number,
-    default: 100
+    default: 100,
   },
   step: {
     type: Number,
-    default: 1
-  }
+    default: 1,
+  },
 });
 
-const emit = defineEmits(['update:modelValue', 'change', 'input']);
+const emit = defineEmits(["update:modelValue", "change", "input"]);
 
 // 当前值
 const currentValue = ref(props.modelValue);
@@ -53,13 +63,13 @@ const colorMap = {
   good: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
   normal: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
   danger: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-  critical: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)"
+  critical: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
 };
 
 // CSS变量样式
 const sliderStyle = computed(() => ({
   "--fill-color": colorMap[sanityLevel.value],
-  "--thumb-color": colorMap[sanityLevel.value]
+  "--thumb-color": colorMap[sanityLevel.value],
 }));
 
 // GSAP 动画函数
@@ -70,7 +80,7 @@ function animateGrab() {
     scale: 1.35,
     boxShadow: "0 6px 18px rgba(0,0,0,0.3)",
     duration: 0.2,
-    ease: "power2.out"
+    ease: "power2.out",
   });
 }
 
@@ -81,14 +91,17 @@ function animateRelease() {
     scale: 1,
     boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
     duration: 0.35,
-    ease: "elastic.out(1, 0.45)"
+    ease: "elastic.out(1, 0.45)",
   });
 }
 
 // 同步外部值变化
-watch(() => props.modelValue, (newValue) => {
-  currentValue.value = newValue;
-});
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    currentValue.value = newValue;
+  }
+);
 
 // 计算百分比位置
 const percentage = computed(() => {
@@ -105,10 +118,10 @@ const displayValue = computed(() => {
 // 计算理智水平分类
 const sanityLevel = computed(() => {
   const value = displayValue.value;
-  if (value >= 80) return 'good';
-  if (value >= 50) return 'normal';
-  if (value >= 20) return 'danger';
-  return 'critical';
+  if (value >= 80) return "good";
+  if (value >= 50) return "normal";
+  if (value >= 20) return "danger";
+  return "critical";
 });
 
 // 处理轨道点击
@@ -118,8 +131,13 @@ function handleTrackClick(event) {
   const rect = sliderRef.value.getBoundingClientRect();
   const clickX = event.clientX - rect.left;
   const sliderWidth = rect.width;
-  const newPercentage = Math.max(0, Math.min(100, (clickX / sliderWidth) * 100));
-  let newValue = Math.round((newPercentage / 100) * (props.max - props.min) + props.min);
+  const newPercentage = Math.max(
+    0,
+    Math.min(100, (clickX / sliderWidth) * 100)
+  );
+  let newValue = Math.round(
+    (newPercentage / 100) * (props.max - props.min) + props.min
+  );
 
   // 确保点击计算的数值也在正确范围内
   newValue = Math.max(props.min, Math.min(props.max, newValue));
@@ -132,8 +150,8 @@ function startDrag(event) {
   event.preventDefault();
   isDragging.value = true;
   animateGrab(); // 添加抓取动画
-  document.addEventListener('mousemove', handleDrag);
-  document.addEventListener('mouseup', stopDrag);
+  document.addEventListener("mousemove", handleDrag);
+  document.addEventListener("mouseup", stopDrag);
 }
 
 // 触摸开始拖拽
@@ -141,8 +159,8 @@ function startDragTouch(event) {
   event.preventDefault();
   isDragging.value = true;
   animateGrab(); // 添加抓取动画
-  document.addEventListener('touchmove', handleDragTouch);
-  document.addEventListener('touchend', stopDrag);
+  document.addEventListener("touchmove", handleDragTouch);
+  document.addEventListener("touchend", stopDrag);
 }
 
 // 使用requestAnimationFrame优化拖拽性能
@@ -154,8 +172,13 @@ function updateValueDuringDrag(pixelX) {
   const sliderWidth = rect.width;
   const sliderLeft = rect.left;
 
-  const newPercentage = Math.max(0, Math.min(100, ((pixelX - sliderLeft) / sliderWidth) * 100));
-  let newValue = Math.round((newPercentage / 100) * (props.max - props.min) + props.min);
+  const newPercentage = Math.max(
+    0,
+    Math.min(100, ((pixelX - sliderLeft) / sliderWidth) * 100)
+  );
+  let newValue = Math.round(
+    (newPercentage / 100) * (props.max - props.min) + props.min
+  );
 
   // 确保拖拽过程中的数值也在正确范围内
   newValue = Math.max(props.min, Math.min(props.max, newValue));
@@ -194,13 +217,13 @@ function stopDrag() {
   animateRelease(); // 添加松手弹性回弹动画
 
   const finalValue = currentValue.value;
-  emit('update:modelValue', finalValue);
-  emit('change', finalValue);
+  emit("update:modelValue", finalValue);
+  emit("change", finalValue);
 
-  document.removeEventListener('mousemove', handleDrag);
-  document.removeEventListener('mouseup', stopDrag);
-  document.removeEventListener('touchmove', handleDragTouch);
-  document.removeEventListener('touchend', stopDrag);
+  document.removeEventListener("mousemove", handleDrag);
+  document.removeEventListener("mouseup", stopDrag);
+  document.removeEventListener("touchmove", handleDragTouch);
+  document.removeEventListener("touchend", stopDrag);
   if (rafId) {
     cancelAnimationFrame(rafId);
     rafId = null;
@@ -219,9 +242,9 @@ function updateValue(newValue) {
 
   // 非拖拽状态时emit事件
   if (!isDragging.value) {
-    emit('update:modelValue', finalValue);
-    emit('input', finalValue);
-    emit('change', finalValue);
+    emit("update:modelValue", finalValue);
+    emit("input", finalValue);
+    emit("change", finalValue);
   }
 }
 
@@ -303,7 +326,7 @@ onUnmounted(() => {
 
 /* 滑块图标显示 */
 .slider-thumb::before {
-  content: '';
+  content: "";
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -330,7 +353,7 @@ onUnmounted(() => {
 }
 
 .thumb-indicator::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 100%;
   left: 50%;

@@ -3,36 +3,61 @@
     <div class="inventory-section">
       <!-- Steam ID 管理 -->
       <div class="steam-id-card">
-        <h3 class="form-section-title">{{ $t('createArchive.playerManagement') }}</h3>
+        <h3 class="form-section-title">
+          {{ $t("createArchive.playerManagement") }}
+        </h3>
         <div class="steam-id-info">
           <font-awesome-icon :icon="['fas', 'info-circle']" />
-          <span>{{ $t('createArchive.steamIdInfo') }}</span>
+          <span>{{ $t("createArchive.steamIdInfo") }}</span>
         </div>
         <div class="steam-id-input-group">
-          <input :value="newSteamId" @input="$emit('update:newSteamId', $event.target.value)" type="text"
-            class="form-input" :placeholder="$t('createArchive.steamIdPlaceholder')"
-            @keyup.enter="$emit('add-steam-id')" />
+          <input
+            :value="newSteamId"
+            @input="$emit('update:newSteamId', $event.target.value)"
+            type="text"
+            class="form-input"
+            :placeholder="$t('createArchive.steamIdPlaceholder')"
+            @keyup.enter="$emit('add-steam-id')"
+          />
           <button @click="$emit('add-steam-id')" class="add-button">
             <font-awesome-icon :icon="['fas', 'plus']" />
-            {{ $t('createArchive.add') }}
+            {{ $t("createArchive.add") }}
           </button>
         </div>
 
         <!-- 玩家输入提示信息 -->
         <transition name="message-fade" mode="out-in">
-          <div v-if="playerInputMessage" class="player-input-message" :class="playerInputMessageType" key="message">
+          <div
+            v-if="playerInputMessage"
+            class="player-input-message"
+            :class="playerInputMessageType"
+            key="message"
+          >
             <font-awesome-icon
-              :icon="playerInputMessageType === 'success' ? ['fas', 'check-circle'] : ['fas', 'exclamation-circle']" />
+              :icon="
+                playerInputMessageType === 'success'
+                  ? ['fas', 'check-circle']
+                  : ['fas', 'exclamation-circle']
+              "
+            />
             {{ playerInputMessage }}
           </div>
         </transition>
 
         <!-- Steam ID 列表 -->
         <div class="steam-id-list">
-          <div v-for="(player, index) in players" :key="index" class="steam-id-item"
-            :class="{ active: activePlayerIndex === index }" @click="$emit('select-player', index)">
+          <div
+            v-for="(player, index) in players"
+            :key="index"
+            class="steam-id-item"
+            :class="{ active: activePlayerIndex === index }"
+            @click="$emit('select-player', index)"
+          >
             <div class="player-info">
-              <div class="player-id" :class="{ 'has-username': player.username }">
+              <div
+                class="player-id"
+                :class="{ 'has-username': player.username }"
+              >
                 <template v-if="player.username">
                   {{ player.username }}
                 </template>
@@ -43,11 +68,14 @@
               <div class="username" :class="{ loading: !player.username }">
                 <template v-if="!player.username">
                   <div class="loading-spinner"></div>
-                  {{ $t('createArchive.loadingUsername') }}
+                  {{ $t("createArchive.loadingUsername") }}
                 </template>
               </div>
             </div>
-            <button @click.stop="$emit('remove-player', index)" class="remove-button">
+            <button
+              @click.stop="$emit('remove-player', index)"
+              class="remove-button"
+            >
               <font-awesome-icon :icon="['fas', 'times']" />
             </button>
           </div>
@@ -57,32 +85,55 @@
       <!-- 背包编辑器 -->
       <div class="inventory-card">
         <h3 class="form-section-title">
-          <template v-if="activePlayerIndex !== -1 && players[activePlayerIndex]">
-            {{ $t('createArchive.editInventoryFor', {
-              playerName: players[activePlayerIndex].username ||
-                players[activePlayerIndex].steamId
-            }) }}
+          <template
+            v-if="activePlayerIndex !== -1 && players[activePlayerIndex]"
+          >
+            {{
+              $t("createArchive.editInventoryFor", {
+                playerName:
+                  players[activePlayerIndex].username ||
+                  players[activePlayerIndex].steamId,
+              })
+            }}
           </template>
           <template v-else>
-            {{ $t('createArchive.editInventory') }}
+            {{ $t("createArchive.editInventory") }}
           </template>
         </h3>
         <div v-if="activePlayerIndex !== -1" class="inventory-grid">
           <!-- 主手和副手位置 -->
           <div class="inventory-column">
-            <div v-for="slot in 3" :key="`weapon-${slot - 1}`" class="inventory-slot weapon-slot" :class="{
-              'main-hand': slot === 1,
-              'off-hand': slot > 1,
-              'empty': !getSlotContent(activePlayerIndex, slot - 1)
-            }" @click="$emit('edit-slot', activePlayerIndex, slot - 1)">
-              <div class="slot-label">{{ $t(`createArchive.${getSlotLabel(slot - 1)}`) }}</div>
+            <div
+              v-for="slot in 3"
+              :key="`weapon-${slot - 1}`"
+              class="inventory-slot weapon-slot"
+              :class="{
+                'main-hand': slot === 1,
+                'off-hand': slot > 1,
+                empty: !getSlotContent(activePlayerIndex, slot - 1),
+              }"
+              @click="$emit('edit-slot', activePlayerIndex, slot - 1)"
+            >
+              <div class="slot-label">
+                {{ $t(`createArchive.${getSlotLabel(slot - 1)}`) }}
+              </div>
               <div class="slot-content">
                 <transition name="item-fade" mode="out-in">
-                  <img v-if="getSlotContent(activePlayerIndex, slot - 1)"
-                    :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}.png`"
-                    :alt="getSlotContent(activePlayerIndex, slot - 1)" class="item-image"
-                    :key="getSlotContent(activePlayerIndex, slot - 1)" />
-                  <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-icon" key="empty" />
+                  <img
+                    v-if="getSlotContent(activePlayerIndex, slot - 1)"
+                    :src="`/icons/ETB_UI/${getItemImageFile(
+                      getSlotContent(activePlayerIndex, slot - 1)
+                    )}.png`"
+                    :alt="getSlotContent(activePlayerIndex, slot - 1)"
+                    class="item-image"
+                    :key="getSlotContent(activePlayerIndex, slot - 1)"
+                  />
+                  <font-awesome-icon
+                    v-else
+                    :icon="['fas', 'hand-paper']"
+                    class="slot-icon"
+                    key="empty"
+                  />
                 </transition>
               </div>
             </div>
@@ -90,17 +141,31 @@
 
           <!-- 背包格子 -->
           <div class="inventory-backpack">
-            <div v-for="slot in 9" :key="`backpack-${slot + 2}`" class="inventory-slot backpack-slot"
+            <div
+              v-for="slot in 9"
+              :key="`backpack-${slot + 2}`"
+              class="inventory-slot backpack-slot"
               :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
-              @click="$emit('edit-slot', activePlayerIndex, slot + 2)">
+              @click="$emit('edit-slot', activePlayerIndex, slot + 2)"
+            >
               <div class="slot-number">{{ slot }}</div>
               <div class="slot-content">
                 <transition name="item-fade" mode="out-in">
-                  <img v-if="getSlotContent(activePlayerIndex, slot + 2)"
-                    :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}.png`"
-                    :alt="getSlotContent(activePlayerIndex, slot + 2)" class="item-image"
-                    :key="getSlotContent(activePlayerIndex, slot + 2)" />
-                  <font-awesome-icon v-else :icon="['fas', 'square']" class="slot-icon" key="empty" />
+                  <img
+                    v-if="getSlotContent(activePlayerIndex, slot + 2)"
+                    :src="`/icons/ETB_UI/${getItemImageFile(
+                      getSlotContent(activePlayerIndex, slot + 2)
+                    )}.png`"
+                    :alt="getSlotContent(activePlayerIndex, slot + 2)"
+                    class="item-image"
+                    :key="getSlotContent(activePlayerIndex, slot + 2)"
+                  />
+                  <font-awesome-icon
+                    v-else
+                    :icon="['fas', 'square']"
+                    class="slot-icon"
+                    key="empty"
+                  />
                 </transition>
               </div>
             </div>
@@ -108,7 +173,7 @@
         </div>
         <div v-else class="empty-inventory-message">
           <font-awesome-icon :icon="['fas', 'info-circle']" />
-          <p>{{ $t('createArchive.selectPlayerMessage') }}</p>
+          <p>{{ $t("createArchive.selectPlayerMessage") }}</p>
         </div>
       </div>
     </div>
@@ -117,48 +182,54 @@
 
 <script>
 export default {
-  name: 'Step3EditInventory',
+  name: "Step3EditInventory",
   props: {
     newSteamId: {
       type: String,
-      default: ''
+      default: "",
     },
     players: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     activePlayerIndex: {
       type: Number,
-      default: -1
+      default: -1,
     },
     playerInputMessage: {
       type: String,
-      default: ''
+      default: "",
     },
     playerInputMessageType: {
       type: String,
-      default: ''
-    }
+      default: "",
+    },
   },
-  emits: ['update:newSteamId', 'add-steam-id', 'remove-player', 'select-player', 'edit-slot'],
+  emits: [
+    "update:newSteamId",
+    "add-steam-id",
+    "remove-player",
+    "select-player",
+    "edit-slot",
+  ],
   methods: {
     getSlotContent(playerIndex, slotIndex) {
       if (this.players[playerIndex] && this.players[playerIndex].inventory) {
-        return this.players[playerIndex].inventory[slotIndex]
+        return this.players[playerIndex].inventory[slotIndex];
       }
-      return null
+      return null;
     },
     getItemImageFile(itemName) {
-      if (!itemName || itemName === 'None' || itemName === null) return 'None'
-      if (itemName === 'Toy') return 'Teddy_Bear'
-      return itemName
+      if (!itemName || itemName === "None" || itemName === null) return "None";
+      if (itemName === "Toy") return "Teddy_Bear";
+      return itemName;
     },
     getSlotLabel(slotIndex) {
-      const labels = ['mainHand', 'offHand1', 'offHand2']
-      return labels[slotIndex] || ''
-    }
-  }
-}
+      const labels = ["mainHand", "offHand1", "offHand2"];
+      return labels[slotIndex] || "";
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -172,12 +243,14 @@ export default {
 
 .steam-id-card,
 .inventory-card {
-  background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  background: linear-gradient(
+    145deg,
+    var(--bg-secondary) 0%,
+    var(--bg-tertiary) 100%
+  );
   border-radius: 20px;
   padding: 24px;
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.05),
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -187,21 +260,24 @@ export default {
 
 .steam-id-card::before,
 .inventory-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 20px;
   right: 20px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
   pointer-events: none;
 }
 
 .steam-id-card:hover,
 .inventory-card:hover {
-  box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.1),
-    0 2px 6px rgba(0, 0, 0, 0.06),
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -217,10 +293,14 @@ export default {
 }
 
 .form-section-title::before {
-  content: '';
+  content: "";
   width: 4px;
   height: 16px;
-  background: linear-gradient(180deg, var(--accent-color), rgba(var(--accent-color-rgb), 0.5));
+  background: linear-gradient(
+    180deg,
+    var(--accent-color),
+    rgba(var(--accent-color-rgb), 0.5)
+  );
   border-radius: 2px;
 }
 
@@ -229,7 +309,11 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  background: linear-gradient(135deg, rgba(var(--accent-color-rgb), 0.12) 0%, rgba(var(--accent-color-rgb), 0.06) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--accent-color-rgb), 0.12) 0%,
+    rgba(var(--accent-color-rgb), 0.06) 100%
+  );
   border-radius: 12px;
   color: var(--accent-color);
   font-size: 13px;
@@ -248,7 +332,11 @@ export default {
   padding: 14px 18px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    145deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-secondary) 100%
+  );
   color: var(--text-primary);
   font-size: 14px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -262,8 +350,7 @@ export default {
 .form-input:focus {
   outline: none;
   border-color: var(--accent-color);
-  box-shadow:
-    0 0 0 3px rgba(var(--accent-color-rgb), 0.15),
+  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15),
     inset 0 1px 2px rgba(0, 0, 0, 0.05);
   background: var(--bg-tertiary);
 }
@@ -280,7 +367,11 @@ export default {
   padding: 14px 22px;
   border-radius: 14px;
   border: none;
-  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--accent-color) 0%,
+    var(--accent-hover) 100%
+  );
   color: white;
   font-size: 14px;
   font-weight: 600;
@@ -344,7 +435,11 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    145deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-secondary) 100%
+  );
   border-radius: 14px;
   border: 2px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
@@ -359,7 +454,11 @@ export default {
 
 .steam-id-item.active {
   border-color: var(--accent-color);
-  background: linear-gradient(145deg, rgba(var(--accent-color-rgb), 0.12) 0%, rgba(var(--accent-color-rgb), 0.06) 100%);
+  background: linear-gradient(
+    145deg,
+    rgba(var(--accent-color-rgb), 0.12) 0%,
+    rgba(var(--accent-color-rgb), 0.06) 100%
+  );
   box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.15);
 }
 
@@ -445,7 +544,11 @@ export default {
 
 .inventory-slot {
   aspect-ratio: 1;
-  background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    145deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-secondary) 100%
+  );
   border-radius: 14px;
   border: 2px solid rgba(255, 255, 255, 0.08);
   display: flex;

@@ -2,15 +2,15 @@
   <div class="edit-archive-container">
     <!-- 顶部标题栏 -->
     <div class="page-header">
-      <h1 class="page-title">{{ $t('editArchive.title') }}</h1>
+      <h1 class="page-title">{{ $t("editArchive.title") }}</h1>
       <div class="header-actions">
         <button class="btn-secondary" @click="closeEdit">
           <font-awesome-icon :icon="['fas', 'times']" />
-          {{ $t('common.cancel') }}
+          {{ $t("common.cancel") }}
         </button>
         <button class="btn-primary" @click="handleSaveArchive">
           <font-awesome-icon :icon="['fas', 'save']" />
-          {{ $t('common.save') }}
+          {{ $t("common.save") }}
         </button>
       </div>
     </div>
@@ -20,24 +20,45 @@
       <div class="form-container">
         <!-- 存档名称 -->
         <div class="form-section">
-          <label class="section-title">{{ $t('editArchive.archiveName') }}</label>
+          <label class="section-title">{{
+            $t("editArchive.archiveName")
+          }}</label>
           <div class="input-wrapper">
-            <input v-model="archiveData.name" type="text" class="form-input"
-              :placeholder="$t('editArchive.archiveNamePlaceholder')" maxlength="50" />
+            <input
+              v-model="archiveData.name"
+              type="text"
+              class="form-input"
+              :placeholder="$t('editArchive.archiveNamePlaceholder')"
+              maxlength="50"
+            />
           </div>
         </div>
 
         <!-- 当前层级 -->
         <div class="form-section">
-          <label class="section-title">{{ $t('editArchive.selectLevelTitle') }}</label>
+          <label class="section-title">{{
+            $t("editArchive.selectLevelTitle")
+          }}</label>
           <div class="level-selector">
-            <div v-for="(level, index) in availableLevels" :key="index" class="level-option"
-              :class="{ selected: archiveData.currentLevel === level.levelKey }" @click="selectLevel(level.levelKey)">
+            <div
+              v-for="(level, index) in availableLevels"
+              :key="index"
+              class="level-option"
+              :class="{ selected: archiveData.currentLevel === level.levelKey }"
+              @click="selectLevel(level.levelKey)"
+            >
               <div class="level-image-container">
-                <LazyImage :src="level.image" :alt="level.name" image-class="level-image" />
+                <LazyImage
+                  :src="level.image"
+                  :alt="level.name"
+                  image-class="level-image"
+                />
                 <div class="level-overlay">
-                  <font-awesome-icon :icon="['fas', 'check']" class="check-icon"
-                    v-if="archiveData.currentLevel === level.levelKey" />
+                  <font-awesome-icon
+                    :icon="['fas', 'check']"
+                    class="check-icon"
+                    v-if="archiveData.currentLevel === level.levelKey"
+                  />
                 </div>
               </div>
               <span class="level-name">{{ level.name }}</span>
@@ -45,35 +66,52 @@
           </div>
         </div>
 
-
-
         <!-- 难度设置 -->
         <div class="form-row">
           <div class="form-section half-width">
-            <label class="section-title">{{ $t('editArchive.difficulty') }}</label>
+            <label class="section-title">{{
+              $t("editArchive.difficulty")
+            }}</label>
             <div class="difficulty-grid">
-              <div v-for="difficulty in difficultyLevels" :key="difficulty.value" class="difficulty-option" :class="{
-                selected: archiveData.archiveDifficulty === difficulty.value
-              }" @click="handleDifficultySelect('archive', difficulty.value)">
+              <div
+                v-for="difficulty in difficultyLevels"
+                :key="difficulty.value"
+                class="difficulty-option"
+                :class="{
+                  selected: archiveData.archiveDifficulty === difficulty.value,
+                }"
+                @click="handleDifficultySelect('archive', difficulty.value)"
+              >
                 <div class="difficulty-icon">
                   <font-awesome-icon :icon="difficulty.icon" />
                 </div>
-                <span class="difficulty-label">{{ $t(`editArchive.difficultyLevels.${difficulty.value}`) }}</span>
+                <span class="difficulty-label">{{
+                  $t(`editArchive.difficultyLevels.${difficulty.value}`)
+                }}</span>
               </div>
             </div>
           </div>
 
           <div class="form-section half-width">
-            <label class="section-title">{{ $t('editArchive.actualDifficulty') }}</label>
+            <label class="section-title">{{
+              $t("editArchive.actualDifficulty")
+            }}</label>
             <div class="difficulty-grid">
-              <div v-for="difficulty in difficultyLevels" :key="`actual-${difficulty.value}`" class="difficulty-option"
+              <div
+                v-for="difficulty in difficultyLevels"
+                :key="`actual-${difficulty.value}`"
+                class="difficulty-option"
                 :class="{
-                  selected: archiveData.actualDifficulty === difficulty.value
-                }" @click="handleDifficultySelect('actual', difficulty.value)">
+                  selected: archiveData.actualDifficulty === difficulty.value,
+                }"
+                @click="handleDifficultySelect('actual', difficulty.value)"
+              >
                 <div class="difficulty-icon">
                   <font-awesome-icon :icon="difficulty.icon" />
                 </div>
-                <span class="difficulty-label">{{ $t(`editArchive.difficultyLevels.${difficulty.value}`) }}</span>
+                <span class="difficulty-label">{{
+                  $t(`editArchive.difficultyLevels.${difficulty.value}`)
+                }}</span>
               </div>
             </div>
           </div>
@@ -81,39 +119,66 @@
 
         <!-- 玩家背包管理 -->
         <div class="form-section">
-          <label class="section-title">{{ $t('editArchive.playerManagement') }}</label>
+          <label class="section-title">{{
+            $t("editArchive.playerManagement")
+          }}</label>
 
           <div class="player-management-layout">
             <!-- 左侧：玩家列表 -->
             <div class="player-list-panel">
               <div class="player-list-header">
-                <span class="player-count">{{ archiveData.players.length }} {{ $t('editArchive.playersCount') }}</span>
+                <span class="player-count"
+                  >{{ archiveData.players.length }}
+                  {{ $t("editArchive.playersCount") }}</span
+                >
               </div>
 
               <!-- Steam ID 列表 -->
               <div class="player-list">
-                <div v-for="(player, index) in archiveData.players" :key="index" class="player-card"
-                  :class="{ active: activePlayerIndex === index }" @click="selectPlayer(index)">
+                <div
+                  v-for="(player, index) in archiveData.players"
+                  :key="index"
+                  class="player-card"
+                  :class="{ active: activePlayerIndex === index }"
+                  @click="selectPlayer(index)"
+                >
                   <div class="player-avatar">
                     <font-awesome-icon :icon="['fas', 'user']" />
                   </div>
                   <div class="player-info">
-                    <span v-if="player.username" class="player-username">{{ player.username }}</span>
-                    <span v-else-if="player.isOfflinePlayer" class="player-username">{{ player.steamId }}(本地)</span>
+                    <span v-if="player.username" class="player-username">{{
+                      player.username
+                    }}</span>
+                    <span
+                      v-else-if="player.isOfflinePlayer"
+                      class="player-username"
+                      >{{ player.steamId }}(本地)</span
+                    >
                     <span v-else class="player-id">{{ player.steamId }}</span>
-                    <span class="player-sanity-badge" :class="getSanityClass(player.sanity ?? 100)">
-                      {{ (player.sanity ?? 100) }}%
+                    <span
+                      class="player-sanity-badge"
+                      :class="getSanityClass(player.sanity ?? 100)"
+                    >
+                      {{ player.sanity ?? 100 }}%
                     </span>
                   </div>
-                  <button class="remove-player-btn" @click.stop="removePlayer(index)">
+                  <button
+                    class="remove-player-btn"
+                    @click.stop="removePlayer(index)"
+                  >
                     <font-awesome-icon :icon="['fas', 'trash']" />
                   </button>
                 </div>
               </div>
 
               <div class="add-player-section">
-                <input v-model="newSteamId" type="text" class="form-input add-player-input"
-                  :placeholder="$t('editArchive.steamIdPlaceholder')" @keyup.enter="addPlayer" />
+                <input
+                  v-model="newSteamId"
+                  type="text"
+                  class="form-input add-player-input"
+                  :placeholder="$t('editArchive.steamIdPlaceholder')"
+                  @keyup.enter="addPlayer"
+                />
                 <button class="add-player-btn" @click="addPlayer">
                   <font-awesome-icon :icon="['fas', 'plus']" />
                 </button>
@@ -121,51 +186,83 @@
 
               <!-- 玩家输入提示信息 -->
               <transition name="message-fade" mode="out-in">
-                <div v-if="playerInputMessage" class="player-input-message" :class="playerInputMessageType"
-                  key="message">
+                <div
+                  v-if="playerInputMessage"
+                  class="player-input-message"
+                  :class="playerInputMessageType"
+                  key="message"
+                >
                   {{ playerInputMessage }}
                 </div>
               </transition>
 
               <!-- 无玩家提示 -->
-              <div v-if="archiveData.players.length === 0" class="no-players-hint">
+              <div
+                v-if="archiveData.players.length === 0"
+                class="no-players-hint"
+              >
                 <font-awesome-icon :icon="['fas', 'users']" class="hint-icon" />
-                <p>{{ $t('editArchive.noPlayersHint') }}</p>
+                <p>{{ $t("editArchive.noPlayersHint") }}</p>
               </div>
             </div>
 
             <!-- 右侧：玩家详情 -->
-            <div class="player-detail-panel" v-if="activePlayerIndex !== -1 && archiveData.players.length > 0">
+            <div
+              class="player-detail-panel"
+              v-if="activePlayerIndex !== -1 && archiveData.players.length > 0"
+            >
               <!-- 玩家理智值管理 -->
               <div class="sanity-section">
                 <div class="sanity-header">
                   <h3 class="sanity-title">
-                    <font-awesome-icon :icon="['fas', 'brain']" class="title-icon" />
-                    {{ $t('editArchive.playerSanity') }}
+                    <font-awesome-icon
+                      :icon="['fas', 'brain']"
+                      class="title-icon"
+                    />
+                    {{ $t("editArchive.playerSanity") }}
                   </h3>
-                  <div class="player-name-tag">{{ getCurrentPlayerDisplayName() }}</div>
+                  <div class="player-name-tag">
+                    {{ getCurrentPlayerDisplayName() }}
+                  </div>
                 </div>
 
                 <div class="sanity-controls">
                   <div class="sanity-display">
-                    <div class="sanity-value-large">{{ currentPlayerSanity }}<span class="sanity-percent">%</span></div>
+                    <div class="sanity-value-large">
+                      {{ currentPlayerSanity
+                      }}<span class="sanity-percent">%</span>
+                    </div>
                     <div class="sanity-bar">
-                      <div class="sanity-bar-fill" :style="{ width: `${currentPlayerSanity}%` }"
-                        :class="getSanityClass(currentPlayerSanity)"></div>
+                      <div
+                        class="sanity-bar-fill"
+                        :style="{ width: `${currentPlayerSanity}%` }"
+                        :class="getSanityClass(currentPlayerSanity)"
+                      ></div>
                     </div>
                   </div>
 
                   <div class="sanity-adjust-row">
                     <div class="sanity-slider-group">
-                      <CustomSlider v-model="currentPlayerSanity" :min="0" :max="100" :step="1" />
+                      <CustomSlider
+                        v-model="currentPlayerSanity"
+                        :min="0"
+                        :max="100"
+                        :step="1"
+                      />
                     </div>
                     <div class="sanity-quick-actions">
-                      <button class="sanity-btn set-min" @click="setMinSanity()"
-                        :title="$t('editArchive.setMinSanity')">
+                      <button
+                        class="sanity-btn set-min"
+                        @click="setMinSanity()"
+                        :title="$t('editArchive.setMinSanity')"
+                      >
                         <font-awesome-icon :icon="['fas', 'skull']" />
                       </button>
-                      <button class="sanity-btn set-max" @click="setMaxSanity()"
-                        :title="$t('editArchive.setMaxSanity')">
+                      <button
+                        class="sanity-btn set-max"
+                        @click="setMaxSanity()"
+                        :title="$t('editArchive.setMaxSanity')"
+                      >
                         <font-awesome-icon :icon="['fas', 'heart']" />
                       </button>
                     </div>
@@ -177,26 +274,47 @@
               <div class="inventory-section">
                 <div class="inventory-header">
                   <h3 class="inventory-title">
-                    <font-awesome-icon :icon="['fas', 'suitcase']" class="title-icon" />
-                    {{ $t('editArchive.inventory') }}
+                    <font-awesome-icon
+                      :icon="['fas', 'suitcase']"
+                      class="title-icon"
+                    />
+                    {{ $t("editArchive.inventory") }}
                   </h3>
                 </div>
                 <div class="inventory-grid">
                   <!-- 主手和副手位置 -->
                   <div class="inventory-column">
-                    <div v-for="slot in 3" :key="`weapon-${slot - 1}`" class="inventory-slot weapon-slot" :class="{
-                      'main-hand': slot === 1,
-                      'off-hand': slot > 1,
-                      'empty': !getSlotContent(activePlayerIndex, slot - 1)
-                    }" @click="editSlot(activePlayerIndex, slot - 1)">
-                      <div class="slot-label">{{ $t(`editArchive.${getSlotLabel(slot - 1)}`) }}</div>
+                    <div
+                      v-for="slot in 3"
+                      :key="`weapon-${slot - 1}`"
+                      class="inventory-slot weapon-slot"
+                      :class="{
+                        'main-hand': slot === 1,
+                        'off-hand': slot > 1,
+                        empty: !getSlotContent(activePlayerIndex, slot - 1),
+                      }"
+                      @click="editSlot(activePlayerIndex, slot - 1)"
+                    >
+                      <div class="slot-label">
+                        {{ $t(`editArchive.${getSlotLabel(slot - 1)}`) }}
+                      </div>
                       <div class="slot-content">
                         <transition name="item-fade" mode="out-in">
-                          <LazyImage v-if="getSlotContent(activePlayerIndex, slot - 1)"
-                            :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}`"
-                            :alt="getSlotContent(activePlayerIndex, slot - 1)" image-class="item-image"
-                            :key="getSlotContent(activePlayerIndex, slot - 1)" />
-                          <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-icon" key="empty" />
+                          <LazyImage
+                            v-if="getSlotContent(activePlayerIndex, slot - 1)"
+                            :src="`/icons/ETB_UI/${getItemImageFile(
+                              getSlotContent(activePlayerIndex, slot - 1)
+                            )}`"
+                            :alt="getSlotContent(activePlayerIndex, slot - 1)"
+                            image-class="item-image"
+                            :key="getSlotContent(activePlayerIndex, slot - 1)"
+                          />
+                          <font-awesome-icon
+                            v-else
+                            :icon="['fas', 'hand-paper']"
+                            class="slot-icon"
+                            key="empty"
+                          />
                         </transition>
                       </div>
                     </div>
@@ -204,17 +322,33 @@
 
                   <!-- 背包格子 -->
                   <div class="inventory-backpack">
-                    <div v-for="slot in 9" :key="`backpack-${slot + 2}`" class="inventory-slot backpack-slot"
-                      :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
-                      @click="editSlot(activePlayerIndex, slot + 2)">
+                    <div
+                      v-for="slot in 9"
+                      :key="`backpack-${slot + 2}`"
+                      class="inventory-slot backpack-slot"
+                      :class="{
+                        empty: !getSlotContent(activePlayerIndex, slot + 2),
+                      }"
+                      @click="editSlot(activePlayerIndex, slot + 2)"
+                    >
                       <div class="slot-number">{{ slot }}</div>
                       <div class="slot-content">
                         <transition name="item-fade" mode="out-in">
-                          <LazyImage v-if="getSlotContent(activePlayerIndex, slot + 2)"
-                            :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}`"
-                            :alt="getSlotContent(activePlayerIndex, slot + 2)" image-class="item-image"
-                            :key="getSlotContent(activePlayerIndex, slot + 2)" />
-                          <font-awesome-icon v-else :icon="['fas', 'square']" class="slot-icon" key="empty" />
+                          <LazyImage
+                            v-if="getSlotContent(activePlayerIndex, slot + 2)"
+                            :src="`/icons/ETB_UI/${getItemImageFile(
+                              getSlotContent(activePlayerIndex, slot + 2)
+                            )}`"
+                            :alt="getSlotContent(activePlayerIndex, slot + 2)"
+                            image-class="item-image"
+                            :key="getSlotContent(activePlayerIndex, slot + 2)"
+                          />
+                          <font-awesome-icon
+                            v-else
+                            :icon="['fas', 'square']"
+                            class="slot-icon"
+                            key="empty"
+                          />
                         </transition>
                       </div>
                     </div>
@@ -224,148 +358,167 @@
             </div>
 
             <!-- 未选择玩家时的提示 -->
-            <div class="player-detail-panel empty-state" v-else-if="archiveData.players.length > 0">
-              <font-awesome-icon :icon="['fas', 'hand-pointer']" class="empty-icon" />
-              <p>{{ $t('editArchive.selectPlayerHint') }}</p>
+            <div
+              class="player-detail-panel empty-state"
+              v-else-if="archiveData.players.length > 0"
+            >
+              <font-awesome-icon
+                :icon="['fas', 'hand-pointer']"
+                class="empty-icon"
+              />
+              <p>{{ $t("editArchive.selectPlayerHint") }}</p>
             </div>
           </div>
         </div>
       </div>
     </div>
     <!-- 物品选择器 -->
-    <InventoryItemSelector :visible="showItemSelector" @select="handleItemSelect"
-      @update:visible="showItemSelector = $event" />
+    <InventoryItemSelector
+      :visible="showItemSelector"
+      @select="handleItemSelect"
+      @update:visible="showItemSelector = $event"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
-import { gsap } from 'gsap'
-import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
-import { invoke } from '@tauri-apps/api/core'
-import InventoryItemSelector from '../components/InventoryItemSelector.vue'
-import LazyImage from '../components/LazyImage.vue'
-import CustomSlider from '../components/CustomSlider.vue'
-import { showError } from '../services/popupService'
+import { ref, reactive, computed, onMounted, nextTick, watch } from "vue";
+import { gsap } from "gsap";
+import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
+import { invoke } from "@tauri-apps/api/core";
+import InventoryItemSelector from "../components/InventoryItemSelector.vue";
+import LazyImage from "../components/LazyImage.vue";
+import CustomSlider from "../components/CustomSlider.vue";
+import { showError } from "../services/popupService";
 
 const props = defineProps({
   archiveData: {
     type: String,
-    default: ''
-  }
-})
+    default: "",
+  },
+});
 
-const { t } = useI18n({ useScope: 'global' })
-const router = useRouter()
+const { t } = useI18n({ useScope: "global" });
+const router = useRouter();
 
 // 添加一个方法来处理实际的存档保存逻辑
 const handleSaveArchive = async () => {
   try {
     if (!originalArchive.value) {
-      console.error('No original archive data found')
-      return
+      console.error("No original archive data found");
+      return;
     }
 
     // 构造玩家背包数据
-    const playerInventory = {}
-    const playerSanity = {}
+    const playerInventory = {};
+    const playerSanity = {};
 
-    archiveData.players.forEach(player => {
-      const steamId = player.steamId.trim()
-      playerInventory[steamId] = player.inventory.map(itemId => ({
-        item: { id: getItemIdByName(itemId) }
-      }))
-      playerSanity[steamId] = player.sanity ?? 100 // 使用玩家保存的理智值，默认100
-    })
+    archiveData.players.forEach((player) => {
+      const steamId = player.steamId.trim();
+      playerInventory[steamId] = player.inventory.map((itemId) => ({
+        item: { id: getItemIdByName(itemId) },
+      }));
+      playerSanity[steamId] = player.sanity ?? 100; // 使用玩家保存的理智值，默认100
+    });
 
     // 构造要保存的数据
     const saveData = {
       path: originalArchive.value.path,
       name: archiveData.name,
-      mode: 'Multiplayer', // 始终设置为多人模式
+      mode: "Multiplayer", // 始终设置为多人模式
       currentLevel: archiveData.currentLevel,
-      difficulty: archiveData.archiveDifficulty.charAt(0).toUpperCase() + archiveData.archiveDifficulty.slice(1),
-      actualDifficulty: archiveData.actualDifficulty.charAt(0).toUpperCase() + archiveData.actualDifficulty.slice(1),
+      difficulty:
+        archiveData.archiveDifficulty.charAt(0).toUpperCase() +
+        archiveData.archiveDifficulty.slice(1),
+      actualDifficulty:
+        archiveData.actualDifficulty.charAt(0).toUpperCase() +
+        archiveData.actualDifficulty.slice(1),
       playerInventory,
-      playerSanity
-    }
+      playerSanity,
+    };
 
-    console.log(t('editArchive.savingArchiveData'), saveData)
+    console.log(t("editArchive.savingArchiveData"), saveData);
 
     // 调用后端的编辑API
-    const outputDir = await invoke('get_local_appdata') + '\\EscapeTheBackrooms\\Saved\\SaveGames'
-    const result = await invoke('handle_edit_save', {
+    const outputDir =
+      (await invoke("get_local_appdata")) +
+      "\\EscapeTheBackrooms\\Saved\\SaveGames";
+    const result = await invoke("handle_edit_save", {
       jsonInput: {
         saveData: {
           jsonData: saveData,
-          outputDir: outputDir
-        }
-      }
-    })
+          outputDir: outputDir,
+        },
+      },
+    });
 
-    console.log('Archive saved successfully:', result)
+    console.log("Archive saved successfully:", result);
 
     // 保存成功后返回主页
-    router.push({ name: 'Home' })
+    router.push({ name: "Home" });
   } catch (error) {
-    console.error(t('editArchive.saveFailed'), error)
+    console.error(t("editArchive.saveFailed"), error);
     // 这里可以添加错误提示
   }
-}
+};
 
 // 解析传入的存档数据
-const originalArchive = ref(null)
+const originalArchive = ref(null);
 
 // 表单数据
 const archiveData = reactive({
-  name: '',
-  currentLevel: 'Level0',
-  gameMode: 'multiplayer', // 默认设置为多人模式
-  archiveDifficulty: 'normal',
-  actualDifficulty: 'normal',
-  players: []
-})
+  name: "",
+  currentLevel: "Level0",
+  gameMode: "multiplayer", // 默认设置为多人模式
+  archiveDifficulty: "normal",
+  actualDifficulty: "normal",
+  players: [],
+});
 
 // 初始化存档数据
 const initArchiveData = () => {
   try {
     if (props.archiveData) {
-      const data = JSON.parse(props.archiveData)
-      originalArchive.value = data
+      const data = JSON.parse(props.archiveData);
+      originalArchive.value = data;
 
       // 填充表单数据
-      archiveData.name = data.name || ''
-      archiveData.currentLevel = data.currentLevel || 'Level0'
+      archiveData.name = data.name || "";
+      archiveData.currentLevel = data.currentLevel || "Level0";
       // 强制设置为多人模式
-      archiveData.gameMode = 'multiplayer'
-      archiveData.archiveDifficulty = data.archiveDifficulty || 'normal'
-      archiveData.actualDifficulty = data.actualDifficulty || 'normal'
+      archiveData.gameMode = "multiplayer";
+      archiveData.archiveDifficulty = data.archiveDifficulty || "normal";
+      archiveData.actualDifficulty = data.actualDifficulty || "normal";
 
       // 加载玩家数据
-      loadPlayerData(data)
+      loadPlayerData(data);
     }
   } catch (e) {
-    console.error(t('editArchive.parseFailed'), e)
+    console.error(t("editArchive.parseFailed"), e);
   }
-}
+};
 
 // 加载玩家数据
 const loadPlayerData = async (archive) => {
   try {
-    const playerData = await invoke('get_player_data', { filePath: archive.path })
+    const playerData = await invoke("get_player_data", {
+      filePath: archive.path,
+    });
 
     if (playerData && playerData.ids && playerData.inventories) {
-      archiveData.players = []
+      archiveData.players = [];
 
       playerData.ids.forEach((steamId, index) => {
         if (steamId && steamId.trim()) {
-          const inventory = playerData.inventories[index] || []
-          const formattedInventory = inventory.map(itemName => itemName || null)
+          const inventory = playerData.inventories[index] || [];
+          const formattedInventory = inventory.map(
+            (itemName) => itemName || null
+          );
 
           // 确保有12个物品槽位
           while (formattedInventory.length < 12) {
-            formattedInventory.push(null)
+            formattedInventory.push(null);
           }
 
           // 检查是否为本地玩家ID并预处理
@@ -374,9 +527,13 @@ const loadPlayerData = async (archive) => {
           let username = null;
 
           // 检查是否为本地玩家格式 (包含横杠的ID)
-          if (steamId.includes('-')) {
-            const parts = steamId.split('-');
-            if (parts.length === 2 && parts[0].length === 5 && parts[1].length === 15) {
+          if (steamId.includes("-")) {
+            const parts = steamId.split("-");
+            if (
+              parts.length === 2 &&
+              parts[0].length === 5 &&
+              parts[1].length === 15
+            ) {
               // 标准本地玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
               playerSteamId = parts[0];
               isOfflinePlayer = true;
@@ -395,54 +552,64 @@ const loadPlayerData = async (archive) => {
             inventory: formattedInventory.slice(0, 12),
             username: username,
             isOfflinePlayer: isOfflinePlayer,
-            sanity: playerData.sanities[index] ?? 100 // 添加理智值，默认100
-          })
+            sanity: playerData.sanities[index] ?? 100, // 添加理智值，默认100
+          });
         }
-      })
+      });
 
       // 如果有玩家，默认选中第一个
       if (archiveData.players.length > 0) {
-        activePlayerIndex.value = 0
+        activePlayerIndex.value = 0;
       }
 
       // 获取Steam用户名
-      await fetchSteamUsernames()
+      await fetchSteamUsernames();
     }
   } catch (error) {
-    console.error('加载玩家数据失败:', error)
+    console.error("加载玩家数据失败:", error);
     // 如果没有玩家数据，创建一个空数组
-    archiveData.players = []
+    archiveData.players = [];
   }
-}
+};
 
 // 获取Steam用户名
 const fetchSteamUsernames = async () => {
   try {
     // 只获取非离线玩家且格式有效的Steam ID
     const steamIds = archiveData.players
-      .filter(player => !player.isOfflinePlayer && player.steamId && player.steamId.length === 17 && /^\d+$/.test(player.steamId))
-      .map(player => player.steamId);
+      .filter(
+        (player) =>
+          !player.isOfflinePlayer &&
+          player.steamId &&
+          player.steamId.length === 17 &&
+          /^\d+$/.test(player.steamId)
+      )
+      .map((player) => player.steamId);
 
     if (steamIds.length === 0) return;
 
     // 调用后端API获取用户名
-    const usernames = await invoke('get_steam_usernames_command', { steamIds });
+    const usernames = await invoke("get_steam_usernames_command", { steamIds });
 
     // 更新玩家数据中的用户名
-    archiveData.players.forEach(player => {
+    archiveData.players.forEach((player) => {
       if (!player.isOfflinePlayer && usernames[player.steamId]) {
         player.username = usernames[player.steamId];
       }
     });
   } catch (error) {
-    console.error('获取Steam用户名失败:', error);
+    console.error("获取Steam用户名失败:", error);
     // 如果获取失败，保持用户名为null
     // 但需要处理无效ID的情况，确保本地玩家能正确显示
-    archiveData.players.forEach(player => {
+    archiveData.players.forEach((player) => {
       // 检查是否为本地玩家格式 (包含横杠的ID)
-      if (player.steamId && player.steamId.includes('-')) {
-        const parts = player.steamId.split('-');
-        if (parts.length === 2 && parts[0].length === 5 && parts[1].length === 15) {
+      if (player.steamId && player.steamId.includes("-")) {
+        const parts = player.steamId.split("-");
+        if (
+          parts.length === 2 &&
+          parts[0].length === 5 &&
+          parts[1].length === 15
+        ) {
           // 标准本地玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
           player.username = `${parts[0]}(本地)`;
           player.isOfflinePlayer = true;
@@ -452,7 +619,11 @@ const fetchSteamUsernames = async () => {
           player.username = `${parts[0]}(本地)`;
           player.isOfflinePlayer = true;
         }
-      } else if (player.steamId && player.steamId.length === 17 && /^\d+$/.test(player.steamId)) {
+      } else if (
+        player.steamId &&
+        player.steamId.length === 17 &&
+        /^\d+$/.test(player.steamId)
+      ) {
         // 有效的17位数字Steam ID，但获取用户名失败，暂时显示为null
         // 不做特殊处理，保持为null
       }
@@ -460,291 +631,390 @@ const fetchSteamUsernames = async () => {
   }
 };
 
-const newSteamId = ref('')
-const activePlayerIndex = ref(archiveData.players.length > 0 ? 0 : -1)
-const showItemSelector = ref(false)
-const editingSlot = ref({ playerIndex: 0, slotIndex: 0 })
-const playerInputMessage = ref('') // 用于显示添加玩家时的提示信息
-const playerInputMessageType = ref('') // 用于标识提示信息类型(error/success)
+const newSteamId = ref("");
+const activePlayerIndex = ref(archiveData.players.length > 0 ? 0 : -1);
+const showItemSelector = ref(false);
+const editingSlot = ref({ playerIndex: 0, slotIndex: 0 });
+const playerInputMessage = ref(""); // 用于显示添加玩家时的提示信息
+const playerInputMessageType = ref(""); // 用于标识提示信息类型(error/success)
 
 // 理智值相关
-const currentPlayerSanity = ref(100) // 当前选中的玩家理智值
+const currentPlayerSanity = ref(100); // 当前选中的玩家理智值
 
 // 可用层级
-const availableLevels = ref([])
-
-
+const availableLevels = ref([]);
 
 // 难度选项
 const difficultyLevels = [
-  { value: 'easy', icon: ['fas', 'smile'], label: 'easy' },
-  { value: 'normal', icon: ['fas', 'meh'], label: 'normal' },
-  { value: 'hard', icon: ['fas', 'frown'], label: 'hard' },
-  { value: 'nightmare', icon: ['fas', 'skull'], label: 'nightmare' }
-]
+  { value: "easy", icon: ["fas", "smile"], label: "easy" },
+  { value: "normal", icon: ["fas", "meh"], label: "normal" },
+  { value: "hard", icon: ["fas", "frown"], label: "hard" },
+  { value: "nightmare", icon: ["fas", "skull"], label: "nightmare" },
+];
 
 // 方法
 const loadLevels = () => {
   try {
     // 层级名称映射 - 与CreateArchive.vue保持一致
     const levelMappings = [
-      'Level0', 'TopFloor', 'MiddleFloor', 'GarageLevel2', 'BottomFloor',
-      'TheHub', 'Pipes1', 'ElectricalStation', 'Office', 'Hotel',
-      'Floor3', 'BoilerRoom', 'Pipes2', 'LevelFun', 'Poolrooms',
-      'LevelRun', 'TheEnd', 'Level922', 'Level94', 'AnimatedKingdom',
-      'LightsOut', 'OceanMap', 'CaveLevel', 'Level05', 'Level9',
-      'AbandonedBase', 'Level10', 'Level3999', 'Level07', 'Snackrooms',
-      'LevelDash', 'Level188_Expanded', 'Poolrooms_Expanded', 'WaterPark_Level01_P',
-      'WaterPark_Level02_P', 'WaterPark_Level03_P', 'LevelFun_Expanded',
-      'Zone1_Modified', 'Zone2_Modified', 'Zone3_Baked', 'Zone4',
-      'Level52', 'TunnelLevel',
-      'Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat'
-    ]
+      "Level0",
+      "TopFloor",
+      "MiddleFloor",
+      "GarageLevel2",
+      "BottomFloor",
+      "TheHub",
+      "Pipes1",
+      "ElectricalStation",
+      "Office",
+      "Hotel",
+      "Floor3",
+      "BoilerRoom",
+      "Pipes2",
+      "LevelFun",
+      "Poolrooms",
+      "LevelRun",
+      "TheEnd",
+      "Level922",
+      "Level94",
+      "AnimatedKingdom",
+      "LightsOut",
+      "OceanMap",
+      "CaveLevel",
+      "Level05",
+      "Level9",
+      "AbandonedBase",
+      "Level10",
+      "Level3999",
+      "Level07",
+      "Snackrooms",
+      "LevelDash",
+      "Level188_Expanded",
+      "Poolrooms_Expanded",
+      "WaterPark_Level01_P",
+      "WaterPark_Level02_P",
+      "WaterPark_Level03_P",
+      "LevelFun_Expanded",
+      "Zone1_Modified",
+      "Zone2_Modified",
+      "Zone3_Baked",
+      "Zone4",
+      "Level52",
+      "TunnelLevel",
+      "Bunker",
+      "GraffitiLevel",
+      "Grassrooms_Expanded",
+      "Level974",
+      "LevelCheat",
+    ];
 
     // 清空现有数据
-    availableLevels.value = []
-    console.log('Loading levels, total count:', levelMappings.length)
+    availableLevels.value = [];
+    console.log("Loading levels, total count:", levelMappings.length);
 
     // 为每个层级生成数据
     levelMappings.forEach((levelKey, index) => {
       try {
         // 现在所有关卡都使用关卡名称作为图片文件名
-        const imagePath = `/images/ETB/${levelKey}.jpg`
+        const imagePath = `/images/ETB/${levelKey}.jpg`;
 
         // 获取翻译名称，如果失败则使用原始键名
-        let levelName
+        let levelName;
         try {
-          levelName = t(`LevelName_Display.${levelKey}`)
+          levelName = t(`LevelName_Display.${levelKey}`);
         } catch (translationError) {
-          console.warn(`Translation failed for level ${levelKey}:`, translationError)
-          levelName = levelKey
+          console.warn(
+            `Translation failed for level ${levelKey}:`,
+            translationError
+          );
+          levelName = levelKey;
         }
 
         availableLevels.value.push({
           name: levelName,
           image: imagePath,
-          levelKey: levelKey
-        })
+          levelKey: levelKey,
+        });
       } catch (itemError) {
-        console.error(`Error processing level ${levelKey}:`, itemError)
+        console.error(`Error processing level ${levelKey}:`, itemError);
       }
-    })
+    });
 
-    console.log('Levels loaded successfully, count:', availableLevels.value.length)
+    console.log(
+      "Levels loaded successfully, count:",
+      availableLevels.value.length
+    );
   } catch (error) {
-    console.error(t('editArchive.loadLevelsFailed'), error)
+    console.error(t("editArchive.loadLevelsFailed"), error);
     // 如果翻译加载失败，使用默认层级（包含所有层级）
     const fallbackLevels = [
-      'Level0', 'TopFloor', 'MiddleFloor', 'GarageLevel2', 'BottomFloor',
-      'TheHub', 'Pipes1', 'ElectricalStation', 'Office', 'Hotel',
-      'Floor3', 'BoilerRoom', 'Pipes2', 'LevelFun', 'Poolrooms',
-      'LevelRun', 'TheEnd', 'Level922', 'Level94', 'AnimatedKingdom',
-      'LightsOut', 'OceanMap', 'CaveLevel', 'Level05', 'Level9',
-      'AbandonedBase', 'Level10', 'Level3999', 'Level07', 'Snackrooms',
-      'LevelDash', 'Level188_Expanded', 'Poolrooms_Expanded', 'WaterPark_Level01_P',
-      'WaterPark_Level02_P', 'WaterPark_Level03_P', 'LevelFun_Expanded',
-      'Zone1_Modified', 'Zone2_Modified', 'Zone3_Baked', 'Zone4',
-      'Level52', 'TunnelLevel',
-      'Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat'
-    ]
+      "Level0",
+      "TopFloor",
+      "MiddleFloor",
+      "GarageLevel2",
+      "BottomFloor",
+      "TheHub",
+      "Pipes1",
+      "ElectricalStation",
+      "Office",
+      "Hotel",
+      "Floor3",
+      "BoilerRoom",
+      "Pipes2",
+      "LevelFun",
+      "Poolrooms",
+      "LevelRun",
+      "TheEnd",
+      "Level922",
+      "Level94",
+      "AnimatedKingdom",
+      "LightsOut",
+      "OceanMap",
+      "CaveLevel",
+      "Level05",
+      "Level9",
+      "AbandonedBase",
+      "Level10",
+      "Level3999",
+      "Level07",
+      "Snackrooms",
+      "LevelDash",
+      "Level188_Expanded",
+      "Poolrooms_Expanded",
+      "WaterPark_Level01_P",
+      "WaterPark_Level02_P",
+      "WaterPark_Level03_P",
+      "LevelFun_Expanded",
+      "Zone1_Modified",
+      "Zone2_Modified",
+      "Zone3_Baked",
+      "Zone4",
+      "Level52",
+      "TunnelLevel",
+      "Bunker",
+      "GraffitiLevel",
+      "Grassrooms_Expanded",
+      "Level974",
+      "LevelCheat",
+    ];
 
-    availableLevels.value = []
+    availableLevels.value = [];
 
     fallbackLevels.forEach((levelKey, index) => {
       // 检查是否存在对应的.png图片（新关卡）
-      const pngNewLevels = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat']
-      let imagePath
+      const pngNewLevels = [
+        "Bunker",
+        "GraffitiLevel",
+        "Grassrooms_Expanded",
+        "Level974",
+        "LevelCheat",
+      ];
+      let imagePath;
 
       if (pngNewLevels.includes(levelKey)) {
         // 新关卡使用关卡名称.png
-        imagePath = `/images/ETB/${levelKey}.png`
+        imagePath = `/images/ETB/${levelKey}.png`;
       } else {
         // 原有关卡使用数字索引.jpg
-        imagePath = `/images/ETB/${index}.jpg`
+        imagePath = `/images/ETB/${index}.jpg`;
       }
 
       availableLevels.value.push({
         name: levelKey, // 使用原始键名作为回退
         image: imagePath,
-        levelKey: levelKey
-      })
-    })
+        levelKey: levelKey,
+      });
+    });
 
-    console.log('Levels loaded with fallback, count:', availableLevels.value.length)
+    console.log(
+      "Levels loaded with fallback, count:",
+      availableLevels.value.length
+    );
   }
-}
+};
 
 const selectLevel = (levelKey) => {
-  archiveData.currentLevel = levelKey
-}
+  archiveData.currentLevel = levelKey;
+};
 
 const handleDifficultySelect = (type, difficulty) => {
   // 单人模式下只能选择普通难度
-  if (archiveData.gameMode === 'singleplayer' && difficulty !== 'normal') {
-    return
+  if (archiveData.gameMode === "singleplayer" && difficulty !== "normal") {
+    return;
   }
 
-  if (type === 'archive') {
-    archiveData.archiveDifficulty = difficulty
-  } else if (type === 'actual') {
-    archiveData.actualDifficulty = difficulty
+  if (type === "archive") {
+    archiveData.archiveDifficulty = difficulty;
+  } else if (type === "actual") {
+    archiveData.actualDifficulty = difficulty;
   }
-}
+};
 
 const getSlotContent = (playerIndex, slotIndex) => {
-  if (archiveData.players[playerIndex] && archiveData.players[playerIndex].inventory) {
-    const item = archiveData.players[playerIndex].inventory[slotIndex]
-    return item && item !== 'None' ? item : null
+  if (
+    archiveData.players[playerIndex] &&
+    archiveData.players[playerIndex].inventory
+  ) {
+    const item = archiveData.players[playerIndex].inventory[slotIndex];
+    return item && item !== "None" ? item : null;
   }
-  return null
-}
+  return null;
+};
 
 // 获取物品图片文件名
 const getItemImageFile = (itemName) => {
-  if (!itemName || itemName === 'None') return null
+  if (!itemName || itemName === "None") return null;
 
   // 特殊处理Toy物品，它的图片文件名是Teddy_Bear.png而不是Toy.png
-  if (itemName === 'Toy') return 'Teddy_Bear.png'
+  if (itemName === "Toy") return "Teddy_Bear.png";
 
   // 其他物品使用默认规则：物品名.png
-  return `${itemName}.png`
-}
+  return `${itemName}.png`;
+};
 
 const getSlotLabel = (slotIndex) => {
-  const labels = ['mainHand', 'offHand1', 'offHand2']
-  return labels[slotIndex] || ''
-}
+  const labels = ["mainHand", "offHand1", "offHand2"];
+  return labels[slotIndex] || "";
+};
 
 // 物品名称到ID的反向映射
 const getItemIdByName = (itemName) => {
-  if (!itemName || itemName === 'None') return -1
+  if (!itemName || itemName === "None") return -1;
 
   const itemMap = {
-    'AlmondConcentrate': 1,
-    'BugSpray': 2,
-    'Camera': 3,
-    'AlmondWater': 4,
-    'Chainsaw': 5,
-    'DivingHelmet': 6,
-    'EnergyBar': 7,
-    'Firework': 8,
-    'Flaregun': 9,
-    'Flashlight': 10,
-    'GlowstickBlue': 11,
-    'GlowStick': 12,
-    'GlowstickRed': 13,
-    'GlowstickYellow': 14,
-    'Juice': 15,
-    'LiquidPain': 16,
-    'Rope': 17,
-    'LiDAR': 18,
-    'Thermometer': 19,
-    'Ticket': 20,
-    'WalkieTalkie': 21,
-    'MothJelly': 22,
-    'Crowbar': 23,
-    'Knife': 24,
-    'Toy': 25
-  }
-  return itemMap[itemName] || -1
-}
+    AlmondConcentrate: 1,
+    BugSpray: 2,
+    Camera: 3,
+    AlmondWater: 4,
+    Chainsaw: 5,
+    DivingHelmet: 6,
+    EnergyBar: 7,
+    Firework: 8,
+    Flaregun: 9,
+    Flashlight: 10,
+    GlowstickBlue: 11,
+    GlowStick: 12,
+    GlowstickRed: 13,
+    GlowstickYellow: 14,
+    Juice: 15,
+    LiquidPain: 16,
+    Rope: 17,
+    LiDAR: 18,
+    Thermometer: 19,
+    Ticket: 20,
+    WalkieTalkie: 21,
+    MothJelly: 22,
+    Crowbar: 23,
+    Knife: 24,
+    Toy: 25,
+  };
+  return itemMap[itemName] || -1;
+};
 
 const editSlot = (playerIndex, slotIndex) => {
-  editingSlot.value = { playerIndex, slotIndex }
-  showItemSelector.value = true
-}
+  editingSlot.value = { playerIndex, slotIndex };
+  showItemSelector.value = true;
+};
 
 const handleItemSelect = (itemId) => {
-  const { playerIndex, slotIndex } = editingSlot.value
+  const { playerIndex, slotIndex } = editingSlot.value;
 
   if (archiveData.players[playerIndex]) {
-    archiveData.players[playerIndex].inventory[slotIndex] = itemId
+    archiveData.players[playerIndex].inventory[slotIndex] = itemId;
   }
 
-  showItemSelector.value = false
-}
+  showItemSelector.value = false;
+};
 
 // 验证Steam ID格式
 const validateSteamId = (steamId) => {
-  if (!steamId || steamId.trim() === '') {
-    return { valid: false, message: t('editArchive.steamIdRequired') }
+  if (!steamId || steamId.trim() === "") {
+    return { valid: false, message: t("editArchive.steamIdRequired") };
   }
 
   // 检查是否为离线玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
-  if (steamId.includes('-')) {
-    const parts = steamId.split('-')
+  if (steamId.includes("-")) {
+    const parts = steamId.split("-");
     if (parts.length === 2 && parts[0].length === 5 && parts[1].length === 15) {
-      return { valid: true, isOfflinePlayer: true, processedSteamId: parts[0] }
+      return { valid: true, isOfflinePlayer: true, processedSteamId: parts[0] };
     } else {
-      return { valid: false, message: t('editArchive.steamIdInvalid') }
+      return { valid: false, message: t("editArchive.steamIdInvalid") };
     }
   }
 
   // 检查是否为纯数字
   if (!/^\d+$/.test(steamId)) {
-    return { valid: false, message: t('editArchive.steamIdInvalid') }
+    return { valid: false, message: t("editArchive.steamIdInvalid") };
   }
 
   // 对于在线Steam ID，检查长度是否为17位
   if (steamId.length !== 17) {
-    return { valid: false, message: t('editArchive.steamIdValidationError', { error: t('editArchive.steamIdLengthError') }) }
+    return {
+      valid: false,
+      message: t("editArchive.steamIdValidationError", {
+        error: t("editArchive.steamIdLengthError"),
+      }),
+    };
   }
 
-  return { valid: true, isOfflinePlayer: false, processedSteamId: steamId }
-}
+  return { valid: true, isOfflinePlayer: false, processedSteamId: steamId };
+};
 
 // 存储当前的定时器ID，以便可以取消之前的定时器
 let messageTimeout = null;
 
 const addPlayer = async () => {
   // 清空之前的提示信息
-  playerInputMessage.value = ''
-  playerInputMessageType.value = ''
+  playerInputMessage.value = "";
+  playerInputMessageType.value = "";
 
-  const steamId = newSteamId.value.trim()
+  const steamId = newSteamId.value.trim();
   if (!steamId) {
-    playerInputMessage.value = t('editArchive.steamIdRequired')
-    playerInputMessageType.value = 'error'
+    playerInputMessage.value = t("editArchive.steamIdRequired");
+    playerInputMessageType.value = "error";
 
     // 3秒后自动清除错误提示
     if (messageTimeout) clearTimeout(messageTimeout);
     messageTimeout = setTimeout(() => {
-      playerInputMessage.value = ''
-      playerInputMessageType.value = ''
-    }, 3000)
-    return
+      playerInputMessage.value = "";
+      playerInputMessageType.value = "";
+    }, 3000);
+    return;
   }
 
   // 验证Steam ID
-  const validation = validateSteamId(steamId)
+  const validation = validateSteamId(steamId);
   if (!validation.valid) {
     // 使用输入框下方提示方式
-    playerInputMessage.value = validation.message
-    playerInputMessageType.value = 'error'
+    playerInputMessage.value = validation.message;
+    playerInputMessageType.value = "error";
 
     // 3秒后自动清除错误提示
     if (messageTimeout) clearTimeout(messageTimeout);
     messageTimeout = setTimeout(() => {
-      playerInputMessage.value = ''
-      playerInputMessageType.value = ''
-    }, 3000)
-    return
+      playerInputMessage.value = "";
+      playerInputMessageType.value = "";
+    }, 3000);
+    return;
   }
 
   // 检查是否已存在相同的Steam ID
-  const isDuplicate = archiveData.players.some(player => player.steamId === validation.processedSteamId)
+  const isDuplicate = archiveData.players.some(
+    (player) => player.steamId === validation.processedSteamId
+  );
   if (isDuplicate) {
-    const duplicateMessage = t('editArchive.steamIdDuplicate', { steamId: validation.processedSteamId })
-    playerInputMessage.value = duplicateMessage
-    playerInputMessageType.value = 'error'
+    const duplicateMessage = t("editArchive.steamIdDuplicate", {
+      steamId: validation.processedSteamId,
+    });
+    playerInputMessage.value = duplicateMessage;
+    playerInputMessageType.value = "error";
 
     // 3秒后自动清除错误提示
     if (messageTimeout) clearTimeout(messageTimeout);
     messageTimeout = setTimeout(() => {
-      playerInputMessage.value = ''
-      playerInputMessageType.value = ''
-    }, 3000)
-    return
+      playerInputMessage.value = "";
+      playerInputMessageType.value = "";
+    }, 3000);
+    return;
   }
 
   // 创建新玩家对象
@@ -753,14 +1023,14 @@ const addPlayer = async () => {
     inventory: Array(12).fill(null),
     username: null,
     isOfflinePlayer: validation.isOfflinePlayer,
-    sanity: 100 // 新玩家默认理智值为100
-  }
+    sanity: 100, // 新玩家默认理智值为100
+  };
 
   // 如果是离线玩家，直接设置用户名
   if (validation.isOfflinePlayer) {
     // 处理本地玩家格式
-    if (validation.processedSteamId.includes('-')) {
-      const parts = validation.processedSteamId.split('-');
+    if (validation.processedSteamId.includes("-")) {
+      const parts = validation.processedSteamId.split("-");
       if (parts.length > 1) {
         newPlayer.username = `${parts[0]}(本地)`;
       } else {
@@ -771,205 +1041,217 @@ const addPlayer = async () => {
     }
   }
 
-  archiveData.players.push(newPlayer)
+  archiveData.players.push(newPlayer);
 
   // 显示成功提示
-  playerInputMessage.value = t('editArchive.playerAddedSuccess')
-  playerInputMessageType.value = 'success'
+  playerInputMessage.value = t("editArchive.playerAddedSuccess");
+  playerInputMessageType.value = "success";
 
-  newSteamId.value = ''
-  activePlayerIndex.value = archiveData.players.length - 1
+  newSteamId.value = "";
+  activePlayerIndex.value = archiveData.players.length - 1;
 
   // 如果不是离线玩家，获取Steam用户名
   if (!validation.isOfflinePlayer) {
     try {
-      const usernames = await invoke('get_steam_usernames_command', { steamIds: [validation.processedSteamId] })
+      const usernames = await invoke("get_steam_usernames_command", {
+        steamIds: [validation.processedSteamId],
+      });
       if (usernames[validation.processedSteamId]) {
-        archiveData.players[archiveData.players.length - 1].username = usernames[validation.processedSteamId]
+        archiveData.players[archiveData.players.length - 1].username =
+          usernames[validation.processedSteamId];
       }
     } catch (error) {
-      console.error('获取Steam用户名失败:', error)
+      console.error("获取Steam用户名失败:", error);
       // 检查是否为无效ID格式错误
-      if (error.toString().includes('无效的Steam ID格式')) {
+      if (error.toString().includes("无效的Steam ID格式")) {
         // 提取横杠前的部分作为用户名显示
-        const parts = validation.processedSteamId.split('-')
+        const parts = validation.processedSteamId.split("-");
         if (parts.length > 1) {
-          archiveData.players[archiveData.players.length - 1].username = `${parts[0]}(本地)`
-          archiveData.players[archiveData.players.length - 1].isOfflinePlayer = true
+          archiveData.players[
+            archiveData.players.length - 1
+          ].username = `${parts[0]}(本地)`;
+          archiveData.players[
+            archiveData.players.length - 1
+          ].isOfflinePlayer = true;
           // 显示成功提示而不是错误提示
-          playerInputMessage.value = t('editArchive.playerAddedSuccess')
-          playerInputMessageType.value = 'success'
+          playerInputMessage.value = t("editArchive.playerAddedSuccess");
+          playerInputMessageType.value = "success";
         } else {
           // 显示获取用户名失败的提示
-          playerInputMessage.value = t('editArchive.failedToFetchSteamUsername', { error: error.message || error })
-          playerInputMessageType.value = 'error'
+          playerInputMessage.value = t(
+            "editArchive.failedToFetchSteamUsername",
+            { error: error.message || error }
+          );
+          playerInputMessageType.value = "error";
         }
       } else {
         // 显示获取用户名失败的提示
-        playerInputMessage.value = t('editArchive.failedToFetchSteamUsername', { error: error.message || error })
-        playerInputMessageType.value = 'error'
+        playerInputMessage.value = t("editArchive.failedToFetchSteamUsername", {
+          error: error.message || error,
+        });
+        playerInputMessageType.value = "error";
       }
 
       // 3秒后自动清除提示
       if (messageTimeout) clearTimeout(messageTimeout);
       messageTimeout = setTimeout(() => {
-        playerInputMessage.value = ''
-        playerInputMessageType.value = ''
-      }, 3000)
+        playerInputMessage.value = "";
+        playerInputMessageType.value = "";
+      }, 3000);
     }
   }
 
   // 3秒后自动清除成功提示
   if (messageTimeout) clearTimeout(messageTimeout);
   messageTimeout = setTimeout(() => {
-    playerInputMessage.value = ''
-    playerInputMessageType.value = ''
-  }, 3000)
-}
+    playerInputMessage.value = "";
+    playerInputMessageType.value = "";
+  }, 3000);
+};
 
 const removePlayer = (index) => {
-  archiveData.players.splice(index, 1)
+  archiveData.players.splice(index, 1);
   if (activePlayerIndex.value >= archiveData.players.length) {
-    activePlayerIndex.value = archiveData.players.length - 1
+    activePlayerIndex.value = archiveData.players.length - 1;
   }
   if (archiveData.players.length === 0) {
-    activePlayerIndex.value = -1
+    activePlayerIndex.value = -1;
   }
-}
+};
 
 const selectPlayer = (index) => {
-  activePlayerIndex.value = index
+  activePlayerIndex.value = index;
   // 同步当前玩家理智值到本地变量
   if (index !== -1 && archiveData.players[index]) {
-    currentPlayerSanity.value = archiveData.players[index].sanity ?? 100
+    currentPlayerSanity.value = archiveData.players[index].sanity ?? 100;
   } else {
-    currentPlayerSanity.value = 100
+    currentPlayerSanity.value = 100;
   }
-}
+};
 
 // 理智值相关方法
 const getCurrentPlayerDisplayName = () => {
-  if (activePlayerIndex.value === -1 || !archiveData.players[activePlayerIndex.value]) {
-    return ''
+  if (
+    activePlayerIndex.value === -1 ||
+    !archiveData.players[activePlayerIndex.value]
+  ) {
+    return "";
   }
 
-  const player = archiveData.players[activePlayerIndex.value]
+  const player = archiveData.players[activePlayerIndex.value];
   if (player.username) {
-    return player.username
+    return player.username;
   }
 
-  return `玩家 ${player.steamId.substring(0, 8)}...`
-}
-
-
+  return `玩家 ${player.steamId.substring(0, 8)}...`;
+};
 
 const adjustSanity = (delta) => {
-  if (activePlayerIndex.value === -1) return
+  if (activePlayerIndex.value === -1) return;
 
-  const player = archiveData.players[activePlayerIndex.value]
-  const currentSanity = player.sanity ?? 100
-  const newSanity = Math.max(0, Math.min(100, currentSanity + delta))
+  const player = archiveData.players[activePlayerIndex.value];
+  const currentSanity = player.sanity ?? 100;
+  const newSanity = Math.max(0, Math.min(100, currentSanity + delta));
 
-  player.sanity = newSanity
-  currentPlayerSanity.value = newSanity
-}
+  player.sanity = newSanity;
+  currentPlayerSanity.value = newSanity;
+};
 
 const setMaxSanity = () => {
-  if (activePlayerIndex.value === -1) return
+  if (activePlayerIndex.value === -1) return;
 
-  archiveData.players[activePlayerIndex.value].sanity = 100
-  currentPlayerSanity.value = 100
-}
+  archiveData.players[activePlayerIndex.value].sanity = 100;
+  currentPlayerSanity.value = 100;
+};
 
 const setMinSanity = () => {
-  if (activePlayerIndex.value === -1) return
+  if (activePlayerIndex.value === -1) return;
 
-  archiveData.players[activePlayerIndex.value].sanity = 0
-  currentPlayerSanity.value = 0
-}
-
-
+  archiveData.players[activePlayerIndex.value].sanity = 0;
+  currentPlayerSanity.value = 0;
+};
 
 const getSanityClass = (sanityValue) => {
   if (sanityValue >= 80) {
-    return 'sanity-high'
+    return "sanity-high";
   } else if (sanityValue >= 50) {
-    return 'sanity-medium'
+    return "sanity-medium";
   } else if (sanityValue >= 20) {
-    return 'sanity-low'
+    return "sanity-low";
   } else {
-    return 'sanity-critical'
+    return "sanity-critical";
   }
-}
+};
 
 // 关闭编辑页面
 const closeEdit = () => {
-  router.push({ name: 'Home' })
-}
+  router.push({ name: "Home" });
+};
 
 // 动画
 const animateIn = () => {
   nextTick(() => {
-    const container = document.querySelector('.edit-archive-container')
+    const container = document.querySelector(".edit-archive-container");
     if (container) {
       // 确保初始位置正确，避免margin auto的冲突
-      gsap.set(container, { opacity: 0, y: 20 })
-      gsap.to(container,
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.3,
-          ease: 'power3.out',
-          clearProps: 'transform',
-          // 优化性能：减少GPU负载
-          force3D: false,
-          // 使用更高效的渲染路径
-          immediateRender: false
-        }
-      )
+      gsap.set(container, { opacity: 0, y: 20 });
+      gsap.to(container, {
+        opacity: 1,
+        y: 0,
+        duration: 0.3,
+        ease: "power3.out",
+        clearProps: "transform",
+        // 优化性能：减少GPU负载
+        force3D: false,
+        // 使用更高效的渲染路径
+        immediateRender: false,
+      });
     }
-  })
-}
+  });
+};
 
 // 监听游戏模式变化
-watch(() => archiveData.gameMode, (newMode) => {
-  if (newMode === 'singleplayer') {
-    // 当切换到单人模式时，自动设置难度为普通
-    archiveData.archiveDifficulty = 'normal'
-    archiveData.actualDifficulty = 'normal'
+watch(
+  () => archiveData.gameMode,
+  (newMode) => {
+    if (newMode === "singleplayer") {
+      // 当切换到单人模式时，自动设置难度为普通
+      archiveData.archiveDifficulty = "normal";
+      archiveData.actualDifficulty = "normal";
+    }
   }
-})
+);
 
 // 监听当前玩家理智值变化，实时更新到存档数据中
 watch(currentPlayerSanity, (newSanity, oldSanity) => {
   if (activePlayerIndex.value !== -1 && archiveData.players.length > 0) {
     // 确保理智值在有效范围内
-    const validSanity = Math.max(0, Math.min(100, Number(newSanity) ?? 100))
+    const validSanity = Math.max(0, Math.min(100, Number(newSanity) ?? 100));
 
     // 立即更新玩家数据
     if (archiveData.players[activePlayerIndex.value]) {
-      archiveData.players[activePlayerIndex.value].sanity = validSanity
+      archiveData.players[activePlayerIndex.value].sanity = validSanity;
     }
   }
-})
+});
 
 onMounted(() => {
-  console.log('EditArchive component mounted')
-  loadLevels()
-  animateIn()
-  initArchiveData()
+  console.log("EditArchive component mounted");
+  loadLevels();
+  animateIn();
+  initArchiveData();
 
   // 如果有存档数据但没有玩家，不添加空玩家
   // 只有当用户手动添加玩家时才创建
 
   // 调试：检查可用层级数据
   setTimeout(() => {
-    console.log('Available levels after mount:', availableLevels.value.length)
+    console.log("Available levels after mount:", availableLevels.value.length);
     if (availableLevels.value.length > 0) {
-      console.log('First few levels:', availableLevels.value.slice(0, 3))
+      console.log("First few levels:", availableLevels.value.slice(0, 3));
     }
-  }, 1000)
-})
+  }, 1000);
+});
 
 // 在<script setup>中不需要return语句，所有变量都会自动暴露给模板
 </script>
@@ -1030,13 +1312,18 @@ onMounted(() => {
 }
 
 .btn-primary::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -1057,13 +1344,18 @@ onMounted(() => {
 }
 
 .btn-secondary::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -1112,7 +1404,11 @@ onMounted(() => {
   font-size: 16px;
   border: 2px solid var(--divider-color);
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    var(--card-bg) 100%
+  );
   color: var(--text-primary);
   outline: none;
   transition: all 0.3s ease;
@@ -1121,7 +1417,8 @@ onMounted(() => {
 
 .form-input:focus {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15), 0 4px 12px rgba(0, 122, 255, 0.1);
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15),
+    0 4px 12px rgba(0, 122, 255, 0.1);
   background: var(--card-bg);
   transform: translateY(-1px);
 }
@@ -1159,7 +1456,11 @@ onMounted(() => {
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--card-bg) 0%,
+    var(--bg-secondary) 100%
+  );
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--divider-light);
 }
@@ -1266,7 +1567,11 @@ onMounted(() => {
   align-items: center;
   padding: 16px 8px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    var(--bg-primary) 100%
+  );
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -1341,7 +1646,11 @@ onMounted(() => {
   width: 60px;
   height: 60px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--card-bg) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    var(--card-bg) 100%
+  );
   border: 2px solid var(--divider-light);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1977,7 +2286,11 @@ onMounted(() => {
   align-items: center;
   padding: 12px 16px;
   margin-top: 12px;
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(0, 122, 255, 0.05));
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.1),
+    rgba(0, 122, 255, 0.05)
+  );
   border: 1px solid rgba(0, 122, 255, 0.2);
   border-radius: 12px;
   color: var(--text-primary);
@@ -2047,7 +2360,7 @@ onMounted(() => {
   border-radius: 8px;
   background: var(--bg-secondary);
   color: var(--text-primary);
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
   font-size: 14px;
   line-height: 1.5;
   resize: vertical;

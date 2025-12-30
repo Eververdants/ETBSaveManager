@@ -1,9 +1,9 @@
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 /**
  * 验证器 composable
  * 用于验证存档配置的完整性和正确性
- * 
+ *
  * Requirements: 13.1, 13.2, 13.3
  */
 
@@ -45,7 +45,7 @@ import { ref, computed } from 'vue'
  * @returns {boolean}
  */
 export function isEmptyName(name) {
-  return !name || typeof name !== 'string' || name.trim() === ''
+  return !name || typeof name !== "string" || name.trim() === "";
 }
 
 /**
@@ -54,26 +54,26 @@ export function isEmptyName(name) {
  * @returns {Map<string, string[]>} 名称到重复存档ID列表的映射
  */
 export function findDuplicateNames(archives) {
-  const nameMap = new Map()
-  const duplicates = new Map()
+  const nameMap = new Map();
+  const duplicates = new Map();
 
   for (const archive of archives) {
-    const name = archive.name?.trim().toLowerCase()
-    if (!name) continue
+    const name = archive.name?.trim().toLowerCase();
+    if (!name) continue;
 
     if (!nameMap.has(name)) {
-      nameMap.set(name, [])
+      nameMap.set(name, []);
     }
-    nameMap.get(name).push(archive.id)
+    nameMap.get(name).push(archive.id);
   }
 
   for (const [name, ids] of nameMap) {
     if (ids.length > 1) {
-      duplicates.set(name, ids)
+      duplicates.set(name, ids);
     }
   }
 
-  return duplicates
+  return duplicates;
 }
 
 /**
@@ -83,38 +83,38 @@ export function findDuplicateNames(archives) {
  * @returns {{ errors: ValidationError[], warnings: ValidationWarning[] }}
  */
 export function validateArchive(archive, duplicateIds = new Set()) {
-  const errors = []
-  const warnings = []
+  const errors = [];
+  const warnings = [];
 
   // 1. 检查空名称
   if (isEmptyName(archive.name)) {
     errors.push({
       archiveId: archive.id,
-      field: 'name',
-      message: '存档名称不能为空',
-      type: 'empty_name'
-    })
+      field: "name",
+      message: "存档名称不能为空",
+      type: "empty_name",
+    });
   }
 
   // 2. 检查必填字段 - 层级
   if (archive.finalLevel === null || archive.finalLevel === undefined) {
     errors.push({
       archiveId: archive.id,
-      field: 'level',
-      message: '请指定层级',
-      type: 'missing_level'
-    })
+      field: "level",
+      message: "请指定层级",
+      type: "missing_level",
+    });
   }
 
   // 3. 检查重复名称（作为警告）
   if (duplicateIds.has(archive.id)) {
     warnings.push({
       archiveId: archive.id,
-      message: '存在重复的存档名称'
-    })
+      message: "存在重复的存档名称",
+    });
   }
 
-  return { errors, warnings }
+  return { errors, warnings };
 }
 
 /**
@@ -126,33 +126,33 @@ export function validate(archives) {
   const result = {
     isValid: true,
     errors: [],
-    warnings: []
-  }
+    warnings: [],
+  };
 
   if (!Array.isArray(archives) || archives.length === 0) {
-    return result
+    return result;
   }
 
   // 查找重复名称
-  const duplicates = findDuplicateNames(archives)
-  const duplicateIds = new Set()
+  const duplicates = findDuplicateNames(archives);
+  const duplicateIds = new Set();
   for (const ids of duplicates.values()) {
     for (const id of ids) {
-      duplicateIds.add(id)
+      duplicateIds.add(id);
     }
   }
 
   // 验证每个存档
   for (const archive of archives) {
-    const { errors, warnings } = validateArchive(archive, duplicateIds)
-    result.errors.push(...errors)
-    result.warnings.push(...warnings)
+    const { errors, warnings } = validateArchive(archive, duplicateIds);
+    result.errors.push(...errors);
+    result.warnings.push(...warnings);
   }
 
   // 如果有错误，则验证不通过
-  result.isValid = result.errors.length === 0
+  result.isValid = result.errors.length === 0;
 
-  return result
+  return result;
 }
 
 /**
@@ -162,7 +162,7 @@ export function validate(archives) {
  * @returns {ValidationError[]}
  */
 export function getArchiveErrors(validationResult, archiveId) {
-  return validationResult.errors.filter(e => e.archiveId === archiveId)
+  return validationResult.errors.filter((e) => e.archiveId === archiveId);
 }
 
 /**
@@ -172,7 +172,7 @@ export function getArchiveErrors(validationResult, archiveId) {
  * @returns {ValidationWarning[]}
  */
 export function getArchiveWarnings(validationResult, archiveId) {
-  return validationResult.warnings.filter(w => w.archiveId === archiveId)
+  return validationResult.warnings.filter((w) => w.archiveId === archiveId);
 }
 
 /**
@@ -182,7 +182,7 @@ export function getArchiveWarnings(validationResult, archiveId) {
  * @returns {boolean}
  */
 export function hasArchiveErrors(validationResult, archiveId) {
-  return validationResult.errors.some(e => e.archiveId === archiveId)
+  return validationResult.errors.some((e) => e.archiveId === archiveId);
 }
 
 /**
@@ -192,15 +192,15 @@ export function hasArchiveErrors(validationResult, archiveId) {
  */
 export function getValidationStats(validationResult) {
   const affectedArchiveIds = new Set([
-    ...validationResult.errors.map(e => e.archiveId),
-    ...validationResult.warnings.map(w => w.archiveId)
-  ])
+    ...validationResult.errors.map((e) => e.archiveId),
+    ...validationResult.warnings.map((w) => w.archiveId),
+  ]);
 
   return {
     errorCount: validationResult.errors.length,
     warningCount: validationResult.warnings.length,
-    affectedArchives: affectedArchiveIds.size
-  }
+    affectedArchives: affectedArchiveIds.size,
+  };
 }
 
 /**
@@ -212,8 +212,8 @@ export function useValidator() {
   const validationResult = ref({
     isValid: true,
     errors: [],
-    warnings: []
-  })
+    warnings: [],
+  });
 
   /**
    * 验证存档列表
@@ -221,9 +221,9 @@ export function useValidator() {
    * @returns {ValidationResult}
    */
   const validateArchives = (archives) => {
-    validationResult.value = validate(archives)
-    return validationResult.value
-  }
+    validationResult.value = validate(archives);
+    return validationResult.value;
+  };
 
   /**
    * 清空验证结果
@@ -232,16 +232,16 @@ export function useValidator() {
     validationResult.value = {
       isValid: true,
       errors: [],
-      warnings: []
-    }
-  }
+      warnings: [],
+    };
+  };
 
   // 计算属性
-  const isValid = computed(() => validationResult.value.isValid)
-  const errorCount = computed(() => validationResult.value.errors.length)
-  const warningCount = computed(() => validationResult.value.warnings.length)
-  
-  const stats = computed(() => getValidationStats(validationResult.value))
+  const isValid = computed(() => validationResult.value.isValid);
+  const errorCount = computed(() => validationResult.value.errors.length);
+  const warningCount = computed(() => validationResult.value.warnings.length);
+
+  const stats = computed(() => getValidationStats(validationResult.value));
 
   /**
    * 获取指定存档的错误
@@ -249,8 +249,8 @@ export function useValidator() {
    * @returns {ValidationError[]}
    */
   const getErrorsForArchive = (archiveId) => {
-    return getArchiveErrors(validationResult.value, archiveId)
-  }
+    return getArchiveErrors(validationResult.value, archiveId);
+  };
 
   /**
    * 获取指定存档的警告
@@ -258,8 +258,8 @@ export function useValidator() {
    * @returns {ValidationWarning[]}
    */
   const getWarningsForArchive = (archiveId) => {
-    return getArchiveWarnings(validationResult.value, archiveId)
-  }
+    return getArchiveWarnings(validationResult.value, archiveId);
+  };
 
   /**
    * 检查指定存档是否有错误
@@ -267,8 +267,8 @@ export function useValidator() {
    * @returns {boolean}
    */
   const archiveHasErrors = (archiveId) => {
-    return hasArchiveErrors(validationResult.value, archiveId)
-  }
+    return hasArchiveErrors(validationResult.value, archiveId);
+  };
 
   return {
     // 状态
@@ -277,14 +277,14 @@ export function useValidator() {
     errorCount,
     warningCount,
     stats,
-    
+
     // 方法
     validateArchives,
     clearValidation,
     getErrorsForArchive,
     getWarningsForArchive,
     archiveHasErrors,
-    
+
     // 导出纯函数
     validate,
     validateArchive,
@@ -293,6 +293,6 @@ export function useValidator() {
     getArchiveErrors,
     getArchiveWarnings,
     hasArchiveErrors,
-    getValidationStats
-  }
+    getValidationStats,
+  };
 }

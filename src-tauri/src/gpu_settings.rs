@@ -2,25 +2,40 @@ use crate::common::get_app_config_dir;
 use serde_json::Value;
 use std::fs;
 
+/// GPU 加速启用时的浏览器参数
+const GPU_ENABLED_ARGS: &[&str] = &[
+    "--disable-gpu-sandbox",
+    "--disable-software-rasterizer",
+    "--enable-gpu-rasterization",
+    "--force-gpu-rasterization",
+];
+
+/// GPU 加速禁用时的浏览器参数
+const GPU_DISABLED_ARGS: &[&str] = &[
+    "--disable-gpu",
+    "--disable-gpu-sandbox",
+    "--disable-software-rasterizer",
+];
+
 /// 获取当前GPU加速设置状态
 #[tauri::command]
 pub fn get_gpu_acceleration_status() -> Result<bool, String> {
     let config_file = get_app_config_dir()?.join("gpu_config.json");
 
-    if config_file.exists() {
-        let content =
-            fs::read_to_string(&config_file).map_err(|e| format!("读取GPU配置失败: {}", e))?;
-
-        let config: Value =
-            serde_json::from_str(&content).map_err(|e| format!("解析GPU配置失败: {}", e))?;
-
-        Ok(config
-            .get("gpuAccelerationDisabled")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(false))
-    } else {
-        Ok(false)
+    if !config_file.exists() {
+        return Ok(false);
     }
+
+    let content =
+        fs::read_to_string(&config_file).map_err(|e| format!("读取GPU配置失败: {}", e))?;
+
+    let config: Value =
+        serde_json::from_str(&content).map_err(|e| format!("解析GPU配置失败: {}", e))?;
+
+    Ok(config
+        .get("gpuAccelerationDisabled")
+        .and_then(Value::as_bool)
+        .unwrap_or(false))
 }
 
 /// 设置GPU加速状态
@@ -56,18 +71,11 @@ pub fn set_gpu_acceleration(disabled: bool) -> Result<bool, String> {
 pub fn get_browser_args() -> Vec<String> {
     let disabled = get_gpu_acceleration_status().unwrap_or(false);
 
-    if disabled {
-        vec![
-            "--disable-gpu".to_string(),
-            "--disable-gpu-sandbox".to_string(),
-            "--disable-software-rasterizer".to_string(),
-        ]
+    let args = if disabled {
+        GPU_DISABLED_ARGS
     } else {
-        vec![
-            "--disable-gpu-sandbox".to_string(),
-            "--disable-software-rasterizer".to_string(),
-            "--enable-gpu-rasterization".to_string(),
-            "--force-gpu-rasterization".to_string(),
-        ]
-    }
+        GPU_ENABLED_ARGS
+    };
+
+    args.iter().map(|s| s.to_string()).collect()
 }

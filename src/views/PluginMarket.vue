@@ -4,18 +4,28 @@
     <div class="search-container">
       <div class="search-bar">
         <font-awesome-icon :icon="['fas', 'search']" class="search-icon" />
-        <input v-model="searchQuery" type="text" :placeholder="t('plugin.searchPlaceholder')" class="search-input" />
+        <input
+          v-model="searchQuery"
+          type="text"
+          :placeholder="t('plugin.searchPlaceholder')"
+          class="search-input"
+        />
       </div>
       <button class="local-install-button" @click="openLocalInstall">
         <font-awesome-icon :icon="['fas', 'plus']" />
-        {{ t('plugin.installLocal') }}
+        {{ t("plugin.installLocal") }}
       </button>
     </div>
 
     <!-- 分类标签 -->
     <div class="category-tabs">
-      <button v-for="category in categories" :key="category.id" class="category-tab"
-        :class="{ active: selectedCategory === category.id }" @click="selectCategory(category.id)">
+      <button
+        v-for="category in categories"
+        :key="category.id"
+        class="category-tab"
+        :class="{ active: selectedCategory === category.id }"
+        @click="selectCategory(category.id)"
+      >
         {{ category.name }}
       </button>
     </div>
@@ -25,7 +35,7 @@
       <!-- 加载状态 -->
       <div v-if="loading" class="loading-state">
         <div class="loading-spinner"></div>
-        <p>{{ $t('plugin.loading') }}</p>
+        <p>{{ $t("plugin.loading") }}</p>
       </div>
 
       <!-- 错误状态 -->
@@ -34,19 +44,24 @@
         <p>{{ error }}</p>
         <button class="retry-button" @click="fetchPlugins">
           <font-awesome-icon :icon="['fas', 'redo']" />
-          {{ $t('plugin.retry') }}
+          {{ $t("plugin.retry") }}
         </button>
       </div>
 
       <!-- 空状态 -->
       <div v-else-if="filteredPlugins.length === 0" class="empty-state">
         <font-awesome-icon :icon="['fas', 'search']" />
-        <p>{{ $t('plugin.noResults') }}</p>
+        <p>{{ $t("plugin.noResults") }}</p>
       </div>
 
       <!-- 插件卡片 -->
-      <div v-else v-for="plugin in filteredPlugins" :key="plugin.id" class="plugin-card archive-card"
-        @click="openPluginDetail(plugin)">
+      <div
+        v-else
+        v-for="plugin in filteredPlugins"
+        :key="plugin.id"
+        class="plugin-card archive-card"
+        @click="openPluginDetail(plugin)"
+      >
         <div class="card-background">
           <div class="plugin-icon">
             <font-awesome-icon :icon="['fas', plugin.icon]" />
@@ -55,13 +70,15 @@
             <h3 class="archive-name plugin-name">{{ plugin.name }}</h3>
             <div class="game-mode-info">
               <span class="mode-tag mode-single">
-                <span class="tag-short">{{ $t('plugin.plugin') }}</span>
-                <span class="tag-full">{{ $t('plugin.plugin') }}</span>
+                <span class="tag-short">{{ $t("plugin.plugin") }}</span>
+                <span class="tag-full">{{ $t("plugin.plugin") }}</span>
               </span>
               <span class="difficulty-tags">
                 <span class="difficulty-tag archive-difficulty difficulty-easy">
                   <span class="tag-short">v{{ plugin.version }}</span>
-                  <span class="tag-full">{{ $t('plugin.version') }}: v{{ plugin.version }}</span>
+                  <span class="tag-full"
+                    >{{ $t("plugin.version") }}: v{{ plugin.version }}</span
+                  >
                 </span>
               </span>
             </div>
@@ -69,13 +86,23 @@
         </div>
         <div class="card-info">
           <div class="level-info">
-            <span class="current-level plugin-description">{{ plugin.description }}</span>
+            <span class="current-level plugin-description">{{
+              plugin.description
+            }}</span>
           </div>
           <div class="action-buttons">
-            <button v-if="plugin.installed" class="action-btn installed" @click.stop="togglePlugin(plugin)">
+            <button
+              v-if="plugin.installed"
+              class="action-btn installed"
+              @click.stop="togglePlugin(plugin)"
+            >
               <font-awesome-icon :icon="['fas', 'check']" />
             </button>
-            <button v-else class="action-btn install" @click.stop="installPlugin(plugin)">
+            <button
+              v-else
+              class="action-btn install"
+              @click.stop="installPlugin(plugin)"
+            >
               <font-awesome-icon :icon="['fas', 'download']" />
             </button>
           </div>
@@ -85,7 +112,11 @@
 
     <!-- 插件详情模态框 -->
     <transition name="modal">
-      <div v-if="selectedPlugin" class="plugin-modal" @click="closePluginDetail">
+      <div
+        v-if="selectedPlugin"
+        class="plugin-modal"
+        @click="closePluginDetail"
+      >
         <div class="modal-content" @click.stop>
           <div class="modal-header">
             <div class="plugin-icon-large">
@@ -102,20 +133,20 @@
 
           <div class="modal-body">
             <div class="plugin-details">
-              <h3>{{ $t('plugin.description') }}</h3>
+              <h3>{{ $t("plugin.description") }}</h3>
               <p>{{ selectedPlugin.description }}</p>
 
               <div class="plugin-info-list">
                 <div class="info-item">
-                  <span class="info-label">{{ $t('plugin.author') }}:</span>
+                  <span class="info-label">{{ $t("plugin.author") }}:</span>
                   <span class="info-value">{{ selectedPlugin.author }}</span>
                 </div>
                 <div class="info-item">
-                  <span class="info-label">{{ $t('plugin.version') }}:</span>
+                  <span class="info-label">{{ $t("plugin.version") }}:</span>
                   <span class="info-value">v{{ selectedPlugin.version }}</span>
                 </div>
                 <div class="info-item">
-                  <span class="info-label">{{ $t('plugin.license') }}:</span>
+                  <span class="info-label">{{ $t("plugin.license") }}:</span>
                   <span class="info-value">{{ selectedPlugin.license }}</span>
                 </div>
               </div>
@@ -123,14 +154,21 @@
           </div>
 
           <div class="modal-footer">
-            <button v-if="selectedPlugin.installed" class="action-button installed large"
-              @click="togglePlugin(selectedPlugin)">
+            <button
+              v-if="selectedPlugin.installed"
+              class="action-button installed large"
+              @click="togglePlugin(selectedPlugin)"
+            >
               <font-awesome-icon :icon="['fas', 'check']" />
-              {{ $t('plugin.installed') }}
+              {{ $t("plugin.installed") }}
             </button>
-            <button v-else class="action-button install large" @click="installPlugin(selectedPlugin)">
+            <button
+              v-else
+              class="action-button install large"
+              @click="installPlugin(selectedPlugin)"
+            >
               <font-awesome-icon :icon="['fas', 'download']" />
-              {{ $t('plugin.install') }}
+              {{ $t("plugin.install") }}
             </button>
           </div>
         </div>
@@ -139,10 +177,14 @@
 
     <!-- 本地插件安装模态框 -->
     <transition name="modal">
-      <div v-if="showLocalInstall" class="plugin-modal" @click="showLocalInstall = false">
+      <div
+        v-if="showLocalInstall"
+        class="plugin-modal"
+        @click="showLocalInstall = false"
+      >
         <div class="modal-content" @click.stop>
           <div class="modal-header">
-            <h3>{{ t('plugin.installLocal') }}</h3>
+            <h3>{{ t("plugin.installLocal") }}</h3>
             <button class="close-button" @click="showLocalInstall = false">
               <font-awesome-icon :icon="['fas', 'times']" />
             </button>
@@ -151,33 +193,48 @@
             <div class="local-install-area">
               <div class="upload-zone-modern">
                 <div class="upload-icon-container">
-                  <font-awesome-icon :icon="['fas', 'cloud-upload-alt']" class="upload-icon-modern" />
+                  <font-awesome-icon
+                    :icon="['fas', 'cloud-upload-alt']"
+                    class="upload-icon-modern"
+                  />
                 </div>
-                <h3>{{ t('plugin.uploadPlugin') }}</h3>
-                <p class="upload-description">{{ t('plugin.uploadDescription') }}</p>
+                <h3>{{ t("plugin.uploadPlugin") }}</h3>
+                <p class="upload-description">
+                  {{ t("plugin.uploadDescription") }}
+                </p>
                 <label class="upload-button">
-                  <input type="file" accept=".zip,.json" class="file-input-hidden" />
-                  <span>{{ t('plugin.selectFile') }}</span>
+                  <input
+                    type="file"
+                    accept=".zip,.json"
+                    class="file-input-hidden"
+                  />
+                  <span>{{ t("plugin.selectFile") }}</span>
                 </label>
                 <div class="drag-hint">
                   <font-awesome-icon :icon="['fas', 'mouse-pointer']" />
-                  <span>{{ t('plugin.dragHint') }}</span>
+                  <span>{{ t("plugin.dragHint") }}</span>
                 </div>
               </div>
 
               <div class="install-info-modern">
                 <div class="info-card">
-                  <font-awesome-icon :icon="['fas', 'file-archive']" class="info-icon" />
+                  <font-awesome-icon
+                    :icon="['fas', 'file-archive']"
+                    class="info-icon"
+                  />
                   <div class="info-content">
-                    <h4>{{ t('plugin.zipFormat') }}</h4>
-                    <p>{{ t('plugin.zipDescription') }}</p>
+                    <h4>{{ t("plugin.zipFormat") }}</h4>
+                    <p>{{ t("plugin.zipDescription") }}</p>
                   </div>
                 </div>
                 <div class="info-card">
-                  <font-awesome-icon :icon="['fas', 'file-code']" class="info-icon" />
+                  <font-awesome-icon
+                    :icon="['fas', 'file-code']"
+                    class="info-icon"
+                  />
                   <div class="info-content">
-                    <h4>{{ t('plugin.jsonFormat') }}</h4>
-                    <p>{{ t('plugin.jsonDescription') }}</p>
+                    <h4>{{ t("plugin.jsonFormat") }}</h4>
+                    <p>{{ t("plugin.jsonDescription") }}</p>
                   </div>
                 </div>
               </div>
@@ -190,18 +247,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { gsap } from 'gsap';
-import { safeModifyBodyStyles, protectFloatingButtonPosition } from '../utils/floatingButtonProtection.js';
+import { ref, computed, onMounted, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
+import { gsap } from "gsap";
+import {
+  safeModifyBodyStyles,
+  protectFloatingButtonPosition,
+} from "../utils/floatingButtonProtection.js";
 
 // 使用国际化
-const { t } = useI18n({ useScope: 'global' });
+const { t } = useI18n({ useScope: "global" });
 
 // 响应式数据
 const plugins = ref([]);
-const searchQuery = ref('');
-const selectedCategory = ref('all');
+const searchQuery = ref("");
+const selectedCategory = ref("all");
 const selectedPlugin = ref(null);
 const showLocalInstall = ref(false);
 const loading = ref(false);
@@ -209,9 +269,7 @@ const error = ref(null);
 const pluginsGrid = ref(null);
 
 // 分类数据
-const categories = ref([
-  { id: 'all', name: t('plugin.all') }
-]);
+const categories = ref([{ id: "all", name: t("plugin.all") }]);
 
 // 获取插件数据
 const fetchPlugins = async () => {
@@ -219,10 +277,12 @@ const fetchPlugins = async () => {
   error.value = null;
 
   try {
-    const response = await fetch('https://raw.githubusercontent.com/Eververdants/ETBSaveX/master/ExpansionPack/plugins.json');
+    const response = await fetch(
+      "https://raw.githubusercontent.com/Eververdants/ETBSaveX/master/ExpansionPack/plugins.json"
+    );
     const data = await response.json();
 
-    plugins.value = data.plugins.map(plugin => ({
+    plugins.value = data.plugins.map((plugin) => ({
       id: plugin.id,
       name: plugin.name,
       description: plugin.description,
@@ -231,27 +291,27 @@ const fetchPlugins = async () => {
       license: plugin.license,
       download_url: plugin.download_url,
       icon: getIconForPlugin(plugin.id),
-      category: plugin.category || 'utility',
-      installed: false
+      category: plugin.category || "utility",
+      installed: false,
     }));
   } catch (err) {
-    console.error('获取插件数据失败:', err);
-    error.value = '获取插件列表失败，请检查网络连接';
+    console.error("获取插件数据失败:", err);
+    error.value = "获取插件列表失败，请检查网络连接";
 
     // 回退到默认数据
     plugins.value = [
       {
-        id: 'plugin-example',
-        name: '测试插件',
-        description: '此项插件仅供测试使用。',
-        author: 'ETBSaveManager团队',
-        version: '1.0.0',
-        license: 'MIT',
-        download_url: '#',
-        icon: 'puzzle-piece',
-        category: 'utility',
-        installed: false
-      }
+        id: "plugin-example",
+        name: "测试插件",
+        description: "此项插件仅供测试使用。",
+        author: "ETBSaveManager团队",
+        version: "1.0.0",
+        license: "MIT",
+        download_url: "#",
+        icon: "puzzle-piece",
+        category: "utility",
+        installed: false,
+      },
     ];
   } finally {
     loading.value = false;
@@ -261,12 +321,12 @@ const fetchPlugins = async () => {
 // 根据插件ID获取合适的图标
 const getIconForPlugin = (pluginId) => {
   const iconMap = {
-    'backup': 'cloud-download-alt',
-    'sync': 'sync',
-    'editor': 'edit',
-    'security': 'shield-alt',
-    'analytics': 'chart-line',
-    'example': 'puzzle-piece'
+    backup: "cloud-download-alt",
+    sync: "sync",
+    editor: "edit",
+    security: "shield-alt",
+    analytics: "chart-line",
+    example: "puzzle-piece",
   };
 
   for (const [key, icon] of Object.entries(iconMap)) {
@@ -275,7 +335,7 @@ const getIconForPlugin = (pluginId) => {
     }
   }
 
-  return 'puzzle-piece'; // 默认图标
+  return "puzzle-piece"; // 默认图标
 };
 
 // 计算属性
@@ -284,15 +344,20 @@ const filteredPlugins = computed(() => {
 
   // 搜索过滤
   if (searchQuery.value) {
-    filtered = filtered.filter(plugin =>
-      plugin.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      plugin.description.toLowerCase().includes(searchQuery.value.toLowerCase())
+    filtered = filtered.filter(
+      (plugin) =>
+        plugin.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        plugin.description
+          .toLowerCase()
+          .includes(searchQuery.value.toLowerCase())
     );
   }
 
   // 分类过滤
-  if (selectedCategory.value !== 'all') {
-    filtered = filtered.filter(plugin => plugin.category === selectedCategory.value);
+  if (selectedCategory.value !== "all") {
+    filtered = filtered.filter(
+      (plugin) => plugin.category === selectedCategory.value
+    );
   }
 
   return filtered;
@@ -309,7 +374,7 @@ const openPluginDetail = (plugin) => {
 
   // 使用全局保护工具安全修改body样式
   safeModifyBodyStyles(() => {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
   });
 };
 
@@ -318,7 +383,7 @@ const closePluginDetail = () => {
 
   // 使用全局保护工具安全修改body样式
   safeModifyBodyStyles(() => {
-    document.body.style.overflow = '';
+    document.body.style.overflow = "";
   });
 
   // 使用全局保护工具确保浮动按钮位置正确
@@ -336,8 +401,6 @@ const togglePlugin = (plugin) => {
   // 这里可以添加启用/禁用逻辑
 };
 
-
-
 const openLocalInstall = () => {
   showLocalInstall.value = true;
 };
@@ -346,8 +409,9 @@ const openLocalInstall = () => {
 const animateCards = async () => {
   await nextTick();
   if (pluginsGrid.value) {
-    const cards = pluginsGrid.value.querySelectorAll('.plugin-card');
-    gsap.fromTo(cards,
+    const cards = pluginsGrid.value.querySelectorAll(".plugin-card");
+    gsap.fromTo(
+      cards,
       { y: 20, opacity: 0 },
       { y: 0, opacity: 1, duration: 0.3, stagger: 0.05, ease: "power2.out" }
     );
@@ -897,8 +961,6 @@ onMounted(async () => {
   justify-content: flex-end;
 }
 
-
-
 /* 现代本地安装样式 */
 .local-install-area {
   display: flex;
@@ -911,14 +973,22 @@ onMounted(async () => {
   padding: 48px 32px;
   border: 2px dashed var(--border-color);
   border-radius: 20px;
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    var(--bg-tertiary) 100%
+  );
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .upload-zone-modern:hover {
   border-color: var(--accent-color);
-  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-secondary) 100%
+  );
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }

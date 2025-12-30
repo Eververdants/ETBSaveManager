@@ -1,24 +1,47 @@
 <template>
-  <div id="titlebar" data-tauri-drag-region class="titlebar" style="padding-left: 12px;"
-    :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+  <div
+    id="titlebar"
+    data-tauri-drag-region
+    class="titlebar"
+    style="padding-left: 12px"
+    :class="{ 'sidebar-collapsed': sidebarCollapsed }"
+  >
     <div class="titlebar-content" data-tauri-drag-region>
       <div class="title-section" data-tauri-drag-region>
         <transition name="text-swift" mode="out-in">
-        <h1 :key="`app-name-${currentLanguage}-${appName}`" data-tauri-drag-region>
-          {{ appName }}
-        </h1>
-      </transition>
+          <h1
+            :key="`app-name-${currentLanguage}-${appName}`"
+            data-tauri-drag-region
+          >
+            {{ appName }}
+          </h1>
+        </transition>
       </div>
     </div>
 
     <div class="titlebar-controls">
-      <div class="titlebar-button" id="titlebar-minimize" @click.stop="handleMinimize">
+      <div
+        class="titlebar-button"
+        id="titlebar-minimize"
+        @click.stop="handleMinimize"
+      >
         <font-awesome-icon :icon="['fas', 'minus']" aria-hidden="true" />
       </div>
-      <div class="titlebar-button" id="titlebar-maximize" @click.stop="handleMaximize">
-        <font-awesome-icon :icon="['fas', 'window-maximize']" aria-hidden="true" />
+      <div
+        class="titlebar-button"
+        id="titlebar-maximize"
+        @click.stop="handleMaximize"
+      >
+        <font-awesome-icon
+          :icon="['fas', 'window-maximize']"
+          aria-hidden="true"
+        />
       </div>
-      <div class="titlebar-button close" id="titlebar-close" @click.stop="handleClose">
+      <div
+        class="titlebar-button close"
+        id="titlebar-close"
+        @click.stop="handleClose"
+      >
         <font-awesome-icon :icon="['fas', 'times']" aria-hidden="true" />
       </div>
     </div>
@@ -26,88 +49,88 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { Window } from '@tauri-apps/api/window';
+import { ref, computed, onMounted, watch } from "vue";
+import { Window } from "@tauri-apps/api/window";
 
-const appName = ref('')
-const currentLanguage = ref('zh-CN')
+const appName = ref("");
+const currentLanguage = ref("zh-CN");
 
 // 更新应用名称的函数
-  const updateAppName = () => {
-    try {
-      const i18n = window.$i18n
-      if (i18n && i18n.t) {
-        appName.value = i18n.t('app.name')
-        currentLanguage.value = i18n.locale.value || i18n.locale || 'zh-CN'
-      }
-    } catch (error) {
-      console.warn('Failed to update app name:', error)
-      appName.value = 'ETB Save Manager'
-      currentLanguage.value = 'zh-CN'
+const updateAppName = () => {
+  try {
+    const i18n = window.$i18n;
+    if (i18n && i18n.t) {
+      appName.value = i18n.t("app.name");
+      currentLanguage.value = i18n.locale.value || i18n.locale || "zh-CN";
     }
+  } catch (error) {
+    console.warn("Failed to update app name:", error);
+    appName.value = "ETB Save Manager";
+    currentLanguage.value = "zh-CN";
   }
+};
 
-const appWindow = new Window('main');
-const sidebarCollapsed = ref(false)
+const appWindow = new Window("main");
+const sidebarCollapsed = ref(false);
 
 // Vue方法定义
 const handleMinimize = () => {
-  console.log('最小化按钮被点击')
-  appWindow.minimize().catch(err => {
-    console.error('最小化失败:', err)
-  })
-}
+  console.log("最小化按钮被点击");
+  appWindow.minimize().catch((err) => {
+    console.error("最小化失败:", err);
+  });
+};
 
 const handleMaximize = () => {
-  console.log('最大化按钮被点击')
-  appWindow.toggleMaximize().catch(err => {
-    console.error('最大化失败:', err)
-  })
-}
+  console.log("最大化按钮被点击");
+  appWindow.toggleMaximize().catch((err) => {
+    console.error("最大化失败:", err);
+  });
+};
 
 const handleClose = () => {
-  console.log('关闭按钮被点击')
-  appWindow.close().catch(err => {
-    console.error('关闭失败:', err)
-  })
-}
+  console.log("关闭按钮被点击");
+  appWindow.close().catch((err) => {
+    console.error("关闭失败:", err);
+  });
+};
 
 onMounted(() => {
   // 初始化应用名称
-  updateAppName()
+  updateAppName();
 
-  window.addEventListener('sidebar-state-change', (e) => {
-    sidebarCollapsed.value = e.detail.collapsed
-  })
+  window.addEventListener("sidebar-state-change", (e) => {
+    sidebarCollapsed.value = e.detail.collapsed;
+  });
 
   // 监听语言变化事件
-  window.addEventListener('language-changed', (e) => {
-    updateAppName()
-  })
+  window.addEventListener("language-changed", (e) => {
+    updateAppName();
+  });
 
   // 标题栏拖拽功能
-  const titlebar = document.getElementById('titlebar')
+  const titlebar = document.getElementById("titlebar");
   if (titlebar) {
-    titlebar.addEventListener('mousedown', (e) => {
+    titlebar.addEventListener("mousedown", (e) => {
       // 检查点击的是否是按钮区域
-      const isButtonClick = e.target.closest('.titlebar-button')
+      const isButtonClick = e.target.closest(".titlebar-button");
       if (isButtonClick) {
-        console.log('点击的是按钮区域，不触发拖拽')
-        return
+        console.log("点击的是按钮区域，不触发拖拽");
+        return;
       }
 
       if (e.buttons === 1) {
         if (e.detail === 2) {
-          console.log('双击最大化')
-          appWindow.toggleMaximize()
+          console.log("双击最大化");
+          appWindow.toggleMaximize();
         } else {
-          console.log('开始拖拽')
-          appWindow.startDragging()
+          console.log("开始拖拽");
+          appWindow.startDragging();
         }
       }
-    })
+    });
   }
-})
+});
 </script>
 
 <style scoped>
@@ -139,7 +162,8 @@ onMounted(() => {
   border-bottom: 1px solid var(--titlebar-border);
   --titlebar-border: rgba(125, 125, 125, 0.3);
   --titlebar-button-hover: rgba(255, 255, 255, 0.1);
-  transition: background 0.25s ease, border-bottom 0.25s ease, backdrop-filter 0.25s ease;
+  transition: background 0.25s ease, border-bottom 0.25s ease,
+    backdrop-filter 0.25s ease;
 }
 
 .title-section h1 {
@@ -223,7 +247,8 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-xs);
-  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease,
+    transform 0.25s ease;
   -webkit-app-region: no-drag;
   font-size: 14px;
 }
@@ -236,8 +261,6 @@ onMounted(() => {
 .sidebar-toggle.collapsed {
   transform: rotate(90deg);
 }
-
-
 
 /* 响应式设计 */
 @media (max-width: 768px) {

@@ -1,19 +1,30 @@
 [
   {
+    "version": "3.0.0-Alpha-7.1",
+    "date": "2025-12-30",
+    "title": "元旦限定主题与枢纽门修复",
+    "type": "patch",
+    "categories": {
+      "newFeatures": [
+        "新增「元旦」限时主题，可在设置中切换，有效期至2026年1月3日"
+      ],
+      "improvements": [],
+      "bugFixes": [
+        "修复创建存档后枢纽门进度检查未正确生效的问题",
+        "解决其他若干小问题"
+      ],
+      "performance": []
+    }
+  },
+  {
     "version": "3.0.0-Alpha-7",
     "date": "2025-12-28",
     "title": "快速模式实装与性能优化",
     "type": "feature",
     "categories": {
-      "newFeatures": [
-        "创建存档「快速模式」页面与功能完整实现"
-      ],
-      "improvements": [
-        "优化存档列表性能"
-      ],
-      "bugFixes": [
-        "修复部分语言本地化问题"
-      ],
+      "newFeatures": ["创建存档「快速模式」页面与功能完整实现"],
+      "improvements": ["优化存档列表性能"],
+      "bugFixes": ["修复部分语言本地化问题"],
       "performance": []
     }
   },
@@ -51,9 +62,7 @@
         "调整了关于页面的更新公告板块样式",
         "调整了设置页面的 Steam API 板块样式"
       ],
-      "bugFixes": [
-        "修复了存档列表页面悬浮按钮多一个设置图标的问题"
-      ],
+      "bugFixes": ["修复了存档列表页面悬浮按钮多一个设置图标的问题"],
       "performance": []
     }
   },
@@ -64,12 +73,8 @@
     "type": "patch",
     "categories": {
       "newFeatures": [],
-      "improvements": [
-        "优化了存档卡片的外观显示效果"
-      ],
-      "bugFixes": [
-        "修复了输入框不支持删除、复制、粘贴和撤销操作的问题"
-      ],
+      "improvements": ["优化了存档卡片的外观显示效果"],
+      "bugFixes": ["修复了输入框不支持删除、复制、粘贴和撤销操作的问题"],
       "performance": []
     }
   },
@@ -94,15 +99,9 @@
     "title": "新增物品与图标更新",
     "type": "patch",
     "categories": {
-      "newFeatures": [
-        "新增游戏内物品：小刀 & 泰迪熊"
-      ],
-      "improvements": [
-        "更新所有物品图标至最新游戏版本"
-      ],
-      "bugFixes": [
-        "修复了物品选择弹窗显示在页面顶部的问题"
-      ],
+      "newFeatures": ["新增游戏内物品：小刀 & 泰迪熊"],
+      "improvements": ["更新所有物品图标至最新游戏版本"],
+      "bugFixes": ["修复了物品选择弹窗显示在页面顶部的问题"],
       "performance": []
     }
   },
@@ -139,9 +138,7 @@
         "压缩最新关卡预览图片，减小包体体积"
       ],
       "bugFixes": [],
-      "performance": [
-        "提升首次加载速度"
-      ]
+      "performance": ["提升首次加载速度"]
     }
   },
   {
@@ -150,9 +147,7 @@
     "title": "首日支持5张新官方地图",
     "type": "feature",
     "categories": {
-      "newFeatures": [
-        "新增对游戏最新5张官方地图的支持，可直接选择和编辑"
-      ],
+      "newFeatures": ["新增对游戏最新5张官方地图的支持，可直接选择和编辑"],
       "improvements": [],
       "bugFixes": [],
       "performance": []
@@ -170,9 +165,7 @@
         "优化搜索筛选组合栏：将输入框和下拉筛选合并为更简洁的组件"
       ],
       "bugFixes": [],
-      "performance": [
-        "大幅提升大列表情况下的流畅度"
-      ]
+      "performance": ["大幅提升大列表情况下的流畅度"]
     }
   },
   {
@@ -181,12 +174,8 @@
     "title": "更新源选择与下载优化",
     "type": "improvement",
     "categories": {
-      "newFeatures": [
-        "新增更新源选择功能，可根据网络环境选择合适的更新源"
-      ],
-      "improvements": [
-        "优化更新下载流程，体验更流畅快速"
-      ],
+      "newFeatures": ["新增更新源选择功能，可根据网络环境选择合适的更新源"],
+      "improvements": ["优化更新下载流程，体验更流畅快速"],
       "bugFixes": [],
       "performance": []
     }
@@ -234,9 +223,7 @@
     "title": "扩展市场界面完成",
     "type": "feature",
     "categories": {
-      "newFeatures": [
-        "新增扩展市场界面，可浏览扩展（暂不支持安装）"
-      ],
+      "newFeatures": ["新增扩展市场界面，可浏览扩展（暂不支持安装）"],
       "improvements": [
         "更新「存档列表」配色方案",
         "调整侧边栏配色方案",
@@ -285,12 +272,8 @@
     "title": "新增侧边栏导航菜单",
     "type": "improvement",
     "categories": {
-      "newFeatures": [
-        "新增左侧边栏导航菜单"
-      ],
-      "improvements": [
-        "持续优化界面交互和视觉细节"
-      ],
+      "newFeatures": ["新增左侧边栏导航菜单"],
+      "improvements": ["持续优化界面交互和视觉细节"],
       "bugFixes": [],
       "performance": []
     }

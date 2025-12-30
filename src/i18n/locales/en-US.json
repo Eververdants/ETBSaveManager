@@ -20,6 +20,7 @@
   "common": {
     "light": "Light",
     "dark": "Dark",
+    "newYear": "🎊 New Year",
     "select": "Select",
     "cancel": "Cancel",
     "save": "Save",
@@ -200,8 +201,30 @@
     "developerModeDescription": "Enable developer mode to access advanced features",
     "enableLogMenu": "Enable Log Menu",
     "enableLogMenuDescription": "Display log menu and logging functionality",
+    "savFileTools": "Save File Tools",
+    "parseSavFile": "Parse Save File",
+    "parseSavFileDescription": "Parse .sav save file to JSON format",
+    "packSavFile": "Pack Save File",
+    "packSavFileDescription": "Pack JSON file to .sav save format",
+    "dropSavFileHere": "Drop .sav file here",
+    "dropJsonFileHere": "Drop .json file here",
+    "orClickToSelect": "or click to select file",
+    "parsing": "Parsing...",
+    "packing": "Packing...",
+    "parseSuccess": "Parse successful! Saved as {filename}",
+    "packSuccess": "Pack successful! Saved as {filename}",
+    "parseError": "Parse failed: {error}",
+    "packError": "Pack failed: {error}",
+    "invalidFileType": "Invalid file type, please select {type} file",
     "testArchiveDisplay": "Test Archive Display",
     "testArchiveDisplayDescription": "Show test archive button in sidebar",
+    "newYearThemeControl": "New Year Theme Control",
+    "newYearThemeControlDescription": "Control New Year theme visibility (default: only shown Dec 31 - Jan 3)",
+    "newYearThemeModeAuto": "Auto (by date)",
+    "newYearThemeModeForce": "Force show",
+    "newYearThemeModeHide": "Hide",
+    "newYearThemeModeChanged": "New Year theme setting updated",
+    "newYearThemeLimitedTime": "🎊 Limited-time theme, available Dec 31 - Jan 3 only",
     "resetTutorial": "Reset Tutorial",
     "resetTutorialDescription": "Reset the quick create tutorial guide, it will show again on next visit",
     "resetTutorialButton": "Reset",
@@ -225,12 +248,12 @@
       "cleanupCompleted": "Cleanup completed, removed {count} expired entries",
       "noExpiredEntries": "No expired cache entries",
       "noCacheEntries": "No cache entries available",
-      
+
       "showRawSteamId": "Show Raw SteamID",
       "hideRawSteamId": "Hide Raw SteamID",
       "showingRawSteamId": "Showing raw SteamID",
       "hidingRawSteamId": "Hiding raw SteamID",
-      
+
       "search": "Search",
       "searchPlaceholder": "Search SteamID or username...",
       "sortByLabel": "Sort By",
@@ -249,10 +272,10 @@
       "clearFilters": "Clear Filters",
       "showStats": "Show Statistics",
       "filtersCleared": "Filters cleared",
-      
+
       "paginationInfo": "Page {current} of {total}, {count} total records",
       "pageSize": "Page Size",
-      
+
       "viewDetail": "View Details",
       "refreshEntry": "Refresh Entry",
       "deleteEntry": "Delete Entry",
@@ -260,7 +283,7 @@
       "entryDeleted": "Entry deleted",
       "refreshError": "Refresh failed: {error}",
       "deleteError": "Delete failed: {error}",
-      
+
       "batchRefresh": "Batch Refresh",
       "batchDelete": "Batch Delete",
       "selectedCount": "{count} selected",
@@ -268,12 +291,12 @@
       "batchDeleteCompleted": "Batch delete completed, deleted {count} entries",
       "batchRefreshError": "Batch refresh failed: {error}",
       "batchDeleteError": "Batch delete failed: {error}",
-      
+
       "confirmDelete": "Confirm Delete",
       "confirmDeleteMessage": "Are you sure you want to delete the cache entry for user {username}?",
       "confirmBatchDelete": "Confirm Batch Delete",
       "confirmBatchDeleteMessage": "Are you sure you want to delete the selected {count} cache entries? This action cannot be undone.",
-      
+
       "cacheDetail": "Cache Details",
       "systemStats": "System Statistics",
       "totalCacheSize": "Total Cache Size",
@@ -282,7 +305,7 @@
       "mostActiveUsers": "Most Active Users",
       "calls": "calls",
       "statsError": "Failed to get statistics: {error}",
-      
+
       "cacheTable": {
         "steamId": "Steam ID",
         "username": "Username",

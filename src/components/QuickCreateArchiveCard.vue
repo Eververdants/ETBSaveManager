@@ -1,10 +1,7 @@
 <template>
-  <div 
+  <div
     class="quick-archive-card"
-    :class="[
-      borderStatusClass,
-      { 'selected': selected }
-    ]"
+    :class="[borderStatusClass, { selected: selected }]"
     @click="$emit('select', archive.id)"
   >
     <!-- 卡片头部：名称和状态图标 -->
@@ -12,10 +9,18 @@
       <div class="card-name-wrapper">
         <span class="card-name" :title="archive.name">{{ archive.name }}</span>
         <div class="status-icons">
-          <span v-if="hasMissingParams" class="status-icon warning" :title="$t('quickCreate.card.missingParams')">
+          <span
+            v-if="hasMissingParams"
+            class="status-icon warning"
+            :title="$t('quickCreate.card.missingParams')"
+          >
             ⚠️
           </span>
-          <span v-if="archive.hasIndividualSettings" class="status-icon modified" :title="$t('quickCreate.card.modified')">
+          <span
+            v-if="archive.hasIndividualSettings"
+            class="status-icon modified"
+            :title="$t('quickCreate.card.modified')"
+          >
             🔧
           </span>
         </div>
@@ -31,10 +36,12 @@
     <div class="card-content">
       <!-- 层级 -->
       <div class="config-row">
-        <span class="config-label">{{ $t('quickCreate.card.level') }}</span>
+        <span class="config-label">{{ $t("quickCreate.card.level") }}</span>
         <span class="config-value" :class="getSourceClass('level')">
           <template v-if="isInherited('level')">
-            <span class="inherit-indicator">{{ $t('quickCreate.card.inherit') }}</span>
+            <span class="inherit-indicator">{{
+              $t("quickCreate.card.inherit")
+            }}</span>
             <span class="inherit-arrow">→</span>
           </template>
           <span class="value-text">{{ displayLevel }}</span>
@@ -43,13 +50,20 @@
 
       <!-- 存档难度 -->
       <div class="config-row">
-        <span class="config-label">{{ $t('quickCreate.card.difficulty') }}</span>
+        <span class="config-label">{{
+          $t("quickCreate.card.difficulty")
+        }}</span>
         <span class="config-value" :class="getSourceClass('difficulty')">
           <template v-if="isInherited('difficulty')">
-            <span class="inherit-indicator">{{ $t('quickCreate.card.inherit') }}</span>
+            <span class="inherit-indicator">{{
+              $t("quickCreate.card.inherit")
+            }}</span>
             <span class="inherit-arrow">→</span>
           </template>
-          <span class="value-text" :class="difficultyClass(archive.finalDifficulty)">
+          <span
+            class="value-text"
+            :class="difficultyClass(archive.finalDifficulty)"
+          >
             {{ displayDifficulty }}
           </span>
         </span>
@@ -57,13 +71,20 @@
 
       <!-- 实际难度 -->
       <div class="config-row">
-        <span class="config-label">{{ $t('quickCreate.card.actualDifficulty') }}</span>
+        <span class="config-label">{{
+          $t("quickCreate.card.actualDifficulty")
+        }}</span>
         <span class="config-value" :class="getSourceClass('actualDifficulty')">
           <template v-if="isInherited('actualDifficulty')">
-            <span class="inherit-indicator">{{ $t('quickCreate.card.inherit') }}</span>
+            <span class="inherit-indicator">{{
+              $t("quickCreate.card.inherit")
+            }}</span>
             <span class="inherit-arrow">→</span>
           </template>
-          <span class="value-text" :class="difficultyClass(archive.finalActualDifficulty)">
+          <span
+            class="value-text"
+            :class="difficultyClass(archive.finalActualDifficulty)"
+          >
             {{ displayActualDifficulty }}
           </span>
         </span>
@@ -71,10 +92,12 @@
 
       <!-- 背包状态 -->
       <div class="config-row">
-        <span class="config-label">{{ $t('quickCreate.card.inventory') }}</span>
+        <span class="config-label">{{ $t("quickCreate.card.inventory") }}</span>
         <span class="config-value" :class="getSourceClass('inventory')">
           <template v-if="isInherited('inventory')">
-            <span class="inherit-indicator">{{ $t('quickCreate.card.inherit') }}</span>
+            <span class="inherit-indicator">{{
+              $t("quickCreate.card.inherit")
+            }}</span>
             <span class="inherit-arrow">→</span>
           </template>
           <span class="value-text">{{ displayInventory }}</span>
@@ -84,13 +107,25 @@
 
     <!-- 卡片操作按钮 -->
     <div class="card-actions">
-      <button class="action-btn edit" @click.stop="$emit('edit', archive.id)" :title="$t('common.edit')">
+      <button
+        class="action-btn edit"
+        @click.stop="$emit('edit', archive.id)"
+        :title="$t('common.edit')"
+      >
         <font-awesome-icon :icon="['fas', 'edit']" />
       </button>
-      <button class="action-btn copy" @click.stop="$emit('copy', archive.id)" :title="$t('quickCreate.card.copy')">
+      <button
+        class="action-btn copy"
+        @click.stop="$emit('copy', archive.id)"
+        :title="$t('quickCreate.card.copy')"
+      >
         <font-awesome-icon :icon="['fas', 'copy']" />
       </button>
-      <button class="action-btn remove" @click.stop="$emit('remove', archive.id)" :title="$t('quickCreate.card.remove')">
+      <button
+        class="action-btn remove"
+        @click.stop="$emit('remove', archive.id)"
+        :title="$t('quickCreate.card.remove')"
+      >
         <font-awesome-icon :icon="['fas', 'times']" />
       </button>
     </div>
@@ -98,114 +133,116 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
-const { t } = useI18n({ useScope: 'global' })
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   archive: {
     type: Object,
-    required: true
+    required: true,
   },
   selected: {
     type: Boolean,
-    default: false
+    default: false,
   },
   configSource: {
     type: Object,
     default: () => ({
-      level: 'default',
-      difficulty: 'default',
-      actualDifficulty: 'default',
-      inventory: 'default'
-    })
-  }
-})
+      level: "default",
+      difficulty: "default",
+      actualDifficulty: "default",
+      inventory: "default",
+    }),
+  },
+});
 
-defineEmits(['select', 'edit', 'copy', 'remove'])
+defineEmits(["select", "edit", "copy", "remove"]);
 
 // 检查是否有缺失参数
 const hasMissingParams = computed(() => {
-  return props.archive.validationErrors && props.archive.validationErrors.length > 0
-})
+  return (
+    props.archive.validationErrors && props.archive.validationErrors.length > 0
+  );
+});
 
 // 边框状态类
 const borderStatusClass = computed(() => {
   if (hasMissingParams.value) {
-    return 'border-error'
+    return "border-error";
   }
   if (props.archive.hasIndividualSettings) {
-    return 'border-individual'
+    return "border-individual";
   }
   // 检查是否有任何继承的配置
-  const source = props.configSource
-  const hasUniform = source.level === 'uniform' || 
-                     source.difficulty === 'uniform' || 
-                     source.actualDifficulty === 'uniform' ||
-                     source.inventory === 'uniform'
+  const source = props.configSource;
+  const hasUniform =
+    source.level === "uniform" ||
+    source.difficulty === "uniform" ||
+    source.actualDifficulty === "uniform" ||
+    source.inventory === "uniform";
   if (hasUniform) {
-    return 'border-uniform'
+    return "border-uniform";
   }
-  return 'border-default'
-})
+  return "border-default";
+});
 
 // 检查字段是否继承
 const isInherited = (field) => {
-  const source = props.configSource[field]
-  return source === 'uniform' || source === 'smart'
-}
+  const source = props.configSource[field];
+  return source === "uniform" || source === "smart";
+};
 
 // 获取来源样式类
 const getSourceClass = (field) => {
-  return `source-${props.configSource[field]}`
-}
+  return `source-${props.configSource[field]}`;
+};
 
 // 难度样式类
 const difficultyClass = (difficulty) => {
-  return `difficulty-${difficulty}`
-}
+  return `difficulty-${difficulty}`;
+};
 
 // 显示层级
 const displayLevel = computed(() => {
-  const level = props.archive.finalLevel
+  const level = props.archive.finalLevel;
   if (!level) {
-    return t('quickCreate.card.notSet')
+    return t("quickCreate.card.notSet");
   }
-  return t(`LevelName_Display.${level}`) || level
-})
+  return t(`LevelName_Display.${level}`) || level;
+});
 
 // 显示存档难度
 const displayDifficulty = computed(() => {
-  const difficulty = props.archive.finalDifficulty
+  const difficulty = props.archive.finalDifficulty;
   if (!difficulty) {
-    return t('quickCreate.card.notSet')
+    return t("quickCreate.card.notSet");
   }
-  return t(`createArchive.difficultyLevels.${difficulty}`) || difficulty
-})
+  return t(`createArchive.difficultyLevels.${difficulty}`) || difficulty;
+});
 
 // 显示实际难度
 const displayActualDifficulty = computed(() => {
-  const difficulty = props.archive.finalActualDifficulty
+  const difficulty = props.archive.finalActualDifficulty;
   if (!difficulty) {
-    return t('quickCreate.card.notSet')
+    return t("quickCreate.card.notSet");
   }
-  return t(`createArchive.difficultyLevels.${difficulty}`) || difficulty
-})
+  return t(`createArchive.difficultyLevels.${difficulty}`) || difficulty;
+});
 
 // 显示背包状态
 const displayInventory = computed(() => {
-  const template = props.archive.finalInventory
+  const template = props.archive.finalInventory;
   if (!template || (Array.isArray(template) && template.length === 0)) {
-    return t('quickCreate.card.emptyInventory')
+    return t("quickCreate.card.emptyInventory");
   }
-  if (typeof template === 'string') {
-    return template
+  if (typeof template === "string") {
+    return template;
   }
-  return t('quickCreate.card.customInventory')
-})
+  return t("quickCreate.card.customInventory");
+});
 </script>
-
 
 <style scoped>
 .quick-archive-card {

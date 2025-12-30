@@ -5,29 +5,37 @@
       <div class="summary-stats">
         <div class="stat-item">
           <span class="stat-value">{{ archives.length }}</span>
-          <span class="stat-label">{{ $t('quickCreate.preview.total') }}</span>
+          <span class="stat-label">{{ $t("quickCreate.preview.total") }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-value">{{ uniformCount }}</span>
-          <span class="stat-label">{{ $t('quickCreate.preview.uniform') }}</span>
+          <span class="stat-label">{{
+            $t("quickCreate.preview.uniform")
+          }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-value">{{ individualCount }}</span>
-          <span class="stat-label">{{ $t('quickCreate.preview.individual') }}</span>
+          <span class="stat-label">{{
+            $t("quickCreate.preview.individual")
+          }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item" :class="{ 'has-error': missingCount > 0 }">
           <span class="stat-value">{{ missingCount }}</span>
-          <span class="stat-label">{{ $t('quickCreate.preview.missing') }}</span>
+          <span class="stat-label">{{
+            $t("quickCreate.preview.missing")
+          }}</span>
         </div>
       </div>
-      
+
       <!-- 预计耗时 -->
       <div class="estimated-time" v-if="archives.length > 0">
         <font-awesome-icon :icon="['fas', 'clock']" class="time-icon" />
-        <span class="time-text">{{ $t('quickCreate.preview.estimatedTime', { time: estimatedTime }) }}</span>
+        <span class="time-text">{{
+          $t("quickCreate.preview.estimatedTime", { time: estimatedTime })
+        }}</span>
       </div>
     </div>
 
@@ -41,31 +49,34 @@
 
     <!-- 操作按钮 -->
     <div class="action-buttons">
-      <button 
-        class="action-btn cancel-btn" 
+      <button
+        class="action-btn cancel-btn"
         @click="handleCancel"
         :disabled="isCreating"
       >
         <font-awesome-icon :icon="['fas', 'times']" />
-        {{ $t('common.cancel') }}
+        {{ $t("common.cancel") }}
       </button>
-      
-      <button 
-        class="action-btn template-btn" 
+
+      <button
+        class="action-btn template-btn"
         @click="handleSaveTemplate"
         :disabled="isCreating || archives.length === 0"
       >
         <font-awesome-icon :icon="['fas', 'save']" />
-        {{ $t('quickCreate.preview.saveTemplate') }}
+        {{ $t("quickCreate.preview.saveTemplate") }}
       </button>
-      
-      <button 
-        class="action-btn create-btn" 
+
+      <button
+        class="action-btn create-btn"
         @click="handleCreate"
         :disabled="!canCreate || isCreating"
         :title="createButtonTooltip"
       >
-        <font-awesome-icon :icon="isCreating ? ['fas', 'spinner'] : ['fas', 'plus']" :spin="isCreating" />
+        <font-awesome-icon
+          :icon="isCreating ? ['fas', 'spinner'] : ['fas', 'plus']"
+          :spin="isCreating"
+        />
         {{ createButtonText }}
       </button>
     </div>
@@ -73,106 +84,113 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
-const { t } = useI18n({ useScope: 'global' })
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   archives: {
     type: Array,
     required: true,
-    default: () => []
+    default: () => [],
   },
   selectedCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   isCreating: {
     type: Boolean,
-    default: false
+    default: false,
   },
   progress: {
     type: Number,
-    default: 0
-  }
-})
+    default: 0,
+  },
+});
 
-const emit = defineEmits(['cancel', 'create', 'save-template'])
+const emit = defineEmits(["cancel", "create", "save-template"]);
 
 // 计算统一配置数量
 const uniformCount = computed(() => {
-  return props.archives.filter(a => !a.hasIndividualSettings).length
-})
+  return props.archives.filter((a) => !a.hasIndividualSettings).length;
+});
 
 // 计算个别设置数量
 const individualCount = computed(() => {
-  return props.archives.filter(a => a.hasIndividualSettings).length
-})
+  return props.archives.filter((a) => a.hasIndividualSettings).length;
+});
 
 // 计算缺失参数数量
 const missingCount = computed(() => {
-  return props.archives.filter(a => a.validationErrors && a.validationErrors.length > 0).length
-})
+  return props.archives.filter(
+    (a) => a.validationErrors && a.validationErrors.length > 0
+  ).length;
+});
 
 // 计算是否可以创建
 const canCreate = computed(() => {
-  if (props.archives.length === 0) return false
-  return missingCount.value === 0
-})
+  if (props.archives.length === 0) return false;
+  return missingCount.value === 0;
+});
 
 // 计算预计耗时（每个存档约0.5秒，批量处理每批5个）
 const estimatedTime = computed(() => {
-  const count = props.archives.length
-  if (count === 0) return '0s'
-  
+  const count = props.archives.length;
+  if (count === 0) return "0s";
+
   // 每批5个，每批约2秒（包含处理和UI更新时间）
-  const batches = Math.ceil(count / 5)
-  const seconds = batches * 2
-  
+  const batches = Math.ceil(count / 5);
+  const seconds = batches * 2;
+
   if (seconds < 60) {
-    return `${seconds}s`
+    return `${seconds}s`;
   } else {
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-    return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return remainingSeconds > 0
+      ? `${minutes}m ${remainingSeconds}s`
+      : `${minutes}m`;
   }
-})
+});
 
 // 创建按钮文本
 const createButtonText = computed(() => {
   if (props.isCreating) {
-    return t('quickCreate.preview.creating')
+    return t("quickCreate.preview.creating");
   }
-  const count = props.selectedCount > 0 ? props.selectedCount : props.archives.length
-  return t('quickCreate.preview.create', { count })
-})
+  const count =
+    props.selectedCount > 0 ? props.selectedCount : props.archives.length;
+  return t("quickCreate.preview.create", { count });
+});
 
 // 创建按钮提示
 const createButtonTooltip = computed(() => {
   if (props.archives.length === 0) {
-    return t('quickCreate.preview.noArchives')
+    return t("quickCreate.preview.noArchives");
   }
   if (missingCount.value > 0) {
-    return t('quickCreate.preview.hasMissingParams', { count: missingCount.value })
+    return t("quickCreate.preview.hasMissingParams", {
+      count: missingCount.value,
+    });
   }
-  return ''
-})
+  return "";
+});
 
 // 事件处理
 const handleCancel = () => {
-  emit('cancel')
-}
+  emit("cancel");
+};
 
 const handleCreate = () => {
   if (canCreate.value && !props.isCreating) {
-    emit('create')
+    emit("create");
   }
-}
+};
 
 const handleSaveTemplate = () => {
-  emit('save-template')
-}
+  emit("save-template");
+};
 </script>
 
 <style scoped>

@@ -1,66 +1,75 @@
 use serde_json::Value;
 
+/// 玩家数据提取结果
+pub struct PlayerDataResult {
+    pub ids: Vec<String>,
+    pub sanities: Vec<f64>,
+    pub inventories: Vec<Vec<String>>,
+}
+
+/// 从存档 JSON 中提取玩家数据
 pub fn extract_player_data(save_json: &Value) -> (Vec<String>, Vec<f64>, Vec<Vec<String>>) {
-    // 获取 Map 列表
-    let map = save_json
-        .pointer("/root/properties/PlayerData_0/Map")
-        .and_then(|v| v.as_array());
-
-    let mut player_ids = Vec::new();
-    let mut player_sanities = Vec::new();
-    let mut player_inventories = Vec::new();
-
-    if let Some(map_items) = map {
-        for item in map_items {
-            // 提取 key.Str
-            let player_id = item
-                .get("key")
-                .and_then(|k| k.get("Str"))
-                .and_then(|s| s.as_str())
-                .map(String::from);
-
-            // 提取 Sanity
-            let sanity = item
-                .get("value")
-                .and_then(|v| v.get("Struct"))
-                .and_then(|s| s.get("Struct"))
-                .and_then(|s| s.get("Sanity_6_A5AFAB454F51CC63745A669BD7E629F6_0"))
-                .and_then(|s| s.get("Float"))
-                .and_then(|f| f.as_f64());
-
-            // 提取 Inventory 的 Name 列表
-            let inventory = item
-                .get("value")
-                .and_then(|v| v.get("Struct"))
-                .and_then(|s| s.get("Struct"))
-                .and_then(|s| s.get("Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4_0"))
-                .and_then(|i| i.get("Array"))
-                .and_then(|a| a.get("Base"))
-                .and_then(|b| b.get("Name"))
-                .and_then(|n| n.as_array());
-
-            if let Some(id) = player_id {
-                player_ids.push(id);
-                player_sanities.push(sanity.unwrap_or(0.0));
-                let names = inventory
-                    .unwrap_or(&vec![])
-                    .iter()
-                    .map(|name| name.as_str().unwrap_or("None").to_string())
-                    .collect();
-                player_inventories.push(names);
-            } else {
-                // 可选：记录警告日志等
-                println!("Skipping invalid entry: missing player ID");
-            }
-        }
-    } else {
-        println!("Map not found or not an array");
-    }
+    let result = extract_player_data_internal(save_json);
 
     // 打印到控制台
-    println!("Player IDs: {:?}", player_ids);
-    println!("Player Sanities: {:?}", player_sanities);
-    println!("Player Inventories: {:?}", player_inventories);
+    println!("Player IDs: {:?}", result.ids);
+    println!("Player Sanities: {:?}", result.sanities);
+    println!("Player Inventories: {:?}", result.inventories);
 
-    (player_ids, player_sanities, player_inventories)
+    (result.ids, result.sanities, result.inventories)
+}
+
+fn extract_player_data_internal(save_json: &Value) -> PlayerDataResult {
+    let mut result = PlayerDataResult {
+        ids: Vec::new(),
+        sanities: Vec::new(),
+        inventories: Vec::new(),
+    };
+
+    let map = match save_json
+        .pointer("/root/properties/PlayerData_0/Map")
+        .and_then(Value::as_array)
+    {
+        Some(m) => m,
+        None => {
+            println!("Map not found or not an array");
+            return result;
+        }
+    };
+
+    for item in map {
+        // 提取 key.Str
+        let player_id = item
+            .pointer("/key/Str")
+            .and_then(Value::as_str)
+            .map(String::from);
+
+        let Some(id) = player_id else {
+            println!("Skipping invalid entry: missing player ID");
+            continue;
+        };
+
+        // 提取 Sanity
+        let sanity = item
+            .pointer("/value/Struct/Struct/Sanity_6_A5AFAB454F51CC63745A669BD7E629F6_0/Float")
+            .and_then(Value::as_f64)
+            .unwrap_or(0.0);
+
+        // 提取 Inventory 的 Name 列表
+        let inventory: Vec<String> = item
+            .pointer("/value/Struct/Struct/Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4_0/Array/Base/Name")
+            .and_then(Value::as_array)
+            .map(|arr| {
+                arr.iter()
+                    .map(|name| name.as_str().unwrap_or("None").to_string())
+                    .collect()
+            })
+            .unwrap_or_default();
+
+        result.ids.push(id);
+        result.sanities.push(sanity);
+        result.inventories.push(inventory);
+    }
+
+    result
 }

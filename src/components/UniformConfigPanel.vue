@@ -3,22 +3,40 @@
     <div class="section-header">
       <h2 class="section-title">
         <font-awesome-icon :icon="['fas', 'sliders-h']" />
-        {{ $t('quickCreate.configArea.title') }}
+        {{ $t("quickCreate.configArea.title") }}
       </h2>
     </div>
-    
+
     <div class="config-content">
       <!-- 层级配置 -->
       <div class="config-group">
-        <label class="config-label">{{ $t('quickCreate.configArea.level') }}</label>
+        <label class="config-label">{{
+          $t("quickCreate.configArea.level")
+        }}</label>
         <div class="config-options">
-          <label class="custom-radio" @click.prevent="handleLevelModeChange(false)">
-            <span class="radio-mark" :class="{ checked: !config.level.enabled }"></span>
-            <span class="radio-text">{{ $t('quickCreate.configArea.noUnify') }}</span>
+          <label
+            class="custom-radio"
+            @click.prevent="handleLevelModeChange(false)"
+          >
+            <span
+              class="radio-mark"
+              :class="{ checked: !config.level.enabled }"
+            ></span>
+            <span class="radio-text">{{
+              $t("quickCreate.configArea.noUnify")
+            }}</span>
           </label>
-          <label class="custom-radio" @click.prevent="handleLevelModeChange(true)">
-            <span class="radio-mark" :class="{ checked: config.level.enabled }"></span>
-            <span class="radio-text">{{ $t('quickCreate.configArea.setAllTo') }}</span>
+          <label
+            class="custom-radio"
+            @click.prevent="handleLevelModeChange(true)"
+          >
+            <span
+              class="radio-mark"
+              :class="{ checked: config.level.enabled }"
+            ></span>
+            <span class="radio-text">{{
+              $t("quickCreate.configArea.setAllTo")
+            }}</span>
           </label>
         </div>
         <CustomDropdown
@@ -32,15 +50,33 @@
 
       <!-- 存档难度配置 -->
       <div class="config-group">
-        <label class="config-label">{{ $t('quickCreate.configArea.difficulty') }}</label>
+        <label class="config-label">{{
+          $t("quickCreate.configArea.difficulty")
+        }}</label>
         <div class="config-options">
-          <label class="custom-radio" @click.prevent="handleDifficultyModeChange(false)">
-            <span class="radio-mark" :class="{ checked: !config.difficulty.enabled }"></span>
-            <span class="radio-text">{{ $t('quickCreate.configArea.noUnify') }}</span>
+          <label
+            class="custom-radio"
+            @click.prevent="handleDifficultyModeChange(false)"
+          >
+            <span
+              class="radio-mark"
+              :class="{ checked: !config.difficulty.enabled }"
+            ></span>
+            <span class="radio-text">{{
+              $t("quickCreate.configArea.noUnify")
+            }}</span>
           </label>
-          <label class="custom-radio" @click.prevent="handleDifficultyModeChange(true)">
-            <span class="radio-mark" :class="{ checked: config.difficulty.enabled }"></span>
-            <span class="radio-text">{{ $t('quickCreate.configArea.setAllTo') }}</span>
+          <label
+            class="custom-radio"
+            @click.prevent="handleDifficultyModeChange(true)"
+          >
+            <span
+              class="radio-mark"
+              :class="{ checked: config.difficulty.enabled }"
+            ></span>
+            <span class="radio-text">{{
+              $t("quickCreate.configArea.setAllTo")
+            }}</span>
           </label>
         </div>
         <CustomDropdown
@@ -54,15 +90,33 @@
 
       <!-- 实际难度配置 -->
       <div class="config-group">
-        <label class="config-label">{{ $t('quickCreate.configArea.actualDifficulty') }}</label>
+        <label class="config-label">{{
+          $t("quickCreate.configArea.actualDifficulty")
+        }}</label>
         <div class="config-options">
-          <label class="custom-radio" @click.prevent="handleActualDifficultyModeChange(false)">
-            <span class="radio-mark" :class="{ checked: !config.actualDifficulty.enabled }"></span>
-            <span class="radio-text">{{ $t('quickCreate.configArea.noUnify') }}</span>
+          <label
+            class="custom-radio"
+            @click.prevent="handleActualDifficultyModeChange(false)"
+          >
+            <span
+              class="radio-mark"
+              :class="{ checked: !config.actualDifficulty.enabled }"
+            ></span>
+            <span class="radio-text">{{
+              $t("quickCreate.configArea.noUnify")
+            }}</span>
           </label>
-          <label class="custom-radio" @click.prevent="handleActualDifficultyModeChange(true)">
-            <span class="radio-mark" :class="{ checked: config.actualDifficulty.enabled }"></span>
-            <span class="radio-text">{{ $t('quickCreate.configArea.setAllTo') }}</span>
+          <label
+            class="custom-radio"
+            @click.prevent="handleActualDifficultyModeChange(true)"
+          >
+            <span
+              class="radio-mark"
+              :class="{ checked: config.actualDifficulty.enabled }"
+            ></span>
+            <span class="radio-text">{{
+              $t("quickCreate.configArea.setAllTo")
+            }}</span>
           </label>
         </div>
         <CustomDropdown
@@ -76,15 +130,33 @@
 
       <!-- 背包模板配置 -->
       <div class="config-group">
-        <label class="config-label">{{ $t('quickCreate.configArea.inventory') }}</label>
+        <label class="config-label">{{
+          $t("quickCreate.configArea.inventory")
+        }}</label>
         <div class="config-options">
-          <label class="custom-radio" @click.prevent="handleInventoryModeChange(false)">
-            <span class="radio-mark" :class="{ checked: !config.inventory.enabled }"></span>
-            <span class="radio-text">{{ $t('quickCreate.configArea.noUnify') }}</span>
+          <label
+            class="custom-radio"
+            @click.prevent="handleInventoryModeChange(false)"
+          >
+            <span
+              class="radio-mark"
+              :class="{ checked: !config.inventory.enabled }"
+            ></span>
+            <span class="radio-text">{{
+              $t("quickCreate.configArea.noUnify")
+            }}</span>
           </label>
-          <label class="custom-radio" @click.prevent="handleInventoryModeChange(true)">
-            <span class="radio-mark" :class="{ checked: config.inventory.enabled }"></span>
-            <span class="radio-text">{{ $t('quickCreate.configArea.useTemplate') }}</span>
+          <label
+            class="custom-radio"
+            @click.prevent="handleInventoryModeChange(true)"
+          >
+            <span
+              class="radio-mark"
+              :class="{ checked: config.inventory.enabled }"
+            ></span>
+            <span class="radio-text">{{
+              $t("quickCreate.configArea.useTemplate")
+            }}</span>
           </label>
         </div>
         <div v-if="config.inventory.enabled" class="inventory-config">
@@ -99,25 +171,66 @@
 
       <!-- 智能规则 -->
       <div class="config-group smart-rules">
-        <label class="config-label">{{ $t('quickCreate.configArea.smartRules') }}</label>
+        <label class="config-label">{{
+          $t("quickCreate.configArea.smartRules")
+        }}</label>
         <div class="checkbox-options">
-          <label class="custom-checkbox" @click.prevent="handleSmartRuleChange('autoAssignLevel', !smartRules.autoAssignLevel)">
-            <span class="checkbox-mark" :class="{ checked: smartRules.autoAssignLevel }">
+          <label
+            class="custom-checkbox"
+            @click.prevent="
+              handleSmartRuleChange(
+                'autoAssignLevel',
+                !smartRules.autoAssignLevel
+              )
+            "
+          >
+            <span
+              class="checkbox-mark"
+              :class="{ checked: smartRules.autoAssignLevel }"
+            >
               <font-awesome-icon :icon="['fas', 'check']" class="check-icon" />
             </span>
-            <span class="checkbox-text">{{ $t('quickCreate.configArea.autoAssignLevel') }}</span>
+            <span class="checkbox-text">{{
+              $t("quickCreate.configArea.autoAssignLevel")
+            }}</span>
           </label>
-          <label class="custom-checkbox" @click.prevent="handleSmartRuleChange('autoDetectDifficulty', !smartRules.autoDetectDifficulty)">
-            <span class="checkbox-mark" :class="{ checked: smartRules.autoDetectDifficulty }">
+          <label
+            class="custom-checkbox"
+            @click.prevent="
+              handleSmartRuleChange(
+                'autoDetectDifficulty',
+                !smartRules.autoDetectDifficulty
+              )
+            "
+          >
+            <span
+              class="checkbox-mark"
+              :class="{ checked: smartRules.autoDetectDifficulty }"
+            >
               <font-awesome-icon :icon="['fas', 'check']" class="check-icon" />
             </span>
-            <span class="checkbox-text">{{ $t('quickCreate.configArea.autoDetectDifficulty') }}</span>
+            <span class="checkbox-text">{{
+              $t("quickCreate.configArea.autoDetectDifficulty")
+            }}</span>
           </label>
-          <label class="custom-checkbox" @click.prevent="handleSmartRuleChange('autoRenameDuplicates', !smartRules.autoRenameDuplicates)">
-            <span class="checkbox-mark" :class="{ checked: smartRules.autoRenameDuplicates }">
+          <label
+            class="custom-checkbox"
+            @click.prevent="
+              handleSmartRuleChange(
+                'autoRenameDuplicates',
+                !smartRules.autoRenameDuplicates
+              )
+            "
+          >
+            <span
+              class="checkbox-mark"
+              :class="{ checked: smartRules.autoRenameDuplicates }"
+            >
               <font-awesome-icon :icon="['fas', 'check']" class="check-icon" />
             </span>
-            <span class="checkbox-text">{{ $t('quickCreate.configArea.autoRenameDuplicates') }}</span>
+            <span class="checkbox-text">{{
+              $t("quickCreate.configArea.autoRenameDuplicates")
+            }}</span>
           </label>
         </div>
       </div>
@@ -126,186 +239,221 @@
 </template>
 
 <script>
-import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
-import CustomDropdown from '@/components/CustomDropdown.vue'
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+import CustomDropdown from "@/components/CustomDropdown.vue";
 
 export default {
-  name: 'UniformConfigPanel',
+  name: "UniformConfigPanel",
   components: {
-    CustomDropdown
+    CustomDropdown,
   },
   props: {
     config: {
       type: Object,
-      required: true
+      required: true,
     },
     smartRules: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
-  emits: ['update:config', 'update:smartRules'],
+  emits: ["update:config", "update:smartRules"],
   setup(props, { emit }) {
-    const { t } = useI18n()
+    const { t } = useI18n();
 
     // 主线层级列表
     const mainLevelKeys = [
-      'Level0', 'TopFloor', 'MiddleFloor', 'GarageLevel2', 'BottomFloor',
-      'TheHub', 'Pipes1', 'ElectricalStation', 'Office', 'Hotel',
-      'Floor3', 'BoilerRoom', 'Pipes2', 'LevelFun', 'Poolrooms',
-      'LevelRun', 'TheEnd', 'Level94', 'AnimatedKingdom',
-      'LightsOut', 'OceanMap', 'CaveLevel', 'Level05', 'Level9',
-      'AbandonedBase', 'Level10', 'Level3999', 'Level07', 'Snackrooms',
-      'LevelDash', 'Level188_Expanded', 'Poolrooms_Expanded', 'WaterPark_Level01_P',
-      'WaterPark_Level02_P', 'WaterPark_Level03_P', 'LevelFun_Expanded',
-      'Zone1_Modified', 'Zone2_Modified', 'Zone3_Baked', 'Zone4',
-      'Level52', 'TunnelLevel'
-    ]
+      "Level0",
+      "TopFloor",
+      "MiddleFloor",
+      "GarageLevel2",
+      "BottomFloor",
+      "TheHub",
+      "Pipes1",
+      "ElectricalStation",
+      "Office",
+      "Hotel",
+      "Floor3",
+      "BoilerRoom",
+      "Pipes2",
+      "LevelFun",
+      "Poolrooms",
+      "LevelRun",
+      "TheEnd",
+      "Level94",
+      "AnimatedKingdom",
+      "LightsOut",
+      "OceanMap",
+      "CaveLevel",
+      "Level05",
+      "Level9",
+      "AbandonedBase",
+      "Level10",
+      "Level3999",
+      "Level07",
+      "Snackrooms",
+      "LevelDash",
+      "Level188_Expanded",
+      "Poolrooms_Expanded",
+      "WaterPark_Level01_P",
+      "WaterPark_Level02_P",
+      "WaterPark_Level03_P",
+      "LevelFun_Expanded",
+      "Zone1_Modified",
+      "Zone2_Modified",
+      "Zone3_Baked",
+      "Zone4",
+      "Level52",
+      "TunnelLevel",
+    ];
 
     // 支线层级列表
-    const branch1LevelKeys = ['Bunker', 'GraffitiLevel', 'Grassrooms_Expanded']
+    const branch1LevelKeys = ["Bunker", "GraffitiLevel", "Grassrooms_Expanded"];
 
     // 计算主线层级
     const mainLevels = computed(() => {
-      return mainLevelKeys.map(key => ({
+      return mainLevelKeys.map((key) => ({
         levelKey: key,
-        name: t(`LevelName_Display.${key}`)
-      }))
-    })
+        name: t(`LevelName_Display.${key}`),
+      }));
+    });
 
     // 计算支线层级
     const branch1Levels = computed(() => {
-      return branch1LevelKeys.map(key => ({
+      return branch1LevelKeys.map((key) => ({
         levelKey: key,
-        name: t(`LevelName_Display.${key}`)
-      }))
-    })
+        name: t(`LevelName_Display.${key}`),
+      }));
+    });
 
     // 层级下拉选项（合并主线和支线）
     const levelOptions = computed(() => {
-      const options = []
+      const options = [];
       // 主线层级
-      mainLevels.value.forEach(level => {
+      mainLevels.value.forEach((level) => {
         options.push({
           value: level.levelKey,
-          label: level.name
-        })
-      })
+          label: level.name,
+        });
+      });
       // 支线层级
-      branch1Levels.value.forEach(level => {
+      branch1Levels.value.forEach((level) => {
         options.push({
           value: level.levelKey,
-          label: level.name
-        })
-      })
-      return options
-    })
+          label: level.name,
+        });
+      });
+      return options;
+    });
 
     // 难度下拉选项
     const difficultyOptions = computed(() => [
-      { value: 'easy', label: t('createArchive.difficultyLevels.easy') },
-      { value: 'normal', label: t('createArchive.difficultyLevels.normal') },
-      { value: 'hard', label: t('createArchive.difficultyLevels.hard') },
-      { value: 'nightmare', label: t('createArchive.difficultyLevels.nightmare') }
-    ])
+      { value: "easy", label: t("createArchive.difficultyLevels.easy") },
+      { value: "normal", label: t("createArchive.difficultyLevels.normal") },
+      { value: "hard", label: t("createArchive.difficultyLevels.hard") },
+      {
+        value: "nightmare",
+        label: t("createArchive.difficultyLevels.nightmare"),
+      },
+    ]);
 
     // 背包模板下拉选项
     const inventoryTemplateOptions = computed(() => [
-      { value: 'empty', label: '默认空背包' }
-    ])
+      { value: "empty", label: "默认空背包" },
+    ]);
 
     // 层级配置处理
     const handleLevelModeChange = (enabled) => {
-      emit('update:config', {
+      emit("update:config", {
         ...props.config,
         level: {
           enabled,
-          value: enabled ? props.config.level.value : null
-        }
-      })
-    }
+          value: enabled ? props.config.level.value : null,
+        },
+      });
+    };
 
     const handleLevelValueChange = (value) => {
-      emit('update:config', {
+      emit("update:config", {
         ...props.config,
         level: {
           enabled: true,
-          value: value || null
-        }
-      })
-    }
+          value: value || null,
+        },
+      });
+    };
 
     // 存档难度配置处理
     const handleDifficultyModeChange = (enabled) => {
-      emit('update:config', {
+      emit("update:config", {
         ...props.config,
         difficulty: {
           enabled,
-          value: enabled ? props.config.difficulty.value : null
-        }
-      })
-    }
+          value: enabled ? props.config.difficulty.value : null,
+        },
+      });
+    };
 
     const handleDifficultyValueChange = (value) => {
-      emit('update:config', {
+      emit("update:config", {
         ...props.config,
         difficulty: {
           enabled: true,
-          value: value || null
-        }
-      })
-    }
+          value: value || null,
+        },
+      });
+    };
 
     // 实际难度配置处理
     const handleActualDifficultyModeChange = (enabled) => {
-      emit('update:config', {
+      emit("update:config", {
         ...props.config,
         actualDifficulty: {
           enabled,
-          value: enabled ? props.config.actualDifficulty.value : null
-        }
-      })
-    }
+          value: enabled ? props.config.actualDifficulty.value : null,
+        },
+      });
+    };
 
     const handleActualDifficultyValueChange = (value) => {
-      emit('update:config', {
+      emit("update:config", {
         ...props.config,
         actualDifficulty: {
           enabled: true,
-          value: value || null
-        }
-      })
-    }
+          value: value || null,
+        },
+      });
+    };
 
     // 背包配置处理
     const handleInventoryModeChange = (enabled) => {
-      emit('update:config', {
+      emit("update:config", {
         ...props.config,
         inventory: {
           enabled,
-          templateName: enabled ? props.config.inventory.templateName : null
-        }
-      })
-    }
+          templateName: enabled ? props.config.inventory.templateName : null,
+        },
+      });
+    };
 
     const handleInventoryTemplateChange = (templateName) => {
-      emit('update:config', {
+      emit("update:config", {
         ...props.config,
         inventory: {
           enabled: true,
-          templateName: templateName || null
-        }
-      })
-    }
+          templateName: templateName || null,
+        },
+      });
+    };
 
     // 智能规则处理
     const handleSmartRuleChange = (rule, checked) => {
-      emit('update:smartRules', {
+      emit("update:smartRules", {
         ...props.smartRules,
-        [rule]: checked
-      })
-    }
+        [rule]: checked,
+      });
+    };
 
     return {
       mainLevels,
@@ -321,12 +469,11 @@ export default {
       handleActualDifficultyValueChange,
       handleInventoryModeChange,
       handleInventoryTemplateChange,
-      handleSmartRuleChange
-    }
-  }
-}
+      handleSmartRuleChange,
+    };
+  },
+};
 </script>
-
 
 <style scoped>
 .uniform-config-panel {
@@ -431,7 +578,7 @@ export default {
 }
 
 .radio-mark::after {
-  content: '';
+  content: "";
   width: 8px;
   height: 8px;
   border-radius: 50%;

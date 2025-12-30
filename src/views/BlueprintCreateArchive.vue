@@ -3,13 +3,13 @@
     <!-- 返回按钮 -->
     <button class="back-button" @click="goBack">
       <font-awesome-icon :icon="['fas', 'arrow-left']" />
-      <span>{{ $t('common.back') }}</span>
+      <span>{{ $t("common.back") }}</span>
     </button>
 
     <!-- 页面标题 -->
     <div class="page-header">
-      <h1 class="page-title">{{ $t('blueprintCreate.title') }}</h1>
-      <p class="page-subtitle">{{ $t('blueprintCreate.subtitle') }}</p>
+      <h1 class="page-title">{{ $t("blueprintCreate.title") }}</h1>
+      <p class="page-subtitle">{{ $t("blueprintCreate.subtitle") }}</p>
     </div>
 
     <!-- 开发中提示 -->
@@ -17,31 +17,31 @@
       <div class="coming-soon-icon">
         <font-awesome-icon :icon="['fas', 'drafting-compass']" />
       </div>
-      <h2>{{ $t('blueprintCreate.comingSoon') }}</h2>
-      <p>{{ $t('blueprintCreate.comingSoonDesc') }}</p>
+      <h2>{{ $t("blueprintCreate.comingSoon") }}</h2>
+      <p>{{ $t("blueprintCreate.comingSoonDesc") }}</p>
     </div>
   </div>
 </template>
 
 <script>
-import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
+import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 
 export default {
-  name: 'BlueprintCreateArchive',
+  name: "BlueprintCreateArchive",
   setup() {
-    const router = useRouter()
-    const { t } = useI18n({ useScope: 'global' })
+    const router = useRouter();
+    const { t } = useI18n({ useScope: "global" });
 
     const goBack = () => {
-      router.push('/create-archive')
-    }
+      router.push("/create-archive");
+    };
 
     return {
-      goBack
-    }
-  }
-}
+      goBack,
+    };
+  },
+};
 </script>
 
 <style scoped>

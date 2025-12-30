@@ -202,7 +202,8 @@ export const colorValidator = {
 class ThemeManager {
   constructor() {
     // 从DOM获取当前主题，不再从localStorage初始化
-    this.currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    this.currentTheme =
+      document.documentElement.getAttribute("data-theme") || "light";
     this.init();
   }
 
@@ -214,7 +215,7 @@ class ThemeManager {
 
   syncThemeState() {
     // 同步当前主题状态到DOM
-    const actualTheme = document.documentElement.getAttribute('data-theme');
+    const actualTheme = document.documentElement.getAttribute("data-theme");
     if (actualTheme && actualTheme !== this.currentTheme) {
       this.currentTheme = actualTheme;
     }
@@ -226,17 +227,17 @@ class ThemeManager {
       localStorage.setItem("theme", newTheme);
     } catch (e) {
       // localStorage不可用时忽略错误
-      console.warn('无法保存主题设置到localStorage:', e);
+      console.warn("无法保存主题设置到localStorage:", e);
     }
-    
+
     // 更新DOM主题属性
-    document.documentElement.setAttribute('data-theme', newTheme);
-    
+    document.documentElement.setAttribute("data-theme", newTheme);
+
     // 确保主题初始化标记存在
-    if (!document.documentElement.classList.contains('theme-initialized')) {
-      document.documentElement.classList.add('theme-initialized');
+    if (!document.documentElement.classList.contains("theme-initialized")) {
+      document.documentElement.classList.add("theme-initialized");
     }
-    
+
     // 强制触发主题背景更新
     this.forceBackgroundUpdate(newTheme);
   }
@@ -245,19 +246,19 @@ class ThemeManager {
     // 强制更新html和body的背景色
     const root = document.documentElement;
     const body = document.body;
-    
-    if (theme === 'dark') {
-      root.style.backgroundColor = '#1c1c1e';
-      if (body) body.style.backgroundColor = '#1c1c1e';
+
+    if (theme === "dark") {
+      root.style.backgroundColor = "#1c1c1e";
+      if (body) body.style.backgroundColor = "#1c1c1e";
     } else {
-      root.style.backgroundColor = '#f8f9fa';
-      if (body) body.style.backgroundColor = '#f8f9fa';
+      root.style.backgroundColor = "#f8f9fa";
+      if (body) body.style.backgroundColor = "#f8f9fa";
     }
-    
+
     // 延迟移除内联样式，让CSS变量接管
     setTimeout(() => {
-      root.style.backgroundColor = '';
-      if (body) body.style.backgroundColor = '';
+      root.style.backgroundColor = "";
+      if (body) body.style.backgroundColor = "";
     }, 50);
   }
 
@@ -268,7 +269,10 @@ class ThemeManager {
 
   // 获取系统主题偏好
   getSystemTheme() {
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
   }
 }
 

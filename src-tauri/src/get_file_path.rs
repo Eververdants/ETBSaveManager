@@ -12,10 +12,12 @@ const SAVE_FILE_PATTERN: &str =
 /// 缓存编译后的正则表达式
 static SAVE_FILE_REGEX: OnceLock<Regex> = OnceLock::new();
 
+#[inline]
 fn get_save_file_regex() -> &'static Regex {
     SAVE_FILE_REGEX.get_or_init(|| Regex::new(SAVE_FILE_PATTERN).expect("正则表达式编译失败"))
 }
 
+/// 列出所有存档文件路径
 pub fn list_save_paths() -> Result<Vec<PathBuf>, String> {
     let base_dir = get_save_games_dir()?;
 
@@ -27,9 +29,9 @@ pub fn list_save_paths() -> Result<Vec<PathBuf>, String> {
 
     // 先收集所有目录条目，然后并行过滤
     let entries: Vec<_> = WalkDir::new(&base_dir)
-        .max_depth(2) // 限制深度，避免不必要的递归
+        .max_depth(2)
         .into_iter()
-        .filter_map(|e| e.ok())
+        .filter_map(Result::ok)
         .collect();
 
     // 并行过滤匹配的存档文件
@@ -37,9 +39,11 @@ pub fn list_save_paths() -> Result<Vec<PathBuf>, String> {
         .into_par_iter()
         .filter_map(|entry| {
             let path = entry.into_path();
+            if !path.is_file() {
+                return None;
+            }
             let name = path.file_name()?.to_str()?;
-
-            if path.is_file() && re.is_match(name) {
+            if re.is_match(name) {
                 Some(path)
             } else {
                 None

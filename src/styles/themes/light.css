@@ -124,7 +124,11 @@
   --card-border: 1px solid var(--glass-border-light);
   --card-radius: 16px;
   --card-padding: 16px;
-  --card-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  --card-highlight: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
+  );
   --card-active-indicator: var(--accent-color);
   --card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --card-hover-transform: translateY(-2px);

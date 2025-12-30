@@ -1,10 +1,18 @@
 <template>
   <transition appear @before-enter="animateCard" :css="false">
-    <div class="archive-card" :data-archive-id="archive.id" @click="handleCardClick"
-      :class="{ 'archive-hidden': !archive.isVisible }">
+    <div
+      class="archive-card"
+      :data-archive-id="archive.id"
+      @click="handleCardClick"
+      :class="{ 'archive-hidden': !archive.isVisible }"
+    >
       <!-- 上半背景区域 -->
       <div class="card-background">
-        <LazyImage :src="backgroundImage" :alt="currentLevelName" image-class="background-image" />
+        <LazyImage
+          :src="backgroundImage"
+          :alt="currentLevelName"
+          image-class="background-image"
+        />
         <div class="background-overlay"></div>
 
         <!-- 存档信息 -->
@@ -12,13 +20,27 @@
           <h3 class="archive-name">{{ archive.name }}</h3>
           <div class="game-mode-info">
             <span class="difficulty-tags">
-              <span class="difficulty-tag archive-difficulty" :class="archiveDifficultyClass">
+              <span
+                class="difficulty-tag archive-difficulty"
+                :class="archiveDifficultyClass"
+              >
                 <span class="tag-short">{{ archiveDifficultyText }}</span>
-                <span class="tag-full">{{ t('archiveCard.archiveDifficulty') }}：{{ archiveDifficultyText }}</span>
+                <span class="tag-full"
+                  >{{ t("archiveCard.archiveDifficulty") }}：{{
+                    archiveDifficultyText
+                  }}</span
+                >
               </span>
-              <span class="difficulty-tag actual-difficulty" :class="actualDifficultyClass">
+              <span
+                class="difficulty-tag actual-difficulty"
+                :class="actualDifficultyClass"
+              >
                 <span class="tag-short">{{ actualDifficultyText }}</span>
-                <span class="tag-full">{{ t('archiveCard.actualDifficulty') }}：{{ actualDifficultyText }}</span>
+                <span class="tag-full"
+                  >{{ t("archiveCard.actualDifficulty") }}：{{
+                    actualDifficultyText
+                  }}</span
+                >
               </span>
             </span>
           </div>
@@ -38,8 +60,11 @@
           </button>
           <button class="action-btn copy" @click="toggleVisibility">
             <transition name="icon-switch" mode="out-in">
-              <font-awesome-icon :key="isVisible ? 'eye' : 'eye-slash'"
-                :icon="isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" class="visibility-icon" />
+              <font-awesome-icon
+                :key="isVisible ? 'eye' : 'eye-slash'"
+                :icon="isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"
+                class="visibility-icon"
+              />
             </transition>
             <span class="shine"></span>
           </button>
@@ -54,237 +79,276 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
-import gsap from 'gsap'
-import LazyImage from './LazyImage.vue'
+import {
+  ref,
+  computed,
+  onMounted,
+  watch,
+  onBeforeUnmount,
+  nextTick,
+} from "vue";
+import gsap from "gsap";
+import LazyImage from "./LazyImage.vue";
 
 // Props
 const props = defineProps({
   archive: {
     type: Object,
-    required: true
+    required: true,
   },
   index: {
     type: Number,
-    default: 0
-  }
-})
+    default: 0,
+  },
+});
 
 // Emits
-const emit = defineEmits(['toggle-visibility', 'edit', 'delete', 'select'])
+const emit = defineEmits(["toggle-visibility", "edit", "delete", "select"]);
 
 // 防重复点击控制
-const clickTimeouts = new Map()
-const isProcessingClick = new Set()
+const clickTimeouts = new Map();
+const isProcessingClick = new Set();
 
 // Computed
 // 使用i18n翻译，避免硬编码
-import { useI18n } from 'vue-i18n'
+import { useI18n } from "vue-i18n";
 
-const { t } = useI18n({ useScope: 'global' })
+const { t } = useI18n({ useScope: "global" });
 
-const isVisible = computed(() => props.archive.isVisible)
+const isVisible = computed(() => props.archive.isVisible);
 
 const currentLevelName = computed(() => {
-  return t(`LevelName_Display.${props.archive.currentLevel}`) || props.archive.currentLevel
-})
+  return (
+    t(`LevelName_Display.${props.archive.currentLevel}`) ||
+    props.archive.currentLevel
+  );
+});
 
 const backgroundImage = computed(() => {
   // 现在所有关卡都使用关卡名称作为图片文件名
-  return `/images/ETB/${props.archive.currentLevel}.jpg`
-})
+  return `/images/ETB/${props.archive.currentLevel}.jpg`;
+});
 
 const archiveDifficultyText = computed(() => {
-  return t(`createArchive.difficultyLevels.${props.archive.archiveDifficulty}`) || props.archive.archiveDifficulty
-})
+  return (
+    t(`createArchive.difficultyLevels.${props.archive.archiveDifficulty}`) ||
+    props.archive.archiveDifficulty
+  );
+});
 
 const actualDifficultyText = computed(() => {
-  return t(`createArchive.difficultyLevels.${props.archive.actualDifficulty}`) || props.archive.actualDifficulty
-})
+  return (
+    t(`createArchive.difficultyLevels.${props.archive.actualDifficulty}`) ||
+    props.archive.actualDifficulty
+  );
+});
 
 const archiveDifficultyClass = computed(() => {
-  return `difficulty-${props.archive.archiveDifficulty}`
-})
+  return `difficulty-${props.archive.archiveDifficulty}`;
+});
 
 const actualDifficultyClass = computed(() => {
-  return `difficulty-${props.archive.actualDifficulty}`
-})
+  return `difficulty-${props.archive.actualDifficulty}`;
+});
 
 // Methods
 const toggleVisibility = () => {
   // 创建一个新的存档对象，切换isVisible状态
   const updatedArchive = {
     ...props.archive,
-    isVisible: !props.archive.isVisible
-  }
-  emit('toggle-visibility', updatedArchive)
-}
+    isVisible: !props.archive.isVisible,
+  };
+  emit("toggle-visibility", updatedArchive);
+};
 
 const editArchive = () => {
-  emit('edit', props.archive)
-}
+  emit("edit", props.archive);
+};
 
 const deleteArchive = () => {
-  emit('delete', props.archive)
-}
+  emit("delete", props.archive);
+};
 
 const handleCardClick = (event) => {
   // 阻止事件冒泡
-  event.stopPropagation()
+  event.stopPropagation();
 
   // 防止重复点击
   if (isProcessingClick.has(props.archive.id)) {
-    return
+    return;
   }
 
-  isProcessingClick.add(props.archive.id)
+  isProcessingClick.add(props.archive.id);
 
   // 清除之前的定时器
   if (clickTimeouts.has(props.archive.id)) {
-    clearTimeout(clickTimeouts.get(props.archive.id))
+    clearTimeout(clickTimeouts.get(props.archive.id));
   }
 
   // 直接触发选择事件，不执行动画
-  emit('select', props.archive)
+  emit("select", props.archive);
 
   // 延迟清理点击状态
   setTimeout(() => {
-    isProcessingClick.delete(props.archive.id)
-  }, 300)
-}
+    isProcessingClick.delete(props.archive.id);
+  }, 300);
+};
 
 // 优化后的标签宽度计算
-let resizeObserver = null
-let intersectionObserver = null
-const hasRendered = ref(false)
-const cardElement = ref(null)
+let resizeObserver = null;
+let intersectionObserver = null;
+const hasRendered = ref(false);
+const cardElement = ref(null);
 
 // 全局共享的测量元素（避免重复创建/销毁）
-let sharedMeasureElement = null
+let sharedMeasureElement = null;
 const getMeasureElement = () => {
   if (!sharedMeasureElement) {
-    sharedMeasureElement = document.createElement('div')
-    sharedMeasureElement.style.cssText = 'position:absolute;visibility:hidden;height:auto;width:auto;white-space:nowrap;padding:0;margin:0;font-size:12px;font-weight:500;pointer-events:none'
-    document.body.appendChild(sharedMeasureElement)
+    sharedMeasureElement = document.createElement("div");
+    sharedMeasureElement.style.cssText =
+      "position:absolute;visibility:hidden;height:auto;width:auto;white-space:nowrap;padding:0;margin:0;font-size:12px;font-weight:500;pointer-events:none";
+    document.body.appendChild(sharedMeasureElement);
   }
-  return sharedMeasureElement
-}
+  return sharedMeasureElement;
+};
 
 // 文本宽度缓存
-const textWidthCache = new Map()
+const textWidthCache = new Map();
 const measureTextWidth = (text) => {
   if (textWidthCache.has(text)) {
-    return textWidthCache.get(text)
+    return textWidthCache.get(text);
   }
-  const el = getMeasureElement()
-  el.textContent = text
-  const width = el.offsetWidth
-  textWidthCache.set(text, width)
-  return width
-}
+  const el = getMeasureElement();
+  el.textContent = text;
+  const width = el.offsetWidth;
+  textWidthCache.set(text, width);
+  return width;
+};
 
 // 优化后的标签宽度计算函数
 const updateTagWidths = () => {
-  if (!cardElement.value) return
+  if (!cardElement.value) return;
 
-  const difficultyTag = cardElement.value.querySelector('.difficulty-tag.archive-difficulty')
-  const actualTag = cardElement.value.querySelector('.difficulty-tag.actual-difficulty')
+  const difficultyTag = cardElement.value.querySelector(
+    ".difficulty-tag.archive-difficulty"
+  );
+  const actualTag = cardElement.value.querySelector(
+    ".difficulty-tag.actual-difficulty"
+  );
 
   // 批量读取 DOM
   const tags = [
-    { el: difficultyTag, short: difficultyTag?.querySelector('.tag-short')?.textContent || '', full: difficultyTag?.querySelector('.tag-full')?.textContent || '' },
-    { el: actualTag, short: actualTag?.querySelector('.tag-short')?.textContent || '', full: actualTag?.querySelector('.tag-full')?.textContent || '' }
-  ]
+    {
+      el: difficultyTag,
+      short: difficultyTag?.querySelector(".tag-short")?.textContent || "",
+      full: difficultyTag?.querySelector(".tag-full")?.textContent || "",
+    },
+    {
+      el: actualTag,
+      short: actualTag?.querySelector(".tag-short")?.textContent || "",
+      full: actualTag?.querySelector(".tag-full")?.textContent || "",
+    },
+  ];
 
   // 批量写入 DOM（使用 requestAnimationFrame 避免强制同步布局）
   requestAnimationFrame(() => {
     tags.forEach(({ el, short, full }) => {
-      if (!el) return
-      const shortWidth = Math.max(30, measureTextWidth(short) + 16)
-      const fullWidth = Math.max(shortWidth, measureTextWidth(full) + 5)
-      el.style.setProperty('--w-short', `${shortWidth}px`)
-      el.style.setProperty('--w-full', `${fullWidth}px`)
-    })
-  })
-}
+      if (!el) return;
+      const shortWidth = Math.max(30, measureTextWidth(short) + 16);
+      const fullWidth = Math.max(shortWidth, measureTextWidth(full) + 5);
+      el.style.setProperty("--w-short", `${shortWidth}px`);
+      el.style.setProperty("--w-full", `${fullWidth}px`);
+    });
+  });
+};
 
 // 卡片入场动画（简化版，减少性能开销）
 const animateCard = (el, done) => {
   // 检查用户是否偏好减少动画
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
 
   if (prefersReducedMotion) {
-    done?.()
-    return
+    done?.();
+    return;
   }
 
   // 简化动画：只使用 opacity 和 transform，避免 filter
-  gsap.fromTo(el, 
+  gsap.fromTo(
+    el,
     { opacity: 0, y: 10 },
-    { 
-      opacity: 1, 
-      y: 0, 
+    {
+      opacity: 1,
+      y: 0,
       duration: 0.2,
       ease: "power2.out",
       onComplete: done,
-      force3D: true
+      force3D: true,
     }
-  )
-}
+  );
+};
 
 // 卡片退场动画
 const animateCardLeave = (el, done) => {
   // 检查用户是否偏好减少动画
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
 
   gsap.to(el, {
     opacity: 0,
     scale: 0.9,
     y: -10,
-    filter: 'blur(2px)',
+    filter: "blur(2px)",
     duration: prefersReducedMotion ? 0 : 0.25,
     ease: "power2.in",
     onComplete: done,
     force3D: true,
-    willChange: 'transform, opacity, filter'
-  })
-}
+    willChange: "transform, opacity, filter",
+  });
+};
 
 onMounted(() => {
   // 使用 requestIdleCallback 延迟非关键初始化
   const initCard = () => {
-    cardElement.value = document.querySelector(`[data-archive-id="${props.archive.id}"]`)
-    if (!cardElement.value) return
+    cardElement.value = document.querySelector(
+      `[data-archive-id="${props.archive.id}"]`
+    );
+    if (!cardElement.value) return;
 
     // 直接计算标签宽度，不再使用 IntersectionObserver（简化逻辑）
-    updateTagWidths()
-    hasRendered.value = true
-  }
+    updateTagWidths();
+    hasRendered.value = true;
+  };
 
   // 优先使用 requestIdleCallback，降低初始化优先级
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(initCard, { timeout: 100 })
+  if ("requestIdleCallback" in window) {
+    requestIdleCallback(initCard, { timeout: 100 });
   } else {
     // 降级：使用 setTimeout
-    setTimeout(initCard, 16)
+    setTimeout(initCard, 16);
   }
-})
+});
 
 // 当文案变动时，重测 - 添加防抖优化
-let tagWidthUpdateTimer = null
+let tagWidthUpdateTimer = null;
 
-watch([() => archiveDifficultyText.value, () => actualDifficultyText.value], () => {
-  clearTimeout(tagWidthUpdateTimer)
-  tagWidthUpdateTimer = setTimeout(updateTagWidths, 100)
-})
+watch(
+  [() => archiveDifficultyText.value, () => actualDifficultyText.value],
+  () => {
+    clearTimeout(tagWidthUpdateTimer);
+    tagWidthUpdateTimer = setTimeout(updateTagWidths, 100);
+  }
+);
 
 onBeforeUnmount(() => {
   // 清理定时器
   if (tagWidthUpdateTimer) {
-    clearTimeout(tagWidthUpdateTimer)
-    tagWidthUpdateTimer = null
+    clearTimeout(tagWidthUpdateTimer);
+    tagWidthUpdateTimer = null;
   }
-})
+});
 </script>
 
 <style scoped>
@@ -319,16 +383,18 @@ onBeforeUnmount(() => {
 
 /* 简化卡片光泽扫过效果 */
 .archive-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg,
-      rgba(255, 255, 255, 0) 30%,
-      rgba(255, 255, 255, 0.02) 50%,
-      rgba(255, 255, 255, 0) 70%);
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(255, 255, 255, 0) 70%
+  );
   transform: rotate(45deg) translate(-100%, -100%);
   transition: transform 0.8s ease;
   pointer-events: none;
@@ -351,10 +417,16 @@ onBeforeUnmount(() => {
 
 .archive-card:hover {
   transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.4), 0 4px 8px -4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.4),
+    0 4px 8px -4px rgba(0, 0, 0, 0.3);
   z-index: 2;
   /* 简化光泽效果，减少性能开销 */
-  background: linear-gradient(145deg, var(--card-bg) 0%, rgba(255, 255, 255, 0.03) 50%, var(--card-bg) 100%);
+  background: linear-gradient(
+    145deg,
+    var(--card-bg) 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    var(--card-bg) 100%
+  );
   /* 优化缩放后的文字渲染 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -413,13 +485,15 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg,
-      rgba(0, 0, 0, 0) 0%,
-      rgba(0, 0, 0, 0.1) 30%,
-      rgba(0, 0, 0, 0.3) 50%,
-      rgba(0, 0, 0, 0.5) 70%,
-      rgba(0, 0, 0, 0.7) 90%,
-      rgba(0, 0, 0, 0.8) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.1) 30%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.5) 70%,
+    rgba(0, 0, 0, 0.7) 90%,
+    rgba(0, 0, 0, 0.8) 100%
+  );
   transition: opacity 0.3s ease;
 }
 
@@ -644,7 +718,12 @@ onBeforeUnmount(() => {
   position: relative;
   overflow: hidden;
   /* 简化按钮内部光泽效果，减少性能开销 */
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.03) 100%);
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.03) 100%
+  );
   /* 简化内阴影效果 */
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
   /* 使用will-change优化动画性能，但只针对会变化的属性 */
@@ -660,7 +739,7 @@ onBeforeUnmount(() => {
 
 /* 添加磁吸效果 - 扩大实际交互区域 */
 .action-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -8px;
   left: -8px;
@@ -671,14 +750,18 @@ onBeforeUnmount(() => {
 
 /* 简化按钮液体波纹效果 */
 .action-btn::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
   transform: translate(-50%, -50%);
   transition: width 0.5s ease, height 0.5s ease;
   z-index: 1;
@@ -698,7 +781,12 @@ onBeforeUnmount(() => {
   left: -100%;
   width: 40%;
   height: 100%;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
   transition: left 0.4s ease;
   z-index: 2;
   pointer-events: none;
@@ -706,14 +794,18 @@ onBeforeUnmount(() => {
   will-change: left;
 }
 
-
-
 /* 操作按钮悬浮状态 - 简化版本 */
 .action-btn:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   /* 简化光泽变化 */
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.03) 100%);
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.03) 100%
+  );
   /* 优化缩放后的文字渲染 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -727,24 +819,39 @@ onBeforeUnmount(() => {
 
 /* 卡片悬浮时按钮显示颜色 - 简化版本 */
 .archive-card:hover .action-btn.edit {
-  background: linear-gradient(135deg, rgba(52, 199, 89, 0.12) 0%, rgba(52, 199, 89, 0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(52, 199, 89, 0.12) 0%,
+    rgba(52, 199, 89, 0.2) 100%
+  );
   color: #34c759;
   border-color: rgba(52, 199, 89, 0.3);
-  box-shadow: 0 2px 6px rgba(52, 199, 89, 0.2), inset 0 1px 0 rgba(52, 199, 89, 0.15);
+  box-shadow: 0 2px 6px rgba(52, 199, 89, 0.2),
+    inset 0 1px 0 rgba(52, 199, 89, 0.15);
 }
 
 .archive-card:hover .action-btn.copy {
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.12) 0%, rgba(0, 122, 255, 0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.12) 0%,
+    rgba(0, 122, 255, 0.2) 100%
+  );
   color: #007aff;
   border-color: rgba(0, 122, 255, 0.3);
-  box-shadow: 0 2px 6px rgba(0, 122, 255, 0.2), inset 0 1px 0 rgba(0, 122, 255, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 122, 255, 0.2),
+    inset 0 1px 0 rgba(0, 122, 255, 0.15);
 }
 
 .archive-card:hover .action-btn.delete {
-  background: linear-gradient(135deg, rgba(255, 59, 48, 0.12) 0%, rgba(255, 59, 48, 0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 59, 48, 0.12) 0%,
+    rgba(255, 59, 48, 0.2) 100%
+  );
   color: #ff3b30;
   border-color: rgba(255, 59, 48, 0.3);
-  box-shadow: 0 2px 6px rgba(255, 59, 48, 0.2), inset 0 1px 0 rgba(255, 59, 48, 0.15);
+  box-shadow: 0 2px 6px rgba(255, 59, 48, 0.2),
+    inset 0 1px 0 rgba(255, 59, 48, 0.15);
 }
 
 /* Vue过渡动画 - 图标切换 */
@@ -892,7 +999,6 @@ onBeforeUnmount(() => {
 
 /* 触摸设备优化 */
 @media (hover: none) and (pointer: coarse) {
-
   /* 增大触摸区域 */
   .action-btn {
     min-width: 40px;
@@ -928,9 +1034,7 @@ onBeforeUnmount(() => {
 }
 
 /* 高分辨率屏幕优化 */
-@media (-webkit-min-device-pixel-ratio: 2),
-(min-resolution: 192dpi) {
-
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .archive-name,
   .current-level {
     text-rendering: optimizeLegibility;

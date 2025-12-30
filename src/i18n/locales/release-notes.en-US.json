@@ -1,5 +1,22 @@
 [
   {
+    "version": "3.0.0-Alpha-7.1",
+    "date": "2025-12-30",
+    "title": "New Year Limited Theme & Hub Door Fix",
+    "type": "patch",
+    "categories": {
+      "newFeatures": [
+        "New Year limited theme available in settings until Jan 3rd, 2026"
+      ],
+      "improvements": [],
+      "bugFixes": [
+        "Hub doors progress check now works correctly after save creation",
+        "Additional minor bugs resolved"
+      ],
+      "performance": []
+    }
+  },
+  {
     "version": "3.0.0-Alpha-7",
     "date": "2025-12-28",
     "title": "Quick Mode Ready and Performance Boost",
@@ -8,12 +25,8 @@
       "newFeatures": [
         "Fully implemented create-save 'Quick Mode' page and functionality"
       ],
-      "improvements": [
-        "Optimized save-list performance"
-      ],
-      "bugFixes": [
-        "Fixed several localization issues"
-      ],
+      "improvements": ["Optimized save-list performance"],
+      "bugFixes": ["Fixed several localization issues"],
       "performance": []
     }
   },
@@ -64,9 +77,7 @@
     "type": "patch",
     "categories": {
       "newFeatures": [],
-      "improvements": [
-        "Polished save-card appearance and visual effects"
-      ],
+      "improvements": ["Polished save-card appearance and visual effects"],
       "bugFixes": [
         "Fixed input box not supporting delete, copy, paste, and undo operations"
       ],
@@ -94,15 +105,9 @@
     "title": "New Items and Icon Refresh",
     "type": "patch",
     "categories": {
-      "newFeatures": [
-        "Added new in-game items: Knife & Teddy Bear"
-      ],
-      "improvements": [
-        "Updated all item icons to the latest game version"
-      ],
-      "bugFixes": [
-        "Fixed item-select modal appearing at the top of the page"
-      ],
+      "newFeatures": ["Added new in-game items: Knife & Teddy Bear"],
+      "improvements": ["Updated all item icons to the latest game version"],
+      "bugFixes": ["Fixed item-select modal appearing at the top of the page"],
       "performance": []
     }
   },
@@ -139,9 +144,7 @@
         "Compressed latest level preview images to reduce package size"
       ],
       "bugFixes": [],
-      "performance": [
-        "Optimized first-time loading speed"
-      ]
+      "performance": ["Optimized first-time loading speed"]
     }
   },
   {
@@ -170,9 +173,7 @@
         "Refined search-filter combo bar: Merged input box and dropdown filter into sleek component"
       ],
       "bugFixes": [],
-      "performance": [
-        "Enhanced smoothness for large lists"
-      ]
+      "performance": ["Enhanced smoothness for large lists"]
     }
   },
   {
@@ -285,9 +286,7 @@
     "title": "Added Sidebar Navigation Menu",
     "type": "improvement",
     "categories": {
-      "newFeatures": [
-        "Added left sidebar navigation menu"
-      ],
+      "newFeatures": ["Added left sidebar navigation menu"],
       "improvements": [
         "Continued refinement of UI interactions and visual details"
       ],

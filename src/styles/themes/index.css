@@ -24,16 +24,19 @@
  */
 
 /* 基础色板 - 定义所有可用颜色 */
-@import './_colors.css';
+@import "./_colors.css";
 
 /* 语义化颜色 - 状态、版本标签、Toast等 */
-@import './_semantic.css';
+@import "./_semantic.css";
 
 /* 组件专用颜色 - 特定组件的颜色定义 */
-@import './_components.css';
+@import "./_components.css";
 
 /* 亮色主题 */
-@import './light.css';
+@import "./light.css";
 
 /* 暗色主题 */
-@import './dark.css';
+@import "./dark.css";
+
+/* 元旦主题 🎊 */
+@import "./new-year.css";

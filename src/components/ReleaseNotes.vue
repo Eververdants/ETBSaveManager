@@ -2,12 +2,18 @@
   <div class="release-notes-container">
     <!-- 简洁版本显示 -->
     <div class="release-notes-compact" v-if="!showDetails">
-      <div v-for="(note, index) in releaseNotes.slice(0, 2)" :key="note.version" class="compact-note-item"
-        :class="note.type">
+      <div
+        v-for="(note, index) in releaseNotes.slice(0, 2)"
+        :key="note.version"
+        class="compact-note-item"
+        :class="note.type"
+      >
         <div class="compact-header">
           <span class="version-tag" :class="note.type">{{ note.version }}</span>
           <span class="compact-date">{{ formatDate(note.date) }}</span>
-          <span v-if="note.isHighlight" class="compact-highlight">{{ $t('featured') }}</span>
+          <span v-if="note.isHighlight" class="compact-highlight">{{
+            $t("featured")
+          }}</span>
         </div>
         <div class="compact-title">{{ note.title }}</div>
         <div class="compact-summary" v-if="note.categories.newFeatures?.[0]">
@@ -15,8 +21,12 @@
         </div>
       </div>
 
-      <div v-if="releaseNotes.length > 2" class="show-more-btn" @click="showDetails = true">
-        {{ $t('viewAllVersions', { count: releaseNotes.length }) }}
+      <div
+        v-if="releaseNotes.length > 2"
+        class="show-more-btn"
+        @click="showDetails = true"
+      >
+        {{ $t("viewAllVersions", { count: releaseNotes.length }) }}
       </div>
     </div>
 
@@ -25,51 +35,90 @@
       <div class="detailed-header">
         <button class="back-btn" @click="showDetails = false">
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
-          {{ $t('back') }}
+          {{ $t("back") }}
         </button>
-        <h4>{{ $t('releaseNotes') }} ({{ releaseNotes.length }} {{ $t('versions') }})</h4>
+        <h4>
+          {{ $t("releaseNotes") }} ({{ releaseNotes.length }}
+          {{ $t("versions") }})
+        </h4>
       </div>
 
       <div class="detailed-content">
-        <div v-for="note in releaseNotes" :key="note.version" class="detailed-note-item" :class="note.type">
+        <div
+          v-for="note in releaseNotes"
+          :key="note.version"
+          class="detailed-note-item"
+          :class="note.type"
+        >
           <div class="detailed-version-header">
-            <span class="version-tag" :class="note.type">{{ note.version }}</span>
+            <span class="version-tag" :class="note.type">{{
+              note.version
+            }}</span>
             <span class="detailed-date">{{ formatDate(note.date) }}</span>
-            <span v-if="note.isHighlight" class="detailed-highlight">{{ $t('featured') }}</span>
+            <span v-if="note.isHighlight" class="detailed-highlight">{{
+              $t("featured")
+            }}</span>
           </div>
           <div class="detailed-title">{{ note.title }}</div>
 
-          <div v-if="note.categories.newFeatures?.length" class="category-block">
-            <div class="category-title">{{ $t('categories.newFeatures') }}</div>
+          <div
+            v-if="note.categories.newFeatures?.length"
+            class="category-block"
+          >
+            <div class="category-title">{{ $t("categories.newFeatures") }}</div>
             <div class="category-items">
-              <div v-for="(item, idx) in note.categories.newFeatures" :key="idx" class="category-item">
+              <div
+                v-for="(item, idx) in note.categories.newFeatures"
+                :key="idx"
+                class="category-item"
+              >
                 {{ item }}
               </div>
             </div>
           </div>
 
-          <div v-if="note.categories.improvements?.length" class="category-block">
-            <div class="category-title">{{ $t('categories.improvements') }}</div>
+          <div
+            v-if="note.categories.improvements?.length"
+            class="category-block"
+          >
+            <div class="category-title">
+              {{ $t("categories.improvements") }}
+            </div>
             <div class="category-items">
-              <div v-for="(item, idx) in note.categories.improvements" :key="idx" class="category-item">
+              <div
+                v-for="(item, idx) in note.categories.improvements"
+                :key="idx"
+                class="category-item"
+              >
                 {{ item }}
               </div>
             </div>
           </div>
 
           <div v-if="note.categories.bugFixes?.length" class="category-block">
-            <div class="category-title">{{ $t('categories.bugFixes') }}</div>
+            <div class="category-title">{{ $t("categories.bugFixes") }}</div>
             <div class="category-items">
-              <div v-for="(item, idx) in note.categories.bugFixes" :key="idx" class="category-item">
+              <div
+                v-for="(item, idx) in note.categories.bugFixes"
+                :key="idx"
+                class="category-item"
+              >
                 {{ item }}
               </div>
             </div>
           </div>
 
-          <div v-if="note.categories.performance?.length" class="category-block">
-            <div class="category-title">{{ $t('categories.performance') }}</div>
+          <div
+            v-if="note.categories.performance?.length"
+            class="category-block"
+          >
+            <div class="category-title">{{ $t("categories.performance") }}</div>
             <div class="category-items">
-              <div v-for="(item, idx) in note.categories.performance" :key="idx" class="category-item">
+              <div
+                v-for="(item, idx) in note.categories.performance"
+                :key="idx"
+                class="category-item"
+              >
                 {{ item }}
               </div>
             </div>
@@ -81,8 +130,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { ref, onMounted, computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
 
@@ -96,7 +145,7 @@ const releaseNotes = ref([]);
 const $t = (key, values) => {
   const text = t(key);
   // 简单的模板替换
-  if (values && typeof values === 'object') {
+  if (values && typeof values === "object") {
     return text.replace(/\{(\w+)\}/g, (match, param) => {
       return values[param] || match;
     });
@@ -107,24 +156,24 @@ const $t = (key, values) => {
 // 方法
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
+  return date.toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   });
 };
 
 const loadReleaseNotes = async () => {
   try {
     // 从 public 目录加载数据
-    const response = await fetch('/releaseNotes.json');
+    const response = await fetch("/releaseNotes.json");
     if (response.ok) {
       releaseNotes.value = await response.json();
     } else {
-      console.warn('无法加载更新公告数据，使用默认数据');
+      console.warn("无法加载更新公告数据，使用默认数据");
     }
   } catch (error) {
-    console.error('加载更新公告失败:', error);
+    console.error("加载更新公告失败:", error);
     releaseNotes.value = [];
   }
 };
@@ -368,7 +417,7 @@ onMounted(() => {
 }
 
 .feature-item::before {
-  content: '•';
+  content: "•";
   position: absolute;
   left: 0;
   color: var(--primary);

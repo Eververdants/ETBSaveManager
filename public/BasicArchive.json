@@ -289,6 +289,123 @@
           }
         },
         "Name": "Level0"
+      },
+      "LevelsCompleted_0": {
+        "tag": {
+          "data": {
+            "Array": {
+              "Struct": {
+                "id": "00000000-0000-0000-0000-000000000000",
+                "struct_type": {
+                  "Struct": "S_LevelStats"
+                }
+              }
+            }
+          }
+        },
+        "Array": {
+          "Struct": {
+            "id": "06e675d4-4bbd-2e16-2f43-dbb447d5d692",
+            "struct_type": {
+              "Struct": "S_LevelStats"
+            },
+            "type_": "StructProperty",
+            "value": [
+              {
+                "Struct": {
+                  "DisplayName_24_E62A59304187EE5783D725B3DCDE520C_0": {
+                    "Str": "Level 0",
+                    "tag": {
+                      "data": {
+                        "Other": "StrProperty"
+                      }
+                    }
+                  },
+                  "HasCompleted_4_EA1ED1B4409DB7F46F5846B1CB695EF3_0": {
+                    "Bool": false,
+                    "tag": {
+                      "data": {
+                        "Other": "BoolProperty"
+                      }
+                    }
+                  },
+                  "HasUnlockedHub_21_7FD307464C90A6868642B3AEBCDA508D_0": {
+                    "Bool": false,
+                    "tag": {
+                      "data": {
+                        "Other": "BoolProperty"
+                      }
+                    }
+                  },
+                  "LevelName_8_4C45C1AA462CC6194F50ADAADFB106A8_0": {
+                    "Name": "Level0",
+                    "tag": {
+                      "data": {
+                        "Other": "NameProperty"
+                      }
+                    }
+                  },
+                  "Time_2_59B2BD3A4F00EEBB9DEECCA10EEA1022_0": {
+                    "Float": -1.0,
+                    "tag": {
+                      "data": {
+                        "Other": "FloatProperty"
+                      }
+                    }
+                  },
+                  "World_14_07F9F91140BC22FA10EDBA9F6EED48E9_0": {
+                    "Struct": {
+                      "Struct": {
+                        "Items_19_783746F14C74611D03643BB2DF689058_0": {
+                          "Array": {
+                            "Struct": {
+                              "id": "3cf48f27-4372-dcdb-d317-b89ae6cf0d83",
+                              "struct_type": {
+                                "Struct": "S_DroppedItem"
+                              },
+                              "type_": "StructProperty",
+                              "value": []
+                            }
+                          },
+                          "tag": {
+                            "data": {
+                              "Array": {
+                                "Struct": {
+                                  "id": "00000000-0000-0000-0000-000000000000",
+                                  "struct_type": {
+                                    "Struct": null
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "SanityLevel_16_3DCC15864CC44BF25D86A09EED0B2065_0": {
+                          "Float": 100.0,
+                          "tag": {
+                            "data": {
+                              "Other": "FloatProperty"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "tag": {
+                      "data": {
+                        "Struct": {
+                          "id": "40fb9965-4c4e-9edc-2fdf-a68d06fdf380",
+                          "struct_type": {
+                            "Struct": "S_WorldCommon"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
       }
     }
   },

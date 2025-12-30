@@ -10,6 +10,90 @@ use uesave::{
 };
 use uuid;
 
+/// 主线层级数据：(DisplayName, LevelName)
+/// 按游戏进度顺序排列 - endingLevelsData[0] 的前17个
+const MAIN_STORYLINE_LEVELS: &[(&str, &str)] = &[
+    ("Level 0", "Level0"),
+    ("Habitable Zone", "TopFloor"),
+    ("Habitable Zone", "MiddleFloor"),
+    ("Habitable Zone", "GarageLevel2"),
+    ("Habitable Zone", "BottomFloor"),
+    ("The Hub", "TheHub"),
+    ("Pipe Dreams", "Pipes1"),
+    ("Electrical Station", "ElectricalStation"),
+    ("Abandoned Office", "Office"),
+    ("Terror Hotel", "Hotel"),
+    ("Terror Hotel", "Floor3"),
+    ("Terror Hotel", "BoilerRoom"),
+    ("Pipe Dreams", "Pipes2"),
+    ("Level Fun", "LevelFun"),
+    ("The Poolrooms", "Poolrooms"),
+    ("Run for your Life!", "LevelRun"),
+    ("The End", "TheEnd"),
+];
+
+/// 全部层级数据（endingLevelsData[0] 的完整列表）：(DisplayName, LevelName)
+/// 用于支线剧情时生成全部层级
+const ALL_LEVELS: &[(&str, &str)] = &[
+    ("Level 0", "Level0"),
+    ("Habitable Zone", "TopFloor"),
+    ("Habitable Zone", "MiddleFloor"),
+    ("Habitable Zone", "GarageLevel2"),
+    ("Habitable Zone", "BottomFloor"),
+    ("The Hub", "TheHub"),
+    ("Pipe Dreams", "Pipes1"),
+    ("Electrical Station", "ElectricalStation"),
+    ("Abandoned Office", "Office"),
+    ("Terror Hotel", "Hotel"),
+    ("Terror Hotel", "Floor3"),
+    ("Terror Hotel", "BoilerRoom"),
+    ("Pipe Dreams", "Pipes2"),
+    ("Level Fun", "LevelFun"),
+    ("The Poolrooms", "Poolrooms"),
+    ("Run for your Life!", "LevelRun"),
+    ("The End", "TheEnd"),
+    ("Level 94", "Level94"),
+    ("Level 94", "AnimatedKingdom"),
+    ("Lights Out", "LightsOut"),
+    ("Thalassophobia", "OceanMap"),
+    ("Cave System", "CaveLevel"),
+    ("Level 188", "Level05"),
+    ("Level 9", "Level9"),
+    ("Level 9", "AbandonedBase"),
+    ("Level 10", "Level10"),
+    ("Level 3999", "Level3999"),
+    ("Level 0.2", "Level07"),
+    ("Snackrooms", "Snackrooms"),
+    ("Level !~!", "LevelDash"),
+    ("Level 188 Expanded", "Level188_Expanded"),
+    ("The Poolrooms Expanded", "Poolrooms_Expanded"),
+    ("The Poolrooms Expanded", "WaterPark_Level01_P"),
+    ("The Poolrooms Expanded", "WaterPark_Level02_P"),
+    ("The Poolrooms Expanded", "WaterPark_Level03_P"),
+    ("Level Fun Expanded", "LevelFun_Expanded"),
+    ("Level Fun Expanded", "Zone1_Modified"),
+    ("Level Fun Expanded", "Zone2_Modified"),
+    ("Level Fun Expanded", "Zone3_Baked"),
+    ("Level Fun Expanded", "Zone4"),
+    ("Level 52", "Level52"),
+    ("Level 55.1", "TunnelLevel"),
+];
+
+/// 背包槽位数量
+const INVENTORY_SLOTS: usize = 12;
+/// 背包属性名称
+const INVENTORY_PROP_NAME: &str = "Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4";
+/// 理智值属性名称
+const SANITY_PROP_NAME: &str = "Sanity_6_A5AFAB454F51CC63745A669BD7E629F6";
+
+/// LevelsCompleted 结构体字段名称
+const DISPLAY_NAME_FIELD: &str = "DisplayName_24_E62A59304187EE5783D725B3DCDE520C";
+const HAS_COMPLETED_FIELD: &str = "HasCompleted_4_EA1ED1B4409DB7F46F5846B1CB695EF3";
+const HAS_UNLOCKED_HUB_FIELD: &str = "HasUnlockedHub_21_7FD307464C90A6868642B3AEBCDA508D";
+const LEVEL_NAME_FIELD: &str = "LevelName_8_4C45C1AA462CC6194F50ADAADFB106A8";
+const TIME_FIELD: &str = "Time_2_59B2BD3A4F00EEBB9DEECCA10EEA1022";
+const WORLD_FIELD: &str = "World_14_07F9F91140BC22FA10EDBA9F6EED48E9";
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SaveData {
     pub archive_name: String,
@@ -18,15 +102,15 @@ pub struct SaveData {
     pub difficulty: String,
     pub actual_difficulty: String,
     pub players: Vec<PlayerData>,
-    pub basic_archive: JsonValue, // 前端传来的完整 BasicArchive.json 内容
-    pub main_ending: bool,        // 添加MainEnding参数，主线为false，支线为true
-    pub meg_unlocked: bool,       // MEG解锁状态
+    pub basic_archive: JsonValue,
+    pub main_ending: bool,
+    pub meg_unlocked: bool,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PlayerData {
     pub steam_id: String,
-    pub inventory: Vec<i32>, // 改为数字ID
+    pub inventory: Vec<i32>,
 }
 
 pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
@@ -37,18 +121,15 @@ pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
     println!("  存档难度: {}", save_data.difficulty);
     println!("  实际难度: {}", save_data.actual_difficulty);
     println!("  玩家数量: {}", save_data.players.len());
-    println!("  是否主线结局: {}", !save_data.main_ending); // 注意：前端传来的main_ending，主线为false，支线为true
+    println!("  是否主线结局: {}", !save_data.main_ending);
 
-    // 处理层级映射（Pipes1/Pipes2 -> Pipes）
+    // 处理层级映射
     let processed_level = match save_data.level.as_str() {
         "Pipes1" | "Pipes2" => "Pipes".to_string(),
         _ => save_data.level.clone(),
     };
 
-    // 生成文件名后缀（多人模式也使用难度）
-    let file_suffix = save_data.difficulty.clone();
-
-    // 1. 构建目标路径
+    // 构建目标路径
     let app_data_dir = get_local_appdata_dir()?;
     let save_dir = app_data_dir.join("EscapeTheBackrooms/Saved/SaveGames");
 
@@ -56,73 +137,52 @@ pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
         fs::create_dir_all(&save_dir).map_err(|e| format!("创建保存目录失败: {}", e))?;
     }
 
-    // 强制设置为多人模式
     let file_name = format!(
-        "{}_{}_{}.sav",
-        "MULTIPLAYER".to_string(), // 始终设置为多人模式
-        save_data.archive_name,
-        file_suffix
+        "MULTIPLAYER_{}_{}.sav",
+        save_data.archive_name, save_data.difficulty
     );
     let save_path = save_dir.join(&file_name);
 
     println!("📂 目标存档路径: {:?}", save_path);
 
-    // 2. 从前端传来的 BasicArchive.json 构造 Save 对象
-    let mut save = parse_json_to_save(&save_data.basic_archive)?;
+    // 从 BasicArchive.json 构造 Save 对象
+    let mut save: Save = serde_json::from_value(save_data.basic_archive.clone()).map_err(|e| {
+        format!(
+            "JSON 转换为 Save 失败: {:?}, JSON 内容: {}",
+            e,
+            save_data.basic_archive.to_string()
+        )
+    })?;
 
-    // 3. 修改 CurrentLevel 字段
+    // 修改 CurrentLevel 字段
     if processed_level == "Level0" {
         remove_current_level(&mut save);
-        println!("✅ Level0 检测到，已移除 CurrentLevel_0 整个字段");
     } else {
         modify_current_level(&mut save, processed_level.clone());
     }
 
-    // 4. 处理 Pipes1/Pipes2 的 UnlockedFun_0 字段
-    match save_data.level.as_str() {
-        "Pipes1" => {
-            // 删除 UnlockedFun_0 字段
-            let unlocked_fun_key = PropertyKey(0, "UnlockedFun".to_string());
-            if save.root.properties.0.contains_key(&unlocked_fun_key) {
-                save.root.properties.0.shift_remove(&unlocked_fun_key);
-                println!("🗑️ 已删除 UnlockedFun_0 字段 (Pipes1)");
-            }
-        }
-        "Pipes2" => {
-            // 创建 UnlockedFun_0 字段，设置为 true
-            let unlocked_fun_prop = Property {
-                tag: PropertyTagPartial {
-                    id: None,
-                    data: PropertyTagDataPartial::Other(uesave::PropertyType::BoolProperty),
-                },
-                inner: PropertyInner::Bool(true),
-            };
-            let unlocked_fun_key = PropertyKey(0, "UnlockedFun".to_string());
-            save.root
-                .properties
-                .0
-                .insert(unlocked_fun_key, unlocked_fun_prop);
-            println!("✅ 已创建 UnlockedFun_0 字段，值为 true (Pipes2)");
-        }
-        _ => {}
-    }
+    // 处理 Pipes 的 UnlockedFun_0 字段
+    handle_pipes_unlocked_fun(&mut save, &save_data.level);
 
-    // 5. 修改难度设置
+    // 修改难度设置
     update_difficulty(&mut save, &save_data.actual_difficulty);
 
-    // 5. 处理MainEnding参数，更新HasCompletedMainEnding字段
-    update_main_ending_status(&mut save, save_data.main_ending)?;
+    // 处理 MainEnding 参数
+    update_bool_property(&mut save, "HasCompletedMainEnding", save_data.main_ending)?;
 
-    // 6. 处理MEGUnlocked参数
-    println!("MEGUnlocked参数: {}", save_data.meg_unlocked);
+    // 处理 MEG 状态
     update_meg_status(&mut save, save_data.meg_unlocked)?;
 
-    // 7. 更新玩家数据（如果有玩家信息）
+    // 生成 LevelsCompleted_0 数据
+    // main_ending 为 true 表示选择的是支线（非主线结局）
+    generate_levels_completed(&mut save, &save_data.level, save_data.main_ending)?;
+
+    // 更新玩家数据
     if !save_data.players.is_empty() {
         update_player_data(&mut save, &save_data.players)?;
     }
 
-    // 8. 写出为 .sav 文件
+    // 写出为 .sav 文件
     let file = fs::File::create(&save_path).map_err(|e| format!("创建输出文件失败: {}", e))?;
     let mut writer = BufWriter::new(file);
     save.write(&mut writer)
@@ -133,56 +193,36 @@ pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
 
     println!("💾 存档已成功保存至: {:?}", save_path);
 
-    // 9. 更新 MAINSAVE.sav 文件
-    update_mainsave_sav(&save_data, &file_name)?;
+    // 更新 MAINSAVE.sav 文件
+    let archive_name = extract_archive_name(&file_name);
+    add_save_to_mainsave(archive_name)?;
 
     Ok(())
 }
 
-// 将 JSON 转换为 Save
-fn parse_json_to_save(json: &JsonValue) -> Result<Save, String> {
-    // 这里你可以用 serde_json::from_value 构造 Save 对象
-    let save: Save = serde_json::from_value(json.clone()).map_err(|e| {
-        format!(
-            "JSON 转换为 Save 失败: {:?}, JSON 内容: {}",
-            e,
-            json.to_string()
-        )
-    })?;
-    Ok(save)
-}
-
-// 修改 CurrentLevel_0.Name 字段值
+/// 修改 CurrentLevel_0.Name 字段值
 pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
-    if let Some(current_level_prop) = save
-        .root
-        .properties
-        .0
-        .get_mut(&PropertyKey(0, "CurrentLevel".to_string()))
-    {
-        match &mut current_level_prop.inner {
-            PropertyInner::Name(ref mut name) => {
-                *name = new_level_name.clone();
-                println!("✅ CurrentLevel_0 已修改为: {}", name);
-                true
-            }
-            other => {
-                eprintln!("❌ CurrentLevel_0 类型错误，期望 Name，实际是 {:?}", other);
-                false
-            }
+    let key = PropertyKey(0, "CurrentLevel".to_string());
+
+    if let Some(current_level_prop) = save.root.properties.0.get_mut(&key) {
+        if let PropertyInner::Name(ref mut name) = &mut current_level_prop.inner {
+            *name = new_level_name.clone();
+            println!("✅ CurrentLevel_0 已修改为: {}", name);
+            return true;
         }
-    } else {
-        eprintln!("❌ 未找到 CurrentLevel_0 字段");
-        false
+        eprintln!("❌ CurrentLevel_0 类型错误");
+        return false;
     }
+
+    eprintln!("❌ 未找到 CurrentLevel_0 字段");
+    false
 }
 
-// 删除 CurrentLevel_0 整个字段
+/// 删除 CurrentLevel_0 整个字段
 pub fn remove_current_level(save: &mut Save) -> bool {
-    let key_to_remove = PropertyKey(0, "CurrentLevel".to_string());
+    let key = PropertyKey(0, "CurrentLevel".to_string());
 
-    if save.root.properties.0.contains_key(&key_to_remove) {
-        save.root.properties.0.shift_remove(&key_to_remove);
+    if save.root.properties.0.shift_remove(&key).is_some() {
         println!("✅ CurrentLevel_0 已被完全移除");
         true
     } else {
@@ -191,130 +231,54 @@ pub fn remove_current_level(save: &mut Save) -> bool {
     }
 }
 
-// 更新HasCompletedMainEnding字段
-fn update_main_ending_status(save: &mut Save, main_ending: bool) -> Result<(), String> {
-    // 根据前端传来的main_ending参数设置HasCompletedMainEnding字段
-    // 注意：前端传来的main_ending，主线为false，支线为true
-    // 所以HasCompletedMainEnding的值应该与main_ending相同
-    let has_completed_main_ending = main_ending;
+/// 处理 Pipes 的 UnlockedFun_0 字段
+fn handle_pipes_unlocked_fun(save: &mut Save, level: &str) {
+    let unlocked_fun_key = PropertyKey(0, "UnlockedFun".to_string());
 
-    // 查找HasCompletedMainEnding字段
-    let has_completed_main_ending_key = PropertyKey(0, "HasCompletedMainEnding".to_string());
-
-    // 创建或更新HasCompletedMainEnding字段
-    let has_completed_main_ending_prop = Property {
-        tag: PropertyTagPartial {
-            id: None,
-            data: PropertyTagDataPartial::Other(uesave::PropertyType::BoolProperty),
-        },
-        inner: PropertyInner::Bool(has_completed_main_ending),
-    };
-
-    // 插入或更新HasCompletedMainEnding字段
-    save.root.properties.0.insert(
-        has_completed_main_ending_key,
-        has_completed_main_ending_prop,
-    );
-
-    if has_completed_main_ending {
-        println!("✅ 已设置HasCompletedMainEnding字段为true（支线结局）");
-    } else {
-        println!("✅ 已设置HasCompletedMainEnding字段为false（主线结局）");
+    match level {
+        "Pipes1" => {
+            if save
+                .root
+                .properties
+                .0
+                .shift_remove(&unlocked_fun_key)
+                .is_some()
+            {
+                println!("🗑️ 已删除 UnlockedFun_0 字段 (Pipes1)");
+            }
+        }
+        "Pipes2" => {
+            let prop = Property {
+                tag: PropertyTagPartial {
+                    id: None,
+                    data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
+                },
+                inner: PropertyInner::Bool(true),
+            };
+            save.root.properties.0.insert(unlocked_fun_key, prop);
+            println!("✅ 已创建 UnlockedFun_0 字段，值为 true (Pipes2)");
+        }
+        _ => {}
     }
-
-    Ok(())
 }
 
-// 更新MEG状态字段
-fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> Result<(), String> {
-    // 根据前端传来的meg_unlocked参数设置IsMEGUnlocked和IsMEGPowerOn字段
-    // 如果meg_unlocked为false，则将三个字段都设置为false
-    // 如果meg_unlocked为true，则保持原样或设置为true
-
-    // 查找IsMEGUnlocked字段
-    let is_meg_unlocked_key = PropertyKey(0, "IsMEGUnlocked".to_string());
-
-    // 创建或更新IsMEGUnlocked字段
-    let is_meg_unlocked_prop = Property {
-        tag: PropertyTagPartial {
-            id: None,
-            data: PropertyTagDataPartial::Other(uesave::PropertyType::BoolProperty),
-        },
-        inner: PropertyInner::Bool(meg_unlocked),
-    };
-
-    // 插入或更新IsMEGUnlocked字段
-    save.root
-        .properties
-        .0
-        .insert(is_meg_unlocked_key, is_meg_unlocked_prop);
-
-    // 查找IsMEGPowerOn字段
-    let is_meg_power_on_key = PropertyKey(0, "IsMEGPowerOn".to_string());
-
-    // 创建或更新IsMEGPowerOn字段
-    let is_meg_power_on_prop = Property {
-        tag: PropertyTagPartial {
-            id: None,
-            data: PropertyTagDataPartial::Other(uesave::PropertyType::BoolProperty),
-        },
-        inner: PropertyInner::Bool(meg_unlocked),
-    };
-
-    // 插入或更新IsMEGPowerOn字段
-    save.root
-        .properties
-        .0
-        .insert(is_meg_power_on_key, is_meg_power_on_prop);
-
-    // 查找IsMEGSecurityUnlocked字段
-    let is_meg_security_unlocked_key = PropertyKey(0, "IsMEGSecurityUnlocked".to_string());
-
-    // 创建或更新IsMEGSecurityUnlocked字段
-    let is_meg_security_unlocked_prop = Property {
-        tag: PropertyTagPartial {
-            id: None,
-            data: PropertyTagDataPartial::Other(uesave::PropertyType::BoolProperty),
-        },
-        inner: PropertyInner::Bool(meg_unlocked),
-    };
-
-    // 插入或更新IsMEGSecurityUnlocked字段
-    save.root
-        .properties
-        .0
-        .insert(is_meg_security_unlocked_key, is_meg_security_unlocked_prop);
-
-    if meg_unlocked {
-        println!(
-            "✅ 已设置IsMEGUnlocked、IsMEGPowerOn和IsMEGSecurityUnlocked字段为true（MEG已解锁）"
-        );
-    } else {
-        println!(
-            "✅ 已设置IsMEGUnlocked、IsMEGPowerOn和IsMEGSecurityUnlocked字段为false（MEG已锁定）"
-        );
-    }
-
-    Ok(())
-}
-
-// 更新难度字段
+/// 更新难度字段
 pub fn update_difficulty(save: &mut Save, difficulty: &str) {
     // 删除旧的 Difficulty 字段
-    let difficulty_keys: Vec<PropertyKey> = save
+    let difficulty_keys: Vec<(u32, String)> = save
         .root
         .properties
         .0
-        .iter()
-        .filter(|(key, _)| key.1.starts_with("Difficulty"))
-        .map(|(key, _)| PropertyKey(key.0, key.1.clone()))
+        .keys()
+        .filter(|key| key.1.starts_with("Difficulty"))
+        .map(|key| (key.0, key.1.clone()))
         .collect();
 
-    for key in difficulty_keys {
-        save.root.properties.0.shift_remove(&key);
+    for (id, name) in difficulty_keys {
+        save.root.properties.0.shift_remove(&PropertyKey(id, name));
     }
 
-    // 如果不是 Normal 难度，则添加新的 Difficulty 字段
+    // 如果不是 Normal 难度，添加新的 Difficulty 字段
     if difficulty != "Normal" {
         let label = match difficulty {
             "Easy" => "E_Difficulty::NewEnumerator0",
@@ -331,15 +295,315 @@ pub fn update_difficulty(save: &mut Save, difficulty: &str) {
             inner: PropertyInner::Byte(uesave::Byte::Label(label.to_string())),
         };
 
-        let key = PropertyKey(0, "Difficulty".to_string());
-        save.root.properties.0.insert(key, prop);
+        save.root
+            .properties
+            .0
+            .insert(PropertyKey(0, "Difficulty".to_string()), prop);
         println!("✅ 已添加新难度字段: {}", label);
     } else {
         println!("➖ 跳过难度字段修改（Normal 难度）");
     }
 }
 
-// 更新玩家数据
+/// 更新布尔属性
+fn update_bool_property(save: &mut Save, name: &str, value: bool) -> Result<(), String> {
+    let prop = Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
+        },
+        inner: PropertyInner::Bool(value),
+    };
+
+    save.root
+        .properties
+        .0
+        .insert(PropertyKey(0, name.to_string()), prop);
+
+    println!("✅ 已设置{}字段为{}", name, value);
+    Ok(())
+}
+
+/// 更新 MEG 状态字段
+fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> Result<(), String> {
+    let meg_fields = ["IsMEGUnlocked", "IsMEGPowerOn", "IsMEGSecurityUnlocked"];
+
+    for field in &meg_fields {
+        update_bool_property(save, field, meg_unlocked)?;
+    }
+
+    if meg_unlocked {
+        println!("✅ MEG 相关字段已设置为 true（MEG已解锁）");
+    } else {
+        println!("✅ MEG 相关字段已设置为 false（MEG已锁定）");
+    }
+
+    Ok(())
+}
+
+/// 创建默认的 World 属性
+/// 结构：S_WorldCommon { Items: [], SanityLevel: 100.0 }
+fn create_default_world_property() -> Property {
+    // 创建内部结构的属性
+    let mut world_inner_props = Properties::default();
+
+    // Items 数组（空）
+    let items_prop = Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Struct {
+                struct_type: StructType::Struct(Some("S_DroppedItem".to_string())),
+                id: uuid::Uuid::nil(),
+            })),
+        },
+        inner: PropertyInner::Array(ValueArray::Struct {
+            id: Some(uuid::Uuid::nil()),
+            struct_type: StructType::Struct(Some("S_DroppedItem".to_string())),
+            type_: PropertyType::StructProperty,
+            value: vec![],
+        }),
+    };
+    world_inner_props.0.insert(
+        PropertyKey(0, "Items_19_783746F14C74611D03643BB2DF689058".to_string()),
+        items_prop,
+    );
+
+    // SanityLevel
+    let sanity_prop = Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
+        },
+        inner: PropertyInner::Float(100.0),
+    };
+    world_inner_props.0.insert(
+        PropertyKey(
+            0,
+            "SanityLevel_16_3DCC15864CC44BF25D86A09EED0B2065".to_string(),
+        ),
+        sanity_prop,
+    );
+
+    // 创建外层 World 属性
+    Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Struct {
+                struct_type: StructType::Struct(Some("S_WorldCommon".to_string())),
+                id: uuid::Uuid::nil(),
+            },
+        },
+        inner: PropertyInner::Struct(StructValue::Struct(world_inner_props)),
+    }
+}
+
+/// 根据选择的层级生成 LevelsCompleted_0 数据
+///
+/// 逻辑：
+/// - 如果 is_side_storyline 为 false（主线结局），根据层级位置生成记录
+///   - 第1个到第n-1个：HasCompleted=true, HasUnlockedHub=true
+///   - 第n个（当前层级）：HasCompleted=false, HasUnlockedHub=false
+/// - 如果 is_side_storyline 为 true（支线结局），生成全部层级，全部设为已完成
+fn generate_levels_completed(
+    save: &mut Save,
+    level: &str,
+    is_side_storyline: bool,
+) -> Result<(), String> {
+    println!(
+        "🎮 开始生成 LevelsCompleted_0 数据，目标层级: {}, 是否支线结局: {}",
+        level, is_side_storyline
+    );
+
+    let levels_to_generate: Vec<(&str, &str, bool)>; // (display_name, level_name, is_completed)
+
+    if is_side_storyline {
+        // 支线结局：生成全部层级，全部设为已完成
+        println!(
+            "📍 检测到支线结局，将生成全部 {} 个层级，全部设为已完成",
+            ALL_LEVELS.len()
+        );
+        levels_to_generate = ALL_LEVELS
+            .iter()
+            .map(|(display, level_name)| (*display, *level_name, true))
+            .collect();
+    } else {
+        // 主线结局：根据层级位置生成记录
+        // 查找层级在主线中的位置（只检查前17个主线层级）
+        let main_index = MAIN_STORYLINE_LEVELS.iter().position(|(_, l)| *l == level);
+
+        if let Some(index) = main_index {
+            // 主线层级：生成从第1个到选择层级的所有记录
+            println!("📍 检测到主线层级，索引: {}", index);
+            levels_to_generate = MAIN_STORYLINE_LEVELS[..=index]
+                .iter()
+                .enumerate()
+                .map(|(i, (display, level_name))| {
+                    let is_completed = i < index; // 最后一个（当前层级）未完成
+                    (*display, *level_name, is_completed)
+                })
+                .collect();
+        } else {
+            // 在主线结局下选择了非主线层级（如支线层级）
+            // 查找在 ALL_LEVELS 中的位置
+            let all_index = ALL_LEVELS.iter().position(|(_, l)| *l == level);
+
+            if let Some(index) = all_index {
+                println!("📍 检测到非主线层级（主线结局模式），索引: {}", index);
+                levels_to_generate = ALL_LEVELS[..=index]
+                    .iter()
+                    .enumerate()
+                    .map(|(i, (display, level_name))| {
+                        let is_completed = i < index; // 最后一个（当前层级）未完成
+                        (*display, *level_name, is_completed)
+                    })
+                    .collect();
+            } else {
+                // 未知层级，只生成 Level0
+                println!("⚠️ 未知层级 {}，使用默认配置", level);
+                levels_to_generate = vec![("Level 0", "Level0", false)];
+            }
+        }
+    }
+
+    println!("📝 将生成 {} 个层级记录", levels_to_generate.len());
+
+    // 获取现有的 LevelsCompleted_0 作为模板
+    let levels_completed_key = PropertyKey(0, "LevelsCompleted".to_string());
+
+    // 从现有数据中获取模板结构信息（只需要 id, struct_type, type_）
+    let template_struct = if let Some(prop) = save.root.properties.0.get(&levels_completed_key) {
+        if let PropertyInner::Array(ValueArray::Struct {
+            id,
+            struct_type,
+            type_,
+            value: _,
+        }) = &prop.inner
+        {
+            Some((id.clone(), struct_type.clone(), type_.clone()))
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    let (struct_id, struct_type, type_name) =
+        template_struct.ok_or("无法获取 LevelsCompleted 模板结构")?;
+
+    // 生成新的层级记录
+    let mut new_values: Vec<StructValue> = Vec::new();
+
+    for (display_name, level_name, is_completed) in levels_to_generate {
+        let mut level_props = Properties::default();
+
+        // DisplayName
+        let display_name_prop = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::StrProperty),
+            },
+            inner: PropertyInner::Str(display_name.to_string()),
+        };
+        level_props.0.insert(
+            PropertyKey(0, DISPLAY_NAME_FIELD.to_string()),
+            display_name_prop,
+        );
+
+        // HasCompleted
+        let has_completed_prop = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
+            },
+            inner: PropertyInner::Bool(is_completed),
+        };
+        level_props.0.insert(
+            PropertyKey(0, HAS_COMPLETED_FIELD.to_string()),
+            has_completed_prop,
+        );
+
+        // HasUnlockedHub
+        let has_unlocked_hub_prop = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
+            },
+            inner: PropertyInner::Bool(is_completed),
+        };
+        level_props.0.insert(
+            PropertyKey(0, HAS_UNLOCKED_HUB_FIELD.to_string()),
+            has_unlocked_hub_prop,
+        );
+
+        // LevelName
+        let level_name_prop = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::NameProperty),
+            },
+            inner: PropertyInner::Name(level_name.to_string()),
+        };
+        level_props.0.insert(
+            PropertyKey(0, LEVEL_NAME_FIELD.to_string()),
+            level_name_prop,
+        );
+
+        // Time
+        let time_prop = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
+            },
+            inner: PropertyInner::Float(-1.0),
+        };
+        level_props
+            .0
+            .insert(PropertyKey(0, TIME_FIELD.to_string()), time_prop);
+
+        // World - 创建默认的 World 结构
+        let world_prop = create_default_world_property();
+        level_props
+            .0
+            .insert(PropertyKey(0, WORLD_FIELD.to_string()), world_prop);
+
+        new_values.push(StructValue::Struct(level_props));
+        println!(
+            "  ✅ 添加层级: {} ({}) - 已完成: {}",
+            display_name, level_name, is_completed
+        );
+    }
+
+    // 创建新的 LevelsCompleted_0 属性
+    // struct_id 是 Option<Uuid>，需要提供一个默认值
+    let final_struct_id = struct_id.unwrap_or_else(uuid::Uuid::nil);
+
+    let new_levels_completed = Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Struct {
+                struct_type: struct_type.clone(),
+                id: final_struct_id,
+            })),
+        },
+        inner: PropertyInner::Array(ValueArray::Struct {
+            id: struct_id,
+            struct_type: struct_type,
+            type_: type_name,
+            value: new_values,
+        }),
+    };
+
+    // 替换原有的 LevelsCompleted_0
+    save.root
+        .properties
+        .0
+        .insert(levels_completed_key, new_levels_completed);
+
+    println!("✅ LevelsCompleted_0 已更新");
+    Ok(())
+}
+
+/// 更新玩家数据
 fn update_player_data(save: &mut Save, players: &[PlayerData]) -> Result<(), String> {
     if players.is_empty() {
         return Ok(());
@@ -347,66 +611,56 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> Result<(), Str
 
     println!("👥 开始处理玩家数据...");
 
-    // 创建 PlayerData_0 Map
-    let mut map_entries = Vec::new();
+    let map_entries: Vec<_> = players
+        .iter()
+        .map(|player| {
+            // 创建背包物品列表
+            let mut inventory_items: Vec<String> = player
+                .inventory
+                .iter()
+                .take(INVENTORY_SLOTS)
+                .map(|&id| map_item_id_to_name(id).to_string())
+                .collect();
 
-    for player in players {
-        // 创建背包物品列表
-        let mut inventory_items = Vec::new();
-        for item_id in player.inventory.iter().take(12) {
-            // 将数字ID转换为物品名称
-            let item_name = map_item_id_to_name(*item_id);
-            inventory_items.push(item_name.to_string());
-        }
-        // 确保正好12个物品
-        while inventory_items.len() < 12 {
-            inventory_items.push("None".to_string());
-        }
+            inventory_items.resize(INVENTORY_SLOTS, "None".to_string());
 
-        // 创建玩家结构体属性
-        let mut player_struct_properties = Properties::default();
+            // 创建玩家结构体属性
+            let mut player_struct_properties = Properties::default();
 
-        // Sanity 属性
-        let sanity_prop = Property {
-            tag: PropertyTagPartial {
-                id: None,
-                data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
-            },
-            inner: PropertyInner::Float(100.0), // 默认理智值
-        };
+            // Sanity 属性
+            let sanity_prop = Property {
+                tag: PropertyTagPartial {
+                    id: None,
+                    data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
+                },
+                inner: PropertyInner::Float(100.0),
+            };
 
-        // Inventory 属性
-        let inventory_prop = Property {
-            tag: PropertyTagPartial {
-                id: None,
-                data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(
-                    PropertyType::NameProperty,
-                ))),
-            },
-            inner: PropertyInner::Array(ValueArray::Base(ValueVec::Name(inventory_items))),
-        };
+            // Inventory 属性
+            let inventory_prop = Property {
+                tag: PropertyTagPartial {
+                    id: None,
+                    data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(
+                        PropertyType::NameProperty,
+                    ))),
+                },
+                inner: PropertyInner::Array(ValueArray::Base(ValueVec::Name(inventory_items))),
+            };
 
-        // 插入玩家属性 - 使用与 test3.json 完全匹配的字段名
-        player_struct_properties.0.insert(
-            PropertyKey(0, "Sanity_6_A5AFAB454F51CC63745A669BD7E629F6".to_string()),
-            sanity_prop,
-        );
-        player_struct_properties.0.insert(
-            PropertyKey(
-                0,
-                "Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4".to_string(),
-            ),
-            inventory_prop,
-        );
+            player_struct_properties
+                .0
+                .insert(PropertyKey(0, SANITY_PROP_NAME.to_string()), sanity_prop);
+            player_struct_properties.0.insert(
+                PropertyKey(0, INVENTORY_PROP_NAME.to_string()),
+                inventory_prop,
+            );
 
-        // 创建 Map Entry
-        let map_entry = uesave::MapEntry {
-            key: uesave::PropertyValue::Str(player.steam_id.clone()),
-            value: uesave::PropertyValue::Struct(StructValue::Struct(player_struct_properties)),
-        };
-
-        map_entries.push(map_entry);
-    }
+            uesave::MapEntry {
+                key: uesave::PropertyValue::Str(player.steam_id.clone()),
+                value: uesave::PropertyValue::Struct(StructValue::Struct(player_struct_properties)),
+            }
+        })
+        .collect();
 
     // 创建 PlayerData_0 属性
     let player_data_prop = Property {
@@ -430,10 +684,4 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> Result<(), Str
     println!("✅ 已创建 PlayerData_0 Map");
 
     Ok(())
-}
-
-// 更新 MAINSAVE.sav 文件，添加新创建的存档名称到 SingleplayerSaves 列表
-fn update_mainsave_sav(_save_data: &SaveData, new_save_filename: &str) -> Result<(), String> {
-    let archive_name = extract_archive_name(new_save_filename);
-    add_save_to_mainsave(archive_name)
 }

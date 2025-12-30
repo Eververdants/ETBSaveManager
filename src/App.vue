@@ -11,7 +11,6 @@ import {
   safeModifyBodyStyles,
 } from "./utils/floatingButtonProtection.js";
 
-
 const i18n = getI18n();
 const router = useRouter();
 
@@ -57,8 +56,44 @@ onMounted(() => {
     protectFloatingButtonPosition();
   };
 
-  // 应用保存的主题
-  const savedTheme = localStorage.getItem("theme") || "light";
+  // 检查当前日期是否在元旦期间 (12.31 - 1.3)
+  const isNewYearPeriod = () => {
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    return (
+      (month === 12 && day === 31) || (month === 1 && day >= 1 && day <= 3)
+    );
+  };
+
+  // 检查元旦主题是否可用
+  const isNewYearThemeAvailable = () => {
+    const mode = localStorage.getItem("newYearThemeMode") || "auto";
+    if (mode === "force") return true;
+    if (mode === "hide") return false;
+    return isNewYearPeriod();
+  };
+
+  // 应用保存的主题，如果是元旦主题但不可用则恢复之前的主题
+  let savedTheme = localStorage.getItem("theme") || "light";
+
+  // 确保 themeBeforeNewYear 有值（用于恢复）
+  // 如果当前主题不是元旦主题且没有记录过，就用当前主题作为备份
+  if (
+    !localStorage.getItem("themeBeforeNewYear") &&
+    savedTheme !== "new-year"
+  ) {
+    localStorage.setItem("themeBeforeNewYear", savedTheme);
+  }
+
+  if (savedTheme === "new-year" && !isNewYearThemeAvailable()) {
+    // 元旦主题不可用，恢复之前的主题
+    const themeBeforeNewYear =
+      localStorage.getItem("themeBeforeNewYear") || "light";
+    savedTheme = themeBeforeNewYear;
+    localStorage.setItem("theme", savedTheme);
+  }
+
   if (window.themeManager) {
     window.themeManager.setTheme(savedTheme);
   } else {
@@ -69,18 +104,22 @@ onMounted(() => {
   const updateBodyBackground = (theme) => {
     const body = document.body;
     if (body) {
-      if (theme === 'dark') {
-        body.style.backgroundColor = '#1c1c1e';
-        body.style.setProperty('--bg', '#1c1c1e');
+      if (theme === "dark") {
+        body.style.backgroundColor = "#1c1c1e";
+        body.style.setProperty("--bg", "#1c1c1e");
+      } else if (theme === "new-year") {
+        // 元旦主题 - 喜庆红金配色
+        body.style.backgroundColor = "#1a0a0a";
+        body.style.setProperty("--bg", "#1a0a0a");
       } else {
-        body.style.backgroundColor = '#f8f9fa';
-        body.style.setProperty('--bg', '#f8f9fa');
+        body.style.backgroundColor = "#f8f9fa";
+        body.style.setProperty("--bg", "#f8f9fa");
       }
 
       // 延迟清除内联样式，让CSS变量接管
       setTimeout(() => {
-        body.style.backgroundColor = '';
-        body.style.setProperty('--bg', '');
+        body.style.backgroundColor = "";
+        body.style.setProperty("--bg", "");
       }, 100);
     }
   };
@@ -153,14 +192,20 @@ onMounted(() => {
     <TitleBar />
     <div class="content-wrapper">
       <Sidebar @sidebar-expand="handleSidebarExpand" />
-      <main class="main-content" :class="{
-        'sidebar-collapsed': !sidebarExpanded,
-        'sidebar-expanded': sidebarExpanded,
-      }">
+      <main
+        class="main-content"
+        :class="{
+          'sidebar-collapsed': !sidebarExpanded,
+          'sidebar-expanded': sidebarExpanded,
+        }"
+      >
         <router-view v-slot="{ Component, route }">
           <transition name="page-fade" mode="out-in">
             <!-- 使用keep-alive缓存常用组件 -->
-            <keep-alive :include="cachedComponents" :exclude="excludedComponents">
+            <keep-alive
+              :include="cachedComponents"
+              :exclude="excludedComponents"
+            >
               <component :is="Component" :key="route.fullPath" />
             </keep-alive>
           </transition>

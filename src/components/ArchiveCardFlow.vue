@@ -5,40 +5,49 @@
       <div class="toolbar-left">
         <button class="toolbar-btn" @click="$emit('select-all')">
           <font-awesome-icon :icon="['fas', 'check-double']" />
-          {{ $t('quickCreate.cardFlow.selectAll') }}
+          {{ $t("quickCreate.cardFlow.selectAll") }}
         </button>
         <button class="toolbar-btn" @click="$emit('invert-selection')">
           <font-awesome-icon :icon="['fas', 'exchange-alt']" />
-          {{ $t('quickCreate.cardFlow.invertSelection') }}
+          {{ $t("quickCreate.cardFlow.invertSelection") }}
         </button>
-        <button 
-          class="toolbar-btn batch-edit" 
+        <button
+          class="toolbar-btn batch-edit"
           :disabled="selectedIds.size === 0"
           @click="$emit('batch-edit')"
         >
           <font-awesome-icon :icon="['fas', 'edit']" />
-          {{ $t('quickCreate.cardFlow.batchEdit') }}
+          {{ $t("quickCreate.cardFlow.batchEdit") }}
         </button>
       </div>
       <div class="toolbar-right">
         <span class="selection-count">
-          {{ $t('quickCreate.cardFlow.selected', { count: selectedIds.size, total: archives.length }) }}
+          {{
+            $t("quickCreate.cardFlow.selected", {
+              count: selectedIds.size,
+              total: archives.length,
+            })
+          }}
         </span>
         <!-- 虚拟滚动指示器 -->
-        <span v-if="useVirtualScroll" class="virtual-indicator" :title="$t('quickCreate.cardFlow.virtualScrollHint')">
+        <span
+          v-if="useVirtualScroll"
+          class="virtual-indicator"
+          :title="$t('quickCreate.cardFlow.virtualScrollHint')"
+        >
           <font-awesome-icon :icon="['fas', 'bolt']" />
         </span>
         <div class="view-toggle">
-          <button 
-            class="view-btn" 
+          <button
+            class="view-btn"
             :class="{ active: viewMode === 'grid' }"
             @click="viewMode = 'grid'"
             :title="$t('quickCreate.cardFlow.gridView')"
           >
             <font-awesome-icon :icon="['fas', 'th-large']" />
           </button>
-          <button 
-            class="view-btn" 
+          <button
+            class="view-btn"
             :class="{ active: viewMode === 'list' }"
             @click="viewMode = 'list'"
             :title="$t('quickCreate.cardFlow.listView')"
@@ -53,9 +62,9 @@
     <div class="flow-content" :class="[`view-${viewMode}`]">
       <div v-if="archives.length === 0" class="empty-state">
         <font-awesome-icon :icon="['fas', 'layer-group']" class="empty-icon" />
-        <p>{{ $t('quickCreate.cardFlow.emptyHint') }}</p>
+        <p>{{ $t("quickCreate.cardFlow.emptyHint") }}</p>
       </div>
-      
+
       <!-- 虚拟滚动模式 (当存档数量 > 50 时启用) -->
       <RecycleScroller
         v-else-if="useVirtualScroll"
@@ -77,12 +86,12 @@
           @remove="handleRemove"
         />
       </RecycleScroller>
-      
+
       <!-- 普通模式 (存档数量 <= 50) -->
-      <TransitionGroup 
-        v-else 
-        name="card-list" 
-        tag="div" 
+      <TransitionGroup
+        v-else
+        name="card-list"
+        tag="div"
         class="card-container"
         :class="[`view-${viewMode}`]"
       >
@@ -103,132 +112,136 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { RecycleScroller } from 'vue-virtual-scroller'
-import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
-import QuickCreateArchiveCard from './QuickCreateArchiveCard.vue'
-import { resolve } from '@/composables/useConfigResolver'
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
+import { RecycleScroller } from "vue-virtual-scroller";
+import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
+import QuickCreateArchiveCard from "./QuickCreateArchiveCard.vue";
+import { resolve } from "@/composables/useConfigResolver";
 
-const { t } = useI18n({ useScope: 'global' })
+const { t } = useI18n({ useScope: "global" });
 
 /**
  * 虚拟滚动阈值
  * Requirements: 16.1 - 当存档数量 > 50 时启用虚拟滚动
  */
-const VIRTUAL_SCROLL_THRESHOLD = 50
+const VIRTUAL_SCROLL_THRESHOLD = 50;
 
 const props = defineProps({
   archives: {
     type: Array,
     required: true,
-    default: () => []
+    default: () => [],
   },
   selectedIds: {
     type: Set,
     required: true,
-    default: () => new Set()
+    default: () => new Set(),
   },
   uniformConfig: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
   smartRules: {
     type: Object,
-    default: () => ({})
-  }
-})
+    default: () => ({}),
+  },
+});
 
 const emit = defineEmits([
-  'select',
-  'select-all',
-  'invert-selection',
-  'edit',
-  'copy',
-  'remove',
-  'reorder',
-  'batch-edit'
-])
+  "select",
+  "select-all",
+  "invert-selection",
+  "edit",
+  "copy",
+  "remove",
+  "reorder",
+  "batch-edit",
+]);
 
 // 视图模式
-const viewMode = ref('grid')
+const viewMode = ref("grid");
 
 // 虚拟滚动器引用
-const scrollerRef = ref(null)
+const scrollerRef = ref(null);
 
 // 计算网格列数（用于虚拟滚动）
-const gridColumns = ref(4)
+const gridColumns = ref(4);
 
 /**
  * 是否启用虚拟滚动
  * Requirements: 16.1 - 当存档数量 > 50 时启用虚拟滚动
  */
 const useVirtualScroll = computed(() => {
-  return props.archives.length > VIRTUAL_SCROLL_THRESHOLD
-})
+  return props.archives.length > VIRTUAL_SCROLL_THRESHOLD;
+});
 
 /**
  * 计算网格列数
  */
 const calculateGridColumns = () => {
-  const containerWidth = document.querySelector('.flow-content')?.clientWidth || 800
-  const cardMinWidth = 220 // 卡片最小宽度
-  const gap = 12 // 间距
-  gridColumns.value = Math.max(1, Math.floor((containerWidth + gap) / (cardMinWidth + gap)))
-}
+  const containerWidth =
+    document.querySelector(".flow-content")?.clientWidth || 800;
+  const cardMinWidth = 220; // 卡片最小宽度
+  const gap = 12; // 间距
+  gridColumns.value = Math.max(
+    1,
+    Math.floor((containerWidth + gap) / (cardMinWidth + gap))
+  );
+};
 
 // 监听窗口大小变化
-let resizeObserver = null
+let resizeObserver = null;
 
 onMounted(() => {
-  calculateGridColumns()
-  
+  calculateGridColumns();
+
   // 使用 ResizeObserver 监听容器大小变化
-  const container = document.querySelector('.flow-content')
+  const container = document.querySelector(".flow-content");
   if (container && window.ResizeObserver) {
     resizeObserver = new ResizeObserver(() => {
-      calculateGridColumns()
-    })
-    resizeObserver.observe(container)
+      calculateGridColumns();
+    });
+    resizeObserver.observe(container);
   }
-})
+});
 
 onUnmounted(() => {
   if (resizeObserver) {
-    resizeObserver.disconnect()
+    resizeObserver.disconnect();
   }
-})
+});
 
 // 获取配置来源
 const getConfigSource = (archive) => {
   if (props.uniformConfig && props.smartRules) {
-    const resolved = resolve(archive, props.uniformConfig, props.smartRules)
-    return resolved.source
+    const resolved = resolve(archive, props.uniformConfig, props.smartRules);
+    return resolved.source;
   }
   return {
-    level: 'default',
-    difficulty: 'default',
-    actualDifficulty: 'default',
-    inventory: 'default'
-  }
-}
+    level: "default",
+    difficulty: "default",
+    actualDifficulty: "default",
+    inventory: "default",
+  };
+};
 
 // 事件处理
 const handleSelect = (archiveId) => {
-  emit('select', archiveId)
-}
+  emit("select", archiveId);
+};
 
 const handleEdit = (archiveId) => {
-  emit('edit', archiveId)
-}
+  emit("edit", archiveId);
+};
 
 const handleCopy = (archiveId) => {
-  emit('copy', archiveId)
-}
+  emit("copy", archiveId);
+};
 
 const handleRemove = (archiveId) => {
-  emit('remove', archiveId)
-}
+  emit("remove", archiveId);
+};
 </script>
 
 <style scoped>

@@ -1,138 +1,169 @@
-# 🕳️ E.T.B. Save Manager - 3.0 Development Edition
-
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-3.0.0--Alpha--7-green.svg)](https://github.com/Eververdants/ETBSaveManager/releases)
+# 🕳️ E.T.B. Save Manager
 
 <p align="center">
-  <img src="./src-tauri/icons/128x128.png" alt="icon">
+  <img src="./src-tauri/icons/128x128.png" alt="E.T.B. Save Manager" width="128">
 </p>
 
-[中文](./README-CN.md) | [English](#)
+<p align="center">
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.0.0--Alpha--7.1-blue.svg" alt="Version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
+  <img src="https://img.shields.io/badge/Platform-Windows-0078D4.svg?logo=windows" alt="Platform">
+  <img src="https://img.shields.io/badge/Framework-Tauri%202.0-orange.svg" alt="Framework">
+</p>
 
-> A major update in development — featuring a more modern UI, search functionality, color themes, multi-language switching, and more!
+<p align="center">
+  <b>A modern, cross-platform save management tool for "Escape The Backrooms"</b>
+</p>
 
-This is a desktop-level save management tool specifically designed for the game "Escape The Backrooms", built using Vue.js + JavaScript + CSS for the frontend, and Vite as the build tool. Version 3.0 represents a complete upgrade, offering an entirely new user experience and enhanced functionalities.
-
-This project uses assets extracted from Escape The Backrooms, which are stored in the `icons/ETB_UI` folder within the `public` directory. The names of the resources have not been modified.
-
-**Current trial version: `V3.0.0-Alpha-7`**
-
-If you encounter any bugs while using the trial version, please provide a detailed description of the issue to the developer, or take a screenshot of the error messages shown in the DevTools, and submit an issue.
-
-Due to the high development complexity and intricate logic involved, the `"Hierarchy Information Editing"` feature will be postponed to a future version. Originally, this feature was planned to be introduced in the `"Create New Archive"` and `"Edit Archive"` interfaces.
-
-My email: **`llzgd@outlook.com`**
-
-‼️‼️‼️ This repository and program are not affiliated with Escape The Backrooms developer Fancy‼️‼️‼️
+<p align="center">
+  <a href="./README-CN.md">中文</a> | <a href="#">English</a>
+</p>
 
 ---
 
-## 🚧 Current Status: In Development (Alpha Stage)
+## ✨ Features
 
-- 🔵 Basic architecture setup 80% complete
-- ❌ Features not fully implemented yet
-- 🛠️ Continuous updates in progress, please follow the repository for the latest developments
-- 🧐 More features under consideration
-- 🤯 Personal student developer, contributions to accelerate project completion are welcome
+### 🗂️ Save Management
+- **Full CRUD Operations** — Create, edit, delete, copy, hide/show saves
+- **Batch Operations** — Process multiple saves simultaneously
+- **Smart Filtering** — Filter by level, difficulty, game mode
+- **Quick Search** — Fuzzy matching to locate saves instantly
 
----
+### 🎨 Modern UI/UX
+- **Apple-inspired Design** — Clean, intuitive interface with smooth animations
+- **Theme System** — Light, Dark, and seasonal themes (New Year special!)
+- **Responsive Layout** — Collapsible sidebar, adaptive components
+- **Hardware Accelerated** — GPU-optimized rendering for smooth performance
 
-## 📦 Main Updates (3.0 New Features)
+### 🌍 Internationalization
+- Simplified Chinese (简体中文)
+- Traditional Chinese (繁體中文)
+- English
 
-| Feature                                       | Status            | Progress | Description                                                                             |
-| --------------------------------------------- | ----------------- | -------- | --------------------------------------------------------------------------------------- |
-| 🎨 More modern UI interface                   | ✅ Completed      | 100%     | Refactor the entire interface using modern design principles to enhance user experience |
-| 🔍 Search functionality                       | ✅ Completed      | 100%     | Support quick search of archives by keywords such as name, hierarchy, etc.              |
-| 🎨 Color themes                               | ⏳ In development | 90%      | Users can customize the application's color themes                                      |
-| 🌐 Multi-language switching                   | ✅ Completed      | 100%     | Support Simplified Chinese, Traditional Chinese, and English                            |
-| 💾 Archive data editing                       | ✅ Completed      | 100%     | Allow users to directly edit archive data within the tool                               |
-| ➕ Expansion of new archive creation features | ✅ Completed      | 100%     | Support quick create, blueprint create, batch create, and more                          |
-| 📄 Expansion content pack                     | ⏳ In development | 10%      | Selectable additional features for use                                                  |
-| 🌐 Cross-platform support                     | ✅ Basic support  | 100%     | Supports Windows/macOS/Linux                                                            |
-
----
-
-## 🧰 Tech Stack
-
-- **Frontend**: Vue.js + JavaScript + CSS
-- **Build Tool**: Vite
-- **Cross-Platform Framework**: Tauri + Rust
-- **Cross-Platform**: Windows
+### 🛠️ Advanced Features
+- **Multiple Creation Modes**
+  - Quick Create — Streamlined workflow for fast save generation
+  - Blueprint Create — Template-based save creation
+  - Batch Create — Generate multiple saves at once
+  - Standard Create — Full customization options
+- **Inventory Editor** — Modify player inventory directly
+- **Steam Cache Management** — Manage local Steam cache data
+- **Performance Monitor** — Built-in diagnostics (dev mode)
 
 ---
 
-## 📥 Installation (V3.0.0-Alpha-7 Test Version)
+## 🖥️ Screenshots
 
-1. Download the Windows installer for [v3.0.0-Alpha-7](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-7).
+> Coming soon...
 
-2. Double-click the installer to begin installation. (If you don't have WebView2 installed, the installer should install it automatically. If not, please click [here](https://developer.microsoft.com/microsoft-edge/webview2) to download and install WebView2.)
+---
 
-### Source Code Download
+## 📦 Installation
+
+### Download Release
+
+1. Go to [Releases](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-7.1)
+2. Download the Windows installer (`.msi` or `.exe`)
+3. Run the installer
+
+> **Note:** You may need [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2) (usually pre-installed on Windows 10/11)
+
+### Build from Source
 
 ```bash
-# Clone the project
+# Clone repository
 git clone https://github.com/Eververdants/ETBSaveManager.git
 cd ETBSaveManager
 
 # Install dependencies
 npm install
 
-# Run development environment
+# Development mode
 npm run tauri dev
+
+# Build for production
+npm run tauri build
+```
+
+**Prerequisites:**
+- Node.js 18+
+- Rust toolchain
+- Platform-specific dependencies (see [Tauri Prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites))
+
+---
+
+## 🧰 Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | Vue 3 + Composition API |
+| Styling | CSS Variables + Theme System |
+| Build | Vite 6 |
+| Desktop | Tauri 2.0 + Rust |
+| i18n | vue-i18n |
+| Animation | GSAP |
+| Virtual Scroll | @tanstack/vue-virtual |
+
+---
+
+## 📁 Project Structure
+
+```
+ETBSaveManager/
+├── src/                    # Vue frontend
+│   ├── components/         # Reusable UI components
+│   ├── views/              # Page components
+│   ├── styles/             # Theme system & CSS
+│   ├── i18n/               # Internationalization
+│   ├── services/           # Business logic
+│   └── utils/              # Utility functions
+├── src-tauri/              # Rust backend
+│   └── src/                # Tauri commands & logic
+└── public/                 # Static assets
+    └── icons/              # Game icons & UI assets
 ```
 
 ---
 
-## 📖 Feature Overview (3.0)
+## 🚧 Development Status
 
-### Save Management
+**Current Version:** `v3.0.0-Alpha-7.1`
 
-- Create, Edit, Delete, Copy, Hide, Show Multiple Saves
-- Supports batch operations
-- Filter saves by level, difficulty, mode
-- Display current level location
-
-### Save Search
-
-- Quickly locate target saves via keywords
-- Supports fuzzy matching
-
-### Color Themes
-
-- Users can select from multiple preset color themes
-- Supports custom color configurations
-
-### Multi-Language Switching
-
-- Provides support for Simplified Chinese, Traditional Chinese, English, and other languages
-- Easy switching of interface language
-
-### Save Data Editing
-
-- Directly modify save data within the tool
-- Modify player inventory
-
-### Expanded New Save Creation
-
-- **Quick Create**: Simplified process for fast save generation
-- **Blueprint Create**: Create saves based on preset templates
-- **Batch Create**: Create multiple saves at once
-- **Standard Create**: Full customization options
-
-### Expansion Content Pack
-
-- Select which expansion features to use
-- Expansion packs will provide additional functionality
-- Option to download packs from GitHub
+| Feature | Status |
+|---------|--------|
+| Core Save Management | ✅ Complete |
+| Search & Filter | ✅ Complete |
+| Theme System | ✅ Complete |
+| Multi-language | ✅ Complete |
+| Save Data Editor | ✅ Complete |
+| Creation Modes | ✅ Complete |
+| Level Info Editor | 🔄 Planned |
+| Plugin System | 🔄 In Progress (10%) |
 
 ---
 
-## 📹 Bilibili Video Introduction (2.6.0)
+## 🤝 Contributing
 
-Watch detailed operation guides at: [Video Introduction](https://www.bilibili.com/video/BV1L3yeYzEfi)
+Contributions are welcome! This is a personal student project, and any help is appreciated.
+
+- 🐛 [Report bugs](https://github.com/Eververdants/ETBSaveManager/issues)
+- 💡 [Request features](https://github.com/Eververdants/ETBSaveManager/issues)
+- 📧 Contact: **llzgd@outlook.com**
+
+---
+
+## ⚠️ Disclaimer
+
+This project is **NOT** affiliated with, endorsed by, or connected to Fancy Games or "Escape The Backrooms" in any way. Game assets used are extracted from the game for educational and tool development purposes only.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License, see the [LICENSE](https://github.com/Eververdants/ETBSaveManager/blob/master/LICENSE) file for details.
+[MIT License](LICENSE) © 2024-NOW Eververdants
+
+---
+
+<p align="center">
+  <sub>Built with ❤️ using Vue.js and Tauri</sub>
+</p>

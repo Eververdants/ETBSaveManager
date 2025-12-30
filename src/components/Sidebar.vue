@@ -1,19 +1,35 @@
 <template>
-  <div ref="sidebarRef" class="sidebar" :class="{ 'expanded': isExpanded }" @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave">
+  <div
+    ref="sidebarRef"
+    class="sidebar"
+    :class="{ expanded: isExpanded }"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+  >
     <div class="sidebar-content">
       <!-- 顶部区域 -->
       <div class="sidebar-section top-section">
-        <div class="sidebar-item" v-for="item in filteredTopMenuItems" :key="item.id"
-          :class="['sidebar-item', { active: item.id === activeItemId }]" @click="handleItemClick(item, $event)"
-          @mousedown="handleMouseDown" @mouseenter="handleMouseEnterItem" @mouseleave="handleMouseLeaveItem"
-          @mouseup="handleMouseUp">
+        <div
+          class="sidebar-item"
+          v-for="item in filteredTopMenuItems"
+          :key="item.id"
+          :class="['sidebar-item', { active: item.id === activeItemId }]"
+          @click="handleItemClick(item, $event)"
+          @mousedown="handleMouseDown"
+          @mouseenter="handleMouseEnterItem"
+          @mouseleave="handleMouseLeaveItem"
+          @mouseup="handleMouseUp"
+        >
           <div class="sidebar-icon-container">
             <font-awesome-icon :icon="item.icon" class="sidebar-icon" />
           </div>
           <div class="sidebar-text-container">
-            <span class="sidebar-text" :data-text="safeT(item.textKey)" :class="{ 'visible': isExpanded }"
-              :data-lang="currentLanguage">
+            <span
+              class="sidebar-text"
+              :data-text="safeT(item.textKey)"
+              :class="{ visible: isExpanded }"
+              :data-lang="currentLanguage"
+            >
               {{ safeT(item.textKey) }}
             </span>
           </div>
@@ -22,16 +38,27 @@
 
       <!-- 底部区域 -->
       <div class="sidebar-section bottom-section">
-        <div class="sidebar-item" v-for="item in bottomMenuItems" :key="item.id"
-          :class="['sidebar-item', { active: item.id === activeItemId }]" @click="handleItemClick(item, $event)"
-          @mousedown="handleMouseDown" @mouseenter="handleMouseEnterItem" @mouseleave="handleMouseLeaveItem"
-          @mouseup="handleMouseUp">
+        <div
+          class="sidebar-item"
+          v-for="item in bottomMenuItems"
+          :key="item.id"
+          :class="['sidebar-item', { active: item.id === activeItemId }]"
+          @click="handleItemClick(item, $event)"
+          @mousedown="handleMouseDown"
+          @mouseenter="handleMouseEnterItem"
+          @mouseleave="handleMouseLeaveItem"
+          @mouseup="handleMouseUp"
+        >
           <div class="sidebar-icon-container">
             <font-awesome-icon :icon="item.icon" class="sidebar-icon" />
           </div>
           <div class="sidebar-text-container">
-            <span class="sidebar-text" :data-text="safeT(item.textKey)" :class="{ 'visible': isExpanded }"
-              :data-lang="currentLanguage">
+            <span
+              class="sidebar-text"
+              :data-text="safeT(item.textKey)"
+              :class="{ visible: isExpanded }"
+              :data-lang="currentLanguage"
+            >
               {{ safeT(item.textKey) }}
             </span>
           </div>
@@ -42,12 +69,24 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick, watch, reactive } from 'vue';
-import { useRoute } from 'vue-router';
-import { topMenuItems as originalTopMenuItems, bottomMenuItems as originalBottomMenuItems, addBottomMenuItem } from '../config/sidebarMenu.js';
-import { gsap } from 'gsap';
+import {
+  ref,
+  computed,
+  onMounted,
+  onUnmounted,
+  nextTick,
+  watch,
+  reactive,
+} from "vue";
+import { useRoute } from "vue-router";
+import {
+  topMenuItems as originalTopMenuItems,
+  bottomMenuItems as originalBottomMenuItems,
+  addBottomMenuItem,
+} from "../config/sidebarMenu.js";
+import { gsap } from "gsap";
 
-const emit = defineEmits(['sidebar-action', 'sidebar-expand']);
+const emit = defineEmits(["sidebar-action", "sidebar-expand"]);
 
 const route = useRoute();
 const isExpanded = ref(false);
@@ -71,21 +110,28 @@ const setActiveItemFromRoute = () => {
 
   // 特殊处理：更新公告页面激活"关于"按钮
   let activeItem = null;
-  if (route.name === 'ReleaseNotes') {
+  if (route.name === "ReleaseNotes") {
     // 查找"关于"菜单项
-    activeItem = allMenuItems.find(item => item.route === 'About');
-  } else if (route.name === 'SelectCreateMode') {
+    activeItem = allMenuItems.find((item) => item.route === "About");
+  } else if (route.name === "SelectCreateMode") {
     // 选择创建模式页面应该激活"创建存档"按钮
-    activeItem = allMenuItems.find(item => item.route === 'CreateArchive');
-  } else if (['CreateArchive', 'QuickCreateArchive', 'BlueprintCreateArchive', 'BatchCreateArchive'].includes(route.name)) {
+    activeItem = allMenuItems.find((item) => item.route === "CreateArchive");
+  } else if (
+    [
+      "CreateArchive",
+      "QuickCreateArchive",
+      "BlueprintCreateArchive",
+      "BatchCreateArchive",
+    ].includes(route.name)
+  ) {
     // 所有创建模式相关页面都应该激活"创建存档"按钮
-    activeItem = allMenuItems.find(item => item.route === 'CreateArchive');
-  } else if (route.name === 'SteamCache') {
+    activeItem = allMenuItems.find((item) => item.route === "CreateArchive");
+  } else if (route.name === "SteamCache") {
     // SteamID缓存页面应该激活"设置"按钮
-    activeItem = allMenuItems.find(item => item.route === 'Settings');
+    activeItem = allMenuItems.find((item) => item.route === "Settings");
   } else {
     // 常规路由匹配
-    activeItem = allMenuItems.find(item => item.route === route.name);
+    activeItem = allMenuItems.find((item) => item.route === route.name);
   }
 
   if (activeItem) {
@@ -96,39 +142,40 @@ const setActiveItemFromRoute = () => {
   }
 };
 
-
-
 // 鼠标进入侧边栏事件处理函数
 const handleMouseEnter = () => {
   isExpanded.value = true;
-  emit('sidebar-expand', true);
+  emit("sidebar-expand", true);
 };
 
 // 鼠标离开侧边栏事件处理函数
 const handleMouseLeave = () => {
   isExpanded.value = false;
-  emit('sidebar-expand', false);
+  emit("sidebar-expand", false);
 };
 
 // 检测并应用主题
 const detectTheme = () => {
   // 检查是否有全局主题管理器
-  if (window.themeManager && typeof window.themeManager.applyTheme === 'function') {
+  if (
+    window.themeManager &&
+    typeof window.themeManager.applyTheme === "function"
+  ) {
     // 获取当前主题设置
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem("theme") || "light";
     // 应用主题
     window.themeManager.applyTheme(savedTheme);
   } else {
     // 如果没有主题管理器，使用默认的亮色主题
-    document.documentElement.setAttribute('data-theme', 'light');
+    document.documentElement.setAttribute("data-theme", "light");
   }
 
   // 主题切换后强制重绘，防止图层卡住
   requestAnimationFrame(() => {
     if (sidebarRef.value) {
-      sidebarRef.value.style.visibility = 'hidden';
+      sidebarRef.value.style.visibility = "hidden";
       sidebarRef.value.offsetHeight; // 触发重排
-      sidebarRef.value.style.visibility = 'visible';
+      sidebarRef.value.style.visibility = "visible";
     }
   });
 };
@@ -139,9 +186,12 @@ onMounted(() => {
   detectTheme();
 
   // 监听路由变化
-  watch(() => route.name, () => {
-    setActiveItemFromRoute();
-  });
+  watch(
+    () => route.name,
+    () => {
+      setActiveItemFromRoute();
+    }
+  );
 
   // 监听语言变化
   watch(currentLanguage, () => {
@@ -152,7 +202,7 @@ onMounted(() => {
   });
 
   // 监听标题栏的侧边栏切换事件
-  window.addEventListener('toggle-sidebar', (e) => {
+  window.addEventListener("toggle-sidebar", (e) => {
     const shouldCollapse = e.detail.collapsed;
     if (shouldCollapse && isExpanded.value) {
       handleMouseLeave();
@@ -162,7 +212,7 @@ onMounted(() => {
   });
 
   // 监听日志菜单开关事件
-  window.addEventListener('log-menu-toggle', (event) => {
+  window.addEventListener("log-menu-toggle", (event) => {
     if (event.detail.enabled) {
       addLogMenuItem();
     } else {
@@ -171,8 +221,11 @@ onMounted(() => {
   });
 
   // 监听开发者模式变化事件
-  window.addEventListener('developer-mode-changed', (event) => {
-    if (event.detail.enabled && localStorage.getItem('logMenuEnabled') === 'true') {
+  window.addEventListener("developer-mode-changed", (event) => {
+    if (
+      event.detail.enabled &&
+      localStorage.getItem("logMenuEnabled") === "true"
+    ) {
       addLogMenuItem();
     } else if (!event.detail.enabled) {
       removeLogMenuItem();
@@ -180,7 +233,7 @@ onMounted(() => {
   });
 
   // 监听测试存档显示开关事件（与日志菜单相同的动态模式）
-  window.addEventListener('test-archive-toggle', (event) => {
+  window.addEventListener("test-archive-toggle", (event) => {
     if (event.detail.enabled) {
       // 只有在明确启用时才添加测试存档菜单项
       addTestArchiveMenuItem();
@@ -191,7 +244,7 @@ onMounted(() => {
   });
 
   // 监听全局语言变化事件
-  window.addEventListener('language-changed', () => {
+  window.addEventListener("language-changed", () => {
     // 触发重新计算翻译
     nextTick(() => {
       // 强制更新DOM
@@ -199,14 +252,17 @@ onMounted(() => {
   });
 
   // 初始化时检查测试存档功能状态
-  const testArchiveEnabled = localStorage.getItem('testArchiveEnabled');
+  const testArchiveEnabled = localStorage.getItem("testArchiveEnabled");
   // 只有在明确启用时才添加测试存档菜单项（与Settings.vue的默认值逻辑保持一致）
-  if (testArchiveEnabled === 'true') {
+  if (testArchiveEnabled === "true") {
     addTestArchiveMenuItem();
   }
 
   // 初始化时检查日志功能状态
-  if (localStorage.getItem('developerMode') === 'true' && localStorage.getItem('logMenuEnabled') === 'true') {
+  if (
+    localStorage.getItem("developerMode") === "true" &&
+    localStorage.getItem("logMenuEnabled") === "true"
+  ) {
     addLogMenuItem();
   }
 });
@@ -217,26 +273,26 @@ const t = computed(() => {
 });
 const currentLanguage = computed(() => {
   const globalI18n = window.$i18n;
-  return globalI18n ? (globalI18n.locale.value || globalI18n.locale) : 'zh-CN';
+  return globalI18n ? globalI18n.locale.value || globalI18n.locale : "zh-CN";
 });
 
 // 安全的翻译函数
 const safeT = (key) => {
   const translateFn = t.value;
-  return typeof translateFn === 'function' ? translateFn(key) : key;
+  return typeof translateFn === "function" ? translateFn(key) : key;
 };
 
 // 添加日志菜单项
 const addLogMenuItem = () => {
   // 检查是否已存在日志菜单项
   const existingLogItem = [...topMenuItems, ...bottomMenuItems].find(
-    item => item.action === 'openLog'
+    (item) => item.action === "openLog"
   );
 
   if (!existingLogItem) {
     // 生成一个唯一的ID，确保不与其他菜单项冲突
     const allItems = [...topMenuItems, ...bottomMenuItems];
-    const maxId = Math.max(...allItems.map(item => item.id));
+    const maxId = Math.max(...allItems.map((item) => item.id));
     const uniqueLogId = maxId + 1;
 
     // 使用textKey属性，保持与其他菜单项一致
@@ -260,7 +316,7 @@ const addLogMenuItem = () => {
 const removeLogMenuItem = () => {
   // 找到日志菜单项的索引
   const logItemIndex = bottomMenuItems.findIndex(
-    item => item.action === 'openLog'
+    (item) => item.action === "openLog"
   );
 
   if (logItemIndex !== -1) {
@@ -285,13 +341,13 @@ const removeLogMenuItem = () => {
 const addTestArchiveMenuItem = () => {
   // 检查是否已存在测试存档菜单项
   const existingTestArchiveItem = [...topMenuItems, ...bottomMenuItems].find(
-    item => item.action === 'openTestArchive'
+    (item) => item.action === "openTestArchive"
   );
 
   if (!existingTestArchiveItem) {
     // 生成一个唯一的ID，确保不与其他菜单项冲突
     const allItems = [...topMenuItems, ...bottomMenuItems];
-    const maxId = Math.max(...allItems.map(item => item.id));
+    const maxId = Math.max(...allItems.map((item) => item.id));
     const uniqueTestArchiveId = maxId + 1;
 
     // 使用textKey属性，保持与其他菜单项一致
@@ -315,7 +371,7 @@ const addTestArchiveMenuItem = () => {
 const removeTestArchiveMenuItem = () => {
   // 找到测试存档菜单项的索引
   const testArchiveItemIndex = topMenuItems.findIndex(
-    item => item.action === 'openTestArchive'
+    (item) => item.action === "openTestArchive"
   );
 
   if (testArchiveItemIndex !== -1) {
@@ -336,16 +392,15 @@ const removeTestArchiveMenuItem = () => {
   }
 };
 
-
-
 // 获取文本宽度
 const getTextWidth = (text) => {
-  const tempElement = document.createElement('span');
-  tempElement.style.position = 'absolute';
-  tempElement.style.visibility = 'hidden';
-  tempElement.style.whiteSpace = 'nowrap';
-  tempElement.style.fontSize = '16px';
-  tempElement.style.fontFamily = '-apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif';
+  const tempElement = document.createElement("span");
+  tempElement.style.position = "absolute";
+  tempElement.style.visibility = "hidden";
+  tempElement.style.whiteSpace = "nowrap";
+  tempElement.style.fontSize = "16px";
+  tempElement.style.fontFamily =
+    '-apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif';
   tempElement.textContent = text;
 
   document.body.appendChild(tempElement);
@@ -375,7 +430,7 @@ const handleMouseDown = (event) => {
   gsap.to(currentPressedItem, {
     scale: 0.95,
     duration: 0.1,
-    ease: 'power2.out'
+    ease: "power2.out",
   });
 };
 
@@ -383,22 +438,31 @@ const handleMouseDown = (event) => {
 const handleMouseEnterItem = (event) => {
   if (isMouseDown) {
     if (currentPressedItem && currentPressedItem !== event.currentTarget) {
-      gsap.to(currentPressedItem, { scale: 1, duration: 0.1, ease: 'power2.out' });
+      gsap.to(currentPressedItem, {
+        scale: 1,
+        duration: 0.1,
+        ease: "power2.out",
+      });
     }
     currentPressedItem = event.currentTarget;
-    gsap.to(currentPressedItem, { scale: 0.95, duration: 0.1, ease: 'power2.out' });
+    gsap.to(currentPressedItem, {
+      scale: 0.95,
+      duration: 0.1,
+      ease: "power2.out",
+    });
   }
 
-  const textElement = event.currentTarget.querySelector('.sidebar-text');
-  const itemText = textElement?.getAttribute('data-text') || textElement?.textContent || '';
+  const textElement = event.currentTarget.querySelector(".sidebar-text");
+  const itemText =
+    textElement?.getAttribute("data-text") || textElement?.textContent || "";
   if (!textElement || !itemText) return;
 
   if (checkTextOverflow(textElement, itemText)) {
-    textElement.classList.add('scroll-needed');
-    textElement.classList.add('scroll-active');
-    textElement.style.animation = '';
-    textElement.style.transform = '';
-    textElement.style.transition = '';
+    textElement.classList.add("scroll-needed");
+    textElement.classList.add("scroll-active");
+    textElement.style.animation = "";
+    textElement.style.transform = "";
+    textElement.style.transition = "";
 
     const textWidth = getTextWidth(itemText);
     const scrollDistance = textWidth + 16;
@@ -415,38 +479,39 @@ const handleMouseLeaveItem = (event) => {
     gsap.to(currentPressedItem, {
       scale: 1,
       duration: 0.1,
-      ease: 'power2.out'
+      ease: "power2.out",
     });
     currentPressedItem = null;
   }
 
-  const textElement = event.currentTarget.querySelector('.sidebar-text');
-  if (textElement && textElement.classList.contains('scroll-active')) {
+  const textElement = event.currentTarget.querySelector(".sidebar-text");
+  if (textElement && textElement.classList.contains("scroll-active")) {
     // 获取当前transform值
     const style = window.getComputedStyle(textElement);
     const matrix = new DOMMatrix(style.transform);
     const currentX = matrix.m41 || 0;
 
     // 立即停止动画
-    textElement.style.animation = 'none';
+    textElement.style.animation = "none";
 
     // 设置当前位置并添加过渡
-    textElement.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    textElement.style.transition =
+      "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
     textElement.style.transform = `translateX(${currentX}px)`;
 
     // 强制重排确保过渡生效
     textElement.offsetHeight;
 
     // 平滑回到初始位置
-    textElement.style.transform = 'translateX(0)';
+    textElement.style.transform = "translateX(0)";
 
     // 移除类并清理
-    textElement.classList.remove('scroll-active');
+    textElement.classList.remove("scroll-active");
 
     // 过渡完成后清理样式
     setTimeout(() => {
-      textElement.style.transition = '';
-      textElement.style.transform = '';
+      textElement.style.transition = "";
+      textElement.style.transform = "";
     }, 400);
   }
 };
@@ -458,7 +523,7 @@ const handleMouseUp = (event) => {
     gsap.to(currentPressedItem, {
       scale: 1,
       duration: 0.1,
-      ease: 'power2.out'
+      ease: "power2.out",
     });
     currentPressedItem = null;
   }
@@ -468,21 +533,25 @@ const handleMouseUp = (event) => {
 const handleItemClick = (item, event) => {
   activeItemId.value = item.id;
   const text = safeT(item.textKey);
-  console.log('项目被点击:', text);
+  console.log("项目被点击:", text);
 
   // 触发动作事件
   if (item.action) {
-    window.dispatchEvent(new CustomEvent('sidebar-action', {
-      detail: { action: item.action, item: item }
-    }));
+    window.dispatchEvent(
+      new CustomEvent("sidebar-action", {
+        detail: { action: item.action, item: item },
+      })
+    );
   }
 
   // 如果有路由，使用vue-router进行导航
   if (item.route) {
     // 使用window的router实例或者通过事件系统触发路由
-    window.dispatchEvent(new CustomEvent('sidebar-route-change', {
-      detail: { route: item.route }
-    }));
+    window.dispatchEvent(
+      new CustomEvent("sidebar-route-change", {
+        detail: { route: item.route },
+      })
+    );
   }
 
   // 重置任何可能的缩放效果
@@ -490,7 +559,7 @@ const handleItemClick = (item, event) => {
     gsap.to(currentPressedItem, {
       scale: 1,
       duration: 0.1,
-      ease: 'power2.out'
+      ease: "power2.out",
     });
     currentPressedItem = null;
     isMouseDown = false;
@@ -517,8 +586,10 @@ const handleItemClick = (item, event) => {
   overflow: hidden;
   border-right: 1px solid var(--sidebar-border-color);
   border-radius: 0 var(--radius-sidebar) var(--radius-sidebar) 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', sans-serif;
-  transition: background 0.25s ease, border-right 0.25s ease, box-shadow 0.25s ease, width 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco",
+    "Helvetica Neue", sans-serif;
+  transition: background 0.25s ease, border-right 0.25s ease,
+    box-shadow 0.25s ease, width 0.3s ease;
 }
 
 /* 侧边栏展开样式 */
@@ -537,11 +608,13 @@ const handleItemClick = (item, event) => {
 /* 侧边栏文本样式 */
 .sidebar-text {
   opacity: 0;
-  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.25s ease;
+  transition: opacity 0.3s ease,
+    transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.25s ease;
   font-size: 16px;
   white-space: nowrap;
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco",
+    "Helvetica Neue", sans-serif;
   transform: translateX(-10px);
   display: block;
   position: relative;
@@ -556,7 +629,8 @@ const handleItemClick = (item, event) => {
   align-items: center;
   padding: var(--space-3) 0;
   cursor: pointer;
-  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease,
+    box-shadow 0.25s ease;
   white-space: nowrap;
   border-radius: var(--radius-sidebar);
   margin: 0 var(--space-4);
@@ -579,7 +653,8 @@ const handleItemClick = (item, event) => {
   background: var(--sidebar-active-bg);
   color: var(--sidebar-active-color);
   box-shadow: inset 0 0 0 2px var(--sidebar-active-border);
-  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 /* 侧边栏项激活+悬停状态样式 */
@@ -620,14 +695,12 @@ const handleItemClick = (item, event) => {
   }
 }
 
-
 /* 侧边栏分区样式 */
 .sidebar-section {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
-
 
 /* 顶部区域样式 */
 .top-section {
@@ -700,7 +773,6 @@ const handleItemClick = (item, event) => {
   background: transparent;
 }
 
-
 /* 底部区域样式 */
 .bottom-section {
   flex-shrink: 0;
@@ -713,7 +785,6 @@ const handleItemClick = (item, event) => {
   margin-bottom: 0px;
   /* 移除最后一个项目的额外下边距 */
 }
-
 
 /* 侧边栏图标容器样式 */
 .sidebar-icon-container {
@@ -729,14 +800,12 @@ const handleItemClick = (item, event) => {
   justify-content: center;
 }
 
-
 /* 侧边栏图标样式 */
 .sidebar-icon {
   font-size: 18px;
   color: var(--text);
   transition: all 0.3s ease;
 }
-
 
 /* 侧边栏文本容器样式 */
 .sidebar-text-container {
@@ -752,11 +821,13 @@ const handleItemClick = (item, event) => {
 /* 侧边栏文本样式 */
 .sidebar-text {
   opacity: 0;
-  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: opacity 0.3s ease,
+    transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   font-size: 16px;
   white-space: nowrap;
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco",
+    "Helvetica Neue", sans-serif;
   transform: translateX(-10px);
   display: block;
   position: relative;
@@ -805,12 +876,18 @@ const handleItemClick = (item, event) => {
   transition: transform 0.4s ease-out;
 }
 
-.sidebar.expanded .sidebar-item:hover .sidebar-text-container .sidebar-text.scroll-needed {
+.sidebar.expanded
+  .sidebar-item:hover
+  .sidebar-text-container
+  .sidebar-text.scroll-needed {
   animation: scroll-text var(--animation-duration, 8s) linear infinite;
   animation-delay: 0.8s;
 }
 
-.sidebar.expanded .sidebar-item:hover .sidebar-text-container .scroll-active::after {
+.sidebar.expanded
+  .sidebar-item:hover
+  .sidebar-text-container
+  .scroll-active::after {
   content: attr(data-text);
   position: absolute;
   left: 100%;
@@ -820,7 +897,6 @@ const handleItemClick = (item, event) => {
   margin-left: var(--space-4);
   /* 使用统一的间距变量 */
 }
-
 
 /* 文本滚动动画 */
 @keyframes scroll-text {
@@ -857,10 +933,12 @@ const handleItemClick = (item, event) => {
   }
 }
 
-.sidebar.expanded .sidebar-item:not(:hover) .sidebar-text-container .sidebar-text.scroll-active {
+.sidebar.expanded
+  .sidebar-item:not(:hover)
+  .sidebar-text-container
+  .sidebar-text.scroll-active {
   animation: none !important;
 }
-
 
 /* 侧边栏项样式 */
 .sidebar-item {
@@ -879,13 +957,11 @@ const handleItemClick = (item, event) => {
   /* 确保收起和展开状态高度一致 */
 }
 
-
 /* 侧边栏项悬停状态样式 */
 .sidebar-item:hover {
   background: var(--sidebar-hover-bg);
   box-shadow: var(--shadow-md);
 }
-
 
 /* 侧边栏项激活状态样式 */
 .sidebar-item.active {
@@ -893,7 +969,6 @@ const handleItemClick = (item, event) => {
   color: var(--sidebar-active-color);
   box-shadow: inset 0 0 0 2px var(--sidebar-active-border);
 }
-
 
 /* 侧边栏项激活+悬停状态样式 */
 .sidebar-item.active:hover {

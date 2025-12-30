@@ -4,39 +4,56 @@ use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::{BufReader, BufWriter, Write};
 use std::path::PathBuf;
+use std::sync::OnceLock;
 use uesave::{
     Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial, PropertyType,
     Save, ValueArray, ValueVec,
 };
 
-/// 获取本地应用数据目录
-pub fn get_local_appdata_dir() -> Result<PathBuf, String> {
-    #[cfg(target_os = "windows")]
-    {
-        std::env::var("LOCALAPPDATA")
-            .map(PathBuf::from)
-            .map_err(|e| format!("获取 LOCALAPPDATA 失败: {}", e))
-    }
+/// 缓存本地应用数据目录路径
+static LOCAL_APPDATA_DIR: OnceLock<Result<PathBuf, String>> = OnceLock::new();
+static SAVE_GAMES_DIR: OnceLock<Result<PathBuf, String>> = OnceLock::new();
+static APP_CONFIG_DIR: OnceLock<Result<PathBuf, String>> = OnceLock::new();
 
-    #[cfg(not(target_os = "windows"))]
-    {
-        Err("仅支持 Windows 系统".to_string())
-    }
+/// 获取本地应用数据目录（带缓存）
+pub fn get_local_appdata_dir() -> Result<PathBuf, String> {
+    LOCAL_APPDATA_DIR
+        .get_or_init(|| {
+            #[cfg(target_os = "windows")]
+            {
+                std::env::var("LOCALAPPDATA")
+                    .map(PathBuf::from)
+                    .map_err(|e| format!("获取 LOCALAPPDATA 失败: {}", e))
+            }
+
+            #[cfg(not(target_os = "windows"))]
+            {
+                Err("仅支持 Windows 系统".to_string())
+            }
+        })
+        .clone()
 }
 
-/// 获取存档目录路径
+/// 获取存档目录路径（带缓存）
 pub fn get_save_games_dir() -> Result<PathBuf, String> {
-    Ok(get_local_appdata_dir()?.join("EscapeTheBackrooms/Saved/SaveGames"))
+    SAVE_GAMES_DIR
+        .get_or_init(|| {
+            get_local_appdata_dir().map(|p| p.join("EscapeTheBackrooms/Saved/SaveGames"))
+        })
+        .clone()
 }
 
 /// 获取 MAINSAVE.sav 文件路径
+#[inline]
 pub fn get_mainsave_path() -> Result<PathBuf, String> {
-    Ok(get_save_games_dir()?.join("MAINSAVE.sav"))
+    get_save_games_dir().map(|p| p.join("MAINSAVE.sav"))
 }
 
-/// 获取应用配置目录
+/// 获取应用配置目录（带缓存）
 pub fn get_app_config_dir() -> Result<PathBuf, String> {
-    Ok(get_local_appdata_dir()?.join("ETBSaveManager"))
+    APP_CONFIG_DIR
+        .get_or_init(|| get_local_appdata_dir().map(|p| p.join("ETBSaveManager")))
+        .clone()
 }
 
 /// 读取 MAINSAVE.sav 文件
@@ -48,7 +65,7 @@ pub fn read_mainsave() -> Result<Save, String> {
     }
 
     let file = File::open(&mainsave_path).map_err(|e| format!("打开 MAINSAVE.sav 失败: {}", e))?;
-    let mut reader = BufReader::new(file);
+    let mut reader = BufReader::with_capacity(8192, file);
 
     Save::read(&mut reader).map_err(|e| format!("解析 MAINSAVE.sav 失败: {:?}", e))
 }
@@ -62,7 +79,7 @@ pub fn write_mainsave(save: &Save) -> Result<(), String> {
     // 写入临时文件
     let file =
         File::create(&temp_path).map_err(|e| format!("创建临时 MAINSAVE 文件失败: {}", e))?;
-    let mut writer = BufWriter::new(file);
+    let mut writer = BufWriter::with_capacity(8192, file);
 
     save.write(&mut writer)
         .map_err(|e| format!("写入 MAINSAVE.sav 失败: {:?}", e))?;
@@ -110,7 +127,7 @@ pub fn add_save_to_mainsave(archive_name: &str) -> Result<(), String> {
         if let PropertyInner::Array(ValueArray::Base(ValueVec::Str(ref mut saves))) =
             &mut prop.inner
         {
-            if !saves.contains(&archive_name.to_string()) {
+            if !saves.iter().any(|s| s == archive_name) {
                 saves.push(archive_name.to_string());
                 println!("✅ 已添加存档到 MAINSAVE: {}", archive_name);
             } else {
@@ -169,6 +186,15 @@ pub fn remove_save_from_mainsave(archive_name: &str) -> Result<bool, String> {
 }
 
 /// 从文件名中提取存档名称（去除 .sav 后缀）
+#[inline]
 pub fn extract_archive_name(filename: &str) -> &str {
-    filename.trim_end_matches(".sav")
+    filename.strip_suffix(".sav").unwrap_or(filename)
+}
+
+/// 统一的错误类型转换宏
+#[macro_export]
+macro_rules! map_err {
+    ($expr:expr, $msg:literal) => {
+        $expr.map_err(|e| format!("{}: {}", $msg, e))
+    };
 }

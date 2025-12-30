@@ -7,7 +7,7 @@
           <div class="modal-header">
             <h3 class="modal-title">
               <font-awesome-icon :icon="['fas', 'edit']" />
-              {{ $t('quickCreate.editModal.title') }}
+              {{ $t("quickCreate.editModal.title") }}
             </h3>
             <button class="close-btn" @click="handleClose">
               <font-awesome-icon :icon="['fas', 'times']" />
@@ -18,18 +18,24 @@
           <div class="modal-content">
             <!-- 存档名称 -->
             <div class="form-group">
-              <label class="form-label">{{ $t('quickCreate.editModal.archiveName') }}</label>
-              <input 
-                type="text" 
+              <label class="form-label">{{
+                $t("quickCreate.editModal.archiveName")
+              }}</label>
+              <input
+                type="text"
                 class="form-input"
                 v-model="localArchive.name"
-                :placeholder="$t('quickCreate.editModal.archiveNamePlaceholder')"
+                :placeholder="
+                  $t('quickCreate.editModal.archiveNamePlaceholder')
+                "
               />
             </div>
 
             <!-- 层级选择 -->
             <div class="form-group">
-              <label class="form-label">{{ $t('quickCreate.editModal.level') }}</label>
+              <label class="form-label">{{
+                $t("quickCreate.editModal.level")
+              }}</label>
               <CustomDropdown
                 :model-value="localArchive.level"
                 :options="levelDropdownOptions"
@@ -40,7 +46,9 @@
 
             <!-- 存档难度 -->
             <div class="form-group">
-              <label class="form-label">{{ $t('quickCreate.editModal.difficulty') }}</label>
+              <label class="form-label">{{
+                $t("quickCreate.editModal.difficulty")
+              }}</label>
               <CustomDropdown
                 :model-value="localArchive.difficulty"
                 :options="difficultyDropdownOptions"
@@ -51,7 +59,9 @@
 
             <!-- 实际难度 -->
             <div class="form-group">
-              <label class="form-label">{{ $t('quickCreate.editModal.actualDifficulty') }}</label>
+              <label class="form-label">{{
+                $t("quickCreate.editModal.actualDifficulty")
+              }}</label>
               <CustomDropdown
                 :model-value="localArchive.actualDifficulty"
                 :options="difficultyDropdownOptions"
@@ -62,7 +72,9 @@
 
             <!-- 背包模板 -->
             <div class="form-group">
-              <label class="form-label">{{ $t('quickCreate.editModal.inventory') }}</label>
+              <label class="form-label">{{
+                $t("quickCreate.editModal.inventory")
+              }}</label>
               <CustomDropdown
                 :model-value="localArchive.inventoryTemplate"
                 :options="inventoryDropdownOptions"
@@ -75,10 +87,10 @@
           <!-- 模态框底部 -->
           <div class="modal-footer">
             <button class="btn btn-secondary" @click="handleClose">
-              {{ $t('common.cancel') }}
+              {{ $t("common.cancel") }}
             </button>
             <button class="btn btn-primary" @click="handleSave">
-              {{ $t('common.save') }}
+              {{ $t("common.save") }}
             </button>
           </div>
         </div>
@@ -88,92 +100,95 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
-import CustomDropdown from '@/components/CustomDropdown.vue'
+import { ref, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
+import CustomDropdown from "@/components/CustomDropdown.vue";
 
-const { t } = useI18n({ useScope: 'global' })
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   visible: {
     type: Boolean,
-    default: false
+    default: false,
   },
   archive: {
     type: Object,
-    default: null
+    default: null,
   },
   availableLevels: {
     type: Array,
-    default: () => []
-  }
-})
+    default: () => [],
+  },
+});
 
-const emit = defineEmits(['close', 'save'])
+const emit = defineEmits(["close", "save"]);
 
 // 本地编辑副本
 const localArchive = ref({
-  name: '',
+  name: "",
   level: null,
   difficulty: null,
   actualDifficulty: null,
-  inventoryTemplate: null
-})
+  inventoryTemplate: null,
+});
 
 // 难度选项
 const difficultyOptions = computed(() => [
-  { value: 'easy', label: t('createArchive.difficultyLevels.easy') },
-  { value: 'normal', label: t('createArchive.difficultyLevels.normal') },
-  { value: 'hard', label: t('createArchive.difficultyLevels.hard') },
-  { value: 'nightmare', label: t('createArchive.difficultyLevels.nightmare') }
-])
+  { value: "easy", label: t("createArchive.difficultyLevels.easy") },
+  { value: "normal", label: t("createArchive.difficultyLevels.normal") },
+  { value: "hard", label: t("createArchive.difficultyLevels.hard") },
+  { value: "nightmare", label: t("createArchive.difficultyLevels.nightmare") },
+]);
 
 // 层级下拉选项（包含继承选项）
 const levelDropdownOptions = computed(() => {
-  return props.availableLevels.map(level => ({
+  return props.availableLevels.map((level) => ({
     value: level.value,
-    label: level.label
-  }))
-})
+    label: level.label,
+  }));
+});
 
 // 难度下拉选项（包含继承选项）
 const difficultyDropdownOptions = computed(() => {
-  return difficultyOptions.value
-})
+  return difficultyOptions.value;
+});
 
 // 背包模板下拉选项
 const inventoryDropdownOptions = computed(() => [
-  { value: 'empty', label: t('quickCreate.card.emptyInventory') }
-])
+  { value: "empty", label: t("quickCreate.card.emptyInventory") },
+]);
 
 // 监听 archive 变化，更新本地副本
-watch(() => props.archive, (newArchive) => {
-  if (newArchive) {
-    localArchive.value = {
-      name: newArchive.name || '',
-      level: newArchive.level,
-      difficulty: newArchive.difficulty,
-      actualDifficulty: newArchive.actualDifficulty,
-      inventoryTemplate: newArchive.inventoryTemplate
+watch(
+  () => props.archive,
+  (newArchive) => {
+    if (newArchive) {
+      localArchive.value = {
+        name: newArchive.name || "",
+        level: newArchive.level,
+        difficulty: newArchive.difficulty,
+        actualDifficulty: newArchive.actualDifficulty,
+        inventoryTemplate: newArchive.inventoryTemplate,
+      };
     }
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+);
 
 // 关闭模态框
 const handleClose = () => {
-  emit('close')
-}
+  emit("close");
+};
 
 // 保存更改
 const handleSave = () => {
-  emit('save', {
+  emit("save", {
     id: props.archive?.id,
-    ...localArchive.value
-  })
-  handleClose()
-}
+    ...localArchive.value,
+  });
+  handleClose();
+};
 </script>
-
 
 <style scoped>
 /* 模态框遮罩 */

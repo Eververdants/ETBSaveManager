@@ -3,67 +3,88 @@
     <main class="about-content">
       <!-- 毛玻璃卡片 -->
       <section class="glass-card app-info">
-        <img class="app-icon" :class="{ 'loaded': iconLoaded }" src="/app-icon.png" alt="App Icon"
-          @load="handleImageLoad" @error="handleImageLoad" @click="handleAppIconClick" />
+        <img
+          class="app-icon"
+          :class="{ loaded: iconLoaded }"
+          src="/app-icon.png"
+          alt="App Icon"
+          @load="handleImageLoad"
+          @error="handleImageLoad"
+          @click="handleAppIconClick"
+        />
         <div>
-          <h2 class="app-title">{{ $t('app.name') }}</h2>
-          <p class="app-version">{{ $t('about.version') }} {{ version }}</p>
-          <p class="app-desc">{{ $t('about.tagline') }}</p>
+          <h2 class="app-title">{{ $t("app.name") }}</h2>
+          <p class="app-version">{{ $t("about.version") }} {{ version }}</p>
+          <p class="app-desc">{{ $t("about.tagline") }}</p>
         </div>
         <div v-if="showEasterEgg" class="easter-egg">
-          <img src="/Written_by_Máo.png" alt="Easter Egg" class="easter-egg-image"
-            :class="{ 'loaded': easterEggImageLoaded }" @load="easterEggImageLoaded = true"
-            @error="easterEggImageLoaded = true" />
+          <img
+            src="/Written_by_Máo.png"
+            alt="Easter Egg"
+            class="easter-egg-image"
+            :class="{ loaded: easterEggImageLoaded }"
+            @load="easterEggImageLoaded = true"
+            @error="easterEggImageLoaded = true"
+          />
         </div>
       </section>
 
       <!-- 分组：应用信息 -->
       <section class="list-section">
-        <h3 class="section-title">{{ $t('about.appInfo') }}</h3>
+        <h3 class="section-title">{{ $t("about.appInfo") }}</h3>
         <div class="list-item clickable" @click="handleEasterEgg">
-          <span>{{ $t('about.author') }}</span>
-          <span class="text-secondary">{{ $t('about.authorName') }}</span>
+          <span>{{ $t("about.author") }}</span>
+          <span class="text-secondary">{{ $t("about.authorName") }}</span>
         </div>
         <div class="list-item">
-          <span>{{ $t('about.license') }}</span>
-          <span class="text-secondary">{{ $t('about.licenseName') }}</span>
+          <span>{{ $t("about.license") }}</span>
+          <span class="text-secondary">{{ $t("about.licenseName") }}</span>
         </div>
       </section>
 
       <!-- 分组：更新公告 -->
       <section class="list-section">
-        <h3 class="section-title">{{ $t('about.releaseNotes') }}</h3>
+        <h3 class="section-title">{{ $t("about.releaseNotes") }}</h3>
         <div class="release-summary" v-if="latestRelease">
           <div class="latest-version-header">
-            <span class="version-badge" :class="latestRelease.type">{{ latestRelease.version }}</span>
-            <span class="version-date">{{ formatDate(latestRelease.date) }}</span>
-            <span v-if="latestRelease.isHighlight" class="featured-badge">{{ $t('featured') }}</span>
+            <span class="version-badge" :class="latestRelease.type">{{
+              latestRelease.version
+            }}</span>
+            <span class="version-date">{{
+              formatDate(latestRelease.date)
+            }}</span>
+            <span v-if="latestRelease.isHighlight" class="featured-badge">{{
+              $t("featured")
+            }}</span>
           </div>
           <h4 class="latest-version-title">{{ latestRelease.title }}</h4>
-          <div class="latest-feature" v-if="latestRelease.categories.newFeatures?.[0]">
+          <div
+            class="latest-feature"
+            v-if="latestRelease.categories.newFeatures?.[0]"
+          >
             <span class="feature-icon">✨</span>
             <span>{{ latestRelease.categories.newFeatures[0] }}</span>
           </div>
           <button class="view-all-btn" @click="goToReleaseNotes">
-            {{ $t('viewAllVersions', { count: totalCount }) }}
+            {{ $t("viewAllVersions", { count: totalCount }) }}
           </button>
         </div>
         <div v-else class="no-release-notes">
-          <p>{{ $t('noReleaseNotes') }}</p>
+          <p>{{ $t("noReleaseNotes") }}</p>
         </div>
       </section>
 
       <!-- 分组：致谢 -->
       <section class="list-section">
-        <h3 class="section-title">{{ $t('about.acknowledgements') }}</h3>
+        <h3 class="section-title">{{ $t("about.acknowledgements") }}</h3>
         <div class="list-item single">
-          {{ $t('archive.thanks') }}
+          {{ $t("archive.thanks") }}
         </div>
       </section>
 
       <!-- 分组：联系方式（图标点击） -->
       <section class="list-section">
-        <h3 class="section-title">{{ $t('about.contact') }}</h3>
+        <h3 class="section-title">{{ $t("about.contact") }}</h3>
         <div class="icon-row">
           <a href="mailto:llzgd@outlook.com" target="_blank">
             <font-awesome-icon :icon="['fas', 'envelope']" />
@@ -71,12 +92,18 @@
           <a href="https://github.com/Eververdants" target="_blank">
             <font-awesome-icon :icon="['fab', 'github']" />
           </a>
-          <a v-if="showChineseSocial" href="https://space.bilibili.com/2019959464" target="_blank">
+          <a
+            v-if="showChineseSocial"
+            href="https://space.bilibili.com/2019959464"
+            target="_blank"
+          >
             <font-awesome-icon :icon="['fab', 'bilibili']" />
           </a>
-          <a v-if="showChineseSocial"
+          <a
+            v-if="showChineseSocial"
             href="https://www.douyin.com/user/MS4wLjABAAAA8MEFE6VVh4_nWkTLPbueZYywgSyN19xhUFkmDF-nkhlnWytZWiBZ9YWM5s3RsprJ"
-            target="_blank">
+            target="_blank"
+          >
             <font-awesome-icon :icon="['fab', 'tiktok']" />
           </a>
         </div>
@@ -84,27 +111,32 @@
 
       <!-- 底部版权 -->
       <footer class="about-footer">
-        <p>© 2025 {{ $t('app.name') }}</p>
-        <small>{{ $t('about.licenseName') }} | {{ $t('archive.disclaimer') }}</small>
+        <p>© 2025 {{ $t("app.name") }}</p>
+        <small
+          >{{ $t("about.licenseName") }} | {{ $t("archive.disclaimer") }}</small
+        >
       </footer>
     </main>
   </div>
 </template>
 
 <script setup>
-import { useI18n } from 'vue-i18n';
-import { computed, ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useReleaseNotes } from '@/composables';
+import { useI18n } from "vue-i18n";
+import { computed, ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useReleaseNotes } from "@/composables";
 
-const { t, locale } = useI18n({ useScope: 'global' });
+const { t, locale } = useI18n({ useScope: "global" });
 const router = useRouter();
-const version = "3.0.0-Alpha-7"; // TODO: 从 package.json 动态获取
+const version = "3.0.0-Alpha-7.1"; // TODO: 从 package.json 动态获取
 
 // 使用公告数据 composable
-const { releaseNotes, latestRelease, totalCount, formatShortDate } = useReleaseNotes();
+const { releaseNotes, latestRelease, totalCount, formatShortDate } =
+  useReleaseNotes();
 
-const showChineseSocial = computed(() => ['zh-CN', 'zh-TW'].includes(locale.value));
+const showChineseSocial = computed(() =>
+  ["zh-CN", "zh-TW"].includes(locale.value)
+);
 const showEasterEgg = ref(false);
 const iconLoaded = ref(false);
 const easterEggImageLoaded = ref(false);
@@ -112,7 +144,7 @@ const easterEggImageLoaded = ref(false);
 // 翻译文本的computed
 const $t = (key, values) => {
   const text = t(key);
-  if (values && typeof values === 'object') {
+  if (values && typeof values === "object") {
     return text.replace(/\{(\w+)\}/g, (match, param) => {
       return values[param] || match;
     });
@@ -131,14 +163,14 @@ const handleImageLoad = () => {
 const formatDate = (dateString) => formatShortDate(dateString);
 
 const goToReleaseNotes = () => {
-  router.push({ name: 'ReleaseNotes' });
+  router.push({ name: "ReleaseNotes" });
 };
 
 onMounted(() => {
   const img = new Image();
   img.onload = handleImageLoad;
   img.onerror = handleImageLoad;
-  img.src = '/app-icon.png';
+  img.src = "/app-icon.png";
 });
 
 const handleEasterEgg = () => {
@@ -184,15 +216,17 @@ const handleAppIconClick = () => {
 
   if (appIconClickCount >= 5) {
     // 激活开发者模式
-    localStorage.setItem('developerMode', 'true');
+    localStorage.setItem("developerMode", "true");
 
     // 触发自定义事件通知其他组件
-    window.dispatchEvent(new CustomEvent('developer-mode-changed', {
-      detail: { enabled: true }
-    }));
+    window.dispatchEvent(
+      new CustomEvent("developer-mode-changed", {
+        detail: { enabled: true },
+      })
+    );
 
     // 显示提示
-    const toast = document.createElement('div');
+    const toast = document.createElement("div");
     toast.style.cssText = `
       position: fixed;
       top: 50px;
@@ -207,7 +241,7 @@ const handleAppIconClick = () => {
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       animation: fadeInOut 2s ease-in-out;
     `;
-    toast.textContent = t('about.developerModeActivated');
+    toast.textContent = t("about.developerModeActivated");
     document.body.appendChild(toast);
 
     setTimeout(() => {
@@ -222,7 +256,6 @@ const handleAppIconClick = () => {
     }, 1000); // 1秒内点击5次
   }
 };
-
 </script>
 
 <style scoped>
@@ -438,8 +471,6 @@ const handleAppIconClick = () => {
   opacity: 0.7;
 }
 
-
-
 .clickable {
   cursor: pointer;
 }
@@ -448,71 +479,74 @@ const handleAppIconClick = () => {
 .release-summary {
   position: relative;
   padding: 1.5rem;
-  background: linear-gradient(135deg,
-      var(--bg-secondary) 0%,
-      var(--bg-tertiary, #2a2a3a) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    var(--bg-tertiary, #2a2a3a) 100%
+  );
   border: 1px solid var(--border-light);
   border-radius: 16px;
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.1),
-    0 1px 3px rgba(0, 0, 0, 0.05),
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .release-summary:before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   z-index: 1;
 }
 
 .release-summary:hover {
   transform: translateY(-2px);
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.12),
-    0 4px 8px rgba(0, 0, 0, 0.08),
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .release-summary.major {
   border-left: 3px solid #ff6b6b;
-  background: linear-gradient(135deg,
-      var(--bg-secondary) 0%,
-      rgba(255, 107, 107, 0.03) 50%,
-      var(--bg-tertiary, #2a2a3a) 100%);
-  box-shadow:
-    0 4px 16px rgba(255, 107, 107, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    rgba(255, 107, 107, 0.03) 50%,
+    var(--bg-tertiary, #2a2a3a) 100%
+  );
+  box-shadow: 0 4px 16px rgba(255, 107, 107, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .release-summary.minor {
   border-left: 3px solid #4ecdc4;
-  background: linear-gradient(135deg,
-      var(--bg-secondary) 0%,
-      rgba(78, 205, 196, 0.03) 50%,
-      var(--bg-tertiary, #2a2a3a) 100%);
-  box-shadow:
-    0 4px 16px rgba(78, 205, 196, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.05),
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    rgba(78, 205, 196, 0.03) 50%,
+    var(--bg-tertiary, #2a2a3a) 100%
+  );
+  box-shadow: 0 4px 16px rgba(78, 205, 196, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .release-summary.patch {
   border-left: 3px solid #45b7d1;
-  background: linear-gradient(135deg,
-      var(--bg-secondary) 0%,
-      rgba(69, 183, 209, 0.03) 50%,
-      var(--bg-tertiary, #2a2a3a) 100%);
-  box-shadow:
-    0 4px 16px rgba(69, 183, 209, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.05),
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    rgba(69, 183, 209, 0.03) 50%,
+    var(--bg-tertiary, #2a2a3a) 100%
+  );
+  box-shadow: 0 4px 16px rgba(69, 183, 209, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -622,7 +656,7 @@ const handleAppIconClick = () => {
 }
 
 .latest-version-title:after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -0.25rem;
   left: 0;
@@ -638,9 +672,11 @@ const handleAppIconClick = () => {
   gap: 0.75rem;
   margin-bottom: 1.25rem;
   padding: 0.75rem;
-  background: linear-gradient(135deg,
-      rgba(var(--accent-color-rgb), 0.08) 0%,
-      rgba(var(--accent-color-rgb), 0.03) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--accent-color-rgb), 0.08) 0%,
+    rgba(var(--accent-color-rgb), 0.03) 100%
+  );
   border: 1px solid rgba(var(--accent-color-rgb), 0.2);
   border-radius: 10px;
   font-size: 0.9rem;
@@ -651,19 +687,26 @@ const handleAppIconClick = () => {
 }
 
 .latest-feature:before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(var(--accent-color-rgb), 0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--accent-color-rgb), 0.3),
+    transparent
+  );
 }
 
 .latest-feature:hover {
-  background: linear-gradient(135deg,
-      rgba(var(--accent-color-rgb), 0.12) 0%,
-      rgba(var(--accent-color-rgb), 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--accent-color-rgb), 0.12) 0%,
+    rgba(var(--accent-color-rgb), 0.05) 100%
+  );
   transform: translateX(4px);
 }
 
@@ -678,10 +721,12 @@ const handleAppIconClick = () => {
   position: relative;
   width: 100%;
   padding: 1rem 1.25rem;
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
   color: var(--text-primary);
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
@@ -694,22 +739,23 @@ const handleAppIconClick = () => {
   overflow: hidden;
   z-index: 2;
   backdrop-filter: blur(10px);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.1),
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .view-all-btn:before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(var(--accent-color-rgb), 0.3),
-      transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--accent-color-rgb), 0.3),
+    transparent
+  );
   transition: left 0.6s ease;
   z-index: -1;
 }
@@ -719,23 +765,22 @@ const handleAppIconClick = () => {
 }
 
 .view-all-btn:hover {
-  background: linear-gradient(135deg,
-      rgba(var(--accent-color-rgb), 0.2) 0%,
-      rgba(var(--accent-color-rgb), 0.1) 50%,
-      rgba(var(--accent-color-rgb), 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--accent-color-rgb), 0.2) 0%,
+    rgba(var(--accent-color-rgb), 0.1) 50%,
+    rgba(var(--accent-color-rgb), 0.05) 100%
+  );
   border-color: rgba(var(--accent-color-rgb), 0.4);
   transform: translateY(-3px) scale(1.02);
-  box-shadow:
-    0 12px 40px rgba(var(--accent-color-rgb), 0.3),
-    0 6px 20px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 40px rgba(var(--accent-color-rgb), 0.3),
+    0 6px 20px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   color: var(--accent-color);
 }
 
 .view-all-btn:active {
   transform: translateY(-1px) scale(1.01);
-  box-shadow:
-    0 6px 20px rgba(var(--accent-color-rgb), 0.2),
+  box-shadow: 0 6px 20px rgba(var(--accent-color-rgb), 0.2),
     0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -751,7 +796,7 @@ const handleAppIconClick = () => {
 }
 
 .no-release-notes:before {
-  content: '📋';
+  content: "📋";
   font-size: 1.5rem;
   display: block;
   margin-bottom: 0.5rem;
@@ -760,6 +805,10 @@ const handleAppIconClick = () => {
 
 /* 深色模式适配 */
 [data-theme="dark"] .about-container {
-  background: linear-gradient(to bottom, var(--about-bg-gradient-start), var(--about-bg-gradient-end));
+  background: linear-gradient(
+    to bottom,
+    var(--about-bg-gradient-start),
+    var(--about-bg-gradient-end)
+  );
 }
 </style>

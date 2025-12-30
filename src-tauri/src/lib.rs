@@ -35,85 +35,61 @@ async fn load_all_saves() -> Result<Vec<SaveFileInfo>, String> {
 
     let paths = paths_result?;
     let visible_saves = Arc::new(visible_saves_result?);
-
     let path_count = paths.len();
+
     println!(
         "=== load_all_saves: 共 {} 个存档，开始并行加载 ===",
         path_count
     );
 
     // 使用 rayon 并行处理所有存档文件
-    let results: Vec<Option<SaveFileInfo>> = paths
+    let results: Vec<SaveFileInfo> = paths
         .into_par_iter()
         .enumerate()
-        .map(|(i, path)| {
-            // 解析存档文件
-            let save = match cli_handlers::parse_sav_file(&path) {
-                Ok(s) => s,
-                Err(e) => {
-                    eprintln!("跳过存档 {}: {}", path.display(), e);
-                    return None;
-                }
-            };
-
-            // 转换为 JSON 并提取信息
-            let save_json = match serde_json::to_value(&save) {
-                Ok(j) => j,
-                Err(e) => {
-                    eprintln!("JSON转换失败 {}: {}", path.display(), e);
-                    return None;
-                }
-            };
-
-            let current_level = cli_handlers::extract_current_level(&save_json);
-            let actual_difficulty = cli_handlers::extract_difficulty_label(&save_json);
-
-            let date = match cli_handlers::get_modified_date(&path) {
-                Ok(d) => d,
-                Err(e) => {
-                    eprintln!("获取日期失败 {}: {}", path.display(), e);
-                    return None;
-                }
-            };
-
-            let file_name = path
-                .file_name()
-                .and_then(|n| n.to_str())
-                .unwrap_or("unknown");
-            let save_name = extract_archive_name(file_name);
-            let is_visible = visible_saves.contains(save_name);
-
-            match save_utils::build_save_info(
-                (i + 1) as u32,
-                &path,
-                current_level,
-                actual_difficulty,
-                date,
-            ) {
-                Ok(mut info) => {
-                    info.is_visible = Some(is_visible);
-                    Some(info)
-                }
-                Err(e) => {
-                    eprintln!("跳过存档 {}: {}", path.display(), e);
-                    None
-                }
-            }
-        })
+        .filter_map(|(i, path)| process_save_file(i, &path, &visible_saves))
         .collect();
-
-    // 过滤掉 None 值
-    let result: Vec<SaveFileInfo> = results.into_iter().flatten().collect();
 
     let elapsed = start_time.elapsed();
     println!(
         "=== load_all_saves 完成: 成功加载 {}/{} 个存档，耗时 {:.2}ms ===",
-        result.len(),
+        results.len(),
         path_count,
         elapsed.as_secs_f64() * 1000.0
     );
 
-    Ok(result)
+    Ok(results)
+}
+
+/// 处理单个存档文件
+fn process_save_file(
+    index: usize,
+    path: &PathBuf,
+    visible_saves: &std::collections::HashSet<String>,
+) -> Option<SaveFileInfo> {
+    // 解析存档文件
+    let save = cli_handlers::parse_sav_file(path).ok()?;
+
+    // 转换为 JSON 并提取信息
+    let save_json = serde_json::to_value(&save).ok()?;
+    let current_level = cli_handlers::extract_current_level(&save_json);
+    let actual_difficulty = cli_handlers::extract_difficulty_label(&save_json);
+    let date = cli_handlers::get_modified_date(path).ok()?;
+
+    let file_name = path.file_name()?.to_str()?;
+    let save_name = extract_archive_name(file_name);
+    let is_visible = visible_saves.contains(save_name);
+
+    let mut info = save_utils::build_save_info(
+        (index + 1) as u32,
+        path,
+        current_level,
+        actual_difficulty,
+        date,
+    )
+    .ok()?;
+
+    info.is_visible = Some(is_visible);
+    Some(info)
 }
 
 #[tauri::command]
@@ -150,9 +126,7 @@ fn open_save_games_folder() -> Result<(), String> {
 
     #[cfg(target_os = "windows")]
     {
-        // 使用 explorer /e,<path> 格式确保以资源管理器模式打开指定文件夹
         let path_str = save_games_path.to_str().ok_or("路径包含无效字符")?;
-
         Command::new("explorer")
             .args(["/e,", path_str])
             .spawn()
@@ -250,13 +224,12 @@ fn clear_saved_password_command() -> Result<(), String> {
 
 #[tauri::command]
 fn get_player_data(file_path: String) -> Result<Value, String> {
-    let path = Path::new(&file_path); // 将 String 转换为 &Path
-    let save = cli_handlers::parse_sav_file(path)?; // 传入 &Path 参数
+    let path = Path::new(&file_path);
+    let save = cli_handlers::parse_sav_file(path)?;
     let save_json = serde_json::to_value(&save).map_err(|e| e.to_string())?;
 
     let (ids, sanities, inventories) = player_data::extract_player_data(&save_json);
 
-    // 构造返回的 JSON 对象
     Ok(json!({
         "ids": ids,
         "sanities": sanities,
@@ -272,24 +245,20 @@ fn handle_edit_save(json_input: Value) -> Result<String, String> {
 
     let output_dir = save_data
         .get("outputDir")
-        .and_then(|v| v.as_str())
+        .and_then(Value::as_str)
         .ok_or("Missing or invalid 'outputDir' in saveData")?;
 
     let json_data = save_data
         .get("jsonData")
-        .and_then(|v| v.as_object())
+        .and_then(Value::as_object)
         .ok_or("Missing or invalid 'jsonData' in saveData")?;
 
-    // 将 serde_json::Map 转换为 serde_json::Value::Object
-    let json_value = serde_json::Value::Object(json_data.clone());
-
+    let json_value = Value::Object(json_data.clone());
     save_editor::edit_save_file(&json_value, output_dir)
 }
 
 #[tauri::command]
 fn convert_sav_to_json(file_path: String) -> Result<Value, String> {
-    use std::path::Path;
-
     println!("🔄 开始转换sav文件到JSON: {}", file_path);
 
     let path = Path::new(&file_path);
@@ -297,19 +266,13 @@ fn convert_sav_to_json(file_path: String) -> Result<Value, String> {
         return Err(format!("文件不存在: {}", file_path));
     }
 
-    // 复用优化后的 parse_sav_file 函数
     let save = cli_handlers::parse_sav_file(path)?;
-
-    // 转换为JSON值
     let save_json = serde_json::to_value(&save).map_err(|e| format!("转换为JSON失败: {}", e))?;
-
-    // 使用pretty格式输出，便于阅读和编辑
     let json_string =
         serde_json::to_string_pretty(&save_json).map_err(|e| format!("JSON格式化失败: {}", e))?;
 
     println!("✅ sav文件成功转换为JSON，长度: {}字符", json_string.len());
 
-    // 返回包含json字段的对象，符合前端期望
     Ok(json!({
         "success": true,
         "json": json_string
@@ -318,9 +281,7 @@ fn convert_sav_to_json(file_path: String) -> Result<Value, String> {
 
 #[tauri::command]
 fn convert_json_to_sav(json_content: String, output_path: String) -> Result<Value, String> {
-    use std::fs::File;
     use std::io::{BufWriter, Write};
-    use std::path::Path;
 
     println!("🔄 开始将JSON转换回sav文件: {}", output_path);
 
@@ -332,34 +293,31 @@ fn convert_json_to_sav(json_content: String, output_path: String) -> Result<Valu
     }
 
     // 解析JSON内容
-    let json_value: serde_json::Value =
+    let json_value: Value =
         serde_json::from_str(&json_content).map_err(|e| format!("JSON解析失败: {}", e))?;
 
-    // 验证JSON结构是否包含必要的root字段
-    if !json_value.get("root").is_some() {
+    // 验证JSON结构
+    if json_value.get("root").is_none() {
         return Err("JSON数据缺少必要的root字段".to_string());
     }
 
-    // 从JSON重建Save对象 - 使用serde_json::from_value
-    let save: uesave::Save = serde_json::from_value(json_value.clone())
-        .map_err(|e| format!("从JSON重建Save对象失败: {}", e))?;
+    // 从JSON重建Save对象
+    let save: uesave::Save =
+        serde_json::from_value(json_value).map_err(|e| format!("从JSON重建Save对象失败: {}", e))?;
 
     // 创建输出文件
-    let file = File::create(&output_path).map_err(|e| format!("创建输出文件失败: {}", e))?;
+    let file = fs::File::create(&output_path).map_err(|e| format!("创建输出文件失败: {}", e))?;
     let mut writer = BufWriter::new(file);
 
-    // 写入sav文件 - 使用与save_editor相同的方式
     save.write(&mut writer)
         .map_err(|e| format!("写入sav文件失败: {:?}", e))?;
 
-    // 确保数据完全写入磁盘
     writer
         .flush()
         .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
 
     println!("✅ JSON数据成功转换并保存到sav文件: {}", output_path);
 
-    // 返回包含success字段的对象，符合前端期望
     Ok(json!({
         "success": true,
         "message": "JSON数据成功转换并保存到sav文件"
@@ -373,8 +331,9 @@ fn get_local_appdata() -> Result<String, String> {
 
 #[tauri::command]
 fn ensure_dir_exists(path: String) -> Result<(), String> {
-    if !Path::new(&path).exists() {
-        fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    let path = Path::new(&path);
+    if !path.exists() {
+        fs::create_dir_all(path).map_err(|e| e.to_string())?;
     }
     Ok(())
 }
@@ -386,7 +345,6 @@ fn handle_new_save(save_data: new_save::SaveData) -> Result<(), String> {
 
 #[tauri::command]
 fn restart_app(app: tauri::AppHandle) -> Result<(), String> {
-    // 使用Tauri 2.0的API重启应用
     app.restart();
 }
 

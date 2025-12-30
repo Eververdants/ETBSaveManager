@@ -4,38 +4,42 @@
     <div class="content-area">
       <!-- 枢纽解锁设置 -->
       <div class="setting-group">
-        <div class="section-header">{{ $t('sidebar.unlockHub') }}</div>
-        
+        <div class="section-header">{{ $t("sidebar.unlockHub") }}</div>
+
         <div class="setting-item">
           <div class="setting-icon">
             <font-awesome-icon :icon="['fas', 'lock']" />
           </div>
           <div class="setting-details">
-            <div class="setting-title">{{ $t('sidebar.unlockHub') }}</div>
-            <div class="setting-description">{{ $t('sidebar.unlockHubSubtitle') }}</div>
+            <div class="setting-title">{{ $t("sidebar.unlockHub") }}</div>
+            <div class="setting-description">
+              {{ $t("sidebar.unlockHubSubtitle") }}
+            </div>
           </div>
           <div class="setting-action">
             <label class="switch">
-              <input type="checkbox" v-model="isHubUnlocked" @change="handleHubUnlockChange">
+              <input
+                type="checkbox"
+                v-model="isHubUnlocked"
+                @change="handleHubUnlockChange"
+              />
               <span class="slider"></span>
             </label>
           </div>
         </div>
-
-
       </div>
 
       <!-- 功能区域（仅在解锁后显示） -->
       <div v-if="isHubUnlocked" class="feature-section">
-        <div class="section-header">{{ $t('sidebar.featureOptions') }}</div>
+        <div class="section-header">{{ $t("sidebar.featureOptions") }}</div>
         <div class="feature-grid">
           <div class="feature-card">
             <div class="feature-icon">
               <font-awesome-icon :icon="['fas', 'database']" />
             </div>
             <div class="feature-content">
-              <h3>{{ $t('sidebar.archiveDataEdit') }}</h3>
-              <p>{{ $t('sidebar.archiveDataEditDesc') }}</p>
+              <h3>{{ $t("sidebar.archiveDataEdit") }}</h3>
+              <p>{{ $t("sidebar.archiveDataEditDesc") }}</p>
             </div>
           </div>
         </div>
@@ -46,38 +50,38 @@
 
 <script>
 export default {
-  name: 'CoreArchive',
+  name: "CoreArchive",
   data() {
     return {
-      isHubUnlocked: false
-    }
+      isHubUnlocked: false,
+    };
   },
   methods: {
     handleHubUnlockChange() {
       // 这里可以添加解锁逻辑，比如保存到本地存储
       if (this.isHubUnlocked) {
-        console.log('The Hub 已解锁');
+        console.log("The Hub 已解锁");
         // 可以在这里添加解锁成功的提示或其他逻辑
       } else {
-        console.log('The Hub 已锁定');
+        console.log("The Hub 已锁定");
         // 可以在这里添加锁定逻辑
       }
-    }
+    },
   },
   mounted() {
     // 从本地存储恢复解锁状态
-    const savedState = localStorage.getItem('hubUnlocked');
+    const savedState = localStorage.getItem("hubUnlocked");
     if (savedState !== null) {
-      this.isHubUnlocked = savedState === 'true';
+      this.isHubUnlocked = savedState === "true";
     }
   },
   watch: {
     isHubUnlocked(newValue) {
       // 保存解锁状态到本地存储
-      localStorage.setItem('hubUnlocked', newValue);
-    }
-  }
-}
+      localStorage.setItem("hubUnlocked", newValue);
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -205,8 +209,6 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(20px);
 }
-
-
 
 /* 简化功能区域样式 */
 .feature-section {

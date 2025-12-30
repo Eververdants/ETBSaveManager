@@ -5,38 +5,56 @@
         <Transition name="modal-scale" appear>
           <div class="selector-modal">
             <div class="modal-header">
-              <h3>{{ $t('inventory.selectItem') }}</h3>
+              <h3>{{ $t("inventory.selectItem") }}</h3>
               <button class="close-btn" @click="close">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <path
+                    d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
                 </svg>
               </button>
             </div>
-            
+
             <div class="items-grid">
               <TransitionGroup name="item-appear" appear>
-                <div 
-                  v-for="item in availableItems" 
+                <div
+                  v-for="item in availableItems"
                   :key="item.id"
                   class="item-card"
-                  :class="{ 'selected': selectedItem === item.id }"
+                  :class="{ selected: selectedItem === item.id }"
                   @click="selectItem(item.id)"
                 >
-                  <LazyImage 
-                    :src="`/icons/ETB_UI/${item.image}`" 
+                  <LazyImage
+                    :src="`/icons/ETB_UI/${item.image}`"
                     :alt="$t(`inventory.items.${item.id}`)"
                     image-class="item-image"
                   />
-                  <span class="item-name">{{ $t(`inventory.items.${item.id}`) }}</span>
+                  <span class="item-name">{{
+                    $t(`inventory.items.${item.id}`)
+                  }}</span>
                 </div>
-                
-                <div key="remove" class="item-card remove-card" @click="selectItem(null)">
+
+                <div
+                  key="remove"
+                  class="item-card remove-card"
+                  @click="selectItem(null)"
+                >
                   <div class="remove-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <path
+                        d="M18 6L6 18M6 6L18 18"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                      />
                     </svg>
                   </div>
-                  <span class="item-name">{{ $t('inventory.removeItem') }}</span>
+                  <span class="item-name">{{
+                    $t("inventory.removeItem")
+                  }}</span>
                 </div>
               </TransitionGroup>
             </div>
@@ -48,64 +66,64 @@
 </template>
 
 <script>
-import LazyImage from './LazyImage.vue'
+import LazyImage from "./LazyImage.vue";
 
 export default {
-  name: 'InventoryItemSelector',
+  name: "InventoryItemSelector",
   components: {
-    LazyImage
+    LazyImage,
   },
   props: {
     visible: {
       type: Boolean,
-      default: false
+      default: false,
     },
     selectedItem: {
       type: String,
-      default: null
-    }
+      default: null,
+    },
   },
-  emits: ['update:visible', 'select'],
+  emits: ["update:visible", "select"],
   computed: {
     availableItems() {
       return [
-        { id: 'AlmondConcentrate', image: 'AlmondConcentrate.png' },
-        { id: 'BugSpray', image: 'BugSpray.png' },
-        { id: 'Camera', image: 'Camera.png' },
-        { id: 'AlmondWater', image: 'AlmondWater.png' },
-        { id: 'Chainsaw', image: 'Chainsaw.png' },
-        { id: 'Crowbar', image: 'Crowbar.png' },
-        { id: 'DivingHelmet', image: 'DivingHelmet.png' },
-        { id: 'EnergyBar', image: 'EnergyBar.png' },
-        { id: 'Firework', image: 'Firework.png' },
-        { id: 'Flaregun', image: 'Flaregun.png' },
-        { id: 'Flashlight', image: 'Flashlight.png' },
-        { id: 'GlowstickBlue', image: 'GlowstickBlue.png' },
-        { id: 'GlowStick', image: 'GlowStick.png' },
-        { id: 'GlowstickRed', image: 'GlowstickRed.png' },
-        { id: 'GlowstickYellow', image: 'GlowstickYellow.png' },
-        { id: 'Knife', image: 'Knife.png' },
-        { id: 'LiquidPain', image: 'LiquidPain.png' },
-        { id: 'Juice', image: 'Juice.png' },
-        { id: 'Rope', image: 'Rope.png' },
-        { id: 'LiDAR', image: 'LiDAR.png' },
-        { id: 'Thermometer', image: 'Thermometer.png' },
-        { id: 'Ticket', image: 'Ticket.png' },
-        { id: 'Toy', image: 'Teddy_Bear.png' },
-        { id: 'WalkieTalkie', image: 'WalkieTalkie.png' },
-        { id: 'MothJelly', image: 'MothJelly.png' }
+        { id: "AlmondConcentrate", image: "AlmondConcentrate.png" },
+        { id: "BugSpray", image: "BugSpray.png" },
+        { id: "Camera", image: "Camera.png" },
+        { id: "AlmondWater", image: "AlmondWater.png" },
+        { id: "Chainsaw", image: "Chainsaw.png" },
+        { id: "Crowbar", image: "Crowbar.png" },
+        { id: "DivingHelmet", image: "DivingHelmet.png" },
+        { id: "EnergyBar", image: "EnergyBar.png" },
+        { id: "Firework", image: "Firework.png" },
+        { id: "Flaregun", image: "Flaregun.png" },
+        { id: "Flashlight", image: "Flashlight.png" },
+        { id: "GlowstickBlue", image: "GlowstickBlue.png" },
+        { id: "GlowStick", image: "GlowStick.png" },
+        { id: "GlowstickRed", image: "GlowstickRed.png" },
+        { id: "GlowstickYellow", image: "GlowstickYellow.png" },
+        { id: "Knife", image: "Knife.png" },
+        { id: "LiquidPain", image: "LiquidPain.png" },
+        { id: "Juice", image: "Juice.png" },
+        { id: "Rope", image: "Rope.png" },
+        { id: "LiDAR", image: "LiDAR.png" },
+        { id: "Thermometer", image: "Thermometer.png" },
+        { id: "Ticket", image: "Ticket.png" },
+        { id: "Toy", image: "Teddy_Bear.png" },
+        { id: "WalkieTalkie", image: "WalkieTalkie.png" },
+        { id: "MothJelly", image: "MothJelly.png" },
       ];
-    }
+    },
   },
   methods: {
     close() {
-      this.$emit('update:visible', false);
+      this.$emit("update:visible", false);
     },
     selectItem(itemId) {
-      this.$emit('select', itemId);
+      this.$emit("select", itemId);
       this.close();
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -289,13 +307,13 @@ export default {
     width: 95%;
     margin: 20px;
   }
-  
+
   .items-grid {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 12px;
     padding: 16px;
   }
-  
+
   .item-image {
     width: 40px;
     height: 40px;

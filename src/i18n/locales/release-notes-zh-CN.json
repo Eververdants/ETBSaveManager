@@ -1,1 +1,16 @@
-{"viewAllVersions": "查看全部 {count} 个版本", "back": "返回", "releaseNotes": "更新公告", "versions": "个版本", "featured": "精选", "version": "版本", "date": "日期", "noReleaseNotes": "暂无更新公告", "categories": {"newFeatures": "✨ 新功能", "improvements": "🔧 改进", "bugFixes": "🐛 修复", "performance": "⚡ 性能"}}
+{
+  "viewAllVersions": "查看全部 {count} 个版本",
+  "back": "返回",
+  "releaseNotes": "更新公告",
+  "versions": "个版本",
+  "featured": "精选",
+  "version": "版本",
+  "date": "日期",
+  "noReleaseNotes": "暂无更新公告",
+  "categories": {
+    "newFeatures": "✨ 新功能",
+    "improvements": "🔧 改进",
+    "bugFixes": "🐛 修复",
+    "performance": "⚡ 性能"
+  }
+}

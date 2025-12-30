@@ -14,7 +14,7 @@
  */
 
 /* 导入主题颜色系统 */
-@import './themes/index.css';
+@import "./themes/index.css";
 
 /* ==========================================
  * 圆角系统 (Border Radius System)
@@ -22,16 +22,16 @@
  * ========================================== */
 :root {
   /* 基础圆角值 */
-  --radius-xs: 4px;     /* 小元素：标签、按钮等 */
-  --radius-sm: 8px;     /* 小型组件：输入框、小卡片 */
-  --radius-md: 12px;    /* 中型组件：表单元素、按钮 */
-  --radius-lg: 16px;    /* 大型组件：卡片、面板 */
-  --radius-xl: 20px;    /* 特大组件：模态框、大卡片 */
-  --radius-2xl: 24px;   /* 超大组件：特殊容器 */
+  --radius-xs: 4px; /* 小元素：标签、按钮等 */
+  --radius-sm: 8px; /* 小型组件：输入框、小卡片 */
+  --radius-md: 12px; /* 中型组件：表单元素、按钮 */
+  --radius-lg: 16px; /* 大型组件：卡片、面板 */
+  --radius-xl: 20px; /* 特大组件：模态框、大卡片 */
+  --radius-2xl: 24px; /* 超大组件：特殊容器 */
 
   /* 特殊圆角值 */
-  --radius-pill: 9999px;  /* 胶囊形状：标签、按钮 */
-  --radius-circle: 50%;   /* 圆形：头像、图标按钮 */
+  --radius-pill: 9999px; /* 胶囊形状：标签、按钮 */
+  --radius-circle: 50%; /* 圆形：头像、图标按钮 */
 
   /* 组件特定圆角 */
   --radius-sidebar: 16px;
@@ -51,16 +51,16 @@
  * ========================================== */
 :root {
   /* 基础间距单位 */
-  --space-1: 4px;     /* 极小间距 */
-  --space-2: 8px;     /* 小间距 */
-  --space-3: 12px;    /* 中小间距 */
-  --space-4: 16px;    /* 中等间距 */
-  --space-5: 20px;    /* 中大间距 */
-  --space-6: 24px;    /* 大间距 */
-  --space-8: 32px;    /* 特大间距 */
-  --space-10: 40px;   /* 超大间距 */
-  --space-12: 48px;   /* 极大间距 */
-  --space-16: 64px;   /* 最大间距 */
+  --space-1: 4px; /* 极小间距 */
+  --space-2: 8px; /* 小间距 */
+  --space-3: 12px; /* 中小间距 */
+  --space-4: 16px; /* 中等间距 */
+  --space-5: 20px; /* 中大间距 */
+  --space-6: 24px; /* 大间距 */
+  --space-8: 32px; /* 特大间距 */
+  --space-10: 40px; /* 超大间距 */
+  --space-12: 48px; /* 极大间距 */
+  --space-16: 64px; /* 最大间距 */
 
   /* 组件特定间距 */
   --spacing-component-padding: var(--space-4);
@@ -178,7 +178,6 @@ button:active,
   transform: scale(0.98);
   transition: transform 0.1s ease;
 }
-
 
 /* ==========================================
  * Toast 通知样式 (Toast Notification Styles)

@@ -3,15 +3,25 @@
     <div class="config-grid">
       <!-- 存档名称 - 占满第一行 -->
       <div class="config-card full-width">
-        <h3 class="form-section-title">{{ $t('createArchive.archiveName') }}</h3>
+        <h3 class="form-section-title">
+          {{ $t("createArchive.archiveName") }}
+        </h3>
         <div class="form-group">
-          <label class="form-label">{{ $t('createArchive.archiveName') }}</label>
-          <input :value="archiveName" @input="$emit('update:archiveName', $event.target.value)" type="text" class="form-input"
-            :placeholder="$t('createArchive.archiveNamePlaceholder')" maxlength="50" />
+          <label class="form-label">{{
+            $t("createArchive.archiveName")
+          }}</label>
+          <input
+            :value="archiveName"
+            @input="$emit('update:archiveName', $event.target.value)"
+            type="text"
+            class="form-input"
+            :placeholder="$t('createArchive.archiveNamePlaceholder')"
+            maxlength="50"
+          />
           <transition name="error-fade">
             <div v-if="archiveName.includes('_')" class="error-message">
               <font-awesome-icon :icon="['fas', 'exclamation-triangle']" />
-              {{ $t('createArchive.archiveNameError') }}
+              {{ $t("createArchive.archiveNameError") }}
             </div>
           </transition>
         </div>
@@ -19,33 +29,54 @@
 
       <!-- 存档难度 -->
       <div class="config-card">
-        <h3 class="form-section-title">{{ $t('createArchive.difficulty') }}</h3>
+        <h3 class="form-section-title">{{ $t("createArchive.difficulty") }}</h3>
         <div class="difficulty-grid">
-          <div v-for="difficulty in difficultyLevels" :key="difficulty.value" class="difficulty-option" :class="{
-            selected: selectedDifficulty === difficulty.value,
-            disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal'
-          }" @click="$emit('select-difficulty', difficulty.value)">
+          <div
+            v-for="difficulty in difficultyLevels"
+            :key="difficulty.value"
+            class="difficulty-option"
+            :class="{
+              selected: selectedDifficulty === difficulty.value,
+              disabled:
+                selectedGameMode === 'singleplayer' &&
+                difficulty.value !== 'normal',
+            }"
+            @click="$emit('select-difficulty', difficulty.value)"
+          >
             <div class="difficulty-icon">
               <font-awesome-icon :icon="difficulty.icon" />
             </div>
-            <span class="difficulty-label">{{ $t(`createArchive.difficultyLevels.${difficulty.value}`) }}</span>
+            <span class="difficulty-label">{{
+              $t(`createArchive.difficultyLevels.${difficulty.value}`)
+            }}</span>
           </div>
         </div>
       </div>
 
       <!-- 实际难度 -->
       <div class="config-card">
-        <h3 class="form-section-title">{{ $t('createArchive.actualDifficulty') }}</h3>
+        <h3 class="form-section-title">
+          {{ $t("createArchive.actualDifficulty") }}
+        </h3>
         <div class="difficulty-grid">
-          <div v-for="difficulty in difficultyLevels" :key="`actual-${difficulty.value}`"
-            class="difficulty-option" :class="{
+          <div
+            v-for="difficulty in difficultyLevels"
+            :key="`actual-${difficulty.value}`"
+            class="difficulty-option"
+            :class="{
               selected: selectedActualDifficulty === difficulty.value,
-              disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal'
-            }" @click="$emit('select-actual-difficulty', difficulty.value)">
+              disabled:
+                selectedGameMode === 'singleplayer' &&
+                difficulty.value !== 'normal',
+            }"
+            @click="$emit('select-actual-difficulty', difficulty.value)"
+          >
             <div class="difficulty-icon">
               <font-awesome-icon :icon="difficulty.icon" />
             </div>
-            <span class="difficulty-label">{{ $t(`createArchive.difficultyLevels.${difficulty.value}`) }}</span>
+            <span class="difficulty-label">{{
+              $t(`createArchive.difficultyLevels.${difficulty.value}`)
+            }}</span>
           </div>
         </div>
       </div>
@@ -55,36 +86,40 @@
 
 <script>
 export default {
-  name: 'Step2ConfigArchive',
+  name: "Step2ConfigArchive",
   props: {
     archiveName: {
       type: String,
-      default: ''
+      default: "",
     },
     selectedGameMode: {
       type: String,
-      default: 'multiplayer'
+      default: "multiplayer",
     },
     selectedDifficulty: {
       type: String,
-      default: 'normal'
+      default: "normal",
     },
     selectedActualDifficulty: {
       type: String,
-      default: 'normal'
+      default: "normal",
     },
     difficultyLevels: {
       type: Array,
       default: () => [
-        { value: 'easy', label: 'easy', icon: ['fas', 'smile'] },
-        { value: 'normal', label: 'normal', icon: ['fas', 'meh'] },
-        { value: 'hard', label: 'hard', icon: ['fas', 'frown'] },
-        { value: 'nightmare', label: 'nightmare', icon: ['fas', 'skull'] }
-      ]
-    }
+        { value: "easy", label: "easy", icon: ["fas", "smile"] },
+        { value: "normal", label: "normal", icon: ["fas", "meh"] },
+        { value: "hard", label: "hard", icon: ["fas", "frown"] },
+        { value: "nightmare", label: "nightmare", icon: ["fas", "skull"] },
+      ],
+    },
   },
-  emits: ['update:archiveName', 'select-difficulty', 'select-actual-difficulty']
-}
+  emits: [
+    "update:archiveName",
+    "select-difficulty",
+    "select-actual-difficulty",
+  ],
+};
 </script>
 
 <style scoped>
@@ -97,12 +132,14 @@ export default {
 }
 
 .config-card {
-  background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  background: linear-gradient(
+    145deg,
+    var(--bg-secondary) 0%,
+    var(--bg-tertiary) 100%
+  );
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.05),
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -111,20 +148,23 @@ export default {
 }
 
 .config-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 20px;
   right: 20px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
   pointer-events: none;
 }
 
 .config-card:hover {
-  box-shadow: 
-    0 8px 30px rgba(0, 0, 0, 0.1),
-    0 2px 6px rgba(0, 0, 0, 0.06),
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -144,10 +184,14 @@ export default {
 }
 
 .form-section-title::before {
-  content: '';
+  content: "";
   width: 4px;
   height: 16px;
-  background: linear-gradient(180deg, var(--accent-color), rgba(var(--accent-color-rgb), 0.5));
+  background: linear-gradient(
+    180deg,
+    var(--accent-color),
+    rgba(var(--accent-color-rgb), 0.5)
+  );
   border-radius: 2px;
 }
 
@@ -172,7 +216,11 @@ export default {
   padding: 14px 18px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    145deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-secondary) 100%
+  );
   color: var(--text-primary);
   font-size: 14px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -187,8 +235,7 @@ export default {
 .form-input:focus {
   outline: none;
   border-color: var(--accent-color);
-  box-shadow: 
-    0 0 0 3px rgba(var(--accent-color-rgb), 0.15),
+  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15),
     inset 0 1px 2px rgba(0, 0, 0, 0.05);
   background: var(--bg-tertiary);
 }
@@ -236,7 +283,11 @@ export default {
   gap: 10px;
   padding: 18px 12px;
   border-radius: 14px;
-  background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    145deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-secondary) 100%
+  );
   border: 2px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -245,10 +296,14 @@ export default {
 }
 
 .difficulty-option::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(var(--accent-color-rgb), 0.1) 0%, transparent 70%);
+  background: radial-gradient(
+    circle at center,
+    rgba(var(--accent-color-rgb), 0.1) 0%,
+    transparent 70%
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -265,9 +320,12 @@ export default {
 
 .difficulty-option.selected {
   border-color: var(--accent-color);
-  background: linear-gradient(145deg, rgba(var(--accent-color-rgb), 0.15) 0%, rgba(var(--accent-color-rgb), 0.08) 100%);
-  box-shadow: 
-    0 0 0 2px rgba(var(--accent-color-rgb), 0.2),
+  background: linear-gradient(
+    145deg,
+    rgba(var(--accent-color-rgb), 0.15) 0%,
+    rgba(var(--accent-color-rgb), 0.08) 100%
+  );
+  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2),
     0 4px 12px rgba(var(--accent-color-rgb), 0.15);
 }
 
@@ -308,7 +366,7 @@ export default {
   .config-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .difficulty-grid {
     grid-template-columns: repeat(2, 1fr);
   }

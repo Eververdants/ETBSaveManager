@@ -7,14 +7,20 @@
             <font-awesome-icon :icon="['fas', 'arrow-left']" />
           </button>
 
-          <button class="cleanup-expired-btn" @click="cleanupExpiredCache" :disabled="isCleaning">
+          <button
+            class="cleanup-expired-btn"
+            @click="cleanupExpiredCache"
+            :disabled="isCleaning"
+          >
             <font-awesome-icon :icon="['fas', 'trash']" />
             {{ t("settings.steamApi.cleanupExpired") }}
           </button>
 
           <!-- SteamID显示切换按钮 -->
           <button class="toggle-steamid-btn" @click="toggleSteamIdDisplay">
-            <font-awesome-icon :icon="showRawSteamId ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
+            <font-awesome-icon
+              :icon="showRawSteamId ? ['fas', 'eye-slash'] : ['fas', 'eye']"
+            />
             {{
               showRawSteamId
                 ? t("settings.steamApi.hideRawSteamId")
@@ -38,7 +44,11 @@
             {{ t("settings.steamApi.search") }}
           </label>
           <div class="search-input-group">
-            <input v-model="searchQuery" :placeholder="t('settings.steamApi.searchPlaceholder')" class="search-input" />
+            <input
+              v-model="searchQuery"
+              :placeholder="t('settings.steamApi.searchPlaceholder')"
+              class="search-input"
+            />
           </div>
         </div>
 
@@ -47,35 +57,48 @@
             <font-awesome-icon :icon="['fas', 'sort']" class="label-icon" />
             {{ t("settings.steamApi.sortByLabel") }}
           </label>
-          <CustomDropdown v-model="sortBy" :options="[
-            {
-              value: 'lastUpdated',
-              label: t('settings.steamApi.sortBy.lastUpdated'),
-            },
-            {
-              value: 'username',
-              label: t('settings.steamApi.sortBy.username'),
-            },
-            {
-              value: 'callCount',
-              label: t('settings.steamApi.sortBy.callCount'),
-            },
-            {
-              value: 'steamId',
-              label: t('settings.steamApi.sortBy.steamId'),
-            },
-          ]" :placeholder="t('settings.steamApi.sortBy.lastUpdated')" class="dropdown-control" />
+          <CustomDropdown
+            v-model="sortBy"
+            :options="[
+              {
+                value: 'lastUpdated',
+                label: t('settings.steamApi.sortBy.lastUpdated'),
+              },
+              {
+                value: 'username',
+                label: t('settings.steamApi.sortBy.username'),
+              },
+              {
+                value: 'callCount',
+                label: t('settings.steamApi.sortBy.callCount'),
+              },
+              {
+                value: 'steamId',
+                label: t('settings.steamApi.sortBy.steamId'),
+              },
+            ]"
+            :placeholder="t('settings.steamApi.sortBy.lastUpdated')"
+            class="dropdown-control"
+          />
         </div>
 
         <div class="form-group">
           <label class="form-label">
-            <font-awesome-icon :icon="['fas', 'arrows-up-down']" class="label-icon" />
+            <font-awesome-icon
+              :icon="['fas', 'arrows-up-down']"
+              class="label-icon"
+            />
             {{ t("settings.steamApi.sortOrderLabel") }}
           </label>
-          <CustomDropdown v-model="sortOrder" :options="[
-            { value: 'desc', label: t('settings.steamApi.sortOrder.desc') },
-            { value: 'asc', label: t('settings.steamApi.sortOrder.asc') },
-          ]" :placeholder="t('settings.steamApi.sortOrder.desc')" class="dropdown-control" />
+          <CustomDropdown
+            v-model="sortOrder"
+            :options="[
+              { value: 'desc', label: t('settings.steamApi.sortOrder.desc') },
+              { value: 'asc', label: t('settings.steamApi.sortOrder.asc') },
+            ]"
+            :placeholder="t('settings.steamApi.sortOrder.desc')"
+            class="dropdown-control"
+          />
         </div>
 
         <div class="form-group">
@@ -84,15 +107,28 @@
             {{ t("settings.steamApi.minCallCount") }}
           </label>
           <div class="number-input-wrapper">
-            <input v-model.number="minCallCount" type="number" :placeholder="t('settings.steamApi.minCallCount')"
-              class="filter-input" min="0" />
+            <input
+              v-model.number="minCallCount"
+              type="number"
+              :placeholder="t('settings.steamApi.minCallCount')"
+              class="filter-input"
+              min="0"
+            />
             <div class="number-spinner">
-              <button type="button" class="spinner-btn spinner-up"
-                @click="minCallCount = Math.max(0, (minCallCount || 0) + 1)" tabindex="-1">
+              <button
+                type="button"
+                class="spinner-btn spinner-up"
+                @click="minCallCount = Math.max(0, (minCallCount || 0) + 1)"
+                tabindex="-1"
+              >
                 <font-awesome-icon :icon="['fas', 'chevron-up']" />
               </button>
-              <button type="button" class="spinner-btn spinner-down"
-                @click="minCallCount = Math.max(0, (minCallCount || 0) - 1)" tabindex="-1">
+              <button
+                type="button"
+                class="spinner-btn spinner-down"
+                @click="minCallCount = Math.max(0, (minCallCount || 0) - 1)"
+                tabindex="-1"
+              >
                 <font-awesome-icon :icon="['fas', 'chevron-down']" />
               </button>
             </div>
@@ -100,7 +136,9 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" style="opacity: 0; pointer-events: none">占位</label>
+          <label class="form-label" style="opacity: 0; pointer-events: none"
+            >占位</label
+          >
           <button @click="clearFilters" class="clear-filters-btn">
             <font-awesome-icon :icon="['fas', 'times']" />
             {{ t("settings.steamApi.clearFilters") }}
@@ -113,7 +151,12 @@
           <thead>
             <tr>
               <th>
-                <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="checkbox" />
+                <input
+                  type="checkbox"
+                  :checked="isAllSelected"
+                  @change="toggleSelectAll"
+                  class="checkbox"
+                />
               </th>
               <th>{{ t("settings.steamApi.cacheTable.steamId") }}</th>
               <th>{{ t("settings.steamApi.cacheTable.username") }}</th>
@@ -125,8 +168,12 @@
           <tbody>
             <tr v-for="entry in paginatedEntries || []" :key="entry.steamId">
               <td>
-                <input type="checkbox" :checked="selectedEntries.has(entry.steamId)"
-                  @change="toggleEntrySelection(entry.steamId)" class="checkbox" />
+                <input
+                  type="checkbox"
+                  :checked="selectedEntries.has(entry.steamId)"
+                  @change="toggleEntrySelection(entry.steamId)"
+                  class="checkbox"
+                />
               </td>
               <td class="steam-id-cell">{{ maskSteamId(entry.steamId) }}</td>
               <td>{{ entry.username }}</td>
@@ -134,12 +181,19 @@
               <td>{{ entry.callCount }}</td>
               <td class="actions-cell">
                 <div class="action-buttons">
-                  <button @click="showCacheDetail(entry)" class="action-btn detail-btn"
-                    :title="t('settings.steamApi.viewDetail')">
+                  <button
+                    @click="showCacheDetail(entry)"
+                    class="action-btn detail-btn"
+                    :title="t('settings.steamApi.viewDetail')"
+                  >
                     <font-awesome-icon :icon="['fas', 'info-circle']" />
                   </button>
-                  <button @click="deleteEntry(entry)" class="action-btn delete-btn"
-                    :title="t('settings.steamApi.deleteEntry')" :disabled="isDeleting">
+                  <button
+                    @click="deleteEntry(entry)"
+                    class="action-btn delete-btn"
+                    :title="t('settings.steamApi.deleteEntry')"
+                    :disabled="isDeleting"
+                  >
                     <font-awesome-icon :icon="['fas', 'trash']" />
                   </button>
                 </div>
@@ -162,11 +216,22 @@
           }}
         </div>
         <div class="batch-buttons">
-          <button @click="batchRefresh" class="batch-btn refresh-batch-btn" :disabled="isRefreshing">
-            <font-awesome-icon :icon="['fas', 'sync']" :class="{ 'fa-spin': isRefreshing }" />
+          <button
+            @click="batchRefresh"
+            class="batch-btn refresh-batch-btn"
+            :disabled="isRefreshing"
+          >
+            <font-awesome-icon
+              :icon="['fas', 'sync']"
+              :class="{ 'fa-spin': isRefreshing }"
+            />
             {{ t("settings.steamApi.batchRefresh") }}
           </button>
-          <button @click="batchDelete" class="batch-btn delete-batch-btn" :disabled="isBatchDeleting">
+          <button
+            @click="batchDelete"
+            class="batch-btn delete-batch-btn"
+            :disabled="isBatchDeleting"
+          >
             <font-awesome-icon :icon="['fas', 'trash']" />
             {{ t("settings.steamApi.batchDelete") }}
           </button>
@@ -185,24 +250,44 @@
           }}
         </div>
         <div class="pagination-controls">
-          <button @click="changePage(1)" :disabled="currentPage === 1" class="pagination-btn">
+          <button
+            @click="changePage(1)"
+            :disabled="currentPage === 1"
+            class="pagination-btn"
+          >
             <font-awesome-icon :icon="['fas', 'angle-double-left']" />
           </button>
-          <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="pagination-btn">
+          <button
+            @click="changePage(currentPage - 1)"
+            :disabled="currentPage === 1"
+            class="pagination-btn"
+          >
             <font-awesome-icon :icon="['fas', 'angle-left']" />
           </button>
 
           <span class="pagination-numbers">
-            <button v-for="page in visiblePages" :key="page" @click="changePage(page)"
-              :class="['pagination-btn', { active: page === currentPage }]">
+            <button
+              v-for="page in visiblePages"
+              :key="page"
+              @click="changePage(page)"
+              :class="['pagination-btn', { active: page === currentPage }]"
+            >
               {{ page }}
             </button>
           </span>
 
-          <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="pagination-btn">
+          <button
+            @click="changePage(currentPage + 1)"
+            :disabled="currentPage === totalPages"
+            class="pagination-btn"
+          >
             <font-awesome-icon :icon="['fas', 'angle-right']" />
           </button>
-          <button @click="changePage(totalPages)" :disabled="currentPage === totalPages" class="pagination-btn">
+          <button
+            @click="changePage(totalPages)"
+            :disabled="currentPage === totalPages"
+            class="pagination-btn"
+          >
             <font-awesome-icon :icon="['fas', 'angle-double-right']" />
           </button>
         </div>
@@ -210,15 +295,23 @@
         <div class="page-size-selector">
           <div class="form-group">
             <label class="form-label">
-              <font-awesome-icon :icon="['fas', 'list-ol']" class="label-icon" />
+              <font-awesome-icon
+                :icon="['fas', 'list-ol']"
+                class="label-icon"
+              />
               {{ t("settings.steamApi.pageSize") }}
             </label>
-            <CustomDropdown v-model.number="pageSize" :options="[
-              { value: 10, label: '10' },
-              { value: 20, label: '20' },
-              { value: 50, label: '50' },
-              { value: 100, label: '100' },
-            ]" :placeholder="'10'" class="dropdown-control" />
+            <CustomDropdown
+              v-model.number="pageSize"
+              :options="[
+                { value: 10, label: '10' },
+                { value: 20, label: '20' },
+                { value: 50, label: '50' },
+                { value: 100, label: '100' },
+              ]"
+              :placeholder="'10'"
+              class="dropdown-control"
+            />
           </div>
         </div>
       </div>
@@ -231,7 +324,11 @@
 
     <!-- 缓存详情弹窗 -->
     <Transition name="modal">
-      <div v-if="showDetailModal && selectedCacheEntry" class="modal-overlay" @click="showDetailModal = false">
+      <div
+        v-if="showDetailModal && selectedCacheEntry"
+        class="modal-overlay"
+        @click="showDetailModal = false"
+      >
         <div class="modal-content cache-detail-modal" @click.stop>
           <div class="modal-header">
             <h3>{{ t("settings.steamApi.cacheDetail") }}</h3>
@@ -245,14 +342,16 @@
               <label>{{ t("settings.steamApi.cacheTable.steamId") }}:</label>
               <span class="steam-id-display">{{
                 selectedCacheEntry.steamId
-                }}</span>
+              }}</span>
             </div>
             <div class="detail-item">
               <label>{{ t("settings.steamApi.cacheTable.username") }}:</label>
               <span>{{ selectedCacheEntry.username }}</span>
             </div>
             <div class="detail-item">
-              <label>{{ t("settings.steamApi.cacheTable.lastUpdated") }}:</label>
+              <label
+                >{{ t("settings.steamApi.cacheTable.lastUpdated") }}:</label
+              >
               <span>{{ formatDate(selectedCacheEntry.lastUpdated) }}</span>
             </div>
             <div class="detail-item">
@@ -756,10 +855,12 @@ export default {
   padding: 0;
   padding-bottom: 30px;
   margin: 0;
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.95) 0%,
-      rgba(250, 250, 252, 0.9) 50%,
-      rgba(245, 247, 250, 0.85) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(250, 250, 252, 0.9) 50%,
+    rgba(245, 247, 250, 0.85) 100%
+  );
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   overflow: hidden;
@@ -774,27 +875,33 @@ export default {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.8) 50%,
-      transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    transparent 100%
+  );
   pointer-events: none;
 }
 
 [data-theme="dark"] .steam-cache-container {
-  background: linear-gradient(135deg,
-      rgba(30, 30, 35, 0.95) 0%,
-      rgba(25, 25, 30, 0.9) 50%,
-      rgba(20, 20, 25, 0.85) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 35, 0.95) 0%,
+    rgba(25, 25, 30, 0.9) 50%,
+    rgba(20, 20, 25, 0.85) 100%
+  );
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
 }
 
 [data-theme="dark"] .steam-cache-container::before {
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.15) 50%,
-      transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 100%
+  );
 }
 
 /* 返回按钮 - 紧凑设计 */
@@ -863,9 +970,11 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.9) 0%,
-      rgba(250, 250, 255, 0.7) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(250, 250, 255, 0.7) 100%
+  );
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: 16px;
@@ -884,10 +993,12 @@ export default {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.3) 50%,
-      transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
   transition: left 0.6s ease;
 }
 
@@ -902,19 +1013,23 @@ export default {
 }
 
 [data-theme="dark"] .cache-actions {
-  background: linear-gradient(135deg,
-      rgba(35, 35, 40, 0.9) 0%,
-      rgba(30, 30, 35, 0.7) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(35, 35, 40, 0.9) 0%,
+    rgba(30, 30, 35, 0.7) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="dark"] .cache-actions::before {
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.1) 50%,
-      transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
 }
 
 [data-theme="dark"] .cache-actions:hover {
@@ -939,9 +1054,11 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 11px 20px;
-  background: linear-gradient(135deg,
-      rgba(255, 59, 48, 0.9) 0%,
-      rgba(255, 45, 85, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 59, 48, 0.9) 0%,
+    rgba(255, 45, 85, 0.8) 100%
+  );
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: white;
@@ -976,9 +1093,11 @@ export default {
 }
 
 .cleanup-expired-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg,
-      rgba(255, 45, 85, 1) 0%,
-      rgba(255, 59, 48, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 45, 85, 1) 0%,
+    rgba(255, 59, 48, 0.95) 100%
+  );
   transform: translateY(-3px) scale(1.02);
   box-shadow: 0 8px 24px rgba(255, 59, 48, 0.35),
     0 4px 8px rgba(255, 59, 48, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -1004,9 +1123,11 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 11px 20px;
-  background: linear-gradient(135deg,
-      var(--primary) 0%,
-      rgba(0, 122, 255, 0.85) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    rgba(0, 122, 255, 0.85) 100%
+  );
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: white;
@@ -1041,9 +1162,11 @@ export default {
 }
 
 .toggle-steamid-btn:hover {
-  background: linear-gradient(135deg,
-      rgba(10, 132, 255, 1) 0%,
-      var(--primary) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(10, 132, 255, 1) 0%,
+    var(--primary) 100%
+  );
   transform: translateY(-3px) scale(1.02);
   box-shadow: 0 8px 24px rgba(0, 122, 255, 0.35),
     0 4px 8px rgba(0, 122, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -1062,9 +1185,11 @@ export default {
   font-weight: 600;
   color: var(--primary);
   padding: 10px 18px;
-  background: linear-gradient(135deg,
-      rgba(0, 122, 255, 0.08) 0%,
-      rgba(0, 122, 255, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.08) 0%,
+    rgba(0, 122, 255, 0.05) 100%
+  );
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
@@ -1075,9 +1200,11 @@ export default {
 }
 
 .cache-count-info:hover {
-  background: linear-gradient(135deg,
-      rgba(0, 122, 255, 0.12) 0%,
-      rgba(0, 122, 255, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.12) 0%,
+    rgba(0, 122, 255, 0.08) 100%
+  );
   border-color: rgba(0, 122, 255, 0.25);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.12),
@@ -1086,17 +1213,21 @@ export default {
 
 [data-theme="dark"] .cache-count-info {
   color: var(--primary);
-  background: linear-gradient(135deg,
-      rgba(10, 132, 255, 0.15) 0%,
-      rgba(10, 132, 255, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(10, 132, 255, 0.15) 0%,
+    rgba(10, 132, 255, 0.1) 100%
+  );
   border: 1px solid rgba(10, 132, 255, 0.25);
 }
 
 /* 搜索和过滤区域 - 磨砂玻璃卡片 */
 .search-filter-section {
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.85) 0%,
-      rgba(250, 250, 255, 0.65) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(250, 250, 255, 0.65) 100%
+  );
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.4);
@@ -1118,9 +1249,11 @@ export default {
 }
 
 [data-theme="dark"] .search-filter-section {
-  background: linear-gradient(135deg,
-      rgba(35, 35, 40, 0.85) 0%,
-      rgba(30, 30, 35, 0.65) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(35, 35, 40, 0.85) 0%,
+    rgba(30, 30, 35, 0.65) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -1294,9 +1427,11 @@ export default {
   justify-content: center;
   width: 24px;
   height: 18px;
-  background: linear-gradient(135deg,
-      rgba(0, 122, 255, 0.08) 0%,
-      rgba(0, 122, 255, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.08) 0%,
+    rgba(0, 122, 255, 0.05) 100%
+  );
   border: 1px solid rgba(0, 122, 255, 0.15);
   border-radius: 6px;
   color: var(--primary);
@@ -1307,9 +1442,11 @@ export default {
 }
 
 .spinner-btn:hover {
-  background: linear-gradient(135deg,
-      rgba(0, 122, 255, 0.15) 0%,
-      rgba(0, 122, 255, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.15) 0%,
+    rgba(0, 122, 255, 0.1) 100%
+  );
   border-color: rgba(0, 122, 255, 0.3);
   transform: scale(1.1);
   box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
@@ -1321,16 +1458,20 @@ export default {
 }
 
 [data-theme="dark"] .spinner-btn {
-  background: linear-gradient(135deg,
-      rgba(10, 132, 255, 0.15) 0%,
-      rgba(10, 132, 255, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(10, 132, 255, 0.15) 0%,
+    rgba(10, 132, 255, 0.1) 100%
+  );
   border: 1px solid rgba(10, 132, 255, 0.25);
 }
 
 [data-theme="dark"] .spinner-btn:hover {
-  background: linear-gradient(135deg,
-      rgba(10, 132, 255, 0.25) 0%,
-      rgba(10, 132, 255, 0.18) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(10, 132, 255, 0.25) 0%,
+    rgba(10, 132, 255, 0.18) 100%
+  );
   border-color: rgba(10, 132, 255, 0.4);
   box-shadow: 0 2px 8px rgba(10, 132, 255, 0.3);
 }
@@ -1425,9 +1566,11 @@ export default {
   overflow: auto;
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 16px;
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.9) 0%,
-      rgba(250, 250, 255, 0.75) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(250, 250, 255, 0.75) 100%
+  );
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   min-height: 0;
@@ -1442,9 +1585,11 @@ export default {
 }
 
 [data-theme="dark"] .cache-table-container {
-  background: linear-gradient(135deg,
-      rgba(35, 35, 40, 0.9) 0%,
-      rgba(30, 30, 35, 0.75) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(35, 35, 40, 0.9) 0%,
+    rgba(30, 30, 35, 0.75) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -1466,9 +1611,11 @@ export default {
 }
 
 .cache-table th {
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.95) 0%,
-      rgba(250, 250, 255, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(250, 250, 255, 0.8) 100%
+  );
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   font-weight: 700;
@@ -1484,9 +1631,11 @@ export default {
 }
 
 [data-theme="dark"] .cache-table th {
-  background: linear-gradient(135deg,
-      rgba(40, 40, 45, 0.95) 0%,
-      rgba(35, 35, 40, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(40, 40, 45, 0.95) 0%,
+    rgba(35, 35, 40, 0.8) 100%
+  );
   border-bottom: 2px solid rgba(10, 132, 255, 0.2);
 }
 
@@ -1510,17 +1659,21 @@ export default {
 }
 
 .cache-table tbody tr:hover {
-  background: linear-gradient(135deg,
-      rgba(0, 122, 255, 0.08) 0%,
-      rgba(0, 122, 255, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.08) 0%,
+    rgba(0, 122, 255, 0.05) 100%
+  );
   transform: translateX(4px);
   box-shadow: -4px 0 0 0 var(--primary), 0 2px 12px rgba(0, 122, 255, 0.12);
 }
 
 [data-theme="dark"] .cache-table tbody tr:hover {
-  background: linear-gradient(135deg,
-      rgba(10, 132, 255, 0.12) 0%,
-      rgba(10, 132, 255, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(10, 132, 255, 0.12) 0%,
+    rgba(10, 132, 255, 0.08) 100%
+  );
 }
 
 /* SteamID单元格 */
@@ -1544,9 +1697,11 @@ export default {
   cursor: pointer;
   position: relative;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.8) 0%,
-      rgba(250, 250, 255, 0.6) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(250, 250, 255, 0.6) 100%
+  );
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08),
@@ -1555,9 +1710,11 @@ export default {
 
 [data-theme="dark"] .checkbox {
   border: 2px solid rgba(10, 132, 255, 0.4);
-  background: linear-gradient(135deg,
-      rgba(40, 40, 45, 0.8) 0%,
-      rgba(35, 35, 40, 0.6) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(40, 40, 45, 0.8) 0%,
+    rgba(35, 35, 40, 0.6) 100%
+  );
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
@@ -1575,9 +1732,11 @@ export default {
 }
 
 .checkbox:checked {
-  background: linear-gradient(135deg,
-      var(--primary) 0%,
-      rgba(0, 122, 255, 0.85) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    rgba(0, 122, 255, 0.85) 100%
+  );
   border-color: var(--primary);
   animation: checkboxPulse 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4),
@@ -1585,9 +1744,11 @@ export default {
 }
 
 [data-theme="dark"] .checkbox:checked {
-  background: linear-gradient(135deg,
-      rgba(10, 132, 255, 1) 0%,
-      rgba(10, 132, 255, 0.9) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(10, 132, 255, 1) 0%,
+    rgba(10, 132, 255, 0.9) 100%
+  );
   box-shadow: 0 4px 16px rgba(10, 132, 255, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -1603,7 +1764,8 @@ export default {
   border: solid white;
   border-width: 0 2.5px 2.5px 0;
   opacity: 0;
-  animation: checkmarkAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+  animation: checkmarkAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s
+    forwards;
 }
 
 @keyframes checkmarkAppear {
@@ -1619,7 +1781,6 @@ export default {
 }
 
 @keyframes checkboxPulse {
-
   0%,
   100% {
     transform: scale(1);
@@ -1678,33 +1839,41 @@ export default {
 }
 
 .detail-btn {
-  background: linear-gradient(135deg,
-      rgba(23, 162, 184, 0.9) 0%,
-      rgba(19, 132, 150, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(23, 162, 184, 0.9) 0%,
+    rgba(19, 132, 150, 0.8) 100%
+  );
   color: white;
   box-shadow: 0 4px 12px rgba(23, 162, 184, 0.25);
 }
 
 .detail-btn:hover {
-  background: linear-gradient(135deg,
-      rgba(19, 132, 150, 1) 0%,
-      rgba(23, 162, 184, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(19, 132, 150, 1) 0%,
+    rgba(23, 162, 184, 0.95) 100%
+  );
   transform: translateY(-3px) scale(1.08);
   box-shadow: 0 8px 20px rgba(23, 162, 184, 0.35);
 }
 
 .refresh-btn {
-  background: linear-gradient(135deg,
-      rgba(40, 167, 69, 0.9) 0%,
-      rgba(33, 136, 56, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(40, 167, 69, 0.9) 0%,
+    rgba(33, 136, 56, 0.8) 100%
+  );
   color: white;
   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
 }
 
 .refresh-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg,
-      rgba(33, 136, 56, 1) 0%,
-      rgba(40, 167, 69, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(33, 136, 56, 1) 0%,
+    rgba(40, 167, 69, 0.95) 100%
+  );
   transform: translateY(-3px) scale(1.08) rotate(180deg);
   box-shadow: 0 8px 20px rgba(40, 167, 69, 0.35);
 }
@@ -1716,17 +1885,21 @@ export default {
 }
 
 .delete-btn {
-  background: linear-gradient(135deg,
-      rgba(255, 59, 48, 0.9) 0%,
-      rgba(255, 45, 85, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 59, 48, 0.9) 0%,
+    rgba(255, 45, 85, 0.8) 100%
+  );
   color: white;
   box-shadow: 0 4px 12px rgba(255, 59, 48, 0.25);
 }
 
 .delete-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg,
-      rgba(255, 45, 85, 1) 0%,
-      rgba(255, 59, 48, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 45, 85, 1) 0%,
+    rgba(255, 59, 48, 0.95) 100%
+  );
   transform: translateY(-3px) scale(1.08);
   box-shadow: 0 8px 20px rgba(255, 59, 48, 0.35);
 }
@@ -1744,9 +1917,11 @@ export default {
   color: var(--text-tertiary);
   font-style: italic;
   font-size: 15px;
-  background: linear-gradient(135deg,
-      rgba(0, 122, 255, 0.03) 0%,
-      rgba(139, 92, 246, 0.03) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.03) 0%,
+    rgba(139, 92, 246, 0.03) 100%
+  );
   border-radius: 16px;
   border: 2px dashed rgba(0, 122, 255, 0.2);
   transition: all 0.3s ease;
@@ -1754,15 +1929,19 @@ export default {
 
 .no-cache-entries:hover {
   border-color: rgba(0, 122, 255, 0.3);
-  background: linear-gradient(135deg,
-      rgba(0, 122, 255, 0.05) 0%,
-      rgba(139, 92, 246, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.05) 0%,
+    rgba(139, 92, 246, 0.05) 100%
+  );
 }
 
 [data-theme="dark"] .no-cache-entries {
-  background: linear-gradient(135deg,
-      rgba(10, 132, 255, 0.05) 0%,
-      rgba(139, 92, 246, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(10, 132, 255, 0.05) 0%,
+    rgba(139, 92, 246, 0.05) 100%
+  );
   border-color: rgba(10, 132, 255, 0.25);
 }
 
@@ -1771,9 +1950,11 @@ export default {
   position: fixed;
   top: 80px;
   right: 24px;
-  background: linear-gradient(135deg,
-      rgba(52, 199, 89, 0.98) 0%,
-      rgba(48, 209, 88, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(52, 199, 89, 0.98) 0%,
+    rgba(48, 209, 88, 0.95) 100%
+  );
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   color: white;
@@ -1897,9 +2078,11 @@ export default {
 }
 
 .modal-content {
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.98) 0%,
-      rgba(250, 250, 255, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(250, 250, 255, 0.95) 100%
+  );
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 24px;
@@ -1913,9 +2096,11 @@ export default {
 }
 
 [data-theme="dark"] .modal-content {
-  background: linear-gradient(135deg,
-      rgba(30, 30, 35, 0.98) 0%,
-      rgba(25, 25, 30, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 35, 0.98) 0%,
+    rgba(25, 25, 30, 0.95) 100%
+  );
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -1928,10 +2113,12 @@ export default {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.8) 50%,
-      transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    transparent 100%
+  );
   pointer-events: none;
 }
 
@@ -1949,18 +2136,22 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 24px 28px;
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.6) 0%,
-      rgba(250, 250, 252, 0.4) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(250, 250, 252, 0.4) 100%
+  );
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 [data-theme="dark"] .modal-header {
-  background: linear-gradient(135deg,
-      rgba(35, 35, 40, 0.6) 0%,
-      rgba(30, 30, 35, 0.4) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(35, 35, 40, 0.6) 0%,
+    rgba(30, 30, 35, 0.4) 100%
+  );
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -2019,18 +2210,22 @@ export default {
   justify-content: flex-end;
   gap: 12px;
   padding: 20px 28px;
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.6) 0%,
-      rgba(250, 250, 252, 0.4) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(250, 250, 252, 0.4) 100%
+  );
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 [data-theme="dark"] .modal-footer {
-  background: linear-gradient(135deg,
-      rgba(35, 35, 40, 0.6) 0%,
-      rgba(30, 30, 35, 0.4) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(35, 35, 40, 0.6) 0%,
+    rgba(30, 30, 35, 0.4) 100%
+  );
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -2169,9 +2364,11 @@ export default {
 }
 
 .confirm-btn {
-  background: linear-gradient(135deg,
-      rgba(220, 53, 69, 0.8),
-      rgba(220, 53, 69, 0.6));
+  background: linear-gradient(
+    135deg,
+    rgba(220, 53, 69, 0.8),
+    rgba(220, 53, 69, 0.6)
+  );
   backdrop-filter: blur(10px);
   color: white;
   border: 1px solid rgba(220, 53, 69, 0.3);
@@ -2179,9 +2376,11 @@ export default {
 }
 
 .confirm-btn:hover {
-  background: linear-gradient(135deg,
-      rgba(200, 35, 51, 0.9),
-      rgba(200, 35, 51, 0.7));
+  background: linear-gradient(
+    135deg,
+    rgba(200, 35, 51, 0.9),
+    rgba(200, 35, 51, 0.7)
+  );
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
@@ -2317,9 +2516,11 @@ export default {
 
 /* 批量操作工具栏 - 磨砂玻璃风格 */
 .batch-actions-toolbar {
-  background: linear-gradient(135deg,
-      rgba(0, 122, 255, 0.12) 0%,
-      rgba(0, 122, 255, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.12) 0%,
+    rgba(0, 122, 255, 0.08) 100%
+  );
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(0, 122, 255, 0.25);
@@ -2337,9 +2538,11 @@ export default {
 }
 
 [data-theme="dark"] .batch-actions-toolbar {
-  background: linear-gradient(135deg,
-      rgba(10, 132, 255, 0.15) 0%,
-      rgba(10, 132, 255, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(10, 132, 255, 0.15) 0%,
+    rgba(10, 132, 255, 0.1) 100%
+  );
   border: 1px solid rgba(10, 132, 255, 0.3);
 }
 
@@ -2350,10 +2553,12 @@ export default {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.2) 50%,
-      transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
   transition: left 0.6s ease;
 }
 
@@ -2417,33 +2622,41 @@ export default {
 }
 
 .refresh-batch-btn {
-  background: linear-gradient(135deg,
-      rgba(40, 167, 69, 0.9) 0%,
-      rgba(33, 136, 56, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(40, 167, 69, 0.9) 0%,
+    rgba(33, 136, 56, 0.8) 100%
+  );
   color: white;
   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
 }
 
 .refresh-batch-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg,
-      rgba(33, 136, 56, 1) 0%,
-      rgba(40, 167, 69, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(33, 136, 56, 1) 0%,
+    rgba(40, 167, 69, 0.95) 100%
+  );
   transform: translateY(-3px) scale(1.02);
   box-shadow: 0 8px 24px rgba(40, 167, 69, 0.35);
 }
 
 .delete-batch-btn {
-  background: linear-gradient(135deg,
-      rgba(255, 59, 48, 0.9) 0%,
-      rgba(255, 45, 85, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 59, 48, 0.9) 0%,
+    rgba(255, 45, 85, 0.8) 100%
+  );
   color: white;
   box-shadow: 0 4px 12px rgba(255, 59, 48, 0.25);
 }
 
 .delete-batch-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg,
-      rgba(255, 45, 85, 1) 0%,
-      rgba(255, 59, 48, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 45, 85, 1) 0%,
+    rgba(255, 59, 48, 0.95) 100%
+  );
   transform: translateY(-3px) scale(1.02);
   box-shadow: 0 8px 24px rgba(255, 59, 48, 0.35);
 }
@@ -2456,9 +2669,11 @@ export default {
 
 /* 分页控件 - 磨砂玻璃风格 */
 .pagination-container {
-  background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.85) 0%,
-      rgba(250, 250, 255, 0.65) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(250, 250, 255, 0.65) 100%
+  );
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.4);
@@ -2475,9 +2690,11 @@ export default {
 }
 
 [data-theme="dark"] .pagination-container {
-  background: linear-gradient(135deg,
-      rgba(35, 35, 40, 0.85) 0%,
-      rgba(30, 30, 35, 0.65) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(35, 35, 40, 0.85) 0%,
+    rgba(30, 30, 35, 0.65) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -2543,9 +2760,11 @@ export default {
 }
 
 .pagination-btn.active {
-  background: linear-gradient(135deg,
-      var(--primary) 0%,
-      rgba(0, 122, 255, 0.85) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    rgba(0, 122, 255, 0.85) 100%
+  );
   color: white;
   border-color: var(--primary);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.35),

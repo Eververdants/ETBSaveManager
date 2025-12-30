@@ -1,32 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/app-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ETB Save Manager</title>
-    
+
     <!-- 在CSS加载前的最早期设置主题 -->
     <script>
       // 主题初始化脚本 - 在CSS加载前执行
-      (function() {
+      (function () {
         function getSystemTheme() {
-          return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          return window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
         }
-        
+
         function setTheme(theme) {
-          document.documentElement.setAttribute('data-theme', theme);
-          document.documentElement.classList.add('theme-initialized');
-          
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.classList.add("theme-initialized");
+
           // 同步到全局主题管理器
           if (window.themeManager) {
             window.themeManager.currentTheme = theme;
           }
         }
-        
+
         try {
           // localStorage + prefers-color-scheme 双保险
-          const savedTheme = localStorage.getItem('theme');
+          const savedTheme = localStorage.getItem("theme");
           const theme = savedTheme || getSystemTheme();
           setTheme(theme);
         } catch (e) {
@@ -35,20 +38,20 @@
         }
       })();
     </script>
-    
-    <link rel="stylesheet" href="./src/styles/variables.css">
-    
+
+    <link rel="stylesheet" href="./src/styles/variables.css" />
+
     <!-- 主题初始化样式 -->
     <style>
       /* 防止主题初始化前的闪烁 */
       html {
         background-color: #1c1c1e; /* 默认深色背景 */
       }
-      
+
       html[data-theme="light"] {
         background-color: #f8f9fa; /* 浅色背景 */
       }
-      
+
       /* 确保body在主题初始化前也是一致的背景 */
       body {
         background-color: inherit;
@@ -56,18 +59,18 @@
         opacity: 0;
         transition: opacity 0.1s ease;
       }
-      
+
       /* 主题初始化后显示内容 */
       html.theme-initialized body {
         opacity: 1;
       }
-      
+
       /* 隐藏Vue应用直到主题初始化完成 */
       #app {
         opacity: 0;
         transition: opacity 0.2s ease;
       }
-      
+
       html.theme-initialized #app {
         opacity: 1;
       }

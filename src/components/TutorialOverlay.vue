@@ -4,36 +4,36 @@
       <div v-if="visible" class="tutorial-overlay">
         <!-- 背景遮罩 -->
         <div class="tutorial-backdrop" @click="handleSkip"></div>
-        
+
         <!-- 高亮区域 -->
-        <div 
-          v-if="currentHighlight" 
+        <div
+          v-if="currentHighlight"
           class="tutorial-highlight"
           :style="highlightStyle"
         ></div>
-        
+
         <!-- 引导卡片 -->
         <div class="tutorial-card" :style="cardStyle">
           <!-- 步骤指示器 -->
           <div class="step-indicator">
-            <div 
-              v-for="step in steps" 
+            <div
+              v-for="step in steps"
               :key="step.id"
               class="step-dot"
-              :class="{ 
+              :class="{
                 active: step.id === currentStep,
-                completed: step.id < currentStep
+                completed: step.id < currentStep,
               }"
             >
-              <font-awesome-icon 
-                v-if="step.id < currentStep" 
-                :icon="['fas', 'check']" 
+              <font-awesome-icon
+                v-if="step.id < currentStep"
+                :icon="['fas', 'check']"
                 class="check-icon"
               />
               <span v-else class="step-number">{{ step.id }}</span>
             </div>
           </div>
-          
+
           <!-- 卡片内容 -->
           <div class="card-content">
             <div class="step-icon">
@@ -42,45 +42,45 @@
             <h3 class="step-title">{{ currentStepData.title }}</h3>
             <p class="step-description">{{ currentStepData.description }}</p>
           </div>
-          
+
           <!-- 卡片底部操作 -->
           <div class="card-footer">
             <button class="btn btn-text" @click="handleSkip">
-              {{ $t('quickCreate.tutorial.skip') }}
+              {{ $t("quickCreate.tutorial.skip") }}
             </button>
             <div class="footer-actions">
-              <button 
-                v-if="currentStep > 1" 
+              <button
+                v-if="currentStep > 1"
                 class="btn btn-secondary"
                 @click="handlePrev"
               >
                 <font-awesome-icon :icon="['fas', 'arrow-left']" />
-                {{ $t('quickCreate.tutorial.prev') }}
+                {{ $t("quickCreate.tutorial.prev") }}
               </button>
-              <button 
-                v-if="currentStep < steps.length" 
+              <button
+                v-if="currentStep < steps.length"
                 class="btn btn-primary"
                 @click="handleNext"
               >
-                {{ $t('quickCreate.tutorial.next') }}
+                {{ $t("quickCreate.tutorial.next") }}
                 <font-awesome-icon :icon="['fas', 'arrow-right']" />
               </button>
-              <button 
-                v-else 
+              <button
+                v-else
                 class="btn btn-primary btn-start"
                 @click="handleComplete"
               >
                 <font-awesome-icon :icon="['fas', 'rocket']" />
-                {{ $t('quickCreate.tutorial.start') }}
+                {{ $t("quickCreate.tutorial.start") }}
               </button>
             </div>
           </div>
         </div>
-        
+
         <!-- 视频教程按钮 -->
         <button class="video-tutorial-btn" @click="handleVideoTutorial">
           <font-awesome-icon :icon="['fas', 'play-circle']" />
-          {{ $t('quickCreate.tutorial.watchVideo') }}
+          {{ $t("quickCreate.tutorial.watchVideo") }}
         </button>
       </div>
     </Transition>
@@ -88,222 +88,224 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
 
-const { t } = useI18n({ useScope: 'global' })
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   visible: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
-const emit = defineEmits(['close', 'next-step', 'skip', 'complete'])
+const emit = defineEmits(["close", "next-step", "skip", "complete"]);
 
 // 当前步骤
-const currentStep = ref(1)
+const currentStep = ref(1);
 
 // 高亮区域位置
-const highlightRect = ref(null)
+const highlightRect = ref(null);
 
 // 定义四个步骤
 const steps = computed(() => [
   {
     id: 1,
-    title: t('quickCreate.tutorial.step1.title'),
-    description: t('quickCreate.tutorial.step1.description'),
-    icon: ['fas', 'keyboard'],
-    targetSelector: '.smart-input-area',
-    position: 'right'
+    title: t("quickCreate.tutorial.step1.title"),
+    description: t("quickCreate.tutorial.step1.description"),
+    icon: ["fas", "keyboard"],
+    targetSelector: ".smart-input-area",
+    position: "right",
   },
   {
     id: 2,
-    title: t('quickCreate.tutorial.step2.title'),
-    description: t('quickCreate.tutorial.step2.description'),
-    icon: ['fas', 'sliders-h'],
-    targetSelector: '.uniform-config-panel',
-    position: 'right'
+    title: t("quickCreate.tutorial.step2.title"),
+    description: t("quickCreate.tutorial.step2.description"),
+    icon: ["fas", "sliders-h"],
+    targetSelector: ".uniform-config-panel",
+    position: "right",
   },
   {
     id: 3,
-    title: t('quickCreate.tutorial.step3.title'),
-    description: t('quickCreate.tutorial.step3.description'),
-    icon: ['fas', 'th-large'],
-    targetSelector: '.card-flow-area',
-    position: 'left'
+    title: t("quickCreate.tutorial.step3.title"),
+    description: t("quickCreate.tutorial.step3.description"),
+    icon: ["fas", "th-large"],
+    targetSelector: ".card-flow-area",
+    position: "left",
   },
   {
     id: 4,
-    title: t('quickCreate.tutorial.step4.title'),
-    description: t('quickCreate.tutorial.step4.description'),
-    icon: ['fas', 'play'],
-    targetSelector: '.header-actions',
-    position: 'bottom'
-  }
-])
+    title: t("quickCreate.tutorial.step4.title"),
+    description: t("quickCreate.tutorial.step4.description"),
+    icon: ["fas", "play"],
+    targetSelector: ".header-actions",
+    position: "bottom",
+  },
+]);
 
 // 当前步骤数据
 const currentStepData = computed(() => {
-  return steps.value.find(s => s.id === currentStep.value) || steps.value[0]
-})
+  return steps.value.find((s) => s.id === currentStep.value) || steps.value[0];
+});
 
 // 当前高亮区域
 const currentHighlight = computed(() => {
-  return highlightRect.value
-})
+  return highlightRect.value;
+});
 
 // 高亮区域样式
 const highlightStyle = computed(() => {
-  if (!highlightRect.value) return {}
-  const padding = 8
+  if (!highlightRect.value) return {};
+  const padding = 8;
   return {
     top: `${highlightRect.value.top - padding}px`,
     left: `${highlightRect.value.left - padding}px`,
     width: `${highlightRect.value.width + padding * 2}px`,
-    height: `${highlightRect.value.height + padding * 2}px`
-  }
-})
+    height: `${highlightRect.value.height + padding * 2}px`,
+  };
+});
 
 // 卡片位置样式
 const cardStyle = computed(() => {
   if (!highlightRect.value) {
     return {
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)'
-    }
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+    };
   }
-  
-  const position = currentStepData.value.position
-  const rect = highlightRect.value
-  const cardWidth = 360
-  const cardHeight = 280
-  const gap = 20
-  
-  let style = {}
-  
+
+  const position = currentStepData.value.position;
+  const rect = highlightRect.value;
+  const cardWidth = 360;
+  const cardHeight = 280;
+  const gap = 20;
+
+  let style = {};
+
   switch (position) {
-    case 'right':
+    case "right":
       style = {
         top: `${Math.max(rect.top, 100)}px`,
-        left: `${rect.right + gap}px`
-      }
-      break
-    case 'left':
+        left: `${rect.right + gap}px`,
+      };
+      break;
+    case "left":
       style = {
         top: `${Math.max(rect.top, 100)}px`,
-        left: `${rect.left - cardWidth - gap}px`
-      }
-      break
-    case 'bottom':
+        left: `${rect.left - cardWidth - gap}px`,
+      };
+      break;
+    case "bottom":
       style = {
         top: `${rect.bottom + gap}px`,
-        left: `${rect.left + (rect.width - cardWidth) / 2}px`
-      }
-      break
-    case 'top':
+        left: `${rect.left + (rect.width - cardWidth) / 2}px`,
+      };
+      break;
+    case "top":
       style = {
         top: `${rect.top - cardHeight - gap}px`,
-        left: `${rect.left + (rect.width - cardWidth) / 2}px`
-      }
-      break
+        left: `${rect.left + (rect.width - cardWidth) / 2}px`,
+      };
+      break;
     default:
       style = {
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)'
-      }
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+      };
   }
-  
-  return style
-})
+
+  return style;
+});
 
 // 更新高亮区域位置
 const updateHighlightRect = () => {
-  const selector = currentStepData.value.targetSelector
-  const element = document.querySelector(selector)
-  
+  const selector = currentStepData.value.targetSelector;
+  const element = document.querySelector(selector);
+
   if (element) {
-    const rect = element.getBoundingClientRect()
+    const rect = element.getBoundingClientRect();
     highlightRect.value = {
       top: rect.top,
       left: rect.left,
       right: rect.right,
       bottom: rect.bottom,
       width: rect.width,
-      height: rect.height
-    }
+      height: rect.height,
+    };
   } else {
-    highlightRect.value = null
+    highlightRect.value = null;
   }
-}
+};
 
 // 下一步
 const handleNext = () => {
   if (currentStep.value < steps.value.length) {
-    currentStep.value++
-    emit('next-step', currentStep.value)
-    updateHighlightRect()
+    currentStep.value++;
+    emit("next-step", currentStep.value);
+    updateHighlightRect();
   }
-}
+};
 
 // 上一步
 const handlePrev = () => {
   if (currentStep.value > 1) {
-    currentStep.value--
-    updateHighlightRect()
+    currentStep.value--;
+    updateHighlightRect();
   }
-}
+};
 
 // 跳过教程
 const handleSkip = () => {
-  saveTutorialCompleted()
-  emit('skip')
-  emit('close')
-}
+  saveTutorialCompleted();
+  emit("skip");
+  emit("close");
+};
 
 // 完成教程
 const handleComplete = () => {
-  saveTutorialCompleted()
-  emit('complete')
-  emit('close')
-}
+  saveTutorialCompleted();
+  emit("complete");
+  emit("close");
+};
 
 // 查看视频教程
 const handleVideoTutorial = () => {
   // 可以打开视频教程链接
-  console.log('Open video tutorial')
-}
+  console.log("Open video tutorial");
+};
 
 // 保存教程完成状态到 localStorage
 const saveTutorialCompleted = () => {
-  localStorage.setItem('quick_create_tutorial_completed', 'true')
-}
+  localStorage.setItem("quick_create_tutorial_completed", "true");
+};
 
 // 监听 visible 变化
-watch(() => props.visible, (newVisible) => {
-  if (newVisible) {
-    currentStep.value = 1
-    // 延迟更新高亮区域，等待 DOM 渲染
-    setTimeout(updateHighlightRect, 100)
+watch(
+  () => props.visible,
+  (newVisible) => {
+    if (newVisible) {
+      currentStep.value = 1;
+      // 延迟更新高亮区域，等待 DOM 渲染
+      setTimeout(updateHighlightRect, 100);
+    }
   }
-})
+);
 
 // 监听窗口大小变化
 onMounted(() => {
-  window.addEventListener('resize', updateHighlightRect)
+  window.addEventListener("resize", updateHighlightRect);
   if (props.visible) {
-    setTimeout(updateHighlightRect, 100)
+    setTimeout(updateHighlightRect, 100);
   }
-})
+});
 
 onUnmounted(() => {
-  window.removeEventListener('resize', updateHighlightRect)
-})
+  window.removeEventListener("resize", updateHighlightRect);
+});
 </script>
-
 
 <style scoped>
 /* 教程遮罩层 */
@@ -332,9 +334,7 @@ onUnmounted(() => {
 .tutorial-highlight {
   position: absolute;
   border-radius: var(--radius-lg);
-  box-shadow: 
-    0 0 0 4px var(--accent-color),
-    0 0 0 9999px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 0 4px var(--accent-color), 0 0 0 9999px rgba(0, 0, 0, 0.7);
   pointer-events: none;
   transition: all 0.4s var(--ease-default);
   z-index: 1;
@@ -571,7 +571,7 @@ onUnmounted(() => {
     top: 50% !important;
     transform: translate(-50%, -50%) !important;
   }
-  
+
   .video-tutorial-btn {
     bottom: var(--space-4);
     right: var(--space-4);

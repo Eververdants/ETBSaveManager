@@ -7,10 +7,14 @@
           <div class="modal-header">
             <h3 class="modal-title">
               <font-awesome-icon :icon="['fas', 'edit']" />
-              {{ $t('quickCreate.batchEdit.title') }}
+              {{ $t("quickCreate.batchEdit.title") }}
             </h3>
             <span class="selected-info">
-              {{ $t('quickCreate.batchEdit.selectedCount', { count: selectedCount }) }}
+              {{
+                $t("quickCreate.batchEdit.selectedCount", {
+                  count: selectedCount,
+                })
+              }}
             </span>
             <button class="close-btn" @click="handleClose">
               <font-awesome-icon :icon="['fas', 'times']" />
@@ -19,19 +23,31 @@
 
           <!-- 模态框内容 -->
           <div class="modal-content">
-            <p class="batch-hint">{{ $t('quickCreate.batchEdit.hint') }}</p>
+            <p class="batch-hint">{{ $t("quickCreate.batchEdit.hint") }}</p>
 
             <!-- 层级选择 -->
             <div class="form-group">
-              <label class="form-label">{{ $t('quickCreate.editModal.level') }}</label>
+              <label class="form-label">{{
+                $t("quickCreate.editModal.level")
+              }}</label>
               <div class="batch-field">
-                <label class="custom-radio" @click.prevent="batchValues.level = KEEP_ORIGINAL">
-                  <span class="radio-mark" :class="{ checked: batchValues.level === KEEP_ORIGINAL }"></span>
-                  <span class="radio-text">{{ $t('quickCreate.batchEdit.keepOriginal') }}</span>
+                <label
+                  class="custom-radio"
+                  @click.prevent="batchValues.level = KEEP_ORIGINAL"
+                >
+                  <span
+                    class="radio-mark"
+                    :class="{ checked: batchValues.level === KEEP_ORIGINAL }"
+                  ></span>
+                  <span class="radio-text">{{
+                    $t("quickCreate.batchEdit.keepOriginal")
+                  }}</span>
                 </label>
                 <CustomDropdown
                   class="batch-dropdown"
-                  :model-value="batchValues.level === KEEP_ORIGINAL ? '' : batchValues.level"
+                  :model-value="
+                    batchValues.level === KEEP_ORIGINAL ? '' : batchValues.level
+                  "
                   :options="levelDropdownOptions"
                   :placeholder="$t('quickCreate.batchEdit.selectToChange')"
                   :disabled="batchValues.level === KEEP_ORIGINAL"
@@ -42,15 +58,31 @@
 
             <!-- 存档难度 -->
             <div class="form-group">
-              <label class="form-label">{{ $t('quickCreate.editModal.difficulty') }}</label>
+              <label class="form-label">{{
+                $t("quickCreate.editModal.difficulty")
+              }}</label>
               <div class="batch-field">
-                <label class="custom-radio" @click.prevent="batchValues.difficulty = KEEP_ORIGINAL">
-                  <span class="radio-mark" :class="{ checked: batchValues.difficulty === KEEP_ORIGINAL }"></span>
-                  <span class="radio-text">{{ $t('quickCreate.batchEdit.keepOriginal') }}</span>
+                <label
+                  class="custom-radio"
+                  @click.prevent="batchValues.difficulty = KEEP_ORIGINAL"
+                >
+                  <span
+                    class="radio-mark"
+                    :class="{
+                      checked: batchValues.difficulty === KEEP_ORIGINAL,
+                    }"
+                  ></span>
+                  <span class="radio-text">{{
+                    $t("quickCreate.batchEdit.keepOriginal")
+                  }}</span>
                 </label>
                 <CustomDropdown
                   class="batch-dropdown"
-                  :model-value="batchValues.difficulty === KEEP_ORIGINAL ? '' : batchValues.difficulty"
+                  :model-value="
+                    batchValues.difficulty === KEEP_ORIGINAL
+                      ? ''
+                      : batchValues.difficulty
+                  "
                   :options="difficultyDropdownOptions"
                   :placeholder="$t('quickCreate.batchEdit.selectToChange')"
                   :disabled="batchValues.difficulty === KEEP_ORIGINAL"
@@ -61,15 +93,31 @@
 
             <!-- 实际难度 -->
             <div class="form-group">
-              <label class="form-label">{{ $t('quickCreate.editModal.actualDifficulty') }}</label>
+              <label class="form-label">{{
+                $t("quickCreate.editModal.actualDifficulty")
+              }}</label>
               <div class="batch-field">
-                <label class="custom-radio" @click.prevent="batchValues.actualDifficulty = KEEP_ORIGINAL">
-                  <span class="radio-mark" :class="{ checked: batchValues.actualDifficulty === KEEP_ORIGINAL }"></span>
-                  <span class="radio-text">{{ $t('quickCreate.batchEdit.keepOriginal') }}</span>
+                <label
+                  class="custom-radio"
+                  @click.prevent="batchValues.actualDifficulty = KEEP_ORIGINAL"
+                >
+                  <span
+                    class="radio-mark"
+                    :class="{
+                      checked: batchValues.actualDifficulty === KEEP_ORIGINAL,
+                    }"
+                  ></span>
+                  <span class="radio-text">{{
+                    $t("quickCreate.batchEdit.keepOriginal")
+                  }}</span>
                 </label>
                 <CustomDropdown
                   class="batch-dropdown"
-                  :model-value="batchValues.actualDifficulty === KEEP_ORIGINAL ? '' : batchValues.actualDifficulty"
+                  :model-value="
+                    batchValues.actualDifficulty === KEEP_ORIGINAL
+                      ? ''
+                      : batchValues.actualDifficulty
+                  "
                   :options="difficultyDropdownOptions"
                   :placeholder="$t('quickCreate.batchEdit.selectToChange')"
                   :disabled="batchValues.actualDifficulty === KEEP_ORIGINAL"
@@ -80,15 +128,31 @@
 
             <!-- 背包模板 -->
             <div class="form-group">
-              <label class="form-label">{{ $t('quickCreate.editModal.inventory') }}</label>
+              <label class="form-label">{{
+                $t("quickCreate.editModal.inventory")
+              }}</label>
               <div class="batch-field">
-                <label class="custom-radio" @click.prevent="batchValues.inventoryTemplate = KEEP_ORIGINAL">
-                  <span class="radio-mark" :class="{ checked: batchValues.inventoryTemplate === KEEP_ORIGINAL }"></span>
-                  <span class="radio-text">{{ $t('quickCreate.batchEdit.keepOriginal') }}</span>
+                <label
+                  class="custom-radio"
+                  @click.prevent="batchValues.inventoryTemplate = KEEP_ORIGINAL"
+                >
+                  <span
+                    class="radio-mark"
+                    :class="{
+                      checked: batchValues.inventoryTemplate === KEEP_ORIGINAL,
+                    }"
+                  ></span>
+                  <span class="radio-text">{{
+                    $t("quickCreate.batchEdit.keepOriginal")
+                  }}</span>
                 </label>
                 <CustomDropdown
                   class="batch-dropdown"
-                  :model-value="batchValues.inventoryTemplate === KEEP_ORIGINAL ? '' : batchValues.inventoryTemplate"
+                  :model-value="
+                    batchValues.inventoryTemplate === KEEP_ORIGINAL
+                      ? ''
+                      : batchValues.inventoryTemplate
+                  "
                   :options="inventoryDropdownOptions"
                   :placeholder="$t('quickCreate.batchEdit.selectToChange')"
                   :disabled="batchValues.inventoryTemplate === KEEP_ORIGINAL"
@@ -101,10 +165,14 @@
           <!-- 模态框底部 -->
           <div class="modal-footer">
             <button class="btn btn-secondary" @click="handleClose">
-              {{ $t('common.cancel') }}
+              {{ $t("common.cancel") }}
             </button>
-            <button class="btn btn-primary" @click="handleApply" :disabled="!hasChanges">
-              {{ $t('quickCreate.batchEdit.apply') }}
+            <button
+              class="btn btn-primary"
+              @click="handleApply"
+              :disabled="!hasChanges"
+            >
+              {{ $t("quickCreate.batchEdit.apply") }}
             </button>
           </div>
         </div>
@@ -114,75 +182,75 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
-import CustomDropdown from '@/components/CustomDropdown.vue'
+import { ref, computed, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import CustomDropdown from "@/components/CustomDropdown.vue";
 
-const { t } = useI18n({ useScope: 'global' })
+const { t } = useI18n({ useScope: "global" });
 
 // 保持原样的特殊值
-const KEEP_ORIGINAL = '__keep_original__'
+const KEEP_ORIGINAL = "__keep_original__";
 
 const props = defineProps({
   visible: {
     type: Boolean,
-    default: false
+    default: false,
   },
   selectedCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   availableLevels: {
     type: Array,
-    default: () => []
-  }
-})
+    default: () => [],
+  },
+});
 
-const emit = defineEmits(['close', 'apply'])
+const emit = defineEmits(["close", "apply"]);
 
 // 批量编辑值
 const batchValues = ref({
   level: KEEP_ORIGINAL,
   difficulty: KEEP_ORIGINAL,
   actualDifficulty: KEEP_ORIGINAL,
-  inventoryTemplate: KEEP_ORIGINAL
-})
+  inventoryTemplate: KEEP_ORIGINAL,
+});
 
 // 难度选项
 const difficultyOptions = computed(() => [
-  { value: 'easy', label: t('createArchive.difficultyLevels.easy') },
-  { value: 'normal', label: t('createArchive.difficultyLevels.normal') },
-  { value: 'hard', label: t('createArchive.difficultyLevels.hard') },
-  { value: 'nightmare', label: t('createArchive.difficultyLevels.nightmare') }
-])
+  { value: "easy", label: t("createArchive.difficultyLevels.easy") },
+  { value: "normal", label: t("createArchive.difficultyLevels.normal") },
+  { value: "hard", label: t("createArchive.difficultyLevels.hard") },
+  { value: "nightmare", label: t("createArchive.difficultyLevels.nightmare") },
+]);
 
 // 层级下拉选项
 const levelDropdownOptions = computed(() => {
   const options = [
-    { value: null, label: t('quickCreate.editModal.inheritFromUniform') }
-  ]
-  props.availableLevels.forEach(level => {
+    { value: null, label: t("quickCreate.editModal.inheritFromUniform") },
+  ];
+  props.availableLevels.forEach((level) => {
     options.push({
       value: level.value,
-      label: level.label
-    })
-  })
-  return options
-})
+      label: level.label,
+    });
+  });
+  return options;
+});
 
 // 难度下拉选项
 const difficultyDropdownOptions = computed(() => {
   return [
-    { value: null, label: t('quickCreate.editModal.inheritFromUniform') },
-    ...difficultyOptions.value
-  ]
-})
+    { value: null, label: t("quickCreate.editModal.inheritFromUniform") },
+    ...difficultyOptions.value,
+  ];
+});
 
 // 背包模板下拉选项
 const inventoryDropdownOptions = computed(() => [
-  { value: null, label: t('quickCreate.editModal.inheritFromUniform') },
-  { value: 'empty', label: t('quickCreate.card.emptyInventory') }
-])
+  { value: null, label: t("quickCreate.editModal.inheritFromUniform") },
+  { value: "empty", label: t("quickCreate.card.emptyInventory") },
+]);
 
 // 检查是否有更改
 const hasChanges = computed(() => {
@@ -191,25 +259,25 @@ const hasChanges = computed(() => {
     batchValues.value.difficulty !== KEEP_ORIGINAL ||
     batchValues.value.actualDifficulty !== KEEP_ORIGINAL ||
     batchValues.value.inventoryTemplate !== KEEP_ORIGINAL
-  )
-})
+  );
+});
 
 // 处理下拉框变化
 const handleLevelChange = (value) => {
-  batchValues.value.level = value
-}
+  batchValues.value.level = value;
+};
 
 const handleDifficultyChange = (value) => {
-  batchValues.value.difficulty = value
-}
+  batchValues.value.difficulty = value;
+};
 
 const handleActualDifficultyChange = (value) => {
-  batchValues.value.actualDifficulty = value
-}
+  batchValues.value.actualDifficulty = value;
+};
 
 const handleInventoryChange = (value) => {
-  batchValues.value.inventoryTemplate = value
-}
+  batchValues.value.inventoryTemplate = value;
+};
 
 // 重置批量值
 const resetBatchValues = () => {
@@ -217,29 +285,31 @@ const resetBatchValues = () => {
     level: KEEP_ORIGINAL,
     difficulty: KEEP_ORIGINAL,
     actualDifficulty: KEEP_ORIGINAL,
-    inventoryTemplate: KEEP_ORIGINAL
-  }
-}
+    inventoryTemplate: KEEP_ORIGINAL,
+  };
+};
 
 // 监听 visible 变化，重置值
-watch(() => props.visible, (newVisible) => {
-  if (newVisible) {
-    resetBatchValues()
+watch(
+  () => props.visible,
+  (newVisible) => {
+    if (newVisible) {
+      resetBatchValues();
+    }
   }
-})
+);
 
 // 关闭模态框
 const handleClose = () => {
-  emit('close')
-}
+  emit("close");
+};
 
 // 应用批量编辑
 const handleApply = () => {
-  emit('apply', { ...batchValues.value })
-  handleClose()
-}
+  emit("apply", { ...batchValues.value });
+  handleClose();
+};
 </script>
-
 
 <style scoped>
 /* 模态框遮罩 */
@@ -382,7 +452,7 @@ const handleApply = () => {
 }
 
 .radio-mark::after {
-  content: '';
+  content: "";
   width: 8px;
   height: 8px;
   border-radius: 50%;

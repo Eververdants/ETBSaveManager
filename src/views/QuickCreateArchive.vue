@@ -7,34 +7,45 @@
         <button class="back-button" @click="goBack">
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
         </button>
-        <h1 class="page-title">{{ $t('quickCreate.title') }}</h1>
+        <h1 class="page-title">{{ $t("quickCreate.title") }}</h1>
       </div>
 
       <!-- 中间：统计数据 -->
       <div class="header-stats">
         <div class="stat-item">
           <span class="stat-value">{{ state.archives.length }}</span>
-          <span class="stat-label">{{ $t('quickCreate.preview.total') }}</span>
+          <span class="stat-label">{{ $t("quickCreate.preview.total") }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-value">{{ summaryStats.uniformCount }}</span>
-          <span class="stat-label">{{ $t('quickCreate.preview.uniform') }}</span>
+          <span class="stat-label">{{
+            $t("quickCreate.preview.uniform")
+          }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-value">{{ summaryStats.individualCount }}</span>
-          <span class="stat-label">{{ $t('quickCreate.preview.individual') }}</span>
+          <span class="stat-label">{{
+            $t("quickCreate.preview.individual")
+          }}</span>
         </div>
         <div class="stat-divider"></div>
-        <div class="stat-item" :class="{ 'has-error': summaryStats.missingCount > 0 }">
+        <div
+          class="stat-item"
+          :class="{ 'has-error': summaryStats.missingCount > 0 }"
+        >
           <span class="stat-value">{{ summaryStats.missingCount }}</span>
-          <span class="stat-label">{{ $t('quickCreate.preview.missing') }}</span>
+          <span class="stat-label">{{
+            $t("quickCreate.preview.missing")
+          }}</span>
         </div>
         <div class="stat-divider" v-if="state.archives.length > 0"></div>
         <div class="stat-item estimated-time" v-if="state.archives.length > 0">
           <font-awesome-icon :icon="['fas', 'clock']" class="time-icon" />
-          <span class="time-text">{{ $t('quickCreate.preview.estimatedTime', { time: estimatedTime }) }}</span>
+          <span class="time-text">{{
+            $t("quickCreate.preview.estimatedTime", { time: estimatedTime })
+          }}</span>
         </div>
       </div>
 
@@ -43,20 +54,35 @@
         <!-- 进度条 (创建中显示) -->
         <div class="progress-section" v-if="state.isCreating">
           <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: `${state.creationProgress}%` }"></div>
+            <div
+              class="progress-fill"
+              :style="{ width: `${state.creationProgress}%` }"
+            ></div>
           </div>
-          <span class="progress-text">{{ Math.round(state.creationProgress) }}%</span>
+          <span class="progress-text"
+            >{{ Math.round(state.creationProgress) }}%</span
+          >
         </div>
 
-        <button class="action-btn template-btn" @click="handleSaveTemplate"
-          :disabled="state.isCreating || state.archives.length === 0">
+        <button
+          class="action-btn template-btn"
+          @click="handleSaveTemplate"
+          :disabled="state.isCreating || state.archives.length === 0"
+        >
           <font-awesome-icon :icon="['fas', 'save']" />
-          {{ $t('quickCreate.preview.saveTemplate') }}
+          {{ $t("quickCreate.preview.saveTemplate") }}
         </button>
 
-        <button class="create-btn" :disabled="!canCreate || state.isCreating" @click="handleCreate"
-          :title="createButtonTooltip">
-          <font-awesome-icon :icon="state.isCreating ? ['fas', 'spinner'] : ['fas', 'plus']" :spin="state.isCreating" />
+        <button
+          class="create-btn"
+          :disabled="!canCreate || state.isCreating"
+          @click="handleCreate"
+          :title="createButtonTooltip"
+        >
+          <font-awesome-icon
+            :icon="state.isCreating ? ['fas', 'spinner'] : ['fas', 'plus']"
+            :spin="state.isCreating"
+          />
           {{ createButtonText }}
         </button>
       </div>
@@ -67,43 +93,86 @@
       <!-- 左侧边栏：智能输入 + 统一配置 -->
       <aside class="left-sidebar">
         <!-- 智能输入区 -->
-        <SmartInputArea v-model="inputNames" :archive-count="state.archives.length"
-          :level-detected-count="detectedStats.levelCount" :difficulty-detected-count="detectedStats.difficultyCount"
-          @parse-complete="onParseComplete" @manual-add="handleManualAdd" @load-template="handleLoadTemplate" />
+        <SmartInputArea
+          v-model="inputNames"
+          :archive-count="state.archives.length"
+          :level-detected-count="detectedStats.levelCount"
+          :difficulty-detected-count="detectedStats.difficultyCount"
+          @parse-complete="onParseComplete"
+          @manual-add="handleManualAdd"
+          @load-template="handleLoadTemplate"
+        />
 
         <!-- 统一配置区 -->
-        <UniformConfigPanel :config="state.uniformConfig" :smart-rules="state.smartRules"
-          @update:config="handleConfigUpdate" @update:smart-rules="handleSmartRulesUpdate" />
+        <UniformConfigPanel
+          :config="state.uniformConfig"
+          :smart-rules="state.smartRules"
+          @update:config="handleConfigUpdate"
+          @update:smart-rules="handleSmartRulesUpdate"
+        />
       </aside>
 
       <!-- 右侧主体：存档预览卡片流 -->
       <section class="card-flow-area">
-        <ArchiveCardFlow :archives="state.archives" :selected-ids="state.selectedArchiveIds"
-          :uniform-config="state.uniformConfig" :smart-rules="state.smartRules" @select="toggleArchiveSelection"
-          @select-all="selectAll" @invert-selection="invertSelection" @edit="openEditModal" @copy="copyArchive"
-          @remove="removeArchive" @batch-edit="openBatchEditModal" />
+        <ArchiveCardFlow
+          :archives="state.archives"
+          :selected-ids="state.selectedArchiveIds"
+          :uniform-config="state.uniformConfig"
+          :smart-rules="state.smartRules"
+          @select="toggleArchiveSelection"
+          @select-all="selectAll"
+          @invert-selection="invertSelection"
+          @edit="openEditModal"
+          @copy="copyArchive"
+          @remove="removeArchive"
+          @batch-edit="openBatchEditModal"
+        />
       </section>
     </main>
 
     <!-- 单个存档编辑模态框 -->
-    <ArchiveEditModal :visible="state.showIndividualEditModal" :archive="editingArchive"
-      :available-levels="availableLevels" @close="closeEditModal" @save="handleEditSave" />
+    <ArchiveEditModal
+      :visible="state.showIndividualEditModal"
+      :archive="editingArchive"
+      :available-levels="availableLevels"
+      @close="closeEditModal"
+      @save="handleEditSave"
+    />
 
     <!-- 批量编辑模态框 -->
-    <BatchEditModal :visible="state.showBatchEditModal" :selected-count="state.selectedArchiveIds.size"
-      :available-levels="availableLevels" @close="closeBatchEditModal" @apply="handleBatchEditApply" />
+    <BatchEditModal
+      :visible="state.showBatchEditModal"
+      :selected-count="state.selectedArchiveIds.size"
+      :available-levels="availableLevels"
+      @close="closeBatchEditModal"
+      @apply="handleBatchEditApply"
+    />
 
     <!-- 创建结果模态框 -->
     <Teleport to="body">
-      <div v-if="showResultModal" class="result-modal-overlay" @click.self="closeResultModal">
+      <div
+        v-if="showResultModal"
+        class="result-modal-overlay"
+        @click.self="closeResultModal"
+      >
         <div class="result-modal">
           <div class="result-modal-header">
             <h3 class="result-modal-title">
               <font-awesome-icon
-                :icon="creationResult?.failed > 0 ? ['fas', 'exclamation-triangle'] : ['fas', 'check-circle']"
-                :class="creationResult?.failed > 0 ? 'warning-icon' : 'success-icon'" />
-              {{ creationResult?.failed > 0 ? $t('quickCreate.result.partialTitle') :
-                $t('quickCreate.result.successTitle') }}
+                :icon="
+                  creationResult?.failed > 0
+                    ? ['fas', 'exclamation-triangle']
+                    : ['fas', 'check-circle']
+                "
+                :class="
+                  creationResult?.failed > 0 ? 'warning-icon' : 'success-icon'
+                "
+              />
+              {{
+                creationResult?.failed > 0
+                  ? $t("quickCreate.result.partialTitle")
+                  : $t("quickCreate.result.successTitle")
+              }}
             </h3>
             <button class="close-btn" @click="closeResultModal">
               <font-awesome-icon :icon="['fas', 'times']" />
@@ -113,20 +182,37 @@
           <div class="result-modal-body">
             <div class="result-summary">
               <div class="result-stat success">
-                <span class="result-value">{{ creationResult?.success || 0 }}</span>
-                <span class="result-label">{{ $t('quickCreate.result.successCount') }}</span>
+                <span class="result-value">{{
+                  creationResult?.success || 0
+                }}</span>
+                <span class="result-label">{{
+                  $t("quickCreate.result.successCount")
+                }}</span>
               </div>
               <div class="result-stat error" v-if="creationResult?.failed > 0">
-                <span class="result-value">{{ creationResult?.failed || 0 }}</span>
-                <span class="result-label">{{ $t('quickCreate.result.failedCount') }}</span>
+                <span class="result-value">{{
+                  creationResult?.failed || 0
+                }}</span>
+                <span class="result-label">{{
+                  $t("quickCreate.result.failedCount")
+                }}</span>
               </div>
             </div>
 
             <!-- 错误详情 -->
-            <div v-if="creationResult?.errors?.length > 0" class="error-details">
-              <h4 class="error-details-title">{{ $t('quickCreate.result.errorDetails') }}</h4>
+            <div
+              v-if="creationResult?.errors?.length > 0"
+              class="error-details"
+            >
+              <h4 class="error-details-title">
+                {{ $t("quickCreate.result.errorDetails") }}
+              </h4>
               <ul class="error-list">
-                <li v-for="(error, index) in creationResult.errors" :key="index" class="error-item">
+                <li
+                  v-for="(error, index) in creationResult.errors"
+                  :key="index"
+                  class="error-item"
+                >
                   <span class="error-name">{{ error.name }}</span>
                   <span class="error-message">{{ error.error }}</span>
                 </li>
@@ -136,29 +222,45 @@
 
           <div class="result-modal-footer">
             <button class="action-btn secondary-btn" @click="closeResultModal">
-              {{ $t('quickCreate.result.continueEditing') }}
+              {{ $t("quickCreate.result.continueEditing") }}
             </button>
             <!-- Requirements 19.3, 19.4: 根据创建数量显示不同的导航按钮 -->
-            <button v-if="creationResult?.success === 1 && creationResult?.failed === 0" 
-              class="action-btn primary-btn" @click="editSingleArchive">
+            <button
+              v-if="
+                creationResult?.success === 1 && creationResult?.failed === 0
+              "
+              class="action-btn primary-btn"
+              @click="editSingleArchive"
+            >
               <font-awesome-icon :icon="['fas', 'edit']" />
-              {{ $t('quickCreate.result.editArchive') }}
+              {{ $t("quickCreate.result.editArchive") }}
             </button>
-            <button v-else class="action-btn primary-btn" @click="navigateToArchives">
+            <button
+              v-else
+              class="action-btn primary-btn"
+              @click="navigateToArchives"
+            >
               <font-awesome-icon :icon="['fas', 'list']" />
-              {{ $t('quickCreate.result.viewArchives') }}
+              {{ $t("quickCreate.result.viewArchives") }}
             </button>
           </div>
         </div>
       </div>
 
       <!-- 草稿恢复提示模态框 -->
-      <div v-if="showDraftRecoveryPrompt" class="result-modal-overlay" @click.self="ignoreDraft">
+      <div
+        v-if="showDraftRecoveryPrompt"
+        class="result-modal-overlay"
+        @click.self="ignoreDraft"
+      >
         <div class="result-modal draft-recovery-modal">
           <div class="result-modal-header">
             <h3 class="result-modal-title">
-              <font-awesome-icon :icon="['fas', 'file-alt']" class="draft-icon" />
-              {{ $t('quickCreate.draft.title') }}
+              <font-awesome-icon
+                :icon="['fas', 'file-alt']"
+                class="draft-icon"
+              />
+              {{ $t("quickCreate.draft.title") }}
             </h3>
             <button class="close-btn" @click="ignoreDraft">
               <font-awesome-icon :icon="['fas', 'times']" />
@@ -167,32 +269,44 @@
 
           <div class="result-modal-body">
             <p class="draft-message">
-              {{ $t('quickCreate.draft.message', { count: draftInfo?.archiveCount || 0 }) }}
+              {{
+                $t("quickCreate.draft.message", {
+                  count: draftInfo?.archiveCount || 0,
+                })
+              }}
             </p>
             <p class="draft-time" v-if="draftInfo?.savedAt">
-              {{ $t('quickCreate.draft.savedAt') }}: {{ formatDraftTime(draftInfo.savedAt) }}
+              {{ $t("quickCreate.draft.savedAt") }}:
+              {{ formatDraftTime(draftInfo.savedAt) }}
             </p>
           </div>
 
           <div class="result-modal-footer">
             <button class="action-btn secondary-btn" @click="ignoreDraft">
-              {{ $t('quickCreate.draft.ignore') }}
+              {{ $t("quickCreate.draft.ignore") }}
             </button>
             <button class="action-btn primary-btn" @click="recoverDraft">
               <font-awesome-icon :icon="['fas', 'undo']" />
-              {{ $t('quickCreate.draft.recover') }}
+              {{ $t("quickCreate.draft.recover") }}
             </button>
           </div>
         </div>
       </div>
 
       <!-- 大量数据警告模态框 -->
-      <div v-if="showLargeDataWarning" class="result-modal-overlay" @click.self="dismissLargeDataWarning">
+      <div
+        v-if="showLargeDataWarning"
+        class="result-modal-overlay"
+        @click.self="dismissLargeDataWarning"
+      >
         <div class="result-modal large-data-warning-modal">
           <div class="result-modal-header">
             <h3 class="result-modal-title">
-              <font-awesome-icon :icon="['fas', 'exclamation-triangle']" class="warning-icon" />
-              {{ $t('quickCreate.largeData.title') }}
+              <font-awesome-icon
+                :icon="['fas', 'exclamation-triangle']"
+                class="warning-icon"
+              />
+              {{ $t("quickCreate.largeData.title") }}
             </h3>
             <button class="close-btn" @click="dismissLargeDataWarning">
               <font-awesome-icon :icon="['fas', 'times']" />
@@ -201,35 +315,44 @@
 
           <div class="result-modal-body">
             <p class="large-data-message">
-              <template v-if="largeDataWarningInfo?.type === 'very_large_input'">
-                {{ $t('quickCreate.largeData.veryLargeMessage', {
-                  count: largeDataWarningInfo?.count || 0, threshold:
-                    VERY_LARGE_NAME_THRESHOLD
-                }) }}
+              <template
+                v-if="largeDataWarningInfo?.type === 'very_large_input'"
+              >
+                {{
+                  $t("quickCreate.largeData.veryLargeMessage", {
+                    count: largeDataWarningInfo?.count || 0,
+                    threshold: VERY_LARGE_NAME_THRESHOLD,
+                  })
+                }}
               </template>
               <template v-else>
-                {{ $t('quickCreate.largeData.largeMessage', {
-                  count: largeDataWarningInfo?.count || 0, threshold:
-                    LARGE_ARCHIVE_THRESHOLD
-                }) }}
+                {{
+                  $t("quickCreate.largeData.largeMessage", {
+                    count: largeDataWarningInfo?.count || 0,
+                    threshold: LARGE_ARCHIVE_THRESHOLD,
+                  })
+                }}
               </template>
             </p>
             <div class="large-data-tips">
               <p class="tip-item">
                 <font-awesome-icon :icon="['fas', 'lightbulb']" />
-                {{ $t('quickCreate.largeData.tip1') }}
+                {{ $t("quickCreate.largeData.tip1") }}
               </p>
               <p class="tip-item">
                 <font-awesome-icon :icon="['fas', 'lightbulb']" />
-                {{ $t('quickCreate.largeData.tip2') }}
+                {{ $t("quickCreate.largeData.tip2") }}
               </p>
             </div>
           </div>
 
           <div class="result-modal-footer">
-            <button class="action-btn primary-btn" @click="dismissLargeDataWarning">
+            <button
+              class="action-btn primary-btn"
+              @click="dismissLargeDataWarning"
+            >
               <font-awesome-icon :icon="['fas', 'check']" />
-              {{ $t('quickCreate.largeData.understand') }}
+              {{ $t("quickCreate.largeData.understand") }}
             </button>
           </div>
         </div>
@@ -237,52 +360,57 @@
     </Teleport>
 
     <!-- 新手引导 -->
-    <TutorialOverlay :visible="showTutorial" @close="closeTutorial" @skip="closeTutorial" @complete="closeTutorial" />
+    <TutorialOverlay
+      :visible="showTutorial"
+      @close="closeTutorial"
+      @skip="closeTutorial"
+      @complete="closeTutorial"
+    />
   </div>
 </template>
 
 <script>
-import { ref, watch, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { useQuickCreate } from '@/composables/useQuickCreate'
-import { useToast } from '@/composables/useToast'
-import SmartInputArea from '@/components/SmartInputArea.vue'
-import UniformConfigPanel from '@/components/UniformConfigPanel.vue'
-import ArchiveCardFlow from '@/components/ArchiveCardFlow.vue'
-import ArchiveEditModal from '@/components/ArchiveEditModal.vue'
-import BatchEditModal from '@/components/BatchEditModal.vue'
-import TutorialOverlay from '@/components/TutorialOverlay.vue'
+import { ref, watch, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { useQuickCreate } from "@/composables/useQuickCreate";
+import { useToast } from "@/composables/useToast";
+import SmartInputArea from "@/components/SmartInputArea.vue";
+import UniformConfigPanel from "@/components/UniformConfigPanel.vue";
+import ArchiveCardFlow from "@/components/ArchiveCardFlow.vue";
+import ArchiveEditModal from "@/components/ArchiveEditModal.vue";
+import BatchEditModal from "@/components/BatchEditModal.vue";
+import TutorialOverlay from "@/components/TutorialOverlay.vue";
 
 export default {
-  name: 'QuickCreateArchive',
+  name: "QuickCreateArchive",
   components: {
     SmartInputArea,
     UniformConfigPanel,
     ArchiveCardFlow,
     ArchiveEditModal,
     BatchEditModal,
-    TutorialOverlay
+    TutorialOverlay,
   },
   setup() {
-    const router = useRouter()
-    const { t } = useI18n({ useScope: 'global' })
-    const { showSuccess, showError, showInfo } = useToast()
+    const router = useRouter();
+    const { t } = useI18n({ useScope: "global" });
+    const { showSuccess, showError, showInfo } = useToast();
 
     // 创建结果状态
-    const creationResult = ref(null)
-    const showResultModal = ref(false)
+    const creationResult = ref(null);
+    const showResultModal = ref(false);
 
     // 草稿恢复提示状态
-    const showDraftRecoveryPrompt = ref(false)
-    const draftInfo = ref(null)
+    const showDraftRecoveryPrompt = ref(false);
+    const draftInfo = ref(null);
 
     // 大量数据警告状态
-    const showLargeDataWarning = ref(false)
-    const largeDataWarningInfo = ref(null)
+    const showLargeDataWarning = ref(false);
+    const largeDataWarningInfo = ref(null);
 
     // 新手引导状态
-    const showTutorial = ref(false)
+    const showTutorial = ref(false);
 
     const {
       state,
@@ -319,131 +447,183 @@ export default {
       LARGE_ARCHIVE_THRESHOLD,
       VERY_LARGE_NAME_THRESHOLD,
       // 重新计算
-      recalculateArchives
-    } = useQuickCreate()
+      recalculateArchives,
+    } = useQuickCreate();
 
-    const inputNames = ref([])
+    const inputNames = ref([]);
 
     // 检测统计（从 archives 计算）
     const detectedStats = computed(() => {
-      let levelCount = 0
-      let difficultyCount = 0
+      let levelCount = 0;
+      let difficultyCount = 0;
       for (const archive of state.archives) {
-        if (archive.parsedInfo?.levelKeyword) levelCount++
-        if (archive.parsedInfo?.difficultyKeyword) difficultyCount++
+        if (archive.parsedInfo?.levelKeyword) levelCount++;
+        if (archive.parsedInfo?.difficultyKeyword) difficultyCount++;
       }
-      return { levelCount, difficultyCount }
-    })
+      return { levelCount, difficultyCount };
+    });
 
     // 计算预计耗时（Rust后端很快，每个存档约0.3秒）
     const estimatedTime = computed(() => {
-      const count = state.archives.length
-      if (count === 0) return '0s'
+      const count = state.archives.length;
+      if (count === 0) return "0s";
 
       // 每个存档约0.3秒，加上批处理间隔
-      const batches = Math.ceil(count / 5)
-      const archiveTime = count * 0.3 // 每个存档0.3秒
-      const batchDelay = (batches - 1) * 0.1 // 批次间延迟
-      const totalSeconds = Math.ceil(archiveTime + batchDelay)
+      const batches = Math.ceil(count / 5);
+      const archiveTime = count * 0.3; // 每个存档0.3秒
+      const batchDelay = (batches - 1) * 0.1; // 批次间延迟
+      const totalSeconds = Math.ceil(archiveTime + batchDelay);
 
       if (totalSeconds < 1) {
-        return '<1s'
+        return "<1s";
       } else if (totalSeconds < 60) {
-        return `${totalSeconds}s`
+        return `${totalSeconds}s`;
       } else {
-        const minutes = Math.floor(totalSeconds / 60)
-        const remainingSeconds = totalSeconds % 60
-        return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`
+        const minutes = Math.floor(totalSeconds / 60);
+        const remainingSeconds = totalSeconds % 60;
+        return remainingSeconds > 0
+          ? `${minutes}m ${remainingSeconds}s`
+          : `${minutes}m`;
       }
-    })
+    });
 
     // 创建按钮文本
     const createButtonText = computed(() => {
       if (state.isCreating) {
-        return t('quickCreate.preview.creating')
+        return t("quickCreate.preview.creating");
       }
-      const count = state.selectedArchiveIds.size > 0 ? state.selectedArchiveIds.size : state.archives.length
-      return t('quickCreate.preview.create', { count })
-    })
+      const count =
+        state.selectedArchiveIds.size > 0
+          ? state.selectedArchiveIds.size
+          : state.archives.length;
+      return t("quickCreate.preview.create", { count });
+    });
 
     // 创建按钮提示
     const createButtonTooltip = computed(() => {
       if (state.archives.length === 0) {
-        return t('quickCreate.preview.noArchives')
+        return t("quickCreate.preview.noArchives");
       }
       if (summaryStats.value.missingCount > 0) {
-        return t('quickCreate.preview.hasMissingParams', { count: summaryStats.value.missingCount })
+        return t("quickCreate.preview.hasMissingParams", {
+          count: summaryStats.value.missingCount,
+        });
       }
-      return ''
-    })
+      return "";
+    });
 
     // 可用层级列表
     const availableLevels = computed(() => {
       // 从 LevelName_Display 获取所有层级
       const levels = [
-        'Level0', 'TopFloor', 'MiddleFloor', 'GarageLevel2', 'BottomFloor',
-        'TheHub', 'Pipes1', 'ElectricalStation', 'Office', 'Hotel',
-        'Floor3', 'BoilerRoom', 'Pipes2', 'LevelFun', 'Poolrooms',
-        'LevelRun', 'TheEnd', 'Level922', 'Level94', 'AnimatedKingdom',
-        'LightsOut', 'OceanMap', 'CaveLevel', 'Level05', 'Level9',
-        'AbandonedBase', 'Level10', 'Level3999', 'Level07', 'Snackrooms',
-        'LevelDash', 'Level188_Expanded', 'Poolrooms_Expanded',
-        'WaterPark_Level01_P', 'WaterPark_Level02_P', 'WaterPark_Level03_P',
-        'LevelFun_Expanded', 'Zone1_Modified', 'Zone2_Modified',
-        'Zone3_Baked', 'Zone4', 'Level52', 'TunnelLevel', 'Bunker',
-        'GraffitiLevel', 'Grassrooms_Expanded', 'Level974', 'LevelCheat'
-      ]
-      return levels.map(level => ({
+        "Level0",
+        "TopFloor",
+        "MiddleFloor",
+        "GarageLevel2",
+        "BottomFloor",
+        "TheHub",
+        "Pipes1",
+        "ElectricalStation",
+        "Office",
+        "Hotel",
+        "Floor3",
+        "BoilerRoom",
+        "Pipes2",
+        "LevelFun",
+        "Poolrooms",
+        "LevelRun",
+        "TheEnd",
+        "Level922",
+        "Level94",
+        "AnimatedKingdom",
+        "LightsOut",
+        "OceanMap",
+        "CaveLevel",
+        "Level05",
+        "Level9",
+        "AbandonedBase",
+        "Level10",
+        "Level3999",
+        "Level07",
+        "Snackrooms",
+        "LevelDash",
+        "Level188_Expanded",
+        "Poolrooms_Expanded",
+        "WaterPark_Level01_P",
+        "WaterPark_Level02_P",
+        "WaterPark_Level03_P",
+        "LevelFun_Expanded",
+        "Zone1_Modified",
+        "Zone2_Modified",
+        "Zone3_Baked",
+        "Zone4",
+        "Level52",
+        "TunnelLevel",
+        "Bunker",
+        "GraffitiLevel",
+        "Grassrooms_Expanded",
+        "Level974",
+        "LevelCheat",
+      ];
+      return levels.map((level) => ({
         value: level,
-        label: t(`LevelName_Display.${level}`) || level
-      }))
-    })
+        label: t(`LevelName_Display.${level}`) || level,
+      }));
+    });
 
     // 当前编辑的存档
     const editingArchive = computed(() => {
       if (state.editingArchiveId) {
-        return state.archives.find(a => a.id === state.editingArchiveId) || null
+        return (
+          state.archives.find((a) => a.id === state.editingArchiveId) || null
+        );
       }
-      return null
-    })
+      return null;
+    });
 
     // 标志：是否正在恢复状态（用于禁用 inputNames 的 watch）
-    const isRestoringState = ref(false)
+    const isRestoringState = ref(false);
 
-    watch(inputNames, (newNames) => {
-      // 如果正在恢复状态，则不处理
-      if (isRestoringState.value) {
-        return
-      }
-      
-      clearArchives()
-      if (newNames.length > 0) {
-        // 检查是否超过非常大量数据阈值
-        if (newNames.length > VERY_LARGE_NAME_THRESHOLD) {
-          largeDataWarningInfo.value = {
-            type: 'very_large_input',
-            count: newNames.length,
-            threshold: VERY_LARGE_NAME_THRESHOLD
-          }
-          showLargeDataWarning.value = true
+    watch(
+      inputNames,
+      (newNames) => {
+        // 如果正在恢复状态，则不处理
+        if (isRestoringState.value) {
+          return;
         }
 
-        const result = addArchives(newNames)
+        clearArchives();
+        if (newNames.length > 0) {
+          // 检查是否超过非常大量数据阈值
+          if (newNames.length > VERY_LARGE_NAME_THRESHOLD) {
+            largeDataWarningInfo.value = {
+              type: "very_large_input",
+              count: newNames.length,
+              threshold: VERY_LARGE_NAME_THRESHOLD,
+            };
+            showLargeDataWarning.value = true;
+          }
 
-        // 检查添加后是否有大量数据警告
-        if (result.warnings && result.warnings.length > 0) {
-          const largeCountWarning = result.warnings.find(w => w.type === 'large_archive_count')
-          if (largeCountWarning && !showLargeDataWarning.value) {
-            largeDataWarningInfo.value = largeCountWarning
-            showLargeDataWarning.value = true
+          const result = addArchives(newNames);
+
+          // 检查添加后是否有大量数据警告
+          if (result.warnings && result.warnings.length > 0) {
+            const largeCountWarning = result.warnings.find(
+              (w) => w.type === "large_archive_count"
+            );
+            if (largeCountWarning && !showLargeDataWarning.value) {
+              largeDataWarningInfo.value = largeCountWarning;
+              showLargeDataWarning.value = true;
+            }
           }
         }
-      }
-    }, { deep: true })
+      },
+      { deep: true }
+    );
 
     const goBack = () => {
-      router.push('/select-create-mode')
-    }
+      router.push("/select-create-mode");
+    };
 
     /**
      * 切换到经典模式
@@ -452,29 +632,38 @@ export default {
      */
     const switchToClassicMode = () => {
       // 如果有统一配置，可以通过 query 参数传递给经典模式
-      const query = {}
-      
+      const query = {};
+
       // 传递统一配置中的层级设置
-      if (state.uniformConfig.level.enabled && state.uniformConfig.level.value) {
-        query.level = state.uniformConfig.level.value
+      if (
+        state.uniformConfig.level.enabled &&
+        state.uniformConfig.level.value
+      ) {
+        query.level = state.uniformConfig.level.value;
       }
-      
+
       // 传递统一配置中的难度设置
-      if (state.uniformConfig.difficulty.enabled && state.uniformConfig.difficulty.value) {
-        query.difficulty = state.uniformConfig.difficulty.value
+      if (
+        state.uniformConfig.difficulty.enabled &&
+        state.uniformConfig.difficulty.value
+      ) {
+        query.difficulty = state.uniformConfig.difficulty.value;
       }
-      
+
       // 传递统一配置中的实际难度设置
-      if (state.uniformConfig.actualDifficulty.enabled && state.uniformConfig.actualDifficulty.value) {
-        query.actualDifficulty = state.uniformConfig.actualDifficulty.value
+      if (
+        state.uniformConfig.actualDifficulty.enabled &&
+        state.uniformConfig.actualDifficulty.value
+      ) {
+        query.actualDifficulty = state.uniformConfig.actualDifficulty.value;
       }
-      
-      router.push({ path: '/create-archive', query })
-    }
+
+      router.push({ path: "/create-archive", query });
+    };
 
     const onParseComplete = (count) => {
-      console.log(`Parsed ${count} names`)
-    }
+      console.log(`Parsed ${count} names`);
+    };
 
     /**
      * 处理手动添加 - 跳转到经典模式配置存档
@@ -484,93 +673,103 @@ export default {
       // 保存当前状态到 sessionStorage，以便返回时恢复
       if (state.archives.length > 0) {
         const currentState = {
-          archives: state.archives.map(a => ({
+          archives: state.archives.map((a) => ({
             id: a.id,
             name: a.name,
             level: a.level,
             difficulty: a.difficulty,
             actualDifficulty: a.actualDifficulty,
             inventoryTemplate: a.inventoryTemplate,
-            parsedInfo: a.parsedInfo
+            parsedInfo: a.parsedInfo,
           })),
           uniformConfig: state.uniformConfig,
-          smartRules: state.smartRules
-        }
-        sessionStorage.setItem('quickModeCurrentState', JSON.stringify(currentState))
+          smartRules: state.smartRules,
+        };
+        sessionStorage.setItem(
+          "quickModeCurrentState",
+          JSON.stringify(currentState)
+        );
       }
-      
+
       // 跳转到经典模式，带上 quickMode 参数表示是从快速模式来的
-      router.push({ path: '/create-archive', query: { quickMode: 'true' } })
-    }
+      router.push({ path: "/create-archive", query: { quickMode: "true" } });
+    };
 
     const handleCreate = async () => {
-      if (!canCreate.value || state.isCreating) return
+      if (!canCreate.value || state.isCreating) return;
 
       try {
-        const results = await batchCreateArchives()
+        const results = await batchCreateArchives();
 
         // 保存结果用于显示
-        creationResult.value = results
+        creationResult.value = results;
 
         if (results.success > 0) {
           // 显示成功 toast
-          const successMessage = results.failed > 0
-            ? t('quickCreate.result.partialSuccess', { success: results.success, failed: results.failed })
-            : t('quickCreate.result.success', { count: results.success })
+          const successMessage =
+            results.failed > 0
+              ? t("quickCreate.result.partialSuccess", {
+                  success: results.success,
+                  failed: results.failed,
+                })
+              : t("quickCreate.result.success", { count: results.success });
 
-          showSuccess(successMessage, '✓')
+          showSuccess(successMessage, "✓");
 
           // 如果全部成功，清空列表
           if (results.failed === 0) {
-            resetState()
-            inputNames.value = []
+            resetState();
+            inputNames.value = [];
 
             // 延迟导航，让用户看到成功提示
             setTimeout(() => {
-              router.push('/')
-            }, 1500)
+              router.push("/");
+            }, 1500);
           } else {
             // 部分失败，显示结果模态框
-            showResultModal.value = true
+            showResultModal.value = true;
           }
         } else if (results.failed > 0) {
           // 全部失败，显示错误
-          showError(t('quickCreate.result.failed'), '✗')
-          showResultModal.value = true
+          showError(t("quickCreate.result.failed"), "✗");
+          showResultModal.value = true;
         }
       } catch (error) {
-        console.error('批量创建失败:', error)
-        showError(t('quickCreate.result.error') + ': ' + (error.message || '未知错误'), '✗')
+        console.error("批量创建失败:", error);
+        showError(
+          t("quickCreate.result.error") + ": " + (error.message || "未知错误"),
+          "✗"
+        );
       }
-    }
+    };
 
     // 关闭结果模态框
     const closeResultModal = () => {
-      showResultModal.value = false
-      creationResult.value = null
-    }
+      showResultModal.value = false;
+      creationResult.value = null;
+    };
 
     // 导航到存档管理页面
     const navigateToArchives = () => {
-      closeResultModal()
-      resetState()
-      inputNames.value = []
-      router.push('/')
-    }
+      closeResultModal();
+      resetState();
+      inputNames.value = [];
+      router.push("/");
+    };
 
     /**
      * 编辑单个存档 - 导航到经典模式编辑
      * Requirements: 19.3 - 单个存档时显示"编辑此存档"
      */
     const editSingleArchive = () => {
-      closeResultModal()
+      closeResultModal();
       // 获取最后创建的存档名称，用于在存档列表中定位
-      const lastCreatedName = creationResult.value?.lastCreatedName
-      resetState()
-      inputNames.value = []
+      const lastCreatedName = creationResult.value?.lastCreatedName;
+      resetState();
+      inputNames.value = [];
       // 导航到首页（存档列表），可以在那里编辑存档
-      router.push({ path: '/', query: { highlight: lastCreatedName } })
-    }
+      router.push({ path: "/", query: { highlight: lastCreatedName } });
+    };
 
     /**
      * 保存为模板
@@ -578,54 +777,61 @@ export default {
      */
     const handleSaveTemplate = async () => {
       if (state.archives.length === 0) {
-        showError(t('quickCreate.template.noArchives'), '⚠️')
-        return
+        showError(t("quickCreate.template.noArchives"), "⚠️");
+        return;
       }
 
       try {
         // 动态导入 Tauri API
-        const { save } = await import('@tauri-apps/plugin-dialog')
-        const { writeTextFile } = await import('@tauri-apps/plugin-fs')
+        const { save } = await import("@tauri-apps/plugin-dialog");
+        const { writeTextFile } = await import("@tauri-apps/plugin-fs");
 
         // 打开保存对话框
         const filePath = await save({
-          title: t('quickCreate.template.saveTitle'),
-          defaultPath: 'quick-create-template.json',
-          filters: [{
-            name: 'JSON',
-            extensions: ['json']
-          }]
-        })
+          title: t("quickCreate.template.saveTitle"),
+          defaultPath: "quick-create-template.json",
+          filters: [
+            {
+              name: "JSON",
+              extensions: ["json"],
+            },
+          ],
+        });
 
         if (!filePath) {
           // 用户取消了保存
-          return
+          return;
         }
 
         // 构建模板数据
         const templateData = {
-          version: '1.0',
+          version: "1.0",
           createdAt: new Date().toISOString(),
-          archives: state.archives.map(archive => ({
+          archives: state.archives.map((archive) => ({
             name: archive.name,
             level: archive.level,
             difficulty: archive.difficulty,
             actualDifficulty: archive.actualDifficulty,
-            inventoryTemplate: archive.inventoryTemplate
+            inventoryTemplate: archive.inventoryTemplate,
           })),
           uniformConfig: JSON.parse(JSON.stringify(state.uniformConfig)),
-          smartRules: JSON.parse(JSON.stringify(state.smartRules))
-        }
+          smartRules: JSON.parse(JSON.stringify(state.smartRules)),
+        };
 
         // 写入文件
-        await writeTextFile(filePath, JSON.stringify(templateData, null, 2))
+        await writeTextFile(filePath, JSON.stringify(templateData, null, 2));
 
-        showSuccess(t('quickCreate.template.saved'), '✓')
+        showSuccess(t("quickCreate.template.saved"), "✓");
       } catch (error) {
-        console.error('保存模板失败:', error)
-        showError(t('quickCreate.template.saveFailed') + ': ' + (error.message || '未知错误'), '✗')
+        console.error("保存模板失败:", error);
+        showError(
+          t("quickCreate.template.saveFailed") +
+            ": " +
+            (error.message || "未知错误"),
+          "✗"
+        );
       }
-    }
+    };
 
     /**
      * 加载模板
@@ -635,91 +841,113 @@ export default {
     const handleLoadTemplate = async (templateData) => {
       try {
         // 验证模板格式
-        if (!templateData.version || !templateData.archives || !Array.isArray(templateData.archives)) {
-          showError(t('quickCreate.template.invalidFormat'), '⚠️')
-          return
+        if (
+          !templateData.version ||
+          !templateData.archives ||
+          !Array.isArray(templateData.archives)
+        ) {
+          showError(t("quickCreate.template.invalidFormat"), "⚠️");
+          return;
         }
 
         // 设置恢复状态标志，防止 watch(inputNames) 触发 clearArchives
-        isRestoringState.value = true
+        isRestoringState.value = true;
 
         // 清空当前存档
-        clearArchives()
+        clearArchives();
 
         // 恢复统一配置
         if (templateData.uniformConfig) {
           for (const key of Object.keys(templateData.uniformConfig)) {
-            if (state.uniformConfig[key] && typeof templateData.uniformConfig[key] === 'object') {
-              Object.assign(state.uniformConfig[key], templateData.uniformConfig[key])
+            if (
+              state.uniformConfig[key] &&
+              typeof templateData.uniformConfig[key] === "object"
+            ) {
+              Object.assign(
+                state.uniformConfig[key],
+                templateData.uniformConfig[key]
+              );
             } else {
-              state.uniformConfig[key] = templateData.uniformConfig[key]
+              state.uniformConfig[key] = templateData.uniformConfig[key];
             }
           }
         }
 
         // 恢复智能规则
         if (templateData.smartRules) {
-          Object.assign(state.smartRules, templateData.smartRules)
+          Object.assign(state.smartRules, templateData.smartRules);
         }
 
         // 添加存档
-        const names = templateData.archives.map(a => a.name)
-        addArchives(names)
+        const names = templateData.archives.map((a) => a.name);
+        addArchives(names);
 
         // 恢复每个存档的个别配置
-        for (let i = 0; i < templateData.archives.length && i < state.archives.length; i++) {
-          const archiveData = templateData.archives[i]
-          const archive = state.archives[i]
-          if (archiveData.level) archive.level = archiveData.level
-          if (archiveData.difficulty) archive.difficulty = archiveData.difficulty
-          if (archiveData.actualDifficulty) archive.actualDifficulty = archiveData.actualDifficulty
-          if (archiveData.inventoryTemplate) archive.inventoryTemplate = archiveData.inventoryTemplate
+        for (
+          let i = 0;
+          i < templateData.archives.length && i < state.archives.length;
+          i++
+        ) {
+          const archiveData = templateData.archives[i];
+          const archive = state.archives[i];
+          if (archiveData.level) archive.level = archiveData.level;
+          if (archiveData.difficulty)
+            archive.difficulty = archiveData.difficulty;
+          if (archiveData.actualDifficulty)
+            archive.actualDifficulty = archiveData.actualDifficulty;
+          if (archiveData.inventoryTemplate)
+            archive.inventoryTemplate = archiveData.inventoryTemplate;
         }
 
         // 重新计算所有存档
-        recalculateArchives()
+        recalculateArchives();
 
         // 更新输入框显示
-        inputNames.value = state.archives.map(a => a.name)
+        inputNames.value = state.archives.map((a) => a.name);
 
         // 等待 Vue 完成响应式更新
-        await nextTick()
+        await nextTick();
 
-        showSuccess(t('quickCreate.template.loaded'), '✓')
+        showSuccess(t("quickCreate.template.loaded"), "✓");
       } catch (error) {
-        console.error('加载模板失败:', error)
-        showError(t('quickCreate.template.loadFailed') + ': ' + (error.message || '未知错误'), '✗')
+        console.error("加载模板失败:", error);
+        showError(
+          t("quickCreate.template.loadFailed") +
+            ": " +
+            (error.message || "未知错误"),
+          "✗"
+        );
       } finally {
         // 重置恢复状态标志
-        isRestoringState.value = false
+        isRestoringState.value = false;
       }
-    }
+    };
 
     // 处理统一配置更新
     const handleConfigUpdate = (newConfig) => {
       for (const [field, value] of Object.entries(newConfig)) {
         if (state.uniformConfig[field]) {
-          updateUniformConfig(field, value)
+          updateUniformConfig(field, value);
         }
       }
-    }
+    };
 
     // 处理智能规则更新
     const handleSmartRulesUpdate = (newRules) => {
-      updateSmartRules(newRules)
-    }
+      updateSmartRules(newRules);
+    };
 
     // 打开单个存档编辑模态框
     const openEditModal = (archiveId) => {
-      state.editingArchiveId = archiveId
-      state.showIndividualEditModal = true
-    }
+      state.editingArchiveId = archiveId;
+      state.showIndividualEditModal = true;
+    };
 
     // 关闭单个存档编辑模态框
     const closeEditModal = () => {
-      state.showIndividualEditModal = false
-      state.editingArchiveId = null
-    }
+      state.showIndividualEditModal = false;
+      state.editingArchiveId = null;
+    };
 
     // 处理单个存档编辑保存
     const handleEditSave = (updates) => {
@@ -729,27 +957,27 @@ export default {
           level: updates.level,
           difficulty: updates.difficulty,
           actualDifficulty: updates.actualDifficulty,
-          inventoryTemplate: updates.inventoryTemplate
-        })
+          inventoryTemplate: updates.inventoryTemplate,
+        });
       }
-    }
+    };
 
     // 打开批量编辑模态框
     const openBatchEditModal = () => {
       if (state.selectedArchiveIds.size > 0) {
-        state.showBatchEditModal = true
+        state.showBatchEditModal = true;
       }
-    }
+    };
 
     // 关闭批量编辑模态框
     const closeBatchEditModal = () => {
-      state.showBatchEditModal = false
-    }
+      state.showBatchEditModal = false;
+    };
 
     // 处理批量编辑应用
     const handleBatchEditApply = (updates) => {
-      batchUpdateSelected(updates)
-    }
+      batchUpdateSelected(updates);
+    };
 
     // ==================== 草稿管理 ====================
 
@@ -759,41 +987,41 @@ export default {
      */
     const recoverDraft = async () => {
       // 设置恢复状态标志，防止 watch(inputNames) 触发 clearArchives
-      isRestoringState.value = true
-      
+      isRestoringState.value = true;
+
       if (loadDraft()) {
         // 从恢复的存档中提取名称用于输入区显示
-        inputNames.value = state.archives.map(a => a.name)
-        
+        inputNames.value = state.archives.map((a) => a.name);
+
         // 等待 Vue 完成响应式更新，确保 watch 不会被触发
-        await nextTick()
-        
-        showInfo(t('quickCreate.draft.recovered'), '📋')
+        await nextTick();
+
+        showInfo(t("quickCreate.draft.recovered"), "📋");
       }
-      showDraftRecoveryPrompt.value = false
-      draftInfo.value = null
-      
+      showDraftRecoveryPrompt.value = false;
+      draftInfo.value = null;
+
       // 重置恢复状态标志
-      isRestoringState.value = false
-    }
+      isRestoringState.value = false;
+    };
 
     /**
      * 忽略草稿
      */
     const ignoreDraft = () => {
-      clearDraft()
-      showDraftRecoveryPrompt.value = false
-      draftInfo.value = null
-    }
+      clearDraft();
+      showDraftRecoveryPrompt.value = false;
+      draftInfo.value = null;
+    };
 
     /**
      * 关闭大量数据警告
      * Requirements: 16.5, 17.1
      */
     const dismissLargeDataWarning = () => {
-      showLargeDataWarning.value = false
-      largeDataWarningInfo.value = null
-    }
+      showLargeDataWarning.value = false;
+      largeDataWarningInfo.value = null;
+    };
 
     /**
      * 格式化草稿保存时间
@@ -801,171 +1029,184 @@ export default {
      * @returns {string} 格式化后的时间字符串
      */
     const formatDraftTime = (date) => {
-      if (!date) return ''
-      const now = new Date()
-      const diff = now - date
+      if (!date) return "";
+      const now = new Date();
+      const diff = now - date;
 
       // 小于1分钟
       if (diff < 60000) {
-        return t('quickCreate.draft.justNow')
+        return t("quickCreate.draft.justNow");
       }
       // 小于1小时
       if (diff < 3600000) {
-        const minutes = Math.floor(diff / 60000)
-        return t('quickCreate.draft.minutesAgo', { count: minutes })
+        const minutes = Math.floor(diff / 60000);
+        return t("quickCreate.draft.minutesAgo", { count: minutes });
       }
       // 小于24小时
       if (diff < 86400000) {
-        const hours = Math.floor(diff / 3600000)
-        return t('quickCreate.draft.hoursAgo', { count: hours })
+        const hours = Math.floor(diff / 3600000);
+        return t("quickCreate.draft.hoursAgo", { count: hours });
       }
       // 超过24小时，显示日期
-      return date.toLocaleDateString()
-    }
+      return date.toLocaleDateString();
+    };
 
     // 检查是否需要显示新手引导
     // Requirements: 18.1 - 首次访问时显示教程
     const checkTutorial = () => {
-      const tutorialCompleted = localStorage.getItem('quick_create_tutorial_completed')
+      const tutorialCompleted = localStorage.getItem(
+        "quick_create_tutorial_completed"
+      );
       if (!tutorialCompleted) {
-        showTutorial.value = true
+        showTutorial.value = true;
       }
-    }
+    };
 
     // 关闭新手引导
     const closeTutorial = () => {
-      showTutorial.value = false
-    }
+      showTutorial.value = false;
+    };
 
     // 组件挂载时检查草稿并启动自动保存
     onMounted(async () => {
       // 检查是否有从经典模式返回的配置数据
       // Requirements: 19.2 - 从经典模式带入配置
-      const quickModeConfigJson = sessionStorage.getItem('quickModeArchiveConfig')
-      const previousStateJson = sessionStorage.getItem('quickModeCurrentState')
-      
+      const quickModeConfigJson = sessionStorage.getItem(
+        "quickModeArchiveConfig"
+      );
+      const previousStateJson = sessionStorage.getItem("quickModeCurrentState");
+
       if (quickModeConfigJson) {
         // 设置恢复状态标志，防止 watch(inputNames) 触发 clearArchives
-        isRestoringState.value = true
-        
+        isRestoringState.value = true;
+
         try {
-          const archiveConfig = JSON.parse(quickModeConfigJson)
+          const archiveConfig = JSON.parse(quickModeConfigJson);
           // 清除 sessionStorage 中的数据
-          sessionStorage.removeItem('quickModeArchiveConfig')
-          sessionStorage.removeItem('quickModeCurrentState')
-          
+          sessionStorage.removeItem("quickModeArchiveConfig");
+          sessionStorage.removeItem("quickModeCurrentState");
+
           // 先恢复之前的状态（如果有）
           if (previousStateJson) {
             try {
-              const previousState = JSON.parse(previousStateJson)
-              
+              const previousState = JSON.parse(previousStateJson);
+
               // 恢复存档列表 - 直接添加名称，不设置配置
-              const namesToRestore = previousState.archives?.map(a => a.name) || []
+              const namesToRestore =
+                previousState.archives?.map((a) => a.name) || [];
               if (namesToRestore.length > 0) {
-                addArchives(namesToRestore)
-                
+                addArchives(namesToRestore);
+
                 // 恢复每个存档的配置
-                for (let i = 0; i < previousState.archives.length && i < state.archives.length; i++) {
-                  const archiveData = previousState.archives[i]
-                  const archive = state.archives[i]
-                  if (archiveData.level) archive.level = archiveData.level
-                  if (archiveData.difficulty) archive.difficulty = archiveData.difficulty
-                  if (archiveData.actualDifficulty) archive.actualDifficulty = archiveData.actualDifficulty
-                  if (archiveData.inventoryTemplate) archive.inventoryTemplate = archiveData.inventoryTemplate
+                for (
+                  let i = 0;
+                  i < previousState.archives.length &&
+                  i < state.archives.length;
+                  i++
+                ) {
+                  const archiveData = previousState.archives[i];
+                  const archive = state.archives[i];
+                  if (archiveData.level) archive.level = archiveData.level;
+                  if (archiveData.difficulty)
+                    archive.difficulty = archiveData.difficulty;
+                  if (archiveData.actualDifficulty)
+                    archive.actualDifficulty = archiveData.actualDifficulty;
+                  if (archiveData.inventoryTemplate)
+                    archive.inventoryTemplate = archiveData.inventoryTemplate;
                 }
               }
-              
+
               // 恢复统一配置
               if (previousState.uniformConfig) {
-                Object.assign(state.uniformConfig, previousState.uniformConfig)
+                Object.assign(state.uniformConfig, previousState.uniformConfig);
               }
-              
+
               // 恢复智能规则
               if (previousState.smartRules) {
-                Object.assign(state.smartRules, previousState.smartRules)
+                Object.assign(state.smartRules, previousState.smartRules);
               }
-              
+
               // 恢复完所有配置后，重新计算
-              recalculateArchives()
+              recalculateArchives();
             } catch (e) {
-              console.error('恢复之前状态失败:', e)
+              console.error("恢复之前状态失败:", e);
             }
           }
-          
+
           // 添加从经典模式返回的新存档
-          const archiveName = archiveConfig.name || '未命名存档'
-          const result = addArchives([archiveName])
-          
+          const archiveName = archiveConfig.name || "未命名存档";
+          const result = addArchives([archiveName]);
+
           // 如果添加成功，更新存档的配置
           if (result.added > 0 && state.archives.length > 0) {
-            const newArchive = state.archives[state.archives.length - 1]
-            
+            const newArchive = state.archives[state.archives.length - 1];
+
             // 设置个别配置
             if (archiveConfig.level) {
-              newArchive.level = archiveConfig.level
+              newArchive.level = archiveConfig.level;
             }
             if (archiveConfig.difficulty) {
-              newArchive.difficulty = archiveConfig.difficulty
+              newArchive.difficulty = archiveConfig.difficulty;
             }
             if (archiveConfig.actualDifficulty) {
-              newArchive.actualDifficulty = archiveConfig.actualDifficulty
+              newArchive.actualDifficulty = archiveConfig.actualDifficulty;
             }
-            
+
             // 重新计算最终配置值
-            recalculateArchives()
-            
+            recalculateArchives();
+
             // 等待 DOM 更新
-            await nextTick()
-            
+            await nextTick();
+
             // 更新输入框显示
-            inputNames.value = state.archives.map(a => a.name)
-            
+            inputNames.value = state.archives.map((a) => a.name);
+
             // 显示成功提示
-            showSuccess(t('quickCreate.result.success', { count: 1 }), '✓')
+            showSuccess(t("quickCreate.result.success", { count: 1 }), "✓");
           }
         } catch (error) {
-          console.error('解析经典模式配置数据失败:', error)
+          console.error("解析经典模式配置数据失败:", error);
         }
-        
+
         // 从经典模式返回时，清除草稿（因为我们已经恢复了状态）
-        clearDraft()
+        clearDraft();
       } else {
         // 清理可能残留的状态
-        sessionStorage.removeItem('quickModeCurrentState')
-        
+        sessionStorage.removeItem("quickModeCurrentState");
+
         // 只有在不是从经典模式返回时，才检查是否有未保存的草稿
         if (hasUnsavedDraft()) {
-          draftInfo.value = getDraftInfo()
+          draftInfo.value = getDraftInfo();
           if (draftInfo.value && draftInfo.value.archiveCount > 0) {
-            showDraftRecoveryPrompt.value = true
+            showDraftRecoveryPrompt.value = true;
           }
         } else {
           // 如果没有草稿恢复提示，检查是否需要显示新手引导
           // Requirements: 18.1 - 首次访问时显示教程
-          checkTutorial()
+          checkTutorial();
         }
       }
 
       // 启动自动保存
-      startAutoSave()
+      startAutoSave();
 
       // 注册 beforeunload 警告
       // Requirements: 17.2 - 浏览器关闭时警告用户
-      registerBeforeUnloadWarning()
-    })
+      registerBeforeUnloadWarning();
+    });
 
     // 组件卸载时停止自动保存并保存当前草稿
     onUnmounted(() => {
-      stopAutoSave()
+      stopAutoSave();
 
       // 取消注册 beforeunload 警告
-      unregisterBeforeUnloadWarning()
+      unregisterBeforeUnloadWarning();
 
       // 如果有未保存的存档，保存草稿
       if (state.archives.length > 0 && !state.isCreating) {
-        saveDraft()
+        saveDraft();
       }
-    })
+    });
 
     return {
       state,
@@ -1022,10 +1263,10 @@ export default {
       dismissLargeDataWarning,
       // 新手引导
       showTutorial,
-      closeTutorial
-    }
-  }
-}
+      closeTutorial,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -1359,7 +1600,7 @@ export default {
     flex-shrink: 0;
   }
 
-  .left-sidebar>* {
+  .left-sidebar > * {
     flex: 1;
     min-width: 0;
   }
@@ -1403,7 +1644,7 @@ export default {
     flex-direction: column;
   }
 
-  .left-sidebar>* {
+  .left-sidebar > * {
     flex: none;
   }
 
@@ -1653,7 +1894,7 @@ export default {
   line-height: 1.4;
 }
 
-.tip-item+.tip-item {
+.tip-item + .tip-item {
   margin-top: var(--space-2);
 }
 

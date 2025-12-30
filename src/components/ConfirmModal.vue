@@ -18,10 +18,19 @@
         </div>
 
         <div class="modal-footer">
-          <button class="btn btn-secondary" @click="handleCancel" :disabled="loading">
+          <button
+            class="btn btn-secondary"
+            @click="handleCancel"
+            :disabled="loading"
+          >
             {{ cancelText }}
           </button>
-          <button class="btn" :class="`btn-${type}`" @click="handleConfirm" :disabled="loading">
+          <button
+            class="btn"
+            :class="`btn-${type}`"
+            @click="handleConfirm"
+            :disabled="loading"
+          >
             <span v-if="loading" class="loading-spinner"></span>
             {{ confirmText }}
           </button>
@@ -32,96 +41,96 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 const props = defineProps({
   show: {
     type: Boolean,
-    default: false
+    default: false,
   },
   title: {
     type: String,
-    default: '确认操作'
+    default: "确认操作",
   },
   message: {
     type: String,
-    required: true
+    required: true,
   },
   description: {
     type: String,
-    default: ''
+    default: "",
   },
   type: {
     type: String,
-    default: 'danger',
-    validator: (value) => ['info', 'warning', 'danger'].includes(value)
+    default: "danger",
+    validator: (value) => ["info", "warning", "danger"].includes(value),
   },
   confirmText: {
     type: String,
-    default: '确认'
+    default: "确认",
   },
   cancelText: {
     type: String,
-    default: '取消'
+    default: "取消",
   },
   loading: {
     type: Boolean,
-    default: false
+    default: false,
   },
   closeOnOverlay: {
     type: Boolean,
-    default: true
-  }
-})
+    default: true,
+  },
+});
 
-const emit = defineEmits(['confirm', 'cancel', 'update:show'])
+const emit = defineEmits(["confirm", "cancel", "update:show"]);
 
 const icon = computed(() => {
   switch (props.type) {
-    case 'danger':
-      return 'fa-solid fa-exclamation-triangle'
-    case 'warning':
-      return 'fa-solid fa-exclamation-circle'
-    case 'info':
-      return 'fa-solid fa-info-circle'
+    case "danger":
+      return "fa-solid fa-exclamation-triangle";
+    case "warning":
+      return "fa-solid fa-exclamation-circle";
+    case "info":
+      return "fa-solid fa-info-circle";
     default:
-      return 'fa-solid fa-question-circle'
+      return "fa-solid fa-question-circle";
   }
-})
+});
 
 const handleConfirm = () => {
-  emit('confirm')
-  emit('update:show', false)
-}
+  emit("confirm");
+  emit("update:show", false);
+};
 
 const handleCancel = () => {
-  emit('cancel')
-  emit('update:show', false)
-}
+  emit("cancel");
+  emit("update:show", false);
+};
 
 const handleOverlayClick = () => {
   if (props.closeOnOverlay) {
-    handleCancel()
+    handleCancel();
   }
-}
+};
 
 // 按ESC键关闭
 const handleKeydown = (event) => {
-  if (event.key === 'Escape') {
-    handleCancel()
+  if (event.key === "Escape") {
+    handleCancel();
   }
-}
+};
 
 // 监听键盘事件
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted } from "vue";
 
 onMounted(() => {
-  document.addEventListener('keydown', handleKeydown)
-})
+  document.addEventListener("keydown", handleKeydown);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown)
-})
+  document.removeEventListener("keydown", handleKeydown);
+});
 </script>
 
 <style scoped>

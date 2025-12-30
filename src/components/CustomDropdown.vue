@@ -1,20 +1,43 @@
 <template>
-  <div class="custom-dropdown" :class="{ disabled: disabled }" ref="dropdownRef">
+  <div
+    class="custom-dropdown"
+    :class="{ disabled: disabled }"
+    ref="dropdownRef"
+  >
     <div class="dropdown-display" @click="toggleDropdown">
       <transition name="text-swift" mode="out-in">
-        <span :key="(selectedLabel || placeholder) + '-' + $i18n.locale" class="dropdown-text">{{ selectedLabel ||
-          placeholder }}</span>
+        <span
+          :key="(selectedLabel || placeholder) + '-' + $i18n.locale"
+          class="dropdown-text"
+          >{{ selectedLabel || placeholder }}</span
+        >
       </transition>
       <span class="dropdown-icon">▼</span>
     </div>
 
     <Teleport to="body">
-      <transition name="dropdown" @enter="handleMenuEnter" @leave="handleMenuLeave">
-        <div v-if="isOpen" class="dropdown-menu" :style="menuStyle" ref="menuRef">
-          <div v-for="option in options" :key="option.value + '-' + $i18n.locale" class="dropdown-option"
-            :class="{ selected: option.value === modelValue }" @click="selectOption(option)">
+      <transition
+        name="dropdown"
+        @enter="handleMenuEnter"
+        @leave="handleMenuLeave"
+      >
+        <div
+          v-if="isOpen"
+          class="dropdown-menu"
+          :style="menuStyle"
+          ref="menuRef"
+        >
+          <div
+            v-for="option in options"
+            :key="option.value + '-' + $i18n.locale"
+            class="dropdown-option"
+            :class="{ selected: option.value === modelValue }"
+            @click="selectOption(option)"
+          >
             <transition name="text-swift" mode="out-in">
-              <span :key="option.label + '-' + $i18n.locale">{{ option.label }}</span>
+              <span :key="option.label + '-' + $i18n.locale">{{
+                option.label
+              }}</span>
             </transition>
           </div>
         </div>
@@ -24,29 +47,29 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { gsap } from 'gsap';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { gsap } from "gsap";
 
 const props = defineProps({
   modelValue: {
     type: [String, Number, Boolean, null],
-    default: null
+    default: null,
   },
   options: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   placeholder: {
     type: String,
-    default: '请选择'
+    default: "请选择",
   },
   disabled: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-const emit = defineEmits(['update:modelValue', 'change']);
+const emit = defineEmits(["update:modelValue", "change"]);
 
 const dropdownRef = ref(null);
 const menuRef = ref(null);
@@ -55,8 +78,10 @@ const menuStyle = ref({});
 const isOpen = ref(false);
 
 const selectedLabel = computed(() => {
-  const selected = props.options.find(option => option.value === props.modelValue);
-  return selected ? selected.label : '';
+  const selected = props.options.find(
+    (option) => option.value === props.modelValue
+  );
+  return selected ? selected.label : "";
 });
 
 const toggleDropdown = () => {
@@ -67,8 +92,8 @@ const toggleDropdown = () => {
 const selectOption = (option) => {
   if (isAnimating.value) return;
 
-  emit('update:modelValue', option.value);
-  emit('change', option);
+  emit("update:modelValue", option.value);
+  emit("change", option);
   isOpen.value = false;
 };
 
@@ -78,22 +103,23 @@ const handleMenuEnter = (el, done) => {
   nextTick(() => {
     updateMenuPosition();
 
-    gsap.fromTo(el,
+    gsap.fromTo(
+      el,
       {
         opacity: 0,
         y: -10,
-        scale: 0.95
+        scale: 0.95,
       },
       {
         opacity: 1,
         y: 0,
         scale: 1,
         duration: 0.25,
-        ease: 'power2.out',
+        ease: "power2.out",
         onComplete: () => {
           isAnimating.value = false;
           done();
-        }
+        },
       }
     );
   });
@@ -102,19 +128,17 @@ const handleMenuEnter = (el, done) => {
 const handleMenuLeave = (el, done) => {
   isAnimating.value = true;
 
-  gsap.to(el,
-    {
-      opacity: 0,
-      y: -10,
-      scale: 0.95,
-      duration: 0.2,
-      ease: 'power2.in',
-      onComplete: () => {
-        isAnimating.value = false;
-        done();
-      }
-    }
-  );
+  gsap.to(el, {
+    opacity: 0,
+    y: -10,
+    scale: 0.95,
+    duration: 0.2,
+    ease: "power2.in",
+    onComplete: () => {
+      isAnimating.value = false;
+      done();
+    },
+  });
 };
 
 const updateMenuPosition = () => {
@@ -129,11 +153,13 @@ const updateMenuPosition = () => {
   const shouldOpenUp = spaceBelow < menuHeight && dropdownRect.top > menuHeight;
 
   menuStyle.value = {
-    position: 'fixed',
-    top: shouldOpenUp ? `${dropdownRect.top - menuHeight - 4}px` : `${dropdownRect.bottom + 4}px`,
+    position: "fixed",
+    top: shouldOpenUp
+      ? `${dropdownRect.top - menuHeight - 4}px`
+      : `${dropdownRect.bottom + 4}px`,
     left: `${dropdownRect.left}px`,
     width: `${dropdownRect.width}px`,
-    zIndex: 1000
+    zIndex: 1000,
   };
 };
 
@@ -192,16 +218,19 @@ const handleClickOutside = (event) => {
 };
 
 onMounted(() => {
-  window.addEventListener('resize', handleResize);
+  window.addEventListener("resize", handleResize);
   // 使用捕获阶段监听滚动事件，确保在其他组件滚动时也能更新位置
-  window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
-  document.addEventListener('click', handleClickOutside);
+  window.addEventListener("scroll", handleScroll, {
+    capture: true,
+    passive: true,
+  });
+  document.addEventListener("click", handleClickOutside);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
-  window.removeEventListener('scroll', handleScroll, { capture: true });
-  document.removeEventListener('click', handleClickOutside);
+  window.removeEventListener("resize", handleResize);
+  window.removeEventListener("scroll", handleScroll, { capture: true });
+  document.removeEventListener("click", handleClickOutside);
 
   // 清理定时器和动画帧
   if (scrollAnimationFrame) {

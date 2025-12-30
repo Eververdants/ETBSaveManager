@@ -1,1 +1,15 @@
-{"viewAllVersions": "View all {count} versions", "back": "Back", "releaseNotes": "Release Notes", "versions": "versions", "featured": "Featured", "version": "Version", "date": "Date", "categories": {"newFeatures": "✨ New Features", "improvements": "🔧 Improvements", "bugFixes": "🐛 Bug Fixes", "performance": "⚡ Performance"}}
+{
+  "viewAllVersions": "View all {count} versions",
+  "back": "Back",
+  "releaseNotes": "Release Notes",
+  "versions": "versions",
+  "featured": "Featured",
+  "version": "Version",
+  "date": "Date",
+  "categories": {
+    "newFeatures": "✨ New Features",
+    "improvements": "🔧 Improvements",
+    "bugFixes": "🐛 Bug Fixes",
+    "performance": "⚡ Performance"
+  }
+}

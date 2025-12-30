@@ -4,55 +4,89 @@
       <div class="header-content">
         <button class="back-btn" @click="goBack">
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
-          {{ $t('back') }}
+          {{ $t("back") }}
         </button>
-        <h1 class="page-title">{{ $t('releaseNotes') }}</h1>
-        <div class="version-count">{{ totalCount }} {{ $t('versions') }}</div>
+        <h1 class="page-title">{{ $t("releaseNotes") }}</h1>
+        <div class="version-count">{{ totalCount }} {{ $t("versions") }}</div>
       </div>
     </header>
 
     <main class="page-content">
       <div class="release-notes-list">
-        <div v-for="note in releaseNotes" :key="note.version" class="release-note-item" :class="note.type">
+        <div
+          v-for="note in releaseNotes"
+          :key="note.version"
+          class="release-note-item"
+          :class="note.type"
+        >
           <div class="version-header">
-            <span class="version-tag" :class="note.type">{{ note.version }}</span>
+            <span class="version-tag" :class="note.type">{{
+              note.version
+            }}</span>
             <span class="version-date">{{ formatDate(note.date) }}</span>
-            <span v-if="note.isHighlight" class="featured-badge">{{ $t('featured') }}</span>
+            <span v-if="note.isHighlight" class="featured-badge">{{
+              $t("featured")
+            }}</span>
           </div>
 
           <h3 class="version-title">{{ note.title }}</h3>
 
-          <div v-if="note.categories.newFeatures?.length" class="category-section">
-            <h4 class="category-title">{{ $t('categories.newFeatures') }}</h4>
+          <div
+            v-if="note.categories.newFeatures?.length"
+            class="category-section"
+          >
+            <h4 class="category-title">{{ $t("categories.newFeatures") }}</h4>
             <ul class="category-list">
-              <li v-for="(item, idx) in note.categories.newFeatures" :key="idx" class="category-item">
+              <li
+                v-for="(item, idx) in note.categories.newFeatures"
+                :key="idx"
+                class="category-item"
+              >
                 {{ item }}
               </li>
             </ul>
           </div>
 
-          <div v-if="note.categories.improvements?.length" class="category-section">
-            <h4 class="category-title">{{ $t('categories.improvements') }}</h4>
+          <div
+            v-if="note.categories.improvements?.length"
+            class="category-section"
+          >
+            <h4 class="category-title">{{ $t("categories.improvements") }}</h4>
             <ul class="category-list">
-              <li v-for="(item, idx) in note.categories.improvements" :key="idx" class="category-item">
+              <li
+                v-for="(item, idx) in note.categories.improvements"
+                :key="idx"
+                class="category-item"
+              >
                 {{ item }}
               </li>
             </ul>
           </div>
 
           <div v-if="note.categories.bugFixes?.length" class="category-section">
-            <h4 class="category-title">{{ $t('categories.bugFixes') }}</h4>
+            <h4 class="category-title">{{ $t("categories.bugFixes") }}</h4>
             <ul class="category-list">
-              <li v-for="(item, idx) in note.categories.bugFixes" :key="idx" class="category-item">
+              <li
+                v-for="(item, idx) in note.categories.bugFixes"
+                :key="idx"
+                class="category-item"
+              >
                 {{ item }}
               </li>
             </ul>
           </div>
 
-          <div v-if="note.categories.performance?.length" class="category-section">
-            <h4 class="category-title">{{ $t('categories.performance') }}</h4>
+          <div
+            v-if="note.categories.performance?.length"
+            class="category-section"
+          >
+            <h4 class="category-title">{{ $t("categories.performance") }}</h4>
             <ul class="category-list">
-              <li v-for="(item, idx) in note.categories.performance" :key="idx" class="category-item">
+              <li
+                v-for="(item, idx) in note.categories.performance"
+                :key="idx"
+                class="category-item"
+              >
                 {{ item }}
               </li>
             </ul>
@@ -61,7 +95,7 @@
 
         <div v-if="totalCount === 0" class="no-notes">
           <font-awesome-icon :icon="['fas', 'info-circle']" size="3x" />
-          <p>{{ $t('noReleaseNotes') }}</p>
+          <p>{{ $t("noReleaseNotes") }}</p>
         </div>
       </div>
     </main>
@@ -69,10 +103,10 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n';
-import { useReleaseNotes } from '@/composables';
+import { onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { useReleaseNotes } from "@/composables";
 
 const router = useRouter();
 const { t } = useI18n();
@@ -162,73 +196,76 @@ const goBack = () => {
 
 .release-note-item {
   position: relative;
-  background: linear-gradient(135deg,
-      var(--bg-secondary) 0%,
-      var(--bg-tertiary, #2a2a3a) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    var(--bg-tertiary, #2a2a3a) 100%
+  );
   border: 1px solid var(--border-light);
   border-radius: 16px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.1),
-    0 1px 3px rgba(0, 0, 0, 0.05),
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .release-note-item:before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   z-index: 1;
 }
 
 .release-note-item:hover {
   transform: translateY(-4px) scale(1.02);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.15),
-    0 4px 8px rgba(0, 0, 0, 0.1),
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .release-note-item.major {
   border-left: 3px solid #ff6b6b;
-  background: linear-gradient(135deg,
-      var(--bg-secondary) 0%,
-      rgba(255, 107, 107, 0.03) 50%,
-      var(--bg-tertiary, #2a2a3a) 100%);
-  box-shadow:
-    0 4px 16px rgba(255, 107, 107, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    rgba(255, 107, 107, 0.03) 50%,
+    var(--bg-tertiary, #2a2a3a) 100%
+  );
+  box-shadow: 0 4px 16px rgba(255, 107, 107, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .release-note-item.minor {
   border-left: 3px solid #4ecdc4;
-  background: linear-gradient(135deg,
-      var(--bg-secondary) 0%,
-      rgba(78, 205, 196, 0.03) 50%,
-      var(--bg-tertiary, #2a2a3a) 100%);
-  box-shadow:
-    0 4px 16px rgba(78, 205, 196, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.05),
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    rgba(78, 205, 196, 0.03) 50%,
+    var(--bg-tertiary, #2a2a3a) 100%
+  );
+  box-shadow: 0 4px 16px rgba(78, 205, 196, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .release-note-item.patch {
   border-left: 3px solid #45b7d1;
-  background: linear-gradient(135deg,
-      var(--bg-secondary) 0%,
-      rgba(69, 183, 209, 0.03) 50%,
-      var(--bg-tertiary, #2a2a3a) 100%);
-  box-shadow:
-    0 4px 16px rgba(69, 183, 209, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.05),
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    rgba(69, 183, 209, 0.03) 50%,
+    var(--bg-tertiary, #2a2a3a) 100%
+  );
+  box-shadow: 0 4px 16px rgba(69, 183, 209, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -338,7 +375,7 @@ const goBack = () => {
 }
 
 .version-title:after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -0.25rem;
   left: 0;
@@ -379,7 +416,7 @@ const goBack = () => {
 }
 
 .category-item:before {
-  content: '•';
+  content: "•";
   position: absolute;
   left: -1rem;
   color: var(--accent-color);

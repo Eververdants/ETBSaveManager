@@ -4,28 +4,43 @@
     <div class="mode-page-content">
       <!-- 标题 -->
       <div class="mode-header">
-        <h1 class="mode-title">{{ $t('createMode.title') }}</h1>
-        <p class="mode-subtitle">{{ $t('createMode.subtitle') }}</p>
+        <h1 class="mode-title">{{ $t("createMode.title") }}</h1>
+        <p class="mode-subtitle">{{ $t("createMode.subtitle") }}</p>
       </div>
 
       <!-- 模式分类 -->
       <div class="mode-categories">
         <!-- 单存档创建 -->
         <div class="mode-category">
-          <h3 class="category-title">{{ $t('createMode.singleArchive') }}</h3>
+          <h3 class="category-title">{{ $t("createMode.singleArchive") }}</h3>
           <div class="mode-cards single">
             <!-- 经典模式 -->
-            <div class="mode-card" :class="{ selected: selectedMode === 'classic' }" @click="goToMode('classic')">
+            <div
+              class="mode-card"
+              :class="{ selected: selectedMode === 'classic' }"
+              @click="goToMode('classic')"
+            >
               <div class="mode-card-image">
-                <LazyImage :src="classicModeImage" alt="Classic Mode" :image-class="'mode-card-img'" />
+                <LazyImage
+                  :src="classicModeImage"
+                  alt="Classic Mode"
+                  :image-class="'mode-card-img'"
+                />
                 <div class="mode-card-overlay">
-                  <font-awesome-icon v-if="selectedMode === 'classic'" :icon="['fas', 'check-circle']"
-                    class="check-icon" />
+                  <font-awesome-icon
+                    v-if="selectedMode === 'classic'"
+                    :icon="['fas', 'check-circle']"
+                    class="check-icon"
+                  />
                 </div>
               </div>
               <div class="mode-card-info">
-                <h4 class="mode-card-title">{{ $t('createMode.classic.title') }}</h4>
-                <p class="mode-card-desc">{{ $t('createMode.classic.desc') }}</p>
+                <h4 class="mode-card-title">
+                  {{ $t("createMode.classic.title") }}
+                </h4>
+                <p class="mode-card-desc">
+                  {{ $t("createMode.classic.desc") }}
+                </p>
               </div>
             </div>
           </div>
@@ -33,35 +48,63 @@
 
         <!-- 多存档创建 -->
         <div class="mode-category">
-          <h3 class="category-title">{{ $t('createMode.multiArchive') }}</h3>
+          <h3 class="category-title">{{ $t("createMode.multiArchive") }}</h3>
           <div class="mode-cards multi">
             <!-- 快速模式 -->
-            <div class="mode-card" :class="{ selected: selectedMode === 'quick' }" @click="goToMode('quick')">
+            <div
+              class="mode-card"
+              :class="{ selected: selectedMode === 'quick' }"
+              @click="goToMode('quick')"
+            >
               <div class="mode-card-image">
-                <LazyImage :src="quickModeImage" alt="Quick Mode" :image-class="'mode-card-img'" />
+                <LazyImage
+                  :src="quickModeImage"
+                  alt="Quick Mode"
+                  :image-class="'mode-card-img'"
+                />
                 <div class="mode-card-overlay">
-                  <font-awesome-icon v-if="selectedMode === 'quick'" :icon="['fas', 'check-circle']"
-                    class="check-icon" />
+                  <font-awesome-icon
+                    v-if="selectedMode === 'quick'"
+                    :icon="['fas', 'check-circle']"
+                    class="check-icon"
+                  />
                 </div>
               </div>
               <div class="mode-card-info">
-                <h4 class="mode-card-title">{{ $t('createMode.quick.title') }}</h4>
-                <p class="mode-card-desc">{{ $t('createMode.quick.desc') }}</p>
+                <h4 class="mode-card-title">
+                  {{ $t("createMode.quick.title") }}
+                </h4>
+                <p class="mode-card-desc">{{ $t("createMode.quick.desc") }}</p>
               </div>
             </div>
 
             <!-- 蓝图模式 -->
-            <div class="mode-card" :class="{ selected: selectedMode === 'blueprint' }" @click="goToMode('blueprint')">
+            <div
+              class="mode-card"
+              :class="{ selected: selectedMode === 'blueprint' }"
+              @click="goToMode('blueprint')"
+            >
               <div class="mode-card-image">
-                <LazyImage :src="quickModeImage" alt="Blueprint Mode" :image-class="'mode-card-img'" />
+                <LazyImage
+                  :src="quickModeImage"
+                  alt="Blueprint Mode"
+                  :image-class="'mode-card-img'"
+                />
                 <div class="mode-card-overlay">
-                  <font-awesome-icon v-if="selectedMode === 'blueprint'" :icon="['fas', 'check-circle']"
-                    class="check-icon" />
+                  <font-awesome-icon
+                    v-if="selectedMode === 'blueprint'"
+                    :icon="['fas', 'check-circle']"
+                    class="check-icon"
+                  />
                 </div>
               </div>
               <div class="mode-card-info">
-                <h4 class="mode-card-title">{{ $t('createMode.blueprint.title') }}</h4>
-                <p class="mode-card-desc">{{ $t('createMode.blueprint.desc') }}</p>
+                <h4 class="mode-card-title">
+                  {{ $t("createMode.blueprint.title") }}
+                </h4>
+                <p class="mode-card-desc">
+                  {{ $t("createMode.blueprint.desc") }}
+                </p>
               </div>
             </div>
           </div>
@@ -69,11 +112,17 @@
       </div>
 
       <!-- 底部返回按钮 -->
-      <button class="bottom-back-button" @click="goBack" @mousedown="handleMouseDown" @mouseup="handleMouseUp"
-        @mouseleave="handleMouseUp" :class="{ 'is-pressing': isPressing }">
+      <button
+        class="bottom-back-button"
+        @click="goBack"
+        @mousedown="handleMouseDown"
+        @mouseup="handleMouseUp"
+        @mouseleave="handleMouseUp"
+        :class="{ 'is-pressing': isPressing }"
+      >
         <div class="button-content">
           <span class="close-icon">✕</span>
-          <span class="button-text">{{ $t('common.back') }}</span>
+          <span class="button-text">{{ $t("common.back") }}</span>
         </div>
         <div class="button-ripple"></div>
       </button>
@@ -82,89 +131,90 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import LazyImage from '@/components/LazyImage.vue'
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import LazyImage from "@/components/LazyImage.vue";
 
 export default {
-  name: 'SelectCreateMode',
+  name: "SelectCreateMode",
   components: {
-    LazyImage
+    LazyImage,
   },
   setup() {
-    const router = useRouter()
-    const { t } = useI18n({ useScope: 'global' })
-    const selectedMode = ref(null)
-    const isPressing = ref(false)
-    const currentTheme = ref('dark')
+    const router = useRouter();
+    const { t } = useI18n({ useScope: "global" });
+    const selectedMode = ref(null);
+    const isPressing = ref(false);
+    const currentTheme = ref("dark");
 
     // 获取当前主题
     const updateTheme = () => {
-      const theme = document.documentElement.getAttribute('data-theme') || 'dark'
-      currentTheme.value = theme
-    }
+      const theme =
+        document.documentElement.getAttribute("data-theme") || "dark";
+      currentTheme.value = theme;
+    };
 
     // 根据主题计算图片路径
     const classicModeImage = computed(() => {
-      return currentTheme.value === 'light' 
-        ? '/images/CAL_JD.jpg' 
-        : '/images/CAD_JD.jpg'
-    })
+      return currentTheme.value === "light"
+        ? "/images/CAL_JD.jpg"
+        : "/images/CAD_JD.jpg";
+    });
 
     const quickModeImage = computed(() => {
-      return currentTheme.value === 'light' 
-        ? '/images/CAL_KS.jpg' 
-        : '/images/CAD_KS.jpg'
-    })
+      return currentTheme.value === "light"
+        ? "/images/CAL_KS.jpg"
+        : "/images/CAD_KS.jpg";
+    });
 
     // 监听主题变化
-    let themeObserver = null
+    let themeObserver = null;
 
     onMounted(() => {
-      updateTheme()
+      updateTheme();
       themeObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
-          if (mutation.attributeName === 'data-theme') {
-            updateTheme()
+          if (mutation.attributeName === "data-theme") {
+            updateTheme();
           }
-        })
-      })
+        });
+      });
       themeObserver.observe(document.documentElement, {
         attributes: true,
-        attributeFilter: ['data-theme']
-      })
-    })
+        attributeFilter: ["data-theme"],
+      });
+    });
 
     onUnmounted(() => {
       if (themeObserver) {
-        themeObserver.disconnect()
+        themeObserver.disconnect();
       }
-    })
+    });
 
     const goBack = () => {
-      router.back()
-    }
+      router.back();
+    };
 
     const handleMouseDown = () => {
-      isPressing.value = true
-    }
+      isPressing.value = true;
+    };
 
     const handleMouseUp = () => {
-      isPressing.value = false
-    }
+      isPressing.value = false;
+    };
 
     const goToMode = (mode) => {
-      selectedMode.value = mode
+      selectedMode.value = mode;
 
       const modeRoutes = {
-        classic: '/create-archive',
-        quick: '/quick-create-archive',
-        blueprint: '/blueprint-create-archive'
-      }
+        classic: "/create-archive",
+        quick: "/quick-create-archive",
+        blueprint: "/blueprint-create-archive",
+      };
 
-      router.push(modeRoutes[mode])
-    }
+      router.push(modeRoutes[mode]);
+    };
 
     return {
       selectedMode,
@@ -175,10 +225,10 @@ export default {
       goBack,
       goToMode,
       handleMouseDown,
-      handleMouseUp
-    }
-  }
-}
+      handleMouseUp,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -412,16 +462,14 @@ export default {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 10;
   overflow: hidden;
-  box-shadow:
-    0 8px 32px rgba(239, 68, 68, 0.3),
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .bottom-back-button:hover {
   background: rgba(220, 38, 38, 0.95);
   transform: translateY(-2px) scale(1.02);
-  box-shadow:
-    0 12px 40px rgba(239, 68, 68, 0.4),
+  box-shadow: 0 12px 40px rgba(239, 68, 68, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   border-color: rgba(239, 68, 68, 0.5);
 }
@@ -476,7 +524,11 @@ export default {
   left: 50%;
   width: 0;
   height: 0;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.3) 0%,
+    transparent 70%
+  );
   border-radius: 50%;
   transform: translate(-50%, -50%);
   transition: all 0.6s ease;
@@ -491,23 +543,18 @@ export default {
 /* 脉冲动画 */
 @keyframes pulse {
   0% {
-    box-shadow:
-      0 8px 32px rgba(239, 68, 68, 0.3),
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 
   50% {
-    box-shadow:
-      0 8px 32px rgba(239, 68, 68, 0.5),
-      0 0 0 0 rgba(239, 68, 68, 0.7),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.5),
+      0 0 0 0 rgba(239, 68, 68, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
   100% {
-    box-shadow:
-      0 8px 32px rgba(239, 68, 68, 0.3),
-      0 0 0 20px rgba(239, 68, 68, 0),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3),
+      0 0 0 20px rgba(239, 68, 68, 0), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 }
 

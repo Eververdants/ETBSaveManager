@@ -7,36 +7,36 @@ const CDN_CONFIG = {
   // 生产环境使用CDN，开发环境使用本地依赖
   production: {
     fontawesome: {
-      baseUrl: 'https://cdn.jsdelivr.net/npm/@fortawesome',
+      baseUrl: "https://cdn.jsdelivr.net/npm/@fortawesome",
       versions: {
-        'free-solid-svg-icons': '^7.1.0',
-        'free-brands-svg-icons': '^7.1.0',
-        'fontawesome-svg-core': '^7.1.0'
-      }
+        "free-solid-svg-icons": "^7.1.0",
+        "free-brands-svg-icons": "^7.1.0",
+        "fontawesome-svg-core": "^7.1.0",
+      },
     },
     vue: {
-      baseUrl: 'https://unpkg.com',
+      baseUrl: "https://unpkg.com",
       versions: {
-        'vue': '^3.5.13',
-        'vue-router': '^4.5.1'
-      }
-    }
+        vue: "^3.5.13",
+        "vue-router": "^4.5.1",
+      },
+    },
   },
-  
+
   // 开发环境配置
   development: {
     useLocal: true,
     localPaths: {
-      fontawesome: '@/assets/icons/fontawesome',
-      vue: 'vue',
-      chartjs: 'chart.js'
-    }
-  }
+      fontawesome: "@/assets/icons/fontawesome",
+      vue: "vue",
+      chartjs: "chart.js",
+    },
+  },
 };
 
 // 动态加载CDN资源的工具函数
 export const loadCDNResource = async (resourceType, library, version) => {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     return null; // 开发环境不使用CDN
   }
 
@@ -66,24 +66,24 @@ const loadScript = (src) => {
       return;
     }
 
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.src = src;
     script.async = true;
-    
+
     script.onload = () => resolve();
     script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-    
+
     document.head.appendChild(script);
   });
 };
 
 // 预加载关键CDN资源
 export const preloadCriticalCDNResources = async () => {
-  if (process.env.NODE_ENV === 'development') return;
+  if (process.env.NODE_ENV === "development") return;
 
   const criticalResources = [
-    { type: 'fontawesome', library: 'fontawesome-svg-core' },
-    { type: 'vue', library: 'vue' }
+    { type: "fontawesome", library: "fontawesome-svg-core" },
+    { type: "vue", library: "vue" },
   ];
 
   const loadPromises = criticalResources.map(({ type, library }) => {
@@ -97,7 +97,7 @@ export const preloadCriticalCDNResources = async () => {
   try {
     await Promise.allSettled(loadPromises);
   } catch (error) {
-    console.warn('部分CDN资源加载失败，但不影响应用启动');
+    console.warn("部分CDN资源加载失败，但不影响应用启动");
   }
 };
 
@@ -105,11 +105,11 @@ export const preloadCriticalCDNResources = async () => {
 export const checkCDNAvailability = () => {
   const checks = {
     fontawesome: () => !!window.FontAwesomeIcon,
-    vue: () => !!window.Vue
+    vue: () => !!window.Vue,
   };
 
   const results = {};
-  
+
   Object.entries(checks).forEach(([name, checkFn]) => {
     try {
       results[name] = checkFn();

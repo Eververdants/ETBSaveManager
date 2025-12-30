@@ -1,19 +1,30 @@
 [
   {
+    "version": "3.0.0-Alpha-7.1",
+    "date": "2025-12-30",
+    "title": "元旦限定主題與Hub門修復",
+    "type": "patch",
+    "categories": {
+      "newFeatures": [
+        "新增「元旦」限時主題，可在設定中切換，有效期至2026年1月3日"
+      ],
+      "improvements": [],
+      "bugFixes": [
+        "修復建立存檔後Hub門進度檢查未正確生效的問題",
+        "解決其他若干小問題"
+      ],
+      "performance": []
+    }
+  },
+  {
     "version": "3.0.0-Alpha-7",
     "date": "2025-12-28",
     "title": "快速模式實裝與效能優化",
     "type": "feature",
     "categories": {
-      "newFeatures": [
-        "建立存檔「快速模式」頁面與功能完整實現"
-      ],
-      "improvements": [
-        "優化存檔列表效能"
-      ],
-      "bugFixes": [
-        "修復部分語言在地化問題"
-      ],
+      "newFeatures": ["建立存檔「快速模式」頁面與功能完整實現"],
+      "improvements": ["優化存檔列表效能"],
+      "bugFixes": ["修復部分語言在地化問題"],
       "performance": []
     }
   },
@@ -51,9 +62,7 @@
         "調整了關於頁面的更新公告板塊樣式",
         "調整了設定頁面的 Steam API 板塊樣式"
       ],
-      "bugFixes": [
-        "修復了存檔列表頁面浮動按鈕多一個設定圖示的問題"
-      ],
+      "bugFixes": ["修復了存檔列表頁面浮動按鈕多一個設定圖示的問題"],
       "performance": []
     }
   },
@@ -64,12 +73,8 @@
     "type": "patch",
     "categories": {
       "newFeatures": [],
-      "improvements": [
-        "優化了存檔卡片的外觀顯示效果"
-      ],
-      "bugFixes": [
-        "修復了輸入框不支援刪除、複製、貼上和復原操作的問題"
-      ],
+      "improvements": ["優化了存檔卡片的外觀顯示效果"],
+      "bugFixes": ["修復了輸入框不支援刪除、複製、貼上和復原操作的問題"],
       "performance": []
     }
   },
@@ -94,15 +99,9 @@
     "title": "新增物品與圖示更新",
     "type": "patch",
     "categories": {
-      "newFeatures": [
-        "新增遊戲內物品：小刀 & 泰迪熊"
-      ],
-      "improvements": [
-        "更新所有物品圖示至最新遊戲版本"
-      ],
-      "bugFixes": [
-        "修復了物品選擇彈窗顯示在頁面頂部的問題"
-      ],
+      "newFeatures": ["新增遊戲內物品：小刀 & 泰迪熊"],
+      "improvements": ["更新所有物品圖示至最新遊戲版本"],
+      "bugFixes": ["修復了物品選擇彈窗顯示在頁面頂部的問題"],
       "performance": []
     }
   },
@@ -139,9 +138,7 @@
         "壓縮最新關卡預覽圖片，減小套件體積"
       ],
       "bugFixes": [],
-      "performance": [
-        "提升首次載入速度"
-      ]
+      "performance": ["提升首次載入速度"]
     }
   },
   {
@@ -150,9 +147,7 @@
     "title": "首日支援5張新官方地圖",
     "type": "feature",
     "categories": {
-      "newFeatures": [
-        "新增對遊戲最新5張官方地圖的支援，可直接選擇和編輯"
-      ],
+      "newFeatures": ["新增對遊戲最新5張官方地圖的支援，可直接選擇和編輯"],
       "improvements": [],
       "bugFixes": [],
       "performance": []
@@ -170,9 +165,7 @@
         "精簡搜尋篩選組合欄：將輸入框和下拉篩選合併為更簡潔的元件"
       ],
       "bugFixes": [],
-      "performance": [
-        "大幅提升大列表情況下的流暢度"
-      ]
+      "performance": ["大幅提升大列表情況下的流暢度"]
     }
   },
   {
@@ -181,12 +174,8 @@
     "title": "更新來源選擇與下載優化",
     "type": "improvement",
     "categories": {
-      "newFeatures": [
-        "新增更新來源選擇功能，可根據網路環境選擇合適的更新來源"
-      ],
-      "improvements": [
-        "優化更新下載流程，體驗更流暢快速"
-      ],
+      "newFeatures": ["新增更新來源選擇功能，可根據網路環境選擇合適的更新來源"],
+      "improvements": ["優化更新下載流程，體驗更流暢快速"],
       "bugFixes": [],
       "performance": []
     }
@@ -234,9 +223,7 @@
     "title": "擴充市場介面完成",
     "type": "feature",
     "categories": {
-      "newFeatures": [
-        "新增擴充市場介面，可瀏覽擴充功能（暫不支援安裝）"
-      ],
+      "newFeatures": ["新增擴充市場介面，可瀏覽擴充功能（暫不支援安裝）"],
       "improvements": [
         "更新「存檔列表」配色方案",
         "調整側邊欄配色方案",
@@ -285,12 +272,8 @@
     "title": "新增側邊欄導航選單",
     "type": "improvement",
     "categories": {
-      "newFeatures": [
-        "新增左側邊欄導航選單"
-      ],
-      "improvements": [
-        "持續優化介面互動和視覺細節"
-      ],
+      "newFeatures": ["新增左側邊欄導航選單"],
+      "improvements": ["持續優化介面互動和視覺細節"],
       "bugFixes": [],
       "performance": []
     }

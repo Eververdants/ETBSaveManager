@@ -28,6 +28,14 @@
     "fs:allow-exists",
     "fs:allow-resource-read-recursive",
     "core:path:default",
-    "fs:allow-app-write"
+    "fs:allow-app-write",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        "$LOCALAPPDATA/**",
+        "$APPDATA/**",
+        "$HOME/**"
+      ]
+    }
   ]
 }

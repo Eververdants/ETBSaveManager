@@ -3,7 +3,9 @@
     <!-- 外观与语言设置组 -->
     <div class="setting-group">
       <transition name="text-swift" mode="out-in">
-        <div class="section-header" :key="currentLanguage">{{ t('settings.appearanceAndLanguage') }}</div>
+        <div class="section-header" :key="currentLanguage">
+          {{ t("settings.appearanceAndLanguage") }}
+        </div>
       </transition>
 
       <!-- 主题设置 -->
@@ -13,16 +15,36 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">{{ t('settings.theme') }}</div>
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.theme") }}
+            </div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.themeDescription') }}</div>
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.themeDescription") }}
+            </div>
+          </transition>
+          <!-- 元旦主题限时提示 -->
+          <transition name="text-swift" mode="out-in">
+            <div
+              v-if="shouldShowNewYearTheme && newYearThemeMode === 'auto'"
+              class="setting-hint new-year-hint"
+              :key="currentLanguage + '-newyear-hint'"
+            >
+              <font-awesome-icon :icon="['fas', 'clock']" />
+              {{ t("settings.newYearThemeLimitedTime") }}
+            </div>
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown v-model="currentTheme" :options="themeOptions" @change="handleThemeChange"
-            @dropdown-open="handleDropdownOpen('theme')" :is-open="activeDropdown === 'theme'"
-            :placeholder="t('common.select')" />
+          <CustomDropdown
+            v-model="currentTheme"
+            :options="themeOptions"
+            @change="handleThemeChange"
+            @dropdown-open="handleDropdownOpen('theme')"
+            :is-open="activeDropdown === 'theme'"
+            :placeholder="t('common.select')"
+          />
         </div>
       </div>
 
@@ -33,16 +55,25 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">{{ t('settings.language') }}</div>
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.language") }}
+            </div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.languageDescription') }}</div>
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.languageDescription") }}
+            </div>
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown v-model="currentLanguage" :options="languageOptions" @change="handleLanguageChange"
-            @dropdown-open="handleDropdownOpen('language')" :is-open="activeDropdown === 'language'"
-            :placeholder="t('common.select')" />
+          <CustomDropdown
+            v-model="currentLanguage"
+            :options="languageOptions"
+            @change="handleLanguageChange"
+            @dropdown-open="handleDropdownOpen('language')"
+            :is-open="activeDropdown === 'language'"
+            :placeholder="t('common.select')"
+          />
         </div>
       </div>
     </div>
@@ -50,7 +81,9 @@
     <!-- 高级设置组 -->
     <div class="setting-group">
       <transition name="text-swift" mode="out-in">
-        <div class="section-header" :key="currentLanguage">{{ t('settings.advancedSettings') }}</div>
+        <div class="section-header" :key="currentLanguage">
+          {{ t("settings.advancedSettings") }}
+        </div>
       </transition>
 
       <!-- 禁用GPU加速开关 -->
@@ -60,16 +93,23 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">{{ t('settings.disableGpuAcceleration') }}</div>
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.disableGpuAcceleration") }}
+            </div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.disableGpuAccelerationDescription')
-              }}</div>
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.disableGpuAccelerationDescription") }}
+            </div>
           </transition>
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input type="checkbox" v-model="gpuAccelerationDisabled" @change="handleGpuAccelerationToggle">
+            <input
+              type="checkbox"
+              v-model="gpuAccelerationDisabled"
+              @change="handleGpuAccelerationToggle"
+            />
             <span class="slider"></span>
           </label>
         </div>
@@ -79,7 +119,9 @@
     <!-- 系统与更新设置组 -->
     <div class="setting-group">
       <transition name="text-swift" mode="out-in">
-        <div class="section-header" :key="currentLanguage">{{ t('settings.systemAndUpdates') }}</div>
+        <div class="section-header" :key="currentLanguage">
+          {{ t("settings.systemAndUpdates") }}
+        </div>
       </transition>
 
       <!-- 更新源设置 -->
@@ -89,16 +131,25 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">{{ t('settings.updateSource') }}</div>
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.updateSource") }}
+            </div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.updateSourceDescription') }}</div>
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.updateSourceDescription") }}
+            </div>
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown v-model="currentUpdateSource" :options="updateSourceOptions"
-            @change="handleUpdateSourceChange" @dropdown-open="handleDropdownOpen('updateSource')"
-            :is-open="activeDropdown === 'updateSource'" :placeholder="t('common.select')" />
+          <CustomDropdown
+            v-model="currentUpdateSource"
+            :options="updateSourceOptions"
+            @change="handleUpdateSourceChange"
+            @dropdown-open="handleDropdownOpen('updateSource')"
+            :is-open="activeDropdown === 'updateSource'"
+            :placeholder="t('common.select')"
+          />
         </div>
       </div>
 
@@ -109,18 +160,32 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">{{ t('settings.checkUpdates') }}</div>
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.checkUpdates") }}
+            </div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.checkUpdatesDescription') }}</div>
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.checkUpdatesDescription") }}
+            </div>
           </transition>
         </div>
         <div class="setting-action">
-          <button class="check-update-btn" @click="checkForUpdates" :disabled="checkingUpdate">
-            <font-awesome-icon v-if="checkingUpdate" :icon="['fas', 'spinner']" spin />
+          <button
+            class="check-update-btn"
+            @click="checkForUpdates"
+            :disabled="checkingUpdate"
+          >
+            <font-awesome-icon
+              v-if="checkingUpdate"
+              :icon="['fas', 'spinner']"
+              spin
+            />
             <transition name="text-swift" mode="out-in">
               <span :key="currentLanguage + '-' + checkingUpdate">
-                {{ checkingUpdate ? t('settings.checking') : t('settings.check') }}
+                {{
+                  checkingUpdate ? t("settings.checking") : t("settings.check")
+                }}
               </span>
             </transition>
           </button>
@@ -131,7 +196,9 @@
     <!-- Steam API 设置组 -->
     <div class="setting-group">
       <transition name="text-swift" mode="out-in">
-        <div class="section-header" :key="currentLanguage">{{ t('settings.steamApi.title') }}</div>
+        <div class="section-header" :key="currentLanguage">
+          {{ t("settings.steamApi.title") }}
+        </div>
       </transition>
 
       <!-- API Key 设置 -->
@@ -141,22 +208,43 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">{{ t('settings.steamApi.apiKey') }}</div>
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.steamApi.apiKey") }}
+            </div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.steamApi.apiKeyDescription') }}</div>
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.steamApi.apiKeyDescription") }}
+            </div>
           </transition>
         </div>
         <div class="setting-action">
           <div class="api-key-container">
             <div class="api-key-input-wrapper">
-              <input v-model="steamApiKey" :type="showApiKey ? 'text' : 'password'" class="api-key-input"
-                :placeholder="t('settings.steamApi.apiKeyPlaceholder')" />
-              <button class="toggle-visibility-btn" @click="showApiKey = !showApiKey"
-                :title="showApiKey ? t('settings.steamApi.hideApiKey') : t('settings.steamApi.showApiKey')">
-                <font-awesome-icon :icon="showApiKey ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
+              <input
+                v-model="steamApiKey"
+                :type="showApiKey ? 'text' : 'password'"
+                class="api-key-input"
+                :placeholder="t('settings.steamApi.apiKeyPlaceholder')"
+              />
+              <button
+                class="toggle-visibility-btn"
+                @click="showApiKey = !showApiKey"
+                :title="
+                  showApiKey
+                    ? t('settings.steamApi.hideApiKey')
+                    : t('settings.steamApi.showApiKey')
+                "
+              >
+                <font-awesome-icon
+                  :icon="showApiKey ? ['fas', 'eye-slash'] : ['fas', 'eye']"
+                />
               </button>
-              <button class="save-api-key-btn" @click="saveSteamApiKey" :title="t('settings.steamApi.saveApiKey')">
+              <button
+                class="save-api-key-btn"
+                @click="saveSteamApiKey"
+                :title="t('settings.steamApi.saveApiKey')"
+              >
                 <font-awesome-icon :icon="['fas', 'save']" />
               </button>
             </div>
@@ -171,29 +259,40 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">{{ t('settings.steamApi.cacheStatus') }}</div>
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.steamApi.cacheStatus") }}
+            </div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.steamApi.cacheStatusDescription') }}
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.steamApi.cacheStatusDescription") }}
             </div>
           </transition>
         </div>
         <div class="setting-action">
           <div class="cache-info">
             <transition name="text-swift" mode="out-in">
-              <span class="cache-count" :key="currentLanguage + '-' + cacheEntryCount">{{ cacheEntryCount }} {{
-                t('settings.steamApi.cacheEntries') }}</span>
+              <span
+                class="cache-count"
+                :key="currentLanguage + '-' + cacheEntryCount"
+                >{{ cacheEntryCount }}
+                {{ t("settings.steamApi.cacheEntries") }}</span
+              >
             </transition>
             <button class="view-cache-btn" @click="navigateToSteamCache">
               <font-awesome-icon :icon="['fas', 'eye']" />
               <transition name="text-swift" mode="out-in">
-                <span :key="currentLanguage + '-viewCache'">{{ t('settings.steamApi.viewCache') }}</span>
+                <span :key="currentLanguage + '-viewCache'">{{
+                  t("settings.steamApi.viewCache")
+                }}</span>
               </transition>
             </button>
             <button class="clear-cache-btn" @click="clearSteamCache">
               <font-awesome-icon :icon="['fas', 'trash']" />
               <transition name="text-swift" mode="out-in">
-                <span :key="currentLanguage + '-clearCache'">{{ t('settings.steamApi.clearCache') }}</span>
+                <span :key="currentLanguage + '-clearCache'">{{
+                  t("settings.steamApi.clearCache")
+                }}</span>
               </transition>
             </button>
           </div>
@@ -204,7 +303,9 @@
     <!-- 开发者选项设置组 -->
     <div class="setting-group" v-if="developerOptionsEnabled">
       <transition name="text-swift" mode="out-in">
-        <div class="section-header" :key="currentLanguage">{{ t('settings.developerOptions') }}</div>
+        <div class="section-header" :key="currentLanguage">
+          {{ t("settings.developerOptions") }}
+        </div>
       </transition>
 
       <!-- 开发者模式开关 -->
@@ -214,15 +315,23 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">{{ t('settings.developerMode') }}</div>
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.developerMode") }}
+            </div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.developerModeDescription') }}</div>
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.developerModeDescription") }}
+            </div>
           </transition>
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input type="checkbox" v-model="developerModeEnabled" @change="handleDeveloperModeToggle">
+            <input
+              type="checkbox"
+              v-model="developerModeEnabled"
+              @change="handleDeveloperModeToggle"
+            />
             <span class="slider"></span>
           </label>
         </div>
@@ -235,15 +344,23 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">{{ t('settings.enableLogging') }}</div>
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.enableLogging") }}
+            </div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.enableLoggingDescription') }}</div>
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.enableLoggingDescription") }}
+            </div>
           </transition>
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input type="checkbox" v-model="logMenuEnabled" @change="handleLogMenuToggle">
+            <input
+              type="checkbox"
+              v-model="logMenuEnabled"
+              @change="handleLogMenuToggle"
+            />
             <span class="slider"></span>
           </label>
         </div>
@@ -256,16 +373,23 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">{{ t('settings.performanceMonitor') }}</div>
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.performanceMonitor") }}
+            </div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.performanceMonitorDescription') }}
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.performanceMonitorDescription") }}
             </div>
           </transition>
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input type="checkbox" v-model="performanceMonitorEnabled" @change="handlePerformanceMonitorToggle">
+            <input
+              type="checkbox"
+              v-model="performanceMonitorEnabled"
+              @change="handlePerformanceMonitorToggle"
+            />
             <span class="slider"></span>
           </label>
         </div>
@@ -278,18 +402,57 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">{{ t('settings.testArchiveDisplay') }}</div>
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.testArchiveDisplay") }}
+            </div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.testArchiveDisplayDescription') }}
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.testArchiveDisplayDescription") }}
             </div>
           </transition>
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input type="checkbox" v-model="testArchiveEnabled" @change="handleTestArchiveToggle">
+            <input
+              type="checkbox"
+              v-model="testArchiveEnabled"
+              @change="handleTestArchiveToggle"
+            />
             <span class="slider"></span>
           </label>
+        </div>
+      </div>
+
+      <!-- 元旦主题控制 -->
+      <div class="setting-item" v-if="developerModeEnabled">
+        <div class="setting-icon">
+          <font-awesome-icon
+            :icon="['fas', 'snowflake']"
+            style="color: #e53935"
+          />
+        </div>
+        <div class="setting-details">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.newYearThemeControl") }}
+            </div>
+          </transition>
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.newYearThemeControlDescription") }}
+            </div>
+          </transition>
+        </div>
+        <div class="setting-action">
+          <CustomDropdown
+            v-model="newYearThemeMode"
+            :options="newYearThemeModeOptions"
+            @change="handleNewYearThemeModeChange"
+            @dropdown-open="handleDropdownOpen('newYearTheme')"
+            :is-open="activeDropdown === 'newYearTheme'"
+            :placeholder="t('common.select')"
+          />
         </div>
       </div>
 
@@ -300,10 +463,13 @@
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">{{ t('settings.resetTutorial') }}</div>
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.resetTutorial") }}
+            </div>
           </transition>
           <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">{{ t('settings.resetTutorialDescription') }}
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.resetTutorialDescription") }}
             </div>
           </transition>
         </div>
@@ -311,9 +477,81 @@
           <button class="reset-tutorial-btn" @click="handleResetTutorial">
             <font-awesome-icon :icon="['fas', 'redo']" />
             <transition name="text-swift" mode="out-in">
-              <span :key="currentLanguage">{{ t('settings.resetTutorialButton') }}</span>
+              <span :key="currentLanguage">{{
+                t("settings.resetTutorialButton")
+              }}</span>
             </transition>
           </button>
+        </div>
+      </div>
+
+      <!-- 存档文件工具 -->
+      <div class="setting-item sav-tools-section" v-if="developerModeEnabled">
+        <div class="setting-icon">
+          <font-awesome-icon :icon="['fas', 'file-code']" />
+        </div>
+        <div class="setting-details full-width">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.savFileTools") }}
+            </div>
+          </transition>
+
+          <div class="sav-tools-container">
+            <!-- 解析存档文件 -->
+            <div
+              class="drop-zone"
+              :class="{ 'drag-over': parseDragOver, processing: isParsing }"
+              @dragover.prevent="parseDragOver = true"
+              @dragleave.prevent="parseDragOver = false"
+              @drop.prevent="handleParseDrop"
+              @click="triggerParseFileInput"
+            >
+              <div class="drop-zone-content">
+                <font-awesome-icon
+                  :icon="
+                    isParsing ? ['fas', 'spinner'] : ['fas', 'file-import']
+                  "
+                  :spin="isParsing"
+                  class="drop-icon"
+                />
+                <div class="drop-title">
+                  {{
+                    isParsing
+                      ? t("settings.parsing")
+                      : t("settings.parseSavFile")
+                  }}
+                </div>
+              </div>
+            </div>
+
+            <!-- 打包存档文件 -->
+            <div
+              class="drop-zone"
+              :class="{ 'drag-over': packDragOver, processing: isPacking }"
+              @dragover.prevent="packDragOver = true"
+              @dragleave.prevent="packDragOver = false"
+              @drop.prevent="handlePackDrop"
+              @click="triggerPackFileInput"
+            >
+              <div class="drop-zone-content">
+                <font-awesome-icon
+                  :icon="
+                    isPacking ? ['fas', 'spinner'] : ['fas', 'file-export']
+                  "
+                  :spin="isPacking"
+                  class="drop-icon"
+                />
+                <div class="drop-title">
+                  {{
+                    isPacking
+                      ? t("settings.packing")
+                      : t("settings.packSavFile")
+                  }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -321,41 +559,65 @@
     <!-- 版本信息 -->
     <div class="version-info">
       <transition name="text-swift" mode="out-in">
-        <div class="version-text" :key="currentLanguage">{{ t('settings.versionInfo', { version: appVersion }) }}</div>
+        <div class="version-text" :key="currentLanguage">
+          {{ t("settings.versionInfo", { version: appVersion }) }}
+        </div>
       </transition>
       <transition name="text-swift" mode="out-in">
-        <div class="version-detail" :key="currentLanguage">{{ t('settings.developedBy') }}</div>
+        <div class="version-detail" :key="currentLanguage">
+          {{ t("settings.developedBy") }}
+        </div>
       </transition>
     </div>
 
     <!-- 更新提示 -->
     <transition name="slide">
-      <div v-if="updateMessage" :class="['update-message', updateMessage.type]"
-        :key="updateMessage.key || updateMessage.text">
+      <div
+        v-if="updateMessage"
+        :class="['update-message', updateMessage.type]"
+        :key="updateMessage.key || updateMessage.text"
+      >
         <font-awesome-icon :icon="updateMessage.icon" />
         <transition name="text-swift" mode="out-in">
-          <span :key="currentLanguage + '-' + updateMessage.text">{{ updateMessage.text }}</span>
+          <span :key="currentLanguage + '-' + updateMessage.text">{{
+            updateMessage.text
+          }}</span>
         </transition>
 
         <!-- 更新操作按钮 -->
         <transition name="expand" mode="out-in">
-          <div v-if="updateStatus === UpdateStatus.AVAILABLE" class="update-actions"
-            :key="'actions-' + updateMessage.key">
-            <button class="update-btn" @click="downloadAndInstall" :disabled="isProcessing">
+          <div
+            v-if="updateStatus === UpdateStatus.AVAILABLE"
+            class="update-actions"
+            :key="'actions-' + updateMessage.key"
+          >
+            <button
+              class="update-btn"
+              @click="downloadAndInstall"
+              :disabled="isProcessing"
+            >
               <font-awesome-icon :icon="['fas', 'external-link-alt']" />
-              {{ t('settings.goToDownload') }}
+              {{ t("settings.goToDownload") }}
             </button>
             <button class="update-btn secondary" @click="closeUpdateMessage">
-              {{ t('common.later') }}
+              {{ t("common.later") }}
             </button>
           </div>
         </transition>
 
         <!-- 自定义操作按钮 -->
         <transition name="expand" mode="out-in">
-          <div v-if="updateMessage.showActions" class="update-actions" :key="'custom-actions-' + updateMessage.key">
-            <button v-for="(action, index) in updateMessage.actions" :key="index" :class="['update-btn', action.class]"
-              @click="action.action">
+          <div
+            v-if="updateMessage.showActions"
+            class="update-actions"
+            :key="'custom-actions-' + updateMessage.key"
+          >
+            <button
+              v-for="(action, index) in updateMessage.actions"
+              :key="index"
+              :class="['update-btn', action.class]"
+              @click="action.action"
+            >
               {{ action.text }}
             </button>
           </div>
@@ -363,10 +625,22 @@
 
         <!-- 更新详情 -->
         <transition name="expand" mode="out-in">
-          <div v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE" class="update-details"
-            :key="'details-' + updateMessage.key">
-            <h4>{{ t('settings.updateNotesForVersion', { version: updateInfo.version }) }}</h4>
-            <div class="update-content" v-html="formatUpdateNotes(updateInfo.body)"></div>
+          <div
+            v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE"
+            class="update-details"
+            :key="'details-' + updateMessage.key"
+          >
+            <h4>
+              {{
+                t("settings.updateNotesForVersion", {
+                  version: updateInfo.version,
+                })
+              }}
+            </h4>
+            <div
+              class="update-content"
+              v-html="formatUpdateNotes(updateInfo.body)"
+            ></div>
           </div>
         </transition>
       </div>
@@ -375,105 +649,149 @@
 </template>
 
 <script>
-import { updateService, UpdateStatus } from '../services/updateService.js';
-import { getAllUpdateSources, getUserUpdateSource, setUserUpdateSource } from '../config/updateConfig.js';
-import CustomDropdown from '../components/CustomDropdown.vue';
-import { useI18n } from 'vue-i18n';
-import { invoke } from '@tauri-apps/api/core';
+import { updateService, UpdateStatus } from "../services/updateService.js";
+import {
+  getAllUpdateSources,
+  getUserUpdateSource,
+  setUserUpdateSource,
+} from "../config/updateConfig.js";
+import CustomDropdown from "../components/CustomDropdown.vue";
+import { useI18n } from "vue-i18n";
+import { invoke } from "@tauri-apps/api/core";
 
 export default {
-  name: 'Settings',
+  name: "Settings",
   components: {
-    CustomDropdown
+    CustomDropdown,
   },
   data() {
     return {
-      currentTheme: localStorage.getItem('theme') || 'light',
-      currentLanguage: localStorage.getItem('language') || 'zh-CN',
-      currentUpdateSource: localStorage.getItem('updateSource') || 'GITEE',
-      performanceMonitorEnabled: localStorage.getItem('performanceMonitor') !== 'false', // 默认开启
-      developerModeEnabled: localStorage.getItem('developerMode') === 'true', // 开发者模式状态
-      developerOptionsEnabled: localStorage.getItem('developerMode') === 'true', // 开发者选项是否显示
-      logMenuEnabled: localStorage.getItem('logMenuEnabled') === 'true', // 日志功能开关状态
-      testArchiveEnabled: localStorage.getItem('testArchiveEnabled') !== 'false', // 测试存档显示开关状态，默认开启
-      gpuAccelerationDisabled: localStorage.getItem('gpuAccelerationDisabled') === 'true', // GPU加速开关状态
+      currentTheme: localStorage.getItem("theme") || "light",
+      currentLanguage: localStorage.getItem("language") || "zh-CN",
+      currentUpdateSource: localStorage.getItem("updateSource") || "GITEE",
+      performanceMonitorEnabled:
+        localStorage.getItem("performanceMonitor") !== "false", // 默认开启
+      developerModeEnabled: localStorage.getItem("developerMode") === "true", // 开发者模式状态
+      developerOptionsEnabled: localStorage.getItem("developerMode") === "true", // 开发者选项是否显示
+      logMenuEnabled: localStorage.getItem("logMenuEnabled") === "true", // 日志功能开关状态
+      testArchiveEnabled:
+        localStorage.getItem("testArchiveEnabled") !== "false", // 测试存档显示开关状态，默认开启
+      gpuAccelerationDisabled:
+        localStorage.getItem("gpuAccelerationDisabled") === "true", // GPU加速开关状态
       // Steam API 相关
-      steamApiKey: '',
+      steamApiKey: "",
       showApiKey: false,
       cacheEntryCount: 0,
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: '3.0.0-Alpha-7',
+      appVersion: "3.0.0-Alpha-7.1",
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
       UpdateStatus: UpdateStatus, // 将UpdateStatus暴露给模板使用
       isProcessing: false,
-      messageId: 0
+      messageId: 0,
+      // 存档文件工具相关
+      parseDragOver: false,
+      packDragOver: false,
+      isParsing: false,
+      isPacking: false,
+      // 元旦主题控制
+      newYearThemeMode: localStorage.getItem("newYearThemeMode") || "auto",
     };
   },
   computed: {
     themeOptions() {
+      const options = [
+        { value: "light", label: this.$t("common.light") },
+        { value: "dark", label: this.$t("common.dark") },
+      ];
+      // 根据元旦主题模式和日期决定是否显示元旦主题选项
+      if (this.shouldShowNewYearTheme) {
+        options.push({ value: "new-year", label: this.$t("common.newYear") });
+      }
+      return options;
+    },
+    shouldShowNewYearTheme() {
+      // 检查开发者模式下的元旦主题控制
+      const mode = this.newYearThemeMode;
+      if (mode === "force") return true;
+      if (mode === "hide") return false;
+      // auto 模式：检查日期是否在 12.31 - 1.3 之间
+      return this.isNewYearPeriod();
+    },
+    newYearThemeModeOptions() {
       return [
-        { value: 'light', label: this.$t('common.light') },
-        { value: 'dark', label: this.$t('common.dark') }
+        { value: "auto", label: this.$t("settings.newYearThemeModeAuto") },
+        { value: "force", label: this.$t("settings.newYearThemeModeForce") },
+        { value: "hide", label: this.$t("settings.newYearThemeModeHide") },
       ];
     },
     languageOptions() {
       return [
-        { value: 'zh-CN', label: "简体中文" },
-        { value: 'zh-TW', label: "繁體中文" },
-        { value: 'en-US', label: "English" }
+        { value: "zh-CN", label: "简体中文" },
+        { value: "zh-TW", label: "繁體中文" },
+        { value: "en-US", label: "English" },
       ];
     },
     updateSourceOptions() {
       const sources = getAllUpdateSources();
       return Object.entries(sources).map(([key, source]) => ({
         value: key,
-        label: source.name
+        label: source.name,
       }));
-    }
+    },
   },
   setup() {
-    const { t, locale } = useI18n({ useScope: 'global' });
+    const { t, locale } = useI18n({ useScope: "global" });
     return { t, locale };
   },
   methods: {
     formatUpdateNotes(body) {
-      if (!body) return this.t('settings.noUpdateNotes');
+      if (!body) return this.t("settings.noUpdateNotes");
 
       let html = body;
 
       // 处理代码块
-      html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
-      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      html = html.replace(
+        /```(\w+)?\n([\s\S]*?)```/g,
+        '<pre><code class="language-$1">$2</code></pre>'
+      );
+      html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
 
       // 处理标题
-      html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
-      html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
-      html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+      html = html.replace(/^### (.*$)/gm, "<h3>$1</h3>");
+      html = html.replace(/^## (.*$)/gm, "<h2>$1</h2>");
+      html = html.replace(/^# (.*$)/gm, "<h1>$1</h1>");
 
       // 处理列表
-      html = html.replace(/^\* (.*$)/gm, '<li>$1</li>');
-      html = html.replace(/^- (.*$)/gm, '<li>$1</li>');
-      html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+      html = html.replace(/^\* (.*$)/gm, "<li>$1</li>");
+      html = html.replace(/^- (.*$)/gm, "<li>$1</li>");
+      html = html.replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>");
 
       // 处理粗体和斜体
-      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-      html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
-      html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+      html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+      html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
+      html = html.replace(/__(.*?)__/g, "<strong>$1</strong>");
+      html = html.replace(/_(.*?)_/g, "<em>$1</em>");
 
       // 处理链接 [text](url)
-      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+      html = html.replace(
+        /\[([^\]]+)\]\(([^)]+)\)/g,
+        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+      );
 
       // 处理换行
-      html = html.replace(/\n\n/g, '</p><p>');
-      html = html.replace(/\n/g, '<br>');
+      html = html.replace(/\n\n/g, "</p><p>");
+      html = html.replace(/\n/g, "<br>");
 
       // 包装段落
-      if (!html.includes('<h') && !html.includes('<pre') && !html.includes('<ul')) {
-        html = '<p>' + html + '</p>';
+      if (
+        !html.includes("<h") &&
+        !html.includes("<pre") &&
+        !html.includes("<ul")
+      ) {
+        html = "<p>" + html + "</p>";
       }
 
       return html;
@@ -485,12 +803,28 @@ export default {
 
     handleThemeChange(option) {
       const theme = option.value;
-      localStorage.setItem('theme', theme);
+      const previousTheme = this.currentTheme;
+
+      // 如果选择元旦主题，记录之前的非元旦主题以便恢复
+      if (theme === "new-year") {
+        // 只有当之前不是元旦主题时才记录
+        if (previousTheme && previousTheme !== "new-year") {
+          localStorage.setItem("themeBeforeNewYear", previousTheme);
+        }
+      } else {
+        // 如果选择的是非元旦主题，也更新 themeBeforeNewYear
+        // 这样即使用户直接从元旦切换到深色，下次恢复也是深色
+        localStorage.setItem("themeBeforeNewYear", theme);
+      }
+
+      // 更新当前主题
+      this.currentTheme = theme;
+      localStorage.setItem("theme", theme);
 
       if (window.themeManager) {
         window.themeManager.setTheme(theme);
       } else {
-        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute("data-theme", theme);
       }
 
       // 强制触发背景更新以确保立即可见
@@ -505,21 +839,30 @@ export default {
       const root = document.documentElement;
       const body = document.body;
 
-      if (theme === 'dark') {
-        root.style.setProperty('--bg', '#1c1c1e');
-        root.style.setProperty('--bg-primary', '#1c1c1e');
-        root.style.setProperty('--bg-secondary', '#2c2c2e');
+      if (theme === "dark") {
+        root.style.setProperty("--bg", "#1c1c1e");
+        root.style.setProperty("--bg-primary", "#1c1c1e");
+        root.style.setProperty("--bg-secondary", "#2c2c2e");
         if (body) {
-          body.style.backgroundColor = '#1c1c1e';
-          body.style.setProperty('--bg', '#1c1c1e');
+          body.style.backgroundColor = "#1c1c1e";
+          body.style.setProperty("--bg", "#1c1c1e");
+        }
+      } else if (theme === "new-year") {
+        // 元旦主题 - 喜庆红金配色
+        root.style.setProperty("--bg", "#1a0a0a");
+        root.style.setProperty("--bg-primary", "#1a0a0a");
+        root.style.setProperty("--bg-secondary", "rgba(45, 21, 21, 0.95)");
+        if (body) {
+          body.style.backgroundColor = "#1a0a0a";
+          body.style.setProperty("--bg", "#1a0a0a");
         }
       } else {
-        root.style.setProperty('--bg', '#f8f9fa');
-        root.style.setProperty('--bg-primary', '#f8f9fa');
-        root.style.setProperty('--bg-secondary', '#ffffff');
+        root.style.setProperty("--bg", "#f8f9fa");
+        root.style.setProperty("--bg-primary", "#f8f9fa");
+        root.style.setProperty("--bg-secondary", "#ffffff");
         if (body) {
-          body.style.backgroundColor = '#f8f9fa';
-          body.style.setProperty('--bg', '#f8f9fa');
+          body.style.backgroundColor = "#f8f9fa";
+          body.style.setProperty("--bg", "#f8f9fa");
         }
       }
 
@@ -544,29 +887,31 @@ export default {
         } else if (window.$i18n) {
           window.$i18n.locale = lang;
         }
-        localStorage.setItem('language', lang);
+        localStorage.setItem("language", lang);
 
         // 触发自定义事件通知其他组件
-        window.dispatchEvent(new CustomEvent('language-changed', { detail: { lang } }));
+        window.dispatchEvent(
+          new CustomEvent("language-changed", { detail: { lang } })
+        );
 
         // 更新窗口标题为语言文件中的 app.name
         await this.updateWindowTitle();
       } catch (error) {
-        console.error(this.t('settings.languageSwitchFailed'), error);
+        console.error(this.t("settings.languageSwitchFailed"), error);
       }
     },
 
     async updateWindowTitle() {
       try {
         // 获取当前语言文件中的应用名称
-        const appName = this.t('app.name');
+        const appName = this.t("app.name");
 
         // 调用后端设置窗口标题
-        await invoke('set_window_title', { title: appName });
+        await invoke("set_window_title", { title: appName });
 
-        console.log('窗口标题已更新为:', appName);
+        console.log("窗口标题已更新为:", appName);
       } catch (error) {
-        console.error('更新窗口标题失败:', error);
+        console.error("更新窗口标题失败:", error);
         // 不抛出错误，语言切换不应该因为标题更新失败而失败
       }
     },
@@ -576,28 +921,29 @@ export default {
       try {
         setUserUpdateSource(source);
         this.currentUpdateSource = source;
-        localStorage.setItem('updateSource', source);
+        localStorage.setItem("updateSource", source);
 
         // 显示成功提示
         this.updateMessage = {
-          text: this.t('settings.updateSourceChanged', { source: option.label }),
-          type: 'success',
-          icon: ['fas', 'check'],
-          key: `source-changed-${this.messageId++}`
+          text: this.t("settings.updateSourceChanged", {
+            source: option.label,
+          }),
+          type: "success",
+          icon: ["fas", "check"],
+          key: `source-changed-${this.messageId++}`,
         };
 
         // 3秒后自动隐藏提示
         setTimeout(() => {
           this.closeUpdateMessage();
         }, 3000);
-
       } catch (error) {
-        console.error(this.t('settings.updateSourceChangeFailed'), error);
+        console.error(this.t("settings.updateSourceChangeFailed"), error);
         this.updateMessage = {
-          text: this.t('settings.updateSourceChangeFailed'),
-          type: 'error',
-          icon: ['fas', 'times'],
-          key: `source-error-${this.messageId++}`
+          text: this.t("settings.updateSourceChangeFailed"),
+          type: "error",
+          icon: ["fas", "times"],
+          key: `source-error-${this.messageId++}`,
         };
       }
     },
@@ -618,18 +964,20 @@ export default {
           this.updateInfo = update;
           this.updateStatus = UpdateStatus.AVAILABLE;
           this.updateMessage = {
-            text: this.t('settings.newVersionAvailable', { version: update.version }),
-            type: 'info',
-            icon: ['fas', 'external-link-alt'],
-            key: `available-${this.messageId}`
+            text: this.t("settings.newVersionAvailable", {
+              version: update.version,
+            }),
+            type: "info",
+            icon: ["fas", "external-link-alt"],
+            key: `available-${this.messageId}`,
           };
         } else {
           this.updateStatus = UpdateStatus.NOT_AVAILABLE;
           this.updateMessage = {
-            text: this.$t('settings.latestVersion'),
-            type: 'success',
-            icon: ['fas', 'check'],
-            key: `latest-${this.messageId}`
+            text: this.$t("settings.latestVersion"),
+            type: "success",
+            icon: ["fas", "check"],
+            key: `latest-${this.messageId}`,
           };
         }
       } catch (error) {
@@ -637,100 +985,195 @@ export default {
         this.messageId++;
 
         // 使用更详细的错误信息
-        let errorText = this.$t('settings.updateFailed');
-        if (error.type === this.t('settings.errorType.rateLimit') || error.message?.includes('rate limit') || error.message?.includes('429')) {
-          errorText = this.$t('settings.rateLimitError');
-        } else if (error.type === this.t('settings.errorType.networkConnection')) {
-          errorText = this.$t('settings.networkError');
-        } else if (error.type === this.t('settings.errorType.resourceNotFound')) {
-          errorText = this.$t('settings.resourceNotFound');
-        } else if (error.type === this.t('settings.errorType.accessDenied')) {
-          errorText = this.$t('settings.accessDenied');
+        let errorText = this.$t("settings.updateFailed");
+        if (
+          error.type === this.t("settings.errorType.rateLimit") ||
+          error.message?.includes("rate limit") ||
+          error.message?.includes("429")
+        ) {
+          errorText = this.$t("settings.rateLimitError");
+        } else if (
+          error.type === this.t("settings.errorType.networkConnection")
+        ) {
+          errorText = this.$t("settings.networkError");
+        } else if (
+          error.type === this.t("settings.errorType.resourceNotFound")
+        ) {
+          errorText = this.$t("settings.resourceNotFound");
+        } else if (error.type === this.t("settings.errorType.accessDenied")) {
+          errorText = this.$t("settings.accessDenied");
         }
 
         this.updateMessage = {
           text: errorText,
-          type: 'error',
-          icon: ['fas', 'times'],
-          key: `error-${this.messageId}`
+          type: "error",
+          icon: ["fas", "times"],
+          key: `error-${this.messageId}`,
         };
       } finally {
         this.checkingUpdate = false;
         this.isProcessing = false;
 
         // 8秒后自动隐藏错误提示（给更多时间阅读错误信息）
-        setTimeout(() => {
-          if (this.updateStatus !== UpdateStatus.AVAILABLE) {
-            this.closeUpdateMessage();
-          }
-        }, this.updateStatus === UpdateStatus.ERROR ? 8000 : 5000);
+        setTimeout(
+          () => {
+            if (this.updateStatus !== UpdateStatus.AVAILABLE) {
+              this.closeUpdateMessage();
+            }
+          },
+          this.updateStatus === UpdateStatus.ERROR ? 8000 : 5000
+        );
       }
     },
     handlePerformanceMonitorToggle() {
-      localStorage.setItem('performanceMonitor', this.performanceMonitorEnabled);
+      localStorage.setItem(
+        "performanceMonitor",
+        this.performanceMonitorEnabled
+      );
       // 触发自定义事件通知App.vue更新状态
-      window.dispatchEvent(new CustomEvent('performance-monitor-toggle', {
-        detail: { enabled: this.performanceMonitorEnabled }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("performance-monitor-toggle", {
+          detail: { enabled: this.performanceMonitorEnabled },
+        })
+      );
     },
 
     handleDeveloperModeToggle() {
-      localStorage.setItem('developerMode', this.developerModeEnabled);
+      localStorage.setItem("developerMode", this.developerModeEnabled);
       this.developerOptionsEnabled = this.developerModeEnabled;
 
       // 触发自定义事件通知其他组件
-      window.dispatchEvent(new CustomEvent('developer-mode-changed', {
-        detail: { enabled: this.developerModeEnabled }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("developer-mode-changed", {
+          detail: { enabled: this.developerModeEnabled },
+        })
+      );
 
       // 如果关闭开发者模式，同时关闭所有相关设置
       if (!this.developerModeEnabled) {
         // 关闭日志功能
         this.logMenuEnabled = false;
-        localStorage.setItem('logMenuEnabled', 'false');
-        window.dispatchEvent(new CustomEvent('log-menu-toggle', {
-          detail: { enabled: false }
-        }));
+        localStorage.setItem("logMenuEnabled", "false");
+        window.dispatchEvent(
+          new CustomEvent("log-menu-toggle", {
+            detail: { enabled: false },
+          })
+        );
 
         // 关闭性能监控
         this.performanceMonitorEnabled = false;
-        localStorage.setItem('performanceMonitor', 'false');
+        localStorage.setItem("performanceMonitor", "false");
 
         // 关闭测试存档显示
         this.testArchiveEnabled = false;
-        localStorage.setItem('testArchiveEnabled', 'false');
-        window.dispatchEvent(new CustomEvent('test-archive-toggle', {
-          detail: { enabled: false }
-        }));
+        localStorage.setItem("testArchiveEnabled", "false");
+        window.dispatchEvent(
+          new CustomEvent("test-archive-toggle", {
+            detail: { enabled: false },
+          })
+        );
       }
     },
 
     handleLogMenuToggle() {
-      localStorage.setItem('logMenuEnabled', this.logMenuEnabled);
+      localStorage.setItem("logMenuEnabled", this.logMenuEnabled);
       // 触发自定义事件通知其他组件
-      window.dispatchEvent(new CustomEvent('log-menu-toggle', {
-        detail: { enabled: this.logMenuEnabled }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("log-menu-toggle", {
+          detail: { enabled: this.logMenuEnabled },
+        })
+      );
     },
 
     handleTestArchiveToggle() {
-      localStorage.setItem('testArchiveEnabled', this.testArchiveEnabled);
+      localStorage.setItem("testArchiveEnabled", this.testArchiveEnabled);
       // 触发自定义事件通知侧边栏更新状态
-      window.dispatchEvent(new CustomEvent('test-archive-toggle', {
-        detail: { enabled: this.testArchiveEnabled }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("test-archive-toggle", {
+          detail: { enabled: this.testArchiveEnabled },
+        })
+      );
+    },
+
+    // 检查当前日期是否在元旦期间 (12.31 - 1.3)
+    isNewYearPeriod() {
+      const now = new Date();
+      const month = now.getMonth() + 1; // 0-11 -> 1-12
+      const day = now.getDate();
+      // 12月31日 或 1月1-3日
+      return (
+        (month === 12 && day === 31) || (month === 1 && day >= 1 && day <= 3)
+      );
+    },
+
+    handleNewYearThemeModeChange(option) {
+      const mode = option.value;
+      this.newYearThemeMode = mode;
+      localStorage.setItem("newYearThemeMode", mode);
+
+      // 如果当前主题是元旦主题但被隐藏了，恢复之前的主题
+      if (mode === "hide" && this.currentTheme === "new-year") {
+        const themeBeforeNewYear =
+          localStorage.getItem("themeBeforeNewYear") || "light";
+        this.currentTheme = themeBeforeNewYear;
+        localStorage.setItem("theme", themeBeforeNewYear);
+        if (window.themeManager) {
+          window.themeManager.setTheme(themeBeforeNewYear);
+        } else {
+          document.documentElement.setAttribute(
+            "data-theme",
+            themeBeforeNewYear
+          );
+        }
+        this.forceThemeBackgroundUpdate(themeBeforeNewYear);
+      }
+
+      // 如果切换到自动模式且当前是元旦主题但不在元旦期间，也要恢复
+      if (
+        mode === "auto" &&
+        this.currentTheme === "new-year" &&
+        !this.isNewYearPeriod()
+      ) {
+        const themeBeforeNewYear =
+          localStorage.getItem("themeBeforeNewYear") || "light";
+        this.currentTheme = themeBeforeNewYear;
+        localStorage.setItem("theme", themeBeforeNewYear);
+        if (window.themeManager) {
+          window.themeManager.setTheme(themeBeforeNewYear);
+        } else {
+          document.documentElement.setAttribute(
+            "data-theme",
+            themeBeforeNewYear
+          );
+        }
+        this.forceThemeBackgroundUpdate(themeBeforeNewYear);
+      }
+
+      // 关闭下拉框
+      this.activeDropdown = null;
+
+      // 显示提示
+      this.updateMessage = {
+        text: this.t("settings.newYearThemeModeChanged"),
+        type: "success",
+        icon: ["fas", "check"],
+        key: `newyear-mode-${this.messageId++}`,
+      };
+      setTimeout(() => {
+        this.closeUpdateMessage();
+      }, 2000);
     },
 
     handleResetTutorial() {
       // 清除快速创建教程完成标记
-      localStorage.removeItem('quick_create_tutorial_completed');
-      
+      localStorage.removeItem("quick_create_tutorial_completed");
+
       // 显示成功提示
       this.updateMessage = {
-        text: this.t('settings.tutorialReset'),
-        type: 'success',
-        icon: ['fas', 'check'],
-        key: `tutorial-reset-${this.messageId++}`
+        text: this.t("settings.tutorialReset"),
+        type: "success",
+        icon: ["fas", "check"],
+        key: `tutorial-reset-${this.messageId++}`,
       };
 
       // 3秒后自动隐藏提示
@@ -739,45 +1182,209 @@ export default {
       }, 3000);
     },
 
+    // ========== 存档文件工具方法 ==========
+    triggerParseFileInput() {
+      if (!this.isParsing) {
+        this.parseSavFile();
+      }
+    },
+
+    triggerPackFileInput() {
+      if (!this.isPacking) {
+        this.packJsonFile();
+      }
+    },
+
+    handleParseDrop(event) {
+      this.parseDragOver = false;
+      // 拖拽也触发文件选择对话框
+      this.parseSavFile();
+    },
+
+    handlePackDrop(event) {
+      this.packDragOver = false;
+      // 拖拽也触发文件选择对话框
+      this.packJsonFile();
+    },
+
+    handleParseFileSelect(event) {
+      // 不再使用，改用 Tauri 对话框
+      event.target.value = "";
+    },
+
+    handlePackFileSelect(event) {
+      // 不再使用，改用 Tauri 对话框
+      event.target.value = "";
+    },
+
+    async parseSavFile() {
+      this.isParsing = true;
+
+      try {
+        // 使用 Tauri 对话框选择文件获取完整路径
+        const { open } = await import("@tauri-apps/plugin-dialog");
+        const filePath = await open({
+          multiple: false,
+          filters: [{ name: "Save Files", extensions: ["sav"] }],
+        });
+
+        if (!filePath) {
+          this.isParsing = false;
+          return;
+        }
+
+        // 调用后端解析存档文件
+        const result = await invoke("convert_sav_to_json", {
+          filePath: filePath,
+        });
+
+        if (result.success && result.json) {
+          // 生成输出文件名（同名 .json）
+          const fileName = filePath.split("\\").pop().split("/").pop();
+          const outputFileName = fileName.replace(/\.sav$/i, ".json");
+          const outputDir = filePath.substring(
+            0,
+            Math.max(filePath.lastIndexOf("\\"), filePath.lastIndexOf("/"))
+          );
+          const outputPath = `${outputDir}/${outputFileName}`.replace(
+            /\//g,
+            "\\"
+          );
+
+          // 使用 Tauri fs 插件写入文件
+          const { writeTextFile } = await import("@tauri-apps/plugin-fs");
+          await writeTextFile(outputPath, result.json);
+
+          this.updateMessage = {
+            text: this.t("settings.parseSuccess", { filename: outputFileName }),
+            type: "success",
+            icon: ["fas", "check"],
+            key: `parse-success-${this.messageId++}`,
+          };
+        } else {
+          throw new Error("解析结果无效");
+        }
+      } catch (error) {
+        console.error("解析存档文件失败:", error);
+        this.updateMessage = {
+          text: this.t("settings.parseError", { error: error.toString() }),
+          type: "error",
+          icon: ["fas", "times"],
+          key: `parse-error-${this.messageId++}`,
+        };
+      } finally {
+        this.isParsing = false;
+        setTimeout(() => this.closeUpdateMessage(), 5000);
+      }
+    },
+
+    async packJsonFile() {
+      this.isPacking = true;
+
+      try {
+        // 使用 Tauri 对话框选择文件获取完整路径
+        const { open } = await import("@tauri-apps/plugin-dialog");
+        const filePath = await open({
+          multiple: false,
+          filters: [{ name: "JSON Files", extensions: ["json"] }],
+        });
+
+        if (!filePath) {
+          this.isPacking = false;
+          return;
+        }
+
+        // 读取 JSON 文件内容
+        const { readTextFile } = await import("@tauri-apps/plugin-fs");
+        const jsonContent = await readTextFile(filePath);
+
+        // 生成输出文件名（同名-edited.sav）
+        const fileName = filePath.split("\\").pop().split("/").pop();
+        const baseName = fileName.replace(/\.json$/i, "");
+        const outputFileName = `${baseName}-edited.sav`;
+        const outputDir = filePath.substring(
+          0,
+          Math.max(filePath.lastIndexOf("\\"), filePath.lastIndexOf("/"))
+        );
+        const outputPath = `${outputDir}/${outputFileName}`.replace(
+          /\//g,
+          "\\"
+        );
+
+        // 调用后端打包存档文件
+        const result = await invoke("convert_json_to_sav", {
+          jsonContent: jsonContent,
+          outputPath: outputPath,
+        });
+
+        if (result.success) {
+          this.updateMessage = {
+            text: this.t("settings.packSuccess", { filename: outputFileName }),
+            type: "success",
+            icon: ["fas", "check"],
+            key: `pack-success-${this.messageId++}`,
+          };
+        } else {
+          throw new Error(result.message || "打包失败");
+        }
+      } catch (error) {
+        console.error("打包存档文件失败:", error);
+        this.updateMessage = {
+          text: this.t("settings.packError", { error: error.toString() }),
+          type: "error",
+          icon: ["fas", "times"],
+          key: `pack-error-${this.messageId++}`,
+        };
+      } finally {
+        this.isPacking = false;
+        setTimeout(() => this.closeUpdateMessage(), 5000);
+      }
+    },
+
     async handleGpuAccelerationToggle() {
       try {
         // 调用Tauri命令设置GPU加速状态
-        await invoke('set_gpu_acceleration', {
-          disabled: this.gpuAccelerationDisabled
+        await invoke("set_gpu_acceleration", {
+          disabled: this.gpuAccelerationDisabled,
         });
 
         // 保存状态到localStorage
-        localStorage.setItem('gpuAccelerationDisabled', this.gpuAccelerationDisabled.toString());
+        localStorage.setItem(
+          "gpuAccelerationDisabled",
+          this.gpuAccelerationDisabled.toString()
+        );
 
         // 显示提示信息，告知用户需要手动重启应用
         const message = this.gpuAccelerationDisabled
-          ? this.t('settings.gpuAccelerationDisabled')
-          : this.t('settings.gpuAccelerationEnabled');
+          ? this.t("settings.gpuAccelerationDisabled")
+          : this.t("settings.gpuAccelerationEnabled");
 
         this.updateMessage = {
           text: message,
-          type: 'info',
-          icon: ['fas', 'info-circle'],
-          key: `gpu-info-${this.messageId++}`
+          type: "info",
+          icon: ["fas", "info-circle"],
+          key: `gpu-info-${this.messageId++}`,
         };
 
         // 5秒后自动隐藏提示
         setTimeout(() => {
           this.closeUpdateMessage();
         }, 5000);
-
       } catch (error) {
-        console.error(this.t('settings.gpuAccelerationChangeFailed'), error);
+        console.error(this.t("settings.gpuAccelerationChangeFailed"), error);
         // 恢复开关状态
         this.gpuAccelerationDisabled = !this.gpuAccelerationDisabled;
-        localStorage.setItem('gpuAccelerationDisabled', this.gpuAccelerationDisabled.toString());
+        localStorage.setItem(
+          "gpuAccelerationDisabled",
+          this.gpuAccelerationDisabled.toString()
+        );
 
         // 显示错误提示
         this.updateMessage = {
-          text: this.t('settings.gpuAccelerationChangeFailed') + ': ' + error,
-          type: 'error',
-          icon: ['fas', 'times'],
-          key: `gpu-error-${this.messageId++}`
+          text: this.t("settings.gpuAccelerationChangeFailed") + ": " + error,
+          type: "error",
+          icon: ["fas", "times"],
+          key: `gpu-error-${this.messageId++}`,
         };
 
         // 3秒后自动隐藏提示
@@ -805,36 +1412,35 @@ export default {
       try {
         this.updateStatus = UpdateStatus.AVAILABLE;
         this.updateMessage = {
-          text: this.t('settings.openingDownloadPage'),
-          type: 'info',
-          icon: ['fas', 'external-link-alt'],
-          key: `downloading-${this.messageId}`
+          text: this.t("settings.openingDownloadPage"),
+          type: "info",
+          icon: ["fas", "external-link-alt"],
+          key: `downloading-${this.messageId}`,
         };
 
         await updateService.downloadAndInstall();
 
         // 成功打开下载页面
         this.updateMessage = {
-          text: this.t('settings.downloadPageOpened'),
-          type: 'success',
-          icon: ['fas', 'check'],
-          key: `success-${this.messageId}`
+          text: this.t("settings.downloadPageOpened"),
+          type: "success",
+          icon: ["fas", "check"],
+          key: `success-${this.messageId}`,
         };
 
         // 3秒后清除提示
         setTimeout(() => {
           this.closeUpdateMessage();
         }, 3000);
-
       } catch (error) {
-        console.error(this.t('settings.openDownloadPageFailed'), error);
+        console.error(this.t("settings.openDownloadPageFailed"), error);
         this.updateStatus = UpdateStatus.ERROR;
         this.messageId++;
         this.updateMessage = {
-          text: this.t('settings.openDownloadPageFailed'),
-          type: 'error',
-          icon: ['fas', 'times'],
-          key: `error-${this.messageId}`
+          text: this.t("settings.openDownloadPageFailed"),
+          type: "error",
+          icon: ["fas", "times"],
+          key: `error-${this.messageId}`,
         };
       } finally {
         this.isProcessing = false;
@@ -843,7 +1449,7 @@ export default {
 
     async initializeLanguage() {
       try {
-        const savedLanguage = localStorage.getItem('language') || 'zh-CN';
+        const savedLanguage = localStorage.getItem("language") || "zh-CN";
         this.currentLanguage = savedLanguage;
         // 使用全局 i18n 实例设置语言
         if (this.$i18n) {
@@ -852,17 +1458,17 @@ export default {
           window.$i18n.locale = savedLanguage;
         }
       } catch (error) {
-        console.error(this.t('settings.languageInitFailed'), error);
-        this.currentLanguage = 'zh-CN';
+        console.error(this.t("settings.languageInitFailed"), error);
+        this.currentLanguage = "zh-CN";
       }
     },
 
     // 处理点击外部区域关闭下拉框
     handleClickOutside(event) {
-      const dropdownContainers = document.querySelectorAll('.setting-action');
+      const dropdownContainers = document.querySelectorAll(".setting-action");
       let clickedInsideDropdown = false;
 
-      dropdownContainers.forEach(container => {
+      dropdownContainers.forEach((container) => {
         if (container.contains(event.target)) {
           clickedInsideDropdown = true;
         }
@@ -883,21 +1489,25 @@ export default {
       if (!enabled) {
         // 关闭日志功能
         this.logMenuEnabled = false;
-        localStorage.setItem('logMenuEnabled', 'false');
-        window.dispatchEvent(new CustomEvent('log-menu-toggle', {
-          detail: { enabled: false }
-        }));
+        localStorage.setItem("logMenuEnabled", "false");
+        window.dispatchEvent(
+          new CustomEvent("log-menu-toggle", {
+            detail: { enabled: false },
+          })
+        );
 
         // 关闭性能监控
         this.performanceMonitorEnabled = false;
-        localStorage.setItem('performanceMonitor', 'false');
+        localStorage.setItem("performanceMonitor", "false");
 
         // 关闭测试存档显示
         this.testArchiveEnabled = false;
-        localStorage.setItem('testArchiveEnabled', 'false');
-        window.dispatchEvent(new CustomEvent('test-archive-toggle', {
-          detail: { enabled: false }
-        }));
+        localStorage.setItem("testArchiveEnabled", "false");
+        window.dispatchEvent(
+          new CustomEvent("test-archive-toggle", {
+            detail: { enabled: false },
+          })
+        );
       }
     },
 
@@ -905,23 +1515,27 @@ export default {
     async initializeGpuAccelerationStatus() {
       try {
         // 从localStorage获取状态
-        const localStorageState = localStorage.getItem('gpuAccelerationDisabled') === 'true';
+        const localStorageState =
+          localStorage.getItem("gpuAccelerationDisabled") === "true";
 
         // 尝试从Tauri后端获取状态
         try {
-          const backendState = await invoke('get_gpu_acceleration_status');
+          const backendState = await invoke("get_gpu_acceleration_status");
           // 如果后端状态与localStorage不同，以后端状态为准
           if (backendState !== localStorageState) {
             this.gpuAccelerationDisabled = backendState;
-            localStorage.setItem('gpuAccelerationDisabled', backendState.toString());
+            localStorage.setItem(
+              "gpuAccelerationDisabled",
+              backendState.toString()
+            );
           }
         } catch (error) {
-          console.warn(this.t('settings.gpuStatusFetchFailed'), error);
+          console.warn(this.t("settings.gpuStatusFetchFailed"), error);
           // 使用localStorage状态
           this.gpuAccelerationDisabled = localStorageState;
         }
       } catch (error) {
-        console.error(this.t('settings.gpuStatusInitFailed'), error);
+        console.error(this.t("settings.gpuStatusInitFailed"), error);
         // 默认启用GPU加速
         this.gpuAccelerationDisabled = false;
       }
@@ -931,22 +1545,24 @@ export default {
     async initializeSteamApiSettings() {
       try {
         // 获取加密存储的API密钥
-        const encryptedApiKey = localStorage.getItem('steamApiKey');
+        const encryptedApiKey = localStorage.getItem("steamApiKey");
         if (encryptedApiKey) {
           try {
             // 调用后端解密API密钥
-            this.steamApiKey = await invoke('decrypt_steam_api_key', { encryptedKey: encryptedApiKey });
+            this.steamApiKey = await invoke("decrypt_steam_api_key", {
+              encryptedKey: encryptedApiKey,
+            });
           } catch (error) {
-            console.error(this.t('settings.steamApi.decryptKeyFailed'), error);
+            console.error(this.t("settings.steamApi.decryptKeyFailed"), error);
             // 如果解密失败，清除存储的密钥
-            localStorage.removeItem('steamApiKey');
+            localStorage.removeItem("steamApiKey");
           }
         }
 
         // 获取缓存条目数量
         this.updateCacheEntryCount();
       } catch (error) {
-        console.error(this.t('settings.steamApi.initFailed'), error);
+        console.error(this.t("settings.steamApi.initFailed"), error);
       }
     },
 
@@ -954,10 +1570,10 @@ export default {
     async saveSteamApiKey() {
       if (!this.steamApiKey.trim()) {
         this.updateMessage = {
-          text: this.t('settings.steamApi.apiKeyPlaceholder'),
-          type: 'error',
-          icon: ['fas', 'times'],
-          key: `api-key-error-${this.messageId++}`
+          text: this.t("settings.steamApi.apiKeyPlaceholder"),
+          type: "error",
+          icon: ["fas", "times"],
+          key: `api-key-error-${this.messageId++}`,
         };
         return;
       }
@@ -965,88 +1581,105 @@ export default {
       try {
         // 显示测试中提示
         this.updateMessage = {
-          text: this.t('settings.steamApi.validatingKey'),
-          type: 'info',
-          icon: ['fas', 'spinner'],
+          text: this.t("settings.steamApi.validatingKey"),
+          type: "info",
+          icon: ["fas", "spinner"],
           spin: true,
-          key: `api-key-testing-${this.messageId++}`
+          key: `api-key-testing-${this.messageId++}`,
         };
 
         // 生成一个随机的Steam ID用于测试
         const testSteamId = this.generateRandomSteamId();
-        console.log(this.t('settings.steamApi.testSteamId'), testSteamId, this.t('settings.steamApi.idLength'), testSteamId.length);
+        console.log(
+          this.t("settings.steamApi.testSteamId"),
+          testSteamId,
+          this.t("settings.steamApi.idLength"),
+          testSteamId.length
+        );
 
         // 测试API密钥是否有效
         let apiTestPassed = false;
         try {
-          console.log(this.t('settings.steamApi.startKeyTest'));
+          console.log(this.t("settings.steamApi.startKeyTest"));
           // 直接使用用户输入的API密钥进行测试，而不是从配置文件读取
-          const result = await invoke('test_steam_api_key', { apiKey: this.steamApiKey, steamId: testSteamId });
-          console.log(this.t('settings.steamApi.apiCallSuccess'), result);
+          const result = await invoke("test_steam_api_key", {
+            apiKey: this.steamApiKey,
+            steamId: testSteamId,
+          });
+          console.log(this.t("settings.steamApi.apiCallSuccess"), result);
           // 如果成功，说明API密钥有效
           apiTestPassed = true;
         } catch (error) {
           const errorMsg = error.toString();
-          console.log(this.t('settings.steamApi.apiCallFailed'), errorMsg);
+          console.log(this.t("settings.steamApi.apiCallFailed"), errorMsg);
 
           // 如果是403错误，说明API密钥无效
-          if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
-            console.log(this.t('settings.steamApi.detected403Error'));
+          if (errorMsg.includes("403") || errorMsg.includes("Forbidden")) {
+            console.log(this.t("settings.steamApi.detected403Error"));
             this.updateMessage = {
-              text: this.t('settings.steamApi.keyInvalid'),
-              type: 'error',
-              icon: ['fas', 'times'],
-              key: `api-key-invalid-${this.messageId++}`
+              text: this.t("settings.steamApi.keyInvalid"),
+              type: "error",
+              icon: ["fas", "times"],
+              key: `api-key-invalid-${this.messageId++}`,
             };
             return; // 直接返回，不保存密钥
           }
 
           // 如果是Steam ID格式错误，说明我们生成的ID有问题，但这不是API密钥的问题
-          if (errorMsg.includes(this.t('settings.steamApi.error.invalidSteamIdFormat')) || errorMsg.includes('Invalid Steam ID format')) {
-            console.log(this.t('settings.steamApi.detectedSteamIdFormatError'));
+          if (
+            errorMsg.includes(
+              this.t("settings.steamApi.error.invalidSteamIdFormat")
+            ) ||
+            errorMsg.includes("Invalid Steam ID format")
+          ) {
+            console.log(this.t("settings.steamApi.detectedSteamIdFormatError"));
             // 这是我们生成ID的问题，不是API密钥的问题，可以继续保存
             apiTestPassed = true;
           }
           // 如果是Steam API返回的错误，说明API密钥有效，只是我们生成的ID不存在
-          else if (errorMsg.includes(this.t('settings.steamApi.error.steamApiError'))) {
-            console.log(this.t('settings.steamApi.detectedSteamApiError'));
+          else if (
+            errorMsg.includes(this.t("settings.steamApi.error.steamApiError"))
+          ) {
+            console.log(this.t("settings.steamApi.detectedSteamApiError"));
             apiTestPassed = true;
           }
           // 其他错误可能是网络问题，可以继续保存
           else {
-            console.warn(this.t('settings.steamApi.otherError'), error);
+            console.warn(this.t("settings.steamApi.otherError"), error);
             apiTestPassed = true;
           }
         }
 
         // 只有API测试通过时才保存密钥
         if (!apiTestPassed) {
-          console.log(this.t('settings.steamApi.apiTestFailed'));
+          console.log(this.t("settings.steamApi.apiTestFailed"));
           this.updateMessage = {
-            text: this.t('settings.steamApi.keyTestFailed'),
-            type: 'error',
-            icon: ['fas', 'times'],
-            key: `api-key-test-failed-${this.messageId++}`
+            text: this.t("settings.steamApi.keyTestFailed"),
+            type: "error",
+            icon: ["fas", "times"],
+            key: `api-key-test-failed-${this.messageId++}`,
           };
           return;
         }
 
-        console.log(this.t('settings.steamApi.keyValidationPassed'));
+        console.log(this.t("settings.steamApi.keyValidationPassed"));
         // 调用后端保存API密钥到配置文件
-        await invoke('save_steam_api_key', { apiKey: this.steamApiKey });
-        console.log(this.t('settings.steamApi.keySavedToConfig'));
+        await invoke("save_steam_api_key", { apiKey: this.steamApiKey });
+        console.log(this.t("settings.steamApi.keySavedToConfig"));
 
         // 同时保存到localStorage以保持兼容性
-        const encryptedApiKey = await invoke('encrypt_steam_api_key', { apiKey: this.steamApiKey });
-        localStorage.setItem('steamApiKey', encryptedApiKey);
-        console.log(this.t('settings.steamApi.keySavedToLocalStorage'));
+        const encryptedApiKey = await invoke("encrypt_steam_api_key", {
+          apiKey: this.steamApiKey,
+        });
+        localStorage.setItem("steamApiKey", encryptedApiKey);
+        console.log(this.t("settings.steamApi.keySavedToLocalStorage"));
 
         // 显示成功提示
         this.updateMessage = {
-          text: this.t('settings.steamApi.keySaved'),
-          type: 'success',
-          icon: ['fas', 'check'],
-          key: `api-key-success-${this.messageId++}`
+          text: this.t("settings.steamApi.keySaved"),
+          type: "success",
+          icon: ["fas", "check"],
+          key: `api-key-success-${this.messageId++}`,
         };
 
         // 3秒后自动隐藏提示
@@ -1054,12 +1687,12 @@ export default {
           this.closeUpdateMessage();
         }, 3000);
       } catch (error) {
-        console.error(this.t('settings.steamApi.saveKeyFailed'), error);
+        console.error(this.t("settings.steamApi.saveKeyFailed"), error);
         this.updateMessage = {
-          text: this.t('settings.steamApi.saveKeyFailed') + ': ' + error,
-          type: 'error',
-          icon: ['fas', 'times'],
-          key: `api-key-error-${this.messageId++}`
+          text: this.t("settings.steamApi.saveKeyFailed") + ": " + error,
+          type: "error",
+          icon: ["fas", "times"],
+          key: `api-key-error-${this.messageId++}`,
         };
       }
     },
@@ -1068,8 +1701,10 @@ export default {
     generateRandomSteamId() {
       // Steam ID格式通常是7656119XXXXXXXXX (17位数字)
       // 7656119是Steam ID的前缀，后面需要10位数字才能达到17位
-      const prefix = '7656119';
-      const randomSuffix = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
+      const prefix = "7656119";
+      const randomSuffix = Math.floor(Math.random() * 10000000000)
+        .toString()
+        .padStart(10, "0");
       return prefix + randomSuffix;
     },
 
@@ -1077,17 +1712,17 @@ export default {
     async clearSteamCache() {
       try {
         // 调用后端清空缓存
-        await invoke('clear_steam_cache');
+        await invoke("clear_steam_cache");
 
         // 更新缓存条目数量
         this.updateCacheEntryCount();
 
         // 显示成功提示
         this.updateMessage = {
-          text: this.t('settings.steamApi.cacheCleared'),
-          type: 'success',
-          icon: ['fas', 'check'],
-          key: `cache-clear-success-${this.messageId++}`
+          text: this.t("settings.steamApi.cacheCleared"),
+          type: "success",
+          icon: ["fas", "check"],
+          key: `cache-clear-success-${this.messageId++}`,
         };
 
         // 3秒后自动隐藏提示
@@ -1095,12 +1730,12 @@ export default {
           this.closeUpdateMessage();
         }, 3000);
       } catch (error) {
-        console.error(this.t('settings.steamApi.clearCacheFailed'), error);
+        console.error(this.t("settings.steamApi.clearCacheFailed"), error);
         this.updateMessage = {
-          text: this.t('settings.steamApi.clearCacheFailed') + ': ' + error,
-          type: 'error',
-          icon: ['fas', 'times'],
-          key: `cache-clear-error-${this.messageId++}`
+          text: this.t("settings.steamApi.clearCacheFailed") + ": " + error,
+          type: "error",
+          icon: ["fas", "times"],
+          key: `cache-clear-error-${this.messageId++}`,
         };
       }
     },
@@ -1109,38 +1744,38 @@ export default {
     async updateCacheEntryCount() {
       try {
         // 调用后端获取缓存条目数量
-        this.cacheEntryCount = await invoke('get_steam_cache_count');
+        this.cacheEntryCount = await invoke("get_steam_cache_count");
       } catch (error) {
-        console.error(this.t('settings.steamApi.getCacheCountFailed'), error);
+        console.error(this.t("settings.steamApi.getCacheCountFailed"), error);
         this.cacheEntryCount = 0;
       }
     },
 
     // 导航到Steam缓存页面
     navigateToSteamCache() {
-      this.$router.push('/steam-cache');
+      this.$router.push("/steam-cache");
     },
 
     // 格式化日期
     formatDate(timestamp) {
-      if (!timestamp) return this.t('common.unknown');
+      if (!timestamp) return this.t("common.unknown");
       const date = new Date(timestamp * 1000);
       return date.toLocaleString();
     },
 
     // Steam ID脱敏处理
     maskSteamId(steamId) {
-      if (!steamId) return '';
+      if (!steamId) return "";
       // Steam ID格式通常是7656119XXXXXXXXX (17位数字)
       if (steamId.length >= 8) {
         const start = steamId.substring(0, 4);
         const end = steamId.substring(steamId.length - 4);
-        const middle = '*'.repeat(steamId.length - 8);
+        const middle = "*".repeat(steamId.length - 8);
         return start + middle + end;
       }
       // 如果长度不足8位，只显示前两位
-      return steamId.substring(0, 2) + '*'.repeat(steamId.length - 2);
-    }
+      return steamId.substring(0, 2) + "*".repeat(steamId.length - 2);
+    },
   },
   beforeUnmount() {
     // 清理倒计时
@@ -1151,16 +1786,19 @@ export default {
     if (window.themeManager) {
       window.themeManager.setTheme(this.currentTheme);
     } else {
-      document.documentElement.setAttribute('data-theme', this.currentTheme);
+      document.documentElement.setAttribute("data-theme", this.currentTheme);
     }
 
     await this.initializeLanguage();
 
     // 添加点击外部关闭下拉框的事件监听
-    document.addEventListener('click', this.handleClickOutside);
+    document.addEventListener("click", this.handleClickOutside);
 
     // 监听开发者模式变化事件
-    window.addEventListener('developer-mode-changed', this.handleDeveloperModeChanged);
+    window.addEventListener(
+      "developer-mode-changed",
+      this.handleDeveloperModeChanged
+    );
 
     // 初始化GPU加速状态
     this.initializeGpuAccelerationStatus();
@@ -1174,15 +1812,18 @@ export default {
         await updateService.checkForUpdates();
         updateService.recordLastCheck && updateService.recordLastCheck();
       } catch (error) {
-        console.error(this.t('settings.startupUpdateCheckFailed'), error);
+        console.error(this.t("settings.startupUpdateCheckFailed"), error);
       }
     }
   },
   beforeUnmount() {
     // 移除事件监听
-    document.removeEventListener('click', this.handleClickOutside);
-    window.removeEventListener('developer-mode-changed', this.handleDeveloperModeChanged);
-  }
+    document.removeEventListener("click", this.handleClickOutside);
+    window.removeEventListener(
+      "developer-mode-changed",
+      this.handleDeveloperModeChanged
+    );
+  },
 };
 </script>
 
@@ -1258,7 +1899,8 @@ export default {
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease,
+    transform 0.25s ease;
   min-width: 100px;
   display: flex;
   align-items: center;
@@ -1324,11 +1966,11 @@ export default {
   border-radius: 50%;
 }
 
-input:checked+.slider {
+input:checked + .slider {
   background-color: var(--accent-color);
 }
 
-input:checked+.slider:before {
+input:checked + .slider:before {
   transform: translateX(26px);
 }
 
@@ -1596,7 +2238,7 @@ input:checked+.slider:before {
   background: var(--bg-tertiary);
   padding: 0.125rem 0.25rem;
   border-radius: 3px;
-  font-family: 'Consolas', 'Monaco', 'Lucida Console', monospace;
+  font-family: "Consolas", "Monaco", "Lucida Console", monospace;
   font-size: 0.7rem;
   color: var(--text);
 }
@@ -1607,7 +2249,7 @@ input:checked+.slider:before {
   border-radius: 4px;
   overflow-x: auto;
   margin: 0.25rem 0;
-  font-family: 'Consolas', 'Monaco', 'Lucida Console', monospace;
+  font-family: "Consolas", "Monaco", "Lucida Console", monospace;
   font-size: 0.7rem;
   line-height: 1.3;
   border: 1px solid var(--divider-color);
@@ -1957,13 +2599,18 @@ input:checked+.slider:before {
 
 .view-cache-btn::before,
 .clear-cache-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -1987,7 +2634,12 @@ input:checked+.slider:before {
 }
 
 .clear-cache-btn::before {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
 }
 
 .clear-cache-btn:hover {
@@ -2015,13 +2667,18 @@ input:checked+.slider:before {
 }
 
 .reset-tutorial-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -2034,5 +2691,109 @@ input:checked+.slider:before {
   border-color: var(--color-warning-hover, #e58600);
   box-shadow: 0 4px 8px rgba(255, 149, 0, 0.25);
   transform: translateY(-1px);
+}
+
+/* 存档文件工具样式 */
+.sav-tools-section {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.sav-tools-section .setting-details.full-width {
+  width: 100%;
+  margin-right: 0;
+}
+
+.sav-tools-container {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.drop-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-tertiary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 180px;
+}
+
+.drop-zone:hover {
+  border-color: var(--accent-color);
+  background-color: rgba(0, 122, 255, 0.05);
+}
+
+.drop-zone.drag-over {
+  border-color: var(--accent-color);
+  background-color: rgba(0, 122, 255, 0.1);
+  border-style: solid;
+}
+
+.drop-zone.processing {
+  pointer-events: none;
+  opacity: 0.7;
+  border-color: var(--accent-color);
+}
+
+.drop-zone-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.drop-icon {
+  font-size: 18px;
+  color: var(--accent-color);
+}
+
+.drop-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.drop-description,
+.drop-hint,
+.drop-sub-hint {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .sav-tools-container {
+    flex-direction: column;
+  }
+
+  .drop-zone {
+    min-width: auto;
+    width: 100%;
+  }
+}
+
+/* 元旦主题限时提示样式 */
+.setting-hint {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.setting-hint.new-year-hint {
+  color: #e53935;
+  background: linear-gradient(90deg, rgba(229, 57, 53, 0.1), transparent);
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+
+.setting-hint.new-year-hint svg {
+  font-size: 10px;
 }
 </style>

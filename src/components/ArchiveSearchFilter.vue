@@ -2,17 +2,35 @@
   <div class="archive-search-filter">
     <div class="search-filter-wrapper">
       <!-- 一体化搜索筛选区域 -->
-      <transition name="search-filter" appear :duration="{ enter: 400, leave: 300 }" @before-enter="beforeEnter"
-        @enter="enter" @leave="leave">
+      <transition
+        name="search-filter"
+        appear
+        :duration="{ enter: 400, leave: 300 }"
+        @before-enter="beforeEnter"
+        @enter="enter"
+        @leave="leave"
+      >
         <div class="unified-search-filter" v-show="showComponent">
           <!-- 搜索区域 -->
           <div class="search-section">
             <div class="search-input-group">
-              <font-awesome-icon icon="fa-solid fa-search" class="search-icon" />
-              <input v-model="searchQuery" type="text" :placeholder="$t('archiveSearch.searchPlaceholder')"
-                class="search-input" />
+              <font-awesome-icon
+                icon="fa-solid fa-search"
+                class="search-icon"
+              />
+              <input
+                v-model="searchQuery"
+                type="text"
+                :placeholder="$t('archiveSearch.searchPlaceholder')"
+                class="search-input"
+              />
               <transition name="clear-btn" mode="out-in">
-                <button v-if="searchQuery" @click="clearSearch" class="clear-btn" key="clear-btn">
+                <button
+                  v-if="searchQuery"
+                  @click="clearSearch"
+                  class="clear-btn"
+                  key="clear-btn"
+                >
                   <font-awesome-icon icon="fa-solid fa-times" />
                 </button>
               </transition>
@@ -23,21 +41,39 @@
           <div class="filter-section">
             <div class="filter-grid">
               <div class="filter-item">
-                <label class="filter-label">{{ $t('archiveSearch.archiveDifficulty') }}</label>
-                <CustomDropdown v-model="selectedArchiveDifficulty" :options="difficultyOptions"
-                  :placeholder="$t('archiveSearch.archiveDifficulty')" @change="handleFilterChange" />
+                <label class="filter-label">{{
+                  $t("archiveSearch.archiveDifficulty")
+                }}</label>
+                <CustomDropdown
+                  v-model="selectedArchiveDifficulty"
+                  :options="difficultyOptions"
+                  :placeholder="$t('archiveSearch.archiveDifficulty')"
+                  @change="handleFilterChange"
+                />
               </div>
 
               <div class="filter-item">
-                <label class="filter-label">{{ $t('archiveSearch.actualDifficulty') }}</label>
-                <CustomDropdown v-model="selectedActualDifficulty" :options="difficultyOptions"
-                  :placeholder="$t('archiveSearch.actualDifficulty')" @change="handleFilterChange" />
+                <label class="filter-label">{{
+                  $t("archiveSearch.actualDifficulty")
+                }}</label>
+                <CustomDropdown
+                  v-model="selectedActualDifficulty"
+                  :options="difficultyOptions"
+                  :placeholder="$t('archiveSearch.actualDifficulty')"
+                  @change="handleFilterChange"
+                />
               </div>
 
               <div class="filter-item">
-                <label class="filter-label">{{ $t('archiveSearch.visibility') }}</label>
-                <CustomDropdown v-model="selectedVisibility" :options="visibilityOptions"
-                  :placeholder="$t('archiveSearch.visibility')" @change="handleFilterChange" />
+                <label class="filter-label">{{
+                  $t("archiveSearch.visibility")
+                }}</label>
+                <CustomDropdown
+                  v-model="selectedVisibility"
+                  :options="visibilityOptions"
+                  :placeholder="$t('archiveSearch.visibility')"
+                  @change="handleFilterChange"
+                />
               </div>
             </div>
           </div>
@@ -48,337 +84,357 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
-import CustomDropdown from './CustomDropdown.vue'
-import { safeModifyBodyStyles, protectFloatingButtonPosition } from '../utils/floatingButtonProtection.js'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
+import CustomDropdown from "./CustomDropdown.vue";
+import {
+  safeModifyBodyStyles,
+  protectFloatingButtonPosition,
+} from "../utils/floatingButtonProtection.js";
 
-const { t } = useI18n({ useScope: 'global' })
+const { t } = useI18n({ useScope: "global" });
 
 // Props
 // 控制组件显示状态
-const showComponent = ref(true)
+const showComponent = ref(true);
 
 const props = defineProps({
   archives: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   initialFilters: {
     type: Object,
     default: () => ({
-      searchQuery: '',
-      selectedArchiveDifficulty: '',
-      selectedActualDifficulty: '',
-      selectedVisibility: ''
-    })
+      searchQuery: "",
+      selectedArchiveDifficulty: "",
+      selectedActualDifficulty: "",
+      selectedVisibility: "",
+    }),
   },
   // 新增：控制动画延迟
   animationDelay: {
     type: Number,
-    default: 0
+    default: 0,
   },
   // 新增：控制组件可见性
   visible: {
     type: Boolean,
-    default: true
-  }
-})
+    default: true,
+  },
+});
 
 // 监听visible prop变化
-watch(() => props.visible, (newVal) => {
-  showComponent.value = newVal
-  
-  // 获取主内容容器
-  const mainContent = document.querySelector('.main-content')
-  const archiveListContainer = document.querySelector('.archive-list-container')
-  
-  // 当组件显示时，阻止背景滚动但不改变滚动位置
-  if (newVal) {
-    // 保存当前滚动位置但不改变它
-    if (mainContent) {
-      mainContent.dataset.scrollY = mainContent.scrollTop
-      mainContent.style.overflow = 'hidden'
-    }
-    
-    if (archiveListContainer) {
-      archiveListContainer.dataset.scrollY = archiveListContainer.scrollTop
-      archiveListContainer.style.overflow = 'hidden'
-    }
-    
-    // 使用全局保护工具安全修改body样式，但保持当前滚动位置
-    const currentScrollY = window.scrollY
-    safeModifyBodyStyles({
-      overflow: 'hidden',
-      position: 'fixed',
-      top: `-${currentScrollY}px`,
-      width: '100%',
-      height: '100vh'
-    });
-    
-    // 移除设置组件固定定位的代码，因为父容器search-overlay已经是固定定位
-  } else {
-    // 恢复滚动位置
-    if (mainContent) {
-      mainContent.style.overflow = ''
-      if (mainContent.dataset.scrollY) {
-        // 使用平滑滚动恢复位置
-        const scrollPosition = parseInt(mainContent.dataset.scrollY)
-        mainContent.scrollTo({
-          top: scrollPosition,
-          behavior: 'smooth'
-        })
+watch(
+  () => props.visible,
+  (newVal) => {
+    showComponent.value = newVal;
+
+    // 获取主内容容器
+    const mainContent = document.querySelector(".main-content");
+    const archiveListContainer = document.querySelector(
+      ".archive-list-container"
+    );
+
+    // 当组件显示时，阻止背景滚动但不改变滚动位置
+    if (newVal) {
+      // 保存当前滚动位置但不改变它
+      if (mainContent) {
+        mainContent.dataset.scrollY = mainContent.scrollTop;
+        mainContent.style.overflow = "hidden";
+      }
+
+      if (archiveListContainer) {
+        archiveListContainer.dataset.scrollY = archiveListContainer.scrollTop;
+        archiveListContainer.style.overflow = "hidden";
+      }
+
+      // 使用全局保护工具安全修改body样式，但保持当前滚动位置
+      const currentScrollY = window.scrollY;
+      safeModifyBodyStyles({
+        overflow: "hidden",
+        position: "fixed",
+        top: `-${currentScrollY}px`,
+        width: "100%",
+        height: "100vh",
+      });
+
+      // 移除设置组件固定定位的代码，因为父容器search-overlay已经是固定定位
+    } else {
+      // 恢复滚动位置
+      if (mainContent) {
+        mainContent.style.overflow = "";
+        if (mainContent.dataset.scrollY) {
+          // 使用平滑滚动恢复位置
+          const scrollPosition = parseInt(mainContent.dataset.scrollY);
+          mainContent.scrollTo({
+            top: scrollPosition,
+            behavior: "smooth",
+          });
+        }
+      }
+
+      if (archiveListContainer) {
+        archiveListContainer.style.overflow = "";
+        if (archiveListContainer.dataset.scrollY) {
+          // 使用平滑滚动恢复位置
+          const scrollPosition = parseInt(archiveListContainer.dataset.scrollY);
+          archiveListContainer.scrollTo({
+            top: scrollPosition,
+            behavior: "smooth",
+          });
+        }
+      }
+
+      // 使用全局保护工具安全修改body样式
+      safeModifyBodyStyles({
+        overflow: "",
+        position: "",
+        top: "",
+        width: "",
+        height: "auto",
+      });
+
+      // 使用全局保护工具确保浮动按钮位置正确
+      protectFloatingButtonPosition();
+
+      const scrollY = document.body.style.top;
+      if (scrollY) {
+        window.scrollTo({
+          top: parseInt(scrollY || "0") * -1,
+          behavior: "smooth",
+        });
       }
     }
-    
-    if (archiveListContainer) {
-      archiveListContainer.style.overflow = ''
-      if (archiveListContainer.dataset.scrollY) {
-        // 使用平滑滚动恢复位置
-        const scrollPosition = parseInt(archiveListContainer.dataset.scrollY)
-        archiveListContainer.scrollTo({
-          top: scrollPosition,
-          behavior: 'smooth'
-        })
-      }
-    }
-    
-    // 使用全局保护工具安全修改body样式
-    safeModifyBodyStyles({
-      overflow: '',
-      position: '',
-      top: '',
-      width: '',
-      height: 'auto'
-    });
-    
-    // 使用全局保护工具确保浮动按钮位置正确
-    protectFloatingButtonPosition();
-    
-    const scrollY = document.body.style.top
-    if (scrollY) {
-      window.scrollTo({
-        top: parseInt(scrollY || '0') * -1,
-        behavior: 'smooth'
-      })
-    }
-  }
-}, { immediate: true }) // 添加immediate选项确保在组件创建时就执行
+  },
+  { immediate: true }
+); // 添加immediate选项确保在组件创建时就执行
 
 // Emits
-const emit = defineEmits(['filtered', 'filters-changed'])
+const emit = defineEmits(["filtered", "filters-changed"]);
 
 // 响应式数据 - 使用initialFilters初始化
-const searchQuery = ref(props.initialFilters.searchQuery || '')
-const selectedArchiveDifficulty = ref(props.initialFilters.selectedArchiveDifficulty || '')
-const selectedActualDifficulty = ref(props.initialFilters.selectedActualDifficulty || '')
-const selectedVisibility = ref(props.initialFilters.selectedVisibility || '')
+const searchQuery = ref(props.initialFilters.searchQuery || "");
+const selectedArchiveDifficulty = ref(
+  props.initialFilters.selectedArchiveDifficulty || ""
+);
+const selectedActualDifficulty = ref(
+  props.initialFilters.selectedActualDifficulty || ""
+);
+const selectedVisibility = ref(props.initialFilters.selectedVisibility || "");
 
 // 监听搜索查询变化，实现在输入时立即筛选
 watch(searchQuery, () => {
   // 使用 nextTick 确保在 DOM 更新后执行筛选
   nextTick(() => {
-    handleSearchChange()
-  })
-})
+    handleSearchChange();
+  });
+});
 
 // 监听initialFilters变化，确保父组件更新筛选条件时子组件能正确响应
-watch(() => props.initialFilters, (newFilters) => {
-  searchQuery.value = newFilters.searchQuery || ''
-  selectedArchiveDifficulty.value = newFilters.selectedArchiveDifficulty || ''
-  selectedActualDifficulty.value = newFilters.selectedActualDifficulty || ''
-  selectedVisibility.value = newFilters.selectedVisibility || ''
-}, { deep: true })
-
-
+watch(
+  () => props.initialFilters,
+  (newFilters) => {
+    searchQuery.value = newFilters.searchQuery || "";
+    selectedArchiveDifficulty.value =
+      newFilters.selectedArchiveDifficulty || "";
+    selectedActualDifficulty.value = newFilters.selectedActualDifficulty || "";
+    selectedVisibility.value = newFilters.selectedVisibility || "";
+  },
+  { deep: true }
+);
 
 // 选项数据
 const gameModeOptions = computed(() => [
-  { value: '', label: t('archiveSearch.allModes') },
-  { value: 'singleplayer', label: t('createArchive.gameModes.singleplayer') },
-  { value: 'multiplayer', label: t('createArchive.gameModes.multiplayer') }
-])
+  { value: "", label: t("archiveSearch.allModes") },
+  { value: "singleplayer", label: t("createArchive.gameModes.singleplayer") },
+  { value: "multiplayer", label: t("createArchive.gameModes.multiplayer") },
+]);
 
 // 选项数据
 const difficultyOptions = computed(() => [
-  { value: '', label: t('archiveSearch.allDifficulties') },
-  { value: 'easy', label: t('createArchive.difficultyLevels.easy') },
-  { value: 'normal', label: t('createArchive.difficultyLevels.normal') },
-  { value: 'hard', label: t('createArchive.difficultyLevels.hard') },
-  { value: 'nightmare', label: t('createArchive.difficultyLevels.nightmare') }
-])
+  { value: "", label: t("archiveSearch.allDifficulties") },
+  { value: "easy", label: t("createArchive.difficultyLevels.easy") },
+  { value: "normal", label: t("createArchive.difficultyLevels.normal") },
+  { value: "hard", label: t("createArchive.difficultyLevels.hard") },
+  { value: "nightmare", label: t("createArchive.difficultyLevels.nightmare") },
+]);
 
 const visibilityOptions = computed(() => [
-  { value: '', label: t('archiveSearch.allVisibilities') },
-  { value: 'visible', label: t('archiveSearch.visible') },
-  { value: 'hidden', label: t('archiveSearch.hidden') }
-])
+  { value: "", label: t("archiveSearch.allVisibilities") },
+  { value: "visible", label: t("archiveSearch.visible") },
+  { value: "hidden", label: t("archiveSearch.hidden") },
+]);
 
 // 计算属性
 const hasActiveFilters = computed(() => {
-  return searchQuery.value ||
+  return (
+    searchQuery.value ||
     selectedArchiveDifficulty.value ||
     selectedActualDifficulty.value ||
     selectedVisibility.value
-})
+  );
+});
 
 // 过滤逻辑
 const filteredArchives = computed(() => {
-  if (!props.archives || props.archives.length === 0) return []
+  if (!props.archives || props.archives.length === 0) return [];
 
-  let filtered = props.archives
+  let filtered = props.archives;
 
   // 按名称搜索
   if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(archive =>
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter((archive) =>
       archive.name.toLowerCase().includes(query)
-    )
+    );
   }
 
   // 按存档难度筛选
   if (selectedArchiveDifficulty.value) {
-    filtered = filtered.filter(archive =>
-      archive.archiveDifficulty === selectedArchiveDifficulty.value
-    )
+    filtered = filtered.filter(
+      (archive) => archive.archiveDifficulty === selectedArchiveDifficulty.value
+    );
   }
 
   // 按实际难度筛选
   if (selectedActualDifficulty.value) {
-    filtered = filtered.filter(archive =>
-      archive.actualDifficulty === selectedActualDifficulty.value
-    )
+    filtered = filtered.filter(
+      (archive) => archive.actualDifficulty === selectedActualDifficulty.value
+    );
   }
 
   // 按可见性筛选
   if (selectedVisibility.value) {
-    const isVisible = selectedVisibility.value === 'visible'
-    filtered = filtered.filter(archive =>
-      archive.isVisible === isVisible
-    )
+    const isVisible = selectedVisibility.value === "visible";
+    filtered = filtered.filter((archive) => archive.isVisible === isVisible);
   }
 
-  return filtered
-})
+  return filtered;
+});
 
 // 方法
 const handleSearchChange = () => {
-  emit('filtered', filteredArchives.value)
-  emitFiltersChanged()
-}
+  emit("filtered", filteredArchives.value);
+  emitFiltersChanged();
+};
 
 const handleFilterChange = () => {
-  emit('filtered', filteredArchives.value)
-  emitFiltersChanged()
-}
+  emit("filtered", filteredArchives.value);
+  emitFiltersChanged();
+};
 
 const clearSearch = () => {
-  searchQuery.value = ''
-  emit('filtered', filteredArchives.value)
-  emitFiltersChanged()
-}
+  searchQuery.value = "";
+  emit("filtered", filteredArchives.value);
+  emitFiltersChanged();
+};
 
 // 清除所有筛选条件
 const clearAllFilters = () => {
-  searchQuery.value = ''
-  selectedArchiveDifficulty.value = ''
-  selectedActualDifficulty.value = ''
-  selectedVisibility.value = ''
-  emit('filtered', filteredArchives.value)
-  emitFiltersChanged()
-}
+  searchQuery.value = "";
+  selectedArchiveDifficulty.value = "";
+  selectedActualDifficulty.value = "";
+  selectedVisibility.value = "";
+  emit("filtered", filteredArchives.value);
+  emitFiltersChanged();
+};
 
 const emitFiltersChanged = () => {
-  emit('filters-changed', {
+  emit("filters-changed", {
     searchQuery: searchQuery.value,
     selectedArchiveDifficulty: selectedArchiveDifficulty.value,
     selectedActualDifficulty: selectedActualDifficulty.value,
-    selectedVisibility: selectedVisibility.value
-  })
-}
-
-
+    selectedVisibility: selectedVisibility.value,
+  });
+};
 
 // 监听数据变化 - 仅当存档数据变化时重新筛选，不重置筛选条件
-watch(() => props.archives, (newArchives) => {
-  // 只有在有数据且不是初始加载状态时才发出筛选事件
-  if (newArchives && newArchives.length > 0) {
-    emit('filtered', filteredArchives.value)
-  }
-}, { deep: true })
+watch(
+  () => props.archives,
+  (newArchives) => {
+    // 只有在有数据且不是初始加载状态时才发出筛选事件
+    if (newArchives && newArchives.length > 0) {
+      emit("filtered", filteredArchives.value);
+    }
+  },
+  { deep: true }
+);
 
 // 初始化 - 延迟执行，确保父组件数据加载完成
 onMounted(() => {
   // 使用 nextTick 确保 DOM 更新完成后再初始化
   nextTick(() => {
     if (props.archives.length > 0) {
-      emit('filtered', filteredArchives.value)
+      emit("filtered", filteredArchives.value);
     }
-  })
-})
+  });
+});
 
 // 组件卸载时恢复背景滚动
 onUnmounted(() => {
   // 恢复滚动位置
-  const scrollY = document.body.style.top
-  
+  const scrollY = document.body.style.top;
+
   // 使用全局保护工具安全修改body样式
   safeModifyBodyStyles(() => {
-    document.body.style.overflow = ''
-    document.body.style.position = ''
-    document.body.style.top = ''
-    document.body.style.width = ''
-    document.body.style.height = 'auto'  // 改为auto而不是空字符串
+    document.body.style.overflow = "";
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.width = "";
+    document.body.style.height = "auto"; // 改为auto而不是空字符串
   });
-  
+
   // 使用全局保护工具确保浮动按钮位置正确
   protectFloatingButtonPosition();
-  
+
   if (scrollY) {
-    window.scrollTo(0, parseInt(scrollY || '0') * -1)
+    window.scrollTo(0, parseInt(scrollY || "0") * -1);
   }
-})
+});
 
 // 动画控制方法 - 首次加载优化
 const beforeEnter = (el) => {
   // 使用 will-change 提前告知浏览器优化
-  el.style.willChange = 'opacity, transform'
-  el.style.opacity = '0'
-  el.style.transform = 'translateY(-15px)'
-}
+  el.style.willChange = "opacity, transform";
+  el.style.opacity = "0";
+  el.style.transform = "translateY(-15px)";
+};
 
 const enter = (el, done) => {
   // 双重 RAF 确保浏览器完全准备好
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      el.style.transition = 'opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
-      el.style.opacity = '1'
-      el.style.transform = 'translateY(0)'
+      el.style.transition =
+        "opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)";
+      el.style.opacity = "1";
+      el.style.transform = "translateY(0)";
 
       // 动画完成后清理
       setTimeout(() => {
-        el.style.transition = ''
-        el.style.willChange = ''
-        done()
-      }, 300)
-    })
-  })
-}
+        el.style.transition = "";
+        el.style.willChange = "";
+        done();
+      }, 300);
+    });
+  });
+};
 
 const leave = (el, done) => {
   // 退场时也使用 will-change 优化
-  el.style.willChange = 'opacity, transform'
-  el.style.transition = 'opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)'
-  el.style.opacity = '0'
-  el.style.transform = 'translateY(-8px)'
+  el.style.willChange = "opacity, transform";
+  el.style.transition =
+    "opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)";
+  el.style.opacity = "0";
+  el.style.transform = "translateY(-8px)";
 
   // 动画完成后清理
   setTimeout(() => {
-    el.style.transition = ''
-    el.style.willChange = ''
-    done()
-  }, 250)
-}
+    el.style.transition = "";
+    el.style.willChange = "";
+    done();
+  }, 250);
+};
 </script>
 
 <style scoped>
@@ -534,12 +590,14 @@ const leave = (el, done) => {
 /* 搜索筛选区域过渡动画 - 首次加载优化 */
 .search-filter-enter-active {
   will-change: opacity, transform;
-  transition: opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .search-filter-leave-active {
   will-change: opacity, transform;
-  transition: opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .search-filter-enter-from {

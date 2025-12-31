@@ -229,6 +229,7 @@
       "cacheStatusDescription": "Steam使用者名稱快取資訊",
       "cacheEntries": "個快取條目",
       "clearCache": "清空快取",
+      "cacheCleared": "快取已清空",
       "viewCache": "檢視快取",
       "cacheDetails": "快取詳情",
       "cleanupExpired": "清理過期快取",

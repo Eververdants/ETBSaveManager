@@ -847,7 +847,7 @@ export default {
 </script>
 
 <style scoped>
-/* 磨砂玻璃效果基础样式 - 优化版 */
+/* 磨砂玻璃效果基础样式 - 多主题适配版 */
 .steam-cache-container {
   display: flex;
   flex-direction: column;
@@ -855,14 +855,9 @@ export default {
   padding: 0;
   padding-bottom: 30px;
   margin: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(250, 250, 252, 0.9) 50%,
-    rgba(245, 247, 250, 0.85) 100%
-  );
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-backdrop-filter);
   overflow: hidden;
   position: relative;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -878,33 +873,13 @@ export default {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.8) 50%,
+    var(--glass-border-light) 50%,
     transparent 100%
   );
   pointer-events: none;
 }
 
-[data-theme="dark"] .steam-cache-container {
-  background: linear-gradient(
-    135deg,
-    rgba(30, 30, 35, 0.95) 0%,
-    rgba(25, 25, 30, 0.9) 50%,
-    rgba(20, 20, 25, 0.85) 100%
-  );
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-}
-
-[data-theme="dark"] .steam-cache-container::before {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.15) 50%,
-    transparent 100%
-  );
-}
-
-/* 返回按钮 - 紧凑设计 */
+/* 返回按钮 - 多主题适配 */
 .back-btn {
   display: flex;
   align-items: center;
@@ -912,40 +887,27 @@ export default {
   width: 40px;
   height: 40px;
   padding: 0;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-backdrop-filter);
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--card-shadow);
 }
 
 .back-btn svg {
   font-size: 16px;
 }
 
-[data-theme="dark"] .back-btn {
-  background: rgba(35, 35, 40, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
 .back-btn:hover {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--surface-hover);
   color: var(--primary);
   transform: translateX(-4px) scale(1.1);
-  box-shadow: 0 8px 24px rgba(0, 122, 255, 0.2),
-    0 4px 12px rgba(0, 122, 255, 0.1);
-  border-color: rgba(0, 122, 255, 0.3);
-}
-
-[data-theme="dark"] .back-btn:hover {
-  background: rgba(40, 40, 45, 0.95);
-  box-shadow: 0 8px 24px rgba(10, 132, 255, 0.25),
-    0 4px 12px rgba(10, 132, 255, 0.15);
+  box-shadow: var(--card-shadow-hover);
+  border-color: var(--primary);
 }
 
 .back-btn:active {
@@ -964,23 +926,18 @@ export default {
   min-height: 0;
 }
 
-/* 缓存操作区域 - 磨砂玻璃卡片 */
+/* 缓存操作区域 - 多主题适配 */
 .cache-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(250, 250, 255, 0.7) 100%
-  );
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-backdrop-filter);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--card-shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -996,7 +953,7 @@ export default {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.3) 50%,
+    var(--glass-border-light) 50%,
     transparent 100%
   );
   transition: left 0.6s ease;
@@ -1008,33 +965,7 @@ export default {
 
 .cache-actions:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
-}
-
-[data-theme="dark"] .cache-actions {
-  background: linear-gradient(
-    135deg,
-    rgba(35, 35, 40, 0.9) 0%,
-    rgba(30, 30, 35, 0.7) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .cache-actions::before {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    transparent 100%
-  );
-}
-
-[data-theme="dark"] .cache-actions:hover {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .cache-actions-left,
@@ -1048,17 +979,13 @@ export default {
   flex-wrap: wrap;
 }
 
-/* 清理过期缓存按钮 - 微交互优化 */
+/* 清理过期缓存按钮 - 多主题适配 */
 .cleanup-expired-btn {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 11px 20px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 59, 48, 0.9) 0%,
-    rgba(255, 45, 85, 0.8) 100%
-  );
+  background: var(--btn-danger-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: white;
@@ -1068,8 +995,7 @@ export default {
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 600;
   font-size: 14px;
-  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.25),
-    0 2px 4px rgba(255, 59, 48, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: var(--card-shadow);
   position: relative;
   overflow: hidden;
 }
@@ -1093,21 +1019,13 @@ export default {
 }
 
 .cleanup-expired-btn:hover:not(:disabled) {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 45, 85, 1) 0%,
-    rgba(255, 59, 48, 0.95) 100%
-  );
   transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 24px rgba(255, 59, 48, 0.35),
-    0 4px 8px rgba(255, 59, 48, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .cleanup-expired-btn:active:not(:disabled) {
   transform: translateY(-1px) scale(0.98);
   transition-duration: 0.1s;
-  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3),
-    0 2px 4px rgba(255, 59, 48, 0.2);
 }
 
 .cleanup-expired-btn:disabled {
@@ -1117,17 +1035,13 @@ export default {
   filter: grayscale(30%);
 }
 
-/* SteamID显示切换按钮 - 微交互优化 */
+/* SteamID显示切换按钮 - 多主题适配 */
 .toggle-steamid-btn {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 11px 20px;
-  background: linear-gradient(
-    135deg,
-    var(--primary) 0%,
-    rgba(0, 122, 255, 0.85) 100%
-  );
+  background: var(--btn-primary-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: white;
@@ -1137,8 +1051,7 @@ export default {
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 600;
   font-size: 14px;
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25),
-    0 2px 4px rgba(0, 122, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: var(--card-shadow);
   position: relative;
   overflow: hidden;
 }
@@ -1162,101 +1075,56 @@ export default {
 }
 
 .toggle-steamid-btn:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(10, 132, 255, 1) 0%,
-    var(--primary) 100%
-  );
+  background: var(--btn-primary-hover);
   transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 24px rgba(0, 122, 255, 0.35),
-    0 4px 8px rgba(0, 122, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .toggle-steamid-btn:active {
   transform: translateY(-1px) scale(0.98);
   transition-duration: 0.1s;
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3),
-    0 2px 4px rgba(0, 122, 255, 0.2);
 }
 
-/* 缓存计数信息 - 微交互优化 */
+/* 缓存计数信息 - 多主题适配 */
 .cache-count-info {
   font-size: 14px;
   font-weight: 600;
   color: var(--primary);
   padding: 10px 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 122, 255, 0.08) 0%,
-    rgba(0, 122, 255, 0.05) 100%
-  );
+  background: var(--card-highlight);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
-  border: 1px solid rgba(0, 122, 255, 0.15);
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .cache-count-info:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 122, 255, 0.12) 0%,
-    rgba(0, 122, 255, 0.08) 100%
-  );
-  border-color: rgba(0, 122, 255, 0.25);
+  border-color: var(--primary);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: var(--card-shadow-hover);
 }
 
-[data-theme="dark"] .cache-count-info {
-  color: var(--primary);
-  background: linear-gradient(
-    135deg,
-    rgba(10, 132, 255, 0.15) 0%,
-    rgba(10, 132, 255, 0.1) 100%
-  );
-  border: 1px solid rgba(10, 132, 255, 0.25);
-}
-
-/* 搜索和过滤区域 - 磨砂玻璃卡片 */
+/* 搜索和过滤区域 - 多主题适配 */
 .search-filter-section {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.85) 0%,
-    rgba(250, 250, 255, 0.65) 100%
-  );
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-backdrop-filter);
+  border: 1px solid var(--glass-border);
   border-radius: 16px;
   padding: 20px 24px;
   display: flex;
   align-items: flex-end;
   gap: 16px;
   flex-wrap: wrap;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: var(--card-shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .search-filter-section:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
-}
-
-[data-theme="dark"] .search-filter-section {
-  background: linear-gradient(
-    135deg,
-    rgba(35, 35, 40, 0.85) 0%,
-    rgba(30, 30, 35, 0.65) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .form-group {
@@ -1305,9 +1173,9 @@ export default {
 .search-input {
   width: 100%;
   padding: 12px 16px;
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border: 1.5px solid var(--border-color);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: var(--text-primary);
@@ -1316,40 +1184,20 @@ export default {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   height: 44px;
   box-sizing: border-box;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-[data-theme="dark"] .search-input {
-  background: rgba(40, 40, 45, 0.8);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: var(--card-shadow);
 }
 
 .search-input:hover {
-  border-color: rgba(0, 122, 255, 0.3);
-  background: rgba(255, 255, 255, 0.95);
-}
-
-[data-theme="dark"] .search-input:hover {
-  border-color: rgba(10, 132, 255, 0.3);
-  background: rgba(45, 45, 50, 0.9);
+  border-color: var(--primary);
+  background: var(--surface-hover);
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--primary);
-  background: white;
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1),
-    0 4px 12px rgba(0, 122, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background: var(--surface-color);
+  box-shadow: var(--card-shadow-hover);
   transform: translateY(-1px);
-}
-
-[data-theme="dark"] .search-input:focus {
-  background: rgba(45, 45, 50, 1);
-  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.15),
-    0 4px 12px rgba(10, 132, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .search-input::placeholder {
@@ -1366,13 +1214,13 @@ export default {
   font-size: 12px;
 }
 
-/* 过滤选择器和输入框 - 微交互优化 */
+/* 过滤选择器和输入框 - 多主题适配 */
 .filter-select,
 .filter-input {
   padding: 12px 16px;
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border: 1.5px solid var(--border-color);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: var(--text-primary);
@@ -1382,8 +1230,7 @@ export default {
   min-width: 160px;
   height: 44px;
   box-sizing: border-box;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: var(--card-shadow);
   cursor: pointer;
 }
 
@@ -1410,7 +1257,7 @@ export default {
   padding-right: 36px;
 }
 
-/* 自定义数字箭头 */
+/* 自定义数字箭头 - 多主题适配 */
 .number-spinner {
   position: absolute;
   right: 4px;
@@ -1427,12 +1274,8 @@ export default {
   justify-content: center;
   width: 24px;
   height: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 122, 255, 0.08) 0%,
-    rgba(0, 122, 255, 0.05) 100%
-  );
-  border: 1px solid rgba(0, 122, 255, 0.15);
+  background: var(--card-highlight);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   color: var(--primary);
   cursor: pointer;
@@ -1442,14 +1285,10 @@ export default {
 }
 
 .spinner-btn:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 122, 255, 0.15) 0%,
-    rgba(0, 122, 255, 0.1) 100%
-  );
-  border-color: rgba(0, 122, 255, 0.3);
+  background: var(--surface-hover);
+  border-color: var(--primary);
   transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+  box-shadow: var(--card-shadow);
 }
 
 .spinner-btn:active {
@@ -1457,61 +1296,20 @@ export default {
   transition-duration: 0.1s;
 }
 
-[data-theme="dark"] .spinner-btn {
-  background: linear-gradient(
-    135deg,
-    rgba(10, 132, 255, 0.15) 0%,
-    rgba(10, 132, 255, 0.1) 100%
-  );
-  border: 1px solid rgba(10, 132, 255, 0.25);
-}
-
-[data-theme="dark"] .spinner-btn:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(10, 132, 255, 0.25) 0%,
-    rgba(10, 132, 255, 0.18) 100%
-  );
-  border-color: rgba(10, 132, 255, 0.4);
-  box-shadow: 0 2px 8px rgba(10, 132, 255, 0.3);
-}
-
-[data-theme="dark"] .filter-select,
-[data-theme="dark"] .filter-input {
-  background: rgba(40, 40, 45, 0.8);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
 .filter-select:hover,
 .filter-input:hover {
-  border-color: rgba(0, 122, 255, 0.3);
-  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--primary);
+  background: var(--surface-hover);
   transform: translateY(-1px);
-}
-
-[data-theme="dark"] .filter-select:hover,
-[data-theme="dark"] .filter-input:hover {
-  border-color: rgba(10, 132, 255, 0.3);
-  background: rgba(45, 45, 50, 0.95);
 }
 
 .filter-select:focus,
 .filter-input:focus {
   outline: none;
   border-color: var(--primary);
-  background: white;
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1),
-    0 4px 12px rgba(0, 122, 255, 0.15);
+  background: var(--surface-color);
+  box-shadow: var(--card-shadow-hover);
   transform: translateY(-1px);
-}
-
-[data-theme="dark"] .filter-select:focus,
-[data-theme="dark"] .filter-input:focus {
-  background: rgba(50, 50, 55, 1);
-  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.15),
-    0 4px 12px rgba(10, 132, 255, 0.2);
 }
 
 .filter-input {
@@ -1519,80 +1317,53 @@ export default {
   cursor: text;
 }
 
-/* 清空过滤按钮 - 微交互优化 */
+/* 清空过滤按钮 - 多主题适配 */
 .clear-filters-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 12px 18px;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border: 1.5px solid var(--border-color);
   border-radius: 12px;
   color: var(--text-secondary);
   cursor: pointer;
   font-weight: 600;
   font-size: 14px;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--card-shadow);
   height: 44px;
   box-sizing: border-box;
   white-space: nowrap;
 }
 
-[data-theme="dark"] .clear-filters-btn {
-  background: rgba(45, 45, 50, 0.7);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
-}
-
 .clear-filters-btn:hover {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--surface-hover);
   color: var(--text-primary);
-  border-color: rgba(0, 0, 0, 0.12);
+  border-color: var(--primary);
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--card-shadow-hover);
 }
 
-[data-theme="dark"] .clear-filters-btn:hover {
-  background: rgba(50, 50, 55, 0.9);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* 缓存表格容器 - 磨砂玻璃风格 */
+/* 缓存表格容器 - 多主题适配 */
 .cache-table-container {
   flex: 1;
   overflow: auto;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--glass-border);
   border-radius: 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(250, 250, 255, 0.75) 100%
-  );
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-backdrop-filter);
   min-height: 0;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: var(--card-shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .cache-table-container:hover {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
-}
-
-[data-theme="dark"] .cache-table-container {
-  background: linear-gradient(
-    135deg,
-    rgba(35, 35, 40, 0.9) 0%,
-    rgba(30, 30, 35, 0.75) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: var(--card-shadow-hover);
 }
 
 /* 缓存表格 */
@@ -1611,11 +1382,7 @@ export default {
 }
 
 .cache-table th {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(250, 250, 255, 0.8) 100%
-  );
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   font-weight: 700;
@@ -1626,27 +1393,14 @@ export default {
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 2px solid rgba(0, 122, 255, 0.15);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-[data-theme="dark"] .cache-table th {
-  background: linear-gradient(
-    135deg,
-    rgba(40, 40, 45, 0.95) 0%,
-    rgba(35, 35, 40, 0.8) 100%
-  );
-  border-bottom: 2px solid rgba(10, 132, 255, 0.2);
+  border-bottom: 2px solid var(--border-color);
+  box-shadow: var(--card-shadow);
 }
 
 .cache-table td {
   color: var(--text-primary);
   font-weight: 500;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-[data-theme="dark"] .cache-table td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--divider-color);
 }
 
 .cache-table tr:last-child td {
@@ -1659,21 +1413,9 @@ export default {
 }
 
 .cache-table tbody tr:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 122, 255, 0.08) 0%,
-    rgba(0, 122, 255, 0.05) 100%
-  );
+  background: var(--card-highlight);
   transform: translateX(4px);
-  box-shadow: -4px 0 0 0 var(--primary), 0 2px 12px rgba(0, 122, 255, 0.12);
-}
-
-[data-theme="dark"] .cache-table tbody tr:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(10, 132, 255, 0.12) 0%,
-    rgba(10, 132, 255, 0.08) 100%
-  );
+  box-shadow: -4px 0 0 0 var(--primary), var(--card-shadow);
 }
 
 /* SteamID单元格 */
@@ -1685,72 +1427,35 @@ export default {
   letter-spacing: 0.5px;
 }
 
-/* 复选框 - 微交互优化 */
+/* 复选框 - 多主题适配 */
 .checkbox {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(0, 122, 255, 0.3);
+  border: 2px solid var(--border-color);
   border-radius: 6px;
   cursor: pointer;
   position: relative;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.8) 0%,
-    rgba(250, 250, 255, 0.6) 100%
-  );
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-
-[data-theme="dark"] .checkbox {
-  border: 2px solid rgba(10, 132, 255, 0.4);
-  background: linear-gradient(
-    135deg,
-    rgba(40, 40, 45, 0.8) 0%,
-    rgba(35, 35, 40, 0.6) 100%
-  );
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: var(--card-shadow);
 }
 
 .checkbox:hover {
   border-color: var(--primary);
   transform: scale(1.15);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-[data-theme="dark"] .checkbox:hover {
-  box-shadow: 0 4px 12px rgba(10, 132, 255, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .checkbox:checked {
-  background: linear-gradient(
-    135deg,
-    var(--primary) 0%,
-    rgba(0, 122, 255, 0.85) 100%
-  );
+  background: var(--primary);
   border-color: var(--primary);
   animation: checkboxPulse 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-[data-theme="dark"] .checkbox:checked {
-  background: linear-gradient(
-    135deg,
-    rgba(10, 132, 255, 1) 0%,
-    rgba(10, 132, 255, 0.9) 100%
-  );
-  box-shadow: 0 4px 16px rgba(10, 132, 255, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .checkbox:checked::after {
@@ -1802,7 +1507,7 @@ export default {
   gap: 4px;
 }
 
-/* 操作按钮 */
+/* 操作按钮 - 多主题适配 */
 .action-btn {
   width: 32px;
   height: 32px;
@@ -1839,43 +1544,25 @@ export default {
 }
 
 .detail-btn {
-  background: linear-gradient(
-    135deg,
-    rgba(23, 162, 184, 0.9) 0%,
-    rgba(19, 132, 150, 0.8) 100%
-  );
+  background: var(--info-color);
   color: white;
-  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.25);
+  box-shadow: var(--card-shadow);
 }
 
 .detail-btn:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(19, 132, 150, 1) 0%,
-    rgba(23, 162, 184, 0.95) 100%
-  );
   transform: translateY(-3px) scale(1.08);
-  box-shadow: 0 8px 20px rgba(23, 162, 184, 0.35);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .refresh-btn {
-  background: linear-gradient(
-    135deg,
-    rgba(40, 167, 69, 0.9) 0%,
-    rgba(33, 136, 56, 0.8) 100%
-  );
+  background: var(--btn-success-bg);
   color: white;
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
+  box-shadow: var(--card-shadow);
 }
 
 .refresh-btn:hover:not(:disabled) {
-  background: linear-gradient(
-    135deg,
-    rgba(33, 136, 56, 1) 0%,
-    rgba(40, 167, 69, 0.95) 100%
-  );
   transform: translateY(-3px) scale(1.08) rotate(180deg);
-  box-shadow: 0 8px 20px rgba(40, 167, 69, 0.35);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .refresh-btn:disabled {
@@ -1885,23 +1572,14 @@ export default {
 }
 
 .delete-btn {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 59, 48, 0.9) 0%,
-    rgba(255, 45, 85, 0.8) 100%
-  );
+  background: var(--btn-danger-bg);
   color: white;
-  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.25);
+  box-shadow: var(--card-shadow);
 }
 
 .delete-btn:hover:not(:disabled) {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 45, 85, 1) 0%,
-    rgba(255, 59, 48, 0.95) 100%
-  );
   transform: translateY(-3px) scale(1.08);
-  box-shadow: 0 8px 20px rgba(255, 59, 48, 0.35);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .delete-btn:disabled {
@@ -1910,61 +1588,39 @@ export default {
   filter: grayscale(30%);
 }
 
-/* 无缓存条目提示 - 优化 */
+/* 无缓存条目提示 - 多主题适配 */
 .no-cache-entries {
   padding: 80px 40px;
   text-align: center;
   color: var(--text-tertiary);
   font-style: italic;
   font-size: 15px;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 122, 255, 0.03) 0%,
-    rgba(139, 92, 246, 0.03) 100%
-  );
+  background: var(--card-highlight);
   border-radius: 16px;
-  border: 2px dashed rgba(0, 122, 255, 0.2);
+  border: 2px dashed var(--border-color);
   transition: all 0.3s ease;
 }
 
 .no-cache-entries:hover {
-  border-color: rgba(0, 122, 255, 0.3);
-  background: linear-gradient(
-    135deg,
-    rgba(0, 122, 255, 0.05) 0%,
-    rgba(139, 92, 246, 0.05) 100%
-  );
+  border-color: var(--primary);
+  background: var(--surface-hover);
 }
 
-[data-theme="dark"] .no-cache-entries {
-  background: linear-gradient(
-    135deg,
-    rgba(10, 132, 255, 0.05) 0%,
-    rgba(139, 92, 246, 0.05) 100%
-  );
-  border-color: rgba(10, 132, 255, 0.25);
-}
-
-/* 成功消息 - 磨砂玻璃动画 */
+/* 成功消息 - 多主题适配 */
 .success-message {
   position: fixed;
   top: 80px;
   right: 24px;
-  background: linear-gradient(
-    135deg,
-    rgba(52, 199, 89, 0.98) 0%,
-    rgba(48, 209, 88, 0.95) 100%
-  );
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: var(--success-color);
+  backdrop-filter: var(--glass-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-backdrop-filter);
   color: white;
   padding: 16px 24px;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(52, 199, 89, 0.35),
-    0 4px 12px rgba(52, 199, 89, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: var(--card-shadow-hover);
   z-index: 10000;
   animation: successSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--glass-border-light);
   font-weight: 600;
   font-size: 15px;
   min-width: 280px;
@@ -2078,32 +1734,16 @@ export default {
 }
 
 .modal-content {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.98) 0%,
-    rgba(250, 250, 255, 0.95) 100%
-  );
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-backdrop-filter);
   border-radius: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: var(--card-shadow-hover);
   max-width: 90vw;
   max-height: 90vh;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--glass-border);
   position: relative;
-}
-
-[data-theme="dark"] .modal-content {
-  background: linear-gradient(
-    135deg,
-    rgba(30, 30, 35, 0.98) 0%,
-    rgba(25, 25, 30, 0.95) 100%
-  );
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .modal-content::before {
@@ -2116,7 +1756,7 @@ export default {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.8) 50%,
+    var(--glass-border-light) 50%,
     transparent 100%
   );
   pointer-events: none;
@@ -2136,23 +1776,10 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 24px 28px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.6) 0%,
-    rgba(250, 250, 252, 0.4) 100%
-  );
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-[data-theme="dark"] .modal-header {
-  background: linear-gradient(
-    135deg,
-    rgba(35, 35, 40, 0.6) 0%,
-    rgba(30, 30, 35, 0.4) 100%
-  );
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--divider-color);
 }
 
 .modal-header h3 {
@@ -2164,10 +1791,10 @@ export default {
 }
 
 .close-btn {
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-color);
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 16px;
@@ -2179,23 +1806,14 @@ export default {
   justify-content: center;
   border-radius: 10px;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-[data-theme="dark"] .close-btn {
-  background: rgba(45, 45, 50, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--card-shadow);
 }
 
 .close-btn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--surface-hover);
   transform: rotate(90deg) scale(1.1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-[data-theme="dark"] .close-btn:hover {
-  background: rgba(50, 50, 55, 0.9);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .modal-body {
@@ -2210,23 +1828,10 @@ export default {
   justify-content: flex-end;
   gap: 12px;
   padding: 20px 28px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.6) 0%,
-    rgba(250, 250, 252, 0.4) 100%
-  );
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-[data-theme="dark"] .modal-footer {
-  background: linear-gradient(
-    135deg,
-    rgba(35, 35, 40, 0.6) 0%,
-    rgba(30, 30, 35, 0.4) 100%
-  );
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--divider-color);
 }
 
 /* 缓存详情弹窗样式 */
@@ -2364,25 +1969,16 @@ export default {
 }
 
 .confirm-btn {
-  background: linear-gradient(
-    135deg,
-    rgba(220, 53, 69, 0.8),
-    rgba(220, 53, 69, 0.6)
-  );
+  background: var(--btn-danger-bg);
   backdrop-filter: blur(10px);
   color: white;
-  border: 1px solid rgba(220, 53, 69, 0.3);
-  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
 }
 
 .confirm-btn:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(200, 35, 51, 0.9),
-    rgba(200, 35, 51, 0.7)
-  );
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  box-shadow: var(--card-shadow-hover);
 }
 
 /* 自定义下拉框样式增强 */
@@ -2514,36 +2110,22 @@ export default {
   }
 }
 
-/* 批量操作工具栏 - 磨砂玻璃风格 */
+/* 批量操作工具栏 - 多主题适配 */
 .batch-actions-toolbar {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 122, 255, 0.12) 0%,
-    rgba(0, 122, 255, 0.08) 100%
-  );
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(0, 122, 255, 0.25);
+  background: var(--card-highlight);
+  backdrop-filter: var(--glass-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-backdrop-filter);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   animation: slideInDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 8px 24px rgba(0, 122, 255, 0.15),
-    0 2px 6px rgba(0, 122, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  box-shadow: var(--card-shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-}
-
-[data-theme="dark"] .batch-actions-toolbar {
-  background: linear-gradient(
-    135deg,
-    rgba(10, 132, 255, 0.15) 0%,
-    rgba(10, 132, 255, 0.1) 100%
-  );
-  border: 1px solid rgba(10, 132, 255, 0.3);
 }
 
 .batch-actions-toolbar::before {
@@ -2556,7 +2138,7 @@ export default {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.2) 50%,
+    var(--glass-border-light) 50%,
     transparent 100%
   );
   transition: left 0.6s ease;
@@ -2568,8 +2150,7 @@ export default {
 
 .batch-actions-toolbar:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(0, 122, 255, 0.2),
-    0 4px 12px rgba(0, 122, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .batch-info {
@@ -2622,43 +2203,25 @@ export default {
 }
 
 .refresh-batch-btn {
-  background: linear-gradient(
-    135deg,
-    rgba(40, 167, 69, 0.9) 0%,
-    rgba(33, 136, 56, 0.8) 100%
-  );
+  background: var(--btn-success-bg);
   color: white;
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
+  box-shadow: var(--card-shadow);
 }
 
 .refresh-batch-btn:hover:not(:disabled) {
-  background: linear-gradient(
-    135deg,
-    rgba(33, 136, 56, 1) 0%,
-    rgba(40, 167, 69, 0.95) 100%
-  );
   transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 24px rgba(40, 167, 69, 0.35);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .delete-batch-btn {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 59, 48, 0.9) 0%,
-    rgba(255, 45, 85, 0.8) 100%
-  );
+  background: var(--btn-danger-bg);
   color: white;
-  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.25);
+  box-shadow: var(--card-shadow);
 }
 
 .delete-batch-btn:hover:not(:disabled) {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 45, 85, 1) 0%,
-    rgba(255, 59, 48, 0.95) 100%
-  );
   transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 24px rgba(255, 59, 48, 0.35);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .batch-btn:disabled {
@@ -2667,16 +2230,12 @@ export default {
   filter: grayscale(30%);
 }
 
-/* 分页控件 - 磨砂玻璃风格 */
+/* 分页控件 - 多主题适配 */
 .pagination-container {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.85) 0%,
-    rgba(250, 250, 255, 0.65) 100%
-  );
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-backdrop-filter);
+  border: 1px solid var(--glass-border);
   border-radius: 16px;
   padding: 16px 24px;
   display: flex;
@@ -2684,24 +2243,13 @@ export default {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: var(--card-shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-[data-theme="dark"] .pagination-container {
-  background: linear-gradient(
-    135deg,
-    rgba(35, 35, 40, 0.85) 0%,
-    rgba(30, 30, 35, 0.65) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .pagination-container:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .pagination-info {
@@ -2720,8 +2268,8 @@ export default {
 .pagination-btn {
   width: 38px;
   height: 38px;
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.7);
+  border: 1.5px solid var(--border-color);
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: var(--text-secondary);
@@ -2733,24 +2281,15 @@ export default {
   font-size: 14px;
   font-weight: 600;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-[data-theme="dark"] .pagination-btn {
-  background: rgba(40, 40, 45, 0.7);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--card-shadow);
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--surface-hover);
   color: var(--primary);
-  border-color: rgba(0, 122, 255, 0.3);
+  border-color: var(--primary);
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.15);
-}
-
-[data-theme="dark"] .pagination-btn:hover:not(:disabled) {
-  background: rgba(45, 45, 50, 0.9);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .pagination-btn:disabled {
@@ -2760,15 +2299,10 @@ export default {
 }
 
 .pagination-btn.active {
-  background: linear-gradient(
-    135deg,
-    var(--primary) 0%,
-    rgba(0, 122, 255, 0.85) 100%
-  );
+  background: var(--primary);
   color: white;
   border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.35),
-    0 2px 4px rgba(0, 122, 255, 0.2);
+  box-shadow: var(--card-shadow-hover);
   transform: scale(1.1);
 }
 

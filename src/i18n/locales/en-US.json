@@ -241,6 +241,7 @@
       "cacheStatusDescription": "Steam username cache information",
       "cacheEntries": "cache entries",
       "clearCache": "Clear Cache",
+      "cacheCleared": "Cache cleared",
       "viewCache": "View Cache",
       "cacheDetails": "Cache Details",
       "cleanupExpired": "Clean Expired Cache",

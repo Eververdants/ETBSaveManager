@@ -684,7 +684,7 @@ export default {
       cacheEntryCount: 0,
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: "3.0.0-Alpha-7.1",
+      appVersion: "3.0.0-Alpha-7.2",
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,

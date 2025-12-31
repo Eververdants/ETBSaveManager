@@ -1,5 +1,19 @@
 [
   {
+    "version": "3.0.0-Alpha-7.2",
+    "date": "2025-12-31",
+    "title": "Fixed Cache Page Theme Glitch",
+    "type": "patch",
+    "categories": {
+      "newFeatures": [],
+      "improvements": [],
+      "bugFixes": [
+        "Fixed cache page theme display anomaly"
+      ],
+      "performance": []
+    }
+  },
+  {
     "version": "3.0.0-Alpha-7.1",
     "date": "2025-12-30",
     "title": "New Year Limited Theme & Hub Door Fix",

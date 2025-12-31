@@ -241,6 +241,7 @@
       "cacheStatusDescription": "Steam用户名缓存信息",
       "cacheEntries": "个缓存条目",
       "clearCache": "清空缓存",
+      "cacheCleared": "缓存已清空",
       "viewCache": "查看缓存",
       "cacheDetails": "缓存详情",
       "cleanupExpired": "清理过期缓存",

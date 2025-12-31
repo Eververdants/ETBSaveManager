@@ -1,5 +1,19 @@
 [
   {
+    "version": "3.0.0-Alpha-7.2",
+    "date": "2025-12-31",
+    "title": "修復快取頁面主題異常",
+    "type": "patch",
+    "categories": {
+      "newFeatures": [],
+      "improvements": [],
+      "bugFixes": [
+        "修復快取頁面主題顯示異常的問題"
+      ],
+      "performance": []
+    }
+  },
+  {
     "version": "3.0.0-Alpha-7.1",
     "date": "2025-12-30",
     "title": "元旦限定主題與Hub門修復",

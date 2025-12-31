@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.0.0--Alpha--7.1-blue.svg" alt="Version"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.0.0--Alpha--7.2-blue.svg" alt="Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/Platform-Windows-0078D4.svg?logo=windows" alt="Platform">
   <img src="https://img.shields.io/badge/Framework-Tauri%202.0-orange.svg" alt="Framework">
@@ -62,7 +62,7 @@
 
 ### Download Release
 
-1. Go to [Releases](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-7.1)
+1. Go to [Releases](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-7.2)
 2. Download the Windows installer (`.msi` or `.exe`)
 3. Run the installer
 
@@ -127,7 +127,7 @@ ETBSaveManager/
 
 ## 🚧 Development Status
 
-**Current Version:** `v3.0.0-Alpha-7.1`
+**Current Version:** `v3.0.0-Alpha-7.2`
 
 | Feature | Status |
 |---------|--------|

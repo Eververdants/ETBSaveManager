@@ -1,8 +1,24 @@
 <template>
   <div class="edit-archive-container">
-    <!-- 顶部标题栏 -->
+    <!-- 顶部标题栏 + 标签导航 -->
     <div class="page-header">
       <h1 class="page-title">{{ $t("editArchive.title") }}</h1>
+      
+      <div class="tab-nav">
+        <div class="tab-highlight" :style="highlightStyle"></div>
+        <button 
+          v-for="(tab, index) in tabs" 
+          :key="tab.id"
+          :ref="el => tabRefs[index] = el"
+          class="tab-btn"
+          :class="{ active: activeTab === tab.id }"
+          @click="switchTab(tab.id, index)"
+        >
+          <font-awesome-icon :icon="tab.icon" />
+          <span>{{ $t(tab.label) }}</span>
+        </button>
+      </div>
+
       <div class="header-actions">
         <button class="btn-secondary" @click="closeEdit">
           <font-awesome-icon :icon="['fas', 'times']" />
@@ -15,15 +31,13 @@
       </div>
     </div>
 
-    <!-- 主要内容区域 -->
-    <div class="content-area">
-      <div class="form-container">
-        <!-- 存档名称 -->
-        <div class="form-section">
-          <label class="section-title">{{
-            $t("editArchive.archiveName")
-          }}</label>
-          <div class="input-wrapper">
+    <!-- 内容区域 -->
+    <div class="tab-content" :class="`slide-${slideDirection}`">
+      <!-- 基础设置 -->
+      <div class="tab-panel" :class="{ 'tab-active': activeTab === 'basic' }">
+        <div class="panel-grid">
+          <div class="form-card">
+            <label class="form-label">{{ $t("editArchive.archiveName") }}</label>
             <input
               v-model="archiveData.name"
               type="text"
@@ -32,346 +46,207 @@
               maxlength="50"
             />
           </div>
-        </div>
-
-        <!-- 当前层级 -->
-        <div class="form-section">
-          <label class="section-title">{{
-            $t("editArchive.selectLevelTitle")
-          }}</label>
-          <div class="level-selector">
-            <div
-              v-for="(level, index) in availableLevels"
-              :key="index"
-              class="level-option"
-              :class="{ selected: archiveData.currentLevel === level.levelKey }"
-              @click="selectLevel(level.levelKey)"
-            >
-              <div class="level-image-container">
-                <LazyImage
-                  :src="level.image"
-                  :alt="level.name"
-                  image-class="level-image"
-                />
-                <div class="level-overlay">
-                  <font-awesome-icon
-                    :icon="['fas', 'check']"
-                    class="check-icon"
-                    v-if="archiveData.currentLevel === level.levelKey"
-                  />
-                </div>
-              </div>
-              <span class="level-name">{{ level.name }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 难度设置 -->
-        <div class="form-row">
-          <div class="form-section half-width">
-            <label class="section-title">{{
-              $t("editArchive.difficulty")
-            }}</label>
-            <div class="difficulty-grid">
+          <div class="form-card">
+            <label class="form-label">{{ $t("editArchive.difficulty") }}</label>
+            <div class="difficulty-options">
               <div
-                v-for="difficulty in difficultyLevels"
-                :key="difficulty.value"
-                class="difficulty-option"
-                :class="{
-                  selected: archiveData.archiveDifficulty === difficulty.value,
-                }"
-                @click="handleDifficultySelect('archive', difficulty.value)"
+                v-for="d in difficultyLevels"
+                :key="d.value"
+                class="difficulty-btn"
+                :class="{ selected: archiveData.archiveDifficulty === d.value }"
+                @click="archiveData.archiveDifficulty = d.value"
               >
-                <div class="difficulty-icon">
-                  <font-awesome-icon :icon="difficulty.icon" />
-                </div>
-                <span class="difficulty-label">{{
-                  $t(`editArchive.difficultyLevels.${difficulty.value}`)
-                }}</span>
+                <font-awesome-icon :icon="d.icon" />
+                <span>{{ $t(`editArchive.difficultyLevels.${d.value}`) }}</span>
               </div>
             </div>
           </div>
-
-          <div class="form-section half-width">
-            <label class="section-title">{{
-              $t("editArchive.actualDifficulty")
-            }}</label>
-            <div class="difficulty-grid">
+          <div class="form-card">
+            <label class="form-label">{{ $t("editArchive.actualDifficulty") }}</label>
+            <div class="difficulty-options">
               <div
-                v-for="difficulty in difficultyLevels"
-                :key="`actual-${difficulty.value}`"
-                class="difficulty-option"
-                :class="{
-                  selected: archiveData.actualDifficulty === difficulty.value,
-                }"
-                @click="handleDifficultySelect('actual', difficulty.value)"
+                v-for="d in difficultyLevels"
+                :key="`actual-${d.value}`"
+                class="difficulty-btn"
+                :class="{ selected: archiveData.actualDifficulty === d.value }"
+                @click="archiveData.actualDifficulty = d.value"
               >
-                <div class="difficulty-icon">
-                  <font-awesome-icon :icon="difficulty.icon" />
-                </div>
-                <span class="difficulty-label">{{
-                  $t(`editArchive.difficultyLevels.${difficulty.value}`)
-                }}</span>
+                <font-awesome-icon :icon="d.icon" />
+                <span>{{ $t(`editArchive.difficultyLevels.${d.value}`) }}</span>
               </div>
             </div>
+          </div>
+          <div class="form-card">
+            <label class="form-label">{{ $t("editArchive.hubDoors") }}</label>
+            <button class="action-btn" @click="unlockAllHubDoors">
+              <font-awesome-icon :icon="['fas', 'door-open']" />
+              <span>{{ $t("editArchive.unlockAllHubDoors") }}</span>
+            </button>
           </div>
         </div>
+      </div>
 
-        <!-- 玩家背包管理 -->
-        <div class="form-section">
-          <label class="section-title">{{
-            $t("editArchive.playerManagement")
-          }}</label>
-
-          <div class="player-management-layout">
-            <!-- 左侧：玩家列表 -->
-            <div class="player-list-panel">
-              <div class="player-list-header">
-                <span class="player-count"
-                  >{{ archiveData.players.length }}
-                  {{ $t("editArchive.playersCount") }}</span
-                >
+      <!-- 层级选择 -->
+      <div class="tab-panel" :class="{ 'tab-active': activeTab === 'level' }">
+        <div class="level-grid">
+          <div
+            v-for="(level, index) in availableLevels"
+            :key="index"
+            class="level-card"
+            :class="{ selected: archiveData.currentLevel === level.levelKey }"
+            @click="selectLevel(level.levelKey)"
+          >
+            <div class="level-img-wrap">
+              <LazyImage :src="level.image" :alt="level.name" image-class="level-img" />
+              <div class="level-check" v-if="archiveData.currentLevel === level.levelKey">
+                <font-awesome-icon :icon="['fas', 'check-circle']" />
               </div>
+            </div>
+            <span class="level-name">{{ level.name }}</span>
+          </div>
+        </div>
+      </div>
 
-              <!-- Steam ID 列表 -->
-              <div class="player-list">
-                <div
-                  v-for="(player, index) in archiveData.players"
-                  :key="index"
-                  class="player-card"
-                  :class="{ active: activePlayerIndex === index }"
-                  @click="selectPlayer(index)"
-                >
-                  <div class="player-avatar">
-                    <font-awesome-icon :icon="['fas', 'user']" />
-                  </div>
-                  <div class="player-info">
-                    <span v-if="player.username" class="player-username">{{
-                      player.username
-                    }}</span>
-                    <span
-                      v-else-if="player.isOfflinePlayer"
-                      class="player-username"
-                      >{{ player.steamId }}(本地)</span
-                    >
-                    <span v-else class="player-id">{{ player.steamId }}</span>
-                    <span
-                      class="player-sanity-badge"
-                      :class="getSanityClass(player.sanity ?? 100)"
-                    >
-                      {{ player.sanity ?? 100 }}%
-                    </span>
-                  </div>
-                  <button
-                    class="remove-player-btn"
-                    @click.stop="removePlayer(index)"
-                  >
-                    <font-awesome-icon :icon="['fas', 'trash']" />
-                  </button>
+      <!-- 玩家管理 -->
+      <div class="tab-panel" :class="{ 'tab-active': activeTab === 'players' }">
+        <div class="players-layout">
+          <!-- 玩家列表 -->
+          <div class="player-list-section">
+            <div class="section-title">
+              <span>{{ $t("editArchive.playerManagement") }}</span>
+              <span class="count-badge">{{ archiveData.players.length }}</span>
+            </div>
+
+            <div class="player-list" v-if="archiveData.players.length > 0">
+              <div
+                v-for="(player, index) in archiveData.players"
+                :key="index"
+                class="player-item"
+                :class="{ active: activePlayerIndex === index }"
+                @click="selectPlayer(index)"
+              >
+                <div class="player-avatar">
+                  <font-awesome-icon :icon="['fas', 'user']" />
                 </div>
-              </div>
-
-              <div class="add-player-section">
-                <input
-                  v-model="newSteamId"
-                  type="text"
-                  class="form-input add-player-input"
-                  :placeholder="$t('editArchive.steamIdPlaceholder')"
-                  @keyup.enter="addPlayer"
-                />
-                <button class="add-player-btn" @click="addPlayer">
-                  <font-awesome-icon :icon="['fas', 'plus']" />
+                <div class="player-info">
+                  <span class="player-name">
+                    {{ player.username || (player.isOfflinePlayer ? `${player.steamId}(本地)` : player.steamId) }}
+                  </span>
+                  <span class="sanity-tag" :class="getSanityClass(player.sanity ?? 100)">
+                    {{ player.sanity ?? 100 }}%
+                  </span>
+                </div>
+                <button class="del-btn" @click.stop="removePlayer(index)">
+                  <font-awesome-icon :icon="['fas', 'trash']" />
                 </button>
               </div>
-
-              <!-- 玩家输入提示信息 -->
-              <transition name="message-fade" mode="out-in">
-                <div
-                  v-if="playerInputMessage"
-                  class="player-input-message"
-                  :class="playerInputMessageType"
-                  key="message"
-                >
-                  {{ playerInputMessage }}
-                </div>
-              </transition>
-
-              <!-- 无玩家提示 -->
-              <div
-                v-if="archiveData.players.length === 0"
-                class="no-players-hint"
-              >
-                <font-awesome-icon :icon="['fas', 'users']" class="hint-icon" />
-                <p>{{ $t("editArchive.noPlayersHint") }}</p>
-              </div>
+            </div>
+            <div class="empty-hint" v-else>
+              <font-awesome-icon :icon="['fas', 'user-plus']" />
+              <p>{{ $t("editArchive.noPlayersHint") }}</p>
             </div>
 
-            <!-- 右侧：玩家详情 -->
-            <div
-              class="player-detail-panel"
-              v-if="activePlayerIndex !== -1 && archiveData.players.length > 0"
-            >
-              <!-- 玩家理智值管理 -->
-              <div class="sanity-section">
-                <div class="sanity-header">
-                  <h3 class="sanity-title">
-                    <font-awesome-icon
-                      :icon="['fas', 'brain']"
-                      class="title-icon"
-                    />
-                    {{ $t("editArchive.playerSanity") }}
-                  </h3>
-                  <div class="player-name-tag">
-                    {{ getCurrentPlayerDisplayName() }}
+            <div class="add-player-row">
+              <input
+                v-model="newSteamId"
+                type="text"
+                class="form-input"
+                :placeholder="$t('editArchive.steamIdPlaceholder')"
+                @keyup.enter="addPlayer"
+              />
+              <button class="add-btn" @click="addPlayer">
+                <font-awesome-icon :icon="['fas', 'plus']" />
+              </button>
+            </div>
+            <transition name="fade">
+              <div v-if="playerInputMessage" class="msg-tip" :class="playerInputMessageType">
+                {{ playerInputMessage }}
+              </div>
+            </transition>
+          </div>
+
+          <!-- 玩家详情 -->
+          <div class="player-detail-section" v-if="activePlayerIndex !== -1 && archiveData.players.length > 0">
+            <div class="detail-header">
+              <span>{{ getCurrentPlayerDisplayName() }}</span>
+            </div>
+
+            <div class="detail-grid">
+              <!-- 理智值 -->
+              <div class="detail-block">
+                <div class="block-title">
+                  <font-awesome-icon :icon="['fas', 'brain']" />
+                  {{ $t("editArchive.playerSanity") }}
+                </div>
+                <div class="sanity-display">
+                  <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)">{{ currentPlayerSanity }}%</span>
+                  <div class="sanity-bar">
+                    <div class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }" :class="getSanityClass(currentPlayerSanity)"></div>
                   </div>
                 </div>
-
-                <div class="sanity-controls">
-                  <div class="sanity-display">
-                    <div class="sanity-value-large">
-                      {{ currentPlayerSanity
-                      }}<span class="sanity-percent">%</span>
-                    </div>
-                    <div class="sanity-bar">
-                      <div
-                        class="sanity-bar-fill"
-                        :style="{ width: `${currentPlayerSanity}%` }"
-                        :class="getSanityClass(currentPlayerSanity)"
-                      ></div>
-                    </div>
-                  </div>
-
-                  <div class="sanity-adjust-row">
-                    <div class="sanity-slider-group">
-                      <CustomSlider
-                        v-model="currentPlayerSanity"
-                        :min="0"
-                        :max="100"
-                        :step="1"
-                      />
-                    </div>
-                    <div class="sanity-quick-actions">
-                      <button
-                        class="sanity-btn set-min"
-                        @click="setMinSanity()"
-                        :title="$t('editArchive.setMinSanity')"
-                      >
-                        <font-awesome-icon :icon="['fas', 'skull']" />
-                      </button>
-                      <button
-                        class="sanity-btn set-max"
-                        @click="setMaxSanity()"
-                        :title="$t('editArchive.setMaxSanity')"
-                      >
-                        <font-awesome-icon :icon="['fas', 'heart']" />
-                      </button>
-                    </div>
+                <div class="sanity-ctrl">
+                  <CustomSlider v-model="currentPlayerSanity" :min="0" :max="100" :step="1" />
+                  <div class="quick-btns">
+                    <button class="qbtn danger" @click="setMinSanity()"><font-awesome-icon :icon="['fas', 'skull']" /></button>
+                    <button class="qbtn success" @click="setMaxSanity()"><font-awesome-icon :icon="['fas', 'heart']" /></button>
                   </div>
                 </div>
               </div>
 
-              <!-- 玩家背包管理 -->
-              <div class="inventory-section">
-                <div class="inventory-header">
-                  <h3 class="inventory-title">
-                    <font-awesome-icon
-                      :icon="['fas', 'suitcase']"
-                      class="title-icon"
-                    />
-                    {{ $t("editArchive.inventory") }}
-                  </h3>
+              <!-- 背包 -->
+              <div class="detail-block">
+                <div class="block-title">
+                  <font-awesome-icon :icon="['fas', 'suitcase']" />
+                  {{ $t("editArchive.inventory") }}
                 </div>
-                <div class="inventory-grid">
-                  <!-- 主手和副手位置 -->
-                  <div class="inventory-column">
+                <div class="inventory-wrap">
+                  <div class="hand-slots">
                     <div
                       v-for="slot in 3"
-                      :key="`weapon-${slot - 1}`"
-                      class="inventory-slot weapon-slot"
-                      :class="{
-                        'main-hand': slot === 1,
-                        'off-hand': slot > 1,
-                        empty: !getSlotContent(activePlayerIndex, slot - 1),
-                      }"
+                      :key="`h-${slot}`"
+                      class="inv-slot"
+                      :class="{ empty: !getSlotContent(activePlayerIndex, slot - 1) }"
                       @click="editSlot(activePlayerIndex, slot - 1)"
                     >
-                      <div class="slot-label">
-                        {{ $t(`editArchive.${getSlotLabel(slot - 1)}`) }}
-                      </div>
-                      <div class="slot-content">
-                        <transition name="item-fade" mode="out-in">
-                          <LazyImage
-                            v-if="getSlotContent(activePlayerIndex, slot - 1)"
-                            :src="`/icons/ETB_UI/${getItemImageFile(
-                              getSlotContent(activePlayerIndex, slot - 1)
-                            )}`"
-                            :alt="getSlotContent(activePlayerIndex, slot - 1)"
-                            image-class="item-image"
-                            :key="getSlotContent(activePlayerIndex, slot - 1)"
-                          />
-                          <font-awesome-icon
-                            v-else
-                            :icon="['fas', 'hand-paper']"
-                            class="slot-icon"
-                            key="empty"
-                          />
-                        </transition>
-                      </div>
+                      <span class="slot-label">{{ $t(`editArchive.${getSlotLabel(slot - 1)}`) }}</span>
+                      <LazyImage
+                        v-if="getSlotContent(activePlayerIndex, slot - 1)"
+                        :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}`"
+                        image-class="slot-img"
+                      />
+                      <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-placeholder" />
                     </div>
                   </div>
-
-                  <!-- 背包格子 -->
-                  <div class="inventory-backpack">
+                  <div class="backpack-slots">
                     <div
                       v-for="slot in 9"
-                      :key="`backpack-${slot + 2}`"
-                      class="inventory-slot backpack-slot"
-                      :class="{
-                        empty: !getSlotContent(activePlayerIndex, slot + 2),
-                      }"
+                      :key="`b-${slot}`"
+                      class="inv-slot"
+                      :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
                       @click="editSlot(activePlayerIndex, slot + 2)"
                     >
-                      <div class="slot-number">{{ slot }}</div>
-                      <div class="slot-content">
-                        <transition name="item-fade" mode="out-in">
-                          <LazyImage
-                            v-if="getSlotContent(activePlayerIndex, slot + 2)"
-                            :src="`/icons/ETB_UI/${getItemImageFile(
-                              getSlotContent(activePlayerIndex, slot + 2)
-                            )}`"
-                            :alt="getSlotContent(activePlayerIndex, slot + 2)"
-                            image-class="item-image"
-                            :key="getSlotContent(activePlayerIndex, slot + 2)"
-                          />
-                          <font-awesome-icon
-                            v-else
-                            :icon="['fas', 'square']"
-                            class="slot-icon"
-                            key="empty"
-                          />
-                        </transition>
-                      </div>
+                      <span class="slot-num">{{ slot }}</span>
+                      <LazyImage
+                        v-if="getSlotContent(activePlayerIndex, slot + 2)"
+                        :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}`"
+                        image-class="slot-img"
+                      />
+                      <font-awesome-icon v-else :icon="['fas', 'cube']" class="slot-placeholder" />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- 未选择玩家时的提示 -->
-            <div
-              class="player-detail-panel empty-state"
-              v-else-if="archiveData.players.length > 0"
-            >
-              <font-awesome-icon
-                :icon="['fas', 'hand-pointer']"
-                class="empty-icon"
-              />
-              <p>{{ $t("editArchive.selectPlayerHint") }}</p>
-            </div>
+          <div class="player-detail-section empty-detail" v-else>
+            <font-awesome-icon :icon="['fas', 'hand-pointer']" />
+            <p>{{ archiveData.players.length > 0 ? $t("editArchive.selectPlayerHint") : $t("editArchive.addPlayerFirst") }}</p>
           </div>
         </div>
       </div>
     </div>
+
     <!-- 物品选择器 -->
     <InventoryItemSelector
       :visible="showItemSelector"
@@ -390,27 +265,87 @@ import { invoke } from "@tauri-apps/api/core";
 import InventoryItemSelector from "../components/InventoryItemSelector.vue";
 import LazyImage from "../components/LazyImage.vue";
 import CustomSlider from "../components/CustomSlider.vue";
-import { showError } from "../services/popupService";
+import { showError, showSuccess } from "../services/popupService";
 
 const props = defineProps({
-  archiveData: {
-    type: String,
-    default: "",
-  },
+  archiveData: { type: String, default: "" },
 });
 
 const { t } = useI18n({ useScope: "global" });
 const router = useRouter();
 
-// 添加一个方法来处理实际的存档保存逻辑
+// 标签页配置
+const tabs = [
+  { id: 'basic', label: 'editArchive.tabs.basic', icon: ['fas', 'cog'] },
+  { id: 'level', label: 'editArchive.tabs.level', icon: ['fas', 'map'] },
+  { id: 'players', label: 'editArchive.tabs.players', icon: ['fas', 'users'] },
+];
+const activeTab = ref('basic');
+const tabRefs = ref([]);
+const highlightStyle = ref({});
+
+// 切换标签
+const currentTabIndex = ref(0);
+const slideDirection = ref('right');
+
+const switchTab = (tabId, index) => {
+  slideDirection.value = index > currentTabIndex.value ? 'right' : 'left';
+  currentTabIndex.value = index;
+  activeTab.value = tabId;
+  updateHighlight(index);
+};
+
+// 更新高亮位置
+const updateHighlight = (index) => {
+  nextTick(() => {
+    const btn = tabRefs.value[index];
+    if (btn) {
+      highlightStyle.value = {
+        width: `${btn.offsetWidth}px`,
+        transform: `translateX(${btn.offsetLeft - 6}px)`,
+      };
+    }
+  });
+};
+
+// 初始化高亮位置
+const initHighlight = () => {
+  const index = tabs.findIndex(t => t.id === activeTab.value);
+  if (index !== -1) updateHighlight(index);
+};
+
+// 表单数据
+const archiveData = reactive({
+  name: "",
+  currentLevel: "Level0",
+  gameMode: "multiplayer",
+  archiveDifficulty: "normal",
+  actualDifficulty: "normal",
+  players: [],
+});
+
+const originalArchive = ref(null);
+const newSteamId = ref("");
+const activePlayerIndex = ref(-1);
+const showItemSelector = ref(false);
+const editingSlot = ref({ playerIndex: 0, slotIndex: 0 });
+const playerInputMessage = ref("");
+const playerInputMessageType = ref("");
+const currentPlayerSanity = ref(100);
+const availableLevels = ref([]);
+
+const difficultyLevels = [
+  { value: "easy", icon: ["fas", "smile"] },
+  { value: "normal", icon: ["fas", "meh"] },
+  { value: "hard", icon: ["fas", "frown"] },
+  { value: "nightmare", icon: ["fas", "skull"] },
+];
+
+// 保存存档
 const handleSaveArchive = async () => {
   try {
-    if (!originalArchive.value) {
-      console.error("No original archive data found");
-      return;
-    }
+    if (!originalArchive.value) return;
 
-    // 构造玩家背包数据
     const playerInventory = {};
     const playerSanity = {};
 
@@ -419,495 +354,237 @@ const handleSaveArchive = async () => {
       playerInventory[steamId] = player.inventory.map((itemId) => ({
         item: { id: getItemIdByName(itemId) },
       }));
-      playerSanity[steamId] = player.sanity ?? 100; // 使用玩家保存的理智值，默认100
+      playerSanity[steamId] = player.sanity ?? 100;
     });
 
-    // 构造要保存的数据
     const saveData = {
       path: originalArchive.value.path,
       name: archiveData.name,
-      mode: "Multiplayer", // 始终设置为多人模式
+      mode: "Multiplayer",
       currentLevel: archiveData.currentLevel,
-      difficulty:
-        archiveData.archiveDifficulty.charAt(0).toUpperCase() +
-        archiveData.archiveDifficulty.slice(1),
-      actualDifficulty:
-        archiveData.actualDifficulty.charAt(0).toUpperCase() +
-        archiveData.actualDifficulty.slice(1),
+      difficulty: archiveData.archiveDifficulty.charAt(0).toUpperCase() + archiveData.archiveDifficulty.slice(1),
+      actualDifficulty: archiveData.actualDifficulty.charAt(0).toUpperCase() + archiveData.actualDifficulty.slice(1),
       playerInventory,
       playerSanity,
     };
 
-    console.log(t("editArchive.savingArchiveData"), saveData);
-
-    // 调用后端的编辑API
-    const outputDir =
-      (await invoke("get_local_appdata")) +
-      "\\EscapeTheBackrooms\\Saved\\SaveGames";
-    const result = await invoke("handle_edit_save", {
-      jsonInput: {
-        saveData: {
-          jsonData: saveData,
-          outputDir: outputDir,
-        },
-      },
+    const outputDir = (await invoke("get_local_appdata")) + "\\EscapeTheBackrooms\\Saved\\SaveGames";
+    await invoke("handle_edit_save", {
+      jsonInput: { saveData: { jsonData: saveData, outputDir } },
     });
 
-    console.log("Archive saved successfully:", result);
-
-    // 保存成功后返回主页
     router.push({ name: "Home" });
   } catch (error) {
-    console.error(t("editArchive.saveFailed"), error);
-    // 这里可以添加错误提示
+    console.error("Save failed:", error);
   }
 };
 
-// 解析传入的存档数据
-const originalArchive = ref(null);
-
-// 表单数据
-const archiveData = reactive({
-  name: "",
-  currentLevel: "Level0",
-  gameMode: "multiplayer", // 默认设置为多人模式
-  archiveDifficulty: "normal",
-  actualDifficulty: "normal",
-  players: [],
-});
-
-// 初始化存档数据
+// 初始化
 const initArchiveData = () => {
   try {
     if (props.archiveData) {
       const data = JSON.parse(props.archiveData);
       originalArchive.value = data;
-
-      // 填充表单数据
       archiveData.name = data.name || "";
       archiveData.currentLevel = data.currentLevel || "Level0";
-      // 强制设置为多人模式
       archiveData.gameMode = "multiplayer";
       archiveData.archiveDifficulty = data.archiveDifficulty || "normal";
       archiveData.actualDifficulty = data.actualDifficulty || "normal";
-
-      // 加载玩家数据
       loadPlayerData(data);
     }
   } catch (e) {
-    console.error(t("editArchive.parseFailed"), e);
+    console.error("Parse failed:", e);
   }
 };
 
-// 加载玩家数据
 const loadPlayerData = async (archive) => {
   try {
-    const playerData = await invoke("get_player_data", {
-      filePath: archive.path,
-    });
-
-    if (playerData && playerData.ids && playerData.inventories) {
+    const playerData = await invoke("get_player_data", { filePath: archive.path });
+    if (playerData?.ids && playerData?.inventories) {
       archiveData.players = [];
-
       playerData.ids.forEach((steamId, index) => {
-        if (steamId && steamId.trim()) {
+        if (steamId?.trim()) {
           const inventory = playerData.inventories[index] || [];
-          const formattedInventory = inventory.map(
-            (itemName) => itemName || null
-          );
+          const formattedInventory = inventory.map((item) => item || null);
+          while (formattedInventory.length < 12) formattedInventory.push(null);
 
-          // 确保有12个物品槽位
-          while (formattedInventory.length < 12) {
-            formattedInventory.push(null);
-          }
-
-          // 检查是否为本地玩家ID并预处理
-          let playerSteamId = steamId;
-          let isOfflinePlayer = false;
+          let processedId = steamId;
+          let isOffline = false;
           let username = null;
 
-          // 检查是否为本地玩家格式 (包含横杠的ID)
           if (steamId.includes("-")) {
             const parts = steamId.split("-");
-            if (
-              parts.length === 2 &&
-              parts[0].length === 5 &&
-              parts[1].length === 15
-            ) {
-              // 标准本地玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
-              playerSteamId = parts[0];
-              isOfflinePlayer = true;
-              username = `${parts[0]}(本地)`;
-            } else if (parts.length > 1) {
-              // 非标准但包含横杠的ID格式
-              // 使用横杠前的部分作为用户名
-              playerSteamId = parts[0];
-              isOfflinePlayer = true;
-              username = `${parts[0]}(本地)`;
-            }
+            processedId = parts[0];
+            isOffline = true;
+            username = `${parts[0]}(本地)`;
           }
 
           archiveData.players.push({
-            steamId: playerSteamId,
+            steamId: processedId,
             inventory: formattedInventory.slice(0, 12),
-            username: username,
-            isOfflinePlayer: isOfflinePlayer,
-            sanity: playerData.sanities[index] ?? 100, // 添加理智值，默认100
+            username,
+            isOfflinePlayer: isOffline,
+            sanity: playerData.sanities[index] ?? 100,
           });
         }
       });
-
-      // 如果有玩家，默认选中第一个
-      if (archiveData.players.length > 0) {
-        activePlayerIndex.value = 0;
-      }
-
-      // 获取Steam用户名
+      if (archiveData.players.length > 0) activePlayerIndex.value = 0;
       await fetchSteamUsernames();
     }
   } catch (error) {
-    console.error("加载玩家数据失败:", error);
-    // 如果没有玩家数据，创建一个空数组
-    archiveData.players = [];
+    console.error("Load player data failed:", error);
   }
 };
 
-// 获取Steam用户名
 const fetchSteamUsernames = async () => {
   try {
-    // 只获取非离线玩家且格式有效的Steam ID
     const steamIds = archiveData.players
-      .filter(
-        (player) =>
-          !player.isOfflinePlayer &&
-          player.steamId &&
-          player.steamId.length === 17 &&
-          /^\d+$/.test(player.steamId)
-      )
-      .map((player) => player.steamId);
-
+      .filter((p) => !p.isOfflinePlayer && p.steamId?.length === 17 && /^\d+$/.test(p.steamId))
+      .map((p) => p.steamId);
     if (steamIds.length === 0) return;
-
-    // 调用后端API获取用户名
     const usernames = await invoke("get_steam_usernames_command", { steamIds });
-
-    // 更新玩家数据中的用户名
     archiveData.players.forEach((player) => {
       if (!player.isOfflinePlayer && usernames[player.steamId]) {
         player.username = usernames[player.steamId];
       }
     });
   } catch (error) {
-    console.error("获取Steam用户名失败:", error);
-    // 如果获取失败，保持用户名为null
-    // 但需要处理无效ID的情况，确保本地玩家能正确显示
-    archiveData.players.forEach((player) => {
-      // 检查是否为本地玩家格式 (包含横杠的ID)
-      if (player.steamId && player.steamId.includes("-")) {
-        const parts = player.steamId.split("-");
-        if (
-          parts.length === 2 &&
-          parts[0].length === 5 &&
-          parts[1].length === 15
-        ) {
-          // 标准本地玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
-          player.username = `${parts[0]}(本地)`;
-          player.isOfflinePlayer = true;
-        } else if (parts.length > 1) {
-          // 非标准但包含横杠的ID格式，如 ZENNODE-FB589726482C1B564393238FF63B5671
-          // 使用横杠前的部分作为用户名
-          player.username = `${parts[0]}(本地)`;
-          player.isOfflinePlayer = true;
-        }
-      } else if (
-        player.steamId &&
-        player.steamId.length === 17 &&
-        /^\d+$/.test(player.steamId)
-      ) {
-        // 有效的17位数字Steam ID，但获取用户名失败，暂时显示为null
-        // 不做特殊处理，保持为null
-      }
-    });
+    console.error("Fetch usernames failed:", error);
   }
 };
 
-const newSteamId = ref("");
-const activePlayerIndex = ref(archiveData.players.length > 0 ? 0 : -1);
-const showItemSelector = ref(false);
-const editingSlot = ref({ playerIndex: 0, slotIndex: 0 });
-const playerInputMessage = ref(""); // 用于显示添加玩家时的提示信息
-const playerInputMessageType = ref(""); // 用于标识提示信息类型(error/success)
-
-// 理智值相关
-const currentPlayerSanity = ref(100); // 当前选中的玩家理智值
-
-// 可用层级
-const availableLevels = ref([]);
-
-// 难度选项
-const difficultyLevels = [
-  { value: "easy", icon: ["fas", "smile"], label: "easy" },
-  { value: "normal", icon: ["fas", "meh"], label: "normal" },
-  { value: "hard", icon: ["fas", "frown"], label: "hard" },
-  { value: "nightmare", icon: ["fas", "skull"], label: "nightmare" },
-];
-
-// 方法
+// 层级相关
 const loadLevels = () => {
-  try {
-    // 层级名称映射 - 与CreateArchive.vue保持一致
-    const levelMappings = [
-      "Level0",
-      "TopFloor",
-      "MiddleFloor",
-      "GarageLevel2",
-      "BottomFloor",
-      "TheHub",
-      "Pipes1",
-      "ElectricalStation",
-      "Office",
-      "Hotel",
-      "Floor3",
-      "BoilerRoom",
-      "Pipes2",
-      "LevelFun",
-      "Poolrooms",
-      "LevelRun",
-      "TheEnd",
-      "Level922",
-      "Level94",
-      "AnimatedKingdom",
-      "LightsOut",
-      "OceanMap",
-      "CaveLevel",
-      "Level05",
-      "Level9",
-      "AbandonedBase",
-      "Level10",
-      "Level3999",
-      "Level07",
-      "Snackrooms",
-      "LevelDash",
-      "Level188_Expanded",
-      "Poolrooms_Expanded",
-      "WaterPark_Level01_P",
-      "WaterPark_Level02_P",
-      "WaterPark_Level03_P",
-      "LevelFun_Expanded",
-      "Zone1_Modified",
-      "Zone2_Modified",
-      "Zone3_Baked",
-      "Zone4",
-      "Level52",
-      "TunnelLevel",
-      "Bunker",
-      "GraffitiLevel",
-      "Grassrooms_Expanded",
-      "Level974",
-      "LevelCheat",
-    ];
+  const levelMappings = [
+    "Level0", "TopFloor", "MiddleFloor", "GarageLevel2", "BottomFloor", "TheHub",
+    "Pipes1", "ElectricalStation", "Office", "Hotel", "Floor3", "BoilerRoom",
+    "Pipes2", "LevelFun", "Poolrooms", "LevelRun", "TheEnd", "Level922", "Level94",
+    "AnimatedKingdom", "LightsOut", "OceanMap", "CaveLevel", "Level05", "Level9",
+    "AbandonedBase", "Level10", "Level3999", "Level07", "Snackrooms", "LevelDash",
+    "Level188_Expanded", "Poolrooms_Expanded", "WaterPark_Level01_P", "WaterPark_Level02_P",
+    "WaterPark_Level03_P", "LevelFun_Expanded", "Zone1_Modified", "Zone2_Modified",
+    "Zone3_Baked", "Zone4", "Level52", "TunnelLevel", "Bunker", "GraffitiLevel",
+    "Grassrooms_Expanded", "Level974", "LevelCheat",
+  ];
 
-    // 清空现有数据
-    availableLevels.value = [];
-    console.log("Loading levels, total count:", levelMappings.length);
-
-    // 为每个层级生成数据
-    levelMappings.forEach((levelKey, index) => {
-      try {
-        // 现在所有关卡都使用关卡名称作为图片文件名
-        const imagePath = `/images/ETB/${levelKey}.jpg`;
-
-        // 获取翻译名称，如果失败则使用原始键名
-        let levelName;
-        try {
-          levelName = t(`LevelName_Display.${levelKey}`);
-        } catch (translationError) {
-          console.warn(
-            `Translation failed for level ${levelKey}:`,
-            translationError
-          );
-          levelName = levelKey;
-        }
-
-        availableLevels.value.push({
-          name: levelName,
-          image: imagePath,
-          levelKey: levelKey,
-        });
-      } catch (itemError) {
-        console.error(`Error processing level ${levelKey}:`, itemError);
-      }
-    });
-
-    console.log(
-      "Levels loaded successfully, count:",
-      availableLevels.value.length
-    );
-  } catch (error) {
-    console.error(t("editArchive.loadLevelsFailed"), error);
-    // 如果翻译加载失败，使用默认层级（包含所有层级）
-    const fallbackLevels = [
-      "Level0",
-      "TopFloor",
-      "MiddleFloor",
-      "GarageLevel2",
-      "BottomFloor",
-      "TheHub",
-      "Pipes1",
-      "ElectricalStation",
-      "Office",
-      "Hotel",
-      "Floor3",
-      "BoilerRoom",
-      "Pipes2",
-      "LevelFun",
-      "Poolrooms",
-      "LevelRun",
-      "TheEnd",
-      "Level922",
-      "Level94",
-      "AnimatedKingdom",
-      "LightsOut",
-      "OceanMap",
-      "CaveLevel",
-      "Level05",
-      "Level9",
-      "AbandonedBase",
-      "Level10",
-      "Level3999",
-      "Level07",
-      "Snackrooms",
-      "LevelDash",
-      "Level188_Expanded",
-      "Poolrooms_Expanded",
-      "WaterPark_Level01_P",
-      "WaterPark_Level02_P",
-      "WaterPark_Level03_P",
-      "LevelFun_Expanded",
-      "Zone1_Modified",
-      "Zone2_Modified",
-      "Zone3_Baked",
-      "Zone4",
-      "Level52",
-      "TunnelLevel",
-      "Bunker",
-      "GraffitiLevel",
-      "Grassrooms_Expanded",
-      "Level974",
-      "LevelCheat",
-    ];
-
-    availableLevels.value = [];
-
-    fallbackLevels.forEach((levelKey, index) => {
-      // 检查是否存在对应的.png图片（新关卡）
-      const pngNewLevels = [
-        "Bunker",
-        "GraffitiLevel",
-        "Grassrooms_Expanded",
-        "Level974",
-        "LevelCheat",
-      ];
-      let imagePath;
-
-      if (pngNewLevels.includes(levelKey)) {
-        // 新关卡使用关卡名称.png
-        imagePath = `/images/ETB/${levelKey}.png`;
-      } else {
-        // 原有关卡使用数字索引.jpg
-        imagePath = `/images/ETB/${index}.jpg`;
-      }
-
-      availableLevels.value.push({
-        name: levelKey, // 使用原始键名作为回退
-        image: imagePath,
-        levelKey: levelKey,
-      });
-    });
-
-    console.log(
-      "Levels loaded with fallback, count:",
-      availableLevels.value.length
-    );
-  }
+  availableLevels.value = levelMappings.map((levelKey) => {
+    let levelName;
+    try { levelName = t(`LevelName_Display.${levelKey}`); } 
+    catch { levelName = levelKey; }
+    return { name: levelName, image: `/images/ETB/${levelKey}.jpg`, levelKey };
+  });
 };
 
 const selectLevel = (levelKey) => {
   archiveData.currentLevel = levelKey;
 };
 
-const handleDifficultySelect = (type, difficulty) => {
-  // 单人模式下只能选择普通难度
-  if (archiveData.gameMode === "singleplayer" && difficulty !== "normal") {
+// 玩家相关
+let messageTimeout = null;
+
+const addPlayer = async () => {
+  playerInputMessage.value = "";
+  const steamId = newSteamId.value.trim();
+  if (!steamId) {
+    showMessage(t("editArchive.steamIdRequired"), "error");
     return;
   }
 
-  if (type === "archive") {
-    archiveData.archiveDifficulty = difficulty;
-  } else if (type === "actual") {
-    archiveData.actualDifficulty = difficulty;
+  const validation = validateSteamId(steamId);
+  if (!validation.valid) {
+    showMessage(validation.message, "error");
+    return;
+  }
+
+  if (archiveData.players.some((p) => p.steamId === validation.processedSteamId)) {
+    showMessage(t("editArchive.steamIdDuplicate", { steamId: validation.processedSteamId }), "error");
+    return;
+  }
+
+  const newPlayer = {
+    steamId: validation.processedSteamId,
+    inventory: Array(12).fill(null),
+    username: validation.isOfflinePlayer ? `${validation.processedSteamId}(本地)` : null,
+    isOfflinePlayer: validation.isOfflinePlayer,
+    sanity: 100,
+  };
+
+  archiveData.players.push(newPlayer);
+  showMessage(t("editArchive.playerAddedSuccess"), "success");
+  newSteamId.value = "";
+  activePlayerIndex.value = archiveData.players.length - 1;
+
+  if (!validation.isOfflinePlayer) {
+    try {
+      const usernames = await invoke("get_steam_usernames_command", { steamIds: [validation.processedSteamId] });
+      if (usernames[validation.processedSteamId]) {
+        archiveData.players[archiveData.players.length - 1].username = usernames[validation.processedSteamId];
+      }
+    } catch (e) { console.error(e); }
   }
 };
 
+const showMessage = (msg, type) => {
+  playerInputMessage.value = msg;
+  playerInputMessageType.value = type;
+  if (messageTimeout) clearTimeout(messageTimeout);
+  messageTimeout = setTimeout(() => { playerInputMessage.value = ""; }, 3000);
+};
+
+const validateSteamId = (steamId) => {
+  if (!steamId) return { valid: false, message: t("editArchive.steamIdRequired") };
+  if (steamId.includes("-")) {
+    const parts = steamId.split("-");
+    if (parts.length === 2 && parts[0].length === 5 && parts[1].length === 15) {
+      return { valid: true, isOfflinePlayer: true, processedSteamId: parts[0] };
+    }
+    return { valid: false, message: t("editArchive.steamIdInvalid") };
+  }
+  if (!/^\d+$/.test(steamId)) return { valid: false, message: t("editArchive.steamIdInvalid") };
+  if (steamId.length !== 17) return { valid: false, message: t("editArchive.steamIdValidationError", { error: "长度必须为17位" }) };
+  return { valid: true, isOfflinePlayer: false, processedSteamId: steamId };
+};
+
+const removePlayer = (index) => {
+  archiveData.players.splice(index, 1);
+  if (activePlayerIndex.value >= archiveData.players.length) {
+    activePlayerIndex.value = archiveData.players.length - 1;
+  }
+};
+
+const selectPlayer = (index) => {
+  activePlayerIndex.value = index;
+  currentPlayerSanity.value = archiveData.players[index]?.sanity ?? 100;
+};
+
+const getCurrentPlayerDisplayName = () => {
+  const player = archiveData.players[activePlayerIndex.value];
+  if (!player) return "";
+  return player.username || `玩家 ${player.steamId.substring(0, 8)}...`;
+};
+
+const getSanityClass = (val) => {
+  if (val >= 80) return "sanity-high";
+  if (val >= 50) return "sanity-medium";
+  if (val >= 20) return "sanity-low";
+  return "sanity-critical";
+};
+
+const setMaxSanity = () => { if (activePlayerIndex.value !== -1) { archiveData.players[activePlayerIndex.value].sanity = 100; currentPlayerSanity.value = 100; } };
+const setMinSanity = () => { if (activePlayerIndex.value !== -1) { archiveData.players[activePlayerIndex.value].sanity = 0; currentPlayerSanity.value = 0; } };
+
+// 背包相关
 const getSlotContent = (playerIndex, slotIndex) => {
-  if (
-    archiveData.players[playerIndex] &&
-    archiveData.players[playerIndex].inventory
-  ) {
-    const item = archiveData.players[playerIndex].inventory[slotIndex];
-    return item && item !== "None" ? item : null;
-  }
-  return null;
+  const item = archiveData.players[playerIndex]?.inventory?.[slotIndex];
+  return item && item !== "None" ? item : null;
 };
 
-// 获取物品图片文件名
+const getSlotLabel = (slotIndex) => ["mainHand", "offHand1", "offHand2"][slotIndex] || "";
+
 const getItemImageFile = (itemName) => {
   if (!itemName || itemName === "None") return null;
-
-  // 特殊处理Toy物品，它的图片文件名是Teddy_Bear.png而不是Toy.png
   if (itemName === "Toy") return "Teddy_Bear.png";
-
-  // 其他物品使用默认规则：物品名.png
   return `${itemName}.png`;
-};
-
-const getSlotLabel = (slotIndex) => {
-  const labels = ["mainHand", "offHand1", "offHand2"];
-  return labels[slotIndex] || "";
-};
-
-// 物品名称到ID的反向映射
-const getItemIdByName = (itemName) => {
-  if (!itemName || itemName === "None") return -1;
-
-  const itemMap = {
-    AlmondConcentrate: 1,
-    BugSpray: 2,
-    Camera: 3,
-    AlmondWater: 4,
-    Chainsaw: 5,
-    DivingHelmet: 6,
-    EnergyBar: 7,
-    Firework: 8,
-    Flaregun: 9,
-    Flashlight: 10,
-    GlowstickBlue: 11,
-    GlowStick: 12,
-    GlowstickRed: 13,
-    GlowstickYellow: 14,
-    Juice: 15,
-    LiquidPain: 16,
-    Rope: 17,
-    LiDAR: 18,
-    Thermometer: 19,
-    Ticket: 20,
-    WalkieTalkie: 21,
-    MothJelly: 22,
-    Crowbar: 23,
-    Knife: 24,
-    Toy: 25,
-  };
-  return itemMap[itemName] || -1;
 };
 
 const editSlot = (playerIndex, slotIndex) => {
@@ -917,600 +594,300 @@ const editSlot = (playerIndex, slotIndex) => {
 
 const handleItemSelect = (itemId) => {
   const { playerIndex, slotIndex } = editingSlot.value;
-
   if (archiveData.players[playerIndex]) {
     archiveData.players[playerIndex].inventory[slotIndex] = itemId;
   }
-
   showItemSelector.value = false;
 };
 
-// 验证Steam ID格式
-const validateSteamId = (steamId) => {
-  if (!steamId || steamId.trim() === "") {
-    return { valid: false, message: t("editArchive.steamIdRequired") };
-  }
-
-  // 检查是否为离线玩家格式 (xxxxx-xxxxxxxxxxxxxxx)
-  if (steamId.includes("-")) {
-    const parts = steamId.split("-");
-    if (parts.length === 2 && parts[0].length === 5 && parts[1].length === 15) {
-      return { valid: true, isOfflinePlayer: true, processedSteamId: parts[0] };
-    } else {
-      return { valid: false, message: t("editArchive.steamIdInvalid") };
-    }
-  }
-
-  // 检查是否为纯数字
-  if (!/^\d+$/.test(steamId)) {
-    return { valid: false, message: t("editArchive.steamIdInvalid") };
-  }
-
-  // 对于在线Steam ID，检查长度是否为17位
-  if (steamId.length !== 17) {
-    return {
-      valid: false,
-      message: t("editArchive.steamIdValidationError", {
-        error: t("editArchive.steamIdLengthError"),
-      }),
-    };
-  }
-
-  return { valid: true, isOfflinePlayer: false, processedSteamId: steamId };
+const getItemIdByName = (itemName) => {
+  if (!itemName || itemName === "None") return -1;
+  const map = { AlmondConcentrate: 1, BugSpray: 2, Camera: 3, AlmondWater: 4, Chainsaw: 5, DivingHelmet: 6, EnergyBar: 7, Firework: 8, Flaregun: 9, Flashlight: 10, GlowstickBlue: 11, GlowStick: 12, GlowstickRed: 13, GlowstickYellow: 14, Juice: 15, LiquidPain: 16, Rope: 17, LiDAR: 18, Thermometer: 19, Ticket: 20, WalkieTalkie: 21, MothJelly: 22, Crowbar: 23, Knife: 24, Toy: 25 };
+  return map[itemName] || -1;
 };
 
-// 存储当前的定时器ID，以便可以取消之前的定时器
-let messageTimeout = null;
+const closeEdit = () => router.push({ name: "Home" });
 
-const addPlayer = async () => {
-  // 清空之前的提示信息
-  playerInputMessage.value = "";
-  playerInputMessageType.value = "";
-
-  const steamId = newSteamId.value.trim();
-  if (!steamId) {
-    playerInputMessage.value = t("editArchive.steamIdRequired");
-    playerInputMessageType.value = "error";
-
-    // 3秒后自动清除错误提示
-    if (messageTimeout) clearTimeout(messageTimeout);
-    messageTimeout = setTimeout(() => {
-      playerInputMessage.value = "";
-      playerInputMessageType.value = "";
-    }, 3000);
+// 解锁全部枢纽门
+const unlockAllHubDoors = async () => {
+  if (!originalArchive.value?.path) {
+    showError(t("editArchive.noArchiveLoaded"));
     return;
   }
-
-  // 验证Steam ID
-  const validation = validateSteamId(steamId);
-  if (!validation.valid) {
-    // 使用输入框下方提示方式
-    playerInputMessage.value = validation.message;
-    playerInputMessageType.value = "error";
-
-    // 3秒后自动清除错误提示
-    if (messageTimeout) clearTimeout(messageTimeout);
-    messageTimeout = setTimeout(() => {
-      playerInputMessage.value = "";
-      playerInputMessageType.value = "";
-    }, 3000);
-    return;
-  }
-
-  // 检查是否已存在相同的Steam ID
-  const isDuplicate = archiveData.players.some(
-    (player) => player.steamId === validation.processedSteamId
-  );
-  if (isDuplicate) {
-    const duplicateMessage = t("editArchive.steamIdDuplicate", {
-      steamId: validation.processedSteamId,
-    });
-    playerInputMessage.value = duplicateMessage;
-    playerInputMessageType.value = "error";
-
-    // 3秒后自动清除错误提示
-    if (messageTimeout) clearTimeout(messageTimeout);
-    messageTimeout = setTimeout(() => {
-      playerInputMessage.value = "";
-      playerInputMessageType.value = "";
-    }, 3000);
-    return;
-  }
-
-  // 创建新玩家对象
-  const newPlayer = {
-    steamId: validation.processedSteamId,
-    inventory: Array(12).fill(null),
-    username: null,
-    isOfflinePlayer: validation.isOfflinePlayer,
-    sanity: 100, // 新玩家默认理智值为100
-  };
-
-  // 如果是离线玩家，直接设置用户名
-  if (validation.isOfflinePlayer) {
-    // 处理本地玩家格式
-    if (validation.processedSteamId.includes("-")) {
-      const parts = validation.processedSteamId.split("-");
-      if (parts.length > 1) {
-        newPlayer.username = `${parts[0]}(本地)`;
-      } else {
-        newPlayer.username = `${validation.processedSteamId}(本地)`;
-      }
-    } else {
-      newPlayer.username = `${validation.processedSteamId}(本地)`;
-    }
-  }
-
-  archiveData.players.push(newPlayer);
-
-  // 显示成功提示
-  playerInputMessage.value = t("editArchive.playerAddedSuccess");
-  playerInputMessageType.value = "success";
-
-  newSteamId.value = "";
-  activePlayerIndex.value = archiveData.players.length - 1;
-
-  // 如果不是离线玩家，获取Steam用户名
-  if (!validation.isOfflinePlayer) {
-    try {
-      const usernames = await invoke("get_steam_usernames_command", {
-        steamIds: [validation.processedSteamId],
-      });
-      if (usernames[validation.processedSteamId]) {
-        archiveData.players[archiveData.players.length - 1].username =
-          usernames[validation.processedSteamId];
-      }
-    } catch (error) {
-      console.error("获取Steam用户名失败:", error);
-      // 检查是否为无效ID格式错误
-      if (error.toString().includes("无效的Steam ID格式")) {
-        // 提取横杠前的部分作为用户名显示
-        const parts = validation.processedSteamId.split("-");
-        if (parts.length > 1) {
-          archiveData.players[
-            archiveData.players.length - 1
-          ].username = `${parts[0]}(本地)`;
-          archiveData.players[
-            archiveData.players.length - 1
-          ].isOfflinePlayer = true;
-          // 显示成功提示而不是错误提示
-          playerInputMessage.value = t("editArchive.playerAddedSuccess");
-          playerInputMessageType.value = "success";
-        } else {
-          // 显示获取用户名失败的提示
-          playerInputMessage.value = t(
-            "editArchive.failedToFetchSteamUsername",
-            { error: error.message || error }
-          );
-          playerInputMessageType.value = "error";
-        }
-      } else {
-        // 显示获取用户名失败的提示
-        playerInputMessage.value = t("editArchive.failedToFetchSteamUsername", {
-          error: error.message || error,
-        });
-        playerInputMessageType.value = "error";
-      }
-
-      // 3秒后自动清除提示
-      if (messageTimeout) clearTimeout(messageTimeout);
-      messageTimeout = setTimeout(() => {
-        playerInputMessage.value = "";
-        playerInputMessageType.value = "";
-      }, 3000);
-    }
-  }
-
-  // 3秒后自动清除成功提示
-  if (messageTimeout) clearTimeout(messageTimeout);
-  messageTimeout = setTimeout(() => {
-    playerInputMessage.value = "";
-    playerInputMessageType.value = "";
-  }, 3000);
-};
-
-const removePlayer = (index) => {
-  archiveData.players.splice(index, 1);
-  if (activePlayerIndex.value >= archiveData.players.length) {
-    activePlayerIndex.value = archiveData.players.length - 1;
-  }
-  if (archiveData.players.length === 0) {
-    activePlayerIndex.value = -1;
+  
+  try {
+    await invoke("unlock_all_hub_doors", { filePath: originalArchive.value.path });
+    showSuccess(t("editArchive.hubDoorsUnlocked"));
+  } catch (error) {
+    console.error("解锁枢纽门失败:", error);
+    showError(String(error));
   }
 };
 
-const selectPlayer = (index) => {
-  activePlayerIndex.value = index;
-  // 同步当前玩家理智值到本地变量
-  if (index !== -1 && archiveData.players[index]) {
-    currentPlayerSanity.value = archiveData.players[index].sanity ?? 100;
-  } else {
-    currentPlayerSanity.value = 100;
-  }
-};
-
-// 理智值相关方法
-const getCurrentPlayerDisplayName = () => {
-  if (
-    activePlayerIndex.value === -1 ||
-    !archiveData.players[activePlayerIndex.value]
-  ) {
-    return "";
-  }
-
-  const player = archiveData.players[activePlayerIndex.value];
-  if (player.username) {
-    return player.username;
-  }
-
-  return `玩家 ${player.steamId.substring(0, 8)}...`;
-};
-
-const adjustSanity = (delta) => {
-  if (activePlayerIndex.value === -1) return;
-
-  const player = archiveData.players[activePlayerIndex.value];
-  const currentSanity = player.sanity ?? 100;
-  const newSanity = Math.max(0, Math.min(100, currentSanity + delta));
-
-  player.sanity = newSanity;
-  currentPlayerSanity.value = newSanity;
-};
-
-const setMaxSanity = () => {
-  if (activePlayerIndex.value === -1) return;
-
-  archiveData.players[activePlayerIndex.value].sanity = 100;
-  currentPlayerSanity.value = 100;
-};
-
-const setMinSanity = () => {
-  if (activePlayerIndex.value === -1) return;
-
-  archiveData.players[activePlayerIndex.value].sanity = 0;
-  currentPlayerSanity.value = 0;
-};
-
-const getSanityClass = (sanityValue) => {
-  if (sanityValue >= 80) {
-    return "sanity-high";
-  } else if (sanityValue >= 50) {
-    return "sanity-medium";
-  } else if (sanityValue >= 20) {
-    return "sanity-low";
-  } else {
-    return "sanity-critical";
-  }
-};
-
-// 关闭编辑页面
-const closeEdit = () => {
-  router.push({ name: "Home" });
-};
-
-// 动画
-const animateIn = () => {
-  nextTick(() => {
-    const container = document.querySelector(".edit-archive-container");
-    if (container) {
-      // 确保初始位置正确，避免margin auto的冲突
-      gsap.set(container, { opacity: 0, y: 20 });
-      gsap.to(container, {
-        opacity: 1,
-        y: 0,
-        duration: 0.3,
-        ease: "power3.out",
-        clearProps: "transform",
-        // 优化性能：减少GPU负载
-        force3D: false,
-        // 使用更高效的渲染路径
-        immediateRender: false,
-      });
-    }
-  });
-};
-
-// 监听游戏模式变化
-watch(
-  () => archiveData.gameMode,
-  (newMode) => {
-    if (newMode === "singleplayer") {
-      // 当切换到单人模式时，自动设置难度为普通
-      archiveData.archiveDifficulty = "normal";
-      archiveData.actualDifficulty = "normal";
-    }
-  }
-);
-
-// 监听当前玩家理智值变化，实时更新到存档数据中
-watch(currentPlayerSanity, (newSanity, oldSanity) => {
-  if (activePlayerIndex.value !== -1 && archiveData.players.length > 0) {
-    // 确保理智值在有效范围内
-    const validSanity = Math.max(0, Math.min(100, Number(newSanity) ?? 100));
-
-    // 立即更新玩家数据
-    if (archiveData.players[activePlayerIndex.value]) {
-      archiveData.players[activePlayerIndex.value].sanity = validSanity;
-    }
+// 监听理智值变化
+watch(currentPlayerSanity, (val) => {
+  if (activePlayerIndex.value !== -1 && archiveData.players[activePlayerIndex.value]) {
+    const numVal = Number(val);
+    archiveData.players[activePlayerIndex.value].sanity = Math.max(0, Math.min(100, isNaN(numVal) ? 100 : numVal));
   }
 });
 
 onMounted(() => {
-  console.log("EditArchive component mounted");
   loadLevels();
-  animateIn();
   initArchiveData();
-
-  // 如果有存档数据但没有玩家，不添加空玩家
-  // 只有当用户手动添加玩家时才创建
-
-  // 调试：检查可用层级数据
-  setTimeout(() => {
-    console.log("Available levels after mount:", availableLevels.value.length);
-    if (availableLevels.value.length > 0) {
-      console.log("First few levels:", availableLevels.value.slice(0, 3));
-    }
-  }, 1000);
+  nextTick(() => initHighlight());
 });
-
-// 在<script setup>中不需要return语句，所有变量都会自动暴露给模板
 </script>
 
 <style scoped>
 .edit-archive-container {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 20px;
+  height: 100%;
+  max-height: calc(100vh - 38px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
+/* 顶部标题 */
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 32px;
-  padding-top: 20px;
+  gap: 20px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .page-title {
-  font-size: 28px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
+  white-space: nowrap;
 }
 
 .header-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
-.btn-primary,
-.btn-secondary {
+.btn-primary, .btn-secondary {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
+  gap: 6px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 12px;
-  font-size: 14px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s;
+}
+
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
+.btn-secondary:hover { background: var(--hover-bg); }
+
+/* 标签导航 - 浮动式 */
+.tab-nav {
   position: relative;
-  overflow: hidden;
-}
-
-.btn-primary {
-  background: var(--primary);
-  color: white;
-}
-
-.btn-primary:hover {
-  background: var(--primary-hover);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 25px rgba(0, 122, 255, 0.3);
-}
-
-.btn-primary::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transition: left 0.5s ease;
-}
-
-.btn-primary:hover::before {
-  left: 100%;
-}
-
-.btn-secondary {
-  background: var(--card-bg);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-  background: var(--hover-bg);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.btn-secondary::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transition: left 0.5s ease;
-}
-
-.btn-secondary:hover::before {
-  left: 100%;
-}
-
-.btn-primary:active,
-.btn-secondary:active {
-  transform: translateY(0) scale(0.98);
-  transition: all 0.1s ease;
-}
-
-.content-area {
-  width: 100%;
-}
-
-.form-container {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--border-color);
-}
-
-.form-section {
-  margin-bottom: 24px;
-}
-
-.section-title {
-  display: block;
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 12px;
-}
-
-.input-wrapper {
-  position: relative;
-  width: 99%;
-}
-
-.form-input {
-  width: 100%;
-  padding: 14px 18px;
-  font-size: 16px;
-  border: 2px solid var(--divider-color);
-  border-radius: 12px;
-  background: linear-gradient(
-    135deg,
-    var(--bg-secondary) 0%,
-    var(--card-bg) 100%
-  );
-  color: var(--text-primary);
-  outline: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.form-input:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15),
-    0 4px 12px rgba(0, 122, 255, 0.1);
-  background: var(--card-bg);
-  transform: translateY(-1px);
-}
-
-.level-selector {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
-  max-height: 400px;
-  overflow-y: auto;
-  padding-right: 8px;
-}
-
-.level-selector::-webkit-scrollbar {
-  width: 6px;
-}
-
-.level-selector::-webkit-scrollbar-track {
+  display: flex;
+  gap: 4px;
+  padding: 6px;
   background: var(--bg-tertiary);
-  border-radius: 3px;
-}
-
-.level-selector::-webkit-scrollbar-thumb {
-  background: var(--text-tertiary);
-  border-radius: 3px;
-}
-
-.level-selector::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
-}
-
-.level-option {
-  position: relative;
   border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: linear-gradient(
-    135deg,
-    var(--card-bg) 0%,
-    var(--bg-secondary) 100%
-  );
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--divider-light);
+  flex-shrink: 0;
 }
 
-.level-option:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+.tab-highlight {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  height: calc(100% - 12px);
+  background: var(--primary);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
 }
 
-.level-option.selected {
-  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
-}
-
-.level-image-container {
+.tab-btn {
   position: relative;
-  aspect-ratio: 16/9;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active { color: white; }
+
+/* 内容区域 */
+.tab-content {
+  flex: 1;
   overflow: hidden;
+  padding: 24px;
+  min-height: 0;
+  box-sizing: border-box;
+  position: relative;
 }
 
-.level-image {
-  width: 100%;
-  height: 100%;
-}
-
-.level-overlay {
+.tab-panel {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
+  padding: 24px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.slide-right .tab-panel {
+  transform: translateX(20px);
+}
+
+.slide-left .tab-panel {
+  transform: translateX(-20px);
+}
+
+.tab-panel.tab-active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* 基础设置 */
+.panel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.form-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.form-input:focus { border-color: var(--primary); }
+
+.difficulty-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.difficulty-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.difficulty-btn:hover { background: var(--hover-bg); }
+.difficulty-btn.selected { background: rgba(0, 122, 255, 0.1); color: var(--primary); border-color: var(--primary); }
+
+.action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.level-option.selected .level-overlay {
-  opacity: 1;
-}
-
-.check-icon {
+  gap: 8px;
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
   color: white;
-  font-size: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); }
+.action-btn:active { transform: translateY(0); box-shadow: none; }
+
+/* 层级选择 */
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.level-card {
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--card-bg);
+  border: 2px solid transparent;
+}
+
+.level-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
+.level-card.selected { border-color: var(--primary); }
+
+.level-img-wrap {
+  position: relative;
+  aspect-ratio: 16/9;
+}
+
+.level-img { width: 100%; height: 100%; object-fit: cover; }
+
+.level-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: var(--primary);
+  font-size: 22px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
 .level-name {
   display: block;
-  padding: 8px 12px;
+  padding: 10px 12px;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-primary);
@@ -1520,971 +897,279 @@ onMounted(() => {
   text-overflow: ellipsis;
 }
 
-.segmented-control {
-  display: flex;
-  background: var(--bg-tertiary);
-  border-radius: 12px;
-  padding: 2px;
-}
-
-.segment {
-  flex: 1;
-  padding: 8px 16px;
-  text-align: center;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--text-secondary);
-}
-
-.segment.active {
-  background: var(--card-bg);
-  color: var(--text-primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.form-row {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.half-width {
-  flex: 1;
-}
-
-.difficulty-grid {
+/* 玩家管理 */
+.players-layout {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
-.difficulty-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px 8px;
-  border-radius: 12px;
-  background: linear-gradient(
-    135deg,
-    var(--bg-secondary) 0%,
-    var(--bg-primary) 100%
-  );
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--divider-light);
-}
-
-.difficulty-option:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.difficulty-option.selected {
-  background: rgba(0, 122, 255, 0.1);
-  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.3);
-}
-
-.difficulty-option.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background: var(--bg-tertiary);
-  border-color: var(--divider-light);
-  color: var(--text-tertiary);
-}
-
-.difficulty-option.disabled:hover {
-  transform: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.difficulty-icon {
-  font-size: 24px;
-  margin-bottom: 4px;
-  color: var(--text-primary);
-}
-
-.difficulty-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.inventory-section {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid var(--divider-light);
-}
-
-.inventory-grid {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.inventory-backpack {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.inventory-column {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.inventory-slot {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
-  background: linear-gradient(
-    135deg,
-    var(--bg-secondary) 0%,
-    var(--card-bg) 100%
-  );
-  border: 2px solid var(--divider-light);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  box-sizing: border-box;
-  flex-shrink: 0;
-}
-
-.inventory-slot:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.inventory-slot.empty {
-  border-color: var(--divider-color);
-}
-
-.slot-label {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  font-size: 8px;
-  color: var(--text-secondary);
-  background: var(--bg-secondary);
-  padding: 1px 3px;
-  border-radius: 2px;
-}
-
-.slot-number {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: var(--bg-secondary);
-  padding: 1px 3px;
-  border-radius: 2px;
-}
-
-.slot-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
   height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.item-image {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  max-width: 100%;
+  min-height: 0;
   max-height: 100%;
-  display: block;
-  margin: auto;
 }
 
-.slot-icon {
-  font-size: 20px;
-  color: var(--text-secondary);
-}
-
-.multiplayer-section {
+.player-list-section, .player-detail-section {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 20px;
-  background: var(--card-bg);
-  border-radius: 16px;
-  border: 1px solid var(--divider-light);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  min-height: 0;
+  overflow: hidden;
 }
 
-/* 玩家管理布局 */
-.player-management-layout {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 20px;
-  min-height: 400px;
-}
-
-.player-list-panel {
-  background: var(--bg-secondary);
-  border-radius: 12px;
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 16px;
-  border: 1px solid var(--divider-light);
-  display: flex;
-  flex-direction: column;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.player-list-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--divider-light);
-}
-
-.player-count {
-  font-size: 13px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.player-detail-panel {
-  background: var(--bg-secondary);
+.count-badge {
+  margin-left: auto;
+  background: var(--primary);
+  color: white;
+  padding: 2px 10px;
   border-radius: 12px;
-  padding: 20px;
-  border: 1px solid var(--divider-light);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.player-detail-panel.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-}
-
-.player-detail-panel.empty-state .empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-  opacity: 0.5;
-}
-
-.player-detail-panel.empty-state p {
-  font-size: 14px;
-  margin: 0;
-  opacity: 0.8;
-}
-
-.no-players-hint {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 16px;
-  text-align: center;
-  color: var(--text-secondary);
-  background: var(--card-bg);
-  border-radius: 10px;
-  border: 2px dashed var(--divider-light);
-  flex: 1;
-  margin-top: 12px;
-}
-
-.hint-icon {
-  font-size: 36px;
-  margin-bottom: 12px;
-  opacity: 0.5;
-}
-
-.no-players-hint p {
-  font-size: 14px;
-  margin: 0;
-  opacity: 0.8;
+  font-size: 12px;
 }
 
 .player-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex: 1;
-  overflow-y: auto;
-  max-height: 280px;
-  padding-right: 4px;
 }
 
-.player-list::-webkit-scrollbar {
-  width: 4px;
-}
-
-.player-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.player-list::-webkit-scrollbar-thumb {
-  background: var(--text-tertiary);
-  border-radius: 2px;
-}
-
-.player-card {
+.player-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: var(--card-bg);
+  gap: 12px;
+  padding: 12px;
   border-radius: 10px;
+  background: var(--bg-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
+  transition: all 0.15s;
 }
 
-.player-card:hover {
-  background: var(--hover-bg);
-  border-color: var(--divider-light);
-}
-
-.player-card.active {
-  background: rgba(0, 122, 255, 0.1);
-  border-color: rgba(0, 122, 255, 0.3);
-}
+.player-item:hover { background: var(--hover-bg); }
+.player-item.active { background: rgba(0, 122, 255, 0.1); outline: 2px solid var(--primary); }
 
 .player-avatar {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   background: var(--bg-tertiary);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
-  font-size: 14px;
-  flex-shrink: 0;
+  color: var(--text-tertiary);
 }
 
-.player-card.active .player-avatar {
-  background: rgba(0, 122, 255, 0.2);
-  color: var(--primary);
-}
+.player-item.active .player-avatar { background: var(--primary); color: white; }
 
-.player-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  min-width: 0;
-}
+.player-info { flex: 1; min-width: 0; }
+.player-name { display: block; font-size: 13px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.player-username,
-.player-id {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.player-sanity-badge {
+.sanity-tag {
+  display: inline-block;
   font-size: 11px;
   font-weight: 600;
-  padding: 2px 6px;
+  padding: 2px 8px;
   border-radius: 4px;
-  width: fit-content;
+  margin-top: 4px;
 }
 
-.player-sanity-badge.sanity-high {
-  background: rgba(52, 199, 89, 0.15);
-  color: #34c759;
-}
+.sanity-tag.sanity-high { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.sanity-tag.sanity-medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.sanity-tag.sanity-low { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.sanity-tag.sanity-critical { background: rgba(220, 38, 38, 0.15); color: #dc2626; }
 
-.player-sanity-badge.sanity-medium {
-  background: rgba(255, 204, 0, 0.15);
-  color: #ffcc00;
-}
-
-.player-sanity-badge.sanity-low {
-  background: rgba(255, 149, 0, 0.15);
-  color: #ff9500;
-}
-
-.player-sanity-badge.sanity-critical {
-  background: rgba(255, 59, 48, 0.15);
-  color: #ff3b30;
-}
-
-.remove-player-btn {
+.del-btn {
+  opacity: 0;
   background: none;
   border: none;
   color: var(--text-tertiary);
-  font-size: 12px;
   cursor: pointer;
-  padding: 6px;
+  padding: 8px;
   border-radius: 6px;
-  transition: all 0.2s ease;
-  opacity: 0;
+  transition: all 0.15s;
 }
 
-.player-card:hover .remove-player-btn {
-  opacity: 1;
+.player-item:hover .del-btn { opacity: 1; }
+.del-btn:hover { background: rgba(255, 59, 48, 0.1); color: #ff3b30; }
+
+.empty-hint {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  padding: 40px;
 }
 
-.remove-player-btn:hover {
-  background: rgba(255, 59, 48, 0.1);
-  color: #ff3b30;
-}
+.empty-hint svg { font-size: 36px; margin-bottom: 12px; opacity: 0.5; }
+.empty-hint p { font-size: 13px; margin: 0; }
 
-.add-player-section {
+.add-player-row {
   display: flex;
   gap: 8px;
-  align-items: center;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--divider-light);
+  padding: 12px;
+  border-top: 1px solid var(--border-color);
 }
 
-.add-player-input {
-  flex: 1;
-  padding: 10px 12px !important;
-  font-size: 13px !important;
-}
-
-.add-player-btn {
+.add-btn {
   background: var(--primary);
   color: white;
   border: none;
-  border-radius: 10px;
-  padding: 10px;
+  border-radius: 8px;
+  padding: 12px 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 40px;
-  height: 40px;
+  transition: all 0.15s;
 }
 
-.add-player-btn:hover {
-  background: var(--primary-hover);
-  transform: scale(0.95);
-}
+.add-btn:hover { background: var(--primary-hover); }
 
-/* 理智值管理样式 */
-.sanity-section {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid var(--divider-light);
-}
-
-.sanity-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.sanity-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sanity-title .title-icon {
-  color: var(--primary);
-  font-size: 14px;
-}
-
-.player-name-tag {
+.msg-tip {
+  padding: 10px 12px;
+  margin: 0 12px 12px;
+  border-radius: 8px;
   font-size: 12px;
-  color: var(--text-secondary);
-  background: var(--bg-tertiary);
-  padding: 4px 10px;
-  border-radius: 6px;
 }
 
-.sanity-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.msg-tip.error { background: rgba(255, 59, 48, 0.1); color: #ff3b30; }
+.msg-tip.success { background: rgba(52, 199, 89, 0.1); color: #34c759; }
 
-.sanity-display {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
+/* 玩家详情 */
+.player-detail-section { padding: 16px; overflow-y: auto; flex: 1; }
+.player-detail-section.empty-detail { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-tertiary); }
+.player-detail-section.empty-detail svg { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+.player-detail-section.empty-detail p { font-size: 13px; margin: 0; }
 
-.sanity-value-large {
-  font-size: 32px;
-  font-weight: 700;
+.detail-header {
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text-primary);
-  min-width: 80px;
-}
-
-.sanity-percent {
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.sanity-bar {
-  flex: 1;
-  height: 8px;
-  background: var(--bg-tertiary);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.sanity-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.3s ease, background 0.3s ease;
-}
-
-.sanity-bar-fill.sanity-high {
-  background: linear-gradient(90deg, #34c759, #30d158);
-}
-
-.sanity-bar-fill.sanity-medium {
-  background: linear-gradient(90deg, #ffcc00, #ffd60a);
-}
-
-.sanity-bar-fill.sanity-low {
-  background: linear-gradient(90deg, #ff9500, #ff9f0a);
-}
-
-.sanity-bar-fill.sanity-critical {
-  background: linear-gradient(90deg, #ff3b30, #ff453a);
-}
-
-.sanity-adjust-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.sanity-slider-group {
-  flex: 1;
-}
-
-.sanity-quick-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.sanity-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.sanity-btn.set-min {
-  background: rgba(255, 59, 48, 0.1);
-  color: #ff3b30;
-}
-
-.sanity-btn.set-min:hover {
-  background: rgba(255, 59, 48, 0.2);
-}
-
-.sanity-btn.set-max {
-  background: rgba(52, 199, 89, 0.1);
-  color: #34c759;
-}
-
-.sanity-btn.set-max:hover {
-  background: rgba(52, 199, 89, 0.2);
-}
-
-/* 背包管理样式 */
-.inventory-header {
+  padding-bottom: 12px;
   margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.inventory-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.detail-block {
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.block-title {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
 }
 
-.inventory-title .title-icon {
-  color: var(--primary);
-  font-size: 14px;
-}
+.block-title svg { color: var(--primary); }
 
-/* 玩家输入提示信息样式 */
-.player-input-message {
-  padding: 12px 16px;
+.sanity-display { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.sanity-num { font-size: 24px; font-weight: 700; min-width: 60px; }
+.sanity-num.sanity-high { color: #10b981; }
+.sanity-num.sanity-medium { color: #f59e0b; }
+.sanity-num.sanity-low { color: #ef4444; }
+.sanity-num.sanity-critical { color: #dc2626; }
+
+.sanity-bar { flex: 1; height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; }
+.sanity-fill { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.4s; }
+.sanity-fill.sanity-high { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+.sanity-fill.sanity-medium { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.sanity-fill.sanity-low { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+.sanity-fill.sanity-critical { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+
+.sanity-ctrl { display: flex; align-items: center; gap: 12px; }
+.sanity-ctrl > :first-child { flex: 1; }
+
+.quick-btns { display: flex; gap: 6px; }
+.qbtn {
+  width: 32px;
+  height: 32px;
+  border: none;
   border-radius: 8px;
-  margin-top: 12px;
-  font-size: 14px;
-  line-height: 1.4;
-  transition: all 0.3s ease;
-  animation: slideDown 0.3s ease;
-}
-
-.player-input-message.error {
-  background: rgba(255, 59, 48, 0.1);
-  border: 1px solid rgba(255, 59, 48, 0.3);
-  color: #ff3b30;
-}
-
-.player-input-message.success {
-  background: rgba(52, 199, 89, 0.1);
-  border: 1px solid rgba(52, 199, 89, 0.3);
-  color: #34c759;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 提示信息过渡动画 */
-.message-fade-enter-active {
-  transition: all 0.3s ease;
-}
-
-.message-fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.message-fade-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.message-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-@media (max-width: 900px) {
-  .player-management-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .player-list-panel {
-    max-height: none;
-  }
-
-  .player-list {
-    max-height: 200px;
-  }
-}
-
-@media (max-width: 768px) {
-  .content-wrapper {
-    padding: 16px;
-  }
-
-  .form-container {
-    padding: 16px;
-  }
-
-  .form-row {
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .level-selector {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .inventory-backpack {
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-  }
-
-  .sanity-display {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .sanity-value-large {
-    font-size: 28px;
-  }
-
-  .sanity-bar {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .level-selector {
-    grid-template-columns: 1fr;
-  }
-
-  .form-container {
-    padding: 12px;
-  }
-
-  .section-title {
-    font-size: 16px;
-  }
-
-  .form-input {
-    padding: 10px 12px;
-    font-size: 14px;
-  }
-
-  .player-detail-panel {
-    padding: 16px;
-  }
-
-  .sanity-adjust-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .sanity-quick-actions {
-    justify-content: center;
-  }
-}
-
-.singleplayer-notice {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  margin-top: 12px;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 122, 255, 0.1),
-    rgba(0, 122, 255, 0.05)
-  );
-  border: 1px solid rgba(0, 122, 255, 0.2);
-  border-radius: 12px;
-  color: var(--text-primary);
-  font-size: 14px;
-  animation: fade-slide-enter 0.3s ease-out;
-}
-
-.notice-icon {
-  margin-right: 8px;
-  color: #007aff;
-}
-
-/* JSON编辑器样式 */
-.json-editor-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  animation: fade-in 0.3s ease-out;
+  transition: all 0.15s;
 }
 
-.json-editor-content {
+.qbtn.danger { background: rgba(255, 59, 48, 0.1); color: #ff3b30; }
+.qbtn.danger:hover { background: rgba(255, 59, 48, 0.2); }
+.qbtn.success { background: rgba(52, 199, 89, 0.1); color: #34c759; }
+.qbtn.success:hover { background: rgba(52, 199, 89, 0.2); }
+
+/* 背包 */
+.inventory-wrap { display: flex; gap: 16px; }
+.hand-slots { display: flex; flex-direction: column; gap: 8px; }
+.backpack-slots { display: grid; grid-template-columns: repeat(3, 56px); gap: 8px; }
+
+.inv-slot {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
   background: var(--card-bg);
-  border-radius: 16px;
-  border: 1px solid var(--divider-light);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  width: 90%;
-  max-width: 800px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  animation: slide-up 0.3s ease-out;
-}
-
-.json-editor-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--divider-light);
-}
-
-.json-editor-header h3 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.json-editor-body {
-  flex: 1;
-  padding: 20px;
-  overflow: hidden;
-}
-
-.json-editor-textarea {
-  width: 100%;
-  height: 400px;
-  padding: 16px;
-  border: 1px solid var(--divider-light);
-  border-radius: 8px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-family: "Consolas", "Monaco", "Courier New", monospace;
-  font-size: 14px;
-  line-height: 1.5;
-  resize: vertical;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.json-editor-textarea:focus {
-  border-color: #007aff;
-}
-
-.json-error {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 12px 16px;
-  background: rgba(255, 59, 48, 0.1);
-  border: 1px solid rgba(255, 59, 48, 0.2);
-  border-radius: 8px;
-  color: #ff3b30;
-  font-size: 14px;
-  animation: fade-in 0.2s ease-out;
-}
-
-.json-editor-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 20px 24px;
-  border-top: 1px solid var(--divider-light);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 18px;
+  border: 2px solid var(--border-color);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 50%;
-  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
 }
 
-.close-btn:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+.inv-slot:hover { border-color: var(--primary); transform: scale(1.05); }
+.inv-slot.empty { border-style: dashed; }
+
+.slot-label { position: absolute; top: 3px; left: 3px; font-size: 8px; color: var(--text-tertiary); background: var(--bg-secondary); padding: 1px 4px; border-radius: 3px; }
+.slot-num { position: absolute; top: 3px; right: 4px; font-size: 10px; font-weight: 600; color: var(--text-tertiary); }
+.slot-img { width: 36px; height: 36px; object-fit: contain; }
+.slot-placeholder { font-size: 18px; color: var(--text-tertiary); opacity: 0.4; }
+
+/* 动画 */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .players-layout { grid-template-columns: 1fr; }
+  .player-list-section { max-height: 300px; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .page-header { flex-wrap: wrap; gap: 12px; }
+  .tab-nav { order: 3; width: 100%; justify-content: center; }
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+@media (max-width: 600px) {
+  .page-header { padding: 12px 16px; }
+  .page-title { font-size: 16px; }
+  .tab-nav { overflow-x: auto; }
+  .tab-btn { padding: 6px 12px; font-size: 12px; white-space: nowrap; }
+  .tab-content { padding: 16px; }
+  .level-grid { grid-template-columns: repeat(2, 1fr); }
+  .detail-grid { grid-template-columns: 1fr; }
+  .inventory-wrap { flex-direction: column; }
+  .btn-primary span, .btn-secondary span { display: none; }
+  .btn-primary, .btn-secondary { padding: 8px 12px; }
 }
-
-@keyframes slide-up {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* Vue过渡动画 */
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.3s ease;
-}
-
-.fade-slide-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.fade-slide-enter-to {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.fade-slide-leave-from {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-@keyframes fade-slide-enter {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 物品图片渐显渐隐动画 */
-.item-fade-enter-active,
-.item-fade-leave-active {
-  transition: opacity 0.15s ease;
-}
-
-.item-fade-enter-from,
-.item-fade-leave-to {
-  opacity: 0;
-}
-
-.item-fade-enter-to,
-.item-fade-leave-from {
-  opacity: 1;
-}
-
-/* 所有主题颜色已通过CSS变量处理，无需额外媒体查询 */
 </style>

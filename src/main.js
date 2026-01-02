@@ -93,6 +93,17 @@ import {
   faUndo,
   faFileExport,
   faSnowflake,
+  faCommentDots,
+  faInbox,
+  faPaperPlane,
+  faComment,
+  faHistory,
+  faLightbulb,
+  faMap,
+  faUserPlus,
+  faHandPointer,
+  faCube,
+  faDoorOpen,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Brand icons
@@ -193,7 +204,18 @@ library.add(
   faClock,
   faUndo,
   faFileExport,
-  faSnowflake
+  faSnowflake,
+  faCommentDots,
+  faInbox,
+  faPaperPlane,
+  faComment,
+  faHistory,
+  faLightbulb,
+  faMap,
+  faUserPlus,
+  faHandPointer,
+  faCube,
+  faDoorOpen
 );
 import "./styles/theme-config.js";
 import {

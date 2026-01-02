@@ -57,6 +57,7 @@
    * 主色调 (Primary Colors)
    * ========================================== */
   --primary: var(--new-year-red);
+  --primary-hover: var(--new-year-red-light);
   --primary-color: var(--new-year-red);
   --secondary-color: var(--new-year-gold);
   --accent-color: var(--new-year-gold);

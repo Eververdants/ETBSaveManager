@@ -5,7 +5,7 @@ use std::io::{BufReader, BufWriter};
 use std::path::Path;
 use uesave::{
     Properties, Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
-    PropertyType, PropertyValue, Save, StructValue, ValueArray, ValueVec,
+    PropertyType, PropertyValue, Save, StructType, StructValue, ValueArray, ValueVec,
 };
 use uuid;
 
@@ -460,4 +460,257 @@ fn create_player_data_field(save: &mut Save, steam_ids: &[String], json_data: &J
         .0
         .insert(PropertyKey(0, "PlayerData".to_string()), player_data_prop);
     println!("✅ 已成功创建 PlayerData_0 字段");
+}
+
+/// LevelsCompleted 结构体字段名称
+const DISPLAY_NAME_FIELD: &str = "DisplayName_24_E62A59304187EE5783D725B3DCDE520C";
+const HAS_COMPLETED_FIELD: &str = "HasCompleted_4_EA1ED1B4409DB7F46F5846B1CB695EF3";
+const HAS_UNLOCKED_HUB_FIELD: &str = "HasUnlockedHub_21_7FD307464C90A6868642B3AEBCDA508D";
+
+/// 用于解锁枢纽门的层级列表（排除不需要的层级）
+const HUB_DOOR_LEVELS: &[(&str, &str)] = &[
+    ("Level 0", "Level0"),
+    ("Habitable Zone", "TopFloor"),
+    ("Habitable Zone", "MiddleFloor"),
+    ("Habitable Zone", "GarageLevel2"),
+    ("Habitable Zone", "BottomFloor"),
+    ("The Hub", "TheHub"),
+    ("Pipe Dreams", "Pipes"),
+    ("Electrical Station", "ElectricalStation"),
+    ("Abandoned Office", "Office"),
+    ("Terror Hotel", "Hotel"),
+    ("Terror Hotel", "Floor3"),
+    ("Terror Hotel", "BoilerRoom"),
+    ("Level Fun", "LevelFun"),
+    ("The Poolrooms", "Poolrooms"),
+    ("Run for your Life!", "LevelRun"),
+    ("The End", "TheEnd"),
+    ("Level 94", "Level94"),
+    ("Level 94", "AnimatedKingdom"),
+    ("Lights Out", "LightsOut"),
+    ("Thalassophobia", "OceanMap"),
+    ("Cave System", "CaveLevel"),
+    ("Level 188", "Level05"),
+    ("Level 9", "Level9"),
+    ("Level 9", "AbandonedBase"),
+    ("Level 10", "Level10"),
+    ("Level 3999", "Level3999"),
+    ("Level 0.2", "Level07"),
+    ("Snackrooms", "Snackrooms"),
+    ("Level !~!", "LevelDash"),
+    ("Level 188 Expanded", "Level188_Expanded"),
+    ("The Poolrooms Expanded", "Poolrooms_Expanded"),
+    ("Level Fun Expanded", "LevelFun_Expanded"),
+    ("Level 52", "Level52"),
+    ("Level 55.1", "TunnelLevel"),
+];
+const LEVEL_NAME_FIELD: &str = "LevelName_8_4C45C1AA462CC6194F50ADAADFB106A8";
+const TIME_FIELD: &str = "Time_2_59B2BD3A4F00EEBB9DEECCA10EEA1022";
+const WORLD_FIELD: &str = "World_14_07F9F91140BC22FA10EDBA9F6EED48E9";
+
+/// 创建默认的 World 属性
+fn create_default_world_property() -> Property {
+    let mut world_inner_props = Properties::default();
+
+    // Items 数组（空）
+    let items_prop = Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Struct {
+                struct_type: StructType::Struct(Some("S_DroppedItem".to_string())),
+                id: uuid::Uuid::nil(),
+            })),
+        },
+        inner: PropertyInner::Array(ValueArray::Struct {
+            id: Some(uuid::Uuid::nil()),
+            struct_type: StructType::Struct(Some("S_DroppedItem".to_string())),
+            type_: PropertyType::StructProperty,
+            value: vec![],
+        }),
+    };
+    world_inner_props.0.insert(
+        PropertyKey(0, "Items_19_783746F14C74611D03643BB2DF689058".to_string()),
+        items_prop,
+    );
+
+    // SanityLevel
+    let sanity_prop = Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
+        },
+        inner: PropertyInner::Float(100.0),
+    };
+    world_inner_props.0.insert(
+        PropertyKey(
+            0,
+            "SanityLevel_16_3DCC15864CC44BF25D86A09EED0B2065".to_string(),
+        ),
+        sanity_prop,
+    );
+
+    Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Struct {
+                struct_type: StructType::Struct(Some("S_WorldCommon".to_string())),
+                id: uuid::Uuid::nil(),
+            },
+        },
+        inner: PropertyInner::Struct(StructValue::Struct(world_inner_props)),
+    }
+}
+
+/// 创建单个层级的结构体
+fn create_level_struct(display_name: &str, level_name: &str) -> StructValue {
+    let mut level_props = Properties::default();
+
+    // DisplayName
+    level_props.0.insert(
+        PropertyKey(0, DISPLAY_NAME_FIELD.to_string()),
+        Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::StrProperty),
+            },
+            inner: PropertyInner::Str(display_name.to_string()),
+        },
+    );
+
+    // HasCompleted - true
+    level_props.0.insert(
+        PropertyKey(0, HAS_COMPLETED_FIELD.to_string()),
+        Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
+            },
+            inner: PropertyInner::Bool(true),
+        },
+    );
+
+    // HasUnlockedHub - true
+    level_props.0.insert(
+        PropertyKey(0, HAS_UNLOCKED_HUB_FIELD.to_string()),
+        Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
+            },
+            inner: PropertyInner::Bool(true),
+        },
+    );
+
+    // LevelName
+    level_props.0.insert(
+        PropertyKey(0, LEVEL_NAME_FIELD.to_string()),
+        Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::NameProperty),
+            },
+            inner: PropertyInner::Name(level_name.to_string()),
+        },
+    );
+
+    // Time
+    level_props.0.insert(
+        PropertyKey(0, TIME_FIELD.to_string()),
+        Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
+            },
+            inner: PropertyInner::Float(-1.0),
+        },
+    );
+
+    // World
+    level_props.0.insert(
+        PropertyKey(0, WORLD_FIELD.to_string()),
+        create_default_world_property(),
+    );
+
+    StructValue::Struct(level_props)
+}
+
+/// 解锁全部枢纽门
+/// 读取存档中的 LevelsCompleted_0，补全到 ALL_LEVELS 的数量，并将所有 Bool 值设为 true
+pub fn unlock_all_hub_doors(file_path: &str) -> Result<String, String> {
+    println!("🔓 开始解锁全部枢纽门: {}", file_path);
+
+    let file = File::open(file_path).map_err(|e| format!("打开存档文件失败: {}", e))?;
+    let mut reader = BufReader::new(file);
+    let mut save = Save::read(&mut reader).map_err(|e| format!("解析存档失败: {:?}", e))?;
+
+    let levels_completed_key = PropertyKey(0, "LevelsCompleted".to_string());
+
+    // 获取现有的 LevelsCompleted_0
+    let levels_completed_prop = save
+        .root
+        .properties
+        .0
+        .get_mut(&levels_completed_key)
+        .ok_or("未找到 LevelsCompleted_0 字段")?;
+
+    if let PropertyInner::Array(ValueArray::Struct {
+        id: _,
+        struct_type: _,
+        type_: _,
+        value,
+    }) = &mut levels_completed_prop.inner
+    {
+        println!(
+            "📊 当前层级数量: {}, 目标数量: {}",
+            value.len(),
+            HUB_DOOR_LEVELS.len()
+        );
+
+        // 收集现有的 LevelName
+        let mut existing_levels: std::collections::HashSet<String> =
+            std::collections::HashSet::new();
+
+        for level_struct in value.iter_mut() {
+            if let StructValue::Struct(props) = level_struct {
+                // 获取 LevelName
+                if let Some(level_name_prop) =
+                    props.0.iter().find(|(k, _)| k.1.starts_with("LevelName"))
+                {
+                    if let PropertyInner::Name(name) = &level_name_prop.1.inner {
+                        existing_levels.insert(name.clone());
+                    }
+                }
+
+                // 将所有 Bool 值设为 true
+                for (_, prop) in props.0.iter_mut() {
+                    if let PropertyInner::Bool(ref mut b) = prop.inner {
+                        *b = true;
+                    }
+                }
+            }
+        }
+
+        println!("📝 现有层级: {:?}", existing_levels);
+
+        // 添加缺失的层级
+        for (display_name, level_name) in HUB_DOOR_LEVELS.iter() {
+            if !existing_levels.contains(*level_name) {
+                println!("➕ 添加缺失层级: {} ({})", display_name, level_name);
+                value.push(create_level_struct(display_name, level_name));
+            }
+        }
+
+        println!("✅ 处理后层级数量: {}", value.len());
+    } else {
+        return Err("LevelsCompleted_0 格式不正确".to_string());
+    }
+
+    // 写回文件
+    let file = File::create(file_path).map_err(|e| format!("创建输出文件失败: {}", e))?;
+    let mut writer = BufWriter::new(file);
+    save.write(&mut writer)
+        .map_err(|e| format!("写入存档失败: {:?}", e))?;
+
+    println!("💾 枢纽门解锁完成，存档已保存");
+    Ok("解锁成功".to_string())
 }

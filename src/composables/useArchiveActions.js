@@ -23,8 +23,9 @@ export function useArchiveActions(archiveData, filters) {
   const handleToggleVisibility = async (updatedArchive, callbacks = {}) => {
     const { onSuccess, onError, onRefresh } = callbacks;
     try {
-      const originalVisibility = updatedArchive.isVisible;
-      const newVisibility = !originalVisibility;
+      // updatedArchive.isVisible 已经是切换后的新值（由 ArchiveCard 组件传入）
+      const newVisibility = updatedArchive.isVisible;
+      const originalVisibility = !newVisibility;
       if (archiveData.updateArchiveVisibility) {
         archiveData.updateArchiveVisibility(updatedArchive.id, newVisibility);
       }

@@ -40,3 +40,6 @@
 
 /* 元旦主题 🎊 */
 @import "./new-year.css";
+
+/* 高对比度主题 ♿ */
+@import "./high-contrast.css";

@@ -1,5 +1,23 @@
 [
   {
+    "version": "3.0.0-Alpha-7.3",
+    "date": "2026-01-02",
+    "title": "新增反馈页面与一键解锁枢纽门",
+    "type": "feature",
+    "categories": {
+      "newFeatures": [
+        "新增反馈页面，可快速提交建议与 Bug",
+        "编辑页新增「解锁全部枢纽门」一键功能"
+      ],
+      "improvements": ["微调创建存档页与编辑页视觉细节"],
+      "bugFixes": [
+        "修复物品选择模态框图片显示异常",
+        "修复切换存档可视性后页面跳动问题"
+      ],
+      "performance": []
+    }
+  },
+  {
     "version": "3.0.0-Alpha-7.2",
     "date": "2025-12-31",
     "title": "修复缓存页面主题异常",
@@ -7,9 +25,7 @@
     "categories": {
       "newFeatures": [],
       "improvements": [],
-      "bugFixes": [
-        "修复缓存页面主题显示异常的问题"
-      ],
+      "bugFixes": ["修复缓存页面主题显示异常的问题"],
       "performance": []
     }
   },

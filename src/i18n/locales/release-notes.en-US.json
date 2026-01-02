@@ -1,5 +1,23 @@
 [
   {
+    "version": "3.0.0-Alpha-7.3",
+    "date": "2026-01-02",
+    "title": "Feedback Page & One-Click Unlock All Hub Doors",
+    "type": "feature",
+    "categories": {
+      "newFeatures": [
+        "New feedback page for quick suggestions and bug reports",
+        "One-click 'Unlock All Hub Doors' button in edit page"
+      ],
+      "improvements": ["Minor visual polish on create-save and edit pages"],
+      "bugFixes": [
+        "Fixed item-picker modal image display anomaly",
+        "Fixed page jump after toggling save visibility"
+      ],
+      "performance": []
+    }
+  },
+  {
     "version": "3.0.0-Alpha-7.2",
     "date": "2025-12-31",
     "title": "Fixed Cache Page Theme Glitch",
@@ -7,9 +25,7 @@
     "categories": {
       "newFeatures": [],
       "improvements": [],
-      "bugFixes": [
-        "Fixed cache page theme display anomaly"
-      ],
+      "bugFixes": ["Fixed cache page theme display anomaly"],
       "performance": []
     }
   },

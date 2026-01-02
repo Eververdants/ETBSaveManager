@@ -121,6 +121,30 @@ const routes = [
     component: () => import("../views/ReleaseNotes.vue"),
     meta: { keepAlive: false },
   },
+  {
+    path: "/feedback",
+    name: "Feedback",
+    component: () => import("../views/Feedback.vue"),
+    meta: { keepAlive: false },
+  },
+  {
+    path: "/theme-editor",
+    name: "ThemeEditor",
+    component: () => import("../views/ThemeEditor.vue"),
+    meta: {
+      keepAlive: false,
+      title: "主题编辑器",
+    },
+  },
+  {
+    path: "/theme-editor/:themeId",
+    name: "ThemeEditorEdit",
+    component: () => import("../views/ThemeEditor.vue"),
+    meta: {
+      keepAlive: false,
+      title: "编辑主题",
+    },
+  },
 ];
 
 const router = createRouter({

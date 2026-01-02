@@ -182,6 +182,33 @@ class LogService {
       console.error("❌ 导出日志失败:", error);
     }
   }
+
+  /**
+   * 获取最近的日志（用于反馈系统）
+   * @param {number} count - 要获取的日志条数，默认100
+   * @returns {string} 格式化的日志文本
+   */
+  getRecentLogs(count = 100) {
+    const recentLogs = this.logs.slice(-count);
+    return recentLogs
+      .map(
+        (log) => `[${log.timestamp}] ${log.type.toUpperCase()}: ${log.message}`
+      )
+      .join("\n");
+  }
+
+  /**
+   * 获取最近的日志数组（用于反馈系统）
+   * @param {number} count - 要获取的日志条数，默认100
+   * @returns {Array} 日志数组
+   */
+  getRecentLogsArray(count = 100) {
+    return this.logs.slice(-count).map((log) => ({
+      timestamp: log.timestamp,
+      type: log.type,
+      message: log.message,
+    }));
+  }
 }
 
 // 创建全局实例

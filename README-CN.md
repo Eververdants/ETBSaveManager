@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.0.0--Alpha--7.2-blue.svg" alt="版本"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.0.0--Alpha--7.3-blue.svg" alt="版本"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/许可证-MIT-green.svg" alt="许可证"></a>
   <img src="https://img.shields.io/badge/平台-Windows-0078D4.svg?logo=windows" alt="平台">
   <img src="https://img.shields.io/badge/框架-Tauri%202.0-orange.svg" alt="框架">
@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="#">中文</a> | <a href="./README.md">English</a>
+  <a href="#">简体中文</a> | <a href="./README-HANT.md">繁體中文</a> | <a href="./README.md">English</a>
 </p>
 
 ---
@@ -24,23 +24,27 @@
 ## ✨ 功能特性
 
 ### 🗂️ 存档管理
+
 - **完整的增删改查** — 创建、编辑、删除、复制、隐藏/显示存档
 - **批量操作** — 同时处理多个存档
 - **智能筛选** — 按层级、难度、游戏模式筛选
 - **快速搜索** — 模糊匹配，即时定位目标存档
 
 ### 🎨 现代化界面
-- **苹果风格设计** — 简洁直观的界面，流畅的动画效果
+
+- **现代化设计** — 简洁直观的界面，流畅的动画效果
 - **主题系统** — 浅色、深色主题，以及节日特别主题（元旦限定！）
 - **响应式布局** — 可折叠侧边栏，自适应组件
 - **硬件加速** — GPU 优化渲染，确保流畅体验
 
 ### 🌍 多语言支持
+
 - 简体中文
 - 繁體中文
 - English
 
 ### 🛠️ 高级功能
+
 - **多种创建模式**
   - 快速创建 — 简化流程，快速生成存档
   - 蓝图创建 — 基于模板创建存档
@@ -48,6 +52,7 @@
   - 标准创建 — 完整的自定义选项
 - **背包编辑器** — 直接修改玩家背包物品
 - **Steam 缓存管理** — 管理本地 Steam 缓存数据
+- **反馈系统** — 内置反馈提交功能，直达开发者
 - **性能监控** — 内置诊断工具（开发模式）
 
 ---
@@ -62,7 +67,7 @@
 
 ### 下载安装包
 
-1. 前往 [Releases 页面](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-7.2)
+1. 前往 [Releases 页面](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-7.3)
 2. 下载 Windows 安装包（`.msi` 或 `.exe`）
 3. 运行安装程序
 
@@ -86,6 +91,7 @@ npm run tauri build
 ```
 
 **环境要求：**
+
 - Node.js 18+
 - Rust 工具链
 - 平台相关依赖（参见 [Tauri 环境配置](https://tauri.app/v1/guides/getting-started/prerequisites)）
@@ -94,15 +100,15 @@ npm run tauri build
 
 ## 🧰 技术栈
 
-| 层级 | 技术 |
-|------|------|
-| 前端框架 | Vue 3 + Composition API |
+| 层级     | 技术                     |
+| -------- | ------------------------ |
+| 前端框架 | Vue 3 + Composition API  |
 | 样式方案 | CSS Variables + 主题系统 |
-| 构建工具 | Vite 6 |
-| 桌面框架 | Tauri 2.0 + Rust |
-| 国际化 | vue-i18n |
-| 动画库 | GSAP |
-| 虚拟滚动 | @tanstack/vue-virtual |
+| 构建工具 | Vite 6                   |
+| 桌面框架 | Tauri 2.0 + Rust         |
+| 国际化   | vue-i18n                 |
+| 动画库   | GSAP                     |
+| 虚拟滚动 | @tanstack/vue-virtual    |
 
 ---
 
@@ -127,18 +133,19 @@ ETBSaveManager/
 
 ## 🚧 开发进度
 
-**当前版本：** `v3.0.0-Alpha-7.2`
+**当前版本：** `v3.0.0-Alpha-7.3`
 
-| 功能 | 状态 |
-|------|------|
-| 核心存档管理 | ✅ 已完成 |
-| 搜索与筛选 | ✅ 已完成 |
-| 主题系统 | ✅ 已完成 |
-| 多语言支持 | ✅ 已完成 |
-| 存档数据编辑 | ✅ 已完成 |
-| 多种创建模式 | ✅ 已完成 |
-| 层级信息编辑 | 🔄 计划中 |
-| 插件系统 | 🔄 开发中 (10%) |
+| 功能         | 状态            |
+| ------------ | --------------- |
+| 核心存档管理 | ✅ 已完成       |
+| 搜索与筛选   | ✅ 已完成       |
+| 主题系统     | ✅ 已完成       |
+| 多语言支持   | ✅ 已完成       |
+| 存档数据编辑 | ✅ 已完成       |
+| 多种创建模式 | ✅ 已完成       |
+| 反馈系统     | ✅ 已完成       |
+| 层级信息编辑 | 🔄 计划中       |
+| 插件系统     | 🔄 开发中 (10%) |
 
 ---
 

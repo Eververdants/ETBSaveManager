@@ -26,25 +26,17 @@
           </transition>
           <!-- 元旦主题限时提示 -->
           <transition name="text-swift" mode="out-in">
-            <div
-              v-if="shouldShowNewYearTheme && newYearThemeMode === 'auto'"
-              class="setting-hint new-year-hint"
-              :key="currentLanguage + '-newyear-hint'"
-            >
+            <div v-if="shouldShowNewYearTheme && newYearThemeMode === 'auto'" class="setting-hint new-year-hint"
+              :key="currentLanguage + '-newyear-hint'">
               <font-awesome-icon :icon="['fas', 'clock']" />
               {{ t("settings.newYearThemeLimitedTime") }}
             </div>
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown
-            v-model="currentTheme"
-            :options="themeOptions"
-            @change="handleThemeChange"
-            @dropdown-open="handleDropdownOpen('theme')"
-            :is-open="activeDropdown === 'theme'"
-            :placeholder="t('common.select')"
-          />
+          <CustomDropdown v-model="currentTheme" :options="themeOptions" @change="handleThemeChange"
+            @dropdown-open="handleDropdownOpen('theme')" :is-open="activeDropdown === 'theme'"
+            :placeholder="t('common.select')" />
         </div>
       </div>
 
@@ -66,17 +58,46 @@
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown
-            v-model="currentLanguage"
-            :options="languageOptions"
-            @change="handleLanguageChange"
-            @dropdown-open="handleDropdownOpen('language')"
-            :is-open="activeDropdown === 'language'"
-            :placeholder="t('common.select')"
-          />
+          <CustomDropdown v-model="currentLanguage" :options="languageOptions" @change="handleLanguageChange"
+            @dropdown-open="handleDropdownOpen('language')" :is-open="activeDropdown === 'language'"
+            :placeholder="t('common.select')" />
         </div>
       </div>
     </div>
+
+    <!-- 自定义主题设置组 -->
+    <div class="setting-group custom-theme-group">
+      <transition name="text-swift" mode="out-in">
+        <div class="section-header" :key="currentLanguage">
+          {{ t("theme.customThemes") }}
+        </div>
+      </transition>
+
+      <div class="custom-theme-content">
+        <ThemeList @create="handleCreateTheme" @edit="handleEditTheme" @delete="handleDeleteTheme"
+          @select="handleSelectTheme" @import="handleImportTheme" @export="handleExportTheme" />
+      </div>
+    </div>
+
+    <!-- 主题编辑模态框 -->
+    <transition name="modal-fade">
+      <div v-if="showThemeEditor" class="theme-editor-modal" @click.self="handleCancelThemeEdit">
+        <div class="theme-editor-container">
+          <div class="modal-header">
+            <h2 class="modal-title">
+              {{ themeEditorMode === 'create' ? t('theme.createCustomTheme') : t('theme.editTheme', {
+                name:
+                  editingTheme?.name || '' }) }}
+            </h2>
+            <button class="modal-close-btn" @click="handleCancelThemeEdit">
+              <font-awesome-icon :icon="['fas', 'times']" />
+            </button>
+          </div>
+          <ThemeEditor :theme="editingTheme" :mode="themeEditorMode" @save="handleSaveTheme"
+            @cancel="handleCancelThemeEdit" />
+        </div>
+      </div>
+    </transition>
 
     <!-- 高级设置组 -->
     <div class="setting-group">
@@ -105,11 +126,7 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input
-              type="checkbox"
-              v-model="gpuAccelerationDisabled"
-              @change="handleGpuAccelerationToggle"
-            />
+            <input type="checkbox" v-model="gpuAccelerationDisabled" @change="handleGpuAccelerationToggle" />
             <span class="slider"></span>
           </label>
         </div>
@@ -142,14 +159,9 @@
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown
-            v-model="currentUpdateSource"
-            :options="updateSourceOptions"
-            @change="handleUpdateSourceChange"
-            @dropdown-open="handleDropdownOpen('updateSource')"
-            :is-open="activeDropdown === 'updateSource'"
-            :placeholder="t('common.select')"
-          />
+          <CustomDropdown v-model="currentUpdateSource" :options="updateSourceOptions"
+            @change="handleUpdateSourceChange" @dropdown-open="handleDropdownOpen('updateSource')"
+            :is-open="activeDropdown === 'updateSource'" :placeholder="t('common.select')" />
         </div>
       </div>
 
@@ -171,16 +183,8 @@
           </transition>
         </div>
         <div class="setting-action">
-          <button
-            class="check-update-btn"
-            @click="checkForUpdates"
-            :disabled="checkingUpdate"
-          >
-            <font-awesome-icon
-              v-if="checkingUpdate"
-              :icon="['fas', 'spinner']"
-              spin
-            />
+          <button class="check-update-btn" @click="checkForUpdates" :disabled="checkingUpdate">
+            <font-awesome-icon v-if="checkingUpdate" :icon="['fas', 'spinner']" spin />
             <transition name="text-swift" mode="out-in">
               <span :key="currentLanguage + '-' + checkingUpdate">
                 {{
@@ -221,30 +225,15 @@
         <div class="setting-action">
           <div class="api-key-container">
             <div class="api-key-input-wrapper">
-              <input
-                v-model="steamApiKey"
-                :type="showApiKey ? 'text' : 'password'"
-                class="api-key-input"
-                :placeholder="t('settings.steamApi.apiKeyPlaceholder')"
-              />
-              <button
-                class="toggle-visibility-btn"
-                @click="showApiKey = !showApiKey"
-                :title="
-                  showApiKey
-                    ? t('settings.steamApi.hideApiKey')
-                    : t('settings.steamApi.showApiKey')
-                "
-              >
-                <font-awesome-icon
-                  :icon="showApiKey ? ['fas', 'eye-slash'] : ['fas', 'eye']"
-                />
+              <input v-model="steamApiKey" :type="showApiKey ? 'text' : 'password'" class="api-key-input"
+                :placeholder="t('settings.steamApi.apiKeyPlaceholder')" />
+              <button class="toggle-visibility-btn" @click="showApiKey = !showApiKey" :title="showApiKey
+                  ? t('settings.steamApi.hideApiKey')
+                  : t('settings.steamApi.showApiKey')
+                ">
+                <font-awesome-icon :icon="showApiKey ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
               </button>
-              <button
-                class="save-api-key-btn"
-                @click="saveSteamApiKey"
-                :title="t('settings.steamApi.saveApiKey')"
-              >
+              <button class="save-api-key-btn" @click="saveSteamApiKey" :title="t('settings.steamApi.saveApiKey')">
                 <font-awesome-icon :icon="['fas', 'save']" />
               </button>
             </div>
@@ -272,19 +261,15 @@
         <div class="setting-action">
           <div class="cache-info">
             <transition name="text-swift" mode="out-in">
-              <span
-                class="cache-count"
-                :key="currentLanguage + '-' + cacheEntryCount"
-                >{{ cacheEntryCount }}
-                {{ t("settings.steamApi.cacheEntries") }}</span
-              >
+              <span class="cache-count" :key="currentLanguage + '-' + cacheEntryCount">{{ cacheEntryCount }}
+                {{ t("settings.steamApi.cacheEntries") }}</span>
             </transition>
             <button class="view-cache-btn" @click="navigateToSteamCache">
               <font-awesome-icon :icon="['fas', 'eye']" />
               <transition name="text-swift" mode="out-in">
                 <span :key="currentLanguage + '-viewCache'">{{
                   t("settings.steamApi.viewCache")
-                }}</span>
+                  }}</span>
               </transition>
             </button>
             <button class="clear-cache-btn" @click="clearSteamCache">
@@ -292,7 +277,7 @@
               <transition name="text-swift" mode="out-in">
                 <span :key="currentLanguage + '-clearCache'">{{
                   t("settings.steamApi.clearCache")
-                }}</span>
+                  }}</span>
               </transition>
             </button>
           </div>
@@ -327,11 +312,7 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input
-              type="checkbox"
-              v-model="developerModeEnabled"
-              @change="handleDeveloperModeToggle"
-            />
+            <input type="checkbox" v-model="developerModeEnabled" @change="handleDeveloperModeToggle" />
             <span class="slider"></span>
           </label>
         </div>
@@ -356,11 +337,7 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input
-              type="checkbox"
-              v-model="logMenuEnabled"
-              @change="handleLogMenuToggle"
-            />
+            <input type="checkbox" v-model="logMenuEnabled" @change="handleLogMenuToggle" />
             <span class="slider"></span>
           </label>
         </div>
@@ -385,11 +362,7 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input
-              type="checkbox"
-              v-model="performanceMonitorEnabled"
-              @change="handlePerformanceMonitorToggle"
-            />
+            <input type="checkbox" v-model="performanceMonitorEnabled" @change="handlePerformanceMonitorToggle" />
             <span class="slider"></span>
           </label>
         </div>
@@ -414,11 +387,7 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input
-              type="checkbox"
-              v-model="testArchiveEnabled"
-              @change="handleTestArchiveToggle"
-            />
+            <input type="checkbox" v-model="testArchiveEnabled" @change="handleTestArchiveToggle" />
             <span class="slider"></span>
           </label>
         </div>
@@ -427,10 +396,7 @@
       <!-- 元旦主题控制 -->
       <div class="setting-item" v-if="developerModeEnabled">
         <div class="setting-icon">
-          <font-awesome-icon
-            :icon="['fas', 'snowflake']"
-            style="color: #e53935"
-          />
+          <font-awesome-icon :icon="['fas', 'snowflake']" style="color: #e53935" />
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
@@ -445,14 +411,9 @@
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown
-            v-model="newYearThemeMode"
-            :options="newYearThemeModeOptions"
-            @change="handleNewYearThemeModeChange"
-            @dropdown-open="handleDropdownOpen('newYearTheme')"
-            :is-open="activeDropdown === 'newYearTheme'"
-            :placeholder="t('common.select')"
-          />
+          <CustomDropdown v-model="newYearThemeMode" :options="newYearThemeModeOptions"
+            @change="handleNewYearThemeModeChange" @dropdown-open="handleDropdownOpen('newYearTheme')"
+            :is-open="activeDropdown === 'newYearTheme'" :placeholder="t('common.select')" />
         </div>
       </div>
 
@@ -479,7 +440,7 @@
             <transition name="text-swift" mode="out-in">
               <span :key="currentLanguage">{{
                 t("settings.resetTutorialButton")
-              }}</span>
+                }}</span>
             </transition>
           </button>
         </div>
@@ -499,22 +460,12 @@
 
           <div class="sav-tools-container">
             <!-- 解析存档文件 -->
-            <div
-              class="drop-zone"
-              :class="{ 'drag-over': parseDragOver, processing: isParsing }"
-              @dragover.prevent="parseDragOver = true"
-              @dragleave.prevent="parseDragOver = false"
-              @drop.prevent="handleParseDrop"
-              @click="triggerParseFileInput"
-            >
+            <div class="drop-zone" :class="{ 'drag-over': parseDragOver, processing: isParsing }"
+              @dragover.prevent="parseDragOver = true" @dragleave.prevent="parseDragOver = false"
+              @drop.prevent="handleParseDrop" @click="triggerParseFileInput">
               <div class="drop-zone-content">
-                <font-awesome-icon
-                  :icon="
-                    isParsing ? ['fas', 'spinner'] : ['fas', 'file-import']
-                  "
-                  :spin="isParsing"
-                  class="drop-icon"
-                />
+                <font-awesome-icon :icon="isParsing ? ['fas', 'spinner'] : ['fas', 'file-import']
+                  " :spin="isParsing" class="drop-icon" />
                 <div class="drop-title">
                   {{
                     isParsing
@@ -526,22 +477,12 @@
             </div>
 
             <!-- 打包存档文件 -->
-            <div
-              class="drop-zone"
-              :class="{ 'drag-over': packDragOver, processing: isPacking }"
-              @dragover.prevent="packDragOver = true"
-              @dragleave.prevent="packDragOver = false"
-              @drop.prevent="handlePackDrop"
-              @click="triggerPackFileInput"
-            >
+            <div class="drop-zone" :class="{ 'drag-over': packDragOver, processing: isPacking }"
+              @dragover.prevent="packDragOver = true" @dragleave.prevent="packDragOver = false"
+              @drop.prevent="handlePackDrop" @click="triggerPackFileInput">
               <div class="drop-zone-content">
-                <font-awesome-icon
-                  :icon="
-                    isPacking ? ['fas', 'spinner'] : ['fas', 'file-export']
-                  "
-                  :spin="isPacking"
-                  class="drop-icon"
-                />
+                <font-awesome-icon :icon="isPacking ? ['fas', 'spinner'] : ['fas', 'file-export']
+                  " :spin="isPacking" class="drop-icon" />
                 <div class="drop-title">
                   {{
                     isPacking
@@ -572,30 +513,20 @@
 
     <!-- 更新提示 -->
     <transition name="slide">
-      <div
-        v-if="updateMessage"
-        :class="['update-message', updateMessage.type]"
-        :key="updateMessage.key || updateMessage.text"
-      >
+      <div v-if="updateMessage" :class="['update-message', updateMessage.type]"
+        :key="updateMessage.key || updateMessage.text">
         <font-awesome-icon :icon="updateMessage.icon" />
         <transition name="text-swift" mode="out-in">
           <span :key="currentLanguage + '-' + updateMessage.text">{{
             updateMessage.text
-          }}</span>
+            }}</span>
         </transition>
 
         <!-- 更新操作按钮 -->
         <transition name="expand" mode="out-in">
-          <div
-            v-if="updateStatus === UpdateStatus.AVAILABLE"
-            class="update-actions"
-            :key="'actions-' + updateMessage.key"
-          >
-            <button
-              class="update-btn"
-              @click="downloadAndInstall"
-              :disabled="isProcessing"
-            >
+          <div v-if="updateStatus === UpdateStatus.AVAILABLE" class="update-actions"
+            :key="'actions-' + updateMessage.key">
+            <button class="update-btn" @click="downloadAndInstall" :disabled="isProcessing">
               <font-awesome-icon :icon="['fas', 'external-link-alt']" />
               {{ t("settings.goToDownload") }}
             </button>
@@ -607,17 +538,9 @@
 
         <!-- 自定义操作按钮 -->
         <transition name="expand" mode="out-in">
-          <div
-            v-if="updateMessage.showActions"
-            class="update-actions"
-            :key="'custom-actions-' + updateMessage.key"
-          >
-            <button
-              v-for="(action, index) in updateMessage.actions"
-              :key="index"
-              :class="['update-btn', action.class]"
-              @click="action.action"
-            >
+          <div v-if="updateMessage.showActions" class="update-actions" :key="'custom-actions-' + updateMessage.key">
+            <button v-for="(action, index) in updateMessage.actions" :key="index" :class="['update-btn', action.class]"
+              @click="action.action">
               {{ action.text }}
             </button>
           </div>
@@ -625,11 +548,8 @@
 
         <!-- 更新详情 -->
         <transition name="expand" mode="out-in">
-          <div
-            v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE"
-            class="update-details"
-            :key="'details-' + updateMessage.key"
-          >
+          <div v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE" class="update-details"
+            :key="'details-' + updateMessage.key">
             <h4>
               {{
                 t("settings.updateNotesForVersion", {
@@ -637,10 +557,7 @@
                 })
               }}
             </h4>
-            <div
-              class="update-content"
-              v-html="formatUpdateNotes(updateInfo.body)"
-            ></div>
+            <div class="update-content" v-html="formatUpdateNotes(updateInfo.body)"></div>
           </div>
         </transition>
       </div>
@@ -656,13 +573,19 @@ import {
   setUserUpdateSource,
 } from "../config/updateConfig.js";
 import CustomDropdown from "../components/CustomDropdown.vue";
+import ThemeList from "../components/ThemeList.vue";
+import ThemeEditor from "../components/ThemeEditor.vue";
 import { useI18n } from "vue-i18n";
 import { invoke } from "@tauri-apps/api/core";
+import themeManager from "../styles/theme-config.js";
+import { themeStorage } from "../services/themeStorage.js";
 
 export default {
   name: "Settings",
   components: {
     CustomDropdown,
+    ThemeList,
+    ThemeEditor,
   },
   data() {
     return {
@@ -684,7 +607,7 @@ export default {
       cacheEntryCount: 0,
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: "3.0.0-Alpha-7.2",
+      appVersion: "3.0.0-Alpha-7.3",
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
@@ -698,6 +621,12 @@ export default {
       isPacking: false,
       // 元旦主题控制
       newYearThemeMode: localStorage.getItem("newYearThemeMode") || "auto",
+      // 自定义主题相关
+      showThemeEditor: false,
+      themeEditorMode: 'create', // 'create' or 'edit'
+      editingTheme: null,
+      isImporting: false,
+      isExporting: false,
     };
   },
   computed: {
@@ -1776,6 +1705,153 @@ export default {
       // 如果长度不足8位，只显示前两位
       return steamId.substring(0, 2) + "*".repeat(steamId.length - 2);
     },
+
+    // ========== 自定义主题方法 ==========
+
+    // 打开创建主题编辑器 - 导航到主题编辑器页面
+    handleCreateTheme() {
+      this.$router.push('/theme-editor');
+    },
+
+    // 打开编辑主题编辑器 - 导航到主题编辑器页面（带主题ID）
+    handleEditTheme(theme) {
+      this.$router.push(`/theme-editor/${theme.id}`);
+    },
+
+    // 处理主题删除
+    handleDeleteTheme(theme) {
+      // ThemeList 组件已处理删除逻辑，这里可以添加额外的提示
+      this.updateMessage = {
+        text: this.t("theme.themeDeleted", { name: theme.name }),
+        type: "success",
+        icon: ["fas", "check"],
+        key: `theme-deleted-${this.messageId++}`,
+      };
+      setTimeout(() => this.closeUpdateMessage(), 3000);
+    },
+
+    // 处理主题选择
+    handleSelectTheme(themeId) {
+      // 更新当前主题状态
+      this.currentTheme = themeId;
+      localStorage.setItem("theme", themeId);
+    },
+
+    // 处理主题导入
+    async handleImportTheme() {
+      if (this.isImporting) return;
+
+      this.isImporting = true;
+
+      try {
+        const result = await themeStorage.importTheme();
+
+        if (result.success && result.theme) {
+          // 保存导入的主题
+          const saveResult = await themeManager.addCustomTheme(result.theme);
+
+          if (saveResult.success) {
+            this.updateMessage = {
+              text: this.t("theme.importSuccess", { name: result.theme.name }),
+              type: "success",
+              icon: ["fas", "check"],
+              key: `theme-import-success-${this.messageId++}`,
+            };
+          } else {
+            throw new Error(saveResult.error || this.t("theme.importFailed"));
+          }
+        } else if (result.error) {
+          throw new Error(result.error);
+        }
+        // 如果 result.success 为 false 且没有 error，说明用户取消了对话框
+      } catch (error) {
+        console.error("Failed to import theme:", error);
+        this.updateMessage = {
+          text: this.t("theme.importFailed") + ": " + (error.message || error),
+          type: "error",
+          icon: ["fas", "times"],
+          key: `theme-import-error-${this.messageId++}`,
+        };
+      } finally {
+        this.isImporting = false;
+        setTimeout(() => this.closeUpdateMessage(), 5000);
+      }
+    },
+
+    // 处理主题导出
+    async handleExportTheme(theme) {
+      if (this.isExporting) return;
+
+      this.isExporting = true;
+
+      try {
+        const exportPath = await themeStorage.exportTheme(theme.id);
+
+        if (exportPath) {
+          this.updateMessage = {
+            text: this.t("theme.exportSuccess", { name: theme.name }),
+            type: "success",
+            icon: ["fas", "check"],
+            key: `theme-export-success-${this.messageId++}`,
+          };
+        }
+        // 如果 exportPath 为 null，说明用户取消了对话框
+      } catch (error) {
+        console.error("Failed to export theme:", error);
+        this.updateMessage = {
+          text: this.t("theme.exportFailed") + ": " + (error.message || error),
+          type: "error",
+          icon: ["fas", "times"],
+          key: `theme-export-error-${this.messageId++}`,
+        };
+      } finally {
+        this.isExporting = false;
+        setTimeout(() => this.closeUpdateMessage(), 5000);
+      }
+    },
+
+    // 保存主题（创建或更新）
+    async handleSaveTheme(themeData) {
+      try {
+        const result = await themeManager.addCustomTheme(themeData);
+
+        if (result.success) {
+          this.showThemeEditor = false;
+          this.editingTheme = null;
+
+          // 应用新保存的主题
+          await themeManager.setTheme(themeData.id);
+          this.currentTheme = themeData.id;
+
+          this.updateMessage = {
+            text: this.t("theme.themeSaved", { name: themeData.name }),
+            type: "success",
+            icon: ["fas", "check"],
+            key: `theme-saved-${this.messageId++}`,
+          };
+        } else {
+          throw new Error(result.error || this.t("theme.saveFailed"));
+        }
+      } catch (error) {
+        console.error("Failed to save theme:", error);
+        this.updateMessage = {
+          text: this.t("theme.saveFailed") + ": " + (error.message || error),
+          type: "error",
+          icon: ["fas", "times"],
+          key: `theme-save-error-${this.messageId++}`,
+        };
+      }
+
+      setTimeout(() => this.closeUpdateMessage(), 3000);
+    },
+
+    // 取消主题编辑
+    handleCancelThemeEdit() {
+      // 取消预览
+      themeManager.cancelPreview();
+      this.showThemeEditor = false;
+      this.editingTheme = null;
+    },
   },
   beforeUnmount() {
     // 清理倒计时
@@ -1966,11 +2042,11 @@ export default {
   border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: var(--accent-color);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(26px);
 }
 
@@ -2605,12 +2681,10 @@ input:checked + .slider:before {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent);
   transition: left 0.5s ease;
 }
 
@@ -2634,12 +2708,10 @@ input:checked + .slider:before {
 }
 
 .clear-cache-btn::before {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent);
 }
 
 .clear-cache-btn:hover {
@@ -2673,12 +2745,10 @@ input:checked + .slider:before {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent);
   transition: left 0.5s ease;
 }
 
@@ -2795,5 +2865,139 @@ input:checked + .slider:before {
 
 .setting-hint.new-year-hint svg {
   font-size: 10px;
+}
+
+/* ========== 自定义主题样式 ========== */
+
+/* 自定义主题设置组 */
+.custom-theme-group {
+  overflow: visible;
+  display: none;
+}
+
+.custom-theme-content {
+  padding: var(--space-4) var(--space-5);
+}
+
+/* 主题编辑模态框 */
+.theme-editor-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: var(--space-4);
+}
+
+.theme-editor-container {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-xl);
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--divider-color);
+  background: var(--bg-tertiary);
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.modal-close-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* 模态框动画 */
+.modal-fade-enter-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-fade-leave-active {
+  transition: all 0.2s ease-out;
+}
+
+.modal-fade-enter-from {
+  opacity: 0;
+}
+
+.modal-fade-enter-from .theme-editor-container {
+  transform: scale(0.95) translateY(20px);
+  opacity: 0;
+}
+
+.modal-fade-enter-to {
+  opacity: 1;
+}
+
+.modal-fade-enter-to .theme-editor-container {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.modal-fade-leave-from {
+  opacity: 1;
+}
+
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-fade-leave-to .theme-editor-container {
+  transform: scale(0.95) translateY(10px);
+  opacity: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .theme-editor-modal {
+    padding: var(--space-2);
+  }
+
+  .theme-editor-container {
+    max-height: 95vh;
+  }
+
+  .modal-header {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .modal-title {
+    font-size: 16px;
+  }
 }
 </style>

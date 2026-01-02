@@ -192,20 +192,14 @@ onMounted(() => {
     <TitleBar />
     <div class="content-wrapper">
       <Sidebar @sidebar-expand="handleSidebarExpand" />
-      <main
-        class="main-content"
-        :class="{
-          'sidebar-collapsed': !sidebarExpanded,
-          'sidebar-expanded': sidebarExpanded,
-        }"
-      >
+      <main class="main-content" :class="{
+        'sidebar-collapsed': !sidebarExpanded,
+        'sidebar-expanded': sidebarExpanded,
+      }">
         <router-view v-slot="{ Component, route }">
           <transition name="page-fade" mode="out-in">
             <!-- 使用keep-alive缓存常用组件 -->
-            <keep-alive
-              :include="cachedComponents"
-              :exclude="excludedComponents"
-            >
+            <keep-alive :include="cachedComponents" :exclude="excludedComponents">
               <component :is="Component" :key="route.fullPath" />
             </keep-alive>
           </transition>

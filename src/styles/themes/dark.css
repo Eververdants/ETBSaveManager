@@ -45,6 +45,7 @@
    * 主色调 (Primary Colors)
    * ========================================== */
   --primary: var(--color-blue-apple-dark);
+  --primary-hover: #0096ff;
   --primary-color: var(--color-brand-primary);
   --secondary-color: var(--color-brand-secondary);
   --accent-color: var(--color-blue-apple-dark);

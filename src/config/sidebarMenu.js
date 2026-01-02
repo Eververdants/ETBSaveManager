@@ -47,6 +47,14 @@ export const topMenuItems = [
  */
 export const bottomMenuItems = [
   {
+    id: 7,
+    textKey: "sidebar.feedback",
+    icon: ["fas", "comment-dots"],
+    action: "openFeedback",
+    descriptionKey: "feedback.sidebarDescription",
+    route: "Feedback",
+  },
+  {
     id: 5,
     textKey: "sidebar.about",
     icon: ["fas", "info-circle"],

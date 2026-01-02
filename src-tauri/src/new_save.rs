@@ -34,7 +34,7 @@ const MAIN_STORYLINE_LEVELS: &[(&str, &str)] = &[
 
 /// 全部层级数据（endingLevelsData[0] 的完整列表）：(DisplayName, LevelName)
 /// 用于支线剧情时生成全部层级
-const ALL_LEVELS: &[(&str, &str)] = &[
+pub const ALL_LEVELS: &[(&str, &str)] = &[
     ("Level 0", "Level0"),
     ("Habitable Zone", "TopFloor"),
     ("Habitable Zone", "MiddleFloor"),

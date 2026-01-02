@@ -14,38 +14,21 @@
           $t("quickCreate.configArea.level")
         }}</label>
         <div class="config-options">
-          <label
-            class="custom-radio"
-            @click.prevent="handleLevelModeChange(false)"
-          >
-            <span
-              class="radio-mark"
-              :class="{ checked: !config.level.enabled }"
-            ></span>
+          <label class="custom-radio" @click.prevent="handleLevelModeChange(false)">
+            <span class="radio-mark" :class="{ checked: !config.level.enabled }"></span>
             <span class="radio-text">{{
               $t("quickCreate.configArea.noUnify")
             }}</span>
           </label>
-          <label
-            class="custom-radio"
-            @click.prevent="handleLevelModeChange(true)"
-          >
-            <span
-              class="radio-mark"
-              :class="{ checked: config.level.enabled }"
-            ></span>
+          <label class="custom-radio" @click.prevent="handleLevelModeChange(true)">
+            <span class="radio-mark" :class="{ checked: config.level.enabled }"></span>
             <span class="radio-text">{{
               $t("quickCreate.configArea.setAllTo")
             }}</span>
           </label>
         </div>
-        <CustomDropdown
-          v-if="config.level.enabled"
-          :model-value="config.level.value || ''"
-          :options="levelOptions"
-          :placeholder="$t('common.select')"
-          @update:model-value="handleLevelValueChange"
-        />
+        <CustomDropdown v-if="config.level.enabled" :model-value="config.level.value || ''" :options="levelOptions"
+          :placeholder="$t('common.select')" @update:model-value="handleLevelValueChange" />
       </div>
 
       <!-- 存档难度配置 -->
@@ -54,38 +37,22 @@
           $t("quickCreate.configArea.difficulty")
         }}</label>
         <div class="config-options">
-          <label
-            class="custom-radio"
-            @click.prevent="handleDifficultyModeChange(false)"
-          >
-            <span
-              class="radio-mark"
-              :class="{ checked: !config.difficulty.enabled }"
-            ></span>
+          <label class="custom-radio" @click.prevent="handleDifficultyModeChange(false)">
+            <span class="radio-mark" :class="{ checked: !config.difficulty.enabled }"></span>
             <span class="radio-text">{{
               $t("quickCreate.configArea.noUnify")
             }}</span>
           </label>
-          <label
-            class="custom-radio"
-            @click.prevent="handleDifficultyModeChange(true)"
-          >
-            <span
-              class="radio-mark"
-              :class="{ checked: config.difficulty.enabled }"
-            ></span>
+          <label class="custom-radio" @click.prevent="handleDifficultyModeChange(true)">
+            <span class="radio-mark" :class="{ checked: config.difficulty.enabled }"></span>
             <span class="radio-text">{{
               $t("quickCreate.configArea.setAllTo")
             }}</span>
           </label>
         </div>
-        <CustomDropdown
-          v-if="config.difficulty.enabled"
-          :model-value="config.difficulty.value || ''"
-          :options="difficultyOptions"
-          :placeholder="$t('common.select')"
-          @update:model-value="handleDifficultyValueChange"
-        />
+        <CustomDropdown v-if="config.difficulty.enabled" :model-value="config.difficulty.value || ''"
+          :options="difficultyOptions" :placeholder="$t('common.select')"
+          @update:model-value="handleDifficultyValueChange" />
       </div>
 
       <!-- 实际难度配置 -->
@@ -94,38 +61,22 @@
           $t("quickCreate.configArea.actualDifficulty")
         }}</label>
         <div class="config-options">
-          <label
-            class="custom-radio"
-            @click.prevent="handleActualDifficultyModeChange(false)"
-          >
-            <span
-              class="radio-mark"
-              :class="{ checked: !config.actualDifficulty.enabled }"
-            ></span>
+          <label class="custom-radio" @click.prevent="handleActualDifficultyModeChange(false)">
+            <span class="radio-mark" :class="{ checked: !config.actualDifficulty.enabled }"></span>
             <span class="radio-text">{{
               $t("quickCreate.configArea.noUnify")
             }}</span>
           </label>
-          <label
-            class="custom-radio"
-            @click.prevent="handleActualDifficultyModeChange(true)"
-          >
-            <span
-              class="radio-mark"
-              :class="{ checked: config.actualDifficulty.enabled }"
-            ></span>
+          <label class="custom-radio" @click.prevent="handleActualDifficultyModeChange(true)">
+            <span class="radio-mark" :class="{ checked: config.actualDifficulty.enabled }"></span>
             <span class="radio-text">{{
               $t("quickCreate.configArea.setAllTo")
             }}</span>
           </label>
         </div>
-        <CustomDropdown
-          v-if="config.actualDifficulty.enabled"
-          :model-value="config.actualDifficulty.value || ''"
-          :options="difficultyOptions"
-          :placeholder="$t('common.select')"
-          @update:model-value="handleActualDifficultyValueChange"
-        />
+        <CustomDropdown v-if="config.actualDifficulty.enabled" :model-value="config.actualDifficulty.value || ''"
+          :options="difficultyOptions" :placeholder="$t('common.select')"
+          @update:model-value="handleActualDifficultyValueChange" />
       </div>
 
       <!-- 背包模板配置 -->
@@ -134,38 +85,22 @@
           $t("quickCreate.configArea.inventory")
         }}</label>
         <div class="config-options">
-          <label
-            class="custom-radio"
-            @click.prevent="handleInventoryModeChange(false)"
-          >
-            <span
-              class="radio-mark"
-              :class="{ checked: !config.inventory.enabled }"
-            ></span>
+          <label class="custom-radio" @click.prevent="handleInventoryModeChange(false)">
+            <span class="radio-mark" :class="{ checked: !config.inventory.enabled }"></span>
             <span class="radio-text">{{
               $t("quickCreate.configArea.noUnify")
             }}</span>
           </label>
-          <label
-            class="custom-radio"
-            @click.prevent="handleInventoryModeChange(true)"
-          >
-            <span
-              class="radio-mark"
-              :class="{ checked: config.inventory.enabled }"
-            ></span>
+          <label class="custom-radio" @click.prevent="handleInventoryModeChange(true)">
+            <span class="radio-mark" :class="{ checked: config.inventory.enabled }"></span>
             <span class="radio-text">{{
               $t("quickCreate.configArea.useTemplate")
             }}</span>
           </label>
         </div>
         <div v-if="config.inventory.enabled" class="inventory-config">
-          <CustomDropdown
-            :model-value="config.inventory.templateName || ''"
-            :options="inventoryTemplateOptions"
-            :placeholder="$t('common.select')"
-            @update:model-value="handleInventoryTemplateChange"
-          />
+          <CustomDropdown :model-value="config.inventory.templateName || ''" :options="inventoryTemplateOptions"
+            :placeholder="$t('common.select')" @update:model-value="handleInventoryTemplateChange" />
         </div>
       </div>
 
@@ -175,57 +110,39 @@
           $t("quickCreate.configArea.smartRules")
         }}</label>
         <div class="checkbox-options">
-          <label
-            class="custom-checkbox"
-            @click.prevent="
-              handleSmartRuleChange(
-                'autoAssignLevel',
-                !smartRules.autoAssignLevel
-              )
-            "
-          >
-            <span
-              class="checkbox-mark"
-              :class="{ checked: smartRules.autoAssignLevel }"
-            >
+          <label class="custom-checkbox" @click.prevent="
+            handleSmartRuleChange(
+              'autoAssignLevel',
+              !smartRules.autoAssignLevel
+            )
+            ">
+            <span class="checkbox-mark" :class="{ checked: smartRules.autoAssignLevel }">
               <font-awesome-icon :icon="['fas', 'check']" class="check-icon" />
             </span>
             <span class="checkbox-text">{{
               $t("quickCreate.configArea.autoAssignLevel")
             }}</span>
           </label>
-          <label
-            class="custom-checkbox"
-            @click.prevent="
-              handleSmartRuleChange(
-                'autoDetectDifficulty',
-                !smartRules.autoDetectDifficulty
-              )
-            "
-          >
-            <span
-              class="checkbox-mark"
-              :class="{ checked: smartRules.autoDetectDifficulty }"
-            >
+          <label class="custom-checkbox" @click.prevent="
+            handleSmartRuleChange(
+              'autoDetectDifficulty',
+              !smartRules.autoDetectDifficulty
+            )
+            ">
+            <span class="checkbox-mark" :class="{ checked: smartRules.autoDetectDifficulty }">
               <font-awesome-icon :icon="['fas', 'check']" class="check-icon" />
             </span>
             <span class="checkbox-text">{{
               $t("quickCreate.configArea.autoDetectDifficulty")
             }}</span>
           </label>
-          <label
-            class="custom-checkbox"
-            @click.prevent="
-              handleSmartRuleChange(
-                'autoRenameDuplicates',
-                !smartRules.autoRenameDuplicates
-              )
-            "
-          >
-            <span
-              class="checkbox-mark"
-              :class="{ checked: smartRules.autoRenameDuplicates }"
-            >
+          <label class="custom-checkbox" @click.prevent="
+            handleSmartRuleChange(
+              'autoRenameDuplicates',
+              !smartRules.autoRenameDuplicates
+            )
+            ">
+            <span class="checkbox-mark" :class="{ checked: smartRules.autoRenameDuplicates }">
               <font-awesome-icon :icon="['fas', 'check']" class="check-icon" />
             </span>
             <span class="checkbox-text">{{
@@ -609,7 +526,7 @@ export default {
   color: var(--text-primary);
 }
 
-.radio-mark.checked ~ .radio-text {
+.radio-mark.checked~.radio-text {
   color: var(--text-primary);
 }
 
@@ -668,7 +585,7 @@ export default {
   color: var(--text-primary);
 }
 
-.checkbox-mark.checked ~ .checkbox-text {
+.checkbox-mark.checked~.checkbox-text {
   color: var(--text-primary);
 }
 

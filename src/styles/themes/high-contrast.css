@@ -1,0 +1,360 @@
+/**
+ * ============================================
+ * ♿ 高对比度主题 (High Contrast Theme)
+ * ============================================
+ * 专为视觉障碍用户设计，满足 WCAG AAA 标准
+ * 对比度要求：普通文本 >= 7:1，大文本 >= 4.5:1
+ */
+
+[data-theme="high-contrast"] {
+  /* ==========================================
+   * 背景层级 (Background Hierarchy)
+   * ========================================== */
+  --bg: #000000;
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-tertiary: #141414;
+  --bg-elevated: #1a1a1a;
+
+  /* ==========================================
+   * 文本层级 (Text Hierarchy)
+   * 所有文本与背景对比度 >= 7:1
+   * ========================================== */
+  --text: #ffffff;
+  --text-color: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: #f0f0f0;
+  --text-tertiary: #d0d0d0;
+  --text-disabled: #808080;
+  --text-inverse: #000000;
+
+  /* ==========================================
+   * 表面/卡片 (Surface/Card)
+   * ========================================== */
+  --surface-color: #0a0a0a;
+  --surface-hover: #1a1a1a;
+  --card-bg: #0a0a0a;
+
+  /* ==========================================
+   * 边框/分割线 (Border/Divider)
+   * 使用高可见度边框
+   * ========================================== */
+  --border-color: #ffffff;
+  --border-light: rgba(255, 255, 255, 0.5);
+  --divider-color: #ffffff;
+  --divider-light: rgba(255, 255, 255, 0.3);
+
+  /* ==========================================
+   * 主色调 (Primary Colors)
+   * 使用高对比度的亮色
+   * ========================================== */
+  --primary: #00ff00;
+  --primary-hover: #33ff33;
+  --primary-color: #00ff00;
+  --secondary-color: #ffff00;
+  --accent-color: #00ffff;
+  --accent-hover: #33ffff;
+
+  /* ==========================================
+   * 状态颜色 (Status Colors)
+   * 使用高饱和度颜色确保可见性
+   * ========================================== */
+  --success-color: #00ff00;
+  --error-color: #ff3333;
+  --warning-color: #ffff00;
+  --info-color: #00ffff;
+
+  /* ==========================================
+   * 侧边栏 (Sidebar)
+   * ========================================== */
+  --sidebar-bg: #000000;
+  --sidebar-text-color: #ffffff;
+  --sidebar-border-color: #ffffff;
+  --sidebar-hover-bg: #1a1a1a;
+  --sidebar-item-hover-bg: #1a1a1a;
+  --sidebar-active-bg: #003300;
+  --sidebar-active-color: #00ff00;
+  --sidebar-active-border: #00ff00;
+  --sidebar-active-hover-bg: #004400;
+
+  /* ==========================================
+   * 标题栏 (Titlebar)
+   * ========================================== */
+  --titlebar-bg: #000000;
+  --titlebar-border: #ffffff;
+  --titlebar-button-hover: #333333;
+
+  /* ==========================================
+   * 滚动条 (Scrollbar)
+   * ========================================== */
+  --scrollbar-track: #1a1a1a;
+  --scrollbar-thumb: #666666;
+  --scrollbar-thumb-hover: #888888;
+
+  /* ==========================================
+   * 下拉菜单 (Dropdown)
+   * ========================================== */
+  --dropdown-bg: #000000;
+  --dropdown-border: #ffffff;
+  --dropdown-border-hover: #00ff00;
+  --dropdown-text: #ffffff;
+  --dropdown-icon: #ffffff;
+  --dropdown-shadow: rgba(255, 255, 255, 0.2);
+  --dropdown-shadow-hover: rgba(0, 255, 0, 0.3);
+  --dropdown-hover-bg: #1a1a1a;
+  --dropdown-selected-bg: #003300;
+  --dropdown-selected-text: #00ff00;
+
+  /* ==========================================
+   * 搜索遮罩 (Search Overlay)
+   * ========================================== */
+  --search-overlay-bg: rgba(0, 0, 0, 0.95);
+  --search-overlay-backdrop: blur(4px);
+
+  /* ==========================================
+   * 毛玻璃效果 (Glass Effect)
+   * 高对比度模式下减少透明效果
+   * ========================================== */
+  --glass-bg: #0a0a0a;
+  --glass-border: #ffffff;
+  --glass-border-light: rgba(255, 255, 255, 0.5);
+  --glass-shadow-light: rgba(255, 255, 255, 0.1);
+  --glass-shadow-medium: rgba(255, 255, 255, 0.05);
+  --glass-backdrop-filter: none;
+
+  /* ==========================================
+   * 卡片样式 (Card Styles)
+   * ========================================== */
+  --card-shadow: 0 0 0 2px #ffffff;
+  --card-shadow-hover: 0 0 0 3px #00ff00;
+  --card-border: 2px solid #ffffff;
+  --card-radius: 8px;
+  --card-padding: 16px;
+  --card-highlight: none;
+  --card-active-indicator: #00ff00;
+  --card-transition: all 0.2s ease;
+  --card-hover-transform: none;
+
+  /* ==========================================
+   * 兼容旧版卡片变量 (Legacy Card Variables)
+   * ========================================== */
+  --Card-bg-primary: var(--bg-secondary);
+  --Card-bg-secondary: var(--bg-tertiary);
+  --Card-border-color: var(--border-color);
+  --Card-shadow-normal: var(--card-shadow);
+  --Card-shadow-hover: var(--card-shadow-hover);
+  --Card-accent-primary: var(--accent-color);
+  --Card-accent-secondary: var(--accent-hover);
+  --Card-text-primary: var(--text-primary);
+  --Card-text-secondary: var(--text-secondary);
+  --Card-surface-overlay: rgba(255, 255, 255, 0.1);
+
+  /* ==========================================
+   * About 页面 (About Page)
+   * ========================================== */
+  --about-glass-bg: var(--bg-secondary);
+  --about-glass-border: var(--border-color);
+  --about-glass-shadow: rgba(255, 255, 255, 0.1);
+  --about-list-bg: var(--bg-secondary);
+  --about-hover-bg: var(--bg-tertiary);
+  --about-border-light: var(--border-color);
+  --about-header-bg: var(--bg-secondary);
+  --about-header-border: var(--border-color);
+
+  /* ==========================================
+   * 浮动按钮 (FAB)
+   * ========================================== */
+  --fab-size: 60px;
+
+  /* ==========================================
+   * 按钮颜色 (Button Colors)
+   * ========================================== */
+  --btn-primary-bg: #003300;
+  --btn-primary-hover: #004400;
+  --btn-success-bg: #003300;
+  --btn-danger-bg: #330000;
+  --btn-warning-bg: #333300;
+}
+
+
+/* ==========================================
+ * 高对比度增强样式 (High Contrast Enhancements)
+ * ========================================== */
+
+/* 强化焦点指示器 */
+[data-theme="high-contrast"] *:focus {
+  outline: 3px solid #00ff00 !important;
+  outline-offset: 2px !important;
+}
+
+[data-theme="high-contrast"] *:focus:not(:focus-visible) {
+  outline: none !important;
+}
+
+[data-theme="high-contrast"] *:focus-visible {
+  outline: 3px solid #00ff00 !important;
+  outline-offset: 2px !important;
+}
+
+/* 链接样式 - 使用下划线增强可识别性 */
+[data-theme="high-contrast"] a {
+  color: #00ffff;
+  text-decoration: underline;
+}
+
+[data-theme="high-contrast"] a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+[data-theme="high-contrast"] a:visited {
+  color: #ff00ff;
+}
+
+/* 按钮增强 */
+[data-theme="high-contrast"] button,
+[data-theme="high-contrast"] .btn {
+  border: 2px solid #ffffff !important;
+  background-color: #000000;
+  color: #ffffff;
+}
+
+[data-theme="high-contrast"] button:hover,
+[data-theme="high-contrast"] .btn:hover {
+  background-color: #1a1a1a;
+  border-color: #00ff00 !important;
+  color: #00ff00;
+}
+
+[data-theme="high-contrast"] button:active,
+[data-theme="high-contrast"] .btn:active {
+  background-color: #003300;
+}
+
+[data-theme="high-contrast"] button:disabled,
+[data-theme="high-contrast"] .btn:disabled {
+  border-color: #666666 !important;
+  color: #666666;
+  background-color: #1a1a1a;
+}
+
+/* 主要按钮 */
+[data-theme="high-contrast"] button.primary,
+[data-theme="high-contrast"] .btn-primary {
+  background-color: #003300;
+  border-color: #00ff00 !important;
+  color: #00ff00;
+}
+
+[data-theme="high-contrast"] button.primary:hover,
+[data-theme="high-contrast"] .btn-primary:hover {
+  background-color: #004400;
+}
+
+/* 输入框增强 */
+[data-theme="high-contrast"] input,
+[data-theme="high-contrast"] textarea,
+[data-theme="high-contrast"] select {
+  background-color: #000000;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+}
+
+[data-theme="high-contrast"] input:focus,
+[data-theme="high-contrast"] textarea:focus,
+[data-theme="high-contrast"] select:focus {
+  border-color: #00ff00;
+}
+
+[data-theme="high-contrast"] input::placeholder,
+[data-theme="high-contrast"] textarea::placeholder {
+  color: #808080;
+}
+
+/* 卡片增强 */
+[data-theme="high-contrast"] .archive-card,
+[data-theme="high-contrast"] .level-card,
+[data-theme="high-contrast"] .setting-item {
+  border: 2px solid #ffffff;
+}
+
+[data-theme="high-contrast"] .archive-card:hover,
+[data-theme="high-contrast"] .level-card:hover,
+[data-theme="high-contrast"] .setting-item:hover {
+  border-color: #00ff00;
+}
+
+/* 侧边栏活跃项增强 */
+[data-theme="high-contrast"] .sidebar-item.active {
+  border-left: 4px solid #00ff00;
+  background-color: #003300;
+}
+
+/* 禁用动画和过渡效果以提高可访问性 */
+[data-theme="high-contrast"] * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* 移除装饰性阴影和渐变 */
+[data-theme="high-contrast"] *::before,
+[data-theme="high-contrast"] *::after {
+  background-image: none !important;
+}
+
+/* 表格增强 */
+[data-theme="high-contrast"] table {
+  border: 2px solid #ffffff;
+}
+
+[data-theme="high-contrast"] th,
+[data-theme="high-contrast"] td {
+  border: 1px solid #ffffff;
+}
+
+[data-theme="high-contrast"] th {
+  background-color: #1a1a1a;
+}
+
+/* 选中状态增强 */
+[data-theme="high-contrast"] ::selection {
+  background-color: #00ff00;
+  color: #000000;
+}
+
+/* 复选框和单选框增强 */
+[data-theme="high-contrast"] input[type="checkbox"],
+[data-theme="high-contrast"] input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+}
+
+[data-theme="high-contrast"] input[type="checkbox"]:checked,
+[data-theme="high-contrast"] input[type="radio"]:checked {
+  background-color: #00ff00;
+  border-color: #00ff00;
+}
+
+/* 进度条增强 */
+[data-theme="high-contrast"] progress {
+  border: 2px solid #ffffff;
+  background-color: #000000;
+}
+
+[data-theme="high-contrast"] progress::-webkit-progress-bar {
+  background-color: #000000;
+}
+
+[data-theme="high-contrast"] progress::-webkit-progress-value {
+  background-color: #00ff00;
+}
+
+/* 工具提示增强 */
+[data-theme="high-contrast"] [data-tooltip]::after,
+[data-theme="high-contrast"] .tooltip {
+  background-color: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+}

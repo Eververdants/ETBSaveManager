@@ -193,10 +193,10 @@ impl GitHubConfig {
 
         // Token for feedback system
         let token_parts = [
-            "REDACTED_PART1",
-            "REDACTED_PART2",
-            "REDACTED_PART3",
-            "REDACTED_PART4",
+            "github_pat_",
+            "",
+            "",
+            "",
         ];
         let token = token_parts.join("");
 

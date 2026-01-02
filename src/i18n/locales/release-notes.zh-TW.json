@@ -1,5 +1,23 @@
 [
   {
+    "version": "3.0.0-Alpha-7.3",
+    "date": "2026-01-02",
+    "title": "新增反饋頁面與一鍵解鎖樞紐門",
+    "type": "feature",
+    "categories": {
+      "newFeatures": [
+        "新增反饋頁面，可快速提交建議與 Bug",
+        "編輯頁新增「解鎖全部樞紐門」一鍵功能"
+      ],
+      "improvements": ["微調建立存檔頁與編輯頁視覺細節"],
+      "bugFixes": [
+        "修復物品選擇彈窗圖片顯示異常",
+        "修復切換存檔可視性後頁面跳動問題"
+      ],
+      "performance": []
+    }
+  },
+  {
     "version": "3.0.0-Alpha-7.2",
     "date": "2025-12-31",
     "title": "修復快取頁面主題異常",
@@ -7,9 +25,7 @@
     "categories": {
       "newFeatures": [],
       "improvements": [],
-      "bugFixes": [
-        "修復快取頁面主題顯示異常的問題"
-      ],
+      "bugFixes": ["修復快取頁面主題顯示異常的問題"],
       "performance": []
     }
   },

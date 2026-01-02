@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.0.0--Alpha--7.2-blue.svg" alt="Version"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.0.0--Alpha--7.3-blue.svg" alt="Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/Platform-Windows-0078D4.svg?logo=windows" alt="Platform">
   <img src="https://img.shields.io/badge/Framework-Tauri%202.0-orange.svg" alt="Framework">
@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="./README-CN.md">中文</a> | <a href="#">English</a>
+  <a href="./README-CN.md">简体中文</a> | <a href="./README-HANT.md">繁體中文</a> | <a href="#">English</a>
 </p>
 
 ---
@@ -24,23 +24,27 @@
 ## ✨ Features
 
 ### 🗂️ Save Management
+
 - **Full CRUD Operations** — Create, edit, delete, copy, hide/show saves
 - **Batch Operations** — Process multiple saves simultaneously
 - **Smart Filtering** — Filter by level, difficulty, game mode
 - **Quick Search** — Fuzzy matching to locate saves instantly
 
 ### 🎨 Modern UI/UX
-- **Apple-inspired Design** — Clean, intuitive interface with smooth animations
+
+- **Modern Design** — Clean, intuitive interface with smooth animations
 - **Theme System** — Light, Dark, and seasonal themes (New Year special!)
 - **Responsive Layout** — Collapsible sidebar, adaptive components
 - **Hardware Accelerated** — GPU-optimized rendering for smooth performance
 
 ### 🌍 Internationalization
+
 - Simplified Chinese (简体中文)
 - Traditional Chinese (繁體中文)
 - English
 
 ### 🛠️ Advanced Features
+
 - **Multiple Creation Modes**
   - Quick Create — Streamlined workflow for fast save generation
   - Blueprint Create — Template-based save creation
@@ -48,6 +52,7 @@
   - Standard Create — Full customization options
 - **Inventory Editor** — Modify player inventory directly
 - **Steam Cache Management** — Manage local Steam cache data
+- **Feedback System** — Built-in feedback submission to developers
 - **Performance Monitor** — Built-in diagnostics (dev mode)
 
 ---
@@ -62,7 +67,7 @@
 
 ### Download Release
 
-1. Go to [Releases](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-7.2)
+1. Go to [Releases](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-7.3)
 2. Download the Windows installer (`.msi` or `.exe`)
 3. Run the installer
 
@@ -86,6 +91,7 @@ npm run tauri build
 ```
 
 **Prerequisites:**
+
 - Node.js 18+
 - Rust toolchain
 - Platform-specific dependencies (see [Tauri Prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites))
@@ -94,15 +100,15 @@ npm run tauri build
 
 ## 🧰 Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | Vue 3 + Composition API |
-| Styling | CSS Variables + Theme System |
-| Build | Vite 6 |
-| Desktop | Tauri 2.0 + Rust |
-| i18n | vue-i18n |
-| Animation | GSAP |
-| Virtual Scroll | @tanstack/vue-virtual |
+| Layer          | Technology                   |
+| -------------- | ---------------------------- |
+| Frontend       | Vue 3 + Composition API      |
+| Styling        | CSS Variables + Theme System |
+| Build          | Vite 6                       |
+| Desktop        | Tauri 2.0 + Rust             |
+| i18n           | vue-i18n                     |
+| Animation      | GSAP                         |
+| Virtual Scroll | @tanstack/vue-virtual        |
 
 ---
 
@@ -127,18 +133,19 @@ ETBSaveManager/
 
 ## 🚧 Development Status
 
-**Current Version:** `v3.0.0-Alpha-7.2`
+**Current Version:** `v3.0.0-Alpha-7.3`
 
-| Feature | Status |
-|---------|--------|
-| Core Save Management | ✅ Complete |
-| Search & Filter | ✅ Complete |
-| Theme System | ✅ Complete |
-| Multi-language | ✅ Complete |
-| Save Data Editor | ✅ Complete |
-| Creation Modes | ✅ Complete |
-| Level Info Editor | 🔄 Planned |
-| Plugin System | 🔄 In Progress (10%) |
+| Feature              | Status               |
+| -------------------- | -------------------- |
+| Core Save Management | ✅ Complete          |
+| Search & Filter      | ✅ Complete          |
+| Theme System         | ✅ Complete          |
+| Multi-language       | ✅ Complete          |
+| Save Data Editor     | ✅ Complete          |
+| Creation Modes       | ✅ Complete          |
+| Feedback System      | ✅ Complete          |
+| Level Info Editor    | 🔄 Planned           |
+| Plugin System        | 🔄 In Progress (10%) |
 
 ---
 

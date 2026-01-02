@@ -337,7 +337,6 @@ const clearAllFilters = () => {
 
 const handleToggleVisibility = (archive) => {
   handleToggleVisibilityBase(archive, {
-    onRefresh: () => initializeArchives(true),
     onSuccess: () => protectFloatingButtonPosition(),
   });
 };

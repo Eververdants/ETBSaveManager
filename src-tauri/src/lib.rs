@@ -1,13 +1,18 @@
 mod cli_handlers;
 mod common;
 mod encryption;
+mod feedback_commands;
+mod feedback_queue;
 mod get_file_path;
+mod github_client;
 mod gpu_settings;
 mod new_save;
 mod player_data;
 mod save_editor;
 mod save_utils;
 mod steam_api;
+mod system_info;
+mod theme_commands;
 
 use common::{
     add_save_to_mainsave, extract_archive_name, get_save_games_dir, get_visible_saves_set,
@@ -22,10 +27,14 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
+use tauri::{Manager, State};
 
 #[tauri::command]
-async fn load_all_saves() -> Result<Vec<SaveFileInfo>, String> {
+async fn load_all_saves(
+    log_state: State<'_, feedback_commands::BackendLogState>,
+) -> Result<Vec<SaveFileInfo>, String> {
     let start_time = Instant::now();
+    log_state.add_log("info", "开始加载所有存档...");
 
     // 并行获取文件列表和可见存档集合
     let (paths_result, visible_saves_result) = rayon::join(
@@ -37,10 +46,9 @@ async fn load_all_saves() -> Result<Vec<SaveFileInfo>, String> {
     let visible_saves = Arc::new(visible_saves_result?);
     let path_count = paths.len();
 
-    println!(
-        "=== load_all_saves: 共 {} 个存档，开始并行加载 ===",
-        path_count
-    );
+    let msg = format!("load_all_saves: 共 {} 个存档，开始并行加载", path_count);
+    log_state.add_log("info", &msg);
+    println!("=== {} ===", msg);
 
     // 使用 rayon 并行处理所有存档文件
     let results: Vec<SaveFileInfo> = paths
@@ -50,12 +58,14 @@ async fn load_all_saves() -> Result<Vec<SaveFileInfo>, String> {
         .collect();
 
     let elapsed = start_time.elapsed();
-    println!(
-        "=== load_all_saves 完成: 成功加载 {}/{} 个存档，耗时 {:.2}ms ===",
+    let msg = format!(
+        "load_all_saves 完成: 成功加载 {}/{} 个存档，耗时 {:.2}ms",
         results.len(),
         path_count,
         elapsed.as_secs_f64() * 1000.0
     );
+    log_state.add_log("info", &msg);
+    println!("=== {} ===", msg);
 
     Ok(results)
 }
@@ -238,6 +248,11 @@ fn get_player_data(file_path: String) -> Result<Value, String> {
 }
 
 #[tauri::command]
+fn unlock_all_hub_doors(file_path: String) -> Result<String, String> {
+    save_editor::unlock_all_hub_doors(&file_path)
+}
+
+#[tauri::command]
 fn handle_edit_save(json_input: Value) -> Result<String, String> {
     let save_data = json_input
         .get("saveData")
@@ -362,6 +377,10 @@ pub fn run() {
     let args_string = browser_args.join(" ");
     println!("应用GPU加速设置: {}", args_string);
 
+    // 初始化反馈系统状态
+    let feedback_state = feedback_commands::FeedbackState::new();
+    let backend_log_state = feedback_commands::BackendLogState::new();
+
     // 构建Tauri应用
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -369,6 +388,36 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_fs::init())
+        .manage(feedback_state)
+        .manage(backend_log_state)
+        .setup(|app| {
+            // 初始化反馈队列数据库
+            let app_data_dir = app.path().app_data_dir();
+            println!("App data dir result: {:?}", app_data_dir);
+
+            match app_data_dir {
+                Ok(dir) => {
+                    println!("Initializing feedback queue in: {:?}", dir);
+                    // 确保目录存在
+                    if !dir.exists() {
+                        if let Err(e) = std::fs::create_dir_all(&dir) {
+                            println!("Warning: Failed to create app data dir: {}", e);
+                        }
+                    }
+
+                    let state = app.state::<feedback_commands::FeedbackState>();
+                    if let Err(e) = state.init(&dir) {
+                        println!("Warning: Failed to initialize feedback queue: {}", e);
+                    } else {
+                        println!("Feedback queue initialized successfully");
+                    }
+                }
+                Err(e) => {
+                    println!("Warning: Could not get app data dir: {}", e);
+                }
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             load_all_saves,
             delete_file,
@@ -379,6 +428,7 @@ pub fn run() {
             decrypt_file_command,
             clear_saved_password_command,
             get_player_data,
+            unlock_all_hub_doors,
             handle_edit_save,
             get_local_appdata,
             ensure_dir_exists,
@@ -398,7 +448,21 @@ pub fn run() {
             steam_api::get_all_steam_cache_entries,
             steam_api::cleanup_expired_steam_cache,
             steam_api::get_steam_usernames_command,
-            set_window_title
+            set_window_title,
+            feedback_commands::submit_feedback,
+            feedback_commands::get_feedback_history,
+            feedback_commands::retry_feedback,
+            feedback_commands::delete_feedback,
+            feedback_commands::get_system_info,
+            feedback_commands::get_backend_logs,
+            feedback_commands::add_backend_log,
+            theme_commands::save_custom_theme,
+            theme_commands::load_custom_themes,
+            theme_commands::delete_custom_theme,
+            theme_commands::get_theme_config,
+            theme_commands::set_active_theme,
+            theme_commands::export_theme_to_file,
+            theme_commands::import_theme_from_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

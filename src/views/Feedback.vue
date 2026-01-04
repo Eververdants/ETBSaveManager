@@ -210,6 +210,7 @@
 import { useI18n } from "vue-i18n";
 import CustomDropdown from "../components/CustomDropdown.vue";
 import { feedbackService } from "../services/feedbackService.js";
+import storage from "../services/storageService";
 
 export default {
   name: "Feedback",
@@ -233,7 +234,7 @@ export default {
       titleError: "",
       descriptionError: "",
       attachmentError: "",
-      currentLanguage: localStorage.getItem("language") || "zh-CN",
+      currentLanguage: storage.getItem("language") || "zh-CN",
     };
   },
   computed: {
@@ -342,7 +343,7 @@ export default {
     },
 
     handleLanguageChange(event) {
-      this.currentLanguage = event.detail?.language || localStorage.getItem("language");
+      this.currentLanguage = event.detail?.language || storage.getItem("language");
     },
 
     async loadSystemInfo() {

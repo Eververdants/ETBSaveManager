@@ -1,4 +1,5 @@
 import { getCurrentUpdateSource } from "../config/updateConfig.js";
+import storage from "./storageService";
 
 // 版本信息
 const CURRENT_VERSION = "3.0.0-Alpha-6.1";
@@ -341,7 +342,7 @@ class UpdateService {
    * @returns {boolean} 是否可以检查更新
    */
   canCheckUpdate() {
-    const lastCheck = localStorage.getItem("lastUpdateCheck");
+    const lastCheck = storage.getItem("lastUpdateCheck");
     if (!lastCheck) return true;
 
     const now = Date.now();
@@ -355,7 +356,7 @@ class UpdateService {
    * 记录最后检查时间
    */
   recordLastCheck() {
-    localStorage.setItem("lastUpdateCheck", Date.now().toString());
+    storage.setItem("lastUpdateCheck", Date.now().toString());
   }
 
   /**

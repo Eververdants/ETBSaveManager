@@ -7,6 +7,7 @@ import {
 } from "./useConfigResolver";
 import { validate } from "./useValidator";
 import { parseName } from "./useNameParser";
+import storage from "../services/storageService";
 
 /**
  * 批量创建配置
@@ -130,7 +131,7 @@ const draftStorage = {
         smartRules: draftData.smartRules,
         firstArchive: draftData.archives[0],
       });
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+      storage.setItem(DRAFT_KEY, JSON.stringify(draftData));
       return true;
     } catch (error) {
       console.error("保存草稿失败:", error);
@@ -144,7 +145,7 @@ const draftStorage = {
    */
   load() {
     try {
-      const draftJson = localStorage.getItem(DRAFT_KEY);
+      const draftJson = storage.getItem(DRAFT_KEY);
       if (!draftJson) return null;
 
       const draftData = JSON.parse(draftJson);
@@ -166,7 +167,7 @@ const draftStorage = {
    */
   clear() {
     try {
-      localStorage.removeItem(DRAFT_KEY);
+      storage.removeItem(DRAFT_KEY);
     } catch (error) {
       console.error("清除草稿失败:", error);
     }
@@ -178,7 +179,7 @@ const draftStorage = {
    */
   hasUnsavedDraft() {
     try {
-      const draftJson = localStorage.getItem(DRAFT_KEY);
+      const draftJson = storage.getItem(DRAFT_KEY);
       if (!draftJson) return false;
 
       const draftData = JSON.parse(draftJson);
@@ -194,7 +195,7 @@ const draftStorage = {
    */
   getDraftInfo() {
     try {
-      const draftJson = localStorage.getItem(DRAFT_KEY);
+      const draftJson = storage.getItem(DRAFT_KEY);
       if (!draftJson) return null;
 
       const draftData = JSON.parse(draftJson);

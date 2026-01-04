@@ -136,12 +136,16 @@ const presetThemes = computed(() => {
     'light': 'light',
     'dark': 'dark',
     'new-year': 'newYear',
-    'high-contrast': 'highContrast'
+    'high-contrast': 'highContrast',
+    'spring-festival-dark': 'springFestivalDark',
+    'spring-festival-light': 'springFestivalLight'
   };
 
-  return Object.values(PRESET_THEMES).map(theme => ({
+  // 获取所有主题（包括限时主题的可用性信息）
+  return themeManager.getAllThemes().filter(theme => theme.type === 'preset').map(theme => ({
     ...theme,
-    name: t(`common.${themeIdToKey[theme.id] || theme.id}`)
+    name: t(`common.${themeIdToKey[theme.id] || theme.id}`),
+    displayName: theme.icon ? `${theme.icon} ${t(`common.${themeIdToKey[theme.id] || theme.id}`)}` : t(`common.${themeIdToKey[theme.id] || theme.id}`)
   }));
 });
 
@@ -383,6 +387,34 @@ onMounted(async () => {
 
 .preview-new-year .mini-card {
   background: rgba(255, 255, 255, 0.9);
+}
+
+/* 春节深色主题预览 - 紫檀+琥珀 */
+.preview-spring-festival-dark {
+  background: linear-gradient(135deg, #1c0a14 0%, #2d1020 100%);
+}
+
+.preview-spring-festival-dark .mini-sidebar {
+  background: rgba(202, 138, 4, 0.12);
+}
+
+.preview-spring-festival-dark .mini-card {
+  background: rgba(45, 16, 32, 0.9);
+  border: 1px solid rgba(202, 138, 4, 0.35);
+}
+
+/* 春节浅色主题预览 - 宣纸+大红 */
+.preview-spring-festival-light {
+  background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+}
+
+.preview-spring-festival-light .mini-sidebar {
+  background: rgba(190, 18, 60, 0.08);
+}
+
+.preview-spring-festival-light .mini-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(190, 18, 60, 0.2);
 }
 
 /* Custom theme preview */

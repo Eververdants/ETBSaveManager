@@ -49,6 +49,8 @@
 </template>
 
 <script>
+import storage from "../services/storageService";
+
 export default {
   name: "CoreArchive",
   data() {
@@ -70,7 +72,7 @@ export default {
   },
   mounted() {
     // 从本地存储恢复解锁状态
-    const savedState = localStorage.getItem("hubUnlocked");
+    const savedState = storage.getItem("hubUnlocked");
     if (savedState !== null) {
       this.isHubUnlocked = savedState === "true";
     }
@@ -78,7 +80,7 @@ export default {
   watch: {
     isHubUnlocked(newValue) {
       // 保存解锁状态到本地存储
-      localStorage.setItem("hubUnlocked", newValue);
+      storage.setItem("hubUnlocked", newValue);
     },
   },
 };

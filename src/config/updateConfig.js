@@ -3,6 +3,8 @@
  * 允许用户选择更新源（Gitee 或 GitHub）
  */
 
+import storage from "../services/storageService";
+
 export const UPDATE_SOURCES = {
   GITEE: {
     name: "Gitee",
@@ -50,7 +52,7 @@ export const DEFAULT_UPDATE_SOURCE = getDefaultUpdateSourceByRegion();
  * @returns {string} 更新源标识
  */
 export function getUserUpdateSource() {
-  const savedSource = localStorage.getItem("updateSource");
+  const savedSource = storage.getItem("updateSource");
 
   // 如果用户手动设置过，优先使用用户设置
   if (savedSource && UPDATE_SOURCES[savedSource]) {
@@ -67,7 +69,7 @@ export function getUserUpdateSource() {
  */
 export function setUserUpdateSource(source) {
   if (UPDATE_SOURCES[source]) {
-    localStorage.setItem("updateSource", source);
+    storage.setItem("updateSource", source);
     return true;
   }
   return false;

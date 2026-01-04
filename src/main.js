@@ -6,6 +6,7 @@ import router from "./router";
 import "./styles/animations.css";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
+import storage, { initStorage } from "./services/storageService";
 // Solid icons
 import {
   faArrowLeft,
@@ -259,11 +260,9 @@ const initializeReleaseNotesData = () => {
   }
 };
 
-const app = createApp(App);
-
-// 从localStorage读取保存的语言设置
+// 从本地存储读取保存的语言设置
 function getSavedLocale() {
-  const saved = localStorage.getItem("language");
+  const saved = storage.getItem("language");
   if (saved && ["zh-CN", "en-US", "zh-TW"].includes(saved)) {
     return saved;
   }
@@ -276,66 +275,85 @@ function getSavedLocale() {
   return "zh-CN";
 }
 
-const i18n = createI18n({
-  legacy: false, // 使用 Composition API
-  locale: getSavedLocale(), // 从保存的设置或系统语言获取
-  fallbackLocale: "en-US", // 回退语言
-  messages: {
-    "zh-CN": zhCN,
-    "en-US": enUS,
-    "zh-TW": zhTW,
-  },
-});
+// 异步初始化应用
+async function initApp() {
+  // 1. 先初始化存储服务
+  await initStorage();
+  console.log('[main.js] 存储服务初始化完成');
 
-app.use(router);
-app.use(i18n);
-app.component("font-awesome-icon", FontAwesomeIcon);
+  // 2. 创建 Vue 应用
+  const app = createApp(App);
 
-// 设置 i18n 实例到语言插件加载器
-languagePluginLoader.setI18nInstance(i18n);
+  // 3. 创建 i18n（现在可以正确读取存储的语言设置）
+  const i18n = createI18n({
+    legacy: false,
+    locale: getSavedLocale(),
+    fallbackLocale: "en-US",
+    messages: {
+      "zh-CN": zhCN,
+      "en-US": enUS,
+      "zh-TW": zhTW,
+    },
+  });
 
-// 初始化更新公告数据
-initializeReleaseNotesData();
+  app.use(router);
+  app.use(i18n);
+  app.component("font-awesome-icon", FontAwesomeIcon);
 
-// 初始化插件系统
-initializePluginSystem().catch(error => {
-  console.error('[main.js] 插件系统初始化失败:', error);
-});
+  // 设置 i18n 实例到语言插件加载器
+  languagePluginLoader.setI18nInstance(i18n);
 
-// 将i18n实例暴露到全局window对象
-window.$i18n = i18n.global;
+  // 初始化更新公告数据
+  initializeReleaseNotesData();
 
-// 打印一下看看
-const currentLocale = i18n.global.locale.value || i18n.global.locale;
-console.log("[i18n] current", currentLocale);
-
-// 根据语言设置窗口标题
-const updateWindowTitle = async () => {
+  // 4. 初始化插件系统
   try {
-    const appWindow = new Window("main");
-    const title = i18n.global.t("app.name");
-    await appWindow.setTitle(title);
-    console.log("[main.js] 窗口标题已设置为:", title);
+    await initializePluginSystem();
+    console.log('[main.js] 插件系统初始化完成');
   } catch (error) {
-    console.warn("[main.js] 设置窗口标题失败:", error);
+    console.error('[main.js] 插件系统初始化失败:', error);
   }
-};
 
-// 启动时设置窗口标题
-updateWindowTitle();
+  // 将i18n实例暴露到全局window对象
+  window.$i18n = i18n.global;
 
-// 监听语言变化事件，更新窗口标题
-window.addEventListener("language-changed", () => {
+  // 打印一下看看
+  const currentLocale = i18n.global.locale.value || i18n.global.locale;
+  console.log("[i18n] current", currentLocale);
+
+  // 根据语言设置窗口标题
+  const updateWindowTitle = async () => {
+    try {
+      const appWindow = new Window("main");
+      const title = i18n.global.t("app.name");
+      await appWindow.setTitle(title);
+      console.log("[main.js] 窗口标题已设置为:", title);
+    } catch (error) {
+      console.warn("[main.js] 设置窗口标题失败:", error);
+    }
+  };
+
+  // 启动时设置窗口标题
   updateWindowTitle();
+
+  // 监听语言变化事件，更新窗口标题
+  window.addEventListener("language-changed", () => {
+    updateWindowTitle();
+  });
+
+  // 5. 挂载应用
+  app.mount("#app");
+
+  // 初始化全局浮动按钮保护
+  initGlobalFloatingButtonProtection();
+
+  return app;
+}
+
+// 启动应用
+initApp().catch(error => {
+  console.error('[main.js] 应用启动失败:', error);
 });
-
-// 禁用所有快捷键、文字选中和图片拖拽
-// disableInteractions()
-
-app.mount("#app");
-
-// 初始化全局浮动按钮保护
-initGlobalFloatingButtonProtection();
 
 // 全局图层合成问题修复
 const fixCompositingLayerIssues = () => {

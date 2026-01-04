@@ -43,7 +43,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue';
+import { computed, onMounted, onUnmounted, ref, nextTick, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { getInstalledThemePlugins, PluginStatus } from '../plugins';
 
@@ -54,7 +54,7 @@ const props = defineProps({
     type: String,
     default: 'light'
   },
-  showNewYear: {
+  showSeasonalThemes: {
     type: Boolean,
     default: false
   }
@@ -73,9 +73,11 @@ const needsScroll = ref(false);
 const updateScrollState = () => {
   if (!scrollContainer.value) return;
   const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value;
-  needsScroll.value = scrollWidth > clientWidth;
-  canScrollLeft.value = scrollLeft > 0;
-  canScrollRight.value = scrollLeft + clientWidth < scrollWidth - 1;
+  // 添加一个小的容差值，避免浮点数精度问题
+  const tolerance = 2;
+  needsScroll.value = scrollWidth > clientWidth + tolerance;
+  canScrollLeft.value = scrollLeft > tolerance;
+  canScrollRight.value = scrollLeft + clientWidth < scrollWidth - tolerance;
 };
 
 const scrollLeft = () => {
@@ -148,9 +150,17 @@ const getThemeName = (themeId) => {
     return pluginTheme.name;
   }
   
-  if (themeId === 'new-year') {
-    return t('common.newYear');
+  // 限时主题名称映射
+  const seasonalThemeKeys = {
+    'new-year': 'newYear',
+    'spring-festival-dark': 'springFestivalDark',
+    'spring-festival-light': 'springFestivalLight'
+  };
+  
+  if (seasonalThemeKeys[themeId]) {
+    return t(`common.${seasonalThemeKeys[themeId]}`);
   }
+  
   return t(`common.${themeId}`);
 };
 
@@ -231,6 +241,20 @@ const themeColors = {
     header: '#3d1f1f',
     card: '#2d1515',
     accent: '#ffd700'
+  },
+  'spring-festival-dark': {
+    bg: '#1c0a14',
+    sidebar: '#2d1020',
+    header: '#3c162a',
+    card: '#2d1020',
+    accent: '#ca8a04'
+  },
+  'spring-festival-light': {
+    bg: '#fefce8',
+    sidebar: '#fef9c3',
+    header: '#ffffff',
+    card: '#ffffff',
+    accent: '#be123c'
   }
 };
 
@@ -248,14 +272,24 @@ const themes = computed(() => {
     { id: 'rose', colors: themeColors.rose },
   ];
   
-  if (props.showNewYear) {
+  // 添加限时主题
+  if (props.showSeasonalThemes) {
     baseThemes.push({ id: 'new-year', colors: themeColors['new-year'] });
+    baseThemes.push({ id: 'spring-festival-dark', colors: themeColors['spring-festival-dark'] });
+    baseThemes.push({ id: 'spring-festival-light', colors: themeColors['spring-festival-light'] });
   }
   
   // 添加插件主题
   baseThemes.push(...pluginThemes.value);
   
   return baseThemes;
+});
+
+// 监听主题列表变化，重新计算滚动状态
+watch(themes, () => {
+  nextTick(() => {
+    updateScrollState();
+  });
 });
 
 const getPreviewStyle = (theme) => ({

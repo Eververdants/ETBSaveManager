@@ -35,6 +35,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import { gsap } from "gsap";
+import storage from "../services/storageService";
 
 defineOptions({ inheritAttrs: false });
 
@@ -253,9 +254,9 @@ onMounted(() => {
   if (shouldRender.value && isHomePage.value) {
     nextTick(() => setTimeout(showFloatingButton, 100));
   }
-  if (!localStorage.getItem("fabScrollHintShown") && shouldRender.value && isHomePage.value) {
+  if (!storage.getItem("fabScrollHintShown") && shouldRender.value && isHomePage.value) {
     setTimeout(showScrollHint, 1000);
-    localStorage.setItem("fabScrollHintShown", "true");
+    storage.setItem("fabScrollHintShown", "true");
   }
 });
 

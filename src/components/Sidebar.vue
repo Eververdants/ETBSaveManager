@@ -85,6 +85,7 @@ import {
   addBottomMenuItem,
 } from "../config/sidebarMenu.js";
 import { gsap } from "gsap";
+import storage from "../services/storageService";
 
 const emit = defineEmits(["sidebar-action", "sidebar-expand"]);
 
@@ -162,7 +163,7 @@ const detectTheme = () => {
     typeof window.themeManager.applyTheme === "function"
   ) {
     // 获取当前主题设置
-    const savedTheme = localStorage.getItem("theme") || "light";
+    const savedTheme = storage.getItem("theme") || "light";
     // 应用主题
     window.themeManager.applyTheme(savedTheme);
   } else {
@@ -224,7 +225,7 @@ onMounted(() => {
   window.addEventListener("developer-mode-changed", (event) => {
     if (
       event.detail.enabled &&
-      localStorage.getItem("logMenuEnabled") === "true"
+      storage.getItem("logMenuEnabled") === "true"
     ) {
       addLogMenuItem();
     } else if (!event.detail.enabled) {
@@ -252,7 +253,7 @@ onMounted(() => {
   });
 
   // 初始化时检查测试存档功能状态
-  const testArchiveEnabled = localStorage.getItem("testArchiveEnabled");
+  const testArchiveEnabled = storage.getItem("testArchiveEnabled");
   // 只有在明确启用时才添加测试存档菜单项（与Settings.vue的默认值逻辑保持一致）
   if (testArchiveEnabled === "true") {
     addTestArchiveMenuItem();
@@ -260,8 +261,8 @@ onMounted(() => {
 
   // 初始化时检查日志功能状态
   if (
-    localStorage.getItem("developerMode") === "true" &&
-    localStorage.getItem("logMenuEnabled") === "true"
+    storage.getItem("developerMode") === "true" &&
+    storage.getItem("logMenuEnabled") === "true"
   ) {
     addLogMenuItem();
   }

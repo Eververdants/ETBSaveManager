@@ -14,6 +14,62 @@ import {
   DEFAULT_THEME_TEMPLATE,
 } from "../services/themeValidator.js";
 import { themeStorage } from "../services/themeStorage.js";
+import storage from "../services/storageService";
+
+/**
+ * 限时主题配置
+ * 定义主题的可用时间范围
+ */
+export const SEASONAL_THEMES = {
+  "spring-festival-dark": {
+    startDate: "2026-02-13",
+    endDate: "2026-02-24",
+  },
+  "spring-festival-light": {
+    startDate: "2026-02-13",
+    endDate: "2026-02-24",
+  },
+};
+
+/**
+ * 检查限时主题是否在可用时间范围内
+ * @param {string} themeId - 主题 ID
+ * @returns {boolean} 是否可用
+ */
+export function isSeasonalThemeAvailable(themeId) {
+  const config = SEASONAL_THEMES[themeId];
+  if (!config) {
+    return true; // 非限时主题始终可用
+  }
+
+  // 检查开发者选项中的限时主题模式
+  try {
+    const mode = localStorage.getItem("seasonalThemeMode") || "auto";
+    if (mode === "force") return true;
+    if (mode === "hide") return false;
+  } catch (e) {
+    // localStorage 不可用时忽略
+  }
+
+  const now = new Date();
+  const start = new Date(config.startDate + "T00:00:00");
+  const end = new Date(config.endDate + "T23:59:59");
+
+  return now >= start && now <= end;
+}
+
+/**
+ * 获取限时主题的可用时间描述
+ * @param {string} themeId - 主题 ID
+ * @returns {string|null} 时间描述或 null
+ */
+export function getSeasonalThemeAvailability(themeId) {
+  const config = SEASONAL_THEMES[themeId];
+  if (!config) {
+    return null;
+  }
+  return `${config.startDate} ~ ${config.endDate}`;
+}
 
 /**
  * 预设主题定义
@@ -33,6 +89,20 @@ export const PRESET_THEMES = {
     id: "new-year",
     name: "元旦",
     type: "preset",
+  },
+  "spring-festival-dark": {
+    id: "spring-festival-dark",
+    name: "春节 (深色)",
+    type: "preset",
+    seasonal: true,
+    icon: "🧧",
+  },
+  "spring-festival-light": {
+    id: "spring-festival-light",
+    name: "春节 (浅色)",
+    type: "preset",
+    seasonal: true,
+    icon: "🧧",
   },
   "high-contrast": {
     id: "high-contrast",
@@ -174,7 +244,7 @@ class ThemeManager {
         activeThemeId = await themeStorage.getActiveThemeId();
       } catch (e) {
         // Tauri 不可用时，从 localStorage 回退
-        activeThemeId = localStorage.getItem("theme");
+        activeThemeId = storage.getItem("theme");
       }
 
       // 加载自定义主题列表
@@ -309,6 +379,13 @@ class ThemeManager {
       return false;
     }
 
+    // 检查限时主题是否在可用时间范围内
+    if (isPreset && !isSeasonalThemeAvailable(themeId)) {
+      const availability = getSeasonalThemeAvailability(themeId);
+      console.warn(`Seasonal theme "${themeId}" is not available. Available: ${availability}`);
+      return false;
+    }
+
     // 启用过渡动画
     if (this._transitionEnabled && !prefersReducedMotion()) {
       document.documentElement.classList.add("theme-transitioning");
@@ -337,7 +414,7 @@ class ThemeManager {
         await themeStorage.setActiveThemeId(themeId);
       } catch (e) {
         // Tauri 不可用时，回退到 localStorage
-        localStorage.setItem("theme", themeId);
+        storage.setItem("theme", themeId);
       }
 
       // 移除过渡类
@@ -490,13 +567,36 @@ class ThemeManager {
   }
 
   /**
-   * 获取所有可用主题
+   * 获取所有可用主题（过滤掉不在时间范围内的限时主题）
+   * @param {boolean} includeUnavailable - 是否包含不可用的限时主题（默认 false）
    * @returns {Object[]} 主题列表
    */
-  getAllThemes() {
-    const presets = Object.values(PRESET_THEMES);
+  getAllThemes(includeUnavailable = false) {
+    const presets = Object.values(PRESET_THEMES).map((theme) => {
+      const availability = getSeasonalThemeAvailability(theme.id);
+      const isAvailable = isSeasonalThemeAvailable(theme.id);
+      return {
+        ...theme,
+        availability,
+        isAvailable,
+      };
+    });
+
+    // 过滤不可用的限时主题
+    const filteredPresets = includeUnavailable
+      ? presets
+      : presets.filter((theme) => theme.isAvailable);
+
     const customs = this._customThemes.value;
-    return [...presets, ...customs];
+    return [...filteredPresets, ...customs];
+  }
+
+  /**
+   * 获取所有主题（包括不可用的限时主题）
+   * @returns {Object[]} 主题列表
+   */
+  getAllThemesIncludingUnavailable() {
+    return this.getAllThemes(true);
   }
 
   /**
@@ -595,14 +695,14 @@ export const themePresets = PRESET_THEMES;
 
 export const userThemeStorage = {
   save: (theme) => {
-    localStorage.setItem("user-custom-theme", JSON.stringify(theme));
+    storage.setItem("user-custom-theme", JSON.stringify(theme));
   },
   load: () => {
-    const saved = localStorage.getItem("user-custom-theme");
+    const saved = storage.getItem("user-custom-theme");
     return saved ? JSON.parse(saved) : null;
   },
   clear: () => {
-    localStorage.removeItem("user-custom-theme");
+    storage.removeItem("user-custom-theme");
   },
 };
 

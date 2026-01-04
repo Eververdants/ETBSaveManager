@@ -1,5 +1,6 @@
 // src/i18n/loader.js
 import { createI18n } from "vue-i18n";
+import storage from "../services/storageService";
 
 // 静态导入 JSON 文件（保证被打包）
 import zhCN from "./locales/zh-CN.json";
@@ -53,7 +54,7 @@ const loadReleaseNotesData = () => {
 
 // 获取用户语言偏好
 const getUserLocale = () => {
-  const savedLocale = localStorage.getItem("locale");
+  const savedLocale = storage.getItem("locale");
   console.log("🌐 [i18n/loader.js] 检测语言偏好...", {
     保存的语言: savedLocale,
     浏览器语言: navigator.language,
@@ -170,7 +171,7 @@ export const switchLanguage = (newLocale) => {
 
   const oldLocale = i18n.global.locale.value;
   i18n.global.locale.value = newLocale;
-  localStorage.setItem("locale", newLocale);
+  storage.setItem("locale", newLocale);
 
   console.log("✅ [i18n/loader.js] 语言切换成功:", {
     from: oldLocale,

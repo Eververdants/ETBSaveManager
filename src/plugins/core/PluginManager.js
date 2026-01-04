@@ -292,6 +292,12 @@ class PluginManager {
           continue;
         }
         
+        // 验证主题插件必须有 data 字段
+        if (plugin.type === 'theme' && !plugin.data) {
+          console.warn(`⚠️ [PluginManager] 跳过无效插件 ${plugin.id}：缺少主题数据`);
+          continue;
+        }
+        
         // 重置状态为未加载
         plugin.status = PluginStatus.UNLOADED;
         this.state.plugins.set(plugin.id, plugin);

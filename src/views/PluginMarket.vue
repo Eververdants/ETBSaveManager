@@ -48,6 +48,7 @@
         v-for="plugin in installedPluginsList"
         :key="plugin.id"
         class="installed-plugin-card"
+        @click="openInstalledPluginDetail(plugin)"
       >
         <div class="installed-card-header">
           <div class="installed-plugin-icon" :class="getPluginTypeClass(plugin.type)">
@@ -78,18 +79,30 @@
           </div>
         </div>
         <div class="installed-card-footer">
-          <span class="plugin-status active">
-            <font-awesome-icon :icon="['fas', 'check-circle']" />
-            已启用
-          </span>
-          <button
-            class="uninstall-btn"
-            @click.stop="handleUninstallPlugin(plugin)"
-            title="卸载插件"
+          <span 
+            class="plugin-status" 
+            :class="{ active: plugin.status === 'active', inactive: plugin.status !== 'active' }"
           >
-            <font-awesome-icon :icon="['fas', 'trash']" />
-            卸载
-          </button>
+            <font-awesome-icon :icon="['fas', plugin.status === 'active' ? 'check-circle' : 'pause-circle']" />
+            {{ plugin.status === 'active' ? '已启用' : '已禁用' }}
+          </span>
+          <div class="plugin-actions-group">
+            <button
+              class="toggle-btn"
+              :class="{ enabled: plugin.status === 'active' }"
+              @click.stop="handleTogglePlugin(plugin)"
+              :title="plugin.status === 'active' ? '禁用插件' : '启用插件'"
+            >
+              <font-awesome-icon :icon="['fas', plugin.status === 'active' ? 'toggle-on' : 'toggle-off']" />
+            </button>
+            <button
+              class="uninstall-btn"
+              @click.stop="handleUninstallPlugin(plugin)"
+              title="卸载插件"
+            >
+              <font-awesome-icon :icon="['fas', 'trash']" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -123,53 +136,63 @@
         v-else
         v-for="plugin in filteredPlugins"
         :key="plugin.id"
-        class="plugin-card archive-card"
+        class="installed-plugin-card store-plugin-card"
         @click="openPluginDetail(plugin)"
       >
-        <div class="card-background">
-          <div class="plugin-icon">
-            <font-awesome-icon :icon="['fas', plugin.icon]" />
+        <div class="installed-card-header">
+          <div class="installed-plugin-icon" :class="getPluginTypeClass(plugin.type)">
+            <font-awesome-icon :icon="['fas', getPluginIcon(plugin.type)]" />
           </div>
-          <div class="archive-info">
-            <h3 class="archive-name plugin-name">{{ plugin.name }}</h3>
-            <div class="game-mode-info">
-              <span class="mode-tag mode-single">
-                <span class="tag-short">{{ $t("plugin.plugin") }}</span>
-                <span class="tag-full">{{ $t("plugin.plugin") }}</span>
+          <div class="installed-plugin-info">
+            <h3 class="installed-plugin-name">{{ plugin.name }}</h3>
+            <div class="installed-plugin-meta">
+              <span class="plugin-type-badge" :class="getPluginTypeClass(plugin.type)">
+                {{ getPluginTypeLabel(plugin.type) }}
               </span>
-              <span class="difficulty-tags">
-                <span class="difficulty-tag archive-difficulty difficulty-easy">
-                  <span class="tag-short">v{{ plugin.version }}</span>
-                  <span class="tag-full"
-                    >{{ $t("plugin.version") }}: v{{ plugin.version }}</span
-                  >
-                </span>
-              </span>
+              <span class="plugin-version">v{{ plugin.version }}</span>
+              <span v-if="plugin.locale" class="plugin-locale">{{ plugin.locale }}</span>
             </div>
           </div>
         </div>
-        <div class="card-info">
-          <div class="level-info">
-            <span class="current-level plugin-description">{{
-              plugin.description
-            }}</span>
+        <div class="installed-card-body">
+          <p class="installed-plugin-desc">{{ plugin.description || '暂无描述' }}</p>
+          <div class="installed-plugin-details">
+            <span v-if="plugin.author" class="detail-item">
+              <font-awesome-icon :icon="['fas', 'user']" />
+              {{ plugin.author }}
+            </span>
+            <span v-if="plugin.localeName" class="detail-item">
+              <font-awesome-icon :icon="['fas', 'globe']" />
+              {{ plugin.localeName }}
+            </span>
           </div>
-          <div class="action-buttons">
-            <button
-              v-if="plugin.installed"
-              class="action-btn installed"
-              @click.stop="togglePlugin(plugin)"
-            >
-              <font-awesome-icon :icon="['fas', 'check']" />
-            </button>
-            <button
-              v-else
-              class="action-btn install"
-              @click.stop="installPlugin(plugin)"
-            >
-              <font-awesome-icon :icon="['fas', 'download']" />
-            </button>
-          </div>
+        </div>
+        <div class="installed-card-footer">
+          <span v-if="plugin.installed" class="plugin-status active">
+            <font-awesome-icon :icon="['fas', 'check-circle']" />
+            已安装
+          </span>
+          <span v-else class="plugin-status inactive">
+            <font-awesome-icon :icon="['fas', 'circle']" />
+            未安装
+          </span>
+          <button
+            v-if="plugin.installed"
+            class="uninstall-btn"
+            @click.stop="togglePlugin(plugin)"
+            title="卸载插件"
+          >
+            <font-awesome-icon :icon="['fas', 'trash']" />
+          </button>
+          <button
+            v-else
+            class="install-btn"
+            @click.stop="installPlugin(plugin)"
+            title="安装插件"
+          >
+            <font-awesome-icon :icon="['fas', 'download']" />
+            安装
+          </button>
         </div>
       </div>
     </div>
@@ -183,12 +206,12 @@
       >
         <div class="modal-content" @click.stop>
           <div class="modal-header">
-            <div class="plugin-icon-large">
-              <font-awesome-icon :icon="['fas', selectedPlugin.icon]" />
+            <div class="plugin-icon-large" :class="getPluginTypeClass(selectedPlugin.type)">
+              <font-awesome-icon :icon="['fas', getPluginIcon(selectedPlugin.type)]" />
             </div>
             <div class="plugin-info">
               <h2>{{ selectedPlugin.name }}</h2>
-              <p class="plugin-author-detail">{{ selectedPlugin.author }}</p>
+              <p class="plugin-author-detail">{{ selectedPlugin.author || 'Unknown' }}</p>
             </div>
             <button class="close-button" @click="closePluginDetail">
               <font-awesome-icon :icon="['fas', 'times']" />
@@ -198,42 +221,85 @@
           <div class="modal-body">
             <div class="plugin-details">
               <h3>{{ $t("plugin.description") }}</h3>
-              <p>{{ selectedPlugin.description }}</p>
+              <p class="plugin-full-desc">{{ selectedPlugin.description || '暂无描述' }}</p>
 
               <div class="plugin-info-list">
                 <div class="info-item">
                   <span class="info-label">{{ $t("plugin.author") }}:</span>
-                  <span class="info-value">{{ selectedPlugin.author }}</span>
+                  <span class="info-value">{{ selectedPlugin.author || 'Unknown' }}</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">{{ $t("plugin.version") }}:</span>
                   <span class="info-value">v{{ selectedPlugin.version }}</span>
                 </div>
                 <div class="info-item">
+                  <span class="info-label">类型:</span>
+                  <span class="info-value">{{ getPluginTypeLabel(selectedPlugin.type) }}</span>
+                </div>
+                <div v-if="selectedPlugin.locale" class="info-item">
+                  <span class="info-label">语言代码:</span>
+                  <span class="info-value">{{ selectedPlugin.locale }}</span>
+                </div>
+                <div v-if="selectedPlugin.localeName" class="info-item">
+                  <span class="info-label">语言名称:</span>
+                  <span class="info-value">{{ selectedPlugin.localeName }}</span>
+                </div>
+                <div v-if="selectedPlugin.themeId" class="info-item">
+                  <span class="info-label">主题ID:</span>
+                  <span class="info-value">{{ selectedPlugin.themeId }}</span>
+                </div>
+                <div v-if="selectedPlugin.license" class="info-item">
                   <span class="info-label">{{ $t("plugin.license") }}:</span>
                   <span class="info-value">{{ selectedPlugin.license }}</span>
+                </div>
+                <div v-if="selectedPlugin.status" class="info-item">
+                  <span class="info-label">状态:</span>
+                  <span class="info-value" :class="{ 'status-active': selectedPlugin.status === 'active' }">
+                    {{ selectedPlugin.status === 'active' ? '已启用' : '已禁用' }}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="modal-footer">
-            <button
-              v-if="selectedPlugin.installed"
-              class="action-button installed large"
-              @click="togglePlugin(selectedPlugin)"
-            >
-              <font-awesome-icon :icon="['fas', 'check']" />
-              {{ $t("plugin.installed") }}
-            </button>
-            <button
-              v-else
-              class="action-button install large"
-              @click="installPlugin(selectedPlugin)"
-            >
-              <font-awesome-icon :icon="['fas', 'download']" />
-              {{ $t("plugin.install") }}
-            </button>
+            <!-- 已安装插件的操作 -->
+            <template v-if="selectedPlugin.status !== undefined">
+              <button
+                class="action-button toggle-action"
+                :class="{ enabled: selectedPlugin.status === 'active' }"
+                @click="handleTogglePluginInModal"
+              >
+                <font-awesome-icon :icon="['fas', selectedPlugin.status === 'active' ? 'pause' : 'play']" />
+                {{ selectedPlugin.status === 'active' ? '禁用' : '启用' }}
+              </button>
+              <button
+                class="action-button uninstall-action"
+                @click="handleUninstallPluginInModal"
+              >
+                <font-awesome-icon :icon="['fas', 'trash']" />
+                卸载
+              </button>
+            </template>
+            <!-- 商店插件的操作 -->
+            <template v-else>
+              <button
+                v-if="selectedPlugin.installed"
+                class="action-button installed large"
+                @click="togglePlugin(selectedPlugin)"
+              >
+                <font-awesome-icon :icon="['fas', 'check']" />
+                {{ $t("plugin.installed") }}
+              </button>
+              <button
+                v-else
+                class="action-button install large"
+                @click="installPlugin(selectedPlugin)"
+              >
+                <font-awesome-icon :icon="['fas', 'download']" />
+                {{ $t("plugin.install") }}
+              </button>
+            </template>
           </div>
         </div>
       </div>
@@ -351,6 +417,9 @@ import {
   installLanguagePlugin,
   uninstallLanguagePlugin,
   getInstalledLanguagePlugins,
+  installThemePlugin,
+  uninstallThemePlugin,
+  getInstalledThemePlugins,
   pluginManager,
   PluginStatus,
 } from "../plugins";
@@ -407,12 +476,10 @@ const getPluginTypeClass = (type) => {
 
 // 获取插件类型标签
 const getPluginTypeLabel = (type) => {
-  const labels = {
-    language: '语言',
-    theme: '主题',
-    feature: '功能',
-  };
-  return labels[type] || '插件';
+  const key = `plugin.type.${type}`;
+  const translated = t(key);
+  // 如果翻译不存在，返回默认值
+  return translated !== key ? translated : t('plugin.type.plugin');
 };
 
 // 插件索引 URL
@@ -532,12 +599,52 @@ const closePluginDetail = () => {
   protectFloatingButtonPosition();
 };
 
+// 打开已安装插件详情
+const openInstalledPluginDetail = (plugin) => {
+  selectedPlugin.value = plugin;
+  safeModifyBodyStyles(() => {
+    document.body.style.overflow = "hidden";
+  });
+};
+
+// 在模态框中切换插件状态
+const handleTogglePluginInModal = async () => {
+  if (!selectedPlugin.value) return;
+  await handleTogglePlugin(selectedPlugin.value);
+  // 刷新选中的插件状态
+  const updated = pluginManager.getPlugin(selectedPlugin.value.id);
+  if (updated) {
+    selectedPlugin.value = { ...updated };
+  }
+};
+
+// 在模态框中卸载插件
+const handleUninstallPluginInModal = async () => {
+  if (!selectedPlugin.value) return;
+  const pluginName = selectedPlugin.value.name;
+  await handleUninstallPlugin(selectedPlugin.value);
+  closePluginDetail();
+  console.log(`✅ 已卸载插件: ${pluginName}`);
+};
+
 const installPlugin = async (plugin) => {
+  console.log('📦 开始安装插件:', plugin.id, plugin);
+  
   try {
     // 如果是语言插件，从远程下载并安装
-    if (plugin.type === 'language' && plugin.download_url) {
-      const response = await fetch(plugin.download_url);
+    if (plugin.type === 'language' && plugin.downloadUrl) {
+      // 构建翻译文件的URL（downloadUrl是插件文件夹路径）
+      const translationsUrl = `${plugin.downloadUrl}/translations.json`;
+      console.log('📥 下载翻译文件:', translationsUrl);
+      
+      const response = await fetch(translationsUrl);
+      
+      if (!response.ok) {
+        throw new Error(`下载翻译文件失败: HTTP ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('✅ 翻译数据下载成功:', Object.keys(data));
       
       await installLanguagePlugin({
         id: plugin.id,
@@ -549,12 +656,45 @@ const installPlugin = async (plugin) => {
         author: plugin.author,
         description: plugin.description,
       });
+      
+      console.log('✅ 插件安装成功:', plugin.id);
+      plugin.installed = true;
+      refreshInstalledPlugins();
+    } else if (plugin.type === 'theme' && plugin.downloadUrl) {
+      // 构建主题文件的URL
+      const themeUrl = `${plugin.downloadUrl}/theme.json`;
+      console.log('📥 下载主题文件:', themeUrl);
+      
+      const response = await fetch(themeUrl);
+      
+      if (!response.ok) {
+        throw new Error(`下载主题文件失败: HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('✅ 主题数据下载成功');
+      
+      await installThemePlugin({
+        id: plugin.id,
+        name: plugin.name,
+        themeId: plugin.themeId || plugin.id,
+        data: data,
+        version: plugin.version,
+        author: plugin.author,
+        description: plugin.description,
+      });
+      
+      console.log('✅ 主题插件安装成功:', plugin.id);
+      plugin.installed = true;
+      refreshInstalledPlugins();
+    } else {
+      console.warn('⚠️ 不支持的插件类型或缺少下载链接:', plugin.type, plugin.downloadUrl);
     }
     
-    plugin.installed = true;
     animateButton(plugin);
   } catch (err) {
-    console.error('安装插件失败:', err);
+    console.error('❌ 安装插件失败:', err);
+    alert(`安装插件失败: ${err.message}`);
   }
 };
 
@@ -656,6 +796,8 @@ const processPluginFolder = async (folderPath) => {
     // 根据插件类型处理
     if (pluginMeta.type === 'language') {
       await processLanguagePlugin(folderPath, pluginMeta);
+    } else if (pluginMeta.type === 'theme') {
+      await processThemePlugin(folderPath, pluginMeta);
     } else {
       localInstallError.value = `暂不支持的插件类型: ${pluginMeta.type}`;
     }
@@ -707,15 +849,84 @@ const processLanguagePlugin = async (folderPath, pluginMeta) => {
   refreshInstalledPlugins();
 };
 
+// 处理主题插件
+const processThemePlugin = async (folderPath, pluginMeta) => {
+  // 读取主题数据文件
+  const mainFile = pluginMeta.main || 'theme.json';
+  const themePath = `${folderPath}/${mainFile}`;
+  
+  let themeData;
+  try {
+    const content = await readTextFile(themePath);
+    themeData = JSON.parse(content);
+  } catch (err) {
+    localInstallError.value = `未找到主题文件 ${mainFile}，请确保插件文件夹结构正确`;
+    return;
+  }
+  
+  // 验证主题数据
+  if (!themeData || typeof themeData !== 'object') {
+    localInstallError.value = '主题文件格式无效';
+    return;
+  }
+  
+  // 安装主题插件
+  await installThemePlugin({
+    id: pluginMeta.id,
+    name: pluginMeta.name,
+    themeId: pluginMeta.themeId || pluginMeta.id,
+    data: themeData,
+    version: pluginMeta.version || '1.0.0',
+    author: pluginMeta.author || 'Unknown',
+    description: pluginMeta.description || '',
+  });
+  
+  localInstallSuccess.value = `成功安装主题插件: ${pluginMeta.name}`;
+  
+  // 刷新插件列表
+  await fetchPlugins();
+  refreshInstalledPlugins();
+};
+
 // 卸载插件
 const handleUninstallPlugin = async (plugin) => {
   try {
-    await uninstallLanguagePlugin(plugin.id);
+    if (plugin.type === 'language') {
+      await uninstallLanguagePlugin(plugin.id);
+    } else if (plugin.type === 'theme') {
+      await uninstallThemePlugin(plugin.id);
+      // 通知主题插件变化
+      window.dispatchEvent(new CustomEvent('theme-plugin-changed'));
+    } else {
+      await pluginManager.removePlugin(plugin.id);
+    }
     refreshInstalledPlugins();
     await fetchPlugins();
     console.log(`✅ 已卸载插件: ${plugin.name}`);
   } catch (err) {
     console.error('卸载插件失败:', err);
+  }
+};
+
+// 启用/禁用插件
+const handleTogglePlugin = async (plugin) => {
+  try {
+    if (plugin.status === 'active') {
+      // 禁用插件
+      await pluginManager.unloadPlugin(plugin.id);
+      console.log(`⏸️ 已禁用插件: ${plugin.name}`);
+    } else {
+      // 启用插件
+      await pluginManager.loadPlugin(plugin.id);
+      console.log(`▶️ 已启用插件: ${plugin.name}`);
+    }
+    // 如果是主题插件，通知变化
+    if (plugin.type === 'theme') {
+      window.dispatchEvent(new CustomEvent('theme-plugin-changed'));
+    }
+    refreshInstalledPlugins();
+  } catch (err) {
+    console.error('切换插件状态失败:', err);
   }
 };
 
@@ -744,8 +955,10 @@ const animateButton = (plugin) => {
 
 // 生命周期
 onMounted(async () => {
-  await fetchPlugins();
+  // 先加载已安装的插件（本地数据，不依赖网络）
   refreshInstalledPlugins();
+  // 再获取商店插件列表（网络请求，可能失败）
+  await fetchPlugins();
   animateCards();
 });
 </script>
@@ -1106,10 +1319,13 @@ onMounted(async () => {
   background: var(--bg-secondary);
   border-radius: 16px;
   padding: 0;
+  height: 240px;
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
 }
 
 .installed-plugin-card:hover {
@@ -1211,6 +1427,7 @@ onMounted(async () => {
 
 .installed-card-body {
   padding: 14px 18px;
+  flex: 1;
 }
 
 .installed-plugin-desc {
@@ -1219,6 +1436,7 @@ onMounted(async () => {
   line-height: 1.5;
   margin: 0 0 10px 0;
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -1266,13 +1484,14 @@ onMounted(async () => {
   color: var(--text-tertiary);
 }
 
+/* 卸载按钮 */
 .uninstall-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 500;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
   color: #ff3b30;
   background: rgba(255, 59, 48, 0.1);
   border: 1px solid rgba(255, 59, 48, 0.2);
@@ -1285,6 +1504,69 @@ onMounted(async () => {
   background: rgba(255, 59, 48, 0.2);
   border-color: rgba(255, 59, 48, 0.3);
   transform: translateY(-1px);
+}
+
+/* 插件操作按钮组 */
+.plugin-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 启用/禁用开关按钮 */
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 18px;
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background: var(--bg-tertiary);
+  transform: translateY(-1px);
+}
+
+.toggle-btn.enabled {
+  color: #34c759;
+}
+
+.toggle-btn.enabled:hover {
+  color: #ff9500;
+}
+
+/* 安装按钮 */
+.install-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #34c759;
+  background: rgba(52, 199, 89, 0.1);
+  border: 1px solid rgba(52, 199, 89, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.install-btn:hover {
+  background: rgba(52, 199, 89, 0.2);
+  border-color: rgba(52, 199, 89, 0.3);
+  transform: translateY(-1px);
+}
+
+/* 商店插件卡片 - 可点击样式 */
+.store-plugin-card {
+  cursor: pointer;
 }
 
 /* 标签徽章 */
@@ -1511,6 +1793,7 @@ onMounted(async () => {
   border-top: 1px solid var(--divider-color);
   display: flex;
   justify-content: flex-end;
+  gap: 12px;
 }
 
 /* 现代本地安装样式 */
@@ -1792,4 +2075,68 @@ onMounted(async () => {
 .info-value {
   color: var(--text-secondary);
 }
+
+/* 模态框中的大图标类型样式 */
+.plugin-icon-large.type-language {
+  background: linear-gradient(135deg, #007aff, #5856d6);
+}
+
+.plugin-icon-large.type-theme {
+  background: linear-gradient(135deg, #ff9500, #ff2d55);
+}
+
+.plugin-icon-large.type-feature {
+  background: linear-gradient(135deg, #34c759, #30d158);
+}
+
+/* 完整描述（无截断） */
+.plugin-full-desc {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 状态激活样式 */
+.status-active {
+  color: #34c759;
+  font-weight: 500;
+}
+
+/* 模态框操作按钮 */
+.action-button.toggle-action {
+  background: rgba(0, 122, 255, 0.1);
+  color: #007aff;
+  border: 1px solid rgba(0, 122, 255, 0.2);
+}
+
+.action-button.toggle-action:hover {
+  background: rgba(0, 122, 255, 0.2);
+  border-color: rgba(0, 122, 255, 0.3);
+}
+
+.action-button.toggle-action.enabled {
+  background: rgba(255, 149, 0, 0.1);
+  color: #ff9500;
+  border: 1px solid rgba(255, 149, 0, 0.2);
+}
+
+.action-button.toggle-action.enabled:hover {
+  background: rgba(255, 149, 0, 0.2);
+  border-color: rgba(255, 149, 0, 0.3);
+}
+
+.action-button.uninstall-action {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+  border: 1px solid rgba(255, 59, 48, 0.2);
+}
+
+.action-button.uninstall-action:hover {
+  background: rgba(255, 59, 48, 0.2);
+  border-color: rgba(255, 59, 48, 0.3);
+}
+
+
 </style>

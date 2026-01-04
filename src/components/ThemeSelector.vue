@@ -1,7 +1,15 @@
 <template>
   <div class="theme-selector">
     <div class="theme-scroll-container">
-      <div class="theme-scroll">
+      <button 
+        v-show="needsScroll && canScrollLeft" 
+        class="scroll-btn scroll-left" 
+        @click="scrollLeft"
+        aria-label="向左滚动"
+      >
+        <font-awesome-icon :icon="['fas', 'chevron-left']" />
+      </button>
+      <div class="theme-scroll" ref="scrollContainer" @scroll="updateScrollState">
         <div
           v-for="theme in themes"
           :key="theme.id"
@@ -22,13 +30,22 @@
           </transition>
         </div>
       </div>
+      <button 
+        v-show="needsScroll && canScrollRight" 
+        class="scroll-btn scroll-right" 
+        @click="scrollRight"
+        aria-label="向右滚动"
+      >
+        <font-awesome-icon :icon="['fas', 'chevron-right']" />
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { getInstalledThemePlugins, PluginStatus } from '../plugins';
 
 const { t, locale } = useI18n();
 
@@ -47,7 +64,90 @@ const emit = defineEmits(['update:modelValue', 'change']);
 
 const currentTheme = computed(() => props.modelValue);
 
+// 滚动相关
+const scrollContainer = ref(null);
+const canScrollLeft = ref(false);
+const canScrollRight = ref(false);
+const needsScroll = ref(false);
+
+const updateScrollState = () => {
+  if (!scrollContainer.value) return;
+  const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value;
+  needsScroll.value = scrollWidth > clientWidth;
+  canScrollLeft.value = scrollLeft > 0;
+  canScrollRight.value = scrollLeft + clientWidth < scrollWidth - 1;
+};
+
+const scrollLeft = () => {
+  if (!scrollContainer.value) return;
+  scrollContainer.value.scrollBy({ left: -224, behavior: 'smooth' });
+};
+
+const scrollRight = () => {
+  if (!scrollContainer.value) return;
+  scrollContainer.value.scrollBy({ left: 224, behavior: 'smooth' });
+};
+
+// 刷新触发器
+const refreshTrigger = ref(0);
+
+// 插件主题列表 - 使用 computed 确保响应式
+const pluginThemes = computed(() => {
+  // 依赖 refreshTrigger 以支持手动刷新
+  refreshTrigger.value;
+  
+  const installed = getInstalledThemePlugins();
+  return installed
+    .filter(p => p.status === PluginStatus.ACTIVE)
+    .map(p => ({
+      id: p.themeId,
+      name: p.name,
+      isPlugin: true,
+      colors: p.data?.previewColors || {
+        bg: '#1a1a25',
+        sidebar: '#12121a',
+        header: '#1e1e2a',
+        card: '#12121a',
+        accent: '#ff00ff'
+      }
+    }));
+});
+
+// 刷新插件主题
+const refreshPluginThemes = () => {
+  refreshTrigger.value++;
+};
+
+// 监听主题插件变化事件
+const handleThemePluginChanged = () => {
+  refreshPluginThemes();
+  // DOM 更新后重新计算滚动状态
+  nextTick(() => {
+    updateScrollState();
+  });
+};
+
+onMounted(() => {
+  window.addEventListener('theme-plugin-changed', handleThemePluginChanged);
+  nextTick(() => {
+    updateScrollState();
+  });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('theme-plugin-changed', handleThemePluginChanged);
+});
+
+// 暴露刷新方法
+defineExpose({ refreshPluginThemes });
+
 const getThemeName = (themeId) => {
+  // 先检查是否是插件主题
+  const pluginTheme = pluginThemes.value.find(t => t.id === themeId);
+  if (pluginTheme) {
+    return pluginTheme.name;
+  }
+  
   if (themeId === 'new-year') {
     return t('common.newYear');
   }
@@ -152,6 +252,9 @@ const themes = computed(() => {
     baseThemes.push({ id: 'new-year', colors: themeColors['new-year'] });
   }
   
+  // 添加插件主题
+  baseThemes.push(...pluginThemes.value);
+  
   return baseThemes;
 });
 
@@ -171,35 +274,62 @@ const selectTheme = (themeId) => {
 }
 
 .theme-scroll-container {
+  position: relative;
   margin: 0 -4px;
   padding: 4px;
+}
+
+/* 滚动按钮 */
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.scroll-btn:hover {
+  background: var(--bg-tertiary);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.scroll-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.scroll-left {
+  left: -8px;
+}
+
+.scroll-right {
+  right: -8px;
 }
 
 .theme-scroll {
   display: flex;
   gap: 12px;
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding: 4px 8px 8px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
 
-/* 隐藏滚动条但保持功能 */
+/* 隐藏滚动条 */
 .theme-scroll::-webkit-scrollbar {
-  height: 6px;
-}
-
-.theme-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.theme-scroll::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
-}
-
-.theme-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--text-tertiary);
+  display: none;
 }
 
 .theme-card {

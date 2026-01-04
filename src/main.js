@@ -106,7 +106,13 @@ import {
   faCube,
   faDoorOpen,
   faGamepad,
-  faFolderOpen
+  faFolderOpen,
+  faCircle,
+  faToggleOn,
+  faToggleOff,
+  faPauseCircle,
+  faChevronLeft,
+  faChevronRight
 } from "@fortawesome/free-solid-svg-icons";
 
 // Brand icons
@@ -220,7 +226,13 @@ library.add(
   faCube,
   faDoorOpen,
   faGamepad,
-  faFolderOpen
+  faFolderOpen,
+  faCircle,
+  faToggleOn,
+  faToggleOff,
+  faPauseCircle,
+  faChevronLeft,
+  faChevronRight
 );
 import "./styles/theme-config.js";
 import {

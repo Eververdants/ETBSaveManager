@@ -79,7 +79,13 @@
     "zipFormat": ".zip 格式",
     "zipDescription": "包含完整插件程式碼與資源的壓縮包",
     "jsonFormat": ".json 格式",
-    "jsonDescription": "插件設定檔，包含插件詮釋資料"
+    "jsonDescription": "插件設定檔，包含插件詮釋資料",
+    "type": {
+      "language": "語言",
+      "theme": "主題",
+      "feature": "功能",
+      "plugin": "插件"
+    }
   },
   "help": {
     "description": "檢視使用教學"

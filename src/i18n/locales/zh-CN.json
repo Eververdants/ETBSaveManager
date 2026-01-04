@@ -87,7 +87,13 @@
     "zipFormat": ".zip 格式",
     "zipDescription": "包含完整插件代码和资源的压缩包",
     "jsonFormat": ".json 格式",
-    "jsonDescription": "插件配置文件，包含插件元数据"
+    "jsonDescription": "插件配置文件，包含插件元数据",
+    "type": {
+      "language": "语言",
+      "theme": "主题",
+      "feature": "功能",
+      "plugin": "插件"
+    }
   },
   "help": {
     "description": "查看使用教程"

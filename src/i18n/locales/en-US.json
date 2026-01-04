@@ -87,7 +87,13 @@
     "zipFormat": ".zip Format",
     "zipDescription": "Complete plugin package with code and resources",
     "jsonFormat": ".json Format",
-    "jsonDescription": "Plugin configuration file containing metadata"
+    "jsonDescription": "Plugin configuration file containing metadata",
+    "type": {
+      "language": "Language",
+      "theme": "Theme",
+      "feature": "Feature",
+      "plugin": "Plugin"
+    }
   },
   "help": {
     "description": "View usage tutorials"

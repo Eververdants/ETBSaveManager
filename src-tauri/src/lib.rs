@@ -22,6 +22,7 @@ use encryption::*;
 use rayon::prelude::*;
 use save_utils::SaveFileInfo;
 use serde_json::{json, Value};
+use std::borrow::Cow;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -34,7 +35,6 @@ async fn load_all_saves(
     log_state: State<'_, feedback_commands::BackendLogState>,
 ) -> Result<Vec<SaveFileInfo>, String> {
     let start_time = Instant::now();
-    log_state.add_log("info", "开始加载所有存档...");
 
     // 并行获取文件列表和可见存档集合
     let (paths_result, visible_saves_result) = rayon::join(
@@ -46,10 +46,6 @@ async fn load_all_saves(
     let visible_saves = Arc::new(visible_saves_result?);
     let path_count = paths.len();
 
-    let msg = format!("load_all_saves: 共 {} 个存档，开始并行加载", path_count);
-    log_state.add_log("info", &msg);
-    println!("=== {} ===", msg);
-
     // 使用 rayon 并行处理所有存档文件
     let results: Vec<SaveFileInfo> = paths
         .into_par_iter()
@@ -58,31 +54,31 @@ async fn load_all_saves(
         .collect();
 
     let elapsed = start_time.elapsed();
-    let msg = format!(
-        "load_all_saves 完成: 成功加载 {}/{} 个存档，耗时 {:.2}ms",
-        results.len(),
-        path_count,
-        elapsed.as_secs_f64() * 1000.0
+    log_state.add_log(
+        "info",
+        &format!(
+            "load_all_saves: {}/{} 存档，耗时 {:.2}ms",
+            results.len(),
+            path_count,
+            elapsed.as_secs_f64() * 1000.0
+        ),
     );
-    log_state.add_log("info", &msg);
-    println!("=== {} ===", msg);
 
     Ok(results)
 }
 
-/// 处理单个存档文件
+/// 处理单个存档文件（优化版）
+#[inline]
 fn process_save_file(
     index: usize,
     path: &PathBuf,
     visible_saves: &std::collections::HashSet<String>,
 ) -> Option<SaveFileInfo> {
-    // 解析存档文件
     let save = cli_handlers::parse_sav_file(path).ok()?;
-
-    // 转换为 JSON 并提取信息
     let save_json = serde_json::to_value(&save).ok()?;
+
     let current_level = cli_handlers::extract_current_level(&save_json);
-    let actual_difficulty = cli_handlers::extract_difficulty_label(&save_json);
+    let actual_difficulty: Cow<'static, str> = cli_handlers::extract_difficulty_label(&save_json);
     let date = cli_handlers::get_modified_date(path).ok()?;
 
     let file_name = path.file_name()?.to_str()?;
@@ -93,7 +89,7 @@ fn process_save_file(
         (index + 1) as u32,
         path,
         current_level,
-        actual_difficulty,
+        actual_difficulty.into_owned(),
         date,
     )
     .ok()?;
@@ -111,13 +107,9 @@ fn delete_file(file_path: String) -> Result<(), String> {
         .ok_or("无效的文件路径")?;
 
     fs::remove_file(&file_path).map_err(|e| format!("删除文件失败: {}", e))?;
-    println!("✅ 已删除文件: {}", file_path);
 
     // 从 MAINSAVE 中移除记录（失败不影响主操作）
-    let archive_name = extract_archive_name(filename);
-    if let Err(e) = remove_save_from_mainsave(archive_name) {
-        println!("⚠️ 更新 MAINSAVE 失败: {}", e);
-    }
+    let _ = remove_save_from_mainsave(extract_archive_name(filename));
 
     Ok(())
 }
@@ -128,17 +120,19 @@ fn open_save_games_folder() -> Result<(), String> {
 
     let save_games_path = get_save_games_dir()?;
 
-    println!("尝试打开存档文件夹: {}", save_games_path.display());
-
     if !save_games_path.exists() {
         return Err(format!("存档目录不存在: {}", save_games_path.display()));
     }
 
     #[cfg(target_os = "windows")]
     {
-        let path_str = save_games_path.to_str().ok_or("路径包含无效字符")?;
+        // Windows需要使用反斜杠路径
+        let path_str = save_games_path
+            .to_str()
+            .ok_or("路径包含无效字符")?
+            .replace('/', "\\");
         Command::new("explorer")
-            .args(["/e,", path_str])
+            .arg(&path_str)
             .spawn()
             .map_err(|e| format!("无法打开文件夹: {}", e))?;
     }
@@ -274,8 +268,6 @@ fn handle_edit_save(json_input: Value) -> Result<String, String> {
 
 #[tauri::command]
 fn convert_sav_to_json(file_path: String) -> Result<Value, String> {
-    println!("🔄 开始转换sav文件到JSON: {}", file_path);
-
     let path = Path::new(&file_path);
     if !path.exists() {
         return Err(format!("文件不存在: {}", file_path));
@@ -286,8 +278,6 @@ fn convert_sav_to_json(file_path: String) -> Result<Value, String> {
     let json_string =
         serde_json::to_string_pretty(&save_json).map_err(|e| format!("JSON格式化失败: {}", e))?;
 
-    println!("✅ sav文件成功转换为JSON，长度: {}字符", json_string.len());
-
     Ok(json!({
         "success": true,
         "json": json_string
@@ -297,8 +287,6 @@ fn convert_sav_to_json(file_path: String) -> Result<Value, String> {
 #[tauri::command]
 fn convert_json_to_sav(json_content: String, output_path: String) -> Result<Value, String> {
     use std::io::{BufWriter, Write};
-
-    println!("🔄 开始将JSON转换回sav文件: {}", output_path);
 
     // 验证输出目录是否存在
     if let Some(parent) = Path::new(&output_path).parent() {
@@ -320,9 +308,9 @@ fn convert_json_to_sav(json_content: String, output_path: String) -> Result<Valu
     let save: uesave::Save =
         serde_json::from_value(json_value).map_err(|e| format!("从JSON重建Save对象失败: {}", e))?;
 
-    // 创建输出文件
+    // 创建输出文件（使用缓冲写入）
     let file = fs::File::create(&output_path).map_err(|e| format!("创建输出文件失败: {}", e))?;
-    let mut writer = BufWriter::new(file);
+    let mut writer = BufWriter::with_capacity(16384, file);
 
     save.write(&mut writer)
         .map_err(|e| format!("写入sav文件失败: {:?}", e))?;
@@ -330,8 +318,6 @@ fn convert_json_to_sav(json_content: String, output_path: String) -> Result<Valu
     writer
         .flush()
         .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
-
-    println!("✅ JSON数据成功转换并保存到sav文件: {}", output_path);
 
     Ok(json!({
         "success": true,

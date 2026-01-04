@@ -15,7 +15,7 @@ use std::sync::Mutex;
 use tauri::State;
 
 // ============================================
-// 后端日志收集器
+// 后端日志收集器（优化版）
 // ============================================
 
 /// 后端日志条目
@@ -28,53 +28,48 @@ pub struct BackendLogEntry {
 
 /// 后端日志收集器状态
 pub struct BackendLogState {
-    pub logs: Mutex<VecDeque<BackendLogEntry>>,
-    pub max_logs: usize,
+    logs: Mutex<VecDeque<BackendLogEntry>>,
+    max_logs: usize,
 }
 
 impl BackendLogState {
     pub fn new() -> Self {
         BackendLogState {
-            logs: Mutex::new(VecDeque::new()),
+            logs: Mutex::new(VecDeque::with_capacity(100)),
             max_logs: 100,
         }
     }
 
+    #[inline]
     pub fn add_log(&self, level: &str, message: &str) {
         if let Ok(mut logs) = self.logs.lock() {
-            let entry = BackendLogEntry {
+            if logs.len() >= self.max_logs {
+                logs.pop_front();
+            }
+            logs.push_back(BackendLogEntry {
                 timestamp: Local::now().format("%H:%M:%S%.3f").to_string(),
                 level: level.to_string(),
                 message: message.to_string(),
-            };
-            logs.push_back(entry);
-            while logs.len() > self.max_logs {
-                logs.pop_front();
-            }
-        }
-    }
-
-    pub fn get_logs(&self) -> Vec<BackendLogEntry> {
-        if let Ok(logs) = self.logs.lock() {
-            logs.iter().cloned().collect()
-        } else {
-            vec![]
+            });
         }
     }
 
     pub fn get_logs_as_string(&self) -> String {
-        self.get_logs()
-            .iter()
-            .map(|log| {
-                format!(
-                    "[{}] {}: {}",
-                    log.timestamp,
-                    log.level.to_uppercase(),
-                    log.message
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n")
+        if let Ok(logs) = self.logs.lock() {
+            let mut result = String::with_capacity(logs.len() * 80);
+            for log in logs.iter() {
+                result.push('[');
+                result.push_str(&log.timestamp);
+                result.push_str("] ");
+                result.push_str(&log.level.to_uppercase());
+                result.push_str(": ");
+                result.push_str(&log.message);
+                result.push('\n');
+            }
+            result
+        } else {
+            String::new()
+        }
     }
 }
 
@@ -82,15 +77,6 @@ impl Default for BackendLogState {
     fn default() -> Self {
         Self::new()
     }
-}
-
-/// 宏：记录后端日志
-#[macro_export]
-macro_rules! backend_log {
-    ($state:expr, $level:expr, $($arg:tt)*) => {
-        $state.add_log($level, &format!($($arg)*));
-        println!("[{}] {}", $level.to_uppercase(), format!($($arg)*));
-    };
 }
 
 /// Feedback data from frontend
@@ -193,17 +179,10 @@ impl GitHubConfig {
 
         // Token for feedback system
         let token_parts = [
-<<<<<<< HEAD
-            "github_pat_",
             "",
             "",
             "",
-=======
-            "github_pat_",
             "",
-            "",
-            "",
->>>>>>> ed2980151045db60ee8861fe819419fb7b130df5
         ];
         let token = token_parts.join("");
 
@@ -532,7 +511,6 @@ fn validate_attachments(attachments: &[AttachmentData]) -> Result<(), String> {
 }
 
 /// Gets backend logs for feedback
-/// 返回内存中收集的后端日志
 #[tauri::command]
 pub fn get_backend_logs(log_state: State<'_, BackendLogState>) -> String {
     log_state.get_logs_as_string()
@@ -542,10 +520,4 @@ pub fn get_backend_logs(log_state: State<'_, BackendLogState>) -> String {
 #[tauri::command]
 pub fn add_backend_log(level: String, message: String, log_state: State<'_, BackendLogState>) {
     log_state.add_log(&level, &message);
-}
-
-/// 辅助函数：记录后端日志
-pub fn log_to_state(log_state: &BackendLogState, level: &str, message: &str) {
-    log_state.add_log(level, message);
-    println!("[{}] {}", level.to_uppercase(), message);
 }

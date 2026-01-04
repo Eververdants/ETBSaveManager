@@ -39,6 +39,46 @@ export const PRESET_THEMES = {
     name: "高对比度",
     type: "preset",
   },
+  ocean: {
+    id: "ocean",
+    name: "海洋",
+    type: "preset",
+  },
+  forest: {
+    id: "forest",
+    name: "森林",
+    type: "preset",
+  },
+  sunset: {
+    id: "sunset",
+    name: "日落",
+    type: "preset",
+  },
+  lavender: {
+    id: "lavender",
+    name: "薰衣草",
+    type: "preset",
+  },
+  rose: {
+    id: "rose",
+    name: "玫瑰",
+    type: "preset",
+  },
+  mint: {
+    id: "mint",
+    name: "薄荷",
+    type: "preset",
+  },
+  peach: {
+    id: "peach",
+    name: "蜜桃",
+    type: "preset",
+  },
+  sky: {
+    id: "sky",
+    name: "天空",
+    type: "preset",
+  },
 };
 
 /**
@@ -180,20 +220,34 @@ class ThemeManager {
     const style = document.createElement("style");
     style.id = "theme-transition-styles";
     style.textContent = `
-      /* 主题切换过渡 */
-      :root.theme-transitioning,
-      :root.theme-transitioning * {
+      /* 主题切换过渡 - 只对关键容器元素添加过渡，避免性能问题 */
+      :root.theme-transitioning {
+        transition: 
+          background-color ${TRANSITION_DURATION}ms ease,
+          color ${TRANSITION_DURATION}ms ease !important;
+      }
+
+      :root.theme-transitioning body,
+      :root.theme-transitioning .settings-container,
+      :root.theme-transitioning .setting-group,
+      :root.theme-transitioning .setting-item,
+      :root.theme-transitioning .sidebar,
+      :root.theme-transitioning .main-content {
         transition: 
           background-color ${TRANSITION_DURATION}ms ease,
           color ${TRANSITION_DURATION}ms ease,
-          border-color ${TRANSITION_DURATION}ms ease,
-          box-shadow ${TRANSITION_DURATION}ms ease !important;
+          border-color ${TRANSITION_DURATION}ms ease !important;
       }
 
       /* 尊重用户动画偏好 */
       @media (prefers-reduced-motion: reduce) {
         :root.theme-transitioning,
-        :root.theme-transitioning * {
+        :root.theme-transitioning body,
+        :root.theme-transitioning .settings-container,
+        :root.theme-transitioning .setting-group,
+        :root.theme-transitioning .setting-item,
+        :root.theme-transitioning .sidebar,
+        :root.theme-transitioning .main-content {
           transition: none !important;
         }
       }

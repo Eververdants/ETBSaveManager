@@ -5,12 +5,7 @@ description = "A tool for managing Save games in ETB"
 authors = ["Eververdants"]
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [lib]
-# The `_lib` suffix may seem redundant but it is necessary
-# to make the lib name unique and wouldn't conflict with the bin name.
-# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
 name = "etbsavemanager_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
@@ -48,3 +43,8 @@ memmap2 = "0.9"
 rusqlite = { version = "0.31", features = ["bundled"] }
 base64 = "0.22"
 urlencoding = "2.1"
+
+# 仅在发布时启用优化，不影响开发编译速度
+[profile.release]
+lto = "thin"
+strip = true

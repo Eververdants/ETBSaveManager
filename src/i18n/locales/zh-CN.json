@@ -21,7 +21,15 @@
   "common": {
     "light": "浅色",
     "dark": "深色",
-    "newYear": "🎊 元旦",
+    "ocean": "海洋",
+    "forest": "森林",
+    "sunset": "日落",
+    "lavender": "薰衣草",
+    "rose": "玫瑰",
+    "mint": "薄荷",
+    "peach": "蜜桃",
+    "sky": "天空",
+    "newYear": "元旦",
     "highContrast": "高对比度",
     "select": "请选择",
     "cancel": "取消",
@@ -434,7 +442,14 @@
     "deleteArchiveMessage": "确定要删除存档 '{name}' 吗？",
     "deleteArchiveDescription": "此操作将永久删除存档文件，无法恢复。",
     "confirm": "删除",
-    "cancel": "取消"
+    "cancel": "取消",
+    "archiveDetails": {
+      "gameMode": "游戏模式",
+      "currentLevel": "当前关卡",
+      "difficulty": "难度",
+      "modifiedTime": "修改时间",
+      "dateFormat": "{year}年{month}月{day}日"
+    }
   },
   "createArchive": {
     "title": "创建新存档",

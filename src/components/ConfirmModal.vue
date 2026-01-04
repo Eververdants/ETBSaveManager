@@ -14,6 +14,36 @@
             <font-awesome-icon :icon="icon" />
           </div>
           <p class="modal-message">{{ message }}</p>
+          
+          <!-- 存档详情卡片 -->
+          <div v-if="archiveDetails" class="archive-details-card">
+            <div class="archive-detail-row">
+              <span class="detail-label">
+                <font-awesome-icon icon="fa-solid fa-layer-group" />
+                {{ t('confirmModal.archiveDetails.currentLevel') }}
+              </span>
+              <span class="detail-value">{{ archiveDetails.currentLevel || t('common.unknown') }}</span>
+            </div>
+            <div class="archive-detail-row">
+              <span class="detail-label">
+                <font-awesome-icon icon="fa-solid fa-skull" />
+                {{ t('confirmModal.archiveDetails.difficulty') }}
+              </span>
+              <span class="detail-value">
+                <span class="difficulty-badge" :class="archiveDetails.archiveDifficulty">
+                  {{ getDifficultyText(archiveDetails.archiveDifficulty) }}
+                </span>
+              </span>
+            </div>
+            <div v-if="archiveDetails.date" class="archive-detail-row">
+              <span class="detail-label">
+                <font-awesome-icon icon="fa-solid fa-clock" />
+                {{ t('confirmModal.archiveDetails.modifiedTime') }}
+              </span>
+              <span class="detail-value">{{ formatDate(archiveDetails.date) }}</span>
+            </div>
+          </div>
+          
           <p v-if="description" class="modal-description">{{ description }}</p>
         </div>
 
@@ -41,7 +71,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps({
   show: {
@@ -81,6 +114,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  archiveDetails: {
+    type: Object,
+    default: null,
+  },
 });
 
 const emit = defineEmits(["confirm", "cancel", "update:show"]);
@@ -97,6 +134,35 @@ const icon = computed(() => {
       return "fa-solid fa-question-circle";
   }
 });
+
+const getGameModeText = (mode) => {
+  const modeMap = {
+    singleplayer: t('createArchive.gameModes.singleplayer'),
+    multiplayer: t('createArchive.gameModes.multiplayer'),
+  };
+  return modeMap[mode] || mode;
+};
+
+const getDifficultyText = (difficulty) => {
+  const difficultyMap = {
+    easy: t('createArchive.difficultyLevels.easy'),
+    normal: t('createArchive.difficultyLevels.normal'),
+    hard: t('createArchive.difficultyLevels.hard'),
+    nightmare: t('createArchive.difficultyLevels.nightmare'),
+  };
+  return difficultyMap[difficulty] || difficulty;
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  try {
+    // 日期格式是 YYYY-MM-DD
+    const [year, month, day] = dateStr.split('-');
+    return t('confirmModal.archiveDetails.dateFormat', { year, month, day });
+  } catch {
+    return dateStr;
+  }
+};
 
 const handleConfirm = () => {
   emit("confirm");
@@ -145,7 +211,6 @@ onUnmounted(() => {
   -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
-  padding-top: 60px;
   justify-content: center;
   z-index: 1099;
   padding: 20px;
@@ -219,6 +284,10 @@ onUnmounted(() => {
   color: var(--text-primary);
   margin: 0 0 8px 0;
   line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .modal-description {
@@ -226,6 +295,98 @@ onUnmounted(() => {
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
+}
+
+/* 存档详情卡片 */
+.archive-details-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin: 16px 0;
+  text-align: left;
+  border: 1px solid var(--divider-color);
+}
+
+.archive-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.archive-detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.archive-detail-row:first-child {
+  padding-top: 0;
+}
+
+.detail-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.detail-label svg {
+  width: 14px;
+  color: var(--text-tertiary);
+}
+
+.detail-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.mode-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.mode-badge.singleplayer {
+  background: rgba(0, 122, 255, 0.15);
+  color: #007aff;
+}
+
+.mode-badge.multiplayer {
+  background: rgba(52, 199, 89, 0.15);
+  color: #34c759;
+}
+
+.difficulty-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.difficulty-badge.easy {
+  background: rgba(52, 199, 89, 0.15);
+  color: #34c759;
+}
+
+.difficulty-badge.normal {
+  background: rgba(0, 122, 255, 0.15);
+  color: #007aff;
+}
+
+.difficulty-badge.hard {
+  background: rgba(255, 149, 0, 0.15);
+  color: #ff9500;
+}
+
+.difficulty-badge.nightmare {
+  background: rgba(255, 59, 48, 0.15);
+  color: #ff3b30;
 }
 
 .modal-footer {

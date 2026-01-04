@@ -21,7 +21,15 @@
   "common": {
     "light": "Light",
     "dark": "Dark",
-    "newYear": "🎊 New Year",
+    "ocean": "Ocean",
+    "forest": "Forest",
+    "sunset": "Sunset",
+    "lavender": "Lavender",
+    "rose": "Rose",
+    "mint": "Mint",
+    "peach": "Peach",
+    "sky": "Sky",
+    "newYear": "New Year",
     "highContrast": "High Contrast",
     "select": "Select",
     "cancel": "Cancel",
@@ -447,7 +455,14 @@
     "deleteArchiveMessage": "Are you sure you want to delete the archive '{name}'?",
     "deleteArchiveDescription": "This action will permanently delete the archive file and cannot be recovered.",
     "confirm": "Delete",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "archiveDetails": {
+      "gameMode": "Game Mode",
+      "currentLevel": "Current Level",
+      "difficulty": "Difficulty",
+      "modifiedTime": "Modified Time",
+      "dateFormat": "{month}/{day}/{year}"
+    }
   },
   "createArchive": {
     "title": "Create New Archive",

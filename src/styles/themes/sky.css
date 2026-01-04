@@ -1,143 +1,135 @@
 /**
  * ============================================
- * ☀️ 亮色主题 (Light Theme)
+ * ☁️ 天空主题 (Sky Theme)
  * ============================================
- * 高级感浅色主题 - 精致的层次与柔和的灰色调
+ * 清澈的天蓝色浅色调，明亮而开阔
  */
 
-:root,
-[data-theme="light"] {
+[data-theme="sky"] {
   /* ==========================================
    * 背景层级 (Background Hierarchy)
-   * 使用柔和的暖白色，营造高级感
    * ========================================== */
-  --bg: #f8f8fa;
-  --bg-primary: #f8f8fa;
+  --bg: #f0f9ff;
+  --bg-primary: #f0f9ff;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f0f0f2;
+  --bg-tertiary: #e0f2fe;
   --bg-elevated: #ffffff;
 
   /* ==========================================
    * 文本层级 (Text Hierarchy)
-   * 使用深灰色而非纯黑，更柔和
    * ========================================== */
-  --text: #1a1a1c;
-  --text-color: #1a1a1c;
-  --text-primary: #1a1a1c;
-  --text-secondary: rgba(26, 26, 28, 0.65);
-  --text-tertiary: rgba(26, 26, 28, 0.45);
-  --text-disabled: rgba(26, 26, 28, 0.28);
+  --text: #0c4a6e;
+  --text-color: #0c4a6e;
+  --text-primary: #0c4a6e;
+  --text-secondary: rgba(12, 74, 110, 0.72);
+  --text-tertiary: rgba(12, 74, 110, 0.48);
+  --text-disabled: rgba(12, 74, 110, 0.28);
   --text-inverse: #ffffff;
 
   /* ==========================================
    * 表面/卡片 (Surface/Card)
    * ========================================== */
   --surface-color: #ffffff;
-  --surface-hover: #f8f8fa;
+  --surface-hover: #f0f9ff;
   --card-bg: #ffffff;
 
   /* ==========================================
    * 边框/分割线 (Border/Divider)
-   * 精致的边框，带有微妙的层次
    * ========================================== */
-  --border-color: rgba(0, 0, 0, 0.08);
-  --border-light: rgba(0, 0, 0, 0.04);
-  --divider-color: rgba(0, 0, 0, 0.08);
-  --divider-light: rgba(0, 0, 0, 0.04);
+  --border-color: rgba(56, 189, 248, 0.25);
+  --border-light: rgba(56, 189, 248, 0.12);
+  --divider-color: rgba(56, 189, 248, 0.25);
+  --divider-light: rgba(56, 189, 248, 0.12);
 
   /* ==========================================
    * 主色调 (Primary Colors)
-   * 使用中性灰色作为主色调，保持高级感
    * ========================================== */
-  --primary: #4b5563;
-  --primary-hover: #374151;
-  --primary-color: #4b5563;
-  --secondary-color: #6b7280;
-  --accent-color: #4b5563;
-  --accent-hover: #374151;
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-color: #0284c7;
+  --secondary-color: #0ea5e9;
+  --accent-color: #0284c7;
+  --accent-hover: #0369a1;
 
   /* ==========================================
    * 状态颜色 (Status Colors)
-   * 柔和但清晰的状态指示
    * ========================================== */
-  --success-color: #22c55e;
-  --error-color: #ef4444;
-  --warning-color: #f59e0b;
-  --info-color: #6b7280;
+  --success-color: #16a34a;
+  --error-color: #dc2626;
+  --warning-color: #d97706;
+  --info-color: #0284c7;
 
   /* ==========================================
    * 侧边栏 (Sidebar)
    * ========================================== */
-  --sidebar-bg: rgba(248, 248, 250, 0.92);
-  --sidebar-text-color: #1a1a1c;
-  --sidebar-border-color: rgba(0, 0, 0, 0.06);
-  --sidebar-hover-bg: rgba(0, 0, 0, 0.04);
-  --sidebar-item-hover-bg: rgba(0, 0, 0, 0.04);
-  --sidebar-active-bg: rgba(0, 0, 0, 0.06);
-  --sidebar-active-color: #1a1a1c;
-  --sidebar-active-border: rgba(0, 0, 0, 0.2);
-  --sidebar-active-hover-bg: rgba(0, 0, 0, 0.08);
+  --sidebar-bg: rgba(240, 249, 255, 0.95);
+  --sidebar-text-color: #0c4a6e;
+  --sidebar-border-color: rgba(56, 189, 248, 0.18);
+  --sidebar-hover-bg: rgba(56, 189, 248, 0.1);
+  --sidebar-item-hover-bg: rgba(56, 189, 248, 0.1);
+  --sidebar-active-bg: rgba(56, 189, 248, 0.15);
+  --sidebar-active-color: #0369a1;
+  --sidebar-active-border: rgba(56, 189, 248, 0.5);
+  --sidebar-active-hover-bg: rgba(56, 189, 248, 0.2);
 
   /* ==========================================
    * 标题栏 (Titlebar)
    * ========================================== */
-  --titlebar-bg: rgba(248, 248, 250, 0.92);
-  --titlebar-border: rgba(0, 0, 0, 0.06);
-  --titlebar-button-hover: rgba(0, 0, 0, 0.04);
+  --titlebar-bg: rgba(240, 249, 255, 0.95);
+  --titlebar-border: rgba(56, 189, 248, 0.18);
+  --titlebar-button-hover: rgba(56, 189, 248, 0.1);
 
   /* ==========================================
    * 滚动条 (Scrollbar)
    * ========================================== */
   --scrollbar-track: transparent;
-  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
-  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+  --scrollbar-thumb: rgba(56, 189, 248, 0.35);
+  --scrollbar-thumb-hover: rgba(56, 189, 248, 0.5);
 
   /* ==========================================
    * 下拉菜单 (Dropdown)
    * ========================================== */
-  --dropdown-bg: rgba(255, 255, 255, 0.96);
-  --dropdown-border: rgba(0, 0, 0, 0.08);
-  --dropdown-border-hover: rgba(0, 0, 0, 0.12);
-  --dropdown-text: #1a1a1c;
-  --dropdown-icon: rgba(0, 0, 0, 0.45);
-  --dropdown-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  --dropdown-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.16);
-  --dropdown-hover-bg: rgba(0, 0, 0, 0.04);
-  --dropdown-selected-bg: #4b5563;
+  --dropdown-bg: rgba(255, 255, 255, 0.98);
+  --dropdown-border: rgba(56, 189, 248, 0.25);
+  --dropdown-border-hover: rgba(56, 189, 248, 0.4);
+  --dropdown-text: #0c4a6e;
+  --dropdown-icon: rgba(12, 74, 110, 0.5);
+  --dropdown-shadow: 0 8px 32px rgba(56, 189, 248, 0.15);
+  --dropdown-shadow-hover: 0 12px 40px rgba(56, 189, 248, 0.2);
+  --dropdown-hover-bg: rgba(56, 189, 248, 0.08);
+  --dropdown-selected-bg: #0284c7;
   --dropdown-selected-text: #ffffff;
 
   /* ==========================================
    * 搜索遮罩 (Search Overlay)
    * ========================================== */
-  --search-overlay-bg: rgba(0, 0, 0, 0.4);
+  --search-overlay-bg: rgba(12, 74, 110, 0.4);
   --search-overlay-backdrop: blur(20px);
 
   /* ==========================================
    * 毛玻璃效果 (Glass Effect)
-   * 精致的毛玻璃，带有微妙的光泽
    * ========================================== */
-  --glass-bg: rgba(255, 255, 255, 0.88);
-  --glass-border: rgba(0, 0, 0, 0.04);
-  --glass-border-light: rgba(0, 0, 0, 0.06);
-  --glass-shadow-light: 0 4px 24px rgba(0, 0, 0, 0.08);
-  --glass-shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(56, 189, 248, 0.18);
+  --glass-border-light: rgba(56, 189, 248, 0.1);
+  --glass-shadow-light: 0 4px 24px rgba(56, 189, 248, 0.1);
+  --glass-shadow-medium: 0 8px 32px rgba(56, 189, 248, 0.15);
   --glass-backdrop-filter: blur(24px) saturate(180%);
 
   /* ==========================================
    * 卡片样式 (Card Styles)
-   * 精致的卡片效果
    * ========================================== */
-  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
-  --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.1);
-  --card-border: 1px solid rgba(0, 0, 0, 0.06);
+  --card-shadow: 0 2px 12px rgba(56, 189, 248, 0.1), 0 0 1px rgba(56, 189, 248, 0.15);
+  --card-shadow-hover: 0 8px 32px rgba(56, 189, 248, 0.15), 0 0 1px rgba(56, 189, 248, 0.2);
+  --card-border: 1px solid rgba(56, 189, 248, 0.18);
   --card-radius: 16px;
   --card-padding: 16px;
   --card-highlight: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.8) 0%,
+    rgba(56, 189, 248, 0.08) 0%,
     transparent 50%
   );
-  --card-active-indicator: #4b5563;
+  --card-active-indicator: #0284c7;
   --card-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --card-hover-transform: translateY(-2px);
 
@@ -149,18 +141,18 @@
   --Card-border-color: var(--divider-color);
   --Card-shadow-normal: var(--card-shadow);
   --Card-shadow-hover: var(--card-shadow-hover);
-  --Card-accent-primary: #4b5563;
-  --Card-accent-secondary: #374151;
+  --Card-accent-primary: #0284c7;
+  --Card-accent-secondary: #0369a1;
   --Card-text-primary: var(--text-primary);
   --Card-text-secondary: var(--text-secondary);
-  --Card-surface-overlay: rgba(0, 0, 0, 0.06);
+  --Card-surface-overlay: rgba(56, 189, 248, 0.1);
 
   /* ==========================================
    * About 页面 (About Page)
    * ========================================== */
   --about-glass-bg: var(--bg-secondary);
   --about-glass-border: var(--divider-color);
-  --about-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --about-glass-shadow: 0 8px 32px rgba(56, 189, 248, 0.1);
   --about-list-bg: var(--bg-secondary);
   --about-hover-bg: var(--bg-tertiary);
   --about-border-light: var(--divider-color);

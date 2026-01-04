@@ -12,36 +12,36 @@
    * ========================================== */
 
   /* 成功状态 */
-  --color-success: var(--color-green-apple);
-  --color-success-light: var(--color-green-100);
-  --color-success-dark: var(--color-green-600);
-  --color-success-hover: var(--color-green-bootstrap-dark);
-  --color-success-bg: rgba(52, 199, 89, 0.1);
-  --color-success-border: rgba(52, 199, 89, 0.3);
+  --color-success: #22c55e;
+  --color-success-light: #dcfce7;
+  --color-success-dark: #16a34a;
+  --color-success-hover: #16a34a;
+  --color-success-bg: rgba(34, 197, 94, 0.1);
+  --color-success-border: rgba(34, 197, 94, 0.24);
 
   /* 错误状态 */
-  --color-error: var(--color-red-apple);
-  --color-error-light: var(--color-red-100);
-  --color-error-dark: var(--color-red-600);
-  --color-error-hover: var(--color-red-bootstrap-dark);
-  --color-error-bg: rgba(255, 59, 48, 0.1);
-  --color-error-border: rgba(255, 59, 48, 0.3);
+  --color-error: #ef4444;
+  --color-error-light: #fee2e2;
+  --color-error-dark: #dc2626;
+  --color-error-hover: #dc2626;
+  --color-error-bg: rgba(239, 68, 68, 0.1);
+  --color-error-border: rgba(239, 68, 68, 0.24);
 
   /* 警告状态 */
-  --color-warning: var(--color-orange-apple);
-  --color-warning-light: var(--color-orange-100);
-  --color-warning-dark: var(--color-orange-600);
-  --color-warning-hover: #e58600;
-  --color-warning-bg: rgba(255, 149, 0, 0.1);
-  --color-warning-border: rgba(255, 149, 0, 0.3);
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-warning-dark: #d97706;
+  --color-warning-hover: #d97706;
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-warning-border: rgba(245, 158, 11, 0.24);
 
   /* 信息状态 */
-  --color-info: var(--color-blue-apple);
-  --color-info-light: var(--color-blue-100);
-  --color-info-dark: var(--color-blue-600);
-  --color-info-hover: #0056b3;
-  --color-info-bg: rgba(0, 122, 255, 0.1);
-  --color-info-border: rgba(0, 122, 255, 0.3);
+  --color-info: #6b7280;
+  --color-info-light: #f3f4f6;
+  --color-info-dark: #4b5563;
+  --color-info-hover: #4b5563;
+  --color-info-bg: rgba(107, 114, 128, 0.1);
+  --color-info-border: rgba(107, 114, 128, 0.24);
 
   /* ==========================================
    * 版本标签颜色 (Version Tag Colors)
@@ -141,26 +141,26 @@
   /* ==========================================
    * 日志页面专用颜色 (Log Page Colors)
    * ========================================== */
-  --log-bg: #1e1e1e;
-  --log-bg-secondary: #252526;
-  --log-bg-tertiary: #3c3c3c;
-  --log-bg-hover: #4a4a4a;
-  --log-header-bg: #252526;
-  --log-border: #3e3e42;
-  --log-scrollbar-track: #1e1e1e;
-  --log-scrollbar-thumb: #424242;
-  --log-scrollbar-thumb-hover: #4f4f4f;
-  --log-text: #d4d4d4;
-  --log-text-secondary: #cccccc;
-  --log-text-muted: #6a9955;
-  --log-btn-primary: #0e639c;
-  --log-btn-primary-hover: #1177bb;
-  --log-btn-secondary: #3c3c3c;
-  --log-btn-secondary-hover: #4a4a4a;
-  --log-level-error: #f48771;
-  --log-level-warn: #dcdcaa;
-  --log-level-info: #9cdcfe;
-  --log-command: #4ec9b0;
+  --log-bg: #0d0d0f;
+  --log-bg-secondary: #161618;
+  --log-bg-tertiary: #1f1f23;
+  --log-bg-hover: #28282d;
+  --log-header-bg: #161618;
+  --log-border: rgba(255, 255, 255, 0.08);
+  --log-scrollbar-track: transparent;
+  --log-scrollbar-thumb: rgba(255, 255, 255, 0.12);
+  --log-scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+  --log-text: #f0f0f2;
+  --log-text-secondary: rgba(240, 240, 242, 0.72);
+  --log-text-muted: rgba(240, 240, 242, 0.48);
+  --log-btn-primary: rgba(255, 255, 255, 0.12);
+  --log-btn-primary-hover: rgba(255, 255, 255, 0.18);
+  --log-btn-secondary: rgba(255, 255, 255, 0.06);
+  --log-btn-secondary-hover: rgba(255, 255, 255, 0.1);
+  --log-level-error: #f87171;
+  --log-level-warn: #fbbf24;
+  --log-level-info: rgba(255, 255, 255, 0.6);
+  --log-command: #4ade80;
 
   /* ==========================================
    * 标题栏按钮颜色 (Titlebar Button Colors)
@@ -218,32 +218,33 @@
  * 暗色主题语义化颜色覆盖
  * ========================================== */
 [data-theme="dark"] {
-  /* 状态颜色 - 暗色主题使用更亮的变体 */
-  --color-success: var(--color-green-apple-dark);
-  --color-success-bg: rgba(48, 209, 88, 0.15);
-  --color-success-border: rgba(48, 209, 88, 0.4);
+  /* 状态颜色 - 柔和但清晰 */
+  --color-success: #4ade80;
+  --color-success-bg: rgba(74, 222, 128, 0.1);
+  --color-success-border: rgba(74, 222, 128, 0.24);
 
-  --color-error: var(--color-red-apple-dark);
-  --color-error-bg: rgba(255, 69, 58, 0.15);
-  --color-error-border: rgba(255, 69, 58, 0.4);
+  --color-error: #f87171;
+  --color-error-bg: rgba(248, 113, 113, 0.1);
+  --color-error-border: rgba(248, 113, 113, 0.24);
 
-  --color-warning: var(--color-orange-apple-dark);
-  --color-warning-bg: rgba(255, 159, 10, 0.15);
-  --color-warning-border: rgba(255, 159, 10, 0.4);
+  --color-warning: #fbbf24;
+  --color-warning-bg: rgba(251, 191, 36, 0.1);
+  --color-warning-border: rgba(251, 191, 36, 0.24);
 
-  --color-info: var(--color-blue-apple-dark);
-  --color-info-bg: rgba(10, 132, 255, 0.15);
-  --color-info-border: rgba(10, 132, 255, 0.4);
+  --color-info: rgba(255, 255, 255, 0.6);
+  --color-info-bg: rgba(255, 255, 255, 0.06);
+  --color-info-border: rgba(255, 255, 255, 0.12);
 
-  /* 版本标签 - 暗色主题下稍微调亮 */
-  --version-major-bg: rgba(255, 107, 107, 0.08);
-  --version-minor-bg: rgba(78, 205, 196, 0.08);
-  --version-patch-bg: rgba(69, 183, 209, 0.08);
-  --version-feature-bg: rgba(139, 92, 246, 0.08);
-  --version-enhancement-bg: rgba(16, 185, 129, 0.08);
-  --version-improvement-bg: rgba(129, 199, 132, 0.08);
-  --version-stability-bg: rgba(255, 213, 79, 0.08);
+  /* 版本标签 - 精致的背景色 */
+  --version-major-bg: rgba(248, 113, 113, 0.06);
+  --version-minor-bg: rgba(255, 255, 255, 0.04);
+  --version-patch-bg: rgba(255, 255, 255, 0.04);
+  --version-feature-bg: rgba(255, 255, 255, 0.04);
+  --version-enhancement-bg: rgba(74, 222, 128, 0.06);
+  --version-improvement-bg: rgba(74, 222, 128, 0.04);
+  --version-stability-bg: rgba(251, 191, 36, 0.06);
 
   /* 开关控件 */
-  --switch-bg-off: var(--color-gray-600);
+  --switch-bg-off: rgba(255, 255, 255, 0.16);
+  --switch-bg-on: #4ade80;
 }

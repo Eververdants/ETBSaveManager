@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-04",
+  "plugins": [
+    {
+      "id": "lang-ja-JP",
+      "name": "日本語言語パック",
+      "type": "language",
+      "version": "1.0.0",
+      "author": "Kiro",
+      "description": "日语翻译包 / Japanese Language Pack",
+      "locale": "ja-JP",
+      "localeName": "日本語",
+      "icon": "globe",
+      "license": "MIT",
+      "downloadUrl": "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/lang-ja-JP"
+    }
+  ]
+}

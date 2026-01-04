@@ -1,7 +1,7 @@
 //! Feedback Queue Module
 //!
 //! Manages offline storage of feedback submissions using SQLite.
-//! Supports enqueue, get_pending, update_status, delete, and get_all operations.
+//! Optimized version with prepared statements and reduced allocations.
 
 use crate::system_info::SystemInfo;
 use chrono::Utc;
@@ -20,20 +20,12 @@ pub enum FeedbackStatus {
 }
 
 impl FeedbackStatus {
+    #[inline]
     pub fn as_str(&self) -> &'static str {
         match self {
             FeedbackStatus::Pending => "pending",
             FeedbackStatus::Submitted => "submitted",
             FeedbackStatus::Failed => "failed",
-        }
-    }
-
-    pub fn from_str(s: &str) -> Option<Self> {
-        match s {
-            "pending" => Some(FeedbackStatus::Pending),
-            "submitted" => Some(FeedbackStatus::Submitted),
-            "failed" => Some(FeedbackStatus::Failed),
-            _ => None,
         }
     }
 }
@@ -96,6 +88,9 @@ impl FeedbackQueue {
         let db_path = app_data_dir.join("feedback_queue.db");
         let conn = Connection::open(&db_path)?;
 
+        // 启用 WAL 模式提升并发性能
+        conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;")?;
+
         let queue = FeedbackQueue { conn };
         queue.init_schema()?;
 
@@ -113,7 +108,7 @@ impl FeedbackQueue {
 
     /// Initializes the database schema
     fn init_schema(&self) -> SqliteResult<()> {
-        self.conn.execute(
+        self.conn.execute_batch(
             "CREATE TABLE IF NOT EXISTS feedbacks (
                 id TEXT PRIMARY KEY,
                 feedback_type TEXT NOT NULL,
@@ -128,21 +123,10 @@ impl FeedbackQueue {
                 retry_count INTEGER DEFAULT 0,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
-            )",
-            [],
-        )?;
-
-        self.conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_feedbacks_status ON feedbacks(status)",
-            [],
-        )?;
-
-        self.conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_feedbacks_created_at ON feedbacks(created_at)",
-            [],
-        )?;
-
-        Ok(())
+            );
+            CREATE INDEX IF NOT EXISTS idx_feedbacks_status ON feedbacks(status);
+            CREATE INDEX IF NOT EXISTS idx_feedbacks_created_at ON feedbacks(created_at);",
+        )
     }
 
     /// Adds a feedback record to the queue
@@ -178,25 +162,6 @@ impl FeedbackQueue {
         Ok(())
     }
 
-    /// Gets all pending feedback records
-    pub fn get_pending(&self) -> SqliteResult<Vec<FeedbackRecord>> {
-        self.get_by_status(FeedbackStatus::Pending)
-    }
-
-    /// Gets feedback records by status
-    fn get_by_status(&self, status: FeedbackStatus) -> SqliteResult<Vec<FeedbackRecord>> {
-        let mut stmt = self.conn.prepare(
-            "SELECT id, feedback_type, severity, title, description,
-                    system_info, attachments, status, discussion_id,
-                    discussion_url, retry_count, created_at, updated_at
-             FROM feedbacks WHERE status = ?1 ORDER BY created_at ASC",
-        )?;
-
-        let records = stmt.query_map([status.as_str()], |row| self.row_to_record(row))?;
-
-        records.collect()
-    }
-
     /// Updates the status of a feedback record
     pub fn update_status(
         &self,
@@ -225,13 +190,11 @@ impl FeedbackQueue {
             params![now, id],
         )?;
 
-        let count: i32 = self.conn.query_row(
+        self.conn.query_row(
             "SELECT retry_count FROM feedbacks WHERE id = ?1",
             [id],
             |row| row.get(0),
-        )?;
-
-        Ok(count)
+        )
     }
 
     /// Deletes a feedback record
@@ -243,7 +206,7 @@ impl FeedbackQueue {
 
     /// Gets all feedback records
     pub fn get_all(&self) -> SqliteResult<Vec<FeedbackRecord>> {
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare_cached(
             "SELECT id, feedback_type, severity, title, description,
                     system_info, attachments, status, discussion_id,
                     discussion_url, retry_count, created_at, updated_at
@@ -251,13 +214,12 @@ impl FeedbackQueue {
         )?;
 
         let records = stmt.query_map([], |row| self.row_to_record(row))?;
-
         records.collect()
     }
 
     /// Gets a single feedback record by ID
     pub fn get_by_id(&self, id: &str) -> SqliteResult<Option<FeedbackRecord>> {
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare_cached(
             "SELECT id, feedback_type, severity, title, description,
                     system_info, attachments, status, discussion_id,
                     discussion_url, retry_count, created_at, updated_at
@@ -330,18 +292,6 @@ mod tests {
         assert_eq!(all.len(), 1);
         assert_eq!(all[0].id, feedback.id);
         assert_eq!(all[0].title, "Test Bug");
-    }
-
-    #[test]
-    fn test_get_pending() {
-        let queue = FeedbackQueue::new_in_memory().unwrap();
-        let feedback = create_test_feedback();
-
-        queue.enqueue(&feedback).unwrap();
-
-        let pending = queue.get_pending().unwrap();
-        assert_eq!(pending.len(), 1);
-        assert_eq!(pending[0].status, "pending");
     }
 
     #[test]

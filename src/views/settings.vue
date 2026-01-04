@@ -9,11 +9,11 @@
       </transition>
 
       <!-- 主题设置 -->
-      <div class="setting-item">
+      <div class="setting-item theme-setting-item">
         <div class="setting-icon">
           <font-awesome-icon :icon="['fas', 'palette']" />
         </div>
-        <div class="setting-details">
+        <div class="setting-details full-width">
           <transition name="text-swift" mode="out-in">
             <div class="setting-title" :key="currentLanguage">
               {{ t("settings.theme") }}
@@ -32,11 +32,14 @@
               {{ t("settings.newYearThemeLimitedTime") }}
             </div>
           </transition>
-        </div>
-        <div class="setting-action">
-          <CustomDropdown v-model="currentTheme" :options="themeOptions" @change="handleThemeChange"
-            @dropdown-open="handleDropdownOpen('theme')" :is-open="activeDropdown === 'theme'"
-            :placeholder="t('common.select')" />
+          <!-- 主题选择器 -->
+          <div class="theme-selector-wrapper">
+            <ThemeSelector 
+              v-model="currentTheme" 
+              :show-new-year="shouldShowNewYearTheme"
+              @change="handleThemeChange" 
+            />
+          </div>
         </div>
       </div>
 
@@ -573,17 +576,20 @@ import {
   setUserUpdateSource,
 } from "../config/updateConfig.js";
 import CustomDropdown from "../components/CustomDropdown.vue";
+import ThemeSelector from "../components/ThemeSelector.vue";
 import ThemeList from "../components/ThemeList.vue";
 import ThemeEditor from "../components/ThemeEditor.vue";
 import { useI18n } from "vue-i18n";
 import { invoke } from "@tauri-apps/api/core";
 import themeManager from "../styles/theme-config.js";
 import { themeStorage } from "../services/themeStorage.js";
+import { getAllAvailableLanguages } from "../plugins";
 
 export default {
   name: "Settings",
   components: {
     CustomDropdown,
+    ThemeSelector,
     ThemeList,
     ThemeEditor,
   },
@@ -634,6 +640,14 @@ export default {
       const options = [
         { value: "light", label: this.$t("common.light") },
         { value: "dark", label: this.$t("common.dark") },
+        { value: "ocean", label: this.$t("common.ocean") },
+        { value: "forest", label: this.$t("common.forest") },
+        { value: "sunset", label: this.$t("common.sunset") },
+        { value: "lavender", label: this.$t("common.lavender") },
+        { value: "rose", label: this.$t("common.rose") },
+        { value: "mint", label: this.$t("common.mint") },
+        { value: "peach", label: this.$t("common.peach") },
+        { value: "sky", label: this.$t("common.sky") },
       ];
       // 根据元旦主题模式和日期决定是否显示元旦主题选项
       if (this.shouldShowNewYearTheme) {
@@ -657,11 +671,12 @@ export default {
       ];
     },
     languageOptions() {
-      return [
-        { value: "zh-CN", label: "简体中文" },
-        { value: "zh-TW", label: "繁體中文" },
-        { value: "en-US", label: "English" },
-      ];
+      // 获取内置语言 + 插件语言
+      const languages = getAllAvailableLanguages();
+      return languages.map(lang => ({
+        value: lang.locale,
+        label: lang.name,
+      }));
     },
     updateSourceOptions() {
       const sources = getAllUpdateSources();
@@ -768,31 +783,73 @@ export default {
       const root = document.documentElement;
       const body = document.body;
 
-      if (theme === "dark") {
-        root.style.setProperty("--bg", "#1c1c1e");
-        root.style.setProperty("--bg-primary", "#1c1c1e");
-        root.style.setProperty("--bg-secondary", "#2c2c2e");
-        if (body) {
-          body.style.backgroundColor = "#1c1c1e";
-          body.style.setProperty("--bg", "#1c1c1e");
+      // 主题背景色映射
+      const themeBackgrounds = {
+        dark: {
+          bg: "#0d0d0f",
+          bgPrimary: "#0d0d0f",
+          bgSecondary: "#161618"
+        },
+        "new-year": {
+          bg: "#1a0a0a",
+          bgPrimary: "#1a0a0a",
+          bgSecondary: "rgba(45, 21, 21, 0.95)"
+        },
+        ocean: {
+          bg: "#0c1929",
+          bgPrimary: "#0c1929",
+          bgSecondary: "#132337"
+        },
+        forest: {
+          bg: "#0f1a14",
+          bgPrimary: "#0f1a14",
+          bgSecondary: "#162920"
+        },
+        sunset: {
+          bg: "#1a1210",
+          bgPrimary: "#1a1210",
+          bgSecondary: "#261a16"
+        },
+        lavender: {
+          bg: "#14101a",
+          bgPrimary: "#14101a",
+          bgSecondary: "#1e1826"
+        },
+        rose: {
+          bg: "#1a1215",
+          bgPrimary: "#1a1215",
+          bgSecondary: "#261a1f"
+        },
+        mint: {
+          bg: "#f0fdf4",
+          bgPrimary: "#f0fdf4",
+          bgSecondary: "#ffffff"
+        },
+        peach: {
+          bg: "#fff5f5",
+          bgPrimary: "#fff5f5",
+          bgSecondary: "#ffffff"
+        },
+        sky: {
+          bg: "#f0f9ff",
+          bgPrimary: "#f0f9ff",
+          bgSecondary: "#ffffff"
+        },
+        light: {
+          bg: "#f8f8fa",
+          bgPrimary: "#f8f8fa",
+          bgSecondary: "#ffffff"
         }
-      } else if (theme === "new-year") {
-        // 元旦主题 - 喜庆红金配色
-        root.style.setProperty("--bg", "#1a0a0a");
-        root.style.setProperty("--bg-primary", "#1a0a0a");
-        root.style.setProperty("--bg-secondary", "rgba(45, 21, 21, 0.95)");
-        if (body) {
-          body.style.backgroundColor = "#1a0a0a";
-          body.style.setProperty("--bg", "#1a0a0a");
-        }
-      } else {
-        root.style.setProperty("--bg", "#f8f9fa");
-        root.style.setProperty("--bg-primary", "#f8f9fa");
-        root.style.setProperty("--bg-secondary", "#ffffff");
-        if (body) {
-          body.style.backgroundColor = "#f8f9fa";
-          body.style.setProperty("--bg", "#f8f9fa");
-        }
+      };
+
+      const colors = themeBackgrounds[theme] || themeBackgrounds.light;
+
+      root.style.setProperty("--bg", colors.bg);
+      root.style.setProperty("--bg-primary", colors.bgPrimary);
+      root.style.setProperty("--bg-secondary", colors.bgSecondary);
+      if (body) {
+        body.style.backgroundColor = colors.bg;
+        body.style.setProperty("--bg", colors.bg);
       }
 
       // 强制重绘
@@ -1940,10 +1997,34 @@ export default {
   display: flex;
   align-items: center;
   padding: var(--space-4) var(--space-5);
-  transition: background-color 0.2s ease;
   position: relative;
-  /* 添加更平滑的过渡 */
-  transition: all 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.setting-item.theme-setting-item {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.setting-item.theme-setting-item .setting-icon {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-5);
+}
+
+.setting-item.theme-setting-item .setting-details {
+  padding-left: 52px;
+}
+
+.setting-details.full-width {
+  width: 100%;
+}
+
+.theme-selector-wrapper {
+  margin-top: var(--space-3);
+  padding-left: 0;
+  margin-left: -52px;
+  width: calc(100% + 52px);
 }
 
 .setting-item:hover {
@@ -1960,7 +2041,6 @@ export default {
   justify-content: center;
   margin-right: var(--space-3);
   color: var(--accent-color);
-  transition: color 0.25s ease;
   /* 添加圆角背景 */
   border-radius: var(--radius-sm);
   background-color: rgba(0, 122, 255, 0.1);

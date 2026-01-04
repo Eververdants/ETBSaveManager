@@ -6,9 +6,11 @@
 import { invoke } from '@tauri-apps/api/core';
 import { pluginManager, PluginType, PluginStatus } from './core/PluginManager';
 import { languagePluginLoader } from './loaders/LanguagePluginLoader';
+import { themePluginLoader } from './loaders/ThemePluginLoader';
 
 // 注册内置加载器
 pluginManager.registerLoader(PluginType.LANGUAGE, languagePluginLoader);
+pluginManager.registerLoader(PluginType.THEME, themePluginLoader);
 
 /**
  * 初始化插件系统
@@ -105,10 +107,66 @@ export function getAllAvailableLanguages() {
   return [...builtIn, ...plugins];
 }
 
+/**
+ * 安装主题插件
+ * @param {Object} options - 插件选项
+ */
+export async function installThemePlugin(options) {
+  const {
+    id,
+    name,
+    themeId,
+    data,
+    version = '1.0.0',
+    author = 'Unknown',
+    description = '',
+  } = options;
+
+  const pluginMeta = {
+    id,
+    type: PluginType.THEME,
+    name,
+    version,
+    author,
+    description,
+    themeId,
+    data,
+    autoLoad: true,
+  };
+
+  await pluginManager.registerPlugin(pluginMeta);
+  await pluginManager.loadPlugin(id);
+  
+  return pluginMeta;
+}
+
+/**
+ * 卸载主题插件
+ * @param {string} pluginId - 插件ID
+ */
+export async function uninstallThemePlugin(pluginId) {
+  return pluginManager.removePlugin(pluginId);
+}
+
+/**
+ * 获取已安装的主题插件
+ */
+export function getInstalledThemePlugins() {
+  return pluginManager.getPluginsByType(PluginType.THEME);
+}
+
+/**
+ * 获取所有可用主题（内置 + 插件）
+ */
+export function getAllAvailableThemes() {
+  return themePluginLoader.getAvailableThemes();
+}
+
 // 导出
 export {
   pluginManager,
   languagePluginLoader,
+  themePluginLoader,
   PluginType,
   PluginStatus,
 };
@@ -116,11 +174,16 @@ export {
 export default {
   pluginManager,
   languagePluginLoader,
+  themePluginLoader,
   initializePluginSystem,
   installLanguagePlugin,
   uninstallLanguagePlugin,
   getInstalledLanguagePlugins,
   getAllAvailableLanguages,
+  installThemePlugin,
+  uninstallThemePlugin,
+  getInstalledThemePlugins,
+  getAllAvailableThemes,
   PluginType,
   PluginStatus,
 };

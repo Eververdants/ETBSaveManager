@@ -7,13 +7,64 @@
       "name": "日本語言語パック",
       "type": "language",
       "version": "1.0.0",
-      "author": "Kiro",
-      "description": "日语翻译包 / Japanese Language Pack",
+      "author": "Eververdants & Tongyi",
+      "description": "Escape the Backrooms セーブツール用の日本語翻訳パック",
       "locale": "ja-JP",
       "localeName": "日本語",
       "icon": "globe",
       "license": "MIT",
       "downloadUrl": "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/lang-ja-JP"
+    },
+    {
+      "id": "lang-ko-KR",
+      "name": "한국어 언어팩",
+      "type": "language",
+      "version": "1.0.0",
+      "author": "Eververdants & Tongyi",
+      "description": "Escape the Backrooms 세이브 도구용 한국어 번역 팩",
+      "locale": "ko-KR",
+      "localeName": "한국어",
+      "icon": "globe",
+      "license": "MIT",
+      "downloadUrl": "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/lang-ko-KR"
+    },
+    {
+      "id": "lang-ru-RU",
+      "name": "Русский языковой пакет",
+      "type": "language",
+      "version": "1.0.0",
+      "author": "Eververdants & Tongyi",
+      "description": "Русский перевод для инструмента сохранений Escape the Backrooms",
+      "locale": "ru-RU",
+      "localeName": "Русский",
+      "icon": "globe",
+      "license": "MIT",
+      "downloadUrl": "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/lang-ru-RU"
+    },
+    {
+      "id": "lang-pt-BR",
+      "name": "Pacote de Idioma Português",
+      "type": "language",
+      "version": "1.0.0",
+      "author": "Eververdants & Tongyi",
+      "description": "Tradução em português para a ferramenta de saves do Escape the Backrooms",
+      "locale": "pt-BR",
+      "localeName": "Português (Brasil)",
+      "icon": "globe",
+      "license": "MIT",
+      "downloadUrl": "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/lang-pt-BR"
+    },
+    {
+      "id": "theme-cyberpunk",
+      "name": "Cyberpunk Theme",
+      "type": "theme",
+      "version": "1.0.0",
+      "author": "Eververdants & Kiro",
+      "description": "A neon-lit cyberpunk theme with vibrant magenta and cyan colors",
+      "themeId": "cyberpunk",
+      "icon": "palette",
+      "license": "MIT",
+      "downloadUrl": "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/theme-cyberpunk"
     }
   ]
 }

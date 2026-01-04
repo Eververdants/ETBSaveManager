@@ -583,7 +583,7 @@ import { useI18n } from "vue-i18n";
 import { invoke } from "@tauri-apps/api/core";
 import themeManager from "../styles/theme-config.js";
 import { themeStorage } from "../services/themeStorage.js";
-import { getAllAvailableLanguages } from "../plugins";
+import { getAllAvailableLanguages, getInstalledThemePlugins } from "../plugins";
 
 export default {
   name: "Settings",
@@ -842,7 +842,25 @@ export default {
         }
       };
 
-      const colors = themeBackgrounds[theme] || themeBackgrounds.light;
+      let colors = themeBackgrounds[theme];
+
+      // 如果是插件主题，从插件数据中获取颜色
+      if (!colors) {
+        const themePlugins = getInstalledThemePlugins();
+        const pluginTheme = themePlugins.find(p => p.themeId === theme);
+        
+        if (pluginTheme && pluginTheme.data && pluginTheme.data.variables) {
+          const vars = pluginTheme.data.variables;
+          colors = {
+            bg: vars['--bg'] || vars['--bg-primary'] || '#0a0a0f',
+            bgPrimary: vars['--bg-primary'] || vars['--bg'] || '#0a0a0f',
+            bgSecondary: vars['--bg-secondary'] || '#12121a'
+          };
+        } else {
+          // 最后回退
+          colors = themeBackgrounds.light;
+        }
+      }
 
       root.style.setProperty("--bg", colors.bg);
       root.style.setProperty("--bg-primary", colors.bgPrimary);

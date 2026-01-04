@@ -78,7 +78,11 @@ onMounted(() => {
 
   // 检查主题是否是限时主题
   const isSeasonalTheme = (themeId) => {
-    return ['new-year', 'spring-festival-dark', 'spring-festival-light'].includes(themeId);
+    return [
+      "new-year",
+      "spring-festival-dark",
+      "spring-festival-light",
+    ].includes(themeId);
   };
 
   // 检查限时主题是否可用
@@ -86,9 +90,12 @@ onMounted(() => {
     const mode = storage.getItem("seasonalThemeMode") || "auto";
     if (mode === "force") return true;
     if (mode === "hide") return false;
-    
-    if (themeId === 'new-year') return isNewYearPeriod();
-    if (themeId === 'spring-festival-dark' || themeId === 'spring-festival-light') {
+
+    if (themeId === "new-year") return isNewYearPeriod();
+    if (
+      themeId === "spring-festival-dark" ||
+      themeId === "spring-festival-light"
+    ) {
       return isSpringFestivalPeriod();
     }
     return true;
@@ -99,10 +106,7 @@ onMounted(() => {
 
   // 确保 themeBeforeNewYear 有值（用于恢复）
   // 如果当前主题不是限时主题且没有记录过，就用当前主题作为备份
-  if (
-    !storage.getItem("themeBeforeNewYear") &&
-    !isSeasonalTheme(savedTheme)
-  ) {
+  if (!storage.getItem("themeBeforeNewYear") && !isSeasonalTheme(savedTheme)) {
     storage.setItem("themeBeforeNewYear", savedTheme);
   }
 
@@ -166,22 +170,31 @@ onMounted(() => {
   // 在午夜检查限时主题是否过期
   const checkSeasonalThemeExpiry = () => {
     const currentTheme = storage.getItem("theme");
-    if (isSeasonalTheme(currentTheme) && !isSeasonalThemeAvailable(currentTheme)) {
+    if (
+      isSeasonalTheme(currentTheme) &&
+      !isSeasonalThemeAvailable(currentTheme)
+    ) {
       // 限时主题已过期，回退到之前的非限时主题
-      const themeBeforeSeasonal = storage.getItem("themeBeforeNewYear") || "light";
+      const themeBeforeSeasonal =
+        storage.getItem("themeBeforeNewYear") || "light";
       storage.setItem("theme", themeBeforeSeasonal);
-      
+
       if (window.themeManager) {
         window.themeManager.setTheme(themeBeforeSeasonal);
       } else {
-        document.documentElement.setAttribute("data-theme", themeBeforeSeasonal);
+        document.documentElement.setAttribute(
+          "data-theme",
+          themeBeforeSeasonal
+        );
       }
       updateBodyBackground(themeBeforeSeasonal);
-      
-      console.log(`Seasonal theme "${currentTheme}" expired, reverted to "${themeBeforeSeasonal}"`);
+
+      console.log(
+        `Seasonal theme "${currentTheme}" expired, reverted to "${themeBeforeSeasonal}"`
+      );
     }
   };
-  
+
   // 计算距离下一个午夜的毫秒数
   const scheduleNextMidnightCheck = () => {
     const now = new Date();
@@ -189,14 +202,14 @@ onMounted(() => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
     const msUntilMidnight = tomorrow.getTime() - now.getTime();
-    
+
     setTimeout(() => {
       checkSeasonalThemeExpiry();
       // 检查完后，设置下一个午夜的检查
       scheduleNextMidnightCheck();
     }, msUntilMidnight);
   };
-  
+
   // 启动午夜检查调度
   scheduleNextMidnightCheck();
 
@@ -257,14 +270,20 @@ onMounted(() => {
     <TitleBar />
     <div class="content-wrapper">
       <Sidebar @sidebar-expand="handleSidebarExpand" />
-      <main class="main-content" :class="{
-        'sidebar-collapsed': !sidebarExpanded,
-        'sidebar-expanded': sidebarExpanded,
-      }">
+      <main
+        class="main-content"
+        :class="{
+          'sidebar-collapsed': !sidebarExpanded,
+          'sidebar-expanded': sidebarExpanded,
+        }"
+      >
         <router-view v-slot="{ Component, route }">
           <transition name="page-fade" mode="out-in">
             <!-- 使用keep-alive缓存常用组件 -->
-            <keep-alive :include="cachedComponents" :exclude="excludedComponents">
+            <keep-alive
+              :include="cachedComponents"
+              :exclude="excludedComponents"
+            >
               <component :is="Component" :key="route.fullPath" />
             </keep-alive>
           </transition>

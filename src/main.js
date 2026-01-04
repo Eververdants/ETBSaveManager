@@ -113,7 +113,7 @@ import {
   faToggleOff,
   faPauseCircle,
   faChevronLeft,
-  faChevronRight
+  faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Brand icons
@@ -279,7 +279,7 @@ function getSavedLocale() {
 async function initApp() {
   // 1. 先初始化存储服务
   await initStorage();
-  console.log('[main.js] 存储服务初始化完成');
+  console.log("[main.js] 存储服务初始化完成");
 
   // 2. 创建 Vue 应用
   const app = createApp(App);
@@ -309,9 +309,9 @@ async function initApp() {
   // 4. 初始化插件系统
   try {
     await initializePluginSystem();
-    console.log('[main.js] 插件系统初始化完成');
+    console.log("[main.js] 插件系统初始化完成");
   } catch (error) {
-    console.error('[main.js] 插件系统初始化失败:', error);
+    console.error("[main.js] 插件系统初始化失败:", error);
   }
 
   // 将i18n实例暴露到全局window对象
@@ -351,8 +351,8 @@ async function initApp() {
 }
 
 // 启动应用
-initApp().catch(error => {
-  console.error('[main.js] 应用启动失败:', error);
+initApp().catch((error) => {
+  console.error("[main.js] 应用启动失败:", error);
 });
 
 // 全局图层合成问题修复

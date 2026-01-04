@@ -40,11 +40,13 @@
 ### 🌍 Internationalization
 
 Built-in languages:
+
 - Simplified Chinese (简体中文)
 - Traditional Chinese (繁體中文)
 - English
 
 Additional languages via plugins:
+
 - 日本語 (Japanese)
 - 한국어 (Korean)
 - Русский (Russian)
@@ -145,17 +147,17 @@ ETBSaveManager/
 
 **Current Version:** `v3.0.0-Alpha-7.3`
 
-| Feature              | Status               |
-| -------------------- | -------------------- |
-| Core Save Management | ✅ Complete          |
-| Search & Filter      | ✅ Complete          |
-| Theme System         | ✅ Complete          |
-| Multi-language       | ✅ Complete          |
-| Save Data Editor     | ✅ Complete          |
-| Creation Modes       | ✅ Complete          |
-| Feedback System      | ✅ Complete          |
-| Plugin System        | 🧪 Beta Testing      |
-| Level Info Editor    | 🔄 Planned           |
+| Feature              | Status          |
+| -------------------- | --------------- |
+| Core Save Management | ✅ Complete     |
+| Search & Filter      | ✅ Complete     |
+| Theme System         | ✅ Complete     |
+| Multi-language       | ✅ Complete     |
+| Save Data Editor     | ✅ Complete     |
+| Creation Modes       | ✅ Complete     |
+| Feedback System      | ✅ Complete     |
+| Plugin System        | 🧪 Beta Testing |
+| Level Info Editor    | 🔄 Planned      |
 
 ---
 

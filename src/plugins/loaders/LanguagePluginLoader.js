@@ -3,10 +3,10 @@
  * 负责加载、验证和管理语言插件
  */
 
-import storage from '../../services/storageService';
+import storage from "../../services/storageService";
 
 // 语言插件必需的字段（用于验证翻译完整性）
-const REQUIRED_FIELDS = ['common', 'sidebar', 'settings'];
+const REQUIRED_FIELDS = ["common", "sidebar", "settings"];
 
 class LanguagePluginLoader {
   constructor() {
@@ -21,7 +21,7 @@ class LanguagePluginLoader {
    */
   setI18nInstance(i18n) {
     this.i18nInstance = i18n;
-    console.log('✅ [LanguageLoader] i18n 实例已设置');
+    console.log("✅ [LanguageLoader] i18n 实例已设置");
   }
 
   /**
@@ -44,19 +44,21 @@ class LanguagePluginLoader {
    */
   validate(plugin) {
     const { data, locale } = plugin;
-    
+
     if (!locale) {
-      throw new Error('语言插件必须指定 locale');
+      throw new Error("语言插件必须指定 locale");
     }
 
-    if (!data || typeof data !== 'object') {
-      throw new Error('语言插件必须包含翻译数据');
+    if (!data || typeof data !== "object") {
+      throw new Error("语言插件必须包含翻译数据");
     }
 
     // 检查必需字段
-    const missingFields = REQUIRED_FIELDS.filter(field => !data[field]);
+    const missingFields = REQUIRED_FIELDS.filter((field) => !data[field]);
     if (missingFields.length > 0) {
-      console.warn(`⚠️ [LanguageLoader] 语言插件缺少字段: ${missingFields.join(', ')}`);
+      console.warn(
+        `⚠️ [LanguageLoader] 语言插件缺少字段: ${missingFields.join(", ")}`
+      );
     }
 
     return true;
@@ -68,19 +70,20 @@ class LanguagePluginLoader {
    */
   async load(plugin) {
     const { id, locale, data, name } = plugin;
-    
+
     console.log(`🌍 [LanguageLoader] 正在加载语言插件: ${name} (${locale})`);
-    
+
     // 验证插件
     this.validate(plugin);
-    
+
     const i18n = this.getI18n();
     if (!i18n) {
-      throw new Error('i18n 实例未初始化，请确保在应用启动后再加载语言插件');
+      throw new Error("i18n 实例未初始化，请确保在应用启动后再加载语言插件");
     }
 
     // 获取 messages 对象（兼容不同的 i18n 结构）
-    const messages = i18n.global?.messages?.value || i18n.global?.messages || {};
+    const messages =
+      i18n.global?.messages?.value || i18n.global?.messages || {};
 
     // 备份原有语言数据（如果存在）
     const existingMessages = messages[locale];
@@ -90,11 +93,11 @@ class LanguagePluginLoader {
 
     // 合并语言数据
     const mergedMessages = this.mergeMessages(existingMessages || {}, data);
-    
+
     // 设置语言消息（兼容不同的 i18n 结构）
     if (i18n.global?.setLocaleMessage) {
       i18n.global.setLocaleMessage(locale, mergedMessages);
-    } else if (typeof i18n.setLocaleMessage === 'function') {
+    } else if (typeof i18n.setLocaleMessage === "function") {
       i18n.setLocaleMessage(locale, mergedMessages);
     } else {
       // 直接设置到 messages 对象
@@ -102,7 +105,7 @@ class LanguagePluginLoader {
         i18n.global.messages.value[locale] = mergedMessages;
       }
     }
-    
+
     // 记录已加载
     this.loadedLanguages.set(id, {
       locale,
@@ -111,8 +114,11 @@ class LanguagePluginLoader {
     });
 
     console.log(`✅ [LanguageLoader] 语言插件加载成功: ${name}`);
-    console.log(`📊 [LanguageLoader] 当前支持的语言:`, this.getSupportedLocales());
-    
+    console.log(
+      `📊 [LanguageLoader] 当前支持的语言:`,
+      this.getSupportedLocales()
+    );
+
     return true;
   }
 
@@ -122,12 +128,12 @@ class LanguagePluginLoader {
    */
   async unload(plugin) {
     const { id, locale, name } = plugin;
-    
+
     console.log(`🔄 [LanguageLoader] 正在卸载语言插件: ${name}`);
-    
+
     const i18n = this.getI18n();
     if (!i18n) {
-      throw new Error('i18n 实例未初始化');
+      throw new Error("i18n 实例未初始化");
     }
 
     // 获取当前语言
@@ -144,13 +150,16 @@ class LanguagePluginLoader {
       if (currentLocale === locale) {
         // 切换到默认语言
         if (i18n.global?.locale) {
-          if (typeof i18n.global.locale === 'object' && 'value' in i18n.global.locale) {
-            i18n.global.locale.value = 'zh-CN';
+          if (
+            typeof i18n.global.locale === "object" &&
+            "value" in i18n.global.locale
+          ) {
+            i18n.global.locale.value = "zh-CN";
           } else {
-            i18n.global.locale = 'zh-CN';
+            i18n.global.locale = "zh-CN";
           }
         }
-        storage.setItem('locale', 'zh-CN');
+        storage.setItem("locale", "zh-CN");
       }
       // 移除语言
       const messages = i18n.global?.messages?.value || i18n.global?.messages;
@@ -160,9 +169,9 @@ class LanguagePluginLoader {
     }
 
     this.loadedLanguages.delete(id);
-    
+
     console.log(`✅ [LanguageLoader] 语言插件卸载成功: ${name}`);
-    
+
     return true;
   }
 
@@ -173,15 +182,19 @@ class LanguagePluginLoader {
    */
   mergeMessages(target, source) {
     const result = { ...target };
-    
+
     for (const key of Object.keys(source)) {
-      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      if (
+        source[key] &&
+        typeof source[key] === "object" &&
+        !Array.isArray(source[key])
+      ) {
         result[key] = this.mergeMessages(result[key] || {}, source[key]);
       } else {
         result[key] = source[key];
       }
     }
-    
+
     return result;
   }
 
@@ -200,8 +213,9 @@ class LanguagePluginLoader {
    */
   getSupportedLocales() {
     const i18n = this.getI18n();
-    if (!i18n) return ['zh-CN', 'zh-TW', 'en-US'];
-    const messages = i18n.global?.messages?.value || i18n.global?.messages || {};
+    if (!i18n) return ["zh-CN", "zh-TW", "en-US"];
+    const messages =
+      i18n.global?.messages?.value || i18n.global?.messages || {};
     return Object.keys(messages);
   }
 
@@ -212,7 +226,8 @@ class LanguagePluginLoader {
   isLocaleLoaded(locale) {
     const i18n = this.getI18n();
     if (!i18n) return false;
-    const messages = i18n.global?.messages?.value || i18n.global?.messages || {};
+    const messages =
+      i18n.global?.messages?.value || i18n.global?.messages || {};
     return !!messages[locale];
   }
 
@@ -223,7 +238,7 @@ class LanguagePluginLoader {
   switchLocale(locale) {
     const i18n = this.getI18n();
     if (!i18n) {
-      throw new Error('i18n 实例未初始化');
+      throw new Error("i18n 实例未初始化");
     }
 
     if (!this.isLocaleLoaded(locale)) {
@@ -231,16 +246,19 @@ class LanguagePluginLoader {
     }
 
     if (i18n.global?.locale) {
-      if (typeof i18n.global.locale === 'object' && 'value' in i18n.global.locale) {
+      if (
+        typeof i18n.global.locale === "object" &&
+        "value" in i18n.global.locale
+      ) {
         i18n.global.locale.value = locale;
       } else {
         i18n.global.locale = locale;
       }
     }
-    storage.setItem('locale', locale);
-    
+    storage.setItem("locale", locale);
+
     console.log(`🌍 [LanguageLoader] 已切换语言: ${locale}`);
-    
+
     return true;
   }
 }

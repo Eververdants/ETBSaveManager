@@ -47,19 +47,19 @@ plugins/
 
 ### Field Description
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` | string | ✅ | Unique identifier, format: `lang-{locale}` |
-| `name` | string | ✅ | Plugin display name |
-| `type` | string | ✅ | Must be `"language"` |
-| `version` | string | ✅ | Semantic version number |
-| `author` | string | ✅ | Author name |
-| `description` | string | ✅ | Plugin description |
-| `locale` | string | ✅ | Language code, e.g., `ja-JP`, `ko-KR` |
-| `localeName` | string | ✅ | Native name of the language |
-| `main` | string | ✅ | Translation file name |
-| `icon` | string | ❌ | Flag emoji or icon |
-| `minAppVersion` | string | ❌ | Minimum supported app version |
+| Field           | Type   | Required | Description                                |
+| --------------- | ------ | -------- | ------------------------------------------ |
+| `id`            | string | ✅       | Unique identifier, format: `lang-{locale}` |
+| `name`          | string | ✅       | Plugin display name                        |
+| `type`          | string | ✅       | Must be `"language"`                       |
+| `version`       | string | ✅       | Semantic version number                    |
+| `author`        | string | ✅       | Author name                                |
+| `description`   | string | ✅       | Plugin description                         |
+| `locale`        | string | ✅       | Language code, e.g., `ja-JP`, `ko-KR`      |
+| `localeName`    | string | ✅       | Native name of the language                |
+| `main`          | string | ✅       | Translation file name                      |
+| `icon`          | string | ❌       | Flag emoji or icon                         |
+| `minAppVersion` | string | ❌       | Minimum supported app version              |
 
 ### 2. Create translations.json
 
@@ -112,13 +112,13 @@ The translation file should contain all translation keys used in the app. Refer 
 
 ### Field Description
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` | string | ✅ | Unique identifier, format: `theme-{name}` |
-| `name` | string | ✅ | Theme display name |
-| `type` | string | ✅ | Must be `"theme"` |
-| `themeId` | string | ✅ | Theme ID for internal reference |
-| `main` | string | ✅ | Theme configuration file name |
+| Field     | Type   | Required | Description                               |
+| --------- | ------ | -------- | ----------------------------------------- |
+| `id`      | string | ✅       | Unique identifier, format: `theme-{name}` |
+| `name`    | string | ✅       | Theme display name                        |
+| `type`    | string | ✅       | Must be `"theme"`                         |
+| `themeId` | string | ✅       | Theme ID for internal reference           |
+| `main`    | string | ✅       | Theme configuration file name             |
 
 ### 2. Create theme.json
 
@@ -146,50 +146,55 @@ The translation file should contain all translation keys used in the app. Refer 
 ### 3. CSS Variables Reference
 
 #### Background Colors
-| Variable | Description |
-|----------|-------------|
-| `--bg` | Main background |
-| `--bg-primary` | Primary background |
-| `--bg-secondary` | Secondary background |
-| `--bg-tertiary` | Tertiary background |
-| `--bg-elevated` | Elevated element background |
+
+| Variable         | Description                 |
+| ---------------- | --------------------------- |
+| `--bg`           | Main background             |
+| `--bg-primary`   | Primary background          |
+| `--bg-secondary` | Secondary background        |
+| `--bg-tertiary`  | Tertiary background         |
+| `--bg-elevated`  | Elevated element background |
 
 #### Text Colors
-| Variable | Description |
-|----------|-------------|
-| `--text` | Main text color |
-| `--text-primary` | Primary text |
-| `--text-secondary` | Secondary text |
-| `--text-tertiary` | Tertiary text |
-| `--text-disabled` | Disabled text |
+
+| Variable           | Description     |
+| ------------------ | --------------- |
+| `--text`           | Main text color |
+| `--text-primary`   | Primary text    |
+| `--text-secondary` | Secondary text  |
+| `--text-tertiary`  | Tertiary text   |
+| `--text-disabled`  | Disabled text   |
 
 #### Theme Colors
-| Variable | Description |
-|----------|-------------|
-| `--primary` | Primary color |
-| `--primary-hover` | Primary hover color |
-| `--secondary-color` | Secondary color |
-| `--accent-color` | Accent color |
+
+| Variable            | Description         |
+| ------------------- | ------------------- |
+| `--primary`         | Primary color       |
+| `--primary-hover`   | Primary hover color |
+| `--secondary-color` | Secondary color     |
+| `--accent-color`    | Accent color        |
 
 #### Status Colors
-| Variable | Description |
-|----------|-------------|
-| `--success-color` | Success |
-| `--error-color` | Error |
-| `--warning-color` | Warning |
-| `--info-color` | Info |
+
+| Variable          | Description |
+| ----------------- | ----------- |
+| `--success-color` | Success     |
+| `--error-color`   | Error       |
+| `--warning-color` | Warning     |
+| `--info-color`    | Info        |
 
 #### Component Styles
-| Variable | Description |
-|----------|-------------|
-| `--sidebar-bg` | Sidebar background |
-| `--sidebar-hover-bg` | Sidebar hover background |
+
+| Variable              | Description               |
+| --------------------- | ------------------------- |
+| `--sidebar-bg`        | Sidebar background        |
+| `--sidebar-hover-bg`  | Sidebar hover background  |
 | `--sidebar-active-bg` | Sidebar active background |
-| `--card-bg` | Card background |
-| `--card-shadow` | Card shadow |
-| `--card-border` | Card border |
-| `--dropdown-bg` | Dropdown background |
-| `--scrollbar-thumb` | Scrollbar color |
+| `--card-bg`           | Card background           |
+| `--card-shadow`       | Card shadow               |
+| `--card-border`       | Card border               |
+| `--dropdown-bg`       | Dropdown background       |
+| `--scrollbar-thumb`   | Scrollbar color           |
 
 ### 4. Reference Example
 

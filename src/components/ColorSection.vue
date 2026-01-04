@@ -7,12 +7,30 @@
           {{ item.label }}
         </label>
         <div class="color-row">
-          <div class="color-swatch" :style="{ backgroundColor: colors[item.key] }" :title="colors[item.key]" />
-          <input :id="`color-${item.key}`" type="text" class="color-value-input" :value="colors[item.key]"
-            @input="handleInput(item.key, $event)" @blur="handleBlur(item.key, $event)" :aria-label="item.label" />
-          <div v-if="item.contrastWith && colors[item.contrastWith]" class="mini-contrast"
-            :class="getContrastClass(colors[item.key], colors[item.contrastWith])"
-            :title="getContrastTooltip(colors[item.key], colors[item.contrastWith])">
+          <div
+            class="color-swatch"
+            :style="{ backgroundColor: colors[item.key] }"
+            :title="colors[item.key]"
+          />
+          <input
+            :id="`color-${item.key}`"
+            type="text"
+            class="color-value-input"
+            :value="colors[item.key]"
+            @input="handleInput(item.key, $event)"
+            @blur="handleBlur(item.key, $event)"
+            :aria-label="item.label"
+          />
+          <div
+            v-if="item.contrastWith && colors[item.contrastWith]"
+            class="mini-contrast"
+            :class="
+              getContrastClass(colors[item.key], colors[item.contrastWith])
+            "
+            :title="
+              getContrastTooltip(colors[item.key], colors[item.contrastWith])
+            "
+          >
             {{ getContrastRatio(colors[item.key], colors[item.contrastWith]) }}
           </div>
         </div>
@@ -22,28 +40,28 @@
 </template>
 
 <script setup>
-import { useI18n } from 'vue-i18n';
-import { themeValidator } from '@/services/themeValidator.js';
-import { accessibilityChecker } from '@/services/accessibilityChecker.js';
+import { useI18n } from "vue-i18n";
+import { themeValidator } from "@/services/themeValidator.js";
+import { accessibilityChecker } from "@/services/accessibilityChecker.js";
 
 const { t } = useI18n();
 
 const props = defineProps({
   title: {
     type: String,
-    required: true
+    required: true,
   },
   items: {
     type: Array,
-    required: true
+    required: true,
   },
   colors: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 });
 
-const emit = defineEmits(['update:color']);
+const emit = defineEmits(["update:color"]);
 
 // Store last valid values for each color
 const lastValidValues = {};
@@ -55,7 +73,7 @@ function handleInput(key, event) {
 
   if (validation.valid) {
     lastValidValues[key] = value;
-    emit('update:color', { key, value });
+    emit("update:color", { key, value });
   }
 }
 
@@ -73,29 +91,29 @@ function handleBlur(key, event) {
 
 // Calculate contrast ratio
 function getContrastRatio(fg, bg) {
-  if (!fg || !bg) return '-';
+  if (!fg || !bg) return "-";
   const ratio = accessibilityChecker.calculateContrastRatio(fg, bg);
   return ratio.toFixed(1);
 }
 
 // Get contrast CSS class
 function getContrastClass(fg, bg) {
-  if (!fg || !bg) return '';
+  if (!fg || !bg) return "";
   const ratio = accessibilityChecker.calculateContrastRatio(fg, bg);
   const level = accessibilityChecker.checkWCAGCompliance(ratio);
   return {
-    'contrast-pass': level === 'AAA' || level === 'AA',
-    'contrast-warn': level === 'A',
-    'contrast-fail': level === 'FAIL'
+    "contrast-pass": level === "AAA" || level === "AA",
+    "contrast-warn": level === "A",
+    "contrast-fail": level === "FAIL",
   };
 }
 
 // Get contrast tooltip
 function getContrastTooltip(fg, bg) {
-  if (!fg || !bg) return '';
+  if (!fg || !bg) return "";
   const ratio = accessibilityChecker.calculateContrastRatio(fg, bg);
   const level = accessibilityChecker.checkWCAGCompliance(ratio);
-  return `${t('theme.contrastRatio', { ratio: ratio.toFixed(2) })} - ${level}`;
+  return `${t("theme.contrastRatio", { ratio: ratio.toFixed(2) })} - ${level}`;
 }
 </script>
 
@@ -150,7 +168,7 @@ function getContrastTooltip(fg, bg) {
   flex: 1;
   padding: 8px 10px;
   font-size: 12px;
-  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  font-family: "SF Mono", Monaco, "Courier New", monospace;
   border: 1px solid var(--border-color, rgba(60, 60, 67, 0.1));
   border-radius: 6px;
   background: var(--bg-secondary, #ffffff);

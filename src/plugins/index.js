@@ -3,10 +3,10 @@
  * 导出插件管理器和相关工具
  */
 
-import { invoke } from '@tauri-apps/api/core';
-import { pluginManager, PluginType, PluginStatus } from './core/PluginManager';
-import { languagePluginLoader } from './loaders/LanguagePluginLoader';
-import { themePluginLoader } from './loaders/ThemePluginLoader';
+import { invoke } from "@tauri-apps/api/core";
+import { pluginManager, PluginType, PluginStatus } from "./core/PluginManager";
+import { languagePluginLoader } from "./loaders/LanguagePluginLoader";
+import { themePluginLoader } from "./loaders/ThemePluginLoader";
 
 // 注册内置加载器
 pluginManager.registerLoader(PluginType.LANGUAGE, languagePluginLoader);
@@ -16,10 +16,10 @@ pluginManager.registerLoader(PluginType.THEME, themePluginLoader);
  * 初始化插件系统
  */
 export async function initializePluginSystem() {
-  console.log('🔌 [Plugins] 正在初始化插件系统...');
-  
+  console.log("🔌 [Plugins] 正在初始化插件系统...");
+
   await pluginManager.initialize();
-  
+
   // 自动加载已安装的插件（从 localStorage 恢复）
   const plugins = pluginManager.getAllPlugins();
   for (const plugin of plugins) {
@@ -31,8 +31,8 @@ export async function initializePluginSystem() {
       }
     }
   }
-  
-  console.log('✅ [Plugins] 插件系统初始化完成');
+
+  console.log("✅ [Plugins] 插件系统初始化完成");
 }
 
 /**
@@ -46,9 +46,9 @@ export async function installLanguagePlugin(options) {
     locale,
     localeName,
     data,
-    version = '1.0.0',
-    author = 'Unknown',
-    description = '',
+    version = "1.0.0",
+    author = "Unknown",
+    description = "",
   } = options;
 
   const pluginMeta = {
@@ -66,7 +66,7 @@ export async function installLanguagePlugin(options) {
 
   await pluginManager.registerPlugin(pluginMeta);
   await pluginManager.loadPlugin(id);
-  
+
   return pluginMeta;
 }
 
@@ -90,14 +90,14 @@ export function getInstalledLanguagePlugins() {
  */
 export function getAllAvailableLanguages() {
   const builtIn = [
-    { locale: 'zh-CN', name: '简体中文', isBuiltIn: true },
-    { locale: 'zh-TW', name: '繁體中文', isBuiltIn: true },
-    { locale: 'en-US', name: 'English', isBuiltIn: true },
+    { locale: "zh-CN", name: "简体中文", isBuiltIn: true },
+    { locale: "zh-TW", name: "繁體中文", isBuiltIn: true },
+    { locale: "en-US", name: "English", isBuiltIn: true },
   ];
 
   const plugins = getInstalledLanguagePlugins()
-    .filter(p => p.status === PluginStatus.ACTIVE)
-    .map(p => ({
+    .filter((p) => p.status === PluginStatus.ACTIVE)
+    .map((p) => ({
       locale: p.locale,
       name: p.localeName || p.name,
       isBuiltIn: false,
@@ -117,9 +117,9 @@ export async function installThemePlugin(options) {
     name,
     themeId,
     data,
-    version = '1.0.0',
-    author = 'Unknown',
-    description = '',
+    version = "1.0.0",
+    author = "Unknown",
+    description = "",
   } = options;
 
   const pluginMeta = {
@@ -136,7 +136,7 @@ export async function installThemePlugin(options) {
 
   await pluginManager.registerPlugin(pluginMeta);
   await pluginManager.loadPlugin(id);
-  
+
   return pluginMeta;
 }
 

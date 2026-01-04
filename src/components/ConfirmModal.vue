@@ -14,23 +14,28 @@
             <font-awesome-icon :icon="icon" />
           </div>
           <p class="modal-message">{{ message }}</p>
-          
+
           <!-- 存档详情卡片 -->
           <div v-if="archiveDetails" class="archive-details-card">
             <div class="archive-detail-row">
               <span class="detail-label">
                 <font-awesome-icon icon="fa-solid fa-layer-group" />
-                {{ t('confirmModal.archiveDetails.currentLevel') }}
+                {{ t("confirmModal.archiveDetails.currentLevel") }}
               </span>
-              <span class="detail-value">{{ archiveDetails.currentLevel || t('common.unknown') }}</span>
+              <span class="detail-value">{{
+                archiveDetails.currentLevel || t("common.unknown")
+              }}</span>
             </div>
             <div class="archive-detail-row">
               <span class="detail-label">
                 <font-awesome-icon icon="fa-solid fa-skull" />
-                {{ t('confirmModal.archiveDetails.difficulty') }}
+                {{ t("confirmModal.archiveDetails.difficulty") }}
               </span>
               <span class="detail-value">
-                <span class="difficulty-badge" :class="archiveDetails.archiveDifficulty">
+                <span
+                  class="difficulty-badge"
+                  :class="archiveDetails.archiveDifficulty"
+                >
                   {{ getDifficultyText(archiveDetails.archiveDifficulty) }}
                 </span>
               </span>
@@ -38,12 +43,14 @@
             <div v-if="archiveDetails.date" class="archive-detail-row">
               <span class="detail-label">
                 <font-awesome-icon icon="fa-solid fa-clock" />
-                {{ t('confirmModal.archiveDetails.modifiedTime') }}
+                {{ t("confirmModal.archiveDetails.modifiedTime") }}
               </span>
-              <span class="detail-value">{{ formatDate(archiveDetails.date) }}</span>
+              <span class="detail-value">{{
+                formatDate(archiveDetails.date)
+              }}</span>
             </div>
           </div>
-          
+
           <p v-if="description" class="modal-description">{{ description }}</p>
         </div>
 
@@ -137,28 +144,28 @@ const icon = computed(() => {
 
 const getGameModeText = (mode) => {
   const modeMap = {
-    singleplayer: t('createArchive.gameModes.singleplayer'),
-    multiplayer: t('createArchive.gameModes.multiplayer'),
+    singleplayer: t("createArchive.gameModes.singleplayer"),
+    multiplayer: t("createArchive.gameModes.multiplayer"),
   };
   return modeMap[mode] || mode;
 };
 
 const getDifficultyText = (difficulty) => {
   const difficultyMap = {
-    easy: t('createArchive.difficultyLevels.easy'),
-    normal: t('createArchive.difficultyLevels.normal'),
-    hard: t('createArchive.difficultyLevels.hard'),
-    nightmare: t('createArchive.difficultyLevels.nightmare'),
+    easy: t("createArchive.difficultyLevels.easy"),
+    normal: t("createArchive.difficultyLevels.normal"),
+    hard: t("createArchive.difficultyLevels.hard"),
+    nightmare: t("createArchive.difficultyLevels.nightmare"),
   };
   return difficultyMap[difficulty] || difficulty;
 };
 
 const formatDate = (dateStr) => {
-  if (!dateStr) return '';
+  if (!dateStr) return "";
   try {
     // 日期格式是 YYYY-MM-DD
-    const [year, month, day] = dateStr.split('-');
-    return t('confirmModal.archiveDetails.dateFormat', { year, month, day });
+    const [year, month, day] = dateStr.split("-");
+    return t("confirmModal.archiveDetails.dateFormat", { year, month, day });
   } catch {
     return dateStr;
   }

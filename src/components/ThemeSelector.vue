@@ -1,15 +1,19 @@
 <template>
   <div class="theme-selector">
     <div class="theme-scroll-container">
-      <button 
-        v-show="needsScroll && canScrollLeft" 
-        class="scroll-btn scroll-left" 
+      <button
+        v-show="needsScroll && canScrollLeft"
+        class="scroll-btn scroll-left"
         @click="scrollLeft"
         aria-label="向左滚动"
       >
         <font-awesome-icon :icon="['fas', 'chevron-left']" />
       </button>
-      <div class="theme-scroll" ref="scrollContainer" @scroll="updateScrollState">
+      <div
+        class="theme-scroll"
+        ref="scrollContainer"
+        @scroll="updateScrollState"
+      >
         <div
           v-for="theme in themes"
           :key="theme.id"
@@ -18,21 +22,35 @@
           @click="selectTheme(theme.id)"
         >
           <div class="theme-preview" :style="getPreviewStyle(theme)">
-            <div class="preview-sidebar" :style="{ background: theme.colors.sidebar }"></div>
+            <div
+              class="preview-sidebar"
+              :style="{ background: theme.colors.sidebar }"
+            ></div>
             <div class="preview-content">
-              <div class="preview-header" :style="{ background: theme.colors.header }"></div>
-              <div class="preview-card" :style="{ background: theme.colors.card }"></div>
+              <div
+                class="preview-header"
+                :style="{ background: theme.colors.header }"
+              ></div>
+              <div
+                class="preview-card"
+                :style="{ background: theme.colors.card }"
+              ></div>
             </div>
-            <div class="preview-accent" :style="{ background: theme.colors.accent }"></div>
+            <div
+              class="preview-accent"
+              :style="{ background: theme.colors.accent }"
+            ></div>
           </div>
           <transition name="text-swift" mode="out-in">
-            <div class="theme-name" :key="locale + '-' + theme.id">{{ getThemeName(theme.id) }}</div>
+            <div class="theme-name" :key="locale + '-' + theme.id">
+              {{ getThemeName(theme.id) }}
+            </div>
           </transition>
         </div>
       </div>
-      <button 
-        v-show="needsScroll && canScrollRight" 
-        class="scroll-btn scroll-right" 
+      <button
+        v-show="needsScroll && canScrollRight"
+        class="scroll-btn scroll-right"
         @click="scrollRight"
         aria-label="向右滚动"
       >
@@ -43,24 +61,24 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, nextTick, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { getInstalledThemePlugins, PluginStatus } from '../plugins';
+import { computed, onMounted, onUnmounted, ref, nextTick, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { getInstalledThemePlugins, PluginStatus } from "../plugins";
 
 const { t, locale } = useI18n();
 
 const props = defineProps({
   modelValue: {
     type: String,
-    default: 'light'
+    default: "light",
   },
   showSeasonalThemes: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-const emit = defineEmits(['update:modelValue', 'change']);
+const emit = defineEmits(["update:modelValue", "change"]);
 
 const currentTheme = computed(() => props.modelValue);
 
@@ -82,12 +100,12 @@ const updateScrollState = () => {
 
 const scrollLeft = () => {
   if (!scrollContainer.value) return;
-  scrollContainer.value.scrollBy({ left: -224, behavior: 'smooth' });
+  scrollContainer.value.scrollBy({ left: -224, behavior: "smooth" });
 };
 
 const scrollRight = () => {
   if (!scrollContainer.value) return;
-  scrollContainer.value.scrollBy({ left: 224, behavior: 'smooth' });
+  scrollContainer.value.scrollBy({ left: 224, behavior: "smooth" });
 };
 
 // 刷新触发器
@@ -97,21 +115,21 @@ const refreshTrigger = ref(0);
 const pluginThemes = computed(() => {
   // 依赖 refreshTrigger 以支持手动刷新
   refreshTrigger.value;
-  
+
   const installed = getInstalledThemePlugins();
   return installed
-    .filter(p => p.status === PluginStatus.ACTIVE)
-    .map(p => ({
+    .filter((p) => p.status === PluginStatus.ACTIVE)
+    .map((p) => ({
       id: p.themeId,
       name: p.name,
       isPlugin: true,
       colors: p.data?.previewColors || {
-        bg: '#1a1a25',
-        sidebar: '#12121a',
-        header: '#1e1e2a',
-        card: '#12121a',
-        accent: '#ff00ff'
-      }
+        bg: "#1a1a25",
+        sidebar: "#12121a",
+        header: "#1e1e2a",
+        card: "#12121a",
+        accent: "#ff00ff",
+      },
     }));
 });
 
@@ -130,14 +148,14 @@ const handleThemePluginChanged = () => {
 };
 
 onMounted(() => {
-  window.addEventListener('theme-plugin-changed', handleThemePluginChanged);
+  window.addEventListener("theme-plugin-changed", handleThemePluginChanged);
   nextTick(() => {
     updateScrollState();
   });
 });
 
 onUnmounted(() => {
-  window.removeEventListener('theme-plugin-changed', handleThemePluginChanged);
+  window.removeEventListener("theme-plugin-changed", handleThemePluginChanged);
 });
 
 // 暴露刷新方法
@@ -145,143 +163,149 @@ defineExpose({ refreshPluginThemes });
 
 const getThemeName = (themeId) => {
   // 先检查是否是插件主题
-  const pluginTheme = pluginThemes.value.find(t => t.id === themeId);
+  const pluginTheme = pluginThemes.value.find((t) => t.id === themeId);
   if (pluginTheme) {
     return pluginTheme.name;
   }
-  
+
   // 限时主题名称映射
   const seasonalThemeKeys = {
-    'new-year': 'newYear',
-    'spring-festival-dark': 'springFestivalDark',
-    'spring-festival-light': 'springFestivalLight'
+    "new-year": "newYear",
+    "spring-festival-dark": "springFestivalDark",
+    "spring-festival-light": "springFestivalLight",
   };
-  
+
   if (seasonalThemeKeys[themeId]) {
     return t(`common.${seasonalThemeKeys[themeId]}`);
   }
-  
+
   return t(`common.${themeId}`);
 };
 
 const themeColors = {
   light: {
-    bg: '#f8f8fa',
-    sidebar: '#f0f0f2',
-    header: '#ffffff',
-    card: '#ffffff',
-    accent: '#4b5563'
+    bg: "#f8f8fa",
+    sidebar: "#f0f0f2",
+    header: "#ffffff",
+    card: "#ffffff",
+    accent: "#4b5563",
   },
   dark: {
-    bg: '#0d0d0f',
-    sidebar: '#161618',
-    header: '#1f1f23',
-    card: '#161618',
-    accent: '#6b7280'
+    bg: "#0d0d0f",
+    sidebar: "#161618",
+    header: "#1f1f23",
+    card: "#161618",
+    accent: "#6b7280",
   },
   ocean: {
-    bg: '#0c1929',
-    sidebar: '#132337',
-    header: '#1a3048',
-    card: '#132337',
-    accent: '#38bdf8'
+    bg: "#0c1929",
+    sidebar: "#132337",
+    header: "#1a3048",
+    card: "#132337",
+    accent: "#38bdf8",
   },
   forest: {
-    bg: '#0f1a14',
-    sidebar: '#162920',
-    header: '#1e382c',
-    card: '#162920',
-    accent: '#4ade80'
+    bg: "#0f1a14",
+    sidebar: "#162920",
+    header: "#1e382c",
+    card: "#162920",
+    accent: "#4ade80",
   },
   sunset: {
-    bg: '#1a1210',
-    sidebar: '#261a16',
-    header: '#33221c',
-    card: '#261a16',
-    accent: '#fb923c'
+    bg: "#1a1210",
+    sidebar: "#261a16",
+    header: "#33221c",
+    card: "#261a16",
+    accent: "#fb923c",
   },
   lavender: {
-    bg: '#14101a',
-    sidebar: '#1e1826',
-    header: '#282033',
-    card: '#1e1826',
-    accent: '#a78bfa'
+    bg: "#14101a",
+    sidebar: "#1e1826",
+    header: "#282033",
+    card: "#1e1826",
+    accent: "#a78bfa",
   },
   rose: {
-    bg: '#1a1215',
-    sidebar: '#261a1f',
-    header: '#33222a',
-    card: '#261a1f',
-    accent: '#fb7185'
+    bg: "#1a1215",
+    sidebar: "#261a1f",
+    header: "#33222a",
+    card: "#261a1f",
+    accent: "#fb7185",
   },
   mint: {
-    bg: '#f0fdf4',
-    sidebar: '#dcfce7',
-    header: '#ffffff',
-    card: '#ffffff',
-    accent: '#16a34a'
+    bg: "#f0fdf4",
+    sidebar: "#dcfce7",
+    header: "#ffffff",
+    card: "#ffffff",
+    accent: "#16a34a",
   },
   peach: {
-    bg: '#fff5f5',
-    sidebar: '#ffe4e6',
-    header: '#ffffff',
-    card: '#ffffff',
-    accent: '#e11d48'
+    bg: "#fff5f5",
+    sidebar: "#ffe4e6",
+    header: "#ffffff",
+    card: "#ffffff",
+    accent: "#e11d48",
   },
   sky: {
-    bg: '#f0f9ff',
-    sidebar: '#e0f2fe',
-    header: '#ffffff',
-    card: '#ffffff',
-    accent: '#0284c7'
+    bg: "#f0f9ff",
+    sidebar: "#e0f2fe",
+    header: "#ffffff",
+    card: "#ffffff",
+    accent: "#0284c7",
   },
-  'new-year': {
-    bg: '#1a0a0a',
-    sidebar: '#2d1515',
-    header: '#3d1f1f',
-    card: '#2d1515',
-    accent: '#ffd700'
+  "new-year": {
+    bg: "#1a0a0a",
+    sidebar: "#2d1515",
+    header: "#3d1f1f",
+    card: "#2d1515",
+    accent: "#ffd700",
   },
-  'spring-festival-dark': {
-    bg: '#1c0a14',
-    sidebar: '#2d1020',
-    header: '#3c162a',
-    card: '#2d1020',
-    accent: '#ca8a04'
+  "spring-festival-dark": {
+    bg: "#1c0a14",
+    sidebar: "#2d1020",
+    header: "#3c162a",
+    card: "#2d1020",
+    accent: "#ca8a04",
   },
-  'spring-festival-light': {
-    bg: '#fefce8',
-    sidebar: '#fef9c3',
-    header: '#ffffff',
-    card: '#ffffff',
-    accent: '#be123c'
-  }
+  "spring-festival-light": {
+    bg: "#fefce8",
+    sidebar: "#fef9c3",
+    header: "#ffffff",
+    card: "#ffffff",
+    accent: "#be123c",
+  },
 };
 
 const themes = computed(() => {
   const baseThemes = [
-    { id: 'light', colors: themeColors.light },
-    { id: 'dark', colors: themeColors.dark },
-    { id: 'mint', colors: themeColors.mint },
-    { id: 'peach', colors: themeColors.peach },
-    { id: 'sky', colors: themeColors.sky },
-    { id: 'ocean', colors: themeColors.ocean },
-    { id: 'forest', colors: themeColors.forest },
-    { id: 'sunset', colors: themeColors.sunset },
-    { id: 'lavender', colors: themeColors.lavender },
-    { id: 'rose', colors: themeColors.rose },
+    { id: "light", colors: themeColors.light },
+    { id: "dark", colors: themeColors.dark },
+    { id: "mint", colors: themeColors.mint },
+    { id: "peach", colors: themeColors.peach },
+    { id: "sky", colors: themeColors.sky },
+    { id: "ocean", colors: themeColors.ocean },
+    { id: "forest", colors: themeColors.forest },
+    { id: "sunset", colors: themeColors.sunset },
+    { id: "lavender", colors: themeColors.lavender },
+    { id: "rose", colors: themeColors.rose },
   ];
-  
+
   // 添加限时主题
   if (props.showSeasonalThemes) {
-    baseThemes.push({ id: 'new-year', colors: themeColors['new-year'] });
-    baseThemes.push({ id: 'spring-festival-dark', colors: themeColors['spring-festival-dark'] });
-    baseThemes.push({ id: 'spring-festival-light', colors: themeColors['spring-festival-light'] });
+    baseThemes.push({ id: "new-year", colors: themeColors["new-year"] });
+    baseThemes.push({
+      id: "spring-festival-dark",
+      colors: themeColors["spring-festival-dark"],
+    });
+    baseThemes.push({
+      id: "spring-festival-light",
+      colors: themeColors["spring-festival-light"],
+    });
   }
-  
+
   // 添加插件主题
   baseThemes.push(...pluginThemes.value);
-  
+
   return baseThemes;
 });
 
@@ -293,12 +317,12 @@ watch(themes, () => {
 });
 
 const getPreviewStyle = (theme) => ({
-  background: theme.colors.bg
+  background: theme.colors.bg,
 });
 
 const selectTheme = (themeId) => {
-  emit('update:modelValue', themeId);
-  emit('change', { value: themeId });
+  emit("update:modelValue", themeId);
+  emit("change", { value: themeId });
 };
 </script>
 
@@ -444,11 +468,11 @@ const selectTheme = (themeId) => {
   .theme-card {
     width: 85px;
   }
-  
+
   .theme-preview {
     height: 50px;
   }
-  
+
   .theme-name {
     font-size: 10px;
     padding: 5px 6px;

@@ -12,34 +12,34 @@
     "--bg-secondary": "#12121a",
     "--bg-tertiary": "#1a1a25",
     "--bg-elevated": "#1e1e2a",
-    
+
     "--text": "#e0e0ff",
     "--text-color": "#e0e0ff",
     "--text-primary": "#e0e0ff",
     "--text-secondary": "rgba(224, 224, 255, 0.72)",
     "--text-tertiary": "rgba(224, 224, 255, 0.48)",
     "--text-disabled": "rgba(224, 224, 255, 0.28)",
-    
+
     "--surface-color": "#12121a",
     "--surface-hover": "#1a1a25",
     "--card-bg": "#12121a",
-    
+
     "--border-color": "rgba(255, 0, 255, 0.2)",
     "--border-light": "rgba(255, 0, 255, 0.1)",
     "--divider-color": "rgba(255, 0, 255, 0.15)",
-    
+
     "--primary": "#ff00ff",
     "--primary-hover": "#ff66ff",
     "--primary-color": "#ff00ff",
     "--secondary-color": "#00ffff",
     "--accent-color": "#ff00ff",
     "--accent-hover": "#ff66ff",
-    
+
     "--success-color": "#00ff88",
     "--error-color": "#ff3366",
     "--warning-color": "#ffcc00",
     "--info-color": "#00ccff",
-    
+
     "--sidebar-bg": "rgba(10, 10, 15, 0.95)",
     "--sidebar-text-color": "#e0e0ff",
     "--sidebar-border-color": "rgba(255, 0, 255, 0.1)",
@@ -48,15 +48,15 @@
     "--sidebar-active-bg": "rgba(255, 0, 255, 0.15)",
     "--sidebar-active-color": "#ff00ff",
     "--sidebar-active-border": "rgba(255, 0, 255, 0.5)",
-    
+
     "--titlebar-bg": "rgba(10, 10, 15, 0.95)",
     "--titlebar-border": "rgba(255, 0, 255, 0.1)",
     "--titlebar-button-hover": "rgba(255, 0, 255, 0.1)",
-    
+
     "--scrollbar-track": "transparent",
     "--scrollbar-thumb": "rgba(255, 0, 255, 0.25)",
     "--scrollbar-thumb-hover": "rgba(255, 0, 255, 0.4)",
-    
+
     "--dropdown-bg": "rgba(18, 18, 26, 0.96)",
     "--dropdown-border": "rgba(255, 0, 255, 0.15)",
     "--dropdown-text": "#e0e0ff",
@@ -64,12 +64,12 @@
     "--dropdown-hover-bg": "rgba(255, 0, 255, 0.08)",
     "--dropdown-selected-bg": "#ff00ff",
     "--dropdown-selected-text": "#0a0a0f",
-    
+
     "--glass-bg": "rgba(18, 18, 26, 0.88)",
     "--glass-border": "rgba(255, 0, 255, 0.1)",
     "--glass-shadow-light": "0 4px 24px rgba(255, 0, 255, 0.15)",
     "--glass-shadow-medium": "0 8px 32px rgba(255, 0, 255, 0.2)",
-    
+
     "--card-shadow": "0 2px 12px rgba(255, 0, 255, 0.15), 0 0 1px rgba(255, 0, 255, 0.2)",
     "--card-shadow-hover": "0 8px 32px rgba(255, 0, 255, 0.25), 0 0 1px rgba(255, 0, 255, 0.3)",
     "--card-border": "1px solid rgba(255, 0, 255, 0.15)",

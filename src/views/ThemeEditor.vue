@@ -3,14 +3,34 @@
     <!-- Page Header -->
     <div class="page-header">
       <button class="back-btn" @click="goBack" :aria-label="$t('common.back')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
-        <span>{{ $t('common.back') }}</span>
+        <span>{{ $t("common.back") }}</span>
       </button>
-      <h1 class="page-title">{{ isEditMode ? $t('theme.editThemeTitle') : $t('theme.createCustomTheme') }}</h1>
-      <div class="accessibility-badge" :class="accessibilityClass" :title="accessibilityTooltip" role="status"
-        :aria-label="$t('theme.accessibilityLevel', { level: accessibilityLevel })">
+      <h1 class="page-title">
+        {{
+          isEditMode
+            ? $t("theme.editThemeTitle")
+            : $t("theme.createCustomTheme")
+        }}
+      </h1>
+      <div
+        class="accessibility-badge"
+        :class="accessibilityClass"
+        :title="accessibilityTooltip"
+        role="status"
+        :aria-label="
+          $t('theme.accessibilityLevel', { level: accessibilityLevel })
+        "
+      >
         <span class="badge-icon">{{ accessibilityIcon }}</span>
         <span class="badge-text">{{ accessibilityLevel }}</span>
       </div>
@@ -22,40 +42,71 @@
       <div class="color-editor-panel">
         <!-- Theme Name Input -->
         <div class="theme-name-section">
-          <label class="section-label" for="theme-name">{{ $t('theme.themeName') }}</label>
-          <input id="theme-name" v-model="themeName" type="text" class="theme-name-input"
-            :placeholder="$t('theme.themeNamePlaceholder')" :aria-label="$t('theme.themeName')"
-            :aria-invalid="!!nameError" @input="validateName" />
-          <span v-if="nameError" class="name-error" role="alert">{{ nameError }}</span>
+          <label class="section-label" for="theme-name">{{
+            $t("theme.themeName")
+          }}</label>
+          <input
+            id="theme-name"
+            v-model="themeName"
+            type="text"
+            class="theme-name-input"
+            :placeholder="$t('theme.themeNamePlaceholder')"
+            :aria-label="$t('theme.themeName')"
+            :aria-invalid="!!nameError"
+            @input="validateName"
+          />
+          <span v-if="nameError" class="name-error" role="alert">{{
+            nameError
+          }}</span>
         </div>
 
         <!-- Color Sections -->
         <div class="color-sections">
           <!-- Background Colors -->
-          <ColorSection :title="$t('theme.backgroundColors')" :items="backgroundColorItems" :colors="colors"
-            @update:color="handleColorUpdate" />
+          <ColorSection
+            :title="$t('theme.backgroundColors')"
+            :items="backgroundColorItems"
+            :colors="colors"
+            @update:color="handleColorUpdate"
+          />
 
           <!-- Text Colors -->
-          <ColorSection :title="$t('theme.textColors')" :items="textColorItems" :colors="colors"
-            @update:color="handleColorUpdate" />
+          <ColorSection
+            :title="$t('theme.textColors')"
+            :items="textColorItems"
+            :colors="colors"
+            @update:color="handleColorUpdate"
+          />
 
           <!-- Accent Colors -->
-          <ColorSection :title="$t('theme.accentColors')" :items="accentColorItems" :colors="colors"
-            @update:color="handleColorUpdate" />
+          <ColorSection
+            :title="$t('theme.accentColors')"
+            :items="accentColorItems"
+            :colors="colors"
+            @update:color="handleColorUpdate"
+          />
 
           <!-- Sidebar Colors -->
-          <ColorSection :title="$t('theme.sidebarColors')" :items="sidebarColorItems" :colors="colors"
-            @update:color="handleColorUpdate" />
+          <ColorSection
+            :title="$t('theme.sidebarColors')"
+            :items="sidebarColorItems"
+            :colors="colors"
+            @update:color="handleColorUpdate"
+          />
 
           <!-- Card Colors -->
-          <ColorSection :title="$t('theme.cardColors')" :items="cardColorItems" :colors="colors"
-            @update:color="handleColorUpdate" />
+          <ColorSection
+            :title="$t('theme.cardColors')"
+            :items="cardColorItems"
+            :colors="colors"
+            @update:color="handleColorUpdate"
+          />
         </div>
       </div>
 
       <!-- Right Panel: Preview -->
       <div class="preview-panel">
-        <h3 class="preview-title">{{ $t('theme.preview') }}</h3>
+        <h3 class="preview-title">{{ $t("theme.preview") }}</h3>
         <ThemePreview :colors="colors" />
       </div>
     </div>
@@ -63,14 +114,14 @@
     <!-- Page Footer -->
     <div class="page-footer">
       <button class="btn-reset" @click="handleReset">
-        {{ $t('theme.reset') }}
+        {{ $t("theme.reset") }}
       </button>
       <div class="footer-right">
         <button class="btn-cancel" @click="handleCancel">
-          {{ $t('common.cancel') }}
+          {{ $t("common.cancel") }}
         </button>
         <button class="btn-save" @click="handleSave" :disabled="!canSave">
-          {{ $t('common.save') }}
+          {{ $t("common.save") }}
         </button>
       </div>
     </div>
@@ -78,15 +129,18 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useRoute, useRouter } from 'vue-router';
-import ThemePreview from '@/components/ThemePreview.vue';
-import ColorSection from '@/components/ColorSection.vue';
-import { themeValidator, DEFAULT_THEME_TEMPLATE } from '@/services/themeValidator.js';
-import { accessibilityChecker } from '@/services/accessibilityChecker.js';
-import themeManager from '@/styles/theme-config.js';
-import { themeStorage } from '@/services/themeStorage.js';
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from "vue";
+import { useI18n } from "vue-i18n";
+import { useRoute, useRouter } from "vue-router";
+import ThemePreview from "@/components/ThemePreview.vue";
+import ColorSection from "@/components/ColorSection.vue";
+import {
+  themeValidator,
+  DEFAULT_THEME_TEMPLATE,
+} from "@/services/themeValidator.js";
+import { accessibilityChecker } from "@/services/accessibilityChecker.js";
+import themeManager from "@/styles/theme-config.js";
+import { themeStorage } from "@/services/themeStorage.js";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -97,56 +151,68 @@ const isEditMode = computed(() => !!route.params.themeId);
 const themeId = computed(() => route.params.themeId);
 
 // Theme name state
-const themeName = ref('');
-const nameError = ref('');
+const themeName = ref("");
+const nameError = ref("");
 
 // Colors reactive object - initialized with default template
 const colors = reactive({ ...DEFAULT_THEME_TEMPLATE });
 
 // Original colors for reset functionality
 const originalColors = ref({ ...DEFAULT_THEME_TEMPLATE });
-const originalName = ref('');
+const originalName = ref("");
 
 // Loading state
 const isLoading = ref(false);
 
 // Color items configuration for each section
 const backgroundColorItems = computed(() => [
-  { key: 'bg', label: t('theme.colorBg') },
-  { key: 'bgPrimary', label: t('theme.colorBgPrimary') },
-  { key: 'bgSecondary', label: t('theme.colorBgSecondary') },
-  { key: 'bgTertiary', label: t('theme.colorBgTertiary') },
-  { key: 'bgElevated', label: t('theme.colorBgElevated') }
+  { key: "bg", label: t("theme.colorBg") },
+  { key: "bgPrimary", label: t("theme.colorBgPrimary") },
+  { key: "bgSecondary", label: t("theme.colorBgSecondary") },
+  { key: "bgTertiary", label: t("theme.colorBgTertiary") },
+  { key: "bgElevated", label: t("theme.colorBgElevated") },
 ]);
 
 const textColorItems = computed(() => [
-  { key: 'text', label: t('theme.colorText'), contrastWith: 'bg' },
-  { key: 'textPrimary', label: t('theme.colorTextPrimary'), contrastWith: 'bgPrimary' },
-  { key: 'textSecondary', label: t('theme.colorTextSecondary'), contrastWith: 'bgSecondary' },
-  { key: 'textTertiary', label: t('theme.colorTextTertiary'), contrastWith: 'bgTertiary' }
+  { key: "text", label: t("theme.colorText"), contrastWith: "bg" },
+  {
+    key: "textPrimary",
+    label: t("theme.colorTextPrimary"),
+    contrastWith: "bgPrimary",
+  },
+  {
+    key: "textSecondary",
+    label: t("theme.colorTextSecondary"),
+    contrastWith: "bgSecondary",
+  },
+  {
+    key: "textTertiary",
+    label: t("theme.colorTextTertiary"),
+    contrastWith: "bgTertiary",
+  },
 ]);
 
 const accentColorItems = computed(() => [
-  { key: 'primary', label: t('theme.colorPrimary') },
-  { key: 'primaryHover', label: t('theme.colorPrimaryHover') },
-  { key: 'accentColor', label: t('theme.colorAccent') },
-  { key: 'accentHover', label: t('theme.colorAccentHover') },
-  { key: 'borderColor', label: t('theme.colorBorder') },
-  { key: 'dividerColor', label: t('theme.colorDivider') }
+  { key: "primary", label: t("theme.colorPrimary") },
+  { key: "primaryHover", label: t("theme.colorPrimaryHover") },
+  { key: "accentColor", label: t("theme.colorAccent") },
+  { key: "accentHover", label: t("theme.colorAccentHover") },
+  { key: "borderColor", label: t("theme.colorBorder") },
+  { key: "dividerColor", label: t("theme.colorDivider") },
 ]);
 
 const sidebarColorItems = computed(() => [
-  { key: 'sidebarBg', label: t('theme.colorSidebarBg') },
-  { key: 'sidebarTextColor', label: t('theme.colorSidebarText') },
-  { key: 'sidebarHoverBg', label: t('theme.colorSidebarHover') },
-  { key: 'sidebarActiveBg', label: t('theme.colorSidebarActiveBg') },
-  { key: 'sidebarActiveColor', label: t('theme.colorSidebarActiveColor') }
+  { key: "sidebarBg", label: t("theme.colorSidebarBg") },
+  { key: "sidebarTextColor", label: t("theme.colorSidebarText") },
+  { key: "sidebarHoverBg", label: t("theme.colorSidebarHover") },
+  { key: "sidebarActiveBg", label: t("theme.colorSidebarActiveBg") },
+  { key: "sidebarActiveColor", label: t("theme.colorSidebarActiveColor") },
 ]);
 
 const cardColorItems = computed(() => [
-  { key: 'cardBg', label: t('theme.colorCardBg') },
-  { key: 'cardShadow', label: t('theme.colorCardShadow') },
-  { key: 'cardBorder', label: t('theme.colorCardBorder') }
+  { key: "cardBg", label: t("theme.colorCardBg") },
+  { key: "cardShadow", label: t("theme.colorCardShadow") },
+  { key: "cardBorder", label: t("theme.colorCardBorder") },
 ]);
 
 // Accessibility score computation
@@ -157,15 +223,15 @@ const accessibilityScore = computed(() => {
 const accessibilityLevel = computed(() => accessibilityScore.value.level);
 
 const accessibilityClass = computed(() => ({
-  'badge-aaa': accessibilityLevel.value === 'AAA',
-  'badge-aa': accessibilityLevel.value === 'AA',
-  'badge-a': accessibilityLevel.value === 'A',
-  'badge-fail': accessibilityLevel.value === 'FAIL'
+  "badge-aaa": accessibilityLevel.value === "AAA",
+  "badge-aa": accessibilityLevel.value === "AA",
+  "badge-a": accessibilityLevel.value === "A",
+  "badge-fail": accessibilityLevel.value === "FAIL",
 }));
 
 const accessibilityIcon = computed(() => {
-  const icons = { 'AAA': '✓✓✓', 'AA': '✓✓', 'A': '✓', 'FAIL': '✗' };
-  return icons[accessibilityLevel.value] || '?';
+  const icons = { AAA: "✓✓✓", AA: "✓✓", A: "✓", FAIL: "✗" };
+  return icons[accessibilityLevel.value] || "?";
 });
 
 const accessibilityTooltip = computed(() => {
@@ -199,19 +265,19 @@ async function loadThemeForEditing() {
   try {
     const theme = await themeStorage.getCustomTheme(themeId.value);
     if (theme) {
-      themeName.value = theme.name || '';
-      originalName.value = theme.name || '';
+      themeName.value = theme.name || "";
+      originalName.value = theme.name || "";
       if (theme.colors) {
         Object.assign(colors, themeValidator.mergeWithTemplate(theme.colors));
         originalColors.value = { ...colors };
       }
     } else {
       // Theme not found, redirect back
-      console.warn('Theme not found:', themeId.value);
+      console.warn("Theme not found:", themeId.value);
       goBack();
     }
   } catch (error) {
-    console.error('Failed to load theme:', error);
+    console.error("Failed to load theme:", error);
     goBack();
   } finally {
     isLoading.value = false;
@@ -222,11 +288,11 @@ async function loadThemeForEditing() {
 function validateName() {
   const name = themeName.value.trim();
   if (!name) {
-    nameError.value = t('theme.nameRequired');
+    nameError.value = t("theme.nameRequired");
   } else if (name.length > 50) {
-    nameError.value = t('theme.nameTooLong');
+    nameError.value = t("theme.nameTooLong");
   } else {
-    nameError.value = '';
+    nameError.value = "";
   }
 }
 
@@ -249,9 +315,9 @@ function handleReset() {
   } else {
     // Reset to default template
     Object.assign(colors, DEFAULT_THEME_TEMPLATE);
-    themeName.value = '';
+    themeName.value = "";
   }
-  nameError.value = '';
+  nameError.value = "";
   themeManager.previewTheme(colors);
 }
 
@@ -274,11 +340,11 @@ async function handleSave() {
     const themeData = {
       id,
       name: themeName.value.trim(),
-      type: 'custom',
+      type: "custom",
       colors: { ...colors },
       version: 1,
       createdAt: isEditMode.value ? undefined : Date.now(),
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     };
 
     // If editing, preserve original createdAt
@@ -297,11 +363,11 @@ async function handleSave() {
       // Navigate back
       goBack();
     } else {
-      console.error('Failed to save theme:', result.error);
+      console.error("Failed to save theme:", result.error);
       // Could show a toast notification here
     }
   } catch (error) {
-    console.error('Failed to save theme:', error);
+    console.error("Failed to save theme:", error);
   } finally {
     isLoading.value = false;
   }
@@ -311,21 +377,20 @@ async function handleSave() {
 async function generateThemeId(name) {
   const base = name
     .toLowerCase()
-    .replace(/[^a-z0-9\u4e00-\u9fa5]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
+    .replace(/[^a-z0-9\u4e00-\u9fa5]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
     .slice(0, 32);
 
   const suffix = Date.now().toString(36).slice(-4);
-  return `custom-${base || 'theme'}-${suffix}`;
+  return `custom-${base || "theme"}-${suffix}`;
 }
 
 // Navigate back to settings
 function goBack() {
-  router.push('/settings');
+  router.push("/settings");
 }
 </script>
-
 
 <style scoped>
 .theme-editor-page {

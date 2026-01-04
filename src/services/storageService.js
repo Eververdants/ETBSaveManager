@@ -4,11 +4,17 @@
  * 支持同步读取（从缓存）和异步持久化到本地文件
  */
 
-import { BaseDirectory, exists, mkdir, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+import {
+  BaseDirectory,
+  exists,
+  mkdir,
+  readTextFile,
+  writeTextFile,
+} from "@tauri-apps/plugin-fs";
 
 // 存储目录和文件名
-const STORAGE_DIR = 'data';
-const STORAGE_FILE = 'settings.json';
+const STORAGE_DIR = "data";
+const STORAGE_FILE = "settings.json";
 
 // 内存缓存
 let cache = {};
@@ -17,23 +23,23 @@ let saveTimeout = null;
 
 // 需要从 localStorage 迁移的键（一次性迁移后删除）
 const KEYS_TO_MIGRATE = [
-  'theme',
-  'language',
-  'updateSource',
-  'performanceMonitor',
-  'developerMode',
-  'logMenuEnabled',
-  'testArchiveEnabled',
-  'gpuAccelerationDisabled',
-  'newYearThemeMode',
-  'themeBeforeNewYear',
-  'quick_create_tutorial_completed',
-  'steamApiKey',
-  'locale',
-  'fabScrollHintShown',
-  'hubUnlocked',
-  'lastUpdateCheck',
-  'user-custom-theme',
+  "theme",
+  "language",
+  "updateSource",
+  "performanceMonitor",
+  "developerMode",
+  "logMenuEnabled",
+  "testArchiveEnabled",
+  "gpuAccelerationDisabled",
+  "newYearThemeMode",
+  "themeBeforeNewYear",
+  "quick_create_tutorial_completed",
+  "steamApiKey",
+  "locale",
+  "fabScrollHintShown",
+  "hubUnlocked",
+  "lastUpdateCheck",
+  "user-custom-theme",
 ];
 
 /**
@@ -41,32 +47,42 @@ const KEYS_TO_MIGRATE = [
  */
 async function init() {
   if (initialized) return;
-  
+
   try {
     // 确保存储目录存在
-    const dirExists = await exists(STORAGE_DIR, { baseDir: BaseDirectory.AppData });
+    const dirExists = await exists(STORAGE_DIR, {
+      baseDir: BaseDirectory.AppData,
+    });
     if (!dirExists) {
-      await mkdir(STORAGE_DIR, { baseDir: BaseDirectory.AppData, recursive: true });
-      console.log('📁 [Storage] 创建存储目录');
+      await mkdir(STORAGE_DIR, {
+        baseDir: BaseDirectory.AppData,
+        recursive: true,
+      });
+      console.log("📁 [Storage] 创建存储目录");
     }
-    
+
     // 读取现有数据
     const filePath = `${STORAGE_DIR}/${STORAGE_FILE}`;
-    const fileExists = await exists(filePath, { baseDir: BaseDirectory.AppData });
-    
+    const fileExists = await exists(filePath, {
+      baseDir: BaseDirectory.AppData,
+    });
+
     if (fileExists) {
-      const content = await readTextFile(filePath, { baseDir: BaseDirectory.AppData });
+      const content = await readTextFile(filePath, {
+        baseDir: BaseDirectory.AppData,
+      });
       cache = JSON.parse(content);
-      console.log(`✅ [Storage] 已加载本地存储 (${Object.keys(cache).length} 项)`);
+      console.log(
+        `✅ [Storage] 已加载本地存储 (${Object.keys(cache).length} 项)`
+      );
     }
-    
+
     initialized = true;
-    
+
     // 迁移 localStorage 数据（一次性）
     await migrateFromLocalStorage();
-    
   } catch (error) {
-    console.error('❌ [Storage] 初始化失败:', error);
+    console.error("❌ [Storage] 初始化失败:", error);
     initialized = true;
   }
 }
@@ -91,9 +107,11 @@ async function saveToFile() {
     const filePath = `${STORAGE_DIR}/${STORAGE_FILE}`;
     const content = JSON.stringify(cache, null, 2);
     await writeTextFile(filePath, content, { baseDir: BaseDirectory.AppData });
-    console.log(`💾 [Storage] 已保存 (${(content.length / 1024).toFixed(1)} KB)`);
+    console.log(
+      `💾 [Storage] 已保存 (${(content.length / 1024).toFixed(1)} KB)`
+    );
   } catch (error) {
-    console.error('❌ [Storage] 保存失败:', error);
+    console.error("❌ [Storage] 保存失败:", error);
   }
 }
 
@@ -103,9 +121,9 @@ async function saveToFile() {
 async function migrateFromLocalStorage() {
   // 检查是否已迁移
   if (cache._migrated) return;
-  
+
   let migrated = false;
-  
+
   for (const key of KEYS_TO_MIGRATE) {
     const value = localStorage.getItem(key);
     if (value !== null && cache[key] === undefined) {
@@ -117,17 +135,17 @@ async function migrateFromLocalStorage() {
       migrated = true;
     }
   }
-  
+
   if (migrated) {
     cache._migrated = true;
     await saveToFile();
-    
+
     // 清除 localStorage 中的旧数据
     for (const key of KEYS_TO_MIGRATE) {
       localStorage.removeItem(key);
     }
-    
-    console.log('✅ [Storage] localStorage 数据迁移完成并已清除');
+
+    console.log("✅ [Storage] localStorage 数据迁移完成并已清除");
   } else {
     // 标记已检查过迁移
     cache._migrated = true;
@@ -186,7 +204,7 @@ export function clear() {
  * @returns {string[]}
  */
 export function keys() {
-  return Object.keys(cache).filter(k => !k.startsWith('_'));
+  return Object.keys(cache).filter((k) => !k.startsWith("_"));
 }
 
 /**

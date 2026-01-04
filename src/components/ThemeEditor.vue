@@ -3,14 +3,24 @@
     <!-- Header -->
     <div class="editor-header">
       <div class="header-left">
-        <input v-model="themeName" type="text" class="theme-name-input" :placeholder="$t('theme.enterThemeName')"
-          :aria-label="$t('theme.themeName')" @input="validateName" />
+        <input
+          v-model="themeName"
+          type="text"
+          class="theme-name-input"
+          :placeholder="$t('theme.enterThemeName')"
+          :aria-label="$t('theme.themeName')"
+          @input="validateName"
+        />
         <span v-if="nameError" class="name-error" role="alert">
           {{ nameError }}
         </span>
       </div>
       <div class="header-right">
-        <div class="accessibility-badge" :class="accessibilityClass" :title="accessibilityTooltip">
+        <div
+          class="accessibility-badge"
+          :class="accessibilityClass"
+          :title="accessibilityTooltip"
+        >
           <span class="badge-icon">{{ accessibilityIcon }}</span>
           <span class="badge-text">{{ accessibilityLevel }}</span>
         </div>
@@ -21,14 +31,26 @@
     <div class="color-sections">
       <!-- Background Colors -->
       <div class="color-section">
-        <h3 class="section-title">{{ $t('theme.backgroundColors') }}</h3>
+        <h3 class="section-title">{{ $t("theme.backgroundColors") }}</h3>
         <div class="color-grid">
-          <div class="color-item" v-for="item in backgroundColorItems" :key="item.key">
+          <div
+            class="color-item"
+            v-for="item in backgroundColorItems"
+            :key="item.key"
+          >
             <label class="color-label">{{ item.label }}</label>
             <div class="color-row">
-              <div class="color-swatch" :style="{ backgroundColor: colors[item.key] }" />
-              <input type="text" class="color-value-input" v-model="colors[item.key]"
-                @input="handleColorChange(item.key)" @blur="validateColor(item.key)" />
+              <div
+                class="color-swatch"
+                :style="{ backgroundColor: colors[item.key] }"
+              />
+              <input
+                type="text"
+                class="color-value-input"
+                v-model="colors[item.key]"
+                @input="handleColorChange(item.key)"
+                @blur="validateColor(item.key)"
+              />
             </div>
           </div>
         </div>
@@ -36,18 +58,42 @@
 
       <!-- Text Colors -->
       <div class="color-section">
-        <h3 class="section-title">{{ $t('theme.textColors') }}</h3>
+        <h3 class="section-title">{{ $t("theme.textColors") }}</h3>
         <div class="color-grid">
-          <div class="color-item" v-for="item in textColorItems" :key="item.key">
+          <div
+            class="color-item"
+            v-for="item in textColorItems"
+            :key="item.key"
+          >
             <label class="color-label">{{ item.label }}</label>
             <div class="color-row">
-              <div class="color-swatch" :style="{ backgroundColor: colors[item.key] }" />
-              <input type="text" class="color-value-input" v-model="colors[item.key]"
-                @input="handleColorChange(item.key)" @blur="validateColor(item.key)" />
-              <div v-if="item.contrastWith" class="mini-contrast"
-                :class="getContrastClass(colors[item.key], colors[item.contrastWith])"
-                :title="getContrastTooltip(colors[item.key], colors[item.contrastWith])">
-                {{ getContrastRatio(colors[item.key], colors[item.contrastWith]) }}
+              <div
+                class="color-swatch"
+                :style="{ backgroundColor: colors[item.key] }"
+              />
+              <input
+                type="text"
+                class="color-value-input"
+                v-model="colors[item.key]"
+                @input="handleColorChange(item.key)"
+                @blur="validateColor(item.key)"
+              />
+              <div
+                v-if="item.contrastWith"
+                class="mini-contrast"
+                :class="
+                  getContrastClass(colors[item.key], colors[item.contrastWith])
+                "
+                :title="
+                  getContrastTooltip(
+                    colors[item.key],
+                    colors[item.contrastWith]
+                  )
+                "
+              >
+                {{
+                  getContrastRatio(colors[item.key], colors[item.contrastWith])
+                }}
               </div>
             </div>
           </div>
@@ -56,14 +102,26 @@
 
       <!-- Primary/Accent Colors -->
       <div class="color-section">
-        <h3 class="section-title">{{ $t('theme.accentColors') }}</h3>
+        <h3 class="section-title">{{ $t("theme.accentColors") }}</h3>
         <div class="color-grid">
-          <div class="color-item" v-for="item in accentColorItems" :key="item.key">
+          <div
+            class="color-item"
+            v-for="item in accentColorItems"
+            :key="item.key"
+          >
             <label class="color-label">{{ item.label }}</label>
             <div class="color-row">
-              <div class="color-swatch" :style="{ backgroundColor: colors[item.key] }" />
-              <input type="text" class="color-value-input" v-model="colors[item.key]"
-                @input="handleColorChange(item.key)" @blur="validateColor(item.key)" />
+              <div
+                class="color-swatch"
+                :style="{ backgroundColor: colors[item.key] }"
+              />
+              <input
+                type="text"
+                class="color-value-input"
+                v-model="colors[item.key]"
+                @input="handleColorChange(item.key)"
+                @blur="validateColor(item.key)"
+              />
             </div>
           </div>
         </div>
@@ -71,14 +129,26 @@
 
       <!-- Sidebar Colors -->
       <div class="color-section">
-        <h3 class="section-title">{{ $t('theme.sidebarColors') }}</h3>
+        <h3 class="section-title">{{ $t("theme.sidebarColors") }}</h3>
         <div class="color-grid">
-          <div class="color-item" v-for="item in sidebarColorItems" :key="item.key">
+          <div
+            class="color-item"
+            v-for="item in sidebarColorItems"
+            :key="item.key"
+          >
             <label class="color-label">{{ item.label }}</label>
             <div class="color-row">
-              <div class="color-swatch" :style="{ backgroundColor: colors[item.key] }" />
-              <input type="text" class="color-value-input" v-model="colors[item.key]"
-                @input="handleColorChange(item.key)" @blur="validateColor(item.key)" />
+              <div
+                class="color-swatch"
+                :style="{ backgroundColor: colors[item.key] }"
+              />
+              <input
+                type="text"
+                class="color-value-input"
+                v-model="colors[item.key]"
+                @input="handleColorChange(item.key)"
+                @blur="validateColor(item.key)"
+              />
             </div>
           </div>
         </div>
@@ -86,14 +156,26 @@
 
       <!-- Card Colors -->
       <div class="color-section">
-        <h3 class="section-title">{{ $t('theme.cardColors') }}</h3>
+        <h3 class="section-title">{{ $t("theme.cardColors") }}</h3>
         <div class="color-grid">
-          <div class="color-item" v-for="item in cardColorItems" :key="item.key">
+          <div
+            class="color-item"
+            v-for="item in cardColorItems"
+            :key="item.key"
+          >
             <label class="color-label">{{ item.label }}</label>
             <div class="color-row">
-              <div class="color-swatch" :style="{ backgroundColor: colors[item.key] }" />
-              <input type="text" class="color-value-input" v-model="colors[item.key]"
-                @input="handleColorChange(item.key)" @blur="validateColor(item.key)" />
+              <div
+                class="color-swatch"
+                :style="{ backgroundColor: colors[item.key] }"
+              />
+              <input
+                type="text"
+                class="color-value-input"
+                v-model="colors[item.key]"
+                @input="handleColorChange(item.key)"
+                @blur="validateColor(item.key)"
+              />
             </div>
           </div>
         </div>
@@ -108,14 +190,14 @@
     <!-- Action Buttons -->
     <div class="editor-actions">
       <button class="btn-reset" @click="handleReset">
-        {{ $t('theme.reset') }}
+        {{ $t("theme.reset") }}
       </button>
       <div class="action-right">
         <button class="btn-cancel" @click="handleCancel">
-          {{ $t('common.cancel') }}
+          {{ $t("common.cancel") }}
         </button>
         <button class="btn-save" @click="handleSave" :disabled="!canSave">
-          {{ $t('common.save') }}
+          {{ $t("common.save") }}
         </button>
       </div>
     </div>
@@ -123,32 +205,35 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue';
-import { useI18n } from 'vue-i18n';
-import ThemePreview from './ThemePreview.vue';
-import { themeValidator, DEFAULT_THEME_TEMPLATE } from '@/services/themeValidator.js';
-import { accessibilityChecker } from '@/services/accessibilityChecker.js';
-import themeManager from '@/styles/theme-config.js';
+import { ref, reactive, computed, watch, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
+import ThemePreview from "./ThemePreview.vue";
+import {
+  themeValidator,
+  DEFAULT_THEME_TEMPLATE,
+} from "@/services/themeValidator.js";
+import { accessibilityChecker } from "@/services/accessibilityChecker.js";
+import themeManager from "@/styles/theme-config.js";
 
 const { t } = useI18n();
 
 const props = defineProps({
   theme: {
     type: Object,
-    default: null
+    default: null,
   },
   mode: {
     type: String,
-    default: 'create', // 'create' or 'edit'
-    validator: (v) => ['create', 'edit'].includes(v)
-  }
+    default: "create", // 'create' or 'edit'
+    validator: (v) => ["create", "edit"].includes(v),
+  },
 });
 
-const emit = defineEmits(['save', 'cancel', 'preview']);
+const emit = defineEmits(["save", "cancel", "preview"]);
 
 // Theme name
-const themeName = ref('');
-const nameError = ref('');
+const themeName = ref("");
+const nameError = ref("");
 
 // Colors reactive object
 const colors = reactive({ ...DEFAULT_THEME_TEMPLATE });
@@ -158,41 +243,53 @@ const originalColors = ref({ ...DEFAULT_THEME_TEMPLATE });
 
 // Color items configuration
 const backgroundColorItems = computed(() => [
-  { key: 'bg', label: t('theme.colorBg') },
-  { key: 'bgPrimary', label: t('theme.colorBgPrimary') },
-  { key: 'bgSecondary', label: t('theme.colorBgSecondary') },
-  { key: 'bgTertiary', label: t('theme.colorBgTertiary') },
-  { key: 'bgElevated', label: t('theme.colorBgElevated') }
+  { key: "bg", label: t("theme.colorBg") },
+  { key: "bgPrimary", label: t("theme.colorBgPrimary") },
+  { key: "bgSecondary", label: t("theme.colorBgSecondary") },
+  { key: "bgTertiary", label: t("theme.colorBgTertiary") },
+  { key: "bgElevated", label: t("theme.colorBgElevated") },
 ]);
 
 const textColorItems = computed(() => [
-  { key: 'text', label: t('theme.colorText'), contrastWith: 'bg' },
-  { key: 'textPrimary', label: t('theme.colorTextPrimary'), contrastWith: 'bgPrimary' },
-  { key: 'textSecondary', label: t('theme.colorTextSecondary'), contrastWith: 'bgSecondary' },
-  { key: 'textTertiary', label: t('theme.colorTextTertiary'), contrastWith: 'bgTertiary' }
+  { key: "text", label: t("theme.colorText"), contrastWith: "bg" },
+  {
+    key: "textPrimary",
+    label: t("theme.colorTextPrimary"),
+    contrastWith: "bgPrimary",
+  },
+  {
+    key: "textSecondary",
+    label: t("theme.colorTextSecondary"),
+    contrastWith: "bgSecondary",
+  },
+  {
+    key: "textTertiary",
+    label: t("theme.colorTextTertiary"),
+    contrastWith: "bgTertiary",
+  },
 ]);
 
 const accentColorItems = computed(() => [
-  { key: 'primary', label: t('theme.colorPrimary') },
-  { key: 'primaryHover', label: t('theme.colorPrimaryHover') },
-  { key: 'accentColor', label: t('theme.colorAccent') },
-  { key: 'accentHover', label: t('theme.colorAccentHover') },
-  { key: 'borderColor', label: t('theme.colorBorder') },
-  { key: 'dividerColor', label: t('theme.colorDivider') }
+  { key: "primary", label: t("theme.colorPrimary") },
+  { key: "primaryHover", label: t("theme.colorPrimaryHover") },
+  { key: "accentColor", label: t("theme.colorAccent") },
+  { key: "accentHover", label: t("theme.colorAccentHover") },
+  { key: "borderColor", label: t("theme.colorBorder") },
+  { key: "dividerColor", label: t("theme.colorDivider") },
 ]);
 
 const sidebarColorItems = computed(() => [
-  { key: 'sidebarBg', label: t('theme.colorSidebarBg') },
-  { key: 'sidebarTextColor', label: t('theme.colorSidebarText') },
-  { key: 'sidebarHoverBg', label: t('theme.colorSidebarHover') },
-  { key: 'sidebarActiveBg', label: t('theme.colorSidebarActiveBg') },
-  { key: 'sidebarActiveColor', label: t('theme.colorSidebarActiveColor') }
+  { key: "sidebarBg", label: t("theme.colorSidebarBg") },
+  { key: "sidebarTextColor", label: t("theme.colorSidebarText") },
+  { key: "sidebarHoverBg", label: t("theme.colorSidebarHover") },
+  { key: "sidebarActiveBg", label: t("theme.colorSidebarActiveBg") },
+  { key: "sidebarActiveColor", label: t("theme.colorSidebarActiveColor") },
 ]);
 
 const cardColorItems = computed(() => [
-  { key: 'cardBg', label: t('theme.colorCardBg') },
-  { key: 'cardShadow', label: t('theme.colorCardShadow') },
-  { key: 'cardBorder', label: t('theme.colorCardBorder') }
+  { key: "cardBg", label: t("theme.colorCardBg") },
+  { key: "cardShadow", label: t("theme.colorCardShadow") },
+  { key: "cardBorder", label: t("theme.colorCardBorder") },
 ]);
 
 // Accessibility score
@@ -203,15 +300,15 @@ const accessibilityScore = computed(() => {
 const accessibilityLevel = computed(() => accessibilityScore.value.level);
 
 const accessibilityClass = computed(() => ({
-  'badge-aaa': accessibilityLevel.value === 'AAA',
-  'badge-aa': accessibilityLevel.value === 'AA',
-  'badge-a': accessibilityLevel.value === 'A',
-  'badge-fail': accessibilityLevel.value === 'FAIL'
+  "badge-aaa": accessibilityLevel.value === "AAA",
+  "badge-aa": accessibilityLevel.value === "AA",
+  "badge-a": accessibilityLevel.value === "A",
+  "badge-fail": accessibilityLevel.value === "FAIL",
 }));
 
 const accessibilityIcon = computed(() => {
-  const icons = { 'AAA': '✓✓✓', 'AA': '✓✓', 'A': '✓', 'FAIL': '✗' };
-  return icons[accessibilityLevel.value] || '?';
+  const icons = { AAA: "✓✓✓", AA: "✓✓", A: "✓", FAIL: "✗" };
+  return icons[accessibilityLevel.value] || "?";
 });
 
 const accessibilityTooltip = computed(() => {
@@ -231,7 +328,7 @@ const canSave = computed(() => {
 // Initialize from props
 onMounted(() => {
   if (props.theme) {
-    themeName.value = props.theme.name || '';
+    themeName.value = props.theme.name || "";
     if (props.theme.colors) {
       Object.assign(colors, props.theme.colors);
       originalColors.value = { ...props.theme.colors };
@@ -240,30 +337,34 @@ onMounted(() => {
 });
 
 // Watch for theme prop changes
-watch(() => props.theme, (newTheme) => {
-  if (newTheme) {
-    themeName.value = newTheme.name || '';
-    if (newTheme.colors) {
-      Object.assign(colors, newTheme.colors);
-      originalColors.value = { ...newTheme.colors };
+watch(
+  () => props.theme,
+  (newTheme) => {
+    if (newTheme) {
+      themeName.value = newTheme.name || "";
+      if (newTheme.colors) {
+        Object.assign(colors, newTheme.colors);
+        originalColors.value = { ...newTheme.colors };
+      }
     }
-  }
-}, { deep: true });
+  },
+  { deep: true }
+);
 
 // Methods
 function validateName() {
   if (!themeName.value.trim()) {
-    nameError.value = t('theme.nameRequired');
+    nameError.value = t("theme.nameRequired");
   } else if (themeName.value.length > 50) {
-    nameError.value = t('theme.nameTooLong');
+    nameError.value = t("theme.nameTooLong");
   } else {
-    nameError.value = '';
+    nameError.value = "";
   }
 }
 
 function handleColorChange(key) {
   // Emit preview event for real-time preview
-  emit('preview', { ...colors });
+  emit("preview", { ...colors });
 
   // Apply preview to theme manager
   themeManager.previewTheme(colors);
@@ -286,16 +387,16 @@ function getContrastClass(fg, bg) {
   const ratio = accessibilityChecker.calculateContrastRatio(fg, bg);
   const level = accessibilityChecker.checkWCAGCompliance(ratio);
   return {
-    'contrast-pass': level === 'AAA' || level === 'AA',
-    'contrast-warn': level === 'A',
-    'contrast-fail': level === 'FAIL'
+    "contrast-pass": level === "AAA" || level === "AA",
+    "contrast-warn": level === "A",
+    "contrast-fail": level === "FAIL",
   };
 }
 
 function getContrastTooltip(fg, bg) {
   const ratio = accessibilityChecker.calculateContrastRatio(fg, bg);
   const level = accessibilityChecker.checkWCAGCompliance(ratio);
-  return `${t('theme.contrastRatio', { ratio: ratio.toFixed(2) })} - ${level}`;
+  return `${t("theme.contrastRatio", { ratio: ratio.toFixed(2) })} - ${level}`;
 }
 
 function handleReset() {
@@ -305,7 +406,7 @@ function handleReset() {
 
 function handleCancel() {
   themeManager.cancelPreview();
-  emit('cancel');
+  emit("cancel");
 }
 
 function handleSave() {
@@ -316,26 +417,26 @@ function handleSave() {
   const themeData = {
     id: themeId,
     name: themeName.value.trim(),
-    type: 'custom',
+    type: "custom",
     colors: { ...colors },
     version: 1,
     createdAt: props.theme?.createdAt || Date.now(),
-    updatedAt: Date.now()
+    updatedAt: Date.now(),
   };
 
-  emit('save', themeData);
+  emit("save", themeData);
 }
 
 function generateThemeId(name) {
   const base = name
     .toLowerCase()
-    .replace(/[^a-z0-9\u4e00-\u9fa5]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
+    .replace(/[^a-z0-9\u4e00-\u9fa5]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
     .slice(0, 32);
 
   const suffix = Date.now().toString(36).slice(-4);
-  return `custom-${base || 'theme'}-${suffix}`;
+  return `custom-${base || "theme"}-${suffix}`;
 }
 </script>
 
@@ -475,7 +576,7 @@ function generateThemeId(name) {
   flex: 1;
   padding: 8px 10px;
   font-size: 12px;
-  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  font-family: "SF Mono", Monaco, "Courier New", monospace;
   border: 1px solid var(--border-color, rgba(60, 60, 67, 0.1));
   border-radius: 6px;
   background: var(--bg-secondary, #ffffff);

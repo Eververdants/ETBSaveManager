@@ -1,5 +1,10 @@
 <template>
-  <div class="theme-preview" :style="previewStyles" role="img" :aria-label="$t('theme.previewArea')">
+  <div
+    class="theme-preview"
+    :style="previewStyles"
+    role="img"
+    :aria-label="$t('theme.previewArea')"
+  >
     <!-- 模拟窗口 -->
     <div class="preview-window">
       <!-- 标题栏 -->
@@ -97,40 +102,40 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { DEFAULT_THEME_TEMPLATE } from '@/services/themeValidator.js';
+import { computed } from "vue";
+import { DEFAULT_THEME_TEMPLATE } from "@/services/themeValidator.js";
 
 const props = defineProps({
   colors: {
     type: Object,
-    default: () => ({})
-  }
+    default: () => ({}),
+  },
 });
 
 const previewStyles = computed(() => {
   const c = { ...DEFAULT_THEME_TEMPLATE, ...props.colors };
 
   return {
-    '--p-bg': c.bg,
-    '--p-bg-primary': c.bgPrimary,
-    '--p-bg-secondary': c.bgSecondary,
-    '--p-bg-tertiary': c.bgTertiary,
-    '--p-text': c.text,
-    '--p-text-primary': c.textPrimary,
-    '--p-text-secondary': c.textSecondary,
-    '--p-text-tertiary': c.textTertiary,
-    '--p-primary': c.primary,
-    '--p-accent': c.accentColor,
-    '--p-border': c.borderColor,
-    '--p-divider': c.dividerColor,
-    '--p-sidebar-bg': c.sidebarBg,
-    '--p-sidebar-hover': c.sidebarHoverBg,
-    '--p-sidebar-active-bg': c.sidebarActiveBg,
-    '--p-sidebar-active-color': c.sidebarActiveColor,
-    '--p-card-bg': c.cardBg,
-    '--p-card-border': c.cardBorder,
-    '--p-card-shadow': c.cardShadow,
-    '--p-scrollbar-thumb': c.scrollbarThumb
+    "--p-bg": c.bg,
+    "--p-bg-primary": c.bgPrimary,
+    "--p-bg-secondary": c.bgSecondary,
+    "--p-bg-tertiary": c.bgTertiary,
+    "--p-text": c.text,
+    "--p-text-primary": c.textPrimary,
+    "--p-text-secondary": c.textSecondary,
+    "--p-text-tertiary": c.textTertiary,
+    "--p-primary": c.primary,
+    "--p-accent": c.accentColor,
+    "--p-border": c.borderColor,
+    "--p-divider": c.dividerColor,
+    "--p-sidebar-bg": c.sidebarBg,
+    "--p-sidebar-hover": c.sidebarHoverBg,
+    "--p-sidebar-active-bg": c.sidebarActiveBg,
+    "--p-sidebar-active-color": c.sidebarActiveColor,
+    "--p-card-bg": c.cardBg,
+    "--p-card-border": c.cardBorder,
+    "--p-card-shadow": c.cardShadow,
+    "--p-scrollbar-thumb": c.scrollbarThumb,
   };
 });
 </script>
@@ -403,7 +408,7 @@ const previewStyles = computed(() => {
 }
 
 .mock-scroll::after {
-  content: '';
+  content: "";
   position: absolute;
   right: 2px;
   top: 4px;

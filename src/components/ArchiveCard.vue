@@ -1,9 +1,9 @@
 <template>
   <div
     class="archive-card"
-    :class="{ 
+    :class="{
       'archive-hidden': !localVisible,
-      'visibility-transitioning': isAnimating 
+      'visibility-transitioning': isAnimating,
     }"
     @click="handleCardClick"
   >
@@ -23,18 +23,33 @@
           <span
             class="difficulty-tag"
             :class="archiveDifficultyClass"
-            :style="tagStyle(archiveDifficultyText, t('archiveCard.archiveDifficulty'))"
+            :style="
+              tagStyle(
+                archiveDifficultyText,
+                t('archiveCard.archiveDifficulty')
+              )
+            "
           >
             <span class="tag-short">{{ archiveDifficultyText }}</span>
-            <span class="tag-full">{{ t("archiveCard.archiveDifficulty") }}：{{ archiveDifficultyText }}</span>
+            <span class="tag-full"
+              >{{ t("archiveCard.archiveDifficulty") }}：{{
+                archiveDifficultyText
+              }}</span
+            >
           </span>
           <span
             class="difficulty-tag"
             :class="actualDifficultyClass"
-            :style="tagStyle(actualDifficultyText, t('archiveCard.actualDifficulty'))"
+            :style="
+              tagStyle(actualDifficultyText, t('archiveCard.actualDifficulty'))
+            "
           >
             <span class="tag-short">{{ actualDifficultyText }}</span>
-            <span class="tag-full">{{ t("archiveCard.actualDifficulty") }}：{{ actualDifficultyText }}</span>
+            <span class="tag-full"
+              >{{ t("archiveCard.actualDifficulty") }}：{{
+                actualDifficultyText
+              }}</span
+            >
           </span>
         </div>
       </div>
@@ -47,10 +62,20 @@
         <button class="action-btn edit" @click.stop="editArchive" type="button">
           <font-awesome-icon icon="fa-solid fa-edit" />
         </button>
-        <button class="action-btn copy" @click.stop="toggleVisibility" type="button">
-          <font-awesome-icon :icon="isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" />
+        <button
+          class="action-btn copy"
+          @click.stop="toggleVisibility"
+          type="button"
+        >
+          <font-awesome-icon
+            :icon="isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"
+          />
         </button>
-        <button class="action-btn delete" @click.stop="deleteArchive" type="button">
+        <button
+          class="action-btn delete"
+          @click.stop="deleteArchive"
+          type="button"
+        >
           <font-awesome-icon icon="fa-solid fa-trash" />
         </button>
       </div>
@@ -111,40 +136,50 @@ const tagStyle = (shortText, prefix) => {
 // Computed - 简化计算属性
 const isVisible = computed(() => props.archive.isVisible);
 
-const currentLevelName = computed(() => 
-  t(`LevelName_Display.${props.archive.currentLevel}`) || props.archive.currentLevel
+const currentLevelName = computed(
+  () =>
+    t(`LevelName_Display.${props.archive.currentLevel}`) ||
+    props.archive.currentLevel
 );
 
-const backgroundImage = computed(() => 
-  `/images/ETB/${props.archive.currentLevel}.jpg`
+const backgroundImage = computed(
+  () => `/images/ETB/${props.archive.currentLevel}.jpg`
 );
 
-const archiveDifficultyText = computed(() => 
-  t(`createArchive.difficultyLevels.${props.archive.archiveDifficulty}`) || props.archive.archiveDifficulty
+const archiveDifficultyText = computed(
+  () =>
+    t(`createArchive.difficultyLevels.${props.archive.archiveDifficulty}`) ||
+    props.archive.archiveDifficulty
 );
 
-const actualDifficultyText = computed(() => 
-  t(`createArchive.difficultyLevels.${props.archive.actualDifficulty}`) || props.archive.actualDifficulty
+const actualDifficultyText = computed(
+  () =>
+    t(`createArchive.difficultyLevels.${props.archive.actualDifficulty}`) ||
+    props.archive.actualDifficulty
 );
 
-const archiveDifficultyClass = computed(() => 
-  `difficulty-${props.archive.archiveDifficulty}`
+const archiveDifficultyClass = computed(
+  () => `difficulty-${props.archive.archiveDifficulty}`
 );
 
-const actualDifficultyClass = computed(() => 
-  `difficulty-${props.archive.actualDifficulty}`
+const actualDifficultyClass = computed(
+  () => `difficulty-${props.archive.actualDifficulty}`
 );
 
 // 监听 props 变化，触发动画
-watch(() => props.archive.isVisible, (newVal) => {
-  if (newVal !== localVisible.value) {
-    isAnimating.value = true;
-    localVisible.value = newVal;
-    setTimeout(() => {
-      isAnimating.value = false;
-    }, 250);
-  }
-}, { immediate: true });
+watch(
+  () => props.archive.isVisible,
+  (newVal) => {
+    if (newVal !== localVisible.value) {
+      isAnimating.value = true;
+      localVisible.value = newVal;
+      setTimeout(() => {
+        isAnimating.value = false;
+      }, 250);
+    }
+  },
+  { immediate: true }
+);
 
 // 初始化时同步状态
 onMounted(() => {
@@ -153,14 +188,16 @@ onMounted(() => {
 
 // Methods - 简化事件处理
 const toggleVisibility = () => {
-  emit("toggle-visibility", { ...props.archive, isVisible: !props.archive.isVisible });
+  emit("toggle-visibility", {
+    ...props.archive,
+    isVisible: !props.archive.isVisible,
+  });
 };
 
 const editArchive = () => emit("edit", props.archive);
 const deleteArchive = () => emit("delete", props.archive);
 const handleCardClick = () => emit("select", props.archive);
 </script>
-
 
 <style scoped>
 /* 卡片容器 - 优化 GPU 加速 */
@@ -175,8 +212,8 @@ const handleCardClick = () => emit("select", props.archive);
   background: var(--card-bg);
   border: var(--card-border);
   box-shadow: var(--card-shadow);
-  transition: transform 0.3s ease, box-shadow 0.3s ease,
-              opacity 0.5s ease, filter 0.5s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.5s ease,
+    filter 0.5s ease;
   transform: translateZ(0);
   will-change: transform, opacity, filter;
   contain: layout style;
@@ -208,13 +245,15 @@ const handleCardClick = () => emit("select", props.archive);
 }
 
 @keyframes shine-sweep {
-  to { transform: rotate(45deg) translate(100%, 100%); }
+  to {
+    transform: rotate(45deg) translate(100%, 100%);
+  }
 }
 
 .archive-card:hover {
   transform: translateY(-4px) scale(1.01);
   box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.4),
-              0 4px 8px -4px rgba(0, 0, 0, 0.3);
+    0 4px 8px -4px rgba(0, 0, 0, 0.3);
   z-index: 2;
 }
 
@@ -308,9 +347,8 @@ const handleCardClick = () => emit("select", props.archive);
   overflow: hidden;
   position: relative;
   width: var(--w-short, auto);
-  transition: width 0.25s ease, background 0.25s ease, 
-              color 0.25s ease, border-color 0.25s ease,
-              box-shadow 0.25s ease;
+  transition: width 0.25s ease, background 0.25s ease, color 0.25s ease,
+    border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .tag-short,
@@ -323,8 +361,12 @@ const handleCardClick = () => emit("select", props.archive);
   white-space: nowrap;
 }
 
-.tag-short { opacity: 1; }
-.tag-full { opacity: 0; }
+.tag-short {
+  opacity: 1;
+}
+.tag-full {
+  opacity: 0;
+}
 
 .archive-card:hover .difficulty-tag {
   width: var(--w-full, var(--w-short, auto));
@@ -332,8 +374,12 @@ const handleCardClick = () => emit("select", props.archive);
   backdrop-filter: blur(8px);
 }
 
-.archive-card:hover .tag-short { opacity: 0; }
-.archive-card:hover .tag-full { opacity: 1; }
+.archive-card:hover .tag-short {
+  opacity: 0;
+}
+.archive-card:hover .tag-full {
+  opacity: 1;
+}
 
 /* 难度颜色 - 悬浮时显示 */
 .archive-card:hover .difficulty-easy {
@@ -411,8 +457,8 @@ const handleCardClick = () => emit("select", props.archive);
   background: rgba(128, 128, 128, 0.1);
   color: rgba(128, 128, 128, 0.7);
   border: 1px solid rgba(128, 128, 128, 0.2);
-  transition: transform 0.2s ease, box-shadow 0.2s ease,
-              background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease,
+    color 0.2s ease, border-color 0.2s ease;
   position: relative;
   overflow: hidden;
   touch-action: manipulation;
@@ -517,12 +563,24 @@ const handleCardClick = () => emit("select", props.archive);
     height: 140px;
   }
 
-  .card-background { height: 90px; }
-  .card-info { height: 50px; padding: var(--space-2) var(--space-3); }
-  .archive-name { font-size: 14px; }
-  .current-level { font-size: 13px; }
-  .difficulty-tag { height: 18px; font-size: 10px; }
-  
+  .card-background {
+    height: 90px;
+  }
+  .card-info {
+    height: 50px;
+    padding: var(--space-2) var(--space-3);
+  }
+  .archive-name {
+    font-size: 14px;
+  }
+  .current-level {
+    font-size: 13px;
+  }
+  .difficulty-tag {
+    height: 18px;
+    font-size: 10px;
+  }
+
   .archive-card:hover {
     transform: translateY(-2px);
   }
@@ -535,12 +593,25 @@ const handleCardClick = () => emit("select", props.archive);
     height: 130px;
   }
 
-  .card-background { height: 80px; }
-  .card-info { height: 50px; padding: var(--space-2); }
-  .archive-name { font-size: 13px; }
-  .current-level { font-size: 12px; }
-  .difficulty-tag { height: 16px; font-size: 9px; min-width: 26px; }
-  
+  .card-background {
+    height: 80px;
+  }
+  .card-info {
+    height: 50px;
+    padding: var(--space-2);
+  }
+  .archive-name {
+    font-size: 13px;
+  }
+  .current-level {
+    font-size: 12px;
+  }
+  .difficulty-tag {
+    height: 16px;
+    font-size: 9px;
+    min-width: 26px;
+  }
+
   .archive-info {
     left: var(--space-2);
     right: var(--space-2);
@@ -565,7 +636,11 @@ const handleCardClick = () => emit("select", props.archive);
     padding: 0 12px;
   }
 
-  .tag-short { opacity: 0; }
-  .tag-full { opacity: 1; }
+  .tag-short {
+    opacity: 0;
+  }
+  .tag-full {
+    opacity: 1;
+  }
 }
 </style>

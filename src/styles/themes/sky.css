@@ -119,8 +119,10 @@
   /* ==========================================
    * 卡片样式 (Card Styles)
    * ========================================== */
-  --card-shadow: 0 2px 12px rgba(56, 189, 248, 0.1), 0 0 1px rgba(56, 189, 248, 0.15);
-  --card-shadow-hover: 0 8px 32px rgba(56, 189, 248, 0.15), 0 0 1px rgba(56, 189, 248, 0.2);
+  --card-shadow: 0 2px 12px rgba(56, 189, 248, 0.1),
+    0 0 1px rgba(56, 189, 248, 0.15);
+  --card-shadow-hover: 0 8px 32px rgba(56, 189, 248, 0.15),
+    0 0 1px rgba(56, 189, 248, 0.2);
   --card-border: 1px solid rgba(56, 189, 248, 0.18);
   --card-radius: 16px;
   --card-padding: 16px;

@@ -21,8 +21,14 @@
               <label class="form-label">{{
                 $t("quickCreate.editModal.archiveName")
               }}</label>
-              <input type="text" class="form-input" v-model="localArchive.name" :placeholder="$t('quickCreate.editModal.archiveNamePlaceholder')
-                " />
+              <input
+                type="text"
+                class="form-input"
+                v-model="localArchive.name"
+                :placeholder="
+                  $t('quickCreate.editModal.archiveNamePlaceholder')
+                "
+              />
             </div>
 
             <!-- 层级选择 -->
@@ -30,9 +36,12 @@
               <label class="form-label">{{
                 $t("quickCreate.editModal.level")
               }}</label>
-              <CustomDropdown :model-value="localArchive.level" :options="levelDropdownOptions"
+              <CustomDropdown
+                :model-value="localArchive.level"
+                :options="levelDropdownOptions"
                 :placeholder="$t('quickCreate.editModal.inheritFromUniform')"
-                @update:model-value="localArchive.level = $event" />
+                @update:model-value="localArchive.level = $event"
+              />
             </div>
 
             <!-- 存档难度 -->
@@ -40,9 +49,12 @@
               <label class="form-label">{{
                 $t("quickCreate.editModal.difficulty")
               }}</label>
-              <CustomDropdown :model-value="localArchive.difficulty" :options="difficultyDropdownOptions"
+              <CustomDropdown
+                :model-value="localArchive.difficulty"
+                :options="difficultyDropdownOptions"
                 :placeholder="$t('quickCreate.editModal.inheritFromUniform')"
-                @update:model-value="localArchive.difficulty = $event" />
+                @update:model-value="localArchive.difficulty = $event"
+              />
             </div>
 
             <!-- 实际难度 -->
@@ -50,9 +62,12 @@
               <label class="form-label">{{
                 $t("quickCreate.editModal.actualDifficulty")
               }}</label>
-              <CustomDropdown :model-value="localArchive.actualDifficulty" :options="difficultyDropdownOptions"
+              <CustomDropdown
+                :model-value="localArchive.actualDifficulty"
+                :options="difficultyDropdownOptions"
                 :placeholder="$t('quickCreate.editModal.inheritFromUniform')"
-                @update:model-value="localArchive.actualDifficulty = $event" />
+                @update:model-value="localArchive.actualDifficulty = $event"
+              />
             </div>
 
             <!-- 背包模板 -->
@@ -60,9 +75,12 @@
               <label class="form-label">{{
                 $t("quickCreate.editModal.inventory")
               }}</label>
-              <CustomDropdown :model-value="localArchive.inventoryTemplate" :options="inventoryDropdownOptions"
+              <CustomDropdown
+                :model-value="localArchive.inventoryTemplate"
+                :options="inventoryDropdownOptions"
                 :placeholder="$t('quickCreate.editModal.inheritFromUniform')"
-                @update:model-value="localArchive.inventoryTemplate = $event" />
+                @update:model-value="localArchive.inventoryTemplate = $event"
+              />
             </div>
           </div>
 

@@ -47,19 +47,19 @@ plugins/
 
 ### 字段说明
 
-| 字段 | 类型 | 必需 | 说明 |
-|------|------|------|------|
-| `id` | string | ✅ | 唯一标识符，格式：`lang-{locale}` |
-| `name` | string | ✅ | 插件显示名称 |
-| `type` | string | ✅ | 必须为 `"language"` |
-| `version` | string | ✅ | 语义化版本号 |
-| `author` | string | ✅ | 作者名称 |
-| `description` | string | ✅ | 插件描述 |
-| `locale` | string | ✅ | 语言代码，如 `ja-JP`, `ko-KR` |
-| `localeName` | string | ✅ | 语言的本地名称 |
-| `main` | string | ✅ | 翻译文件名 |
-| `icon` | string | ❌ | 国旗 emoji 或图标 |
-| `minAppVersion` | string | ❌ | 最低支持的应用版本 |
+| 字段            | 类型   | 必需 | 说明                              |
+| --------------- | ------ | ---- | --------------------------------- |
+| `id`            | string | ✅   | 唯一标识符，格式：`lang-{locale}` |
+| `name`          | string | ✅   | 插件显示名称                      |
+| `type`          | string | ✅   | 必须为 `"language"`               |
+| `version`       | string | ✅   | 语义化版本号                      |
+| `author`        | string | ✅   | 作者名称                          |
+| `description`   | string | ✅   | 插件描述                          |
+| `locale`        | string | ✅   | 语言代码，如 `ja-JP`, `ko-KR`     |
+| `localeName`    | string | ✅   | 语言的本地名称                    |
+| `main`          | string | ✅   | 翻译文件名                        |
+| `icon`          | string | ❌   | 国旗 emoji 或图标                 |
+| `minAppVersion` | string | ❌   | 最低支持的应用版本                |
 
 ### 2. 创建 translations.json
 
@@ -112,13 +112,13 @@ plugins/
 
 ### 字段说明
 
-| 字段 | 类型 | 必需 | 说明 |
-|------|------|------|------|
-| `id` | string | ✅ | 唯一标识符，格式：`theme-{name}` |
-| `name` | string | ✅ | 主题显示名称 |
-| `type` | string | ✅ | 必须为 `"theme"` |
-| `themeId` | string | ✅ | 主题 ID，用于内部引用 |
-| `main` | string | ✅ | 主题配置文件名 |
+| 字段      | 类型   | 必需 | 说明                             |
+| --------- | ------ | ---- | -------------------------------- |
+| `id`      | string | ✅   | 唯一标识符，格式：`theme-{name}` |
+| `name`    | string | ✅   | 主题显示名称                     |
+| `type`    | string | ✅   | 必须为 `"theme"`                 |
+| `themeId` | string | ✅   | 主题 ID，用于内部引用            |
+| `main`    | string | ✅   | 主题配置文件名                   |
 
 ### 2. 创建 theme.json
 
@@ -146,50 +146,55 @@ plugins/
 ### 3. CSS 变量参考
 
 #### 背景色
-| 变量 | 说明 |
-|------|------|
-| `--bg` | 主背景色 |
-| `--bg-primary` | 主要背景 |
-| `--bg-secondary` | 次要背景 |
-| `--bg-tertiary` | 第三级背景 |
-| `--bg-elevated` | 悬浮元素背景 |
+
+| 变量             | 说明         |
+| ---------------- | ------------ |
+| `--bg`           | 主背景色     |
+| `--bg-primary`   | 主要背景     |
+| `--bg-secondary` | 次要背景     |
+| `--bg-tertiary`  | 第三级背景   |
+| `--bg-elevated`  | 悬浮元素背景 |
 
 #### 文字颜色
-| 变量 | 说明 |
-|------|------|
-| `--text` | 主文字颜色 |
-| `--text-primary` | 主要文字 |
-| `--text-secondary` | 次要文字 |
-| `--text-tertiary` | 第三级文字 |
-| `--text-disabled` | 禁用状态文字 |
+
+| 变量               | 说明         |
+| ------------------ | ------------ |
+| `--text`           | 主文字颜色   |
+| `--text-primary`   | 主要文字     |
+| `--text-secondary` | 次要文字     |
+| `--text-tertiary`  | 第三级文字   |
+| `--text-disabled`  | 禁用状态文字 |
 
 #### 主题色
-| 变量 | 说明 |
-|------|------|
-| `--primary` | 主色调 |
-| `--primary-hover` | 主色调悬停 |
-| `--secondary-color` | 次要色调 |
-| `--accent-color` | 强调色 |
+
+| 变量                | 说明       |
+| ------------------- | ---------- |
+| `--primary`         | 主色调     |
+| `--primary-hover`   | 主色调悬停 |
+| `--secondary-color` | 次要色调   |
+| `--accent-color`    | 强调色     |
 
 #### 状态颜色
-| 变量 | 说明 |
-|------|------|
+
+| 变量              | 说明 |
+| ----------------- | ---- |
 | `--success-color` | 成功 |
-| `--error-color` | 错误 |
+| `--error-color`   | 错误 |
 | `--warning-color` | 警告 |
-| `--info-color` | 信息 |
+| `--info-color`    | 信息 |
 
 #### 组件样式
-| 变量 | 说明 |
-|------|------|
-| `--sidebar-bg` | 侧边栏背景 |
-| `--sidebar-hover-bg` | 侧边栏悬停背景 |
+
+| 变量                  | 说明           |
+| --------------------- | -------------- |
+| `--sidebar-bg`        | 侧边栏背景     |
+| `--sidebar-hover-bg`  | 侧边栏悬停背景 |
 | `--sidebar-active-bg` | 侧边栏激活背景 |
-| `--card-bg` | 卡片背景 |
-| `--card-shadow` | 卡片阴影 |
-| `--card-border` | 卡片边框 |
-| `--dropdown-bg` | 下拉菜单背景 |
-| `--scrollbar-thumb` | 滚动条颜色 |
+| `--card-bg`           | 卡片背景       |
+| `--card-shadow`       | 卡片阴影       |
+| `--card-border`       | 卡片边框       |
+| `--dropdown-bg`       | 下拉菜单背景   |
+| `--scrollbar-thumb`   | 滚动条颜色     |
 
 ### 4. 参考示例
 

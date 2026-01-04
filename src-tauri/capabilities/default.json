@@ -25,18 +25,17 @@
     "fs:allow-read-file",
     "fs:allow-write-file",
     "fs:allow-read-dir",
+    "fs:allow-mkdir",
     "fs:allow-exists",
+    "fs:allow-remove",
     "fs:allow-resource-read-recursive",
     "core:path:default",
     "core:window:allow-set-title",
     "fs:allow-app-write",
+    "fs:allow-app-read",
     {
       "identifier": "fs:scope",
-      "allow": [
-        "$LOCALAPPDATA/**",
-        "$APPDATA/**",
-        "$HOME/**"
-      ]
+      "allow": ["$LOCALAPPDATA/**", "$APPDATA/**", "$HOME/**"]
     }
   ]
 }

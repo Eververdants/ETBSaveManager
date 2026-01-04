@@ -26,10 +26,10 @@
           </transition>
           <!-- 主题选择器 -->
           <div class="theme-selector-wrapper">
-            <ThemeSelector 
-              v-model="currentTheme" 
+            <ThemeSelector
+              v-model="currentTheme"
               :show-seasonal-themes="shouldShowSeasonalThemes"
-              @change="handleThemeChange" 
+              @change="handleThemeChange"
             />
           </div>
         </div>
@@ -53,9 +53,14 @@
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown v-model="currentLanguage" :options="languageOptions" @change="handleLanguageChange"
-            @dropdown-open="handleDropdownOpen('language')" :is-open="activeDropdown === 'language'"
-            :placeholder="t('common.select')" />
+          <CustomDropdown
+            v-model="currentLanguage"
+            :options="languageOptions"
+            @change="handleLanguageChange"
+            @dropdown-open="handleDropdownOpen('language')"
+            :is-open="activeDropdown === 'language'"
+            :placeholder="t('common.select')"
+          />
         </div>
       </div>
     </div>
@@ -69,27 +74,45 @@
       </transition>
 
       <div class="custom-theme-content">
-        <ThemeList @create="handleCreateTheme" @edit="handleEditTheme" @delete="handleDeleteTheme"
-          @select="handleSelectTheme" @import="handleImportTheme" @export="handleExportTheme" />
+        <ThemeList
+          @create="handleCreateTheme"
+          @edit="handleEditTheme"
+          @delete="handleDeleteTheme"
+          @select="handleSelectTheme"
+          @import="handleImportTheme"
+          @export="handleExportTheme"
+        />
       </div>
     </div>
 
     <!-- 主题编辑模态框 -->
     <transition name="modal-fade">
-      <div v-if="showThemeEditor" class="theme-editor-modal" @click.self="handleCancelThemeEdit">
+      <div
+        v-if="showThemeEditor"
+        class="theme-editor-modal"
+        @click.self="handleCancelThemeEdit"
+      >
         <div class="theme-editor-container">
           <div class="modal-header">
             <h2 class="modal-title">
-              {{ themeEditorMode === 'create' ? t('theme.createCustomTheme') : t('theme.editTheme', {
-                name:
-                  editingTheme?.name || '' }) }}
+              {{
+                themeEditorMode === "create"
+                  ? t("theme.createCustomTheme")
+                  : t("theme.editTheme", {
+                      name: editingTheme?.name || "",
+                    })
+              }}
             </h2>
             <button class="modal-close-btn" @click="handleCancelThemeEdit">
               <font-awesome-icon :icon="['fas', 'times']" />
             </button>
           </div>
-          <ThemeEditor :theme="editingTheme" :mode="themeEditorMode" @save="handleSaveTheme"
-            @cancel="handleCancelThemeEdit" />
+          <ThemeEditor
+            :theme="editingTheme"
+            :mode="themeEditorMode"
+            @save="handleSaveTheme"
+            @cancel="handleCancelThemeEdit"
+          />
         </div>
       </div>
     </transition>
@@ -121,7 +144,11 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input type="checkbox" v-model="gpuAccelerationDisabled" @change="handleGpuAccelerationToggle" />
+            <input
+              type="checkbox"
+              v-model="gpuAccelerationDisabled"
+              @change="handleGpuAccelerationToggle"
+            />
             <span class="slider"></span>
           </label>
         </div>
@@ -154,9 +181,14 @@
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown v-model="currentUpdateSource" :options="updateSourceOptions"
-            @change="handleUpdateSourceChange" @dropdown-open="handleDropdownOpen('updateSource')"
-            :is-open="activeDropdown === 'updateSource'" :placeholder="t('common.select')" />
+          <CustomDropdown
+            v-model="currentUpdateSource"
+            :options="updateSourceOptions"
+            @change="handleUpdateSourceChange"
+            @dropdown-open="handleDropdownOpen('updateSource')"
+            :is-open="activeDropdown === 'updateSource'"
+            :placeholder="t('common.select')"
+          />
         </div>
       </div>
 
@@ -178,8 +210,16 @@
           </transition>
         </div>
         <div class="setting-action">
-          <button class="check-update-btn" @click="checkForUpdates" :disabled="checkingUpdate">
-            <font-awesome-icon v-if="checkingUpdate" :icon="['fas', 'spinner']" spin />
+          <button
+            class="check-update-btn"
+            @click="checkForUpdates"
+            :disabled="checkingUpdate"
+          >
+            <font-awesome-icon
+              v-if="checkingUpdate"
+              :icon="['fas', 'spinner']"
+              spin
+            />
             <transition name="text-swift" mode="out-in">
               <span :key="currentLanguage + '-' + checkingUpdate">
                 {{
@@ -220,15 +260,30 @@
         <div class="setting-action">
           <div class="api-key-container">
             <div class="api-key-input-wrapper">
-              <input v-model="steamApiKey" :type="showApiKey ? 'text' : 'password'" class="api-key-input"
-                :placeholder="t('settings.steamApi.apiKeyPlaceholder')" />
-              <button class="toggle-visibility-btn" @click="showApiKey = !showApiKey" :title="showApiKey
-                  ? t('settings.steamApi.hideApiKey')
-                  : t('settings.steamApi.showApiKey')
-                ">
-                <font-awesome-icon :icon="showApiKey ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
+              <input
+                v-model="steamApiKey"
+                :type="showApiKey ? 'text' : 'password'"
+                class="api-key-input"
+                :placeholder="t('settings.steamApi.apiKeyPlaceholder')"
+              />
+              <button
+                class="toggle-visibility-btn"
+                @click="showApiKey = !showApiKey"
+                :title="
+                  showApiKey
+                    ? t('settings.steamApi.hideApiKey')
+                    : t('settings.steamApi.showApiKey')
+                "
+              >
+                <font-awesome-icon
+                  :icon="showApiKey ? ['fas', 'eye-slash'] : ['fas', 'eye']"
+                />
               </button>
-              <button class="save-api-key-btn" @click="saveSteamApiKey" :title="t('settings.steamApi.saveApiKey')">
+              <button
+                class="save-api-key-btn"
+                @click="saveSteamApiKey"
+                :title="t('settings.steamApi.saveApiKey')"
+              >
                 <font-awesome-icon :icon="['fas', 'save']" />
               </button>
             </div>
@@ -256,15 +311,19 @@
         <div class="setting-action">
           <div class="cache-info">
             <transition name="text-swift" mode="out-in">
-              <span class="cache-count" :key="currentLanguage + '-' + cacheEntryCount">{{ cacheEntryCount }}
-                {{ t("settings.steamApi.cacheEntries") }}</span>
+              <span
+                class="cache-count"
+                :key="currentLanguage + '-' + cacheEntryCount"
+                >{{ cacheEntryCount }}
+                {{ t("settings.steamApi.cacheEntries") }}</span
+              >
             </transition>
             <button class="view-cache-btn" @click="navigateToSteamCache">
               <font-awesome-icon :icon="['fas', 'eye']" />
               <transition name="text-swift" mode="out-in">
                 <span :key="currentLanguage + '-viewCache'">{{
                   t("settings.steamApi.viewCache")
-                  }}</span>
+                }}</span>
               </transition>
             </button>
             <button class="clear-cache-btn" @click="clearSteamCache">
@@ -272,7 +331,7 @@
               <transition name="text-swift" mode="out-in">
                 <span :key="currentLanguage + '-clearCache'">{{
                   t("settings.steamApi.clearCache")
-                  }}</span>
+                }}</span>
               </transition>
             </button>
           </div>
@@ -307,7 +366,11 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input type="checkbox" v-model="developerModeEnabled" @change="handleDeveloperModeToggle" />
+            <input
+              type="checkbox"
+              v-model="developerModeEnabled"
+              @change="handleDeveloperModeToggle"
+            />
             <span class="slider"></span>
           </label>
         </div>
@@ -332,7 +395,11 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input type="checkbox" v-model="logMenuEnabled" @change="handleLogMenuToggle" />
+            <input
+              type="checkbox"
+              v-model="logMenuEnabled"
+              @change="handleLogMenuToggle"
+            />
             <span class="slider"></span>
           </label>
         </div>
@@ -357,7 +424,11 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input type="checkbox" v-model="performanceMonitorEnabled" @change="handlePerformanceMonitorToggle" />
+            <input
+              type="checkbox"
+              v-model="performanceMonitorEnabled"
+              @change="handlePerformanceMonitorToggle"
+            />
             <span class="slider"></span>
           </label>
         </div>
@@ -382,7 +453,11 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input type="checkbox" v-model="testArchiveEnabled" @change="handleTestArchiveToggle" />
+            <input
+              type="checkbox"
+              v-model="testArchiveEnabled"
+              @change="handleTestArchiveToggle"
+            />
             <span class="slider"></span>
           </label>
         </div>
@@ -391,7 +466,10 @@
       <!-- 限时主题控制 -->
       <div class="setting-item" v-if="developerModeEnabled">
         <div class="setting-icon">
-          <font-awesome-icon :icon="['fas', 'snowflake']" style="color: #e53935" />
+          <font-awesome-icon
+            :icon="['fas', 'snowflake']"
+            style="color: #e53935"
+          />
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
@@ -406,9 +484,14 @@
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown v-model="seasonalThemeMode" :options="seasonalThemeModeOptions"
-            @change="handleSeasonalThemeModeChange" @dropdown-open="handleDropdownOpen('seasonalTheme')"
-            :is-open="activeDropdown === 'seasonalTheme'" :placeholder="t('common.select')" />
+          <CustomDropdown
+            v-model="seasonalThemeMode"
+            :options="seasonalThemeModeOptions"
+            @change="handleSeasonalThemeModeChange"
+            @dropdown-open="handleDropdownOpen('seasonalTheme')"
+            :is-open="activeDropdown === 'seasonalTheme'"
+            :placeholder="t('common.select')"
+          />
         </div>
       </div>
 
@@ -435,7 +518,7 @@
             <transition name="text-swift" mode="out-in">
               <span :key="currentLanguage">{{
                 t("settings.resetTutorialButton")
-                }}</span>
+              }}</span>
             </transition>
           </button>
         </div>
@@ -455,12 +538,22 @@
 
           <div class="sav-tools-container">
             <!-- 解析存档文件 -->
-            <div class="drop-zone" :class="{ 'drag-over': parseDragOver, processing: isParsing }"
-              @dragover.prevent="parseDragOver = true" @dragleave.prevent="parseDragOver = false"
-              @drop.prevent="handleParseDrop" @click="triggerParseFileInput">
+            <div
+              class="drop-zone"
+              :class="{ 'drag-over': parseDragOver, processing: isParsing }"
+              @dragover.prevent="parseDragOver = true"
+              @dragleave.prevent="parseDragOver = false"
+              @drop.prevent="handleParseDrop"
+              @click="triggerParseFileInput"
+            >
               <div class="drop-zone-content">
-                <font-awesome-icon :icon="isParsing ? ['fas', 'spinner'] : ['fas', 'file-import']
-                  " :spin="isParsing" class="drop-icon" />
+                <font-awesome-icon
+                  :icon="
+                    isParsing ? ['fas', 'spinner'] : ['fas', 'file-import']
+                  "
+                  :spin="isParsing"
+                  class="drop-icon"
+                />
                 <div class="drop-title">
                   {{
                     isParsing
@@ -472,12 +565,22 @@
             </div>
 
             <!-- 打包存档文件 -->
-            <div class="drop-zone" :class="{ 'drag-over': packDragOver, processing: isPacking }"
-              @dragover.prevent="packDragOver = true" @dragleave.prevent="packDragOver = false"
-              @drop.prevent="handlePackDrop" @click="triggerPackFileInput">
+            <div
+              class="drop-zone"
+              :class="{ 'drag-over': packDragOver, processing: isPacking }"
+              @dragover.prevent="packDragOver = true"
+              @dragleave.prevent="packDragOver = false"
+              @drop.prevent="handlePackDrop"
+              @click="triggerPackFileInput"
+            >
               <div class="drop-zone-content">
-                <font-awesome-icon :icon="isPacking ? ['fas', 'spinner'] : ['fas', 'file-export']
-                  " :spin="isPacking" class="drop-icon" />
+                <font-awesome-icon
+                  :icon="
+                    isPacking ? ['fas', 'spinner'] : ['fas', 'file-export']
+                  "
+                  :spin="isPacking"
+                  class="drop-icon"
+                />
                 <div class="drop-title">
                   {{
                     isPacking
@@ -508,20 +611,30 @@
 
     <!-- 更新提示 -->
     <transition name="slide">
-      <div v-if="updateMessage" :class="['update-message', updateMessage.type]"
-        :key="updateMessage.key || updateMessage.text">
+      <div
+        v-if="updateMessage"
+        :class="['update-message', updateMessage.type]"
+        :key="updateMessage.key || updateMessage.text"
+      >
         <font-awesome-icon :icon="updateMessage.icon" />
         <transition name="text-swift" mode="out-in">
           <span :key="currentLanguage + '-' + updateMessage.text">{{
             updateMessage.text
-            }}</span>
+          }}</span>
         </transition>
 
         <!-- 更新操作按钮 -->
         <transition name="expand" mode="out-in">
-          <div v-if="updateStatus === UpdateStatus.AVAILABLE" class="update-actions"
-            :key="'actions-' + updateMessage.key">
-            <button class="update-btn" @click="downloadAndInstall" :disabled="isProcessing">
+          <div
+            v-if="updateStatus === UpdateStatus.AVAILABLE"
+            class="update-actions"
+            :key="'actions-' + updateMessage.key"
+          >
+            <button
+              class="update-btn"
+              @click="downloadAndInstall"
+              :disabled="isProcessing"
+            >
               <font-awesome-icon :icon="['fas', 'external-link-alt']" />
               {{ t("settings.goToDownload") }}
             </button>
@@ -533,9 +646,17 @@
 
         <!-- 自定义操作按钮 -->
         <transition name="expand" mode="out-in">
-          <div v-if="updateMessage.showActions" class="update-actions" :key="'custom-actions-' + updateMessage.key">
-            <button v-for="(action, index) in updateMessage.actions" :key="index" :class="['update-btn', action.class]"
-              @click="action.action">
+          <div
+            v-if="updateMessage.showActions"
+            class="update-actions"
+            :key="'custom-actions-' + updateMessage.key"
+          >
+            <button
+              v-for="(action, index) in updateMessage.actions"
+              :key="index"
+              :class="['update-btn', action.class]"
+              @click="action.action"
+            >
               {{ action.text }}
             </button>
           </div>
@@ -543,8 +664,11 @@
 
         <!-- 更新详情 -->
         <transition name="expand" mode="out-in">
-          <div v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE" class="update-details"
-            :key="'details-' + updateMessage.key">
+          <div
+            v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE"
+            class="update-details"
+            :key="'details-' + updateMessage.key"
+          >
             <h4>
               {{
                 t("settings.updateNotesForVersion", {
@@ -552,7 +676,10 @@
                 })
               }}
             </h4>
-            <div class="update-content" v-html="formatUpdateNotes(updateInfo.body)"></div>
+            <div
+              class="update-content"
+              v-html="formatUpdateNotes(updateInfo.body)"
+            ></div>
           </div>
         </transition>
       </div>
@@ -596,8 +723,7 @@ export default {
       developerModeEnabled: storage.getItem("developerMode", false) === true, // 开发者模式状态
       developerOptionsEnabled: storage.getItem("developerMode", false) === true, // 开发者选项是否显示
       logMenuEnabled: storage.getItem("logMenuEnabled", false) === true, // 日志功能开关状态
-      testArchiveEnabled:
-        storage.getItem("testArchiveEnabled", true) !== false, // 测试存档显示开关状态，默认开启
+      testArchiveEnabled: storage.getItem("testArchiveEnabled", true) !== false, // 测试存档显示开关状态，默认开启
       gpuAccelerationDisabled:
         storage.getItem("gpuAccelerationDisabled", false) === true, // GPU加速开关状态
       // Steam API 相关
@@ -622,7 +748,7 @@ export default {
       seasonalThemeMode: storage.getItem("seasonalThemeMode", "auto"),
       // 自定义主题相关
       showThemeEditor: false,
-      themeEditorMode: 'create', // 'create' or 'edit'
+      themeEditorMode: "create", // 'create' or 'edit'
       editingTheme: null,
       isImporting: false,
       isExporting: false,
@@ -645,13 +771,22 @@ export default {
       // 根据限时主题模式和日期决定是否显示限时主题选项
       if (this.shouldShowSeasonalThemes) {
         // 元旦主题
-        if (this.isNewYearPeriod() || this.seasonalThemeMode === 'force') {
+        if (this.isNewYearPeriod() || this.seasonalThemeMode === "force") {
           options.push({ value: "new-year", label: this.$t("common.newYear") });
         }
         // 春节主题
-        if (this.isSpringFestivalPeriod() || this.seasonalThemeMode === 'force') {
-          options.push({ value: "spring-festival-dark", label: this.$t("common.springFestivalDark") });
-          options.push({ value: "spring-festival-light", label: this.$t("common.springFestivalLight") });
+        if (
+          this.isSpringFestivalPeriod() ||
+          this.seasonalThemeMode === "force"
+        ) {
+          options.push({
+            value: "spring-festival-dark",
+            label: this.$t("common.springFestivalDark"),
+          });
+          options.push({
+            value: "spring-festival-light",
+            label: this.$t("common.springFestivalLight"),
+          });
         }
       }
       return options;
@@ -674,7 +809,7 @@ export default {
     languageOptions() {
       // 获取内置语言 + 插件语言
       const languages = getAllAvailableLanguages();
-      return languages.map(lang => ({
+      return languages.map((lang) => ({
         value: lang.locale,
         label: lang.name,
       }));
@@ -789,68 +924,68 @@ export default {
         dark: {
           bg: "#0d0d0f",
           bgPrimary: "#0d0d0f",
-          bgSecondary: "#161618"
+          bgSecondary: "#161618",
         },
         "new-year": {
           bg: "#1a0a0a",
           bgPrimary: "#1a0a0a",
-          bgSecondary: "rgba(45, 21, 21, 0.95)"
+          bgSecondary: "rgba(45, 21, 21, 0.95)",
         },
         "spring-festival-dark": {
           bg: "#1c0a14",
           bgPrimary: "#1c0a14",
-          bgSecondary: "rgba(45, 16, 32, 0.95)"
+          bgSecondary: "rgba(45, 16, 32, 0.95)",
         },
         "spring-festival-light": {
           bg: "#fefce8",
           bgPrimary: "#fefce8",
-          bgSecondary: "rgba(255, 255, 255, 0.95)"
+          bgSecondary: "rgba(255, 255, 255, 0.95)",
         },
         ocean: {
           bg: "#0c1929",
           bgPrimary: "#0c1929",
-          bgSecondary: "#132337"
+          bgSecondary: "#132337",
         },
         forest: {
           bg: "#0f1a14",
           bgPrimary: "#0f1a14",
-          bgSecondary: "#162920"
+          bgSecondary: "#162920",
         },
         sunset: {
           bg: "#1a1210",
           bgPrimary: "#1a1210",
-          bgSecondary: "#261a16"
+          bgSecondary: "#261a16",
         },
         lavender: {
           bg: "#14101a",
           bgPrimary: "#14101a",
-          bgSecondary: "#1e1826"
+          bgSecondary: "#1e1826",
         },
         rose: {
           bg: "#1a1215",
           bgPrimary: "#1a1215",
-          bgSecondary: "#261a1f"
+          bgSecondary: "#261a1f",
         },
         mint: {
           bg: "#f0fdf4",
           bgPrimary: "#f0fdf4",
-          bgSecondary: "#ffffff"
+          bgSecondary: "#ffffff",
         },
         peach: {
           bg: "#fff5f5",
           bgPrimary: "#fff5f5",
-          bgSecondary: "#ffffff"
+          bgSecondary: "#ffffff",
         },
         sky: {
           bg: "#f0f9ff",
           bgPrimary: "#f0f9ff",
-          bgSecondary: "#ffffff"
+          bgSecondary: "#ffffff",
         },
         light: {
           bg: "#f8f8fa",
           bgPrimary: "#f8f8fa",
-          bgSecondary: "#ffffff"
-        }
+          bgSecondary: "#ffffff",
+        },
       };
 
       let colors = themeBackgrounds[theme];
@@ -858,14 +993,14 @@ export default {
       // 如果是插件主题，从插件数据中获取颜色
       if (!colors) {
         const themePlugins = getInstalledThemePlugins();
-        const pluginTheme = themePlugins.find(p => p.themeId === theme);
-        
+        const pluginTheme = themePlugins.find((p) => p.themeId === theme);
+
         if (pluginTheme && pluginTheme.data && pluginTheme.data.variables) {
           const vars = pluginTheme.data.variables;
           colors = {
-            bg: vars['--bg'] || vars['--bg-primary'] || '#0a0a0f',
-            bgPrimary: vars['--bg-primary'] || vars['--bg'] || '#0a0a0f',
-            bgSecondary: vars['--bg-secondary'] || '#12121a'
+            bg: vars["--bg"] || vars["--bg-primary"] || "#0a0a0f",
+            bgPrimary: vars["--bg-primary"] || vars["--bg"] || "#0a0a0f",
+            bgSecondary: vars["--bg-secondary"] || "#12121a",
           };
         } else {
           // 最后回退
@@ -1041,10 +1176,7 @@ export default {
       }
     },
     handlePerformanceMonitorToggle() {
-      storage.setItem(
-        "performanceMonitor",
-        this.performanceMonitorEnabled
-      );
+      storage.setItem("performanceMonitor", this.performanceMonitorEnabled);
       // 触发自定义事件通知App.vue更新状态
       window.dispatchEvent(
         new CustomEvent("performance-monitor-toggle", {
@@ -1133,13 +1265,20 @@ export default {
 
     // 检查主题是否是限时主题
     isSeasonalTheme(themeId) {
-      return ['new-year', 'spring-festival-dark', 'spring-festival-light'].includes(themeId);
+      return [
+        "new-year",
+        "spring-festival-dark",
+        "spring-festival-light",
+      ].includes(themeId);
     },
 
     // 检查限时主题当前是否可用
     isSeasonalThemeAvailable(themeId) {
-      if (themeId === 'new-year') return this.isNewYearPeriod();
-      if (themeId === 'spring-festival-dark' || themeId === 'spring-festival-light') {
+      if (themeId === "new-year") return this.isNewYearPeriod();
+      if (
+        themeId === "spring-festival-dark" ||
+        themeId === "spring-festival-light"
+      ) {
         return this.isSpringFestivalPeriod();
       }
       return true;
@@ -1563,10 +1702,7 @@ export default {
           // 如果后端状态与localStorage不同，以后端状态为准
           if (backendState !== localStorageState) {
             this.gpuAccelerationDisabled = backendState;
-            storage.setItem(
-              "gpuAccelerationDisabled",
-              backendState.toString()
-            );
+            storage.setItem("gpuAccelerationDisabled", backendState.toString());
           }
         } catch (error) {
           console.warn(this.t("settings.gpuStatusFetchFailed"), error);
@@ -1820,7 +1956,7 @@ export default {
 
     // 打开创建主题编辑器 - 导航到主题编辑器页面
     handleCreateTheme() {
-      this.$router.push('/theme-editor');
+      this.$router.push("/theme-editor");
     },
 
     // 打开编辑主题编辑器 - 导航到主题编辑器页面（带主题ID）
@@ -2175,11 +2311,11 @@ export default {
   border-radius: 50%;
 }
 
-input:checked+.slider {
+input:checked + .slider {
   background-color: var(--accent-color);
 }
 
-input:checked+.slider:before {
+input:checked + .slider:before {
   transform: translateX(26px);
 }
 
@@ -2814,10 +2950,12 @@ input:checked+.slider:before {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -2841,10 +2979,12 @@ input:checked+.slider:before {
 }
 
 .clear-cache-btn::before {
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
 }
 
 .clear-cache-btn:hover {
@@ -2878,10 +3018,12 @@ input:checked+.slider:before {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 

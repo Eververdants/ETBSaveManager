@@ -382,7 +382,9 @@ class ThemeManager {
     // 检查限时主题是否在可用时间范围内
     if (isPreset && !isSeasonalThemeAvailable(themeId)) {
       const availability = getSeasonalThemeAvailability(themeId);
-      console.warn(`Seasonal theme "${themeId}" is not available. Available: ${availability}`);
+      console.warn(
+        `Seasonal theme "${themeId}" is not available. Available: ${availability}`
+      );
       return false;
     }
 

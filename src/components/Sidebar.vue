@@ -223,10 +223,7 @@ onMounted(() => {
 
   // 监听开发者模式变化事件
   window.addEventListener("developer-mode-changed", (event) => {
-    if (
-      event.detail.enabled &&
-      storage.getItem("logMenuEnabled") === "true"
-    ) {
+    if (event.detail.enabled && storage.getItem("logMenuEnabled") === "true") {
       addLogMenuItem();
     } else if (!event.detail.enabled) {
       removeLogMenuItem();

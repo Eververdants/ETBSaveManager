@@ -7,7 +7,10 @@
         <div class="panel-card">
           <transition name="text-swift" mode="out-in">
             <div class="panel-header" :key="currentLanguage">
-              <font-awesome-icon :icon="['fas', 'comment-dots']" class="header-icon" />
+              <font-awesome-icon
+                :icon="['fas', 'comment-dots']"
+                class="header-icon"
+              />
               {{ t("feedback.title") }}
             </div>
           </transition>
@@ -20,8 +23,11 @@
                   {{ t("feedback.type") }}
                 </label>
               </transition>
-              <CustomDropdown v-model="formData.type" :options="feedbackTypeOptions"
-                :placeholder="t('feedback.selectType')" />
+              <CustomDropdown
+                v-model="formData.type"
+                :options="feedbackTypeOptions"
+                :placeholder="t('feedback.selectType')"
+              />
             </div>
 
             <!-- Bug 严重程度 -->
@@ -31,8 +37,11 @@
                   {{ t("feedback.severity") }}
                 </label>
               </transition>
-              <CustomDropdown v-model="formData.severity" :options="severityOptions"
-                :placeholder="t('feedback.selectSeverity')" />
+              <CustomDropdown
+                v-model="formData.severity"
+                :options="severityOptions"
+                :placeholder="t('feedback.selectSeverity')"
+              />
             </div>
 
             <!-- 发送人（可选） -->
@@ -40,11 +49,18 @@
               <transition name="text-swift" mode="out-in">
                 <label class="form-label" :key="currentLanguage">
                   {{ t("feedback.sender") }}
-                  <span class="optional-hint">{{ t("feedback.optional") }}</span>
+                  <span class="optional-hint">{{
+                    t("feedback.optional")
+                  }}</span>
                 </label>
               </transition>
-              <input type="text" v-model="formData.sender" :placeholder="t('feedback.senderPlaceholder')"
-                class="form-input" maxlength="50" />
+              <input
+                type="text"
+                v-model="formData.sender"
+                :placeholder="t('feedback.senderPlaceholder')"
+                class="form-input"
+                maxlength="50"
+              />
             </div>
 
             <!-- 标题输入 -->
@@ -52,11 +68,19 @@
               <transition name="text-swift" mode="out-in">
                 <label class="form-label" :key="currentLanguage">
                   {{ t("feedback.titleLabel") }}
-                  <span class="char-count">{{ formData.title.length }}/100</span>
+                  <span class="char-count"
+                    >{{ formData.title.length }}/100</span
+                  >
                 </label>
               </transition>
-              <input type="text" v-model="formData.title" :placeholder="t('feedback.titlePlaceholder')"
-                class="form-input" :class="{ 'input-error': titleError }" maxlength="100" />
+              <input
+                type="text"
+                v-model="formData.title"
+                :placeholder="t('feedback.titlePlaceholder')"
+                class="form-input"
+                :class="{ 'input-error': titleError }"
+                maxlength="100"
+              />
               <span v-if="titleError" class="error-text">{{ titleError }}</span>
             </div>
 
@@ -65,12 +89,21 @@
               <transition name="text-swift" mode="out-in">
                 <label class="form-label" :key="currentLanguage">
                   {{ t("feedback.description") }}
-                  <span class="char-count">{{ formData.description.length }}/5000</span>
+                  <span class="char-count"
+                    >{{ formData.description.length }}/5000</span
+                  >
                 </label>
               </transition>
-              <textarea v-model="formData.description" :placeholder="t('feedback.descriptionPlaceholder')"
-                class="form-textarea" :class="{ 'input-error': descriptionError }" maxlength="5000"></textarea>
-              <span v-if="descriptionError" class="error-text">{{ descriptionError }}</span>
+              <textarea
+                v-model="formData.description"
+                :placeholder="t('feedback.descriptionPlaceholder')"
+                class="form-textarea"
+                :class="{ 'input-error': descriptionError }"
+                maxlength="5000"
+              ></textarea>
+              <span v-if="descriptionError" class="error-text">{{
+                descriptionError
+              }}</span>
             </div>
 
             <!-- 附件上传区域 -->
@@ -78,29 +111,58 @@
               <transition name="text-swift" mode="out-in">
                 <label class="form-label" :key="currentLanguage">
                   {{ t("feedback.attachments") }}
-                  <span class="attachment-hint">{{ t("feedback.attachmentHint") }}</span>
+                  <span class="attachment-hint">{{
+                    t("feedback.attachmentHint")
+                  }}</span>
                 </label>
               </transition>
-              <div ref="dropZone" class="attachment-drop-zone" :class="{ 'drag-over': isDragOver }"
-                @click="triggerFileInput">
-                <font-awesome-icon :icon="['fas', 'cloud-upload-alt']" class="upload-icon" />
+              <div
+                ref="dropZone"
+                class="attachment-drop-zone"
+                :class="{ 'drag-over': isDragOver }"
+                @click="triggerFileInput"
+              >
+                <font-awesome-icon
+                  :icon="['fas', 'cloud-upload-alt']"
+                  class="upload-icon"
+                />
                 <span>{{ t("feedback.dropOrClick") }}</span>
               </div>
-              <input ref="fileInput" type="file" multiple accept=".png,.jpg,.jpeg,.gif,.txt,.log,.json"
-                style="display: none" @change="handleFileSelect" />
+              <input
+                ref="fileInput"
+                type="file"
+                multiple
+                accept=".png,.jpg,.jpeg,.gif,.txt,.log,.json"
+                style="display: none"
+                @change="handleFileSelect"
+              />
 
               <!-- 附件预览列表 -->
               <div v-if="attachments.length > 0" class="attachment-list">
-                <div v-for="(file, index) in attachments" :key="index" class="attachment-item">
-                  <img v-if="isImageFile(file)" :src="file.preview" class="attachment-preview" />
-                  <font-awesome-icon v-else :icon="['fas', 'file-alt']" class="file-icon" />
+                <div
+                  v-for="(file, index) in attachments"
+                  :key="index"
+                  class="attachment-item"
+                >
+                  <img
+                    v-if="isImageFile(file)"
+                    :src="file.preview"
+                    class="attachment-preview"
+                  />
+                  <font-awesome-icon
+                    v-else
+                    :icon="['fas', 'file-alt']"
+                    class="file-icon"
+                  />
                   <span class="attachment-name">{{ file.name }}</span>
                   <button class="remove-btn" @click="removeAttachment(index)">
                     <font-awesome-icon :icon="['fas', 'times']" />
                   </button>
                 </div>
               </div>
-              <span v-if="attachmentError" class="error-text">{{ attachmentError }}</span>
+              <span v-if="attachmentError" class="error-text">{{
+                attachmentError
+              }}</span>
             </div>
 
             <!-- 系统信息预览 -->
@@ -114,19 +176,31 @@
                   <div class="info-grid">
                     <div class="info-item">
                       <span class="info-label">{{ t("feedback.os") }}</span>
-                      <span class="info-value">{{ systemInfo.os }} {{ systemInfo.osVersion }}</span>
+                      <span class="info-value"
+                        >{{ systemInfo.os }} {{ systemInfo.osVersion }}</span
+                      >
                     </div>
                     <div class="info-item">
-                      <span class="info-label">{{ t("feedback.appVersion") }}</span>
-                      <span class="info-value">{{ systemInfo.appVersion }}</span>
+                      <span class="info-label">{{
+                        t("feedback.appVersion")
+                      }}</span>
+                      <span class="info-value">{{
+                        systemInfo.appVersion
+                      }}</span>
                     </div>
                     <div class="info-item">
-                      <span class="info-label">{{ t("feedback.language") }}</span>
+                      <span class="info-label">{{
+                        t("feedback.language")
+                      }}</span>
                       <span class="info-value">{{ systemInfo.language }}</span>
                     </div>
                     <div class="info-item">
-                      <span class="info-label">{{ t("feedback.resolution") }}</span>
-                      <span class="info-value">{{ systemInfo.screenResolution }}</span>
+                      <span class="info-label">{{
+                        t("feedback.resolution")
+                      }}</span>
+                      <span class="info-value">{{
+                        systemInfo.screenResolution
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -135,10 +209,20 @@
 
             <!-- 提交按钮 -->
             <div class="form-actions">
-              <button class="submit-btn" :disabled="!isFormValid || isSubmitting" @click="submitFeedback">
-                <font-awesome-icon v-if="isSubmitting" :icon="['fas', 'spinner']" spin />
+              <button
+                class="submit-btn"
+                :disabled="!isFormValid || isSubmitting"
+                @click="submitFeedback"
+              >
+                <font-awesome-icon
+                  v-if="isSubmitting"
+                  :icon="['fas', 'spinner']"
+                  spin
+                />
                 <font-awesome-icon v-else :icon="['fas', 'paper-plane']" />
-                <span>{{ isSubmitting ? t("feedback.submitting") : t("feedback.submit") }}</span>
+                <span>{{
+                  isSubmitting ? t("feedback.submitting") : t("feedback.submit")
+                }}</span>
               </button>
             </div>
           </div>
@@ -150,7 +234,10 @@
         <div class="panel-card">
           <transition name="text-swift" mode="out-in">
             <div class="panel-header" :key="currentLanguage">
-              <font-awesome-icon :icon="['fas', 'history']" class="header-icon" />
+              <font-awesome-icon
+                :icon="['fas', 'history']"
+                class="header-icon"
+              />
               {{ t("feedback.history") }}
               <span v-if="feedbackHistory.length > 0" class="history-count">
                 {{ feedbackHistory.length }}
@@ -159,17 +246,22 @@
           </transition>
 
           <div class="panel-content">
-
             <div v-if="feedbackHistory.length === 0" class="empty-history">
               <font-awesome-icon :icon="['fas', 'inbox']" class="empty-icon" />
               <span>{{ t("feedback.noHistory") }}</span>
             </div>
 
             <div v-else class="history-list">
-              <div v-for="item in feedbackHistory" :key="item.id" class="history-item">
+              <div
+                v-for="item in feedbackHistory"
+                :key="item.id"
+                class="history-item"
+              >
                 <div class="history-header">
                   <span :class="['history-type', item.feedback_type]">
-                    <font-awesome-icon :icon="getTypeIcon(item.feedback_type)" />
+                    <font-awesome-icon
+                      :icon="getTypeIcon(item.feedback_type)"
+                    />
                     {{ getTypeLabel(item.feedback_type) }}
                   </span>
                   <span :class="['history-status', item.status]">
@@ -182,17 +274,37 @@
                   {{ formatDate(item.created_at) }}
                 </div>
                 <div class="history-actions">
-                  <a v-if="item.status === 'submitted' && item.discussion_url" :href="item.discussion_url"
-                    target="_blank" class="action-link">
-                    <font-awesome-icon :icon="['fas', 'external-link-alt']" class="action-icon" />
+                  <a
+                    v-if="item.status === 'submitted' && item.discussion_url"
+                    :href="item.discussion_url"
+                    target="_blank"
+                    class="action-link"
+                  >
+                    <font-awesome-icon
+                      :icon="['fas', 'external-link-alt']"
+                      class="action-icon"
+                    />
                     <span>{{ t("feedback.viewDiscussion") }}</span>
                   </a>
-                  <button v-if="item.status === 'failed'" class="action-btn retry" @click="retryFeedback(item.id)">
-                    <font-awesome-icon :icon="['fas', 'redo']" class="action-icon" />
+                  <button
+                    v-if="item.status === 'failed'"
+                    class="action-btn retry"
+                    @click="retryFeedback(item.id)"
+                  >
+                    <font-awesome-icon
+                      :icon="['fas', 'redo']"
+                      class="action-icon"
+                    />
                     <span>{{ t("feedback.retry") }}</span>
                   </button>
-                  <button class="action-btn delete" @click="deleteFeedback(item.id)">
-                    <font-awesome-icon :icon="['fas', 'trash']" class="action-icon" />
+                  <button
+                    class="action-btn delete"
+                    @click="deleteFeedback(item.id)"
+                  >
+                    <font-awesome-icon
+                      :icon="['fas', 'trash']"
+                      class="action-icon"
+                    />
                     <span>{{ t("feedback.delete") }}</span>
                   </button>
                 </div>
@@ -204,7 +316,6 @@
     </div>
   </div>
 </template>
-
 
 <script>
 import { useI18n } from "vue-i18n";
@@ -309,8 +420,12 @@ export default {
         e.stopPropagation();
         // 检查是否真的离开了拖拽区域
         const rect = dropZone.getBoundingClientRect();
-        if (e.clientX < rect.left || e.clientX >= rect.right ||
-          e.clientY < rect.top || e.clientY >= rect.bottom) {
+        if (
+          e.clientX < rect.left ||
+          e.clientX >= rect.right ||
+          e.clientY < rect.top ||
+          e.clientY >= rect.bottom
+        ) {
           this.isDragOver = false;
         }
       };
@@ -336,14 +451,18 @@ export default {
       const dropZone = this.$refs.dropZone;
       if (!dropZone) return;
 
-      if (this._onDragEnter) dropZone.removeEventListener("dragenter", this._onDragEnter);
-      if (this._onDragOver) dropZone.removeEventListener("dragover", this._onDragOver);
-      if (this._onDragLeave) dropZone.removeEventListener("dragleave", this._onDragLeave);
+      if (this._onDragEnter)
+        dropZone.removeEventListener("dragenter", this._onDragEnter);
+      if (this._onDragOver)
+        dropZone.removeEventListener("dragover", this._onDragOver);
+      if (this._onDragLeave)
+        dropZone.removeEventListener("dragleave", this._onDragLeave);
       if (this._onDrop) dropZone.removeEventListener("drop", this._onDrop);
     },
 
     handleLanguageChange(event) {
-      this.currentLanguage = event.detail?.language || storage.getItem("language");
+      this.currentLanguage =
+        event.detail?.language || storage.getItem("language");
     },
 
     async loadSystemInfo() {
@@ -378,7 +497,8 @@ export default {
       try {
         const result = await feedbackService.submitFeedback({
           type: this.formData.type,
-          severity: this.formData.type === "bug" ? this.formData.severity : null,
+          severity:
+            this.formData.type === "bug" ? this.formData.severity : null,
           sender: this.formData.sender.trim() || null,
           title: this.formData.title,
           description: this.formData.description,
@@ -438,7 +558,15 @@ export default {
 
     async processFiles(files) {
       this.attachmentError = "";
-      const allowedExtensions = [".png", ".jpg", ".jpeg", ".gif", ".txt", ".log", ".json"];
+      const allowedExtensions = [
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".txt",
+        ".log",
+        ".json",
+      ];
       const maxSize = 25 * 1024 * 1024;
       const maxFiles = 5;
 
@@ -465,7 +593,9 @@ export default {
           type: file.type,
           size: file.size,
           content: content,
-          preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+          preview: file.type.startsWith("image/")
+            ? URL.createObjectURL(file)
+            : null,
         });
       }
     },
@@ -491,8 +621,16 @@ export default {
     },
 
     resetForm() {
-      this.formData = { type: "", severity: "", sender: "", title: "", description: "" };
-      this.attachments.forEach((a) => { if (a.preview) URL.revokeObjectURL(a.preview); });
+      this.formData = {
+        type: "",
+        severity: "",
+        sender: "",
+        title: "",
+        description: "",
+      };
+      this.attachments.forEach((a) => {
+        if (a.preview) URL.revokeObjectURL(a.preview);
+      });
       this.attachments = [];
       this.clearErrors();
     },
@@ -515,12 +653,12 @@ export default {
 
     getTypeIcon(type) {
       const icons = {
-        bug: ['fas', 'bug'],
-        idea: ['fas', 'lightbulb'],
-        general: ['fas', 'comment'],
-        ui: ['fas', 'paint-brush'],
+        bug: ["fas", "bug"],
+        idea: ["fas", "lightbulb"],
+        general: ["fas", "comment"],
+        ui: ["fas", "paint-brush"],
       };
-      return icons[type] || ['fas', 'comment'];
+      return icons[type] || ["fas", "comment"];
     },
 
     getStatusLabel(status) {
@@ -540,7 +678,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 .feedback-page {

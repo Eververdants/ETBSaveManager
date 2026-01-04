@@ -43,3 +43,27 @@
 
 /* 高对比度主题 ♿ */
 @import "./high-contrast.css";
+
+/* 🌊 海洋主题 */
+@import "./ocean.css";
+
+/* 🌲 森林主题 */
+@import "./forest.css";
+
+/* 🌅 日落主题 */
+@import "./sunset.css";
+
+/* 💜 薰衣草主题 */
+@import "./lavender.css";
+
+/* 🌸 玫瑰主题 */
+@import "./rose.css";
+
+/* 🍃 薄荷主题 (浅色) */
+@import "./mint.css";
+
+/* 🍑 蜜桃主题 (浅色) */
+@import "./peach.css";
+
+/* ☁️ 天空主题 (浅色) */
+@import "./sky.css";

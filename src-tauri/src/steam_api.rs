@@ -45,6 +45,7 @@ pub struct CacheEntry {
 }
 
 impl CacheEntry {
+    #[inline]
     fn new(username: String) -> Self {
         Self {
             username,
@@ -53,17 +54,18 @@ impl CacheEntry {
         }
     }
 
+    #[inline]
     fn is_expired(&self) -> bool {
         current_timestamp() - self.last_updated > CACHE_EXPIRY_SECONDS
     }
 }
 
-/// 获取当前时间戳
-#[inline]
+/// 获取当前时间戳（内联优化）
+#[inline(always)]
 fn current_timestamp() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .unwrap_or_default()
         .as_secs()
 }
 
@@ -72,6 +74,7 @@ pub struct SteamCacheManager {
     cache_path: PathBuf,
     cache: HashMap<String, CacheEntry>,
     call_count: u32,
+    dirty: bool, // 追踪是否需要保存
 }
 
 impl SteamCacheManager {
@@ -85,8 +88,9 @@ impl SteamCacheManager {
         let cache_path = cache_dir.join("steam_usernames.json");
         let mut manager = Self {
             cache_path,
-            cache: HashMap::new(),
+            cache: HashMap::with_capacity(64),
             call_count: 0,
+            dirty: false,
         };
 
         manager.load_cache()?;
@@ -107,6 +111,7 @@ impl SteamCacheManager {
 
         // 加载缓存条目
         if let Some(entries) = cache_data.get("entries").and_then(|v| v.as_object()) {
+            self.cache.reserve(entries.len());
             for (steam_id, entry_data) in entries {
                 if let Ok(entry) = serde_json::from_value::<CacheEntry>(entry_data.clone()) {
                     self.cache.insert(steam_id.clone(), entry);
@@ -119,16 +124,15 @@ impl SteamCacheManager {
             self.call_count = count as u32;
         }
 
-        println!(
-            "已加载Steam缓存，包含{}个条目，调用次数: {}",
-            self.cache.len(),
-            self.call_count
-        );
         Ok(())
     }
 
-    /// 保存缓存到文件
-    fn save_cache(&self) -> Result<(), String> {
+    /// 保存缓存到文件（仅在 dirty 时保存）
+    fn save_cache(&mut self) -> Result<(), String> {
+        if !self.dirty {
+            return Ok(());
+        }
+
         let entries: serde_json::Map<String, serde_json::Value> = self
             .cache
             .iter()
@@ -144,10 +148,11 @@ impl SteamCacheManager {
             "call_count": self.call_count
         });
 
-        let cache_json = serde_json::to_string_pretty(&cache_data)
+        let cache_json = serde_json::to_string(&cache_data) // 不使用 pretty，减少文件大小
             .map_err(|e| format!("序列化缓存失败: {}", e))?;
 
         fs::write(&self.cache_path, cache_json).map_err(|e| format!("写入缓存文件失败: {}", e))?;
+        self.dirty = false;
 
         Ok(())
     }
@@ -163,22 +168,20 @@ impl SteamCacheManager {
         let entry = self.cache.get_mut(steam_id)?;
 
         if entry.is_expired() {
-            println!("缓存已过期，移除Steam ID: {}", steam_id);
             self.cache.remove(steam_id);
+            self.dirty = true;
             return None;
         }
 
         entry.call_count += 1;
         let username = entry.username.clone();
 
-        // 每10次调用保存一次，避免频繁写入
-        if entry.call_count % 10 == 0 {
-            if let Err(e) = self.save_cache() {
-                eprintln!("保存缓存失败: {}", e);
-            }
+        // 每20次调用保存一次
+        if entry.call_count % 20 == 0 {
+            self.dirty = true;
+            let _ = self.save_cache();
         }
 
-        println!("从缓存获取Steam用户名: {} -> {}", steam_id, username);
         Some(username)
     }
 
@@ -193,33 +196,12 @@ impl SteamCacheManager {
     /// 清理过期的缓存条目
     pub fn cleanup_expired_cache(&mut self) -> usize {
         let initial_count = self.cache.len();
-        println!("开始清理过期缓存，当前缓存条目数: {}", initial_count);
-
-        self.cache.retain(|_, entry| {
-            let keep = !entry.is_expired();
-            if !keep {
-                println!(
-                    "发现过期缓存: {} (最后更新: {}秒前)",
-                    entry.username,
-                    current_timestamp() - entry.last_updated
-                );
-            }
-            keep
-        });
-
+        self.cache.retain(|_, entry| !entry.is_expired());
         let removed_count = initial_count - self.cache.len();
 
         if removed_count > 0 {
-            println!(
-                "清理了{}个过期的缓存条目，剩余{}个条目",
-                removed_count,
-                self.cache.len()
-            );
-            if let Err(e) = self.save_cache() {
-                eprintln!("保存缓存失败: {}", e);
-            }
-        } else {
-            println!("没有发现过期的缓存条目");
+            self.dirty = true;
+            let _ = self.save_cache();
         }
 
         removed_count
@@ -230,47 +212,43 @@ impl SteamCacheManager {
         self.cache
             .insert(steam_id.to_string(), CacheEntry::new(username));
         self.call_count += 1;
+        self.dirty = true;
 
         // 检查是否需要执行智能清理
         if self.cache.len() > SMART_CLEANUP_THRESHOLD {
             self.smart_cleanup();
         }
 
-        if let Err(e) = self.save_cache() {
-            eprintln!("保存缓存失败: {}", e);
-        }
+        let _ = self.save_cache();
     }
 
     /// 智能清理缓存
     fn smart_cleanup(&mut self) {
         let initial_count = self.cache.len();
-        println!("执行智能清理，当前缓存条目数: {}", initial_count);
-
         self.cache
             .retain(|_, entry| entry.call_count >= MIN_CALL_COUNT);
 
-        let removed_count = initial_count - self.cache.len();
-        println!(
-            "智能清理完成，删除了{}个条目，剩余{}个条目",
-            removed_count,
-            self.cache.len()
-        );
+        if self.cache.len() < initial_count {
+            self.dirty = true;
+        }
     }
 
     /// 清空所有缓存
     pub fn clear_cache(&mut self) -> Result<(), String> {
         self.cache.clear();
         self.call_count = 0;
+        self.dirty = true;
         self.save_cache()
     }
 }
 
-/// 验证 Steam ID 格式
+/// 验证 Steam ID 格式（优化版）
+#[inline]
 fn validate_steam_id(steam_id: &str) -> bool {
-    steam_id.len() == 17 && steam_id.chars().all(|c| c.is_ascii_digit())
+    steam_id.len() == 17 && steam_id.bytes().all(|b| b.is_ascii_digit())
 }
 
-/// 获取Steam用户名
+/// 获取Steam用户名（优化版）
 pub async fn get_steam_usernames(
     steam_ids: Vec<String>,
     api_key: String,
@@ -286,22 +264,13 @@ pub async fn get_steam_usernames(
         }
     }
 
-    println!(
-        "开始获取Steam用户名，请求的Steam ID数量: {}",
-        steam_ids.len()
-    );
-
     let mut cache_manager = SteamCacheManager::new()?;
-    println!("当前缓存状态: {} 个条目", cache_manager.get_cache_size());
 
     // 自动清理过期的缓存条目
-    let removed_count = cache_manager.cleanup_expired_cache();
-    if removed_count > 0 {
-        println!("清理了 {} 个过期的缓存条目", removed_count);
-    }
+    cache_manager.cleanup_expired_cache();
 
     // 分离缓存命中和未命中的 ID
-    let mut result = HashMap::new();
+    let mut result = HashMap::with_capacity(steam_ids.len());
     let mut uncached_ids = Vec::new();
 
     for steam_id in &steam_ids {
@@ -314,16 +283,14 @@ pub async fn get_steam_usernames(
 
     // 如果所有ID都在缓存中，直接返回
     if uncached_ids.is_empty() {
-        println!("所有Steam ID都从缓存获取，无需调用API");
         return Ok(result);
     }
 
-    println!("需要通过API获取的用户名数量: {}", uncached_ids.len());
-
     // 分批处理未缓存的ID
-    for (i, chunk) in uncached_ids.chunks(MAX_BATCH_SIZE).enumerate() {
-        println!("正在处理第 {} 批，{} 个Steam ID", i + 1, chunk.len());
+    let chunks: Vec<_> = uncached_ids.chunks(MAX_BATCH_SIZE).collect();
+    let chunk_count = chunks.len();
 
+    for (i, chunk) in chunks.into_iter().enumerate() {
         let chunk_result = fetch_steam_usernames_batch(chunk, &api_key).await?;
 
         for (steam_id, username) in chunk_result {
@@ -331,13 +298,12 @@ pub async fn get_steam_usernames(
             cache_manager.update_cache(&steam_id, username);
         }
 
-        // 批次间延迟
-        if i < uncached_ids.chunks(MAX_BATCH_SIZE).count() - 1 {
+        // 批次间延迟（最后一批不需要）
+        if i < chunk_count - 1 {
             sleep(Duration::from_millis(BATCH_DELAY_MS)).await;
         }
     }
 
-    println!("Steam用户名获取完成，总计获取 {} 个用户", result.len());
     Ok(result)
 }
 

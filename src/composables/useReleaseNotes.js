@@ -46,9 +46,20 @@ export function useReleaseNotes() {
   }
 
   // 当前语言的公告数据（响应式）
+  // 中文显示中文公告，其他语言显示英文公告
   const releaseNotes = computed(() => {
     const currentLocale = locale.value || "zh-CN";
-    return releaseNotesCache[currentLocale] || releaseNotesCache["zh-CN"] || [];
+    
+    // 中文语言使用对应的中文公告
+    if (currentLocale === "zh-CN") {
+      return releaseNotesCache["zh-CN"] || [];
+    }
+    if (currentLocale === "zh-TW") {
+      return releaseNotesCache["zh-TW"] || releaseNotesCache["zh-CN"] || [];
+    }
+    
+    // 其他所有语言（包括插件语言）使用英文公告
+    return releaseNotesCache["en-US"] || [];
   });
 
   // 最新版本公告

@@ -27,11 +27,75 @@
         @click="selectCategory(category.id)"
       >
         {{ category.name }}
+        <span v-if="category.id === 'installed' && installedPluginsList.length > 0" class="tab-badge">
+          {{ installedPluginsList.length }}
+        </span>
       </button>
     </div>
 
-    <!-- 插件网格 -->
-    <div class="plugins-grid" ref="pluginsGrid">
+    <!-- 已安装插件管理 -->
+    <div v-if="selectedCategory === 'installed'" class="plugins-grid" ref="pluginsGrid">
+      <!-- 空状态 -->
+      <div v-if="installedPluginsList.length === 0" class="empty-state">
+        <font-awesome-icon :icon="['fas', 'puzzle-piece']" />
+        <p>暂无已安装的插件</p>
+        <p class="empty-hint">从商店安装插件或导入本地插件</p>
+      </div>
+
+      <!-- 已安装插件卡片 -->
+      <div
+        v-else
+        v-for="plugin in installedPluginsList"
+        :key="plugin.id"
+        class="installed-plugin-card"
+      >
+        <div class="installed-card-header">
+          <div class="installed-plugin-icon" :class="getPluginTypeClass(plugin.type)">
+            <font-awesome-icon :icon="['fas', getPluginIcon(plugin.type)]" />
+          </div>
+          <div class="installed-plugin-info">
+            <h3 class="installed-plugin-name">{{ plugin.name }}</h3>
+            <div class="installed-plugin-meta">
+              <span class="plugin-type-badge" :class="getPluginTypeClass(plugin.type)">
+                {{ getPluginTypeLabel(plugin.type) }}
+              </span>
+              <span class="plugin-version">v{{ plugin.version }}</span>
+              <span v-if="plugin.locale" class="plugin-locale">{{ plugin.locale }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="installed-card-body">
+          <p class="installed-plugin-desc">{{ plugin.description || plugin.localeName || '暂无描述' }}</p>
+          <div class="installed-plugin-details">
+            <span v-if="plugin.author" class="detail-item">
+              <font-awesome-icon :icon="['fas', 'user']" />
+              {{ plugin.author }}
+            </span>
+            <span v-if="plugin.localeName" class="detail-item">
+              <font-awesome-icon :icon="['fas', 'globe']" />
+              {{ plugin.localeName }}
+            </span>
+          </div>
+        </div>
+        <div class="installed-card-footer">
+          <span class="plugin-status active">
+            <font-awesome-icon :icon="['fas', 'check-circle']" />
+            已启用
+          </span>
+          <button
+            class="uninstall-btn"
+            @click.stop="handleUninstallPlugin(plugin)"
+            title="卸载插件"
+          >
+            <font-awesome-icon :icon="['fas', 'trash']" />
+            卸载
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 插件网格（商店） -->
+    <div v-else class="plugins-grid" ref="pluginsGrid">
       <!-- 加载状态 -->
       <div v-if="loading" class="loading-state">
         <div class="loading-spinner"></div>
@@ -180,51 +244,80 @@
       <div
         v-if="showLocalInstall"
         class="plugin-modal"
-        @click="showLocalInstall = false"
+        @click="closeLocalInstall"
       >
         <div class="modal-content" @click.stop>
           <div class="modal-header">
             <h3>{{ t("plugin.installLocal") }}</h3>
-            <button class="close-button" @click="showLocalInstall = false">
+            <button class="close-button" @click="closeLocalInstall">
               <font-awesome-icon :icon="['fas', 'times']" />
             </button>
           </div>
           <div class="modal-body">
             <div class="local-install-area">
-              <div class="upload-zone-modern">
-                <div class="upload-icon-container">
-                  <font-awesome-icon
-                    :icon="['fas', 'cloud-upload-alt']"
-                    class="upload-icon-modern"
-                  />
+              <div 
+                class="upload-zone-modern"
+                :class="{ 'dragging': isDragging, 'loading': localInstallLoading }"
+                @dragover="handleDragOver"
+                @dragleave="handleDragLeave"
+                @drop="handleDrop"
+              >
+                <!-- 加载状态 -->
+                <div v-if="localInstallLoading" class="upload-loading">
+                  <div class="loading-spinner"></div>
+                  <p>正在安装插件...</p>
                 </div>
-                <h3>{{ t("plugin.uploadPlugin") }}</h3>
-                <p class="upload-description">
-                  {{ t("plugin.uploadDescription") }}
-                </p>
-                <label class="upload-button">
-                  <input
-                    type="file"
-                    accept=".zip,.json"
-                    class="file-input-hidden"
-                  />
-                  <span>{{ t("plugin.selectFile") }}</span>
-                </label>
-                <div class="drag-hint">
-                  <font-awesome-icon :icon="['fas', 'mouse-pointer']" />
-                  <span>{{ t("plugin.dragHint") }}</span>
+                
+                <!-- 成功状态 -->
+                <div v-else-if="localInstallSuccess" class="upload-success">
+                  <font-awesome-icon :icon="['fas', 'check-circle']" class="success-icon" />
+                  <p>{{ localInstallSuccess }}</p>
+                  <button class="upload-button" @click="localInstallSuccess = null">
+                    继续安装
+                  </button>
                 </div>
+                
+                <!-- 错误状态 -->
+                <div v-else-if="localInstallError" class="upload-error">
+                  <font-awesome-icon :icon="['fas', 'exclamation-circle']" class="error-icon" />
+                  <p>{{ localInstallError }}</p>
+                  <button class="upload-button" @click="localInstallError = null">
+                    重试
+                  </button>
+                </div>
+                
+                <!-- 默认上传状态 -->
+                <template v-else>
+                  <div class="upload-icon-container">
+                    <font-awesome-icon
+                      :icon="['fas', 'folder-open']"
+                      class="upload-icon-modern"
+                    />
+                  </div>
+                  <h3>选择插件文件夹</h3>
+                  <p class="upload-description">
+                    选择包含 plugin.json 的插件文件夹
+                  </p>
+                  <button class="upload-button" @click="selectPluginFolder">
+                    <font-awesome-icon :icon="['fas', 'folder-open']" />
+                    <span>选择文件夹</span>
+                  </button>
+                  <div class="drag-hint">
+                    <font-awesome-icon :icon="['fas', 'info-circle']" />
+                    <span>插件文件夹必须包含 plugin.json 元数据文件</span>
+                  </div>
+                </template>
               </div>
 
               <div class="install-info-modern">
                 <div class="info-card">
                   <font-awesome-icon
-                    :icon="['fas', 'file-archive']"
+                    :icon="['fas', 'folder']"
                     class="info-icon"
                   />
                   <div class="info-content">
-                    <h4>{{ t("plugin.zipFormat") }}</h4>
-                    <p>{{ t("plugin.zipDescription") }}</p>
+                    <h4>插件文件夹结构</h4>
+                    <p>plugin.json（必需）+ translations.json（语言插件）</p>
                   </div>
                 </div>
                 <div class="info-card">
@@ -233,8 +326,8 @@
                     class="info-icon"
                   />
                   <div class="info-content">
-                    <h4>{{ t("plugin.jsonFormat") }}</h4>
-                    <p>{{ t("plugin.jsonDescription") }}</p>
+                    <h4>plugin.json</h4>
+                    <p>包含插件 ID、名称、类型、版本等元数据信息</p>
                   </div>
                 </div>
               </div>
@@ -254,6 +347,15 @@ import {
   safeModifyBodyStyles,
   protectFloatingButtonPosition,
 } from "../utils/floatingButtonProtection.js";
+import {
+  installLanguagePlugin,
+  uninstallLanguagePlugin,
+  getInstalledLanguagePlugins,
+  pluginManager,
+  PluginStatus,
+} from "../plugins";
+import { open } from "@tauri-apps/plugin-dialog";
+import { readTextFile, readDir } from "@tauri-apps/plugin-fs";
 
 // 使用国际化
 const { t } = useI18n({ useScope: "global" });
@@ -268,8 +370,53 @@ const loading = ref(false);
 const error = ref(null);
 const pluginsGrid = ref(null);
 
+// 本地安装相关
+const localInstallLoading = ref(false);
+const localInstallError = ref(null);
+const localInstallSuccess = ref(null);
+const isDragging = ref(false);
+
+// 已安装插件列表
+const installedPluginsList = ref([]);
+
 // 分类数据
-const categories = ref([{ id: "all", name: t("plugin.all") }]);
+const categories = ref([
+  { id: "all", name: t("plugin.all") },
+  { id: "installed", name: "已安装" }
+]);
+
+// 刷新已安装插件列表
+const refreshInstalledPlugins = () => {
+  installedPluginsList.value = pluginManager.getAllPlugins();
+};
+
+// 获取插件类型图标
+const getPluginIcon = (type) => {
+  const icons = {
+    language: 'globe',
+    theme: 'palette',
+    feature: 'puzzle-piece',
+  };
+  return icons[type] || 'puzzle-piece';
+};
+
+// 获取插件类型样式类
+const getPluginTypeClass = (type) => {
+  return `type-${type || 'feature'}`;
+};
+
+// 获取插件类型标签
+const getPluginTypeLabel = (type) => {
+  const labels = {
+    language: '语言',
+    theme: '主题',
+    feature: '功能',
+  };
+  return labels[type] || '插件';
+};
+
+// 插件索引 URL
+const PLUGIN_INDEX_URL = "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/plugins.json";
 
 // 获取插件数据
 const fetchPlugins = async () => {
@@ -277,10 +424,15 @@ const fetchPlugins = async () => {
   error.value = null;
 
   try {
-    const response = await fetch(
-      "https://raw.githubusercontent.com/Eververdants/ETBSaveX/master/ExpansionPack/plugins.json"
-    );
+    const response = await fetch(PLUGIN_INDEX_URL);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
     const data = await response.json();
+
+    // 获取已安装的插件
+    const installedPlugins = getInstalledLanguagePlugins();
+    const installedIds = new Set(installedPlugins.map(p => p.id));
 
     plugins.value = data.plugins.map((plugin) => ({
       id: plugin.id,
@@ -289,30 +441,18 @@ const fetchPlugins = async () => {
       author: plugin.author,
       version: plugin.version,
       license: plugin.license,
-      download_url: plugin.download_url,
-      icon: getIconForPlugin(plugin.id),
+      downloadUrl: plugin.downloadUrl || plugin.download_url,
+      icon: plugin.icon || getIconForPlugin(plugin.id),
       category: plugin.category || "utility",
-      installed: false,
+      installed: installedIds.has(plugin.id),
+      type: plugin.type || 'feature',
+      locale: plugin.locale,
+      localeName: plugin.localeName,
     }));
   } catch (err) {
     console.error("获取插件数据失败:", err);
     error.value = "获取插件列表失败，请检查网络连接";
-
-    // 回退到默认数据
-    plugins.value = [
-      {
-        id: "plugin-example",
-        name: "测试插件",
-        description: "此项插件仅供测试使用。",
-        author: "ETBSaveManager团队",
-        version: "1.0.0",
-        license: "MIT",
-        download_url: "#",
-        icon: "puzzle-piece",
-        category: "utility",
-        installed: false,
-      },
-    ];
+    plugins.value = [];
   } finally {
     loading.value = false;
   }
@@ -327,6 +467,8 @@ const getIconForPlugin = (pluginId) => {
     security: "shield-alt",
     analytics: "chart-line",
     example: "puzzle-piece",
+    lang: "globe",
+    language: "globe",
   };
 
   for (const [key, icon] of Object.entries(iconMap)) {
@@ -390,19 +532,191 @@ const closePluginDetail = () => {
   protectFloatingButtonPosition();
 };
 
-const installPlugin = (plugin) => {
-  plugin.installed = true;
-  // 这里可以添加实际的安装逻辑
-  animateButton(plugin);
+const installPlugin = async (plugin) => {
+  try {
+    // 如果是语言插件，从远程下载并安装
+    if (plugin.type === 'language' && plugin.download_url) {
+      const response = await fetch(plugin.download_url);
+      const data = await response.json();
+      
+      await installLanguagePlugin({
+        id: plugin.id,
+        name: plugin.name,
+        locale: plugin.locale,
+        localeName: plugin.localeName,
+        data: data,
+        version: plugin.version,
+        author: plugin.author,
+        description: plugin.description,
+      });
+    }
+    
+    plugin.installed = true;
+    animateButton(plugin);
+  } catch (err) {
+    console.error('安装插件失败:', err);
+  }
 };
 
-const togglePlugin = (plugin) => {
-  plugin.installed = !plugin.installed;
-  // 这里可以添加启用/禁用逻辑
+const togglePlugin = async (plugin) => {
+  if (plugin.installed) {
+    // 卸载插件
+    try {
+      await uninstallLanguagePlugin(plugin.id);
+      plugin.installed = false;
+    } catch (err) {
+      console.error('卸载插件失败:', err);
+    }
+  } else {
+    await installPlugin(plugin);
+  }
 };
 
 const openLocalInstall = () => {
   showLocalInstall.value = true;
+  localInstallError.value = null;
+  localInstallSuccess.value = null;
+};
+
+const closeLocalInstall = () => {
+  showLocalInstall.value = false;
+  localInstallError.value = null;
+  localInstallSuccess.value = null;
+};
+
+// 选择插件文件夹
+const selectPluginFolder = async () => {
+  try {
+    const selected = await open({
+      directory: true,
+      multiple: false,
+      title: '选择插件文件夹',
+    });
+    
+    if (selected) {
+      await processPluginFolder(selected);
+    }
+  } catch (err) {
+    console.error('选择文件夹失败:', err);
+    localInstallError.value = `选择文件夹失败: ${err.message}`;
+  }
+};
+
+// 处理拖拽
+const handleDragOver = (event) => {
+  event.preventDefault();
+  isDragging.value = true;
+};
+
+const handleDragLeave = (event) => {
+  event.preventDefault();
+  isDragging.value = false;
+};
+
+const handleDrop = async (event) => {
+  event.preventDefault();
+  isDragging.value = false;
+  
+  // 拖拽暂不支持文件夹，提示用户使用按钮
+  localInstallError.value = '请点击「选择文件夹」按钮来选择插件目录';
+};
+
+// 处理插件文件夹
+const processPluginFolder = async (folderPath) => {
+  localInstallLoading.value = true;
+  localInstallError.value = null;
+  localInstallSuccess.value = null;
+
+  try {
+    // 读取 plugin.json 元数据文件
+    const pluginJsonPath = `${folderPath}/plugin.json`;
+    let pluginMeta;
+    
+    try {
+      const metaContent = await readTextFile(pluginJsonPath);
+      pluginMeta = JSON.parse(metaContent);
+    } catch (err) {
+      localInstallError.value = '未找到 plugin.json 文件，请确保选择了正确的插件文件夹';
+      return;
+    }
+    
+    // 验证元数据
+    if (!pluginMeta.id || !pluginMeta.type || !pluginMeta.name) {
+      localInstallError.value = 'plugin.json 格式无效，缺少必需字段（id, type, name）';
+      return;
+    }
+    
+    // 检查插件是否已安装
+    const existingPlugin = pluginManager.getPlugin(pluginMeta.id);
+    if (existingPlugin) {
+      localInstallError.value = `插件「${pluginMeta.name}」已安装`;
+      return;
+    }
+    
+    // 根据插件类型处理
+    if (pluginMeta.type === 'language') {
+      await processLanguagePlugin(folderPath, pluginMeta);
+    } else {
+      localInstallError.value = `暂不支持的插件类型: ${pluginMeta.type}`;
+    }
+  } catch (err) {
+    console.error('处理插件文件夹失败:', err);
+    localInstallError.value = `安装失败: ${err.message}`;
+  } finally {
+    localInstallLoading.value = false;
+  }
+};
+
+// 处理语言插件
+const processLanguagePlugin = async (folderPath, pluginMeta) => {
+  // 读取翻译数据文件
+  const mainFile = pluginMeta.main || 'translations.json';
+  const translationsPath = `${folderPath}/${mainFile}`;
+  
+  let translationsData;
+  try {
+    const content = await readTextFile(translationsPath);
+    translationsData = JSON.parse(content);
+  } catch (err) {
+    localInstallError.value = `未找到翻译文件 ${mainFile}，请确保插件文件夹结构正确`;
+    return;
+  }
+  
+  // 验证翻译数据
+  if (!translationsData || typeof translationsData !== 'object') {
+    localInstallError.value = '翻译文件格式无效';
+    return;
+  }
+  
+  // 安装语言插件
+  await installLanguagePlugin({
+    id: pluginMeta.id,
+    name: pluginMeta.name,
+    locale: pluginMeta.locale,
+    localeName: pluginMeta.localeName || pluginMeta.name,
+    data: translationsData,
+    version: pluginMeta.version || '1.0.0',
+    author: pluginMeta.author || 'Unknown',
+    description: pluginMeta.description || '',
+  });
+  
+  localInstallSuccess.value = `成功安装语言插件: ${pluginMeta.name}`;
+  
+  // 刷新插件列表
+  await fetchPlugins();
+  refreshInstalledPlugins();
+};
+
+// 卸载插件
+const handleUninstallPlugin = async (plugin) => {
+  try {
+    await uninstallLanguagePlugin(plugin.id);
+    refreshInstalledPlugins();
+    await fetchPlugins();
+    console.log(`✅ 已卸载插件: ${plugin.name}`);
+  } catch (err) {
+    console.error('卸载插件失败:', err);
+  }
 };
 
 // GSAP 动画
@@ -410,22 +724,28 @@ const animateCards = async () => {
   await nextTick();
   if (pluginsGrid.value) {
     const cards = pluginsGrid.value.querySelectorAll(".plugin-card");
-    gsap.fromTo(
-      cards,
-      { y: 20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.3, stagger: 0.05, ease: "power2.out" }
-    );
+    // 只有当有卡片时才执行动画
+    if (cards && cards.length > 0) {
+      gsap.fromTo(
+        cards,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, stagger: 0.05, ease: "power2.out" }
+      );
+    }
   }
 };
 
 const animateButton = (plugin) => {
-  const button = event.target;
-  gsap.to(button, { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1 });
+  const button = event?.target;
+  if (button) {
+    gsap.to(button, { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1 });
+  }
 };
 
 // 生命周期
 onMounted(async () => {
   await fetchPlugins();
+  refreshInstalledPlugins();
   animateCards();
 });
 </script>
@@ -758,6 +1078,238 @@ onMounted(async () => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+.action-btn.uninstall {
+  background: rgba(255, 59, 48, 0.1);
+  color: rgba(255, 59, 48, 0.7);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+}
+
+.action-btn.uninstall:hover {
+  background: rgba(255, 59, 48, 0.2);
+  color: #ff3b30;
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 59, 48, 0.15);
+}
+
+/* 已安装插件卡片 */
+.installed-card {
+  border: 1px solid var(--border-color);
+}
+
+.plugin-icon.icon-language {
+  background: linear-gradient(135deg, #007aff, #5856d6);
+}
+
+/* 新版已安装插件卡片样式 */
+.installed-plugin-card {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-color);
+}
+
+.installed-plugin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border-color: var(--accent-color);
+}
+
+.installed-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 18px 14px;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.installed-plugin-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.installed-plugin-icon.type-language {
+  background: linear-gradient(135deg, #007aff, #5856d6);
+}
+
+.installed-plugin-icon.type-theme {
+  background: linear-gradient(135deg, #ff9500, #ff2d55);
+}
+
+.installed-plugin-icon.type-feature {
+  background: linear-gradient(135deg, #34c759, #30d158);
+}
+
+.installed-plugin-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.installed-plugin-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.installed-plugin-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.plugin-type-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: white;
+}
+
+.plugin-type-badge.type-language {
+  background: linear-gradient(135deg, #007aff, #5856d6);
+}
+
+.plugin-type-badge.type-theme {
+  background: linear-gradient(135deg, #ff9500, #ff2d55);
+}
+
+.plugin-type-badge.type-feature {
+  background: linear-gradient(135deg, #34c759, #30d158);
+}
+
+.plugin-version {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.plugin-locale {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: rgba(0, 122, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.installed-card-body {
+  padding: 14px 18px;
+}
+
+.installed-plugin-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.installed-plugin-details {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.detail-item {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.detail-item svg {
+  font-size: 10px;
+}
+
+.installed-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+}
+
+.plugin-status {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.plugin-status.active {
+  color: #34c759;
+}
+
+.plugin-status.inactive {
+  color: var(--text-tertiary);
+}
+
+.uninstall-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ff3b30;
+  background: rgba(255, 59, 48, 0.1);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.uninstall-btn:hover {
+  background: rgba(255, 59, 48, 0.2);
+  border-color: rgba(255, 59, 48, 0.3);
+  transform: translateY(-1px);
+}
+
+/* 标签徽章 */
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--accent-color);
+  color: white;
+  border-radius: 9px;
+}
+
+/* 空状态提示 */
+.empty-hint {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-top: 8px;
+}
+
 .action-button {
   padding: 8px 16px;
   border: none;
@@ -991,6 +1543,50 @@ onMounted(async () => {
   );
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.upload-zone-modern.dragging {
+  border-color: var(--accent-color);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.1) 0%,
+    rgba(0, 122, 255, 0.05) 100%
+  );
+  transform: scale(1.02);
+  box-shadow: 0 8px 32px rgba(0, 122, 255, 0.2);
+}
+
+.upload-zone-modern.loading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.upload-loading,
+.upload-success,
+.upload-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.upload-loading .loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--divider-color);
+  border-top: 3px solid var(--accent-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.success-icon {
+  font-size: 64px;
+  color: #34c759;
+}
+
+.error-icon {
+  font-size: 64px;
+  color: #ff3b30;
 }
 
 .upload-icon-container {

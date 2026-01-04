@@ -28,6 +28,7 @@
     "fs:allow-exists",
     "fs:allow-resource-read-recursive",
     "core:path:default",
+    "core:window:allow-set-title",
     "fs:allow-app-write",
     {
       "identifier": "fs:scope",

@@ -2,135 +2,142 @@
  * ============================================
  * 🌙 暗色主题 (Dark Theme)
  * ============================================
- * 定义暗色主题下的所有颜色变量
+ * 高级感深色主题 - 精致的层次与微妙的暖灰色调
  */
 
 [data-theme="dark"] {
   /* ==========================================
    * 背景层级 (Background Hierarchy)
+   * 使用带有微妙暖色调的深色，营造高级感
    * ========================================== */
-  --bg: var(--color-gray-950);
-  --bg-primary: var(--color-gray-950);
-  --bg-secondary: var(--color-gray-900);
-  --bg-tertiary: var(--color-gray-800);
-  --bg-elevated: var(--color-gray-900);
+  --bg: #0d0d0f;
+  --bg-primary: #0d0d0f;
+  --bg-secondary: #161618;
+  --bg-tertiary: #1f1f23;
+  --bg-elevated: #1a1a1d;
 
   /* ==========================================
    * 文本层级 (Text Hierarchy)
+   * 柔和的白色，避免刺眼
    * ========================================== */
-  --text: #f5f5f7;
-  --text-color: #f5f5f7;
-  --text-primary: #f5f5f7;
-  --text-secondary: #ebebf5;
-  --text-tertiary: var(--color-gray-500);
-  --text-disabled: var(--color-gray-600);
-  --text-inverse: var(--color-gray-950);
+  --text: #f0f0f2;
+  --text-color: #f0f0f2;
+  --text-primary: #f0f0f2;
+  --text-secondary: rgba(240, 240, 242, 0.72);
+  --text-tertiary: rgba(240, 240, 242, 0.48);
+  --text-disabled: rgba(240, 240, 242, 0.28);
+  --text-inverse: #0d0d0f;
 
   /* ==========================================
    * 表面/卡片 (Surface/Card)
    * ========================================== */
-  --surface-color: var(--color-gray-900);
-  --surface-hover: var(--color-gray-800);
-  --card-bg: var(--color-gray-900);
+  --surface-color: #161618;
+  --surface-hover: #1f1f23;
+  --card-bg: #161618;
 
   /* ==========================================
    * 边框/分割线 (Border/Divider)
+   * 精致的边框，带有微妙的层次
    * ========================================== */
-  --border-color: rgba(84, 84, 88, 0.3);
-  --border-light: rgba(84, 84, 88, 0.1);
-  --divider-color: rgba(84, 84, 88, 0.3);
-  --divider-light: rgba(84, 84, 88, 0.1);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.04);
+  --divider-color: rgba(255, 255, 255, 0.08);
+  --divider-light: rgba(255, 255, 255, 0.04);
 
   /* ==========================================
    * 主色调 (Primary Colors)
+   * 保持功能性的强调色，但使用更柔和的色调
    * ========================================== */
-  --primary: var(--color-blue-apple-dark);
-  --primary-hover: #0096ff;
-  --primary-color: var(--color-brand-primary);
-  --secondary-color: var(--color-brand-secondary);
-  --accent-color: var(--color-blue-apple-dark);
-  --accent-hover: #0096ff;
+  --primary: #6b7280;
+  --primary-hover: #9ca3af;
+  --primary-color: #6b7280;
+  --secondary-color: #4b5563;
+  --accent-color: #9ca3af;
+  --accent-hover: #d1d5db;
 
   /* ==========================================
    * 状态颜色 (Status Colors)
+   * 柔和但清晰的状态指示
    * ========================================== */
-  --success-color: var(--color-green-apple-dark);
-  --error-color: var(--color-red-apple-dark);
-  --warning-color: var(--color-orange-apple-dark);
-  --info-color: var(--color-blue-apple-dark);
+  --success-color: #4ade80;
+  --error-color: #f87171;
+  --warning-color: #fbbf24;
+  --info-color: rgba(255, 255, 255, 0.6);
 
   /* ==========================================
    * 侧边栏 (Sidebar)
    * ========================================== */
-  --sidebar-bg: rgba(40, 40, 45, 0.8);
-  --sidebar-text-color: #f5f5f7;
-  --sidebar-border-color: rgba(80, 80, 85, 0.9);
-  --sidebar-hover-bg: rgba(70, 70, 75, 0.9);
-  --sidebar-item-hover-bg: rgba(70, 70, 75, 0.9);
-  --sidebar-active-bg: rgba(10, 132, 255, 0.1);
-  --sidebar-active-color: var(--color-blue-apple-dark);
-  --sidebar-active-border: rgba(10, 132, 255, 0.5);
-  --sidebar-active-hover-bg: rgba(10, 132, 255, 0.15);
+  --sidebar-bg: rgba(13, 13, 15, 0.92);
+  --sidebar-text-color: #f0f0f2;
+  --sidebar-border-color: rgba(255, 255, 255, 0.06);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-item-hover-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-active-bg: rgba(255, 255, 255, 0.08);
+  --sidebar-active-color: #ffffff;
+  --sidebar-active-border: rgba(255, 255, 255, 0.24);
+  --sidebar-active-hover-bg: rgba(255, 255, 255, 0.1);
 
   /* ==========================================
    * 标题栏 (Titlebar)
    * ========================================== */
-  --titlebar-bg: rgba(28, 28, 30, 0.8);
-  --titlebar-border: rgba(125, 125, 125, 0.3);
-  --titlebar-button-hover: rgba(255, 255, 255, 0.1);
+  --titlebar-bg: rgba(13, 13, 15, 0.92);
+  --titlebar-border: rgba(255, 255, 255, 0.06);
+  --titlebar-button-hover: rgba(255, 255, 255, 0.06);
 
   /* ==========================================
    * 滚动条 (Scrollbar)
    * ========================================== */
-  --scrollbar-track: rgba(60, 60, 65, 0.3);
-  --scrollbar-thumb: rgba(100, 100, 105, 0.5);
-  --scrollbar-thumb-hover: rgba(120, 120, 125, 0.7);
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.12);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
 
   /* ==========================================
    * 下拉菜单 (Dropdown)
    * ========================================== */
-  --dropdown-bg: rgba(28, 28, 30, 0.8);
-  --dropdown-border: rgba(84, 84, 88, 0.3);
-  --dropdown-border-hover: rgba(99, 102, 241, 0.5);
-  --dropdown-text: #ffffff;
-  --dropdown-icon: rgba(235, 235, 245, 0.6);
-  --dropdown-shadow: rgba(0, 0, 0, 0.3);
-  --dropdown-shadow-hover: rgba(255, 255, 255, 0.15);
-  --dropdown-hover-bg: rgba(255, 255, 255, 0.05);
-  --dropdown-selected-bg: var(--color-blue-apple-dark);
-  --dropdown-selected-text: var(--color-white);
+  --dropdown-bg: rgba(22, 22, 24, 0.96);
+  --dropdown-border: rgba(255, 255, 255, 0.08);
+  --dropdown-border-hover: rgba(255, 255, 255, 0.12);
+  --dropdown-text: #f0f0f2;
+  --dropdown-icon: rgba(255, 255, 255, 0.48);
+  --dropdown-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --dropdown-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --dropdown-hover-bg: rgba(255, 255, 255, 0.04);
+  --dropdown-selected-bg: rgba(255, 255, 255, 0.1);
+  --dropdown-selected-text: #ffffff;
 
   /* ==========================================
    * 搜索遮罩 (Search Overlay)
    * ========================================== */
-  --search-overlay-bg: rgba(0, 0, 0, 0.7);
-  --search-overlay-backdrop: blur(12px);
+  --search-overlay-bg: rgba(0, 0, 0, 0.75);
+  --search-overlay-backdrop: blur(20px);
 
   /* ==========================================
    * 毛玻璃效果 (Glass Effect)
+   * 精致的毛玻璃，带有微妙的光泽
    * ========================================== */
-  --glass-bg: rgba(28, 28, 30, 0.8);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-border-light: rgba(84, 84, 88, 0.3);
-  --glass-shadow-light: rgba(0, 0, 0, 0.3);
-  --glass-shadow-medium: rgba(0, 0, 0, 0.2);
-  --glass-backdrop-filter: blur(20px);
+  --glass-bg: rgba(22, 22, 24, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-light: rgba(255, 255, 255, 0.04);
+  --glass-shadow-light: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --glass-shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --glass-backdrop-filter: blur(24px) saturate(180%);
 
   /* ==========================================
    * 卡片样式 (Card Styles)
+   * 精致的卡片效果
    * ========================================== */
-  --card-shadow: 0 2px 8px var(--glass-shadow-light);
-  --card-shadow-hover: 0 4px 12px var(--glass-shadow-medium);
-  --card-border: 1px solid var(--glass-border-light);
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), 0 0 1px rgba(255, 255, 255, 0.05);
+  --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.08);
+  --card-border: 1px solid rgba(255, 255, 255, 0.06);
   --card-radius: 16px;
   --card-padding: 16px;
   --card-highlight: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.05)
+    rgba(255, 255, 255, 0.04) 0%,
+    transparent 50%
   );
-  --card-active-indicator: var(--accent-color);
-  --card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --card-active-indicator: #ffffff;
+  --card-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --card-hover-transform: translateY(-2px);
 
   /* ==========================================
@@ -141,18 +148,18 @@
   --Card-border-color: var(--divider-color);
   --Card-shadow-normal: var(--card-shadow);
   --Card-shadow-hover: var(--card-shadow-hover);
-  --Card-accent-primary: var(--accent-color);
-  --Card-accent-secondary: var(--accent-hover);
+  --Card-accent-primary: #9ca3af;
+  --Card-accent-secondary: #d1d5db;
   --Card-text-primary: var(--text-primary);
   --Card-text-secondary: var(--text-secondary);
-  --Card-surface-overlay: rgba(0, 0, 0, 0.2);
+  --Card-surface-overlay: rgba(0, 0, 0, 0.4);
 
   /* ==========================================
    * About 页面 (About Page)
    * ========================================== */
   --about-glass-bg: var(--bg-secondary);
   --about-glass-border: var(--divider-color);
-  --about-glass-shadow: rgba(0, 0, 0, 0.3);
+  --about-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --about-list-bg: var(--bg-secondary);
   --about-hover-bg: var(--bg-tertiary);
   --about-border-light: var(--divider-color);

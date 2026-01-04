@@ -104,22 +104,25 @@
     </Teleport>
 
     <!-- 删除确认 -->
-    <ConfirmModal
-      v-model:show="showDeleteConfirm"
-      :title="$t('confirmModal.deleteArchiveTitle')"
-      :message="
-        $t('confirmModal.deleteArchiveMessage', {
-          name: archiveToDelete?.name || '',
-        })
-      "
-      :description="$t('confirmModal.deleteArchiveDescription')"
-      type="danger"
-      :confirm-text="$t('confirmModal.confirm')"
-      :cancel-text="$t('confirmModal.cancel')"
-      :loading="isDeleting"
-      @confirm="confirmDelete"
-      @cancel="cancelDelete"
-    />
+    <Teleport to="body">
+      <ConfirmModal
+        v-model:show="showDeleteConfirm"
+        :title="$t('confirmModal.deleteArchiveTitle')"
+        :message="
+          $t('confirmModal.deleteArchiveMessage', {
+            name: archiveToDelete?.name || '',
+          })
+        "
+        :description="$t('confirmModal.deleteArchiveDescription')"
+        type="danger"
+        :confirm-text="$t('confirmModal.confirm')"
+        :cancel-text="$t('confirmModal.cancel')"
+        :loading="isDeleting"
+        :archive-details="archiveToDelete"
+        @confirm="confirmDelete"
+        @cancel="cancelDelete"
+      />
+    </Teleport>
 
     <!-- 性能设置 -->
     <Teleport to="body">
@@ -266,7 +269,6 @@ const archiveSearchFilter = ref(null);
 const showSearch = ref(false);
 const isPageActive = ref(false);
 const columnsPerRow = ref(4);
-const savedScrollTop = ref(0); // 保存滚动位置
 const shouldResetScroll = ref(false); // 是否需要重置滚动
 
 // 计算列数
@@ -299,7 +301,7 @@ const virtualizerOptions = computed(() => ({
   count: rowCount.value,
   getScrollElement: () => scrollContainerRef.value,
   estimateSize: () => 180, // 卡片高度160px + gap 20px
-  overscan: 5,
+  overscan: 2, // 减少 overscan，降低渲染数量
 }));
 
 // 虚拟化器
@@ -380,32 +382,19 @@ const updateContainerSize = () => {
 let isUnmounted = false;
 let resizeObserver = null;
 
-// 恢复滚动位置的函数
-const restoreScrollPosition = () => {
-  if (savedScrollTop.value > 0 && scrollContainerRef.value) {
-    updateContainerSize();
-    scrollContainerRef.value.scrollTop = savedScrollTop.value;
-    scrollContainerRef.value.dispatchEvent(new Event("scroll"));
-  }
-};
-
 // keep-alive 激活时
 onActivated(async () => {
   isPageActive.value = true;
-  // 先立即恢复滚动位置
-  restoreScrollPosition();
+  // 回到顶部
+  if (scrollContainerRef.value) {
+    scrollContainerRef.value.scrollTop = 0;
+  }
   // 刷新数据
   await refreshArchivesSilent();
-  // 数据更新后再次恢复滚动位置
-  nextTick(() => restoreScrollPosition());
 });
 
 // keep-alive 停用时
 onDeactivated(() => {
-  // 保存滚动位置
-  if (scrollContainerRef.value) {
-    savedScrollTop.value = scrollContainerRef.value.scrollTop;
-  }
   isPageActive.value = false;
 });
 
@@ -497,7 +486,6 @@ watch(
   box-sizing: border-box;
   /* 优化滚动性能 */
   -webkit-overflow-scrolling: touch;
-  contain: strict;
 }
 
 .archive-list-container.no-scroll {
@@ -506,12 +494,10 @@ watch(
 
 .archive-grid-virtual {
   padding-bottom: 80px;
-  contain: layout style;
 }
 
 .archive-row {
   padding: 0;
-  contain: layout style;
 }
 
 .archive-grid {
@@ -526,9 +512,8 @@ watch(
   width: 100%;
   min-width: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease, transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform-origin: center center;
-  contain: layout style paint;
 }
 
 .archive-grid :deep(.archive-card.deleting) {

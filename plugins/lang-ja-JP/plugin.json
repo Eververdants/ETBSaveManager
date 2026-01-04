@@ -1,0 +1,17 @@
+{
+  "id": "lang-ja-JP",
+  "name": "日本語言語パック",
+  "type": "language",
+  "version": "1.0.0",
+  "author": "Kiro",
+  "description": "逃离后室存档工具的日语翻译包",
+  "locale": "ja-JP",
+  "localeName": "日本語",
+  "main": "translations.json",
+  "icon": "🇯🇵",
+  "homepage": "",
+  "repository": "",
+  "license": "MIT",
+  "minAppVersion": "1.0.0",
+  "keywords": ["language", "japanese", "日本語", "翻訳"]
+}

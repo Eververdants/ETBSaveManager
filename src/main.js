@@ -1,5 +1,6 @@
 import { createApp } from "vue";
 import { createI18n } from "vue-i18n";
+import { Window } from "@tauri-apps/api/window";
 import App from "./App.vue";
 import router from "./router";
 import "./styles/animations.css";
@@ -104,6 +105,8 @@ import {
   faHandPointer,
   faCube,
   faDoorOpen,
+  faGamepad,
+  faFolderOpen
 } from "@fortawesome/free-solid-svg-icons";
 
 // Brand icons
@@ -215,7 +218,9 @@ library.add(
   faUserPlus,
   faHandPointer,
   faCube,
-  faDoorOpen
+  faDoorOpen,
+  faGamepad,
+  faFolderOpen
 );
 import "./styles/theme-config.js";
 import {
@@ -229,6 +234,9 @@ import { disableInteractions } from "./utils/disableInteractions";
 import zhCN from "./i18n/locales/zh-CN.json";
 import enUS from "./i18n/locales/en-US.json";
 import zhTW from "./i18n/locales/zh-TW.json";
+
+// 导入插件系统
+import { initializePluginSystem, languagePluginLoader } from "./plugins";
 
 // 初始化更新公告数据（简化版，数据由 useReleaseNotes composable 按需加载）
 const initializeReleaseNotesData = () => {
@@ -271,8 +279,16 @@ app.use(router);
 app.use(i18n);
 app.component("font-awesome-icon", FontAwesomeIcon);
 
+// 设置 i18n 实例到语言插件加载器
+languagePluginLoader.setI18nInstance(i18n);
+
 // 初始化更新公告数据
 initializeReleaseNotesData();
+
+// 初始化插件系统
+initializePluginSystem().catch(error => {
+  console.error('[main.js] 插件系统初始化失败:', error);
+});
 
 // 将i18n实例暴露到全局window对象
 window.$i18n = i18n.global;
@@ -281,8 +297,28 @@ window.$i18n = i18n.global;
 const currentLocale = i18n.global.locale.value || i18n.global.locale;
 console.log("[i18n] current", currentLocale);
 
+// 根据语言设置窗口标题
+const updateWindowTitle = async () => {
+  try {
+    const appWindow = new Window("main");
+    const title = i18n.global.t("app.name");
+    await appWindow.setTitle(title);
+    console.log("[main.js] 窗口标题已设置为:", title);
+  } catch (error) {
+    console.warn("[main.js] 设置窗口标题失败:", error);
+  }
+};
+
+// 启动时设置窗口标题
+updateWindowTitle();
+
+// 监听语言变化事件，更新窗口标题
+window.addEventListener("language-changed", () => {
+  updateWindowTitle();
+});
+
 // 禁用所有快捷键、文字选中和图片拖拽
-disableInteractions()
+// disableInteractions()
 
 app.mount("#app");
 

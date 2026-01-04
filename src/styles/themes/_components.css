@@ -28,38 +28,38 @@
  * ========================================== */
 :root {
   /* 背景 */
-  --log-bg: #1e1e1e;
-  --log-bg-secondary: #252526;
-  --log-bg-tertiary: #3c3c3c;
-  --log-bg-hover: #4a4a4a;
+  --log-bg: #0d0d0f;
+  --log-bg-secondary: #161618;
+  --log-bg-tertiary: #1f1f23;
+  --log-bg-hover: #28282d;
 
   /* 边框 */
-  --log-border: #3e3e42;
+  --log-border: rgba(255, 255, 255, 0.08);
 
   /* 文本 */
-  --log-text: #d4d4d4;
-  --log-text-secondary: #cccccc;
-  --log-text-muted: #6a9955;
+  --log-text: #f0f0f2;
+  --log-text-secondary: rgba(240, 240, 242, 0.72);
+  --log-text-muted: rgba(240, 240, 242, 0.48);
 
   /* 按钮 */
-  --log-btn-primary: #0e639c;
-  --log-btn-primary-hover: #1177bb;
-  --log-btn-secondary: #3c3c3c;
-  --log-btn-secondary-hover: #4a4a4a;
+  --log-btn-primary: rgba(255, 255, 255, 0.12);
+  --log-btn-primary-hover: rgba(255, 255, 255, 0.18);
+  --log-btn-secondary: rgba(255, 255, 255, 0.06);
+  --log-btn-secondary-hover: rgba(255, 255, 255, 0.1);
 
   /* 日志级别 */
-  --log-level-error: #f48771;
-  --log-level-warn: #dcdcaa;
-  --log-level-info: #9cdcfe;
-  --log-level-debug: #6a9955;
+  --log-level-error: #f87171;
+  --log-level-warn: #fbbf24;
+  --log-level-info: rgba(255, 255, 255, 0.6);
+  --log-level-debug: rgba(255, 255, 255, 0.4);
 
   /* 命令/提示符 */
-  --log-command: #4ec9b0;
+  --log-command: #4ade80;
 
   /* 滚动条 */
-  --log-scrollbar-track: #1e1e1e;
-  --log-scrollbar-thumb: #424242;
-  --log-scrollbar-thumb-hover: #4f4f4f;
+  --log-scrollbar-track: transparent;
+  --log-scrollbar-thumb: rgba(255, 255, 255, 0.12);
+  --log-scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
 }
 
 /* ==========================================
@@ -67,9 +67,9 @@
  * ========================================== */
 :root {
   /* 主要按钮 */
-  --btn-primary-bg: var(--color-info);
-  --btn-primary-bg-hover: var(--color-info-hover);
-  --btn-primary-text: var(--color-white);
+  --btn-primary-bg: #4b5563;
+  --btn-primary-bg-hover: #374151;
+  --btn-primary-text: #ffffff;
 
   /* 成功按钮 */
   --btn-success-bg: var(--color-success);
@@ -86,27 +86,43 @@
   --btn-warning-bg-hover: var(--color-warning-hover);
   --btn-warning-text: var(--color-white);
 
-  /* 信息按钮 (青色) */
-  --btn-info-bg: var(--color-cyan-bootstrap);
-  --btn-info-bg-hover: var(--color-cyan-bootstrap-dark);
+  /* 信息按钮 */
+  --btn-info-bg: #6b7280;
+  --btn-info-bg-hover: #4b5563;
   --btn-info-text: var(--color-white);
 
   /* 次要按钮 */
-  --btn-secondary-bg: var(--color-gray-200);
-  --btn-secondary-bg-hover: var(--color-gray-300);
-  --btn-secondary-text: var(--color-gray-800);
+  --btn-secondary-bg: rgba(0, 0, 0, 0.06);
+  --btn-secondary-bg-hover: rgba(0, 0, 0, 0.1);
+  --btn-secondary-text: #1a1a1c;
 
   /* 轮廓按钮 */
-  --btn-outline-border: var(--color-info);
-  --btn-outline-text: var(--color-info);
-  --btn-outline-bg-hover: var(--color-info-bg);
+  --btn-outline-border: rgba(0, 0, 0, 0.2);
+  --btn-outline-text: #1a1a1c;
+  --btn-outline-bg-hover: rgba(0, 0, 0, 0.04);
 }
 
 [data-theme="dark"] {
-  /* 次要按钮 - 暗色主题 */
-  --btn-secondary-bg: var(--color-gray-700);
-  --btn-secondary-bg-hover: var(--color-gray-600);
-  --btn-secondary-text: var(--color-gray-200);
+  /* 主要按钮 - 使用柔和的灰色 */
+  --btn-primary-bg: #6b7280;
+  --btn-primary-bg-hover: #9ca3af;
+  --btn-primary-text: #ffffff;
+
+  /* 次要按钮 */
+  --btn-secondary-bg: rgba(255, 255, 255, 0.08);
+  --btn-secondary-bg-hover: rgba(255, 255, 255, 0.12);
+  --btn-secondary-text: #f0f0f2;
+
+  /* 成功按钮 - 深色文字 */
+  --btn-success-text: #0d0d0f;
+
+  /* 警告按钮 - 深色文字 */
+  --btn-warning-text: #0d0d0f;
+
+  /* 轮廓按钮 */
+  --btn-outline-border: rgba(255, 255, 255, 0.24);
+  --btn-outline-text: #f0f0f2;
+  --btn-outline-bg-hover: rgba(255, 255, 255, 0.06);
 }
 
 /* ==========================================
@@ -114,51 +130,57 @@
  * ========================================== */
 :root {
   /* 成功弹窗 */
-  --popup-success-bg: var(--color-white);
+  --popup-success-bg: #ffffff;
   --popup-success-border: var(--color-success-border);
   --popup-success-icon-bg: linear-gradient(
     135deg,
-    var(--color-green-apple) 0%,
-    var(--color-green-bootstrap) 100%
+    #22c55e 0%,
+    #16a34a 100%
   );
-  --popup-success-shadow: rgba(52, 199, 89, 0.25);
+  --popup-success-shadow: rgba(34, 197, 94, 0.2);
 
   /* 错误弹窗 */
-  --popup-error-bg: var(--color-white);
+  --popup-error-bg: #ffffff;
   --popup-error-border: var(--color-error-border);
   --popup-error-icon-bg: linear-gradient(
     135deg,
-    var(--color-red-apple) 0%,
-    var(--color-red-bootstrap) 100%
+    #ef4444 0%,
+    #dc2626 100%
   );
-  --popup-error-shadow: rgba(255, 59, 48, 0.25);
+  --popup-error-shadow: rgba(239, 68, 68, 0.2);
 
   /* 警告弹窗 */
-  --popup-warning-bg: var(--color-white);
+  --popup-warning-bg: #ffffff;
   --popup-warning-border: var(--color-warning-border);
   --popup-warning-icon-bg: linear-gradient(
     135deg,
-    var(--color-orange-apple) 0%,
-    #fd7e14 100%
+    #f59e0b 0%,
+    #d97706 100%
   );
-  --popup-warning-shadow: rgba(255, 149, 0, 0.25);
+  --popup-warning-shadow: rgba(245, 158, 11, 0.2);
 
   /* 信息弹窗 */
-  --popup-info-bg: var(--color-white);
+  --popup-info-bg: #ffffff;
   --popup-info-border: var(--color-info-border);
   --popup-info-icon-bg: linear-gradient(
     135deg,
-    var(--color-blue-apple) 0%,
-    #0056b3 100%
+    #6b7280 0%,
+    #4b5563 100%
   );
-  --popup-info-shadow: rgba(0, 122, 255, 0.25);
+  --popup-info-shadow: rgba(107, 114, 128, 0.2);
 }
 
 [data-theme="dark"] {
-  --popup-success-bg: var(--color-gray-950);
-  --popup-error-bg: var(--color-gray-950);
-  --popup-warning-bg: var(--color-gray-950);
-  --popup-info-bg: var(--color-gray-950);
+  --popup-success-bg: #161618;
+  --popup-error-bg: #161618;
+  --popup-warning-bg: #161618;
+  --popup-info-bg: #161618;
+  --popup-info-icon-bg: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  --popup-info-shadow: rgba(255, 255, 255, 0.1);
 }
 
 /* ==========================================
@@ -250,17 +272,17 @@
   --radio-size: 16px;
 
   /* 未选中状态 */
-  --checkbox-bg: var(--bg-tertiary);
-  --checkbox-border: var(--divider-medium);
-  --checkbox-border-hover: var(--accent-color);
+  --checkbox-bg: #f8f8fa;
+  --checkbox-border: rgba(0, 0, 0, 0.15);
+  --checkbox-border-hover: #4b5563;
 
   /* 选中状态 */
-  --checkbox-checked-bg: var(--accent-color);
-  --checkbox-checked-border: var(--accent-color);
-  --checkbox-checkmark-color: var(--color-white);
+  --checkbox-checked-bg: #4b5563;
+  --checkbox-checked-border: #4b5563;
+  --checkbox-checkmark-color: #ffffff;
 
   /* 焦点状态 */
-  --checkbox-focus-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
+  --checkbox-focus-shadow: 0 0 0 2px rgba(75, 85, 99, 0.2);
 
   /* 禁用状态 */
   --checkbox-disabled-bg: var(--bg-disabled);
@@ -269,7 +291,10 @@
 }
 
 [data-theme="dark"] {
-  --checkbox-bg: var(--bg-tertiary);
-  --checkbox-border: rgba(255, 255, 255, 0.15);
-  --checkbox-border-hover: var(--accent-color);
+  --checkbox-bg: #1f1f23;
+  --checkbox-border: rgba(255, 255, 255, 0.12);
+  --checkbox-border-hover: rgba(255, 255, 255, 0.24);
+  --checkbox-checked-bg: rgba(255, 255, 255, 0.9);
+  --checkbox-checked-border: rgba(255, 255, 255, 0.9);
+  --checkbox-checkmark-color: #0d0d0f;
 }

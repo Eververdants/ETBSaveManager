@@ -1,4 +1,5 @@
 import { createI18n } from "vue-i18n";
+import storage from "../services/storageService";
 
 // 本地写死的语言包
 import zhCN from "./locales/zh-CN.json";
@@ -34,7 +35,7 @@ console.log("📊 [i18n/index.js] 繁体中文公告数量:", releaseNotesZhTW.l
 console.log("📊 [i18n/index.js] 英文公告数量:", releaseNotesEnUS.length);
 
 function getUserLocale() {
-  const saved = localStorage.getItem("locale");
+  const saved = storage.getItem("locale");
   if (saved && messages[saved]) return saved;
   const lang = navigator.language || "zh-CN";
   if (["zh-TW", "zh-HK", "zh-MO"].includes(lang)) return "zh-TW";

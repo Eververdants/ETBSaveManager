@@ -3,6 +3,8 @@
  * 负责加载、验证和管理主题插件
  */
 
+import storage from '../../services/storageService';
+
 // 主题插件必需的 CSS 变量
 const REQUIRED_VARIABLES = [
   '--bg-primary',
@@ -95,7 +97,7 @@ class ThemePluginLoader {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     if (currentTheme === themeId) {
       document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('theme', 'light');
+      storage.setItem('theme', 'light');
       console.log(`🎨 [ThemeLoader] 已切换到默认主题`);
     }
     
@@ -183,7 +185,7 @@ ${customCSS}
    */
   switchTheme(themeId) {
     document.documentElement.setAttribute('data-theme', themeId);
-    localStorage.setItem('theme', themeId);
+    storage.setItem('theme', themeId);
     console.log(`🎨 [ThemeLoader] 已切换主题: ${themeId}`);
     return true;
   }

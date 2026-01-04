@@ -33,15 +33,24 @@
 ### 🎨 Modern UI/UX
 
 - **Modern Design** — Clean, intuitive interface with smooth animations
-- **Theme System** — Light, Dark, and seasonal themes (New Year special!)
+- **Theme System** — Light, Dark, and seasonal themes
 - **Responsive Layout** — Collapsible sidebar, adaptive components
 - **Hardware Accelerated** — GPU-optimized rendering for smooth performance
 
 ### 🌍 Internationalization
 
+Built-in languages:
 - Simplified Chinese (简体中文)
 - Traditional Chinese (繁體中文)
 - English
+
+Additional languages via plugins:
+- 日本語 (Japanese)
+- 한국어 (Korean)
+- Русский (Russian)
+- Português (Brazilian Portuguese)
+
+> ⚠️ **Note:** Language plugins may not be updated immediately with new app versions.
 
 ### 🛠️ Advanced Features
 
@@ -53,6 +62,7 @@
 - **Inventory Editor** — Modify player inventory directly
 - **Steam Cache Management** — Manage local Steam cache data
 - **Feedback System** — Built-in feedback submission to developers
+- **Plugin Market** — Download language packs and themes from the plugin marketplace
 - **Performance Monitor** — Built-in diagnostics (dev mode)
 
 ---
@@ -144,8 +154,8 @@ ETBSaveManager/
 | Save Data Editor     | ✅ Complete          |
 | Creation Modes       | ✅ Complete          |
 | Feedback System      | ✅ Complete          |
+| Plugin System        | 🧪 Beta Testing      |
 | Level Info Editor    | 🔄 Planned           |
-| Plugin System        | 🔄 In Progress (10%) |
 
 ---
 

@@ -375,6 +375,7 @@ import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useQuickCreate } from "@/composables/useQuickCreate";
 import { useToast } from "@/composables/useToast";
+import storage from "@/services/storageService";
 import SmartInputArea from "@/components/SmartInputArea.vue";
 import UniformConfigPanel from "@/components/UniformConfigPanel.vue";
 import ArchiveCardFlow from "@/components/ArchiveCardFlow.vue";
@@ -1054,7 +1055,7 @@ export default {
     // 检查是否需要显示新手引导
     // Requirements: 18.1 - 首次访问时显示教程
     const checkTutorial = () => {
-      const tutorialCompleted = localStorage.getItem(
+      const tutorialCompleted = storage.getItem(
         "quick_create_tutorial_completed"
       );
       if (!tutorialCompleted) {

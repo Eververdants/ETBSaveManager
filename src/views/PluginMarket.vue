@@ -456,7 +456,9 @@ const categories = ref([
 
 // 刷新已安装插件列表
 const refreshInstalledPlugins = () => {
-  installedPluginsList.value = pluginManager.getAllPlugins();
+  const plugins = pluginManager.getAllPlugins();
+  console.log('🔄 刷新已安装插件列表:', plugins.length, plugins.map(p => p.id));
+  installedPluginsList.value = [...plugins];
 };
 
 // 获取插件类型图标
@@ -702,8 +704,16 @@ const togglePlugin = async (plugin) => {
   if (plugin.installed) {
     // 卸载插件
     try {
-      await uninstallLanguagePlugin(plugin.id);
+      if (plugin.type === 'language') {
+        await uninstallLanguagePlugin(plugin.id);
+      } else if (plugin.type === 'theme') {
+        await uninstallThemePlugin(plugin.id);
+        window.dispatchEvent(new CustomEvent('theme-plugin-changed'));
+      } else {
+        await pluginManager.removePlugin(plugin.id);
+      }
       plugin.installed = false;
+      refreshInstalledPlugins();
     } catch (err) {
       console.error('卸载插件失败:', err);
     }
@@ -901,7 +911,11 @@ const handleUninstallPlugin = async (plugin) => {
       await pluginManager.removePlugin(plugin.id);
     }
     refreshInstalledPlugins();
-    await fetchPlugins();
+    // 更新商店列表中对应插件的安装状态
+    const storePlugin = plugins.value.find(p => p.id === plugin.id);
+    if (storePlugin) {
+      storePlugin.installed = false;
+    }
     console.log(`✅ 已卸载插件: ${plugin.name}`);
   } catch (err) {
     console.error('卸载插件失败:', err);

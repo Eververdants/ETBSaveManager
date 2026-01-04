@@ -125,6 +125,7 @@ import { useI18n } from "vue-i18n";
 import { computed, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useReleaseNotes } from "@/composables";
+import storage from "@/services/storageService";
 
 const { t, locale } = useI18n({ useScope: "global" });
 const router = useRouter();
@@ -216,7 +217,7 @@ const handleAppIconClick = () => {
 
   if (appIconClickCount >= 5) {
     // 激活开发者模式
-    localStorage.setItem("developerMode", "true");
+    storage.setItem("developerMode", "true");
 
     // 触发自定义事件通知其他组件
     window.dispatchEvent(

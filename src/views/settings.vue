@@ -24,19 +24,11 @@
               {{ t("settings.themeDescription") }}
             </div>
           </transition>
-          <!-- 元旦主题限时提示 -->
-          <transition name="text-swift" mode="out-in">
-            <div v-if="shouldShowNewYearTheme && newYearThemeMode === 'auto'" class="setting-hint new-year-hint"
-              :key="currentLanguage + '-newyear-hint'">
-              <font-awesome-icon :icon="['fas', 'clock']" />
-              {{ t("settings.newYearThemeLimitedTime") }}
-            </div>
-          </transition>
           <!-- 主题选择器 -->
           <div class="theme-selector-wrapper">
             <ThemeSelector 
               v-model="currentTheme" 
-              :show-new-year="shouldShowNewYearTheme"
+              :show-seasonal-themes="shouldShowSeasonalThemes"
               @change="handleThemeChange" 
             />
           </div>
@@ -396,7 +388,7 @@
         </div>
       </div>
 
-      <!-- 元旦主题控制 -->
+      <!-- 限时主题控制 -->
       <div class="setting-item" v-if="developerModeEnabled">
         <div class="setting-icon">
           <font-awesome-icon :icon="['fas', 'snowflake']" style="color: #e53935" />
@@ -404,19 +396,19 @@
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
             <div class="setting-title" :key="currentLanguage">
-              {{ t("settings.newYearThemeControl") }}
+              {{ t("settings.seasonalThemeControl") }}
             </div>
           </transition>
           <transition name="text-swift" mode="out-in">
             <div class="setting-description" :key="currentLanguage">
-              {{ t("settings.newYearThemeControlDescription") }}
+              {{ t("settings.seasonalThemeControlDescription") }}
             </div>
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown v-model="newYearThemeMode" :options="newYearThemeModeOptions"
-            @change="handleNewYearThemeModeChange" @dropdown-open="handleDropdownOpen('newYearTheme')"
-            :is-open="activeDropdown === 'newYearTheme'" :placeholder="t('common.select')" />
+          <CustomDropdown v-model="seasonalThemeMode" :options="seasonalThemeModeOptions"
+            @change="handleSeasonalThemeModeChange" @dropdown-open="handleDropdownOpen('seasonalTheme')"
+            :is-open="activeDropdown === 'seasonalTheme'" :placeholder="t('common.select')" />
         </div>
       </div>
 
@@ -584,6 +576,7 @@ import { invoke } from "@tauri-apps/api/core";
 import themeManager from "../styles/theme-config.js";
 import { themeStorage } from "../services/themeStorage.js";
 import { getAllAvailableLanguages, getInstalledThemePlugins } from "../plugins";
+import storage from "../services/storageService";
 
 export default {
   name: "Settings",
@@ -595,18 +588,18 @@ export default {
   },
   data() {
     return {
-      currentTheme: localStorage.getItem("theme") || "light",
-      currentLanguage: localStorage.getItem("language") || "zh-CN",
-      currentUpdateSource: localStorage.getItem("updateSource") || "GITEE",
+      currentTheme: storage.getItem("theme", "light"),
+      currentLanguage: storage.getItem("language", "zh-CN"),
+      currentUpdateSource: storage.getItem("updateSource", "GITEE"),
       performanceMonitorEnabled:
-        localStorage.getItem("performanceMonitor") !== "false", // 默认开启
-      developerModeEnabled: localStorage.getItem("developerMode") === "true", // 开发者模式状态
-      developerOptionsEnabled: localStorage.getItem("developerMode") === "true", // 开发者选项是否显示
-      logMenuEnabled: localStorage.getItem("logMenuEnabled") === "true", // 日志功能开关状态
+        storage.getItem("performanceMonitor", true) !== false, // 默认开启
+      developerModeEnabled: storage.getItem("developerMode", false) === true, // 开发者模式状态
+      developerOptionsEnabled: storage.getItem("developerMode", false) === true, // 开发者选项是否显示
+      logMenuEnabled: storage.getItem("logMenuEnabled", false) === true, // 日志功能开关状态
       testArchiveEnabled:
-        localStorage.getItem("testArchiveEnabled") !== "false", // 测试存档显示开关状态，默认开启
+        storage.getItem("testArchiveEnabled", true) !== false, // 测试存档显示开关状态，默认开启
       gpuAccelerationDisabled:
-        localStorage.getItem("gpuAccelerationDisabled") === "true", // GPU加速开关状态
+        storage.getItem("gpuAccelerationDisabled", false) === true, // GPU加速开关状态
       // Steam API 相关
       steamApiKey: "",
       showApiKey: false,
@@ -625,8 +618,8 @@ export default {
       packDragOver: false,
       isParsing: false,
       isPacking: false,
-      // 元旦主题控制
-      newYearThemeMode: localStorage.getItem("newYearThemeMode") || "auto",
+      // 限时主题控制
+      seasonalThemeMode: storage.getItem("seasonalThemeMode", "auto"),
       // 自定义主题相关
       showThemeEditor: false,
       themeEditorMode: 'create', // 'create' or 'edit'
@@ -649,25 +642,33 @@ export default {
         { value: "peach", label: this.$t("common.peach") },
         { value: "sky", label: this.$t("common.sky") },
       ];
-      // 根据元旦主题模式和日期决定是否显示元旦主题选项
-      if (this.shouldShowNewYearTheme) {
-        options.push({ value: "new-year", label: this.$t("common.newYear") });
+      // 根据限时主题模式和日期决定是否显示限时主题选项
+      if (this.shouldShowSeasonalThemes) {
+        // 元旦主题
+        if (this.isNewYearPeriod() || this.seasonalThemeMode === 'force') {
+          options.push({ value: "new-year", label: this.$t("common.newYear") });
+        }
+        // 春节主题
+        if (this.isSpringFestivalPeriod() || this.seasonalThemeMode === 'force') {
+          options.push({ value: "spring-festival-dark", label: this.$t("common.springFestivalDark") });
+          options.push({ value: "spring-festival-light", label: this.$t("common.springFestivalLight") });
+        }
       }
       return options;
     },
-    shouldShowNewYearTheme() {
-      // 检查开发者模式下的元旦主题控制
-      const mode = this.newYearThemeMode;
+    shouldShowSeasonalThemes() {
+      // 检查开发者模式下的限时主题控制
+      const mode = this.seasonalThemeMode;
       if (mode === "force") return true;
       if (mode === "hide") return false;
-      // auto 模式：检查日期是否在 12.31 - 1.3 之间
-      return this.isNewYearPeriod();
+      // auto 模式：至少有一个限时主题在有效期内
+      return this.isNewYearPeriod() || this.isSpringFestivalPeriod();
     },
-    newYearThemeModeOptions() {
+    seasonalThemeModeOptions() {
       return [
-        { value: "auto", label: this.$t("settings.newYearThemeModeAuto") },
-        { value: "force", label: this.$t("settings.newYearThemeModeForce") },
-        { value: "hide", label: this.$t("settings.newYearThemeModeHide") },
+        { value: "auto", label: this.$t("settings.seasonalThemeModeAuto") },
+        { value: "force", label: this.$t("settings.seasonalThemeModeForce") },
+        { value: "hide", label: this.$t("settings.seasonalThemeModeHide") },
       ];
     },
     languageOptions() {
@@ -753,17 +754,17 @@ export default {
       if (theme === "new-year") {
         // 只有当之前不是元旦主题时才记录
         if (previousTheme && previousTheme !== "new-year") {
-          localStorage.setItem("themeBeforeNewYear", previousTheme);
+          storage.setItem("themeBeforeNewYear", previousTheme);
         }
       } else {
         // 如果选择的是非元旦主题，也更新 themeBeforeNewYear
         // 这样即使用户直接从元旦切换到深色，下次恢复也是深色
-        localStorage.setItem("themeBeforeNewYear", theme);
+        storage.setItem("themeBeforeNewYear", theme);
       }
 
       // 更新当前主题
       this.currentTheme = theme;
-      localStorage.setItem("theme", theme);
+      storage.setItem("theme", theme);
 
       if (window.themeManager) {
         window.themeManager.setTheme(theme);
@@ -794,6 +795,16 @@ export default {
           bg: "#1a0a0a",
           bgPrimary: "#1a0a0a",
           bgSecondary: "rgba(45, 21, 21, 0.95)"
+        },
+        "spring-festival-dark": {
+          bg: "#1c0a14",
+          bgPrimary: "#1c0a14",
+          bgSecondary: "rgba(45, 16, 32, 0.95)"
+        },
+        "spring-festival-light": {
+          bg: "#fefce8",
+          bgPrimary: "#fefce8",
+          bgSecondary: "rgba(255, 255, 255, 0.95)"
         },
         ocean: {
           bg: "#0c1929",
@@ -891,7 +902,7 @@ export default {
         } else if (window.$i18n) {
           window.$i18n.locale = lang;
         }
-        localStorage.setItem("language", lang);
+        storage.setItem("language", lang);
 
         // 触发自定义事件通知其他组件
         window.dispatchEvent(
@@ -925,7 +936,7 @@ export default {
       try {
         setUserUpdateSource(source);
         this.currentUpdateSource = source;
-        localStorage.setItem("updateSource", source);
+        storage.setItem("updateSource", source);
 
         // 显示成功提示
         this.updateMessage = {
@@ -1030,7 +1041,7 @@ export default {
       }
     },
     handlePerformanceMonitorToggle() {
-      localStorage.setItem(
+      storage.setItem(
         "performanceMonitor",
         this.performanceMonitorEnabled
       );
@@ -1043,7 +1054,7 @@ export default {
     },
 
     handleDeveloperModeToggle() {
-      localStorage.setItem("developerMode", this.developerModeEnabled);
+      storage.setItem("developerMode", this.developerModeEnabled);
       this.developerOptionsEnabled = this.developerModeEnabled;
 
       // 触发自定义事件通知其他组件
@@ -1057,7 +1068,7 @@ export default {
       if (!this.developerModeEnabled) {
         // 关闭日志功能
         this.logMenuEnabled = false;
-        localStorage.setItem("logMenuEnabled", "false");
+        storage.setItem("logMenuEnabled", "false");
         window.dispatchEvent(
           new CustomEvent("log-menu-toggle", {
             detail: { enabled: false },
@@ -1066,11 +1077,11 @@ export default {
 
         // 关闭性能监控
         this.performanceMonitorEnabled = false;
-        localStorage.setItem("performanceMonitor", "false");
+        storage.setItem("performanceMonitor", "false");
 
         // 关闭测试存档显示
         this.testArchiveEnabled = false;
-        localStorage.setItem("testArchiveEnabled", "false");
+        storage.setItem("testArchiveEnabled", "false");
         window.dispatchEvent(
           new CustomEvent("test-archive-toggle", {
             detail: { enabled: false },
@@ -1080,7 +1091,7 @@ export default {
     },
 
     handleLogMenuToggle() {
-      localStorage.setItem("logMenuEnabled", this.logMenuEnabled);
+      storage.setItem("logMenuEnabled", this.logMenuEnabled);
       // 触发自定义事件通知其他组件
       window.dispatchEvent(
         new CustomEvent("log-menu-toggle", {
@@ -1090,7 +1101,7 @@ export default {
     },
 
     handleTestArchiveToggle() {
-      localStorage.setItem("testArchiveEnabled", this.testArchiveEnabled);
+      storage.setItem("testArchiveEnabled", this.testArchiveEnabled);
       // 触发自定义事件通知侧边栏更新状态
       window.dispatchEvent(
         new CustomEvent("test-archive-toggle", {
@@ -1110,47 +1121,71 @@ export default {
       );
     },
 
-    handleNewYearThemeModeChange(option) {
-      const mode = option.value;
-      this.newYearThemeMode = mode;
-      localStorage.setItem("newYearThemeMode", mode);
+    // 检查当前日期是否在春节期间 (2.13 - 2.24)
+    isSpringFestivalPeriod() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      // 2026年2月13日 - 2月24日
+      return year === 2026 && month === 2 && day >= 13 && day <= 24;
+    },
 
-      // 如果当前主题是元旦主题但被隐藏了，恢复之前的主题
-      if (mode === "hide" && this.currentTheme === "new-year") {
-        const themeBeforeNewYear =
-          localStorage.getItem("themeBeforeNewYear") || "light";
-        this.currentTheme = themeBeforeNewYear;
-        localStorage.setItem("theme", themeBeforeNewYear);
+    // 检查主题是否是限时主题
+    isSeasonalTheme(themeId) {
+      return ['new-year', 'spring-festival-dark', 'spring-festival-light'].includes(themeId);
+    },
+
+    // 检查限时主题当前是否可用
+    isSeasonalThemeAvailable(themeId) {
+      if (themeId === 'new-year') return this.isNewYearPeriod();
+      if (themeId === 'spring-festival-dark' || themeId === 'spring-festival-light') {
+        return this.isSpringFestivalPeriod();
+      }
+      return true;
+    },
+
+    handleSeasonalThemeModeChange(option) {
+      const mode = option.value;
+      this.seasonalThemeMode = mode;
+      storage.setItem("seasonalThemeMode", mode);
+
+      // 如果当前主题是限时主题但被隐藏了，恢复之前的主题
+      if (mode === "hide" && this.isSeasonalTheme(this.currentTheme)) {
+        const themeBeforeSeasonal =
+          storage.getItem("themeBeforeNewYear") || "light";
+        this.currentTheme = themeBeforeSeasonal;
+        storage.setItem("theme", themeBeforeSeasonal);
         if (window.themeManager) {
-          window.themeManager.setTheme(themeBeforeNewYear);
+          window.themeManager.setTheme(themeBeforeSeasonal);
         } else {
           document.documentElement.setAttribute(
             "data-theme",
-            themeBeforeNewYear
+            themeBeforeSeasonal
           );
         }
-        this.forceThemeBackgroundUpdate(themeBeforeNewYear);
+        this.forceThemeBackgroundUpdate(themeBeforeSeasonal);
       }
 
-      // 如果切换到自动模式且当前是元旦主题但不在元旦期间，也要恢复
+      // 如果切换到自动模式且当前是限时主题但不在有效期内，也要恢复
       if (
         mode === "auto" &&
-        this.currentTheme === "new-year" &&
-        !this.isNewYearPeriod()
+        this.isSeasonalTheme(this.currentTheme) &&
+        !this.isSeasonalThemeAvailable(this.currentTheme)
       ) {
-        const themeBeforeNewYear =
-          localStorage.getItem("themeBeforeNewYear") || "light";
-        this.currentTheme = themeBeforeNewYear;
-        localStorage.setItem("theme", themeBeforeNewYear);
+        const themeBeforeSeasonal =
+          storage.getItem("themeBeforeNewYear") || "light";
+        this.currentTheme = themeBeforeSeasonal;
+        storage.setItem("theme", themeBeforeSeasonal);
         if (window.themeManager) {
-          window.themeManager.setTheme(themeBeforeNewYear);
+          window.themeManager.setTheme(themeBeforeSeasonal);
         } else {
           document.documentElement.setAttribute(
             "data-theme",
-            themeBeforeNewYear
+            themeBeforeSeasonal
           );
         }
-        this.forceThemeBackgroundUpdate(themeBeforeNewYear);
+        this.forceThemeBackgroundUpdate(themeBeforeSeasonal);
       }
 
       // 关闭下拉框
@@ -1158,10 +1193,10 @@ export default {
 
       // 显示提示
       this.updateMessage = {
-        text: this.t("settings.newYearThemeModeChanged"),
+        text: this.t("settings.seasonalThemeModeChanged"),
         type: "success",
         icon: ["fas", "check"],
-        key: `newyear-mode-${this.messageId++}`,
+        key: `seasonal-mode-${this.messageId++}`,
       };
       setTimeout(() => {
         this.closeUpdateMessage();
@@ -1170,7 +1205,7 @@ export default {
 
     handleResetTutorial() {
       // 清除快速创建教程完成标记
-      localStorage.removeItem("quick_create_tutorial_completed");
+      storage.removeItem("quick_create_tutorial_completed");
 
       // 显示成功提示
       this.updateMessage = {
@@ -1353,7 +1388,7 @@ export default {
         });
 
         // 保存状态到localStorage
-        localStorage.setItem(
+        storage.setItem(
           "gpuAccelerationDisabled",
           this.gpuAccelerationDisabled.toString()
         );
@@ -1378,7 +1413,7 @@ export default {
         console.error(this.t("settings.gpuAccelerationChangeFailed"), error);
         // 恢复开关状态
         this.gpuAccelerationDisabled = !this.gpuAccelerationDisabled;
-        localStorage.setItem(
+        storage.setItem(
           "gpuAccelerationDisabled",
           this.gpuAccelerationDisabled.toString()
         );
@@ -1453,7 +1488,7 @@ export default {
 
     async initializeLanguage() {
       try {
-        const savedLanguage = localStorage.getItem("language") || "zh-CN";
+        const savedLanguage = storage.getItem("language") || "zh-CN";
         this.currentLanguage = savedLanguage;
         // 使用全局 i18n 实例设置语言
         if (this.$i18n) {
@@ -1493,7 +1528,7 @@ export default {
       if (!enabled) {
         // 关闭日志功能
         this.logMenuEnabled = false;
-        localStorage.setItem("logMenuEnabled", "false");
+        storage.setItem("logMenuEnabled", "false");
         window.dispatchEvent(
           new CustomEvent("log-menu-toggle", {
             detail: { enabled: false },
@@ -1502,11 +1537,11 @@ export default {
 
         // 关闭性能监控
         this.performanceMonitorEnabled = false;
-        localStorage.setItem("performanceMonitor", "false");
+        storage.setItem("performanceMonitor", "false");
 
         // 关闭测试存档显示
         this.testArchiveEnabled = false;
-        localStorage.setItem("testArchiveEnabled", "false");
+        storage.setItem("testArchiveEnabled", "false");
         window.dispatchEvent(
           new CustomEvent("test-archive-toggle", {
             detail: { enabled: false },
@@ -1520,7 +1555,7 @@ export default {
       try {
         // 从localStorage获取状态
         const localStorageState =
-          localStorage.getItem("gpuAccelerationDisabled") === "true";
+          storage.getItem("gpuAccelerationDisabled") === "true";
 
         // 尝试从Tauri后端获取状态
         try {
@@ -1528,7 +1563,7 @@ export default {
           // 如果后端状态与localStorage不同，以后端状态为准
           if (backendState !== localStorageState) {
             this.gpuAccelerationDisabled = backendState;
-            localStorage.setItem(
+            storage.setItem(
               "gpuAccelerationDisabled",
               backendState.toString()
             );
@@ -1549,7 +1584,7 @@ export default {
     async initializeSteamApiSettings() {
       try {
         // 获取加密存储的API密钥
-        const encryptedApiKey = localStorage.getItem("steamApiKey");
+        const encryptedApiKey = storage.getItem("steamApiKey");
         if (encryptedApiKey) {
           try {
             // 调用后端解密API密钥
@@ -1559,7 +1594,7 @@ export default {
           } catch (error) {
             console.error(this.t("settings.steamApi.decryptKeyFailed"), error);
             // 如果解密失败，清除存储的密钥
-            localStorage.removeItem("steamApiKey");
+            storage.removeItem("steamApiKey");
           }
         }
 
@@ -1675,7 +1710,7 @@ export default {
         const encryptedApiKey = await invoke("encrypt_steam_api_key", {
           apiKey: this.steamApiKey,
         });
-        localStorage.setItem("steamApiKey", encryptedApiKey);
+        storage.setItem("steamApiKey", encryptedApiKey);
         console.log(this.t("settings.steamApi.keySavedToLocalStorage"));
 
         // 显示成功提示
@@ -1809,7 +1844,7 @@ export default {
     handleSelectTheme(themeId) {
       // 更新当前主题状态
       this.currentTheme = themeId;
-      localStorage.setItem("theme", themeId);
+      storage.setItem("theme", themeId);
     },
 
     // 处理主题导入

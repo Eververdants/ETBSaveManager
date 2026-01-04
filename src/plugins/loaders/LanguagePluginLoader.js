@@ -3,6 +3,8 @@
  * 负责加载、验证和管理语言插件
  */
 
+import storage from '../../services/storageService';
+
 // 语言插件必需的字段（用于验证翻译完整性）
 const REQUIRED_FIELDS = ['common', 'sidebar', 'settings'];
 
@@ -148,7 +150,7 @@ class LanguagePluginLoader {
             i18n.global.locale = 'zh-CN';
           }
         }
-        localStorage.setItem('locale', 'zh-CN');
+        storage.setItem('locale', 'zh-CN');
       }
       // 移除语言
       const messages = i18n.global?.messages?.value || i18n.global?.messages;
@@ -235,7 +237,7 @@ class LanguagePluginLoader {
         i18n.global.locale = locale;
       }
     }
-    localStorage.setItem('locale', locale);
+    storage.setItem('locale', locale);
     
     console.log(`🌍 [LanguageLoader] 已切换语言: ${locale}`);
     

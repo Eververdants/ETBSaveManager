@@ -1,9 +1,11 @@
 /**
  * 插件管理器 - 核心模块
  * 负责插件的注册、加载、卸载和生命周期管理
+ * 插件数据存储在 AppData/plugins/<plugin-id>/ 目录下
  */
 
 import { reactive, readonly } from 'vue';
+import pluginStorage from '../../services/pluginStorage';
 
 // 插件类型枚举
 export const PluginType = {
@@ -20,10 +22,6 @@ export const PluginStatus = {
   ERROR: 'error',
   DISABLED: 'disabled',
 };
-
-// 插件存储键
-const PLUGIN_STORAGE_KEY = 'installed_plugins';
-const PLUGIN_SETTINGS_KEY = 'plugin_settings';
 
 class PluginManager {
   constructor() {
@@ -52,7 +50,7 @@ class PluginManager {
     
     console.log('🔌 [PluginManager] 初始化插件系统...');
     
-    // 从本地存储恢复已安装的插件信息
+    // 从本地文件恢复已安装的插件
     await this.restorePlugins();
     
     this.initialized = true;
@@ -103,7 +101,9 @@ class PluginManager {
     };
 
     this.state.plugins.set(id, plugin);
-    this.savePlugins();
+    
+    // 保存到本地文件
+    await pluginStorage.savePlugin(plugin);
     
     console.log(`📥 [PluginManager] 已注册插件: ${name} v${version}`);
     this.emit('plugin:registered', plugin);
@@ -140,7 +140,9 @@ class PluginManager {
       
       plugin.status = PluginStatus.ACTIVE;
       this.state.loadedPlugins.add(pluginId);
-      this.savePlugins();
+      
+      // 更新状态到本地文件
+      await pluginStorage.updatePluginMeta(pluginId, { status: PluginStatus.ACTIVE });
       
       console.log(`✅ [PluginManager] 插件加载成功: ${plugin.name}`);
       this.emit('plugin:loaded', plugin);
@@ -183,7 +185,9 @@ class PluginManager {
       
       plugin.status = PluginStatus.UNLOADED;
       this.state.loadedPlugins.delete(pluginId);
-      this.savePlugins();
+      
+      // 更新状态到本地文件
+      await pluginStorage.updatePluginMeta(pluginId, { status: PluginStatus.UNLOADED });
       
       console.log(`✅ [PluginManager] 插件卸载成功: ${plugin.name}`);
       this.emit('plugin:unloaded', plugin);
@@ -213,7 +217,9 @@ class PluginManager {
 
     this.state.plugins.delete(pluginId);
     this.state.pluginErrors.delete(pluginId);
-    this.savePlugins();
+    
+    // 从本地文件删除
+    await pluginStorage.deletePlugin(pluginId);
     
     console.log(`🗑️ [PluginManager] 已移除插件: ${plugin.name}`);
     this.emit('plugin:removed', plugin);
@@ -260,29 +266,11 @@ class PluginManager {
   }
 
   /**
-   * 保存插件信息到本地存储
-   */
-  savePlugins() {
-    try {
-      const data = Array.from(this.state.plugins.entries()).map(([id, plugin]) => ({
-        ...plugin,
-        // 保留翻译数据用于恢复
-      }));
-      localStorage.setItem(PLUGIN_STORAGE_KEY, JSON.stringify(data));
-    } catch (error) {
-      console.error('❌ [PluginManager] 保存插件信息失败:', error);
-    }
-  }
-
-  /**
-   * 从本地存储恢复插件信息
+   * 从本地文件恢复插件
    */
   async restorePlugins() {
     try {
-      const saved = localStorage.getItem(PLUGIN_STORAGE_KEY);
-      if (!saved) return;
-
-      const plugins = JSON.parse(saved);
+      const plugins = await pluginStorage.loadAllPlugins();
       let validCount = 0;
       
       for (const plugin of plugins) {
@@ -304,16 +292,9 @@ class PluginManager {
         validCount++;
       }
       
-      // 如果有无效插件被跳过，重新保存
-      if (validCount !== plugins.length) {
-        this.savePlugins();
-      }
-      
-      console.log(`📂 [PluginManager] 已恢复 ${validCount} 个插件信息`);
+      console.log(`📂 [PluginManager] 已恢复 ${validCount} 个插件`);
     } catch (error) {
-      console.error('❌ [PluginManager] 恢复插件信息失败:', error);
-      // 清除损坏的数据
-      localStorage.removeItem(PLUGIN_STORAGE_KEY);
+      console.error('❌ [PluginManager] 恢复插件失败:', error);
     }
   }
 

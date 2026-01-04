@@ -10,6 +10,7 @@ import {
   protectFloatingButtonPosition,
   safeModifyBodyStyles,
 } from "./utils/floatingButtonProtection.js";
+import storage from "./services/storageService";
 
 const i18n = getI18n();
 const router = useRouter();
@@ -66,32 +67,51 @@ onMounted(() => {
     );
   };
 
-  // 检查元旦主题是否可用
-  const isNewYearThemeAvailable = () => {
-    const mode = localStorage.getItem("newYearThemeMode") || "auto";
-    if (mode === "force") return true;
-    if (mode === "hide") return false;
-    return isNewYearPeriod();
+  // 检查当前日期是否在春节期间 (2.13 - 2.24)
+  const isSpringFestivalPeriod = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    return year === 2026 && month === 2 && day >= 13 && day <= 24;
   };
 
-  // 应用保存的主题，如果是元旦主题但不可用则恢复之前的主题
-  let savedTheme = localStorage.getItem("theme") || "light";
+  // 检查主题是否是限时主题
+  const isSeasonalTheme = (themeId) => {
+    return ['new-year', 'spring-festival-dark', 'spring-festival-light'].includes(themeId);
+  };
+
+  // 检查限时主题是否可用
+  const isSeasonalThemeAvailable = (themeId) => {
+    const mode = storage.getItem("seasonalThemeMode") || "auto";
+    if (mode === "force") return true;
+    if (mode === "hide") return false;
+    
+    if (themeId === 'new-year') return isNewYearPeriod();
+    if (themeId === 'spring-festival-dark' || themeId === 'spring-festival-light') {
+      return isSpringFestivalPeriod();
+    }
+    return true;
+  };
+
+  // 应用保存的主题，如果是限时主题但不可用则恢复之前的主题
+  let savedTheme = storage.getItem("theme") || "light";
 
   // 确保 themeBeforeNewYear 有值（用于恢复）
-  // 如果当前主题不是元旦主题且没有记录过，就用当前主题作为备份
+  // 如果当前主题不是限时主题且没有记录过，就用当前主题作为备份
   if (
-    !localStorage.getItem("themeBeforeNewYear") &&
-    savedTheme !== "new-year"
+    !storage.getItem("themeBeforeNewYear") &&
+    !isSeasonalTheme(savedTheme)
   ) {
-    localStorage.setItem("themeBeforeNewYear", savedTheme);
+    storage.setItem("themeBeforeNewYear", savedTheme);
   }
 
-  if (savedTheme === "new-year" && !isNewYearThemeAvailable()) {
-    // 元旦主题不可用，恢复之前的主题
-    const themeBeforeNewYear =
-      localStorage.getItem("themeBeforeNewYear") || "light";
-    savedTheme = themeBeforeNewYear;
-    localStorage.setItem("theme", savedTheme);
+  if (isSeasonalTheme(savedTheme) && !isSeasonalThemeAvailable(savedTheme)) {
+    // 限时主题不可用，恢复之前的主题
+    const themeBeforeSeasonal =
+      storage.getItem("themeBeforeNewYear") || "light";
+    savedTheme = themeBeforeSeasonal;
+    storage.setItem("theme", savedTheme);
   }
 
   if (window.themeManager) {
@@ -111,6 +131,14 @@ onMounted(() => {
         // 元旦主题 - 喜庆红金配色
         body.style.backgroundColor = "#1a0a0a";
         body.style.setProperty("--bg", "#1a0a0a");
+      } else if (theme === "spring-festival-dark") {
+        // 春节深色主题 - 紫檀色
+        body.style.backgroundColor = "#1c0a14";
+        body.style.setProperty("--bg", "#1c0a14");
+      } else if (theme === "spring-festival-light") {
+        // 春节浅色主题 - 宣纸色
+        body.style.backgroundColor = "#fefce8";
+        body.style.setProperty("--bg", "#fefce8");
       } else {
         body.style.backgroundColor = "#f8f9fa";
         body.style.setProperty("--bg", "#f8f9fa");
@@ -134,6 +162,43 @@ onMounted(() => {
 
   // 定期检查并修复浮动按钮位置
   setInterval(ensureFloatingButtonPosition, 1000);
+
+  // 在午夜检查限时主题是否过期
+  const checkSeasonalThemeExpiry = () => {
+    const currentTheme = storage.getItem("theme");
+    if (isSeasonalTheme(currentTheme) && !isSeasonalThemeAvailable(currentTheme)) {
+      // 限时主题已过期，回退到之前的非限时主题
+      const themeBeforeSeasonal = storage.getItem("themeBeforeNewYear") || "light";
+      storage.setItem("theme", themeBeforeSeasonal);
+      
+      if (window.themeManager) {
+        window.themeManager.setTheme(themeBeforeSeasonal);
+      } else {
+        document.documentElement.setAttribute("data-theme", themeBeforeSeasonal);
+      }
+      updateBodyBackground(themeBeforeSeasonal);
+      
+      console.log(`Seasonal theme "${currentTheme}" expired, reverted to "${themeBeforeSeasonal}"`);
+    }
+  };
+  
+  // 计算距离下一个午夜的毫秒数
+  const scheduleNextMidnightCheck = () => {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const msUntilMidnight = tomorrow.getTime() - now.getTime();
+    
+    setTimeout(() => {
+      checkSeasonalThemeExpiry();
+      // 检查完后，设置下一个午夜的检查
+      scheduleNextMidnightCheck();
+    }, msUntilMidnight);
+  };
+  
+  // 启动午夜检查调度
+  scheduleNextMidnightCheck();
 
   // 监听性能监控开关事件 - 发行版禁用
   // window.addEventListener('performance-monitor-toggle', (event) => {

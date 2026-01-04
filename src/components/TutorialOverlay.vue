@@ -90,6 +90,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
+import storage from "../services/storageService";
 
 const { t } = useI18n({ useScope: "global" });
 
@@ -279,7 +280,7 @@ const handleVideoTutorial = () => {
 
 // 保存教程完成状态到 localStorage
 const saveTutorialCompleted = () => {
-  localStorage.setItem("quick_create_tutorial_completed", "true");
+  storage.setItem("quick_create_tutorial_completed", "true");
 };
 
 // 监听 visible 变化

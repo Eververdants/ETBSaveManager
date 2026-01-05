@@ -2,7 +2,7 @@ import { getCurrentUpdateSource } from "../config/updateConfig.js";
 import storage from "./storageService";
 
 // 版本信息
-const CURRENT_VERSION = "3.0.0-Alpha-6.1";
+const CURRENT_VERSION = "3.0.0-Alpha-8";
 
 // 简化版更新状态
 export const UpdateStatus = {
@@ -56,30 +56,98 @@ class UpdateService {
         throw new Error("没有找到任何版本");
       }
 
-      // 从所有版本中找到最新版本（包括预发布）
-      const allVersions = releases.map((r) => ({
-        version: r.tag_name.replace("v", ""),
-        published_at: sourceConfig.name.includes("Gitee")
-          ? r.created_at
-          : r.published_at,
-        body: sourceConfig.name.includes("Gitee")
-          ? r.body || r.description || "暂无更新说明"
-          : r.body || "暂无更新说明",
-        prerelease: sourceConfig.name.includes("Gitee")
+      // 从所有版本中提取版本信息
+      const allVersions = releases.map((r) => {
+        const version = r.tag_name.replace("v", "");
+        // 判断是否为预发布版本：优先使用 API 的 prerelease 字段，但也检查版本号格式
+        const isPreReleaseByApi = sourceConfig.name.includes("Gitee")
           ? r.prerelease || false
-          : r.prerelease,
-        html_url: r.html_url || r.url,
-        assets: r.assets || [],
-      }));
-
-      // 使用版本比较找到真正的最新版本
-      const latestVersion = allVersions.reduce((latest, current) => {
-        return this.isNewVersion(current.version, latest.version)
-          ? current
-          : latest;
+          : r.prerelease;
+        const isPreReleaseByVersion = version.includes('-'); // 版本号包含 - 说明是预发布版本
+        
+        // 如果版本号格式表明是预发布版本，则强制标记为预发布
+        const isPreRelease = isPreReleaseByVersion || isPreReleaseByApi;
+        
+        return {
+          version,
+          published_at: sourceConfig.name.includes("Gitee")
+            ? r.created_at
+            : r.published_at,
+          body: sourceConfig.name.includes("Gitee")
+            ? r.body || r.description || "暂无更新说明"
+            : r.body || "暂无更新说明",
+          prerelease: isPreRelease,
+          html_url: r.html_url || r.url,
+          assets: r.assets || [],
+        };
       });
 
-      console.log("找到的最新版本:", latestVersion);
+      // 判断当前版本是否为预发布版本
+      const currentIsPreRelease = CURRENT_VERSION.includes('-');
+      
+      console.log(`当前版本: ${CURRENT_VERSION} (${currentIsPreRelease ? '预发布' : '正式版'})`);
+      console.log(`找到 ${allVersions.length} 个版本:`, allVersions.map(v => `${v.version}${v.prerelease ? ' (预发布)' : ''}`));
+      
+      // 分离正式版本和预发布版本
+      const stableVersions = allVersions.filter(v => !v.prerelease);
+      const preReleaseVersions = allVersions.filter(v => v.prerelease);
+
+      console.log(`正式版本: ${stableVersions.length} 个`, stableVersions.map(v => v.version));
+      console.log(`预发布版本: ${preReleaseVersions.length} 个`, preReleaseVersions.map(v => v.version));
+
+      // 优先选择正式版本，如果没有正式版本或正式版本都比当前版本旧，才考虑预发布版本
+      let latestVersion = null;
+
+      // 先找最新的正式版本
+      if (stableVersions.length > 0) {
+        latestVersion = stableVersions.reduce((latest, current) => {
+          return this.isNewVersion(current.version, latest.version)
+            ? current
+            : latest;
+        });
+        
+        console.log(`最新正式版本: ${latestVersion.version}`);
+        
+        // 如果最新正式版本比当前版本新，就使用它
+        if (this.isNewVersion(latestVersion.version, CURRENT_VERSION)) {
+          console.log(`✓ 找到更新的正式版本: ${latestVersion.version}`);
+        } else {
+          console.log(`✗ 最新正式版本 ${latestVersion.version} 不比当前版本 ${CURRENT_VERSION} 新`);
+          
+          // 正式版本不够新，检查预发布版本
+          if (preReleaseVersions.length > 0) {
+            const latestPreRelease = preReleaseVersions.reduce((latest, current) => {
+              return this.isNewVersion(current.version, latest.version)
+                ? current
+                : latest;
+            });
+            
+            console.log(`最新预发布版本: ${latestPreRelease.version}`);
+            
+            // 如果预发布版本比当前版本新，使用它
+            if (this.isNewVersion(latestPreRelease.version, CURRENT_VERSION)) {
+              latestVersion = latestPreRelease;
+              console.log(`✓ 使用预发布版本: ${latestVersion.version}`);
+            } else {
+              console.log(`✗ 没有找到更新的版本`);
+            }
+          }
+        }
+      } else if (preReleaseVersions.length > 0) {
+        // 没有正式版本，只能使用预发布版本
+        latestVersion = preReleaseVersions.reduce((latest, current) => {
+          return this.isNewVersion(current.version, latest.version)
+            ? current
+            : latest;
+        });
+        console.log(`只有预发布版本，使用: ${latestVersion.version}`);
+      }
+
+      if (!latestVersion) {
+        throw new Error("没有找到可用的版本");
+      }
+
+      console.log(`最终选择版本: ${latestVersion.version}${latestVersion.prerelease ? ' (预发布)' : ' (正式版)'}`);
       console.log("资产信息:", latestVersion.assets);
 
       if (this.isNewVersion(latestVersion.version, CURRENT_VERSION)) {

@@ -129,7 +129,7 @@ import storage from "@/services/storageService";
 
 const { t, locale } = useI18n({ useScope: "global" });
 const router = useRouter();
-const version = "3.0.0-Alpha-7.3"; // TODO: 从 package.json 动态获取
+const version = "3.0.0-Alpha-8"; // TODO: 从 package.json 动态获取
 
 // 使用公告数据 composable
 const { releaseNotes, latestRelease, totalCount, formatShortDate } =

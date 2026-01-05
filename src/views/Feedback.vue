@@ -473,7 +473,7 @@ export default {
         this.systemInfo = {
           os: "Unknown",
           osVersion: "",
-          appVersion: "3.0.0-Alpha-7.3",
+          appVersion: "3.0.0-Alpha-8",
           language: this.currentLanguage,
           screenResolution: `${window.screen.width}x${window.screen.height}`,
         };

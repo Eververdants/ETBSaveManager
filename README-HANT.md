@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.0.0--Alpha--7.3-blue.svg" alt="版本"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.0.0--Alpha--8-blue.svg" alt="版本"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/授權-MIT-green.svg" alt="授權"></a>
   <img src="https://img.shields.io/badge/平台-Windows-0078D4.svg?logo=windows" alt="平台">
   <img src="https://img.shields.io/badge/框架-Tauri%202.0-orange.svg" alt="框架">
@@ -88,7 +88,7 @@
 
 ### 下載安裝包
 
-1. 前往 [Releases 頁面](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-7.3)
+1. 前往 [Releases 頁面](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-8)
 2. 下載 Windows 安裝包（`.msi` 或 `.exe`）
 3. 執行安裝程式
 
@@ -154,7 +154,7 @@ ETBSaveManager/
 
 ## 🚧 開發進度
 
-**目前版本：** `v3.0.0-Alpha-7.3`
+**目前版本：** `v3.0.0-Alpha-8`
 
 | 功能         | 狀態          |
 | ------------ | ------------- |

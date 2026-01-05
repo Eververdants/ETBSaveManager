@@ -114,6 +114,13 @@ import {
   faPauseCircle,
   faChevronLeft,
   faChevronRight,
+  faCodeBranch,
+  faAlignLeft,
+  faCertificate,
+  faLanguage,
+  faBolt,
+  faPause,
+  faFolderTree
 } from "@fortawesome/free-solid-svg-icons";
 
 // Brand icons
@@ -233,7 +240,14 @@ library.add(
   faToggleOff,
   faPauseCircle,
   faChevronLeft,
-  faChevronRight
+  faChevronRight,
+  faCodeBranch,
+  faAlignLeft,
+  faCertificate,
+  faLanguage,
+  faBolt,
+  faPause,
+  faFolderTree
 );
 import "./styles/theme-config.js";
 import {
@@ -275,13 +289,33 @@ function getSavedLocale() {
   return "zh-CN";
 }
 
+// 检查插件系统灰度测试资格
+function checkPluginBetaEligibility() {
+  const existingStatus = storage.getItem("pluginSystemBetaUser");
+  
+  // 如果已经有记录，不再重新抽取
+  if (existingStatus !== null) {
+    console.log(`[main.js] 插件系统灰度测试状态: ${existingStatus ? '已选中' : '未选中'}`);
+    return;
+  }
+
+  // 40% 概率被选为灰度测试用户
+  const isBetaUser = Math.random() < 0.4;
+  storage.setItem("pluginSystemBetaUser", isBetaUser);
+  
+  console.log(`[main.js] 插件系统灰度测试抽取结果: ${isBetaUser ? '已选中 🎉' : '未选中'}`);
+}
+
 // 异步初始化应用
 async function initApp() {
   // 1. 先初始化存储服务
   await initStorage();
   console.log("[main.js] 存储服务初始化完成");
 
-  // 2. 创建 Vue 应用
+  // 2. 检查插件系统灰度测试
+  checkPluginBetaEligibility();
+
+  // 3. 创建 Vue 应用
   const app = createApp(App);
 
   // 3. 创建 i18n（现在可以正确读取存储的语言设置）

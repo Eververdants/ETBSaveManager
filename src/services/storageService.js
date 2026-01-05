@@ -40,6 +40,8 @@ const KEYS_TO_MIGRATE = [
   "hubUnlocked",
   "lastUpdateCheck",
   "user-custom-theme",
+  "pluginSystemBetaUser",
+  "pluginSystemBetaNotified",
 ];
 
 /**

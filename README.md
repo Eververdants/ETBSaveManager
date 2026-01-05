@@ -59,7 +59,6 @@ Additional languages via plugins:
 - **Multiple Creation Modes**
   - Quick Create — Streamlined workflow for fast save generation
   - Blueprint Create — Template-based save creation
-  - Batch Create — Generate multiple saves at once
   - Standard Create — Full customization options
 - **Inventory Editor** — Modify player inventory directly
 - **Steam Cache Management** — Manage local Steam cache data
@@ -71,7 +70,17 @@ Additional languages via plugins:
 
 ## 🖥️ Screenshots
 
-> Coming soon...
+> Screenshots below are demonstrated using the "Ocean" theme
+
+<p align="center">
+  <img src="./docs/存档列表-en.png" alt="Archive List" width="49%">
+  <img src="./docs/创建存档页面第一步-en.png" alt="Create Archive Step 1" width="49%">
+</p>
+
+<p align="center">
+  <img src="./docs/快速创建存档页面-en.png" alt="Quick Create Archive" width="49%">
+  <img src="./docs/编辑页面-en.png" alt="Edit Archive" width="49%">
+</p>
 
 ---
 

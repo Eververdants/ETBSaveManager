@@ -5,6 +5,7 @@ import { getI18n } from "./i18n/loader.js";
 import Sidebar from "./components/Sidebar.vue";
 import TitleBar from "./components/TitleBar.vue";
 import PerformanceMonitor from "./components/PerformanceMonitor.vue";
+import PluginBetaModal from "./components/PluginBetaModal.vue";
 import { showPopup } from "@/services/popupService";
 import {
   protectFloatingButtonPosition,
@@ -18,6 +19,8 @@ const router = useRouter();
 const sidebarExpanded = ref(false);
 // 发行版禁用性能监控 - 设置为false确保默认不显示
 const performanceMonitorEnabled = ref(false);
+// 插件系统灰度测试模态框
+const showPluginBetaModal = ref(false);
 
 // 组件缓存管理
 const cachedComponents = ref([
@@ -38,7 +41,28 @@ const handleSidebarExpand = (expanded) => {
   sidebarExpanded.value = expanded;
 };
 
+const handlePluginBetaModalClose = () => {
+  showPluginBetaModal.value = false;
+  document.body.style.overflow = '';
+};
+
 onMounted(() => {
+  // 检查是否需要显示插件系统灰度测试通知
+  const checkPluginBetaStatus = () => {
+    const isBetaUser = storage.getItem("pluginSystemBetaUser");
+    const hasNotified = storage.getItem("pluginSystemBetaNotified");
+    
+    if (isBetaUser && !hasNotified) {
+      // 延迟显示模态框，确保应用完全加载
+      setTimeout(() => {
+        showPluginBetaModal.value = true;
+        storage.setItem("pluginSystemBetaNotified", true);
+      }, 1000);
+    }
+  };
+
+  checkPluginBetaStatus();
+
   // 强制启用硬件加速，防止图层合成问题
   const forceHardwareAcceleration = () => {
     const elements = document.querySelectorAll(
@@ -292,6 +316,8 @@ onMounted(() => {
         <!-- <PerformanceMonitor v-if="performanceMonitorEnabled" class="performance-monitor" /> -->
       </main>
     </div>
+    <!-- 插件系统灰度测试模态框 -->
+    <PluginBetaModal :show="showPluginBetaModal" @close="handlePluginBetaModalClose" />
   </div>
 </template>
 

@@ -1,5 +1,26 @@
 [
   {
+    "version": "3.0.0-Alpha-8",
+    "date": "2026-01-05",
+    "title": "Plugin System (Gradual Rollout) & Spring Festival Theme",
+    "type": "major",
+    "categories": {
+      "newFeatures": [
+        "Language & theme plugin support (40 % gradual rollout, hidden unlock available)",
+        "Remastered plugin market: hero section, gradient categories, card animations, keyboard nav, reduced-motion option",
+        "Multiple new color themes with unified light/dark base palettes",
+        "Spring Festival limited theme (2026.2.13-2026.2.24) in both light & dark versions"
+      ],
+      "improvements": [
+        "Polished confirm-delete modal styling"
+      ],
+      "bugFixes": [
+        "Fixed floating-button tooltip not showing"
+      ],
+      "performance": []
+    }
+  },
+  {
     "version": "3.0.0-Alpha-7.3",
     "date": "2026-01-02",
     "title": "Feedback Page & One-Click Unlock All Hub Doors",

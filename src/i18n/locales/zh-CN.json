@@ -264,6 +264,7 @@
     "updateCheckInterval": "每天自动检查一次更新",
     "updateSource": "更新源",
     "updateSourceDescription": "选择从哪里获取应用更新",
+    "giteeUpdateHint": "提示：Gitee 更新源可能存在同步延迟，如需获取最新版本请切换至 GitHub 源",
     "performanceMonitor": "性能监控",
     "performanceMonitorDescription": "显示实时性能数据和图表",
     "testArchiveDisplay": "测试存档显示",

@@ -318,6 +318,8 @@ async function initApp() {
   // 3. 创建 Vue 应用
   const app = createApp(App);
 
+  disableInteractions();
+
   // 3. 创建 i18n（现在可以正确读取存储的语言设置）
   const i18n = createI18n({
     legacy: false,

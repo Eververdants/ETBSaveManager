@@ -180,6 +180,13 @@
               {{ t("settings.updateSourceDescription") }}
             </div>
           </transition>
+          <!-- Gitee 更新源提示 -->
+          <transition name="fade">
+            <div v-if="currentUpdateSource === 'GITEE'" class="update-source-hint">
+              <font-awesome-icon :icon="['fas', 'info-circle']" />
+              <span>{{ t("settings.giteeUpdateHint") }}</span>
+            </div>
+          </transition>
         </div>
         <div class="setting-action">
           <CustomDropdown
@@ -733,7 +740,7 @@ export default {
       cacheEntryCount: 0,
       checkingUpdate: false,
       updateMessage: null,
-      appVersion: "3.0.0-Alpha-7.3",
+      appVersion: "3.0.0-Alpha-8",
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
@@ -2363,6 +2370,25 @@ input:checked + .slider:before {
 
   .setting-description {
     font-size: 14px;
+  }
+
+  .update-source-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(255, 193, 7, 0.1);
+    border-left: 3px solid #ffc107;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .update-source-hint svg {
+    color: #ffc107;
+    font-size: 14px;
+    flex-shrink: 0;
   }
 
   .setting-action .custom-dropdown {

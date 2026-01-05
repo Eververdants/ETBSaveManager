@@ -259,6 +259,7 @@
     "updateCheckInterval": "Automatically check for updates once per day",
     "updateSource": "Update Source",
     "updateSourceDescription": "Choose where to get app updates from",
+    "giteeUpdateHint": "Note: Gitee update source may have sync delays. Switch to GitHub source for the latest version",
     "performanceMonitor": "Performance Monitor",
     "performanceMonitorDescription": "Display real-time performance data and charts",
     "developerOptions": "Developer Options",

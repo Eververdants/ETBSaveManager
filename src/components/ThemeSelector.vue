@@ -87,15 +87,34 @@ const scrollContainer = ref(null);
 const canScrollLeft = ref(false);
 const canScrollRight = ref(false);
 const needsScroll = ref(false);
+let resizeObserver = null;
 
 const updateScrollState = () => {
   if (!scrollContainer.value) return;
-  const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value;
-  // 添加一个小的容差值，避免浮点数精度问题
-  const tolerance = 2;
-  needsScroll.value = scrollWidth > clientWidth + tolerance;
-  canScrollLeft.value = scrollLeft > tolerance;
-  canScrollRight.value = scrollLeft + clientWidth < scrollWidth - tolerance;
+  
+  // 使用 requestAnimationFrame 确保 DOM 已完全渲染
+  requestAnimationFrame(() => {
+    if (!scrollContainer.value) return;
+    
+    const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value;
+    // 添加一个小的容差值，避免浮点数精度问题
+    const tolerance = 2;
+    
+    const newNeedsScroll = scrollWidth > clientWidth + tolerance;
+    const newCanScrollLeft = scrollLeft > tolerance;
+    const newCanScrollRight = scrollLeft + clientWidth < scrollWidth - tolerance;
+    
+    // 只在值真正改变时更新，避免不必要的重渲染
+    if (needsScroll.value !== newNeedsScroll) {
+      needsScroll.value = newNeedsScroll;
+    }
+    if (canScrollLeft.value !== newCanScrollLeft) {
+      canScrollLeft.value = newCanScrollLeft;
+    }
+    if (canScrollRight.value !== newCanScrollRight) {
+      canScrollRight.value = newCanScrollRight;
+    }
+  });
 };
 
 const scrollLeft = () => {
@@ -141,21 +160,45 @@ const refreshPluginThemes = () => {
 // 监听主题插件变化事件
 const handleThemePluginChanged = () => {
   refreshPluginThemes();
-  // DOM 更新后重新计算滚动状态
+  // 使用多次 nextTick 确保 DOM 完全更新
   nextTick(() => {
-    updateScrollState();
+    nextTick(() => {
+      updateScrollState();
+    });
   });
 };
 
 onMounted(() => {
   window.addEventListener("theme-plugin-changed", handleThemePluginChanged);
+  
+  // 使用 ResizeObserver 监听容器大小变化
+  if (scrollContainer.value) {
+    resizeObserver = new ResizeObserver(() => {
+      updateScrollState();
+    });
+    resizeObserver.observe(scrollContainer.value);
+  }
+  
+  // 初始化时多次检查，确保正确计算
   nextTick(() => {
     updateScrollState();
+    // 延迟再次检查，确保插件主题已加载
+    setTimeout(() => {
+      updateScrollState();
+    }, 100);
+    setTimeout(() => {
+      updateScrollState();
+    }, 300);
   });
 });
 
 onUnmounted(() => {
   window.removeEventListener("theme-plugin-changed", handleThemePluginChanged);
+  if (resizeObserver && scrollContainer.value) {
+    resizeObserver.unobserve(scrollContainer.value);
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
 });
 
 // 暴露刷新方法
@@ -310,11 +353,34 @@ const themes = computed(() => {
 });
 
 // 监听主题列表变化，重新计算滚动状态
-watch(themes, () => {
-  nextTick(() => {
-    updateScrollState();
-  });
-});
+watch(
+  themes,
+  () => {
+    // 使用多次 nextTick 和延迟确保 DOM 完全更新
+    nextTick(() => {
+      nextTick(() => {
+        updateScrollState();
+        // 额外延迟检查，确保动画和渲染完成
+        setTimeout(() => {
+          updateScrollState();
+        }, 50);
+      });
+    });
+  },
+  { deep: true }
+);
+
+// 监听 showSeasonalThemes 变化
+watch(
+  () => props.showSeasonalThemes,
+  () => {
+    nextTick(() => {
+      nextTick(() => {
+        updateScrollState();
+      });
+    });
+  }
+);
 
 const getPreviewStyle = (theme) => ({
   background: theme.colors.bg,
@@ -335,6 +401,7 @@ const selectTheme = (themeId) => {
   position: relative;
   margin: 0 -4px;
   padding: 4px;
+  overflow: visible; /* 确保按钮不被裁剪 */
 }
 
 /* 滚动按钮 */
@@ -342,7 +409,7 @@ const selectTheme = (themeId) => {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 10;
+  z-index: 100; /* 提高 z-index 确保按钮在最上层 */
   width: 32px;
   height: 32px;
   border: none;
@@ -355,6 +422,7 @@ const selectTheme = (themeId) => {
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transition: all 0.2s ease;
+  pointer-events: auto; /* 确保按钮可点击 */
 }
 
 .scroll-btn:hover {

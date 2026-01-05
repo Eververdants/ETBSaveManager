@@ -1,5 +1,42 @@
 <template>
   <div class="plugin-market">
+    <!-- 秘密解锁模态框 -->
+    <transition name="modal-fade">
+      <div v-if="showSecretModal" class="secret-modal-overlay" @click="cancelSecretUnlock">
+        <div class="secret-modal" @click.stop>
+          <div class="secret-modal-icon">
+            <font-awesome-icon icon="key" />
+          </div>
+          <h2 class="secret-modal-title">{{ $t('plugin.secretUnlockTitle') }}</h2>
+          <p class="secret-modal-message">{{ $t('plugin.secretUnlockMessage') }}</p>
+          <p class="secret-modal-hint">{{ $t('plugin.secretUnlockHint') }}</p>
+          <div v-if="secretUnlocked" class="secret-unlocked">
+            <font-awesome-icon icon="check-circle" />
+            <span>{{ $t('plugin.secretUnlocked') }}</span>
+          </div>
+          <div v-else class="secret-modal-buttons">
+            <button class="secret-btn secret-btn-cancel" @click="cancelSecretUnlock">
+              {{ $t('common.cancel') }}
+            </button>
+            <button class="secret-btn secret-btn-confirm" @click="confirmSecretUnlock">
+              {{ $t('plugin.secretUnlockConfirm') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 灰度测试未开放提示 -->
+    <div v-if="!isBetaUser" class="beta-notice">
+      <div class="beta-notice-icon" @click="handleSecretClick" title="🤫">
+        <font-awesome-icon icon="puzzle-piece" />
+      </div>
+      <h2 class="beta-notice-title">{{ $t('plugin.betaNotAvailable') }}</h2>
+      <p class="beta-notice-message">{{ $t('plugin.betaNotAvailableDesc') }}</p>
+    </div>
+
+    <!-- 插件市场内容 - 仅灰度测试用户可见 -->
+    <div v-else class="plugin-market-content">
     <!-- 搜索栏 -->
     <div class="search-container">
       <div class="search-bar">
@@ -45,8 +82,8 @@
       <!-- 空状态 -->
       <div v-if="installedPluginsList.length === 0" class="empty-state">
         <font-awesome-icon :icon="['fas', 'puzzle-piece']" />
-        <p>暂无已安装的插件</p>
-        <p class="empty-hint">从商店安装插件或导入本地插件</p>
+        <p>{{ $t('plugin.noInstalledPlugins') }}</p>
+        <p class="empty-hint">{{ $t('plugin.installFromStore') }}</p>
       </div>
 
       <!-- 已安装插件卡片 -->
@@ -82,7 +119,7 @@
         </div>
         <div class="installed-card-body">
           <p class="installed-plugin-desc">
-            {{ plugin.description || plugin.localeName || "暂无描述" }}
+            {{ plugin.description || plugin.localeName || $t('plugin.noDescription') }}
           </p>
           <div class="installed-plugin-details">
             <span v-if="plugin.author" class="detail-item">
@@ -109,14 +146,14 @@
                 plugin.status === 'active' ? 'check-circle' : 'pause-circle',
               ]"
             />
-            {{ plugin.status === "active" ? "已启用" : "已禁用" }}
+            {{ plugin.status === "active" ? $t('plugin.enabled') : $t('plugin.disabled') }}
           </span>
           <div class="plugin-actions-group">
             <button
               class="toggle-btn"
               :class="{ enabled: plugin.status === 'active' }"
               @click.stop="handleTogglePlugin(plugin)"
-              :title="plugin.status === 'active' ? '禁用插件' : '启用插件'"
+              :title="plugin.status === 'active' ? $t('plugin.disablePlugin') : $t('plugin.enablePlugin')"
             >
               <font-awesome-icon
                 :icon="[
@@ -128,7 +165,7 @@
             <button
               class="uninstall-btn"
               @click.stop="handleUninstallPlugin(plugin)"
-              title="卸载插件"
+              :title="$t('plugin.uninstallPlugin')"
             >
               <font-awesome-icon :icon="['fas', 'trash']" />
             </button>
@@ -194,7 +231,7 @@
         </div>
         <div class="installed-card-body">
           <p class="installed-plugin-desc">
-            {{ plugin.description || "暂无描述" }}
+            {{ plugin.description || t('plugin.noDescription') }}
           </p>
           <div class="installed-plugin-details">
             <span v-if="plugin.author" class="detail-item">
@@ -210,17 +247,17 @@
         <div class="installed-card-footer">
           <span v-if="plugin.installed" class="plugin-status active">
             <font-awesome-icon :icon="['fas', 'check-circle']" />
-            已安装
+            {{ $t('plugin.installed') }}
           </span>
           <span v-else class="plugin-status inactive">
             <font-awesome-icon :icon="['fas', 'circle']" />
-            未安装
+            {{ $t('plugin.notInstalled') }}
           </span>
           <button
             v-if="plugin.installed"
             class="uninstall-btn"
             @click.stop="togglePlugin(plugin)"
-            title="卸载插件"
+            :title="$t('plugin.uninstallPlugin')"
           >
             <font-awesome-icon :icon="['fas', 'trash']" />
           </button>
@@ -228,143 +265,161 @@
             v-else
             class="install-btn"
             @click.stop="installPlugin(plugin)"
-            title="安装插件"
+            :title="$t('plugin.installPlugin')"
           >
             <font-awesome-icon :icon="['fas', 'download']" />
-            安装
+            {{ $t('plugin.install') }}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- 插件详情模态框 -->
-    <transition name="modal">
+    <!-- 插件详情模态框 - 重新设计 -->
+    <transition name="modal-fade">
       <div
         v-if="selectedPlugin"
-        class="plugin-modal"
+        class="plugin-detail-overlay"
         @click="closePluginDetail"
       >
-        <div class="modal-content" @click.stop>
-          <div class="modal-header">
-            <div
-              class="plugin-icon-large"
-              :class="getPluginTypeClass(selectedPlugin.type)"
-            >
-              <font-awesome-icon
-                :icon="['fas', getPluginIcon(selectedPlugin.type)]"
-              />
-            </div>
-            <div class="plugin-info">
-              <h2>{{ selectedPlugin.name }}</h2>
-              <p class="plugin-author-detail">
-                {{ selectedPlugin.author || "Unknown" }}
-              </p>
-            </div>
-            <button class="close-button" @click="closePluginDetail">
-              <font-awesome-icon :icon="['fas', 'times']" />
-            </button>
-          </div>
+        <div class="plugin-detail-modal" @click.stop>
+          <!-- 关闭按钮 -->
+          <button class="modal-close-btn" @click="closePluginDetail">
+            <font-awesome-icon :icon="['fas', 'times']" />
+          </button>
 
-          <div class="modal-body">
-            <div class="plugin-details">
-              <h3>{{ $t("plugin.description") }}</h3>
-              <p class="plugin-full-desc">
-                {{ selectedPlugin.description || "暂无描述" }}
-              </p>
-
-              <div class="plugin-info-list">
-                <div class="info-item">
-                  <span class="info-label">{{ $t("plugin.author") }}:</span>
-                  <span class="info-value">{{
-                    selectedPlugin.author || "Unknown"
-                  }}</span>
+          <!-- 头部区域 -->
+          <div class="modal-hero">
+            <div class="hero-background" :class="getPluginTypeClass(selectedPlugin.type)"></div>
+            <div class="hero-content">
+              <div class="plugin-icon-wrapper">
+                <div class="plugin-icon-glow" :class="getPluginTypeClass(selectedPlugin.type)"></div>
+                <div class="plugin-icon-main" :class="getPluginTypeClass(selectedPlugin.type)">
+                  <font-awesome-icon :icon="['fas', getPluginIcon(selectedPlugin.type)]" />
                 </div>
-                <div class="info-item">
-                  <span class="info-label">{{ $t("plugin.version") }}:</span>
-                  <span class="info-value">v{{ selectedPlugin.version }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">类型:</span>
-                  <span class="info-value">{{
-                    getPluginTypeLabel(selectedPlugin.type)
-                  }}</span>
-                </div>
-                <div v-if="selectedPlugin.locale" class="info-item">
-                  <span class="info-label">语言代码:</span>
-                  <span class="info-value">{{ selectedPlugin.locale }}</span>
-                </div>
-                <div v-if="selectedPlugin.localeName" class="info-item">
-                  <span class="info-label">语言名称:</span>
-                  <span class="info-value">{{
-                    selectedPlugin.localeName
-                  }}</span>
-                </div>
-                <div v-if="selectedPlugin.themeId" class="info-item">
-                  <span class="info-label">主题ID:</span>
-                  <span class="info-value">{{ selectedPlugin.themeId }}</span>
-                </div>
-                <div v-if="selectedPlugin.license" class="info-item">
-                  <span class="info-label">{{ $t("plugin.license") }}:</span>
-                  <span class="info-value">{{ selectedPlugin.license }}</span>
-                </div>
-                <div v-if="selectedPlugin.status" class="info-item">
-                  <span class="info-label">状态:</span>
-                  <span
-                    class="info-value"
-                    :class="{
-                      'status-active': selectedPlugin.status === 'active',
-                    }"
-                  >
-                    {{
-                      selectedPlugin.status === "active" ? "已启用" : "已禁用"
-                    }}
+              </div>
+              <div class="plugin-title-section">
+                <h1 class="plugin-title">{{ selectedPlugin.name }}</h1>
+                <div class="plugin-meta-tags">
+                  <span class="meta-tag type-tag" :class="getPluginTypeClass(selectedPlugin.type)">
+                    <font-awesome-icon :icon="['fas', getPluginIcon(selectedPlugin.type)]" />
+                    {{ getPluginTypeLabel(selectedPlugin.type) }}
+                  </span>
+                  <span class="meta-tag version-tag">
+                    <font-awesome-icon :icon="['fas', 'code-branch']" />
+                    v{{ selectedPlugin.version }}
+                  </span>
+                  <span v-if="selectedPlugin.status" class="meta-tag status-tag" :class="{ active: selectedPlugin.status === 'active' }">
+                    <font-awesome-icon :icon="['fas', selectedPlugin.status === 'active' ? 'check-circle' : 'pause-circle']" />
+                    {{ selectedPlugin.status === 'active' ? $t('plugin.enabled') : $t('plugin.disabled') }}
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="modal-footer">
+          <!-- 内容区域 -->
+          <div class="modal-content-area">
+            <!-- 描述部分 -->
+            <div class="content-section">
+              <div class="section-header">
+                <font-awesome-icon :icon="['fas', 'align-left']" class="section-icon" />
+                <h3>{{ $t("plugin.description") }}</h3>
+              </div>
+              <p class="plugin-description">
+                {{ selectedPlugin.description || $t('plugin.noDescription') }}
+              </p>
+            </div>
+
+            <!-- 详细信息 -->
+            <div class="content-section">
+              <div class="section-header">
+                <font-awesome-icon :icon="['fas', 'info-circle']" class="section-icon" />
+                <h3>{{ $t('plugin.detailsTitle') }}</h3>
+              </div>
+              <div class="info-grid">
+                <div class="info-card">
+                  <div class="info-icon">
+                    <font-awesome-icon :icon="['fas', 'user']" />
+                  </div>
+                  <div class="info-text">
+                    <span class="info-label">{{ $t("plugin.author") }}</span>
+                    <span class="info-value">{{ selectedPlugin.author || "Unknown" }}</span>
+                  </div>
+                </div>
+                <div v-if="selectedPlugin.license" class="info-card">
+                  <div class="info-icon">
+                    <font-awesome-icon :icon="['fas', 'certificate']" />
+                  </div>
+                  <div class="info-text">
+                    <span class="info-label">{{ $t("plugin.license") }}</span>
+                    <span class="info-value">{{ selectedPlugin.license }}</span>
+                  </div>
+                </div>
+                <div v-if="selectedPlugin.locale" class="info-card">
+                  <div class="info-icon">
+                    <font-awesome-icon :icon="['fas', 'language']" />
+                  </div>
+                  <div class="info-text">
+                    <span class="info-label">{{ $t('plugin.languageCode') }}</span>
+                    <span class="info-value">{{ selectedPlugin.locale }}</span>
+                  </div>
+                </div>
+                <div v-if="selectedPlugin.localeName" class="info-card">
+                  <div class="info-icon">
+                    <font-awesome-icon :icon="['fas', 'globe']" />
+                  </div>
+                  <div class="info-text">
+                    <span class="info-label">{{ $t('plugin.languageName') }}</span>
+                    <span class="info-value">{{ selectedPlugin.localeName }}</span>
+                  </div>
+                </div>
+                <div v-if="selectedPlugin.themeId" class="info-card">
+                  <div class="info-icon">
+                    <font-awesome-icon :icon="['fas', 'palette']" />
+                  </div>
+                  <div class="info-text">
+                    <span class="info-label">{{ $t('plugin.themeId') }}</span>
+                    <span class="info-value">{{ selectedPlugin.themeId }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 底部操作栏 -->
+          <div class="modal-actions">
             <!-- 已安装插件的操作 -->
             <template v-if="selectedPlugin.status !== undefined">
               <button
-                class="action-button toggle-action"
-                :class="{ enabled: selectedPlugin.status === 'active' }"
+                class="action-btn secondary-btn"
+                :class="{ active: selectedPlugin.status === 'active' }"
                 @click="handleTogglePluginInModal"
               >
-                <font-awesome-icon
-                  :icon="[
-                    'fas',
-                    selectedPlugin.status === 'active' ? 'pause' : 'play',
-                  ]"
-                />
-                {{ selectedPlugin.status === "active" ? "禁用" : "启用" }}
+                <font-awesome-icon :icon="['fas', selectedPlugin.status === 'active' ? 'pause' : 'play']" />
+                <span>{{ selectedPlugin.status === "active" ? $t('plugin.disablePlugin') : $t('plugin.enablePlugin') }}</span>
               </button>
-              <button
-                class="action-button uninstall-action"
-                @click="handleUninstallPluginInModal"
-              >
-                <font-awesome-icon :icon="['fas', 'trash']" />
-                卸载
+              <button class="action-btn danger-btn" @click="handleUninstallPluginInModal">
+                <font-awesome-icon :icon="['fas', 'trash-alt']" />
+                <span>{{ $t('plugin.uninstallPlugin') }}</span>
               </button>
             </template>
             <!-- 商店插件的操作 -->
             <template v-else>
               <button
                 v-if="selectedPlugin.installed"
-                class="action-button installed large"
+                class="action-btn success-btn full-width"
                 @click="togglePlugin(selectedPlugin)"
               >
-                <font-awesome-icon :icon="['fas', 'check']" />
-                {{ $t("plugin.installed") }}
+                <font-awesome-icon :icon="['fas', 'check-circle']" />
+                <span>{{ $t("plugin.installed") }}</span>
               </button>
               <button
                 v-else
-                class="action-button install large"
+                class="action-btn primary-btn full-width"
                 @click="installPlugin(selectedPlugin)"
               >
                 <font-awesome-icon :icon="['fas', 'download']" />
-                {{ $t("plugin.install") }}
+                <span>{{ $t("plugin.install") }}</span>
               </button>
             </template>
           </div>
@@ -372,108 +427,108 @@
       </div>
     </transition>
 
-    <!-- 本地插件安装模态框 -->
-    <transition name="modal">
+    <!-- 本地插件安装模态框 - 重新设计 -->
+    <transition name="modal-fade">
       <div
         v-if="showLocalInstall"
-        class="plugin-modal"
+        class="plugin-detail-overlay"
         @click="closeLocalInstall"
       >
-        <div class="modal-content" @click.stop>
-          <div class="modal-header">
-            <h3>{{ t("plugin.installLocal") }}</h3>
-            <button class="close-button" @click="closeLocalInstall">
-              <font-awesome-icon :icon="['fas', 'times']" />
-            </button>
+        <div class="local-install-modal" @click.stop>
+          <!-- 关闭按钮 -->
+          <button class="modal-close-btn" @click="closeLocalInstall">
+            <font-awesome-icon :icon="['fas', 'times']" />
+          </button>
+
+          <!-- 头部 -->
+          <div class="local-modal-header">
+            <div class="header-icon">
+              <font-awesome-icon :icon="['fas', 'folder-open']" />
+            </div>
+            <h2>{{ t("plugin.installLocal") }}</h2>
+            <p class="header-subtitle">{{ t('plugin.installFromLocal') }}</p>
           </div>
-          <div class="modal-body">
-            <div class="local-install-area">
-              <div
-                class="upload-zone-modern"
-                :class="{ dragging: isDragging, loading: localInstallLoading }"
-                @dragover="handleDragOver"
-                @dragleave="handleDragLeave"
-                @drop="handleDrop"
-              >
-                <!-- 加载状态 -->
-                <div v-if="localInstallLoading" class="upload-loading">
-                  <div class="loading-spinner"></div>
-                  <p>正在安装插件...</p>
-                </div>
 
-                <!-- 成功状态 -->
-                <div v-else-if="localInstallSuccess" class="upload-success">
-                  <font-awesome-icon
-                    :icon="['fas', 'check-circle']"
-                    class="success-icon"
-                  />
-                  <p>{{ localInstallSuccess }}</p>
-                  <button
-                    class="upload-button"
-                    @click="localInstallSuccess = null"
-                  >
-                    继续安装
-                  </button>
-                </div>
-
-                <!-- 错误状态 -->
-                <div v-else-if="localInstallError" class="upload-error">
-                  <font-awesome-icon
-                    :icon="['fas', 'exclamation-circle']"
-                    class="error-icon"
-                  />
-                  <p>{{ localInstallError }}</p>
-                  <button
-                    class="upload-button"
-                    @click="localInstallError = null"
-                  >
-                    重试
-                  </button>
-                </div>
-
-                <!-- 默认上传状态 -->
-                <template v-else>
-                  <div class="upload-icon-container">
-                    <font-awesome-icon
-                      :icon="['fas', 'folder-open']"
-                      class="upload-icon-modern"
-                    />
-                  </div>
-                  <h3>选择插件文件夹</h3>
-                  <p class="upload-description">
-                    选择包含 plugin.json 的插件文件夹
-                  </p>
-                  <button class="upload-button" @click="selectPluginFolder">
-                    <font-awesome-icon :icon="['fas', 'folder-open']" />
-                    <span>选择文件夹</span>
-                  </button>
-                  <div class="drag-hint">
-                    <font-awesome-icon :icon="['fas', 'info-circle']" />
-                    <span>插件文件夹必须包含 plugin.json 元数据文件</span>
-                  </div>
-                </template>
+          <!-- 内容区域 -->
+          <div class="local-modal-body">
+            <div
+              class="upload-zone"
+              :class="{ dragging: isDragging, loading: localInstallLoading }"
+              @dragover="handleDragOver"
+              @dragleave="handleDragLeave"
+              @drop="handleDrop"
+            >
+              <!-- 加载状态 -->
+              <div v-if="localInstallLoading" class="upload-state">
+                <div class="state-spinner"></div>
+                <p class="state-text">{{ $t('plugin.installing') }}</p>
               </div>
 
-              <div class="install-info-modern">
-                <div class="info-card">
-                  <font-awesome-icon
-                    :icon="['fas', 'folder']"
-                    class="info-icon"
-                  />
-                  <div class="info-content">
-                    <h4>插件文件夹结构</h4>
-                    <p>plugin.json（必需）+ translations.json（语言插件）</p>
+              <!-- 成功状态 -->
+              <div v-else-if="localInstallSuccess" class="upload-state success">
+                <div class="state-icon success">
+                  <font-awesome-icon :icon="['fas', 'check-circle']" />
+                </div>
+                <p class="state-text">{{ localInstallSuccess }}</p>
+                <button class="state-button" @click="localInstallSuccess = null">
+                  <font-awesome-icon :icon="['fas', 'plus']" />
+                  {{ $t('plugin.continueInstall') }}
+                </button>
+              </div>
+
+              <!-- 错误状态 -->
+              <div v-else-if="localInstallError" class="upload-state error">
+                <div class="state-icon error">
+                  <font-awesome-icon :icon="['fas', 'exclamation-circle']" />
+                </div>
+                <p class="state-text">{{ localInstallError }}</p>
+                <button class="state-button" @click="localInstallError = null">
+                  <font-awesome-icon :icon="['fas', 'redo']" />
+                  {{ $t('plugin.retry') }}
+                </button>
+              </div>
+
+              <!-- 默认上传状态 -->
+              <template v-else>
+                <div class="upload-icon-wrapper">
+                  <div class="upload-icon-glow"></div>
+                  <div class="upload-icon">
+                    <font-awesome-icon :icon="['fas', 'folder-open']" />
                   </div>
                 </div>
-                <div class="info-card">
-                  <font-awesome-icon
-                    :icon="['fas', 'file-code']"
-                    class="info-icon"
-                  />
-                  <div class="info-content">
-                    <h4>plugin.json</h4>
-                    <p>包含插件 ID、名称、类型、版本等元数据信息</p>
-                  </div>
+                <h3 class="upload-title">{{ $t('plugin.selectPluginFolder') }}</h3>
+                <p class="upload-description">
+                  {{ $t('plugin.selectFolderWithPluginJson') }}
+                </p>
+                <button class="upload-button primary" @click="selectPluginFolder">
+                  <font-awesome-icon :icon="['fas', 'folder-open']" />
+                  <span>{{ $t('plugin.browseFolder') }}</span>
+                </button>
+                <div class="upload-hint">
+                  <font-awesome-icon :icon="['fas', 'info-circle']" />
+                  <span>{{ $t('plugin.pluginFolderMustContainJson') }}</span>
+                </div>
+              </template>
+            </div>
+
+            <!-- 说明卡片 -->
+            <div class="info-cards">
+              <div class="info-card-item">
+                <div class="card-icon">
+                  <font-awesome-icon :icon="['fas', 'folder-tree']" />
+                </div>
+                <div class="card-content">
+                  <h4>{{ $t('plugin.pluginFolderStructure') }}</h4>
+                  <p>{{ $t('plugin.pluginJsonRequired') }}</p>
+                </div>
+              </div>
+              <div class="info-card-item">
+                <div class="card-icon">
+                  <font-awesome-icon :icon="['fas', 'file-code']" />
+                </div>
+                <div class="card-content">
+                  <h4>plugin.json</h4>
+                  <p>{{ $t('plugin.pluginJsonMetadata') }}</p>
                 </div>
               </div>
             </div>
@@ -481,6 +536,7 @@
         </div>
       </div>
     </transition>
+    </div>
   </div>
 </template>
 
@@ -504,9 +560,17 @@ import {
 } from "../plugins";
 import { open } from "@tauri-apps/plugin-dialog";
 import { readTextFile, readDir } from "@tauri-apps/plugin-fs";
+import storage from "../services/storageService";
 
 // 使用国际化
 const { t } = useI18n({ useScope: "global" });
+
+// 检查是否为灰度测试用户
+const isBetaUser = computed(() => storage.getItem("pluginSystemBetaUser") === true);
+
+// 秘密解锁相关
+const showSecretModal = ref(false);
+const secretUnlocked = ref(false);
 
 // 响应式数据
 const plugins = ref([]);
@@ -527,10 +591,34 @@ const isDragging = ref(false);
 // 已安装插件列表
 const installedPluginsList = ref([]);
 
+// 秘密解锁功能 - 点击图标解锁插件系统
+const handleSecretClick = () => {
+  if (!isBetaUser.value) {
+    showSecretModal.value = true;
+  }
+};
+
+const confirmSecretUnlock = () => {
+  storage.setItem("pluginSystemBetaUser", true);
+  storage.removeItem("pluginSystemBetaNotified"); // 允许显示欢迎弹窗
+  secretUnlocked.value = true;
+  
+  // 延迟关闭模态框并刷新页面
+  setTimeout(() => {
+    showSecretModal.value = false;
+    // 刷新页面以重新初始化插件系统
+    window.location.reload();
+  }, 1500);
+};
+
+const cancelSecretUnlock = () => {
+  showSecretModal.value = false;
+};
+
 // 分类数据
 const categories = ref([
   { id: "all", name: t("plugin.all") },
-  { id: "installed", name: "已安装" },
+  { id: "installed", name: t("plugin.installed") },
 ]);
 
 // 刷新已安装插件列表
@@ -772,6 +860,10 @@ const installPlugin = async (plugin) => {
 
       console.log("✅ 主题插件安装成功:", plugin.id);
       plugin.installed = true;
+      
+      // 通知主题插件变化
+      window.dispatchEvent(new CustomEvent("theme-plugin-changed"));
+      
       refreshInstalledPlugins();
     } else {
       console.warn(
@@ -828,7 +920,7 @@ const selectPluginFolder = async () => {
     const selected = await open({
       directory: true,
       multiple: false,
-      title: "选择插件文件夹",
+      title: t("plugin.selectPluginFolder"),
     });
 
     if (selected) {
@@ -836,7 +928,7 @@ const selectPluginFolder = async () => {
     }
   } catch (err) {
     console.error("选择文件夹失败:", err);
-    localInstallError.value = `选择文件夹失败: ${err.message}`;
+    localInstallError.value = `${t('plugin.selectFolderFailed')}: ${err.message}`;
   }
 };
 
@@ -926,7 +1018,7 @@ const processLanguagePlugin = async (folderPath, pluginMeta) => {
 
   // 验证翻译数据
   if (!translationsData || typeof translationsData !== "object") {
-    localInstallError.value = "翻译文件格式无效";
+    localInstallError.value = t("plugin.invalidTranslationFile");
     return;
   }
 
@@ -966,7 +1058,7 @@ const processThemePlugin = async (folderPath, pluginMeta) => {
 
   // 验证主题数据
   if (!themeData || typeof themeData !== "object") {
-    localInstallError.value = "主题文件格式无效";
+    localInstallError.value = t("plugin.invalidThemeFile");
     return;
   }
 
@@ -982,6 +1074,9 @@ const processThemePlugin = async (folderPath, pluginMeta) => {
   });
 
   localInstallSuccess.value = `成功安装主题插件: ${pluginMeta.name}`;
+
+  // 通知主题插件变化
+  window.dispatchEvent(new CustomEvent("theme-plugin-changed"));
 
   // 刷新插件列表
   await fetchPlugins();
@@ -1068,15 +1163,310 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* 灰度测试未开放提示 */
+.beta-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  text-align: center;
+  min-height: 400px;
+}
+
+.beta-notice-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 24px;
+  background: var(--bg-secondary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.beta-notice-icon:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.beta-notice-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.beta-notice-message {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 500px;
+}
+
+/* 秘密解锁模态框 */
+.secret-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease;
+}
+
+.secret-modal {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid #ffd700;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(255, 215, 0, 0.3), 0 0 40px rgba(255, 215, 0, 0.2);
+  animation: slideUpBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  position: relative;
+  overflow: hidden;
+}
+
+.secret-modal::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+  animation: rotate 10s linear infinite;
+}
+
+.secret-modal-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: #1a1a2e;
+  box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+}
+
+.secret-modal-title {
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 16px;
+  color: #ffd700;
+  text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+  position: relative;
+  z-index: 1;
+}
+
+.secret-modal-message {
+  font-size: 18px;
+  text-align: center;
+  color: #e0e0e0;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.secret-modal-hint {
+  font-size: 16px;
+  text-align: center;
+  color: #ffed4e;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  font-style: italic;
+  position: relative;
+  z-index: 1;
+}
+
+.secret-modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.secret-btn {
+  padding: 14px 32px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.secret-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.secret-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.secret-btn-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.secret-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.secret-btn-confirm {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #1a1a2e;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.secret-btn-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6);
+}
+
+.secret-btn-confirm:active {
+  transform: translateY(0);
+}
+
+.secret-unlocked {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  background: rgba(76, 175, 80, 0.2);
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  color: #4caf50;
+  font-size: 18px;
+  font-weight: 600;
+  animation: successPulse 1s ease-in-out;
+  position: relative;
+  z-index: 1;
+}
+
+.secret-unlocked svg {
+  font-size: 24px;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.8);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes successPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
 /* 主容器 */
 .plugin-market {
   padding: 32px;
   max-width: 1200px;
   margin: 0 auto;
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-/* 搜索栏 */
+/* 插件市场内容容器 */
+.plugin-market-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 搜索栏 - 优化版 */
 .search-container {
   display: flex;
   gap: 12px;
@@ -1091,29 +1481,41 @@ onMounted(async () => {
 
 .search-icon {
   position: absolute;
-  left: 16px;
+  left: 18px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-tertiary);
   font-size: 16px;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .search-input {
   width: 100%;
-  padding: 12px 16px 12px 48px;
-  border: none;
-  border-radius: 18px;
+  padding: 14px 20px 14px 50px;
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
   background: var(--bg-secondary);
   color: var(--text-primary);
-  font-size: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
 }
 
+.search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
 .search-input:focus {
   outline: none;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.15);
+  background: var(--bg-primary);
+}
+
+.search-input:focus + .search-icon {
+  color: var(--accent-color);
 }
 
 .filter-button {
@@ -1195,11 +1597,52 @@ onMounted(async () => {
 /* 插件网格 */
 .plugins-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 320px);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
-  justify-content: center;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  padding-bottom: 20px;
+}
+
+/* 限制最大列数，避免卡片过多 */
+@media (min-width: 1400px) {
+  .plugins-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1000px) and (max-width: 1399px) {
+  .plugins-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 999px) {
+  .plugins-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 自定义滚动条 */
+.plugins-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.plugins-grid::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+.plugins-grid::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 4px;
+}
+
+.plugins-grid::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover);
 }
 
 .plugin-card {
@@ -1219,7 +1662,7 @@ onMounted(async () => {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* 加载状态 */
+/* 加载、错误、空状态 - 重新设计 */
 .loading-state,
 .error-state,
 .empty-state {
@@ -1228,55 +1671,79 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px;
+  padding: 80px 32px;
   text-align: center;
   color: var(--text-secondary);
 }
 
 .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--divider-color);
-  border-top: 3px solid var(--accent-color);
+  width: 56px;
+  height: 56px;
+  border: 4px solid var(--border-color);
+  border-top: 4px solid var(--accent-color);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2);
 }
 
 @keyframes spin {
   0% {
     transform: rotate(0deg);
   }
-
   100% {
     transform: rotate(360deg);
   }
 }
 
+.loading-state p,
+.error-state p,
+.empty-state p {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0;
+}
+
 .error-state svg,
 .empty-state svg {
-  font-size: 48px;
-  margin-bottom: 16px;
+  font-size: 64px;
+  margin-bottom: 20px;
   color: var(--text-tertiary);
+  opacity: 0.5;
+}
+
+.error-state svg {
+  color: #ff9f0a;
+  opacity: 0.8;
 }
 
 .retry-button {
-  margin-top: 16px;
-  padding: 8px 16px;
+  margin-top: 20px;
+  padding: 12px 24px;
   border: none;
   border-radius: 12px;
-  background: var(--accent-color);
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
   color: white;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
 }
 
 .retry-button:hover {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 122, 255, 0.4);
+}
+
+.empty-hint {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  margin-top: 12px;
 }
 
 .plugin-icon {
@@ -1418,61 +1885,82 @@ onMounted(async () => {
   background: linear-gradient(135deg, #007aff, #5856d6);
 }
 
-/* 新版已安装插件卡片样式 */
+/* 新版已安装插件卡片样式 - 优化版 */
 .installed-plugin-card {
   background: var(--bg-secondary);
   border-radius: 16px;
   padding: 0;
   height: 240px;
   overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+  position: relative;
+  cursor: pointer;
+}
+
+.installed-plugin-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .installed-plugin-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
   border-color: var(--accent-color);
+}
+
+.installed-plugin-card:hover::before {
+  opacity: 1;
 }
 
 .installed-card-header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 18px 18px 14px;
-  background: linear-gradient(
-    135deg,
-    var(--bg-tertiary) 0%,
-    var(--bg-secondary) 100%
-  );
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   border-bottom: 1px solid var(--border-color);
+  position: relative;
 }
 
 .installed-plugin-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 24px;
   color: white;
   flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.installed-plugin-card:hover .installed-plugin-icon {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .installed-plugin-icon.type-language {
-  background: linear-gradient(135deg, #007aff, #5856d6);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .installed-plugin-icon.type-theme {
-  background: linear-gradient(135deg, #ff9500, #ff2d55);
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 }
 
 .installed-plugin-icon.type-feature {
-  background: linear-gradient(135deg, #34c759, #30d158);
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
 .installed-plugin-info {
@@ -1481,79 +1969,91 @@ onMounted(async () => {
 }
 
 .installed-plugin-name {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.3px;
 }
 
 .installed-plugin-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .plugin-type-badge {
   font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
   color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .plugin-type-badge.type-language {
-  background: linear-gradient(135deg, #007aff, #5856d6);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .plugin-type-badge.type-theme {
-  background: linear-gradient(135deg, #ff9500, #ff2d55);
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 }
 
 .plugin-type-badge.type-feature {
-  background: linear-gradient(135deg, #34c759, #30d158);
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
 .plugin-version {
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--text-tertiary);
-  background: var(--bg-tertiary);
-  padding: 2px 8px;
+  background: var(--bg-secondary);
+  padding: 4px 10px;
   border-radius: 8px;
+  border: 1px solid var(--border-color);
 }
 
 .plugin-locale {
-  font-size: 12px;
-  color: var(--text-secondary);
-  background: rgba(0, 122, 255, 0.1);
-  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 4px 10px;
   border-radius: 8px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .installed-card-body {
-  padding: 14px 18px;
+  padding: 16px 20px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .installed-plugin-desc {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
-  line-height: 1.5;
-  margin: 0 0 10px 0;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
   display: -webkit-box;
   line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  flex: 1;
 }
 
 .installed-plugin-details {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
+  margin-top: auto;
 }
 
 .detail-item {
@@ -1561,24 +2061,29 @@ onMounted(async () => {
   color: var(--text-tertiary);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  padding: 4px 8px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
 }
 
 .detail-item svg {
-  font-size: 10px;
+  font-size: 11px;
+  color: var(--accent-color);
 }
 
 .installed-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 18px;
+  padding: 14px 20px;
   background: var(--bg-tertiary);
   border-top: 1px solid var(--border-color);
 }
 
 .plugin-status {
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1592,54 +2097,95 @@ onMounted(async () => {
   color: var(--text-tertiary);
 }
 
-/* 卸载按钮 */
+.plugin-status svg {
+  font-size: 14px;
+}
+
+/* 卸载按钮 - 优化版 */
 .uninstall-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  font-size: 14px;
+  width: 36px;
+  height: 36px;
+  font-size: 15px;
   color: #ff3b30;
   background: rgba(255, 59, 48, 0.1);
   border: 1px solid rgba(255, 59, 48, 0.2);
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .uninstall-btn:hover {
   background: rgba(255, 59, 48, 0.2);
-  border-color: rgba(255, 59, 48, 0.3);
-  transform: translateY(-1px);
+  border-color: rgba(255, 59, 48, 0.4);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
 }
 
 /* 插件操作按钮组 */
 .plugin-actions-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-/* 启用/禁用开关按钮 */
+/* 启用/禁用开关按钮 - 优化版 */
 .toggle-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   font-size: 18px;
   color: var(--text-tertiary);
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .toggle-btn:hover {
-  background: var(--bg-tertiary);
-  transform: translateY(-1px);
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-btn.enabled {
+  color: #34c759;
+  background: rgba(52, 199, 89, 0.1);
+  border-color: rgba(52, 199, 89, 0.3);
+}
+
+.toggle-btn.enabled:hover {
+  color: #ff9500;
+  background: rgba(255, 149, 0, 0.1);
+  border-color: rgba(255, 149, 0, 0.3);
+}
+
+/* 安装按钮 - 优化版 */
+.install-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #34c759, #30d158);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+}
+
+.install-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(52, 199, 89, 0.4);
 }
 
 .toggle-btn.enabled {
@@ -1741,32 +2287,42 @@ onMounted(async () => {
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(16px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .modal-content {
   background: var(--bg-secondary);
   border-radius: 24px;
-  max-width: 600px;
+  max-width: 750px;
   width: 100%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: modalSlideIn 0.3s ease-out;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 32px 96px rgba(0, 0, 0, 0.5), 
+              0 8px 32px rgba(0, 0, 0, 0.3),
+              0 0 1px rgba(255, 255, 255, 0.1) inset;
+  animation: modalSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  margin: auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 @keyframes modalSlideIn {
   from {
     opacity: 0;
-    transform: translateY(50px) scale(0.9);
+    transform: translateY(40px) scale(0.92);
   }
 
   to {
@@ -1778,55 +2334,104 @@ onMounted(async () => {
 .modal-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 24px;
+  gap: 20px;
+  padding: 32px 36px;
   border-bottom: 1px solid var(--divider-color);
+  flex-shrink: 0;
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
 }
 
 .plugin-icon-large {
-  width: 64px;
-  height: 64px;
-  background: var(--accent-color);
-  border-radius: 16px;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 28px;
+  font-size: 36px;
+  flex-shrink: 0;
+  box-shadow: 0 12px 32px rgba(0, 122, 255, 0.35),
+              0 4px 12px rgba(0, 122, 255, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.plugin-icon-large:hover {
+  transform: scale(1.05) rotate(5deg);
+}
+
+.plugin-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .plugin-info h2 {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 4px 0;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
 }
 
 .plugin-author-detail {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-secondary);
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .close-button {
-  margin-left: auto;
-  padding: 8px;
+  padding: 10px;
   border: none;
-  background: none;
-  color: var(--text-tertiary);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
   cursor: pointer;
-  font-size: 20px;
-  border-radius: 50%;
-  transition: all 0.3s ease;
+  font-size: 22px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .close-button:hover {
-  background: var(--bg-tertiary);
+  background: var(--bg-hover);
   color: var(--text-primary);
+  transform: scale(1.05);
 }
 
 .modal-body {
-  padding: 24px;
+  padding: 32px 36px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-color) var(--bg-tertiary);
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover);
 }
 
 .plugin-screenshots {
@@ -1846,26 +2451,72 @@ onMounted(async () => {
 }
 
 .plugin-details h3 {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   color: var(--text-primary);
-  margin: 24px 0 12px 0;
+  margin: 0 0 20px 0;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--divider-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.plugin-details p {
+.plugin-details h3::before {
+  content: '';
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(180deg, var(--accent-color), var(--accent-hover));
+  border-radius: 2px;
+}
+
+.plugin-full-desc {
   color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 16px;
+  line-height: 1.7;
+  margin-bottom: 24px;
+  font-size: 15px;
 }
 
-.plugin-details ul {
-  margin: 0;
-  padding-left: 20px;
+.plugin-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 24px;
 }
 
-.plugin-details li {
+.info-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--bg-tertiary);
+  border-radius: 14px;
+  transition: all 0.25s ease;
+  border: 1px solid transparent;
+}
+
+.info-item:hover {
+  background: var(--bg-hover);
+  transform: translateX(6px);
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.15);
+}
+
+.info-label {
+  font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  min-width: 100px;
+  font-size: 14px;
+}
+
+.info-value {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.status-active {
+  color: #34c759;
+  font-weight: 600;
 }
 
 .plugin-stats {
@@ -1897,11 +2548,13 @@ onMounted(async () => {
 }
 
 .modal-footer {
-  padding: 24px;
+  padding: 24px 36px;
   border-top: 1px solid var(--divider-color);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  flex-shrink: 0;
 }
 
 /* 现代本地安装样式 */
@@ -2040,22 +2693,6 @@ onMounted(async () => {
   gap: 16px;
 }
 
-.info-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-}
-
-.info-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
 .info-icon {
   font-size: 32px;
   color: var(--accent-color);
@@ -2084,11 +2721,6 @@ onMounted(async () => {
 
   .market-title {
     font-size: 28px;
-  }
-
-  .plugins-grid {
-    grid-template-columns: repeat(auto-fill, 280px);
-    gap: 20px;
   }
 
   .search-container {
@@ -2123,7 +2755,6 @@ onMounted(async () => {
   }
 
   .plugins-grid {
-    grid-template-columns: 1fr;
     gap: 16px;
   }
 
@@ -2243,6 +2874,1069 @@ onMounted(async () => {
 
 .action-button.uninstall-action:hover {
   background: rgba(255, 59, 48, 0.2);
-  border-color: rgba(255, 59, 48, 0.3);
+}
+
+/* ==================== 插件详情模态框 - 全新设计 ==================== */
+
+/* 模态框过渡动画 */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-fade-enter-active .plugin-detail-modal,
+.modal-fade-leave-active .plugin-detail-modal {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+
+.modal-fade-enter-from .plugin-detail-modal,
+.modal-fade-leave-to .plugin-detail-modal {
+  transform: scale(0.9) translateY(20px);
+  opacity: 0;
+}
+
+/* 遮罩层 */
+.plugin-detail-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* 模态框主体 */
+.plugin-detail-modal {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  background: var(--bg-secondary);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 
+    0 32px 64px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  margin: auto;
+}
+
+/* 关闭按钮 */
+.modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.modal-close-btn:hover {
+  background: rgba(0, 0, 0, 0.6);
+  transform: rotate(90deg) scale(1.1);
+}
+
+/* 头部英雄区域 */
+.modal-hero {
+  position: relative;
+  padding: 48px 32px 32px;
+  overflow: hidden;
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.15;
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
+}
+
+.hero-background.type-language {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.hero-background.type-theme {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.hero-background.type-feature {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.hero-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* 插件图标 */
+.plugin-icon-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.plugin-icon-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  filter: blur(30px);
+  opacity: 0.6;
+  background: var(--accent-color);
+}
+
+.plugin-icon-glow.type-language {
+  background: #667eea;
+}
+
+.plugin-icon-glow.type-theme {
+  background: #f093fb;
+}
+
+.plugin-icon-glow.type-feature {
+  background: #4facfe;
+}
+
+.plugin-icon-main {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: white;
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.plugin-icon-main.type-language {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.plugin-icon-main.type-theme {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.plugin-icon-main.type-feature {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* 标题区域 */
+.plugin-title-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.plugin-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  line-height: 1.2;
+}
+
+.plugin-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.meta-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.meta-tag svg {
+  font-size: 12px;
+}
+
+.type-tag.type-language {
+  background: rgba(102, 126, 234, 0.15);
+  color: #667eea;
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.type-tag.type-theme {
+  background: rgba(240, 147, 251, 0.15);
+  color: #f093fb;
+  border-color: rgba(240, 147, 251, 0.3);
+}
+
+.type-tag.type-feature {
+  background: rgba(79, 172, 254, 0.15);
+  color: #4facfe;
+  border-color: rgba(79, 172, 254, 0.3);
+}
+
+.version-tag {
+  background: rgba(52, 199, 89, 0.15);
+  color: #34c759;
+  border-color: rgba(52, 199, 89, 0.3);
+}
+
+.status-tag {
+  background: rgba(255, 159, 10, 0.15);
+  color: #ff9f0a;
+  border-color: rgba(255, 159, 10, 0.3);
+}
+
+.status-tag.active {
+  background: rgba(52, 199, 89, 0.15);
+  color: #34c759;
+  border-color: rgba(52, 199, 89, 0.3);
+}
+
+/* 内容区域 */
+.modal-content-area {
+  padding: 0 32px 24px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.modal-content-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-content-area::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.modal-content-area::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* 内容区块 */
+.content-section {
+  margin-bottom: 28px;
+}
+
+.content-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.section-icon {
+  font-size: 18px;
+  color: var(--accent-color);
+}
+
+.section-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.plugin-description {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  border-left: 3px solid var(--accent-color);
+}
+
+/* 信息网格 */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.info-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.info-card:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.info-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.info-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 底部操作栏 */
+.modal-actions {
+  padding: 20px 32px;
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 12px;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.action-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.action-btn svg {
+  font-size: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.action-btn span {
+  position: relative;
+  z-index: 1;
+}
+
+.action-btn.full-width {
+  flex: 1 1 100%;
+}
+
+/* 主要按钮 */
+.primary-btn {
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  color: white;
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 122, 255, 0.4);
+}
+
+.primary-btn:active {
+  transform: translateY(0);
+}
+
+/* 次要按钮 */
+.secondary-btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.secondary-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+.secondary-btn.active {
+  background: rgba(52, 199, 89, 0.15);
+  border-color: #34c759;
+  color: #34c759;
+}
+
+/* 成功按钮 */
+.success-btn {
+  background: linear-gradient(135deg, #34c759, #30d158);
+  color: white;
+  box-shadow: 0 4px 16px rgba(52, 199, 89, 0.3);
+}
+
+.success-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(52, 199, 89, 0.4);
+}
+
+/* 危险按钮 */
+.danger-btn {
+  background: linear-gradient(135deg, #ff3b30, #ff453a);
+  color: white;
+  box-shadow: 0 4px 16px rgba(255, 59, 48, 0.3);
+}
+
+.danger-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(255, 59, 48, 0.4);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .plugin-detail-modal {
+    max-width: 100%;
+    border-radius: 20px;
+  }
+
+  .modal-hero {
+    padding: 40px 24px 24px;
+  }
+
+  .hero-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .plugin-title {
+    font-size: 24px;
+  }
+
+  .plugin-meta-tags {
+    justify-content: center;
+  }
+
+  .modal-content-area {
+    padding: 0 24px 20px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-actions {
+    padding: 16px 24px;
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+  }
+}
+
+/* ==================== 本地安装模态框样式 ==================== */
+
+.local-install-modal {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  background: var(--bg-secondary);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 
+    0 32px 64px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  margin: auto;
+}
+
+.local-modal-header {
+  padding: 40px 32px 32px;
+  text-align: center;
+  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: white;
+  box-shadow: 0 8px 24px rgba(0, 122, 255, 0.3);
+}
+
+.local-modal-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.header-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.local-modal-body {
+  padding: 32px;
+}
+
+/* 上传区域 */
+.upload-zone {
+  padding: 48px 32px;
+  border: 2px dashed var(--border-color);
+  border-radius: 16px;
+  background: var(--bg-tertiary);
+  text-align: center;
+  transition: all 0.3s ease;
+  margin-bottom: 24px;
+}
+
+.upload-zone.dragging {
+  border-color: var(--accent-color);
+  background: rgba(0, 122, 255, 0.05);
+  transform: scale(1.02);
+}
+
+.upload-zone.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* 上传图标 */
+.upload-icon-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.upload-icon-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  filter: blur(30px);
+  opacity: 0.4;
+}
+
+.upload-icon {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: white;
+  box-shadow: 0 8px 24px rgba(0, 122, 255, 0.3);
+}
+
+.upload-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.upload-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 24px 0;
+}
+
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.upload-button.primary {
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  color: white;
+  border: none;
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+}
+
+.upload-button:hover {
+  transform: translateY(-2px);
+}
+
+.upload-button.primary:hover {
+  box-shadow: 0 6px 24px rgba(0, 122, 255, 0.4);
+}
+
+.upload-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.upload-hint svg {
+  font-size: 14px;
+  color: var(--accent-color);
+}
+
+/* 状态显示 */
+.upload-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.state-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--accent-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.state-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+
+.state-icon.success {
+  background: rgba(52, 199, 89, 0.15);
+  color: #34c759;
+}
+
+.state-icon.error {
+  background: rgba(255, 59, 48, 0.15);
+  color: #ff3b30;
+}
+
+.state-text {
+  font-size: 15px;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.state-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.state-button:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+/* 信息卡片 */
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.info-card-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.info-card-item:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.card-content {
+  flex: 1;
+}
+
+.card-content h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
+}
+
+.card-content p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .local-install-modal {
+    max-width: 100%;
+    border-radius: 20px;
+  }
+
+  .local-modal-header {
+    padding: 32px 24px 24px;
+  }
+
+  .local-modal-body {
+    padding: 24px;
+  }
+
+  .upload-zone {
+    padding: 40px 24px;
+  }
+
+  .info-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==================== 额外的动画和效果 ==================== */
+
+/* 卡片进入动画 */
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.installed-plugin-card,
+.store-plugin-card {
+  animation: cardFadeIn 0.4s ease-out backwards;
+}
+
+.installed-plugin-card:nth-child(1),
+.store-plugin-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.installed-plugin-card:nth-child(2),
+.store-plugin-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.installed-plugin-card:nth-child(3),
+.store-plugin-card:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.installed-plugin-card:nth-child(4),
+.store-plugin-card:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.installed-plugin-card:nth-child(5),
+.store-plugin-card:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.installed-plugin-card:nth-child(6),
+.store-plugin-card:nth-child(6) {
+  animation-delay: 0.3s;
+}
+
+/* 标签动画 */
+.category-tab {
+  position: relative;
+  overflow: hidden;
+}
+
+.category-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.category-tab:hover::before {
+  left: 100%;
+}
+
+/* 搜索框聚焦效果 */
+.search-input {
+  position: relative;
+}
+
+.search-input:focus {
+  box-shadow: 0 6px 20px rgba(0, 122, 255, 0.15), 0 2px 8px rgba(0, 122, 255, 0.1);
+}
+
+/* 按钮点击效果 */
+.action-btn:active,
+.upload-button:active,
+.state-button:active {
+  transform: scale(0.95);
+}
+
+/* 图标旋转动画 */
+@keyframes iconFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.empty-state svg,
+.error-state svg {
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+/* 加载旋转器脉冲效果 */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 4px 24px rgba(0, 122, 255, 0.4);
+  }
+}
+
+.loading-spinner {
+  animation: spin 0.8s linear infinite, pulse 2s ease-in-out infinite;
+}
+
+/* 徽章闪烁效果 */
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.tab-badge {
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+/* 悬停时的光晕效果 */
+.plugin-icon-main::after,
+.upload-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: inherit;
+  filter: blur(20px);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.plugin-detail-modal:hover .plugin-icon-main::after,
+.local-install-modal:hover .upload-icon::after {
+  opacity: 0.6;
+}
+
+/* 信息卡片闪光效果 */
+.info-card::before,
+.info-card-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.info-card:hover::before,
+.info-card-item:hover::before {
+  left: 100%;
+}
+
+/* 平滑滚动 */
+.modal-content-area,
+.local-modal-body {
+  scroll-behavior: smooth;
+}
+
+/* 选中状态的视觉反馈 */
+.action-btn:focus-visible,
+.upload-button:focus-visible,
+.modal-close-btn:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* 禁用状态 */
+.action-btn:disabled,
+.upload-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* 渐变文字效果 */
+.plugin-title {
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 响应式动画优化 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 </style>

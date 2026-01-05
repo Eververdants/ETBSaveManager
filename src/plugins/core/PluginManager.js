@@ -6,6 +6,7 @@
 
 import { reactive, readonly } from "vue";
 import pluginStorage from "../../services/pluginStorage";
+import storage from "../../services/storageService";
 
 // 插件类型枚举
 export const PluginType = {
@@ -49,6 +50,16 @@ class PluginManager {
     if (this.initialized) return;
 
     console.log("🔌 [PluginManager] 初始化插件系统...");
+
+    // 检查是否为灰度测试用户
+    const isBetaUser = storage.getItem("pluginSystemBetaUser");
+    if (!isBetaUser) {
+      console.log("⚠️ [PluginManager] 当前用户未被选为插件系统灰度测试用户，插件功能不可用");
+      this.initialized = true;
+      return;
+    }
+
+    console.log("✅ [PluginManager] 当前用户为插件系统灰度测试用户");
 
     // 从本地文件恢复已安装的插件
     await this.restorePlugins();
@@ -341,6 +352,13 @@ class PluginManager {
         }
       });
     }
+  }
+
+  /**
+   * 检查插件系统是否可用
+   */
+  isPluginSystemAvailable() {
+    return storage.getItem("pluginSystemBetaUser") === true;
   }
 
   /**

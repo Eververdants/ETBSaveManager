@@ -27,6 +27,7 @@
           <!-- 主题选择器 -->
           <div class="theme-selector-wrapper">
             <ThemeSelector
+              ref="themeSelectorRef"
               v-model="currentTheme"
               :show-seasonal-themes="shouldShowSeasonalThemes"
               @change="handleThemeChange"
@@ -2193,6 +2194,7 @@ export default {
 .setting-item.theme-setting-item {
   flex-direction: column;
   align-items: flex-start;
+  overflow: visible; /* 确保滚动按钮不被裁剪 */
 }
 
 .setting-item.theme-setting-item .setting-icon {
@@ -2203,10 +2205,12 @@ export default {
 
 .setting-item.theme-setting-item .setting-details {
   padding-left: 52px;
+  overflow: visible; /* 确保滚动按钮不被裁剪 */
 }
 
 .setting-details.full-width {
   width: 100%;
+  overflow: visible; /* 确保滚动按钮不被裁剪 */
 }
 
 .theme-selector-wrapper {
@@ -2214,6 +2218,7 @@ export default {
   padding-left: 0;
   margin-left: -52px;
   width: calc(100% + 52px);
+  overflow: visible; /* 确保滚动按钮不被裁剪 */
 }
 
 .setting-item:hover {

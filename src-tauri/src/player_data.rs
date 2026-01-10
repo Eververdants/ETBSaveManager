@@ -32,6 +32,11 @@ pub fn extract_player_data(save_json: &Value) -> (Vec<String>, Vec<f64>, Vec<Vec
             None => continue,
         };
 
+        // 屏蔽无效玩家 ID
+        if id == "ERROR, BAD UNIQUE NET ID" {
+            continue;
+        }
+
         // 提取理智值
         let sanity = item
             .pointer(SANITY_PATH)

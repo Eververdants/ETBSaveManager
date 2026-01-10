@@ -335,15 +335,14 @@ export function validateSeverity(severity, feedbackType) {
 }
 
 /**
- * 验证完整的反馈表单数据
+ * 验证完整的反馈表单数据（简化版，无附件）
  * @param {Object} data - 反馈数据
  * @param {string} data.type - 反馈类型
  * @param {string} [data.severity] - Bug 严重程度
  * @param {string} data.title - 标题
  * @param {string} data.description - 描述
- * @param {Array} [data.attachments] - 附件列表
  * @returns {ValidationResult} 验证结果
- * Requirements: 2.2, 2.3, 2.4, 8.1, 8.2
+ * Requirements: 2.2, 2.3
  */
 export function validateFeedbackForm(data) {
   // 验证反馈类型
@@ -370,14 +369,6 @@ export function validateFeedbackForm(data) {
     return descriptionResult;
   }
 
-  // 验证附件
-  if (data.attachments && data.attachments.length > 0) {
-    const attachmentsResult = validateAttachments(data.attachments);
-    if (!attachmentsResult.valid) {
-      return attachmentsResult;
-    }
-  }
-
   return { valid: true, error: null };
 }
 
@@ -390,21 +381,20 @@ class FeedbackService {
   }
 
   /**
-   * 提交反馈
+   * 提交反馈到 Gist（无需 Token）
    * @param {Object} data - 反馈数据
    * @param {string} data.type - 反馈类型 (bug, idea, general, ui)
    * @param {string} [data.severity] - Bug 严重程度 (仅 bug 类型)
    * @param {string} [data.sender] - 发送人名称（可选）
    * @param {string} data.title - 反馈标题
    * @param {string} data.description - 反馈描述
-   * @param {Array<Object>} [data.attachments] - 附件列表
    * @param {string} [data.language] - 应用语言设置
    * @param {string} [data.screenResolution] - 屏幕分辨率
    * @param {boolean} [data.includeLogs] - 是否包含日志，默认 true
    * @returns {Promise<Object>} 提交结果
    */
   async submitFeedback(data) {
-    // 前端验证
+    // 前端验证（不再验证附件）
     const validationResult = validateFeedbackForm(data);
     if (!validationResult.valid) {
       throw new Error(validationResult.error);
@@ -460,7 +450,6 @@ class FeedbackService {
           title: data.title,
           description: descriptionWithLogs,
         },
-        attachments: data.attachments || [],
         language,
         screenResolution,
       });

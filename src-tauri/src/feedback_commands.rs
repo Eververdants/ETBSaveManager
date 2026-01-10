@@ -1,15 +1,12 @@
 //! Feedback Commands Module
 //!
 //! Tauri command handlers for the feedback system.
-//! Provides commands for submitting feedback, managing history, and collecting system info.
+//! Provides commands for submitting feedback via Gist comments (no authentication required).
 
 use crate::feedback_queue::{FeedbackQueue, FeedbackRecord, FeedbackStatus};
-use crate::github_client::GitHubClient;
 use crate::system_info::SystemInfo;
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
 use chrono::Local;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::collections::VecDeque;
 use std::sync::Mutex;
 use tauri::State;
@@ -89,21 +86,6 @@ pub struct FeedbackData {
     pub description: String,
 }
 
-/// Log data from frontend
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LogData {
-    pub frontend_logs: String,
-    pub backend_logs: String,
-}
-
-/// Attachment data from frontend
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttachmentData {
-    pub name: String,
-    pub content: String, // Base64 encoded
-    pub mime_type: String,
-}
-
 /// Result of submitting feedback
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitResult {
@@ -162,60 +144,41 @@ impl Default for FeedbackState {
     }
 }
 
-/// GitHub configuration (loaded from environment or config)
-pub struct GitHubConfig {
-    pub token: String,
-    pub repo_owner: String,
-    pub repo_name: String,
-    pub repo_id: String,
-    pub category_ids: HashMap<String, String>,
-}
+/// Gist configuration for feedback
+const GIST_ID: &str = "89e5ee33efd53a221ee572aa2af7a06d";
+const GIST_URL: &str = "https://gist.github.com/Eververdants/89e5ee33efd53a221ee572aa2af7a06d";
 
-impl GitHubConfig {
-    /// Creates a new GitHub config with hardcoded values for ETBSaveManager
-    pub fn from_env() -> Option<Self> {
-        let repo_owner = "Eververdants".to_string();
-        let repo_name = "ETBSaveManager".to_string();
+/// Sends feedback to Gist as a public comment (no authentication required)
+#[tauri::command]
+pub async fn send_feedback_to_gist(
+    gist_id: String,
+    content: String,
+) -> Result<String, String> {
+    let client = reqwest::Client::new();
+    let url = format!("https://api.github.com/gists/{}/comments", gist_id);
 
-        // Token for feedback system
-        let token_parts = [
-            "github_pat_11A24I44Q0",
-            "GoqcxN3u2o6O_q4oTS5Fsj",
-            "HXI0WT5Mb7Po0noV4psFD2",
-            "0WP1YVsqh1fl7PEILDEEq4egsMLr",
-        ];
-        let token = token_parts.join("");
+    // 必须设置 User-Agent（GitHub API 要求）
+    let res = client
+        .post(&url)
+        .header("User-Agent", "ETBSaveManager/3.0")
+        .json(&serde_json::json!({ "body": content }))
+        .send()
+        .await
+        .map_err(|e| format!("Network error: {}", e))?;
 
-        // Repository ID and category IDs for ETBSaveManager
-        let repo_id = "R_kgDOMfVwYQ".to_string();
-
-        let mut category_ids = HashMap::new();
-        category_ids.insert(
-            "Bug Reports".to_string(),
-            "DIC_kwDOMfVwYc4C0cyx".to_string(),
-        );
-        category_ids.insert("Ideas".to_string(), "DIC_kwDOMfVwYc4C0cyU".to_string());
-        category_ids.insert("General".to_string(), "DIC_kwDOMfVwYc4C0cyS".to_string());
-        category_ids.insert(
-            "UI & Experience".to_string(),
-            "DIC_kwDOMfVwYc4C0cyw".to_string(),
-        );
-
-        Some(GitHubConfig {
-            token,
-            repo_owner,
-            repo_name,
-            repo_id,
-            category_ids,
-        })
+    if res.status().is_success() {
+        Ok("Feedback sent successfully!".to_string())
+    } else {
+        let status = res.status();
+        let text = res.text().await.unwrap_or_default();
+        Err(format!("Failed: {} - {}", status, text))
     }
 }
 
-/// Submits feedback to GitHub or queues it for later
+/// Submits feedback to Gist or queues it for later
 #[tauri::command]
 pub async fn submit_feedback(
     data: FeedbackData,
-    attachments: Vec<AttachmentData>,
     language: String,
     screen_resolution: String,
     state: State<'_, FeedbackState>,
@@ -223,10 +186,12 @@ pub async fn submit_feedback(
 ) -> Result<SubmitResult, String> {
     // Validate input
     validate_feedback_input(&data)?;
-    validate_attachments(&attachments)?;
 
     // Collect system info
     let system_info = SystemInfo::collect(language, screen_resolution);
+
+    // Format feedback content for Gist comment
+    let content = format_feedback_content(&data, &system_info);
 
     // Create feedback record
     let mut record = FeedbackRecord::new(
@@ -238,86 +203,71 @@ pub async fn submit_feedback(
         vec![],
     );
 
-    // Try to submit to GitHub
-    if let Some(config) = GitHubConfig::from_env() {
-        let client = GitHubClient::new(
-            config.token,
-            config.repo_owner,
-            config.repo_name,
-            config.repo_id,
-            config.category_ids,
-        );
+    // Try to submit to Gist
+    match send_feedback_to_gist(GIST_ID.to_string(), content).await {
+        Ok(_) => {
+            record.status = FeedbackStatus::Submitted.as_str().to_string();
+            record.discussion_url = Some(GIST_URL.to_string());
 
-        // Upload attachments first
-        let mut attachment_urls = Vec::new();
-        for attachment in &attachments {
-            let content = BASE64
-                .decode(&attachment.content)
-                .map_err(|e| format!("Invalid attachment encoding: {}", e))?;
+            // Save to local history
+            state.with_queue(|queue| queue.enqueue(&record).map_err(|e| e.to_string()))?;
 
-            match client
-                .upload_attachment(&attachment.name, &content, &attachment.mime_type)
-                .await
-            {
-                Ok(url) => attachment_urls.push(url),
-                Err(e) => {
-                    println!(
-                        "Warning: Failed to upload attachment {}: {}",
-                        attachment.name, e
-                    );
-                    // Continue without this attachment
-                }
-            }
+            Ok(SubmitResult {
+                success: true,
+                feedback_id: record.id,
+                queued: false,
+                discussion_url: Some(GIST_URL.to_string()),
+                error: None,
+            })
         }
+        Err(e) => {
+            println!("Failed to submit to Gist: {}", e);
+            
+            // Queue for later submission (offline)
+            state.with_queue(|queue| queue.enqueue(&record).map_err(|e| e.to_string()))?;
 
-        record.attachments = attachment_urls.clone();
-
-        // Create discussion
-        match client
-            .create_discussion(
-                &data.feedback_type,
-                data.severity.as_deref(),
-                &data.title,
-                &data.description,
-                &system_info,
-                &attachment_urls,
-                data.sender.as_deref(),
-            )
-            .await
-        {
-            Ok(result) => {
-                record.status = FeedbackStatus::Submitted.as_str().to_string();
-                record.discussion_id = Some(result.id.clone());
-                record.discussion_url = Some(result.url.clone());
-
-                // Save to local history
-                state.with_queue(|queue| queue.enqueue(&record).map_err(|e| e.to_string()))?;
-
-                return Ok(SubmitResult {
-                    success: true,
-                    feedback_id: record.id,
-                    queued: false,
-                    discussion_url: Some(result.url),
-                    error: None,
-                });
-            }
-            Err(e) => {
-                println!("Failed to submit to GitHub: {}", e);
-                // Fall through to queue the feedback
-            }
+            Ok(SubmitResult {
+                success: true,
+                feedback_id: record.id,
+                queued: true,
+                discussion_url: None,
+                error: Some(e),
+            })
         }
     }
+}
 
-    // Queue for later submission (offline or GitHub not configured)
-    state.with_queue(|queue| queue.enqueue(&record).map_err(|e| e.to_string()))?;
-
-    Ok(SubmitResult {
-        success: true,
-        feedback_id: record.id,
-        queued: true,
-        discussion_url: None,
-        error: None,
-    })
+/// Formats feedback content for Gist comment
+fn format_feedback_content(data: &FeedbackData, system_info: &SystemInfo) -> String {
+    let mut content = String::new();
+    
+    // Title
+    content.push_str(&format!("## {}\n\n", data.title));
+    
+    // Type and Severity
+    content.push_str(&format!("**Type:** {}\n", data.feedback_type));
+    if let Some(ref severity) = data.severity {
+        content.push_str(&format!("**Severity:** {}\n", severity));
+    }
+    if let Some(ref sender) = data.sender {
+        content.push_str(&format!("**From:** {}\n", sender));
+    }
+    content.push_str("\n");
+    
+    // Description
+    content.push_str("### Description\n\n");
+    content.push_str(&data.description);
+    content.push_str("\n\n");
+    
+    // System Info
+    content.push_str("### System Information\n\n");
+    content.push_str(&format!("- **OS:** {} {}\n", system_info.os, system_info.os_version));
+    content.push_str(&format!("- **App Version:** {}\n", system_info.app_version));
+    content.push_str(&format!("- **Language:** {}\n", system_info.language));
+    content.push_str(&format!("- **Resolution:** {}\n", system_info.screen_resolution));
+    content.push_str(&format!("- **Timestamp:** {}\n", Local::now().format("%Y-%m-%d %H:%M:%S")));
+    
+    content
 }
 
 /// Gets the feedback history
@@ -360,75 +310,63 @@ pub async fn retry_feedback(
         return Err("Feedback cannot be retried".to_string());
     }
 
-    // Try to submit to GitHub
-    if let Some(config) = GitHubConfig::from_env() {
-        let client = GitHubClient::new(
-            config.token,
-            config.repo_owner,
-            config.repo_name,
-            config.repo_id,
-            config.category_ids,
-        );
+    // Format feedback content
+    let content = format_feedback_content(
+        &FeedbackData {
+            feedback_type: record.feedback_type.clone(),
+            severity: record.severity.clone(),
+            sender: None,
+            title: record.title.clone(),
+            description: record.description.clone(),
+        },
+        &record.system_info,
+    );
 
-        match client
-            .create_discussion(
-                &record.feedback_type,
-                record.severity.as_deref(),
-                &record.title,
-                &record.description,
-                &record.system_info,
-                &record.attachments,
-                None,
-            )
-            .await
-        {
-            Ok(result) => {
+    // Try to submit to Gist
+    match send_feedback_to_gist(GIST_ID.to_string(), content).await {
+        Ok(_) => {
+            state.with_queue(|queue| {
+                queue
+                    .update_status(
+                        &id,
+                        FeedbackStatus::Submitted,
+                        None,
+                        Some(GIST_URL),
+                    )
+                    .map_err(|e| e.to_string())
+            })?;
+
+            Ok(SubmitResult {
+                success: true,
+                feedback_id: id,
+                queued: false,
+                discussion_url: Some(GIST_URL.to_string()),
+                error: None,
+            })
+        }
+        Err(e) => {
+            // Increment retry count
+            let retry_count = state.with_queue(|queue| {
+                queue.increment_retry_count(&id).map_err(|e| e.to_string())
+            })?;
+
+            // Mark as failed after 3 retries
+            if retry_count >= 3 {
                 state.with_queue(|queue| {
                     queue
-                        .update_status(
-                            &id,
-                            FeedbackStatus::Submitted,
-                            Some(&result.id),
-                            Some(&result.url),
-                        )
+                        .update_status(&id, FeedbackStatus::Failed, None, None)
                         .map_err(|e| e.to_string())
                 })?;
-
-                return Ok(SubmitResult {
-                    success: true,
-                    feedback_id: id,
-                    queued: false,
-                    discussion_url: Some(result.url),
-                    error: None,
-                });
             }
-            Err(e) => {
-                // Increment retry count
-                let retry_count = state.with_queue(|queue| {
-                    queue.increment_retry_count(&id).map_err(|e| e.to_string())
-                })?;
 
-                // Mark as failed after 3 retries
-                if retry_count >= 3 {
-                    state.with_queue(|queue| {
-                        queue
-                            .update_status(&id, FeedbackStatus::Failed, None, None)
-                            .map_err(|e| e.to_string())
-                    })?;
-                }
-
-                return Err(format!("Retry failed: {}", e));
-            }
+            Err(format!("Retry failed: {}", e))
         }
     }
-
-    Err("GitHub not configured".to_string())
 }
 
 /// Deletes a feedback entry
 #[tauri::command]
 pub fn delete_feedback(id: String, state: State<'_, FeedbackState>) -> Result<(), String> {
-    // Delete feedback record (allow deleting any status)
     state.with_queue(|queue| queue.delete(&id).map_err(|e| e.to_string()))
 }
 
@@ -452,8 +390,6 @@ fn validate_feedback_input(data: &FeedbackData) -> Result<(), String> {
     if data.title.len() > 100 {
         return Err("Title must be 100 characters or less".to_string());
     }
-    // 增加描述长度限制以容纳自动附加的日志
-    // 用户描述 5000 + 日志约 50000 = 55000
     if data.description.len() > 60000 {
         return Err("Description must be 60000 characters or less".to_string());
     }
@@ -471,39 +407,6 @@ fn validate_feedback_input(data: &FeedbackData) -> Result<(), String> {
             if !valid_severities.contains(&severity.to_lowercase().as_str()) {
                 return Err("Invalid severity level".to_string());
             }
-        }
-    }
-
-    Ok(())
-}
-
-/// Validates attachment data
-fn validate_attachments(attachments: &[AttachmentData]) -> Result<(), String> {
-    const MAX_ATTACHMENTS: usize = 5;
-    const MAX_FILE_SIZE: usize = 25 * 1024 * 1024; // 25MB
-
-    if attachments.len() > MAX_ATTACHMENTS {
-        return Err(format!("Maximum {} attachments allowed", MAX_ATTACHMENTS));
-    }
-
-    let valid_extensions = ["png", "jpg", "jpeg", "gif", "txt", "log", "json"];
-
-    for attachment in attachments {
-        // Check file extension
-        let ext = attachment
-            .name
-            .rsplit('.')
-            .next()
-            .unwrap_or("")
-            .to_lowercase();
-        if !valid_extensions.contains(&ext.as_str()) {
-            return Err(format!("Invalid file type: {}", ext));
-        }
-
-        // Check file size (base64 encoded size is ~4/3 of original)
-        let estimated_size = attachment.content.len() * 3 / 4;
-        if estimated_size > MAX_FILE_SIZE {
-            return Err(format!("File {} exceeds 25MB limit", attachment.name));
         }
     }
 

@@ -4,7 +4,6 @@ mod encryption;
 mod feedback_commands;
 mod feedback_queue;
 mod get_file_path;
-mod github_client;
 mod gpu_settings;
 mod new_save;
 mod player_data;
@@ -436,6 +435,7 @@ pub fn run() {
             steam_api::get_steam_usernames_command,
             set_window_title,
             feedback_commands::submit_feedback,
+            feedback_commands::send_feedback_to_gist,
             feedback_commands::get_feedback_history,
             feedback_commands::retry_feedback,
             feedback_commands::delete_feedback,

@@ -106,65 +106,6 @@
               }}</span>
             </div>
 
-            <!-- 附件上传区域 -->
-            <div class="form-group">
-              <transition name="text-swift" mode="out-in">
-                <label class="form-label" :key="currentLanguage">
-                  {{ t("feedback.attachments") }}
-                  <span class="attachment-hint">{{
-                    t("feedback.attachmentHint")
-                  }}</span>
-                </label>
-              </transition>
-              <div
-                ref="dropZone"
-                class="attachment-drop-zone"
-                :class="{ 'drag-over': isDragOver }"
-                @click="triggerFileInput"
-              >
-                <font-awesome-icon
-                  :icon="['fas', 'cloud-upload-alt']"
-                  class="upload-icon"
-                />
-                <span>{{ t("feedback.dropOrClick") }}</span>
-              </div>
-              <input
-                ref="fileInput"
-                type="file"
-                multiple
-                accept=".png,.jpg,.jpeg,.gif,.txt,.log,.json"
-                style="display: none"
-                @change="handleFileSelect"
-              />
-
-              <!-- 附件预览列表 -->
-              <div v-if="attachments.length > 0" class="attachment-list">
-                <div
-                  v-for="(file, index) in attachments"
-                  :key="index"
-                  class="attachment-item"
-                >
-                  <img
-                    v-if="isImageFile(file)"
-                    :src="file.preview"
-                    class="attachment-preview"
-                  />
-                  <font-awesome-icon
-                    v-else
-                    :icon="['fas', 'file-alt']"
-                    class="file-icon"
-                  />
-                  <span class="attachment-name">{{ file.name }}</span>
-                  <button class="remove-btn" @click="removeAttachment(index)">
-                    <font-awesome-icon :icon="['fas', 'times']" />
-                  </button>
-                </div>
-              </div>
-              <span v-if="attachmentError" class="error-text">{{
-                attachmentError
-              }}</span>
-            </div>
-
             <!-- 系统信息预览 -->
             <div class="form-group">
               <details class="system-info-details">
@@ -337,14 +278,11 @@ export default {
         title: "",
         description: "",
       },
-      attachments: [],
       systemInfo: null,
       feedbackHistory: [],
       isSubmitting: false,
-      isDragOver: false,
       titleError: "",
       descriptionError: "",
-      attachmentError: "",
       currentLanguage: storage.getItem("language") || "zh-CN",
     };
   },
@@ -371,8 +309,7 @@ export default {
         this.formData.title.trim().length > 0 &&
         this.formData.title.length <= 100 &&
         this.formData.description.trim().length > 0 &&
-        this.formData.description.length <= 5000 &&
-        this.attachments.length <= 5
+        this.formData.description.length <= 5000
       );
     },
   },
@@ -385,81 +322,11 @@ export default {
     await this.loadSystemInfo();
     await this.loadHistory();
     window.addEventListener("language-changed", this.handleLanguageChange);
-
-    // 手动绑定拖拽事件到拖拽区域
-    this.$nextTick(() => {
-      this.setupDropZone();
-    });
   },
   beforeUnmount() {
     window.removeEventListener("language-changed", this.handleLanguageChange);
-    this.cleanupDropZone();
   },
   methods: {
-    setupDropZone() {
-      const dropZone = this.$refs.dropZone;
-      if (!dropZone) return;
-
-      this._onDragEnter = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.isDragOver = true;
-      };
-
-      this._onDragOver = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.dataTransfer) {
-          e.dataTransfer.dropEffect = "copy";
-        }
-        this.isDragOver = true;
-      };
-
-      this._onDragLeave = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        // 检查是否真的离开了拖拽区域
-        const rect = dropZone.getBoundingClientRect();
-        if (
-          e.clientX < rect.left ||
-          e.clientX >= rect.right ||
-          e.clientY < rect.top ||
-          e.clientY >= rect.bottom
-        ) {
-          this.isDragOver = false;
-        }
-      };
-
-      this._onDrop = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.isDragOver = false;
-
-        const files = e.dataTransfer?.files;
-        if (files && files.length > 0) {
-          this.processFiles(Array.from(files));
-        }
-      };
-
-      dropZone.addEventListener("dragenter", this._onDragEnter);
-      dropZone.addEventListener("dragover", this._onDragOver);
-      dropZone.addEventListener("dragleave", this._onDragLeave);
-      dropZone.addEventListener("drop", this._onDrop);
-    },
-
-    cleanupDropZone() {
-      const dropZone = this.$refs.dropZone;
-      if (!dropZone) return;
-
-      if (this._onDragEnter)
-        dropZone.removeEventListener("dragenter", this._onDragEnter);
-      if (this._onDragOver)
-        dropZone.removeEventListener("dragover", this._onDragOver);
-      if (this._onDragLeave)
-        dropZone.removeEventListener("dragleave", this._onDragLeave);
-      if (this._onDrop) dropZone.removeEventListener("drop", this._onDrop);
-    },
-
     handleLanguageChange(event) {
       this.currentLanguage =
         event.detail?.language || storage.getItem("language");
@@ -502,11 +369,6 @@ export default {
           sender: this.formData.sender.trim() || null,
           title: this.formData.title,
           description: this.formData.description,
-          attachments: this.attachments.map((a) => ({
-            name: a.name,
-            content: a.content,
-            mime_type: a.type,
-          })),
         });
 
         if (result.queued) {
@@ -546,80 +408,6 @@ export default {
       }
     },
 
-    triggerFileInput() {
-      this.$refs.fileInput.click();
-    },
-
-    handleFileSelect(event) {
-      const files = Array.from(event.target.files);
-      this.processFiles(files);
-      event.target.value = "";
-    },
-
-    async processFiles(files) {
-      this.attachmentError = "";
-      const allowedExtensions = [
-        ".png",
-        ".jpg",
-        ".jpeg",
-        ".gif",
-        ".txt",
-        ".log",
-        ".json",
-      ];
-      const maxSize = 25 * 1024 * 1024;
-      const maxFiles = 5;
-
-      for (const file of files) {
-        if (this.attachments.length >= maxFiles) {
-          this.attachmentError = this.$t("feedback.maxFilesError");
-          break;
-        }
-
-        const ext = "." + file.name.split(".").pop().toLowerCase();
-        if (!allowedExtensions.includes(ext)) {
-          this.attachmentError = this.$t("feedback.invalidFileType");
-          continue;
-        }
-
-        if (file.size > maxSize) {
-          this.attachmentError = this.$t("feedback.fileTooLarge");
-          continue;
-        }
-
-        const content = await this.readFileAsBase64(file);
-        this.attachments.push({
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          content: content,
-          preview: file.type.startsWith("image/")
-            ? URL.createObjectURL(file)
-            : null,
-        });
-      }
-    },
-
-    readFileAsBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    },
-
-    removeAttachment(index) {
-      const attachment = this.attachments[index];
-      if (attachment.preview) URL.revokeObjectURL(attachment.preview);
-      this.attachments.splice(index, 1);
-      this.attachmentError = "";
-    },
-
-    isImageFile(file) {
-      return file.type && file.type.startsWith("image/");
-    },
-
     resetForm() {
       this.formData = {
         type: "",
@@ -628,17 +416,12 @@ export default {
         title: "",
         description: "",
       };
-      this.attachments.forEach((a) => {
-        if (a.preview) URL.revokeObjectURL(a.preview);
-      });
-      this.attachments = [];
       this.clearErrors();
     },
 
     clearErrors() {
       this.titleError = "";
       this.descriptionError = "";
-      this.attachmentError = "";
     },
 
     getTypeLabel(type) {

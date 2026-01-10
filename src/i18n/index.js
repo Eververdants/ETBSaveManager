@@ -49,6 +49,8 @@ export const i18n = createI18n({
   globalInjection: true,
   locale: getUserLocale(),
   fallbackLocale: "en-US",
+  silentFallbackWarn: false,
+  missingWarn: true,
   messages,
   // 将更新公告数据挂载到全局
   releaseNotes: releaseNotesData,

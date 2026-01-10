@@ -6,30 +6,17 @@
         <div class="tutorial-backdrop" @click="handleSkip"></div>
 
         <!-- 高亮区域 -->
-        <div
-          v-if="currentHighlight"
-          class="tutorial-highlight"
-          :style="highlightStyle"
-        ></div>
+        <div v-if="currentHighlight" class="tutorial-highlight" :style="highlightStyle"></div>
 
         <!-- 引导卡片 -->
         <div class="tutorial-card" :style="cardStyle">
           <!-- 步骤指示器 -->
           <div class="step-indicator">
-            <div
-              v-for="step in steps"
-              :key="step.id"
-              class="step-dot"
-              :class="{
-                active: step.id === currentStep,
-                completed: step.id < currentStep,
-              }"
-            >
-              <font-awesome-icon
-                v-if="step.id < currentStep"
-                :icon="['fas', 'check']"
-                class="check-icon"
-              />
+            <div v-for="step in steps" :key="step.id" class="step-dot" :class="{
+              active: step.id === currentStep,
+              completed: step.id < currentStep,
+            }">
+              <font-awesome-icon v-if="step.id < currentStep" :icon="['fas', 'check']" class="check-icon" />
               <span v-else class="step-number">{{ step.id }}</span>
             </div>
           </div>
@@ -49,27 +36,15 @@
               {{ $t("quickCreate.tutorial.skip") }}
             </button>
             <div class="footer-actions">
-              <button
-                v-if="currentStep > 1"
-                class="btn btn-secondary"
-                @click="handlePrev"
-              >
+              <button v-if="currentStep > 1" class="btn btn-secondary" @click="handlePrev">
                 <font-awesome-icon :icon="['fas', 'arrow-left']" />
                 {{ $t("quickCreate.tutorial.prev") }}
               </button>
-              <button
-                v-if="currentStep < steps.length"
-                class="btn btn-primary"
-                @click="handleNext"
-              >
+              <button v-if="currentStep < steps.length" class="btn btn-primary" @click="handleNext">
                 {{ $t("quickCreate.tutorial.next") }}
                 <font-awesome-icon :icon="['fas', 'arrow-right']" />
               </button>
-              <button
-                v-else
-                class="btn btn-primary btn-start"
-                @click="handleComplete"
-              >
+              <button v-else class="btn btn-primary btn-start" @click="handleComplete">
                 <font-awesome-icon :icon="['fas', 'rocket']" />
                 {{ $t("quickCreate.tutorial.start") }}
               </button>
@@ -359,6 +334,7 @@ onUnmounted(() => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

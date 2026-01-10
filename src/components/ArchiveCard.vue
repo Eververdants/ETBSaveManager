@@ -1,55 +1,33 @@
 <template>
-  <div
-    class="archive-card"
-    :class="{
-      'archive-hidden': !localVisible,
-      'visibility-transitioning': isAnimating,
-    }"
-    @click="handleCardClick"
-  >
+  <div class="archive-card" :class="{
+    'archive-hidden': !localVisible,
+    'visibility-transitioning': isAnimating,
+  }" @click="handleCardClick">
     <!-- 上半背景区域 -->
     <div class="card-background">
-      <LazyImage
-        :src="backgroundImage"
-        :alt="currentLevelName"
-        image-class="background-image"
-      />
+      <LazyImage :src="backgroundImage" :alt="currentLevelName" image-class="background-image" />
       <div class="background-overlay"></div>
 
       <!-- 存档信息 -->
       <div class="archive-info">
         <h3 class="archive-name">{{ archive.name }}</h3>
         <div class="game-mode-info">
-          <span
-            class="difficulty-tag"
-            :class="archiveDifficultyClass"
-            :style="
-              tagStyle(
-                archiveDifficultyText,
-                t('archiveCard.archiveDifficulty')
-              )
-            "
-          >
+          <span class="difficulty-tag" :class="archiveDifficultyClass" :style="tagStyle(
+            archiveDifficultyText,
+            t('archiveCard.archiveDifficulty')
+          )
+            ">
             <span class="tag-short">{{ archiveDifficultyText }}</span>
-            <span class="tag-full"
-              >{{ t("archiveCard.archiveDifficulty") }}：{{
-                archiveDifficultyText
-              }}</span
-            >
+            <span class="tag-full">{{ t("archiveCard.archiveDifficulty") }}：{{
+              archiveDifficultyText
+            }}</span>
           </span>
-          <span
-            class="difficulty-tag"
-            :class="actualDifficultyClass"
-            :style="
-              tagStyle(actualDifficultyText, t('archiveCard.actualDifficulty'))
-            "
-          >
+          <span class="difficulty-tag" :class="actualDifficultyClass" :style="tagStyle(actualDifficultyText, t('archiveCard.actualDifficulty'))
+            ">
             <span class="tag-short">{{ actualDifficultyText }}</span>
-            <span class="tag-full"
-              >{{ t("archiveCard.actualDifficulty") }}：{{
-                actualDifficultyText
-              }}</span
-            >
+            <span class="tag-full">{{ t("archiveCard.actualDifficulty") }}：{{
+              actualDifficultyText
+            }}</span>
           </span>
         </div>
       </div>
@@ -62,20 +40,10 @@
         <button class="action-btn edit" @click.stop="editArchive" type="button">
           <font-awesome-icon icon="fa-solid fa-edit" />
         </button>
-        <button
-          class="action-btn copy"
-          @click.stop="toggleVisibility"
-          type="button"
-        >
-          <font-awesome-icon
-            :icon="isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"
-          />
+        <button class="action-btn copy" @click.stop="toggleVisibility" type="button">
+          <font-awesome-icon :icon="isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" />
         </button>
-        <button
-          class="action-btn delete"
-          @click.stop="deleteArchive"
-          type="button"
-        >
+        <button class="action-btn delete" @click.stop="deleteArchive" type="button">
           <font-awesome-icon icon="fa-solid fa-trash" />
         </button>
       </div>
@@ -96,7 +64,17 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["toggle-visibility", "edit", "delete", "select"]);
-const { t } = useI18n({ useScope: "global" });
+const { t, te } = useI18n({ useScope: "global" });
+
+const getLevelName = (levelKey) => {
+  const translationKey = `LevelName_Display.${levelKey}`;
+  return te(translationKey) ? t(translationKey) : levelKey;
+};
+
+const getDifficultyText = (difficultyKey) => {
+  const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
+  return te(translationKey) ? t(translationKey) : difficultyKey;
+};
 
 // 本地可见性状态，用于动画过渡
 const localVisible = ref(props.archive.isVisible);
@@ -137,9 +115,7 @@ const tagStyle = (shortText, prefix) => {
 const isVisible = computed(() => props.archive.isVisible);
 
 const currentLevelName = computed(
-  () =>
-    t(`LevelName_Display.${props.archive.currentLevel}`) ||
-    props.archive.currentLevel
+  () => getLevelName(props.archive.currentLevel)
 );
 
 const backgroundImage = computed(
@@ -147,15 +123,11 @@ const backgroundImage = computed(
 );
 
 const archiveDifficultyText = computed(
-  () =>
-    t(`createArchive.difficultyLevels.${props.archive.archiveDifficulty}`) ||
-    props.archive.archiveDifficulty
+  () => getDifficultyText(props.archive.archiveDifficulty)
 );
 
 const actualDifficultyText = computed(
-  () =>
-    t(`createArchive.difficultyLevels.${props.archive.actualDifficulty}`) ||
-    props.archive.actualDifficulty
+  () => getDifficultyText(props.archive.actualDifficulty)
 );
 
 const archiveDifficultyClass = computed(
@@ -227,12 +199,10 @@ const handleCardClick = () => emit("select", props.archive);
   inset: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.03) 50%,
-    transparent 70%
-  );
+  background: linear-gradient(45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.03) 50%,
+      transparent 70%);
   transform: rotate(45deg) translate(-100%, -100%);
   pointer-events: none;
   z-index: 10;
@@ -282,13 +252,11 @@ const handleCardClick = () => emit("select", props.archive);
 .background-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(0, 0, 0, 0.1) 30%,
-    rgba(0, 0, 0, 0.4) 60%,
-    rgba(0, 0, 0, 0.7) 100%
-  );
+  background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.1) 30%,
+      rgba(0, 0, 0, 0.4) 60%,
+      rgba(0, 0, 0, 0.7) 100%);
   transition: opacity 0.3s ease;
 }
 
@@ -364,6 +332,7 @@ const handleCardClick = () => emit("select", props.archive);
 .tag-short {
   opacity: 1;
 }
+
 .tag-full {
   opacity: 0;
 }
@@ -377,6 +346,7 @@ const handleCardClick = () => emit("select", props.archive);
 .archive-card:hover .tag-short {
   opacity: 0;
 }
+
 .archive-card:hover .tag-full {
   opacity: 1;
 }
@@ -473,12 +443,10 @@ const handleCardClick = () => emit("select", props.archive);
   left: -100%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent);
   transition: left 0.4s ease;
 }
 
@@ -566,16 +534,20 @@ const handleCardClick = () => emit("select", props.archive);
   .card-background {
     height: 90px;
   }
+
   .card-info {
     height: 50px;
     padding: var(--space-2) var(--space-3);
   }
+
   .archive-name {
     font-size: 14px;
   }
+
   .current-level {
     font-size: 13px;
   }
+
   .difficulty-tag {
     height: 18px;
     font-size: 10px;
@@ -596,16 +568,20 @@ const handleCardClick = () => emit("select", props.archive);
   .card-background {
     height: 80px;
   }
+
   .card-info {
     height: 50px;
     padding: var(--space-2);
   }
+
   .archive-name {
     font-size: 13px;
   }
+
   .current-level {
     font-size: 12px;
   }
+
   .difficulty-tag {
     height: 16px;
     font-size: 9px;
@@ -639,6 +615,7 @@ const handleCardClick = () => emit("select", props.archive);
   .tag-short {
     opacity: 0;
   }
+
   .tag-full {
     opacity: 1;
   }

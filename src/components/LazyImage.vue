@@ -6,14 +6,8 @@
     </div>
 
     <!-- 实际图片 -->
-    <img
-      :src="src"
-      :alt="alt"
-      :class="imageClass"
-      :style="imageStyle"
-      @load="handleImageLoad"
-      @error="handleImageError"
-    />
+    <img :src="src" :alt="alt" :class="imageClass" :style="imageStyle" @load="handleImageLoad"
+      @error="handleImageError" />
   </div>
 </template>
 

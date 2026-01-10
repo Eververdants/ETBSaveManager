@@ -11,11 +11,7 @@
           <font-awesome-icon :icon="['fas', 'exchange-alt']" />
           {{ $t("quickCreate.cardFlow.invertSelection") }}
         </button>
-        <button
-          class="toolbar-btn batch-edit"
-          :disabled="selectedIds.size === 0"
-          @click="$emit('batch-edit')"
-        >
+        <button class="toolbar-btn batch-edit" :disabled="selectedIds.size === 0" @click="$emit('batch-edit')">
           <font-awesome-icon :icon="['fas', 'edit']" />
           {{ $t("quickCreate.cardFlow.batchEdit") }}
         </button>
@@ -30,28 +26,16 @@
           }}
         </span>
         <!-- 虚拟滚动指示器 -->
-        <span
-          v-if="useVirtualScroll"
-          class="virtual-indicator"
-          :title="$t('quickCreate.cardFlow.virtualScrollHint')"
-        >
+        <span v-if="useVirtualScroll" class="virtual-indicator" :title="$t('quickCreate.cardFlow.virtualScrollHint')">
           <font-awesome-icon :icon="['fas', 'bolt']" />
         </span>
         <div class="view-toggle">
-          <button
-            class="view-btn"
-            :class="{ active: viewMode === 'grid' }"
-            @click="viewMode = 'grid'"
-            :title="$t('quickCreate.cardFlow.gridView')"
-          >
+          <button class="view-btn" :class="{ active: viewMode === 'grid' }" @click="viewMode = 'grid'"
+            :title="$t('quickCreate.cardFlow.gridView')">
             <font-awesome-icon :icon="['fas', 'th-large']" />
           </button>
-          <button
-            class="view-btn"
-            :class="{ active: viewMode === 'list' }"
-            @click="viewMode = 'list'"
-            :title="$t('quickCreate.cardFlow.listView')"
-          >
+          <button class="view-btn" :class="{ active: viewMode === 'list' }" @click="viewMode = 'list'"
+            :title="$t('quickCreate.cardFlow.listView')">
             <font-awesome-icon :icon="['fas', 'list']" />
           </button>
         </div>
@@ -66,46 +50,19 @@
       </div>
 
       <!-- 虚拟滚动模式 (当存档数量 > 50 时启用) -->
-      <RecycleScroller
-        v-else-if="useVirtualScroll"
-        ref="scrollerRef"
-        class="virtual-scroller"
-        :items="archives"
-        :item-size="viewMode === 'grid' ? 180 : 120"
-        :grid-items="viewMode === 'grid' ? gridColumns : 1"
-        key-field="id"
-        v-slot="{ item }"
-      >
-        <QuickCreateArchiveCard
-          :archive="item"
-          :selected="selectedIds.has(item.id)"
-          :config-source="getConfigSource(item)"
-          @select="handleSelect"
-          @edit="handleEdit"
-          @copy="handleCopy"
-          @remove="handleRemove"
-        />
+      <RecycleScroller v-else-if="useVirtualScroll" ref="scrollerRef" class="virtual-scroller" :items="archives"
+        :item-size="viewMode === 'grid' ? 180 : 120" :grid-items="viewMode === 'grid' ? gridColumns : 1" key-field="id"
+        v-slot="{ item }">
+        <QuickCreateArchiveCard :archive="item" :selected="selectedIds.has(item.id)"
+          :config-source="getConfigSource(item)" @select="handleSelect" @edit="handleEdit" @copy="handleCopy"
+          @remove="handleRemove" />
       </RecycleScroller>
 
       <!-- 普通模式 (存档数量 <= 50) -->
-      <TransitionGroup
-        v-else
-        name="card-list"
-        tag="div"
-        class="card-container"
-        :class="[`view-${viewMode}`]"
-      >
-        <QuickCreateArchiveCard
-          v-for="archive in archives"
-          :key="archive.id"
-          :archive="archive"
-          :selected="selectedIds.has(archive.id)"
-          :config-source="getConfigSource(archive)"
-          @select="handleSelect"
-          @edit="handleEdit"
-          @copy="handleCopy"
-          @remove="handleRemove"
-        />
+      <TransitionGroup v-else name="card-list" tag="div" class="card-container" :class="[`view-${viewMode}`]">
+        <QuickCreateArchiveCard v-for="archive in archives" :key="archive.id" :archive="archive"
+          :selected="selectedIds.has(archive.id)" :config-source="getConfigSource(archive)" @select="handleSelect"
+          @edit="handleEdit" @copy="handleCopy" @remove="handleRemove" />
       </TransitionGroup>
     </div>
   </div>

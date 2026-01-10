@@ -2,7 +2,7 @@ import { getCurrentUpdateSource } from "../config/updateConfig.js";
 import storage from "./storageService";
 
 // 版本信息
-const CURRENT_VERSION = "3.0.0-Alpha-8";
+const CURRENT_VERSION = "3.0.0-Alpha-7";
 
 // 简化版更新状态
 export const UpdateStatus = {

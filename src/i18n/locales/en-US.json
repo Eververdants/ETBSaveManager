@@ -61,13 +61,6 @@
   "plugin": {
     "marketDescription": "Browse and install plugins",
     "searchPlaceholder": "Search plugins...",
-    "betaNotAvailable": "Plugin System Not Available",
-    "betaNotAvailableDesc": "The plugin system is currently in beta testing and only available to selected users. Thank you for your understanding and support!",
-    "secretUnlockTitle": "🤫 Shh...Secret Passage Found",
-    "secretUnlockMessage": "Alright, since you found this place, I'll unlock the plugin system for you!",
-    "secretUnlockHint": "But...this is our little secret, don't tell anyone~ 😉",
-    "secretUnlocked": "✨ Plugin system unlocked! Refreshing...",
-    "secretUnlockConfirm": "I promise not to tell!",
     "description": "Description",
     "detailsTitle": "Details",
     "features": "Features",
@@ -142,14 +135,6 @@
   "app": {
     "name": "ETB Save Manager"
   },
-  "pluginBeta": {
-    "title": "🎉 Congratulations! You've been selected for the Plugin System Beta",
-    "message": "You now have access to all plugin system features, including language packs, themes, and other extensions.",
-    "feature1": "Install multilingual translation plugins",
-    "feature2": "Use community custom themes",
-    "feature3": "Experience more extension features",
-    "confirm": "Start Exploring"
-  },
   "about": {
     "description": "About application information",
     "version": "Version",
@@ -192,6 +177,9 @@
   },
   "settings": {
     "goToDownload": "Go to Download",
+    "openingDownloadPage": "Opening download page...",
+    "downloadPageOpened": "Download page opened",
+    "openDownloadPageFailed": "Failed to open download page",
     "updateNotesForVersion": "Update Notes for Version {version}",
     "startupUpdateCheckFailed": "Startup update check failed:",
     "errorType": {

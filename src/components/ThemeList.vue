@@ -4,12 +4,8 @@
     <div class="list-header">
       <h3 class="list-title">{{ $t("theme.themeList") }}</h3>
       <div class="header-actions">
-        <button
-          class="btn-icon"
-          @click="handleImport"
-          :title="$t('theme.importTheme')"
-          :aria-label="$t('theme.importTheme')"
-        >
+        <button class="btn-icon" @click="handleImport" :title="$t('theme.importTheme')"
+          :aria-label="$t('theme.importTheme')">
           <span class="icon">📥</span>
         </button>
       </div>
@@ -19,19 +15,10 @@
     <div class="theme-section">
       <h4 class="section-title">{{ $t("theme.presetThemes") }}</h4>
       <div class="theme-grid">
-        <div
-          v-for="theme in presetThemes"
-          :key="theme.id"
-          class="theme-card"
-          :class="{ active: currentThemeId === theme.id }"
-          @click="selectTheme(theme.id)"
-          role="button"
-          :aria-pressed="currentThemeId === theme.id"
-          :aria-label="theme.name"
-          tabindex="0"
-          @keydown.enter="selectTheme(theme.id)"
-          @keydown.space.prevent="selectTheme(theme.id)"
-        >
+        <div v-for="theme in presetThemes" :key="theme.id" class="theme-card"
+          :class="{ active: currentThemeId === theme.id }" @click="selectTheme(theme.id)" role="button"
+          :aria-pressed="currentThemeId === theme.id" :aria-label="theme.name" tabindex="0"
+          @keydown.enter="selectTheme(theme.id)" @keydown.space.prevent="selectTheme(theme.id)">
           <div class="theme-preview-mini" :class="`preview-${theme.id}`">
             <div class="mini-sidebar"></div>
             <div class="mini-content">
@@ -61,23 +48,11 @@
       </div>
 
       <div v-else class="theme-grid">
-        <div
-          v-for="theme in customThemes"
-          :key="theme.id"
-          class="theme-card custom"
-          :class="{ active: currentThemeId === theme.id }"
-          @click="selectTheme(theme.id)"
-          role="button"
-          :aria-pressed="currentThemeId === theme.id"
-          :aria-label="theme.name"
-          tabindex="0"
-          @keydown.enter="selectTheme(theme.id)"
-          @keydown.space.prevent="selectTheme(theme.id)"
-        >
-          <div
-            class="theme-preview-mini custom-preview"
-            :style="getCustomPreviewStyle(theme)"
-          >
+        <div v-for="theme in customThemes" :key="theme.id" class="theme-card custom"
+          :class="{ active: currentThemeId === theme.id }" @click="selectTheme(theme.id)" role="button"
+          :aria-pressed="currentThemeId === theme.id" :aria-label="theme.name" tabindex="0"
+          @keydown.enter="selectTheme(theme.id)" @keydown.space.prevent="selectTheme(theme.id)">
+          <div class="theme-preview-mini custom-preview" :style="getCustomPreviewStyle(theme)">
             <div class="mini-sidebar"></div>
             <div class="mini-content">
               <div class="mini-card"></div>
@@ -90,28 +65,16 @@
             </span>
           </div>
           <div class="theme-actions" @click.stop>
-            <button
-              class="btn-action"
-              @click="handleEdit(theme)"
-              :title="$t('common.edit')"
-              :aria-label="$t('theme.editTheme', { name: theme.name })"
-            >
+            <button class="btn-action" @click="handleEdit(theme)" :title="$t('common.edit')"
+              :aria-label="$t('theme.editTheme', { name: theme.name })">
               ✏️
             </button>
-            <button
-              class="btn-action"
-              @click="handleExport(theme)"
-              :title="$t('theme.exportTheme')"
-              :aria-label="$t('theme.exportThemeNamed', { name: theme.name })"
-            >
+            <button class="btn-action" @click="handleExport(theme)" :title="$t('theme.exportTheme')"
+              :aria-label="$t('theme.exportThemeNamed', { name: theme.name })">
               📤
             </button>
-            <button
-              class="btn-action delete"
-              @click="handleDelete(theme)"
-              :title="$t('common.delete')"
-              :aria-label="$t('theme.deleteTheme', { name: theme.name })"
-            >
+            <button class="btn-action delete" @click="handleDelete(theme)" :title="$t('common.delete')"
+              :aria-label="$t('theme.deleteTheme', { name: theme.name })">
               🗑️
             </button>
           </div>
@@ -120,21 +83,13 @@
     </div>
 
     <!-- Create Button -->
-    <button
-      class="btn-create"
-      @click="handleCreate"
-      :disabled="customThemes.length >= 10"
-    >
+    <button class="btn-create" @click="handleCreate" :disabled="customThemes.length >= 10">
       <span class="create-icon">+</span>
       {{ $t("theme.createCustomTheme") }}
     </button>
 
     <!-- Delete Confirmation Modal -->
-    <div
-      v-if="showDeleteConfirm"
-      class="modal-overlay"
-      @click.self="cancelDelete"
-    >
+    <div v-if="showDeleteConfirm" class="modal-overlay" @click.self="cancelDelete">
       <div class="modal-content" role="dialog" aria-modal="true">
         <h3 class="modal-title">{{ $t("theme.confirmDelete") }}</h3>
         <p class="modal-text">
@@ -159,7 +114,7 @@ import { useI18n } from "vue-i18n";
 import themeManager, { PRESET_THEMES } from "@/styles/theme-config.js";
 import { themeStorage } from "@/services/themeStorage.js";
 
-const { t } = useI18n();
+const { t, te } = useI18n();
 
 const props = defineProps({
   showEmptyState: {
@@ -177,13 +132,7 @@ const emit = defineEmits([
   "export",
 ]);
 
-// State
-const showDeleteConfirm = ref(false);
-const themeToDelete = ref(null);
-
-// Computed
-const presetThemes = computed(() => {
-  // Map theme IDs to translation keys (convert kebab-case to camelCase)
+const getThemeName = (themeId) => {
   const themeIdToKey = {
     light: "light",
     dark: "dark",
@@ -192,18 +141,29 @@ const presetThemes = computed(() => {
     "spring-festival-dark": "springFestivalDark",
     "spring-festival-light": "springFestivalLight",
   };
+  const translationKey = `common.${themeIdToKey[themeId] || themeId}`;
+  return te(translationKey) ? t(translationKey) : themeId;
+};
 
-  // 获取所有主题（包括限时主题的可用性信息）
+// State
+const showDeleteConfirm = ref(false);
+const themeToDelete = ref(null);
+
+// Computed
+const presetThemes = computed(() => {
   return themeManager
     .getAllThemes()
     .filter((theme) => theme.type === "preset")
-    .map((theme) => ({
-      ...theme,
-      name: t(`common.${themeIdToKey[theme.id] || theme.id}`),
-      displayName: theme.icon
-        ? `${theme.icon} ${t(`common.${themeIdToKey[theme.id] || theme.id}`)}`
-        : t(`common.${themeIdToKey[theme.id] || theme.id}`),
-    }));
+    .map((theme) => {
+      const themeName = getThemeName(theme.id);
+      return {
+        ...theme,
+        name: themeName,
+        displayName: theme.icon
+          ? `${theme.icon} ${themeName}`
+          : themeName,
+      };
+    });
 });
 
 const customThemes = computed(() => themeManager.customThemes.value);

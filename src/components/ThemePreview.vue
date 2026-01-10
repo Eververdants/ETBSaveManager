@@ -1,10 +1,5 @@
 <template>
-  <div
-    class="theme-preview"
-    :style="previewStyles"
-    role="img"
-    :aria-label="$t('theme.previewArea')"
-  >
+  <div class="theme-preview" :style="previewStyles" role="img" :aria-label="$t('theme.previewArea')">
     <!-- 模拟窗口 -->
     <div class="preview-window">
       <!-- 标题栏 -->

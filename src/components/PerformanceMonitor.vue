@@ -9,19 +9,15 @@
         </div>
       </div>
       <div class="stat-item">
-        <span
-          >🧠 {{ t("performanceMonitor.memory") }}:
+        <span>🧠 {{ t("performanceMonitor.memory") }}:
           {{ formatMemory(memory.usedJSHeapSize) }} /
-          {{ formatMemory(memory.totalJSHeapSize) }}</span
-        >
+          {{ formatMemory(memory.totalJSHeapSize) }}</span>
         <div class="rating" :class="memoryRating.class">
           {{ memoryRating.icon }}
         </div>
       </div>
       <div class="stat-item">
-        <span
-          >🖥️ {{ t("performanceMonitor.cpu") }}: {{ cpuLoad.toFixed(1) }}%</span
-        >
+        <span>🖥️ {{ t("performanceMonitor.cpu") }}: {{ cpuLoad.toFixed(1) }}%</span>
         <div class="rating" :class="cpuRating.class">
           {{ cpuRating.icon }}
         </div>

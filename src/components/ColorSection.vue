@@ -7,30 +7,12 @@
           {{ item.label }}
         </label>
         <div class="color-row">
-          <div
-            class="color-swatch"
-            :style="{ backgroundColor: colors[item.key] }"
-            :title="colors[item.key]"
-          />
-          <input
-            :id="`color-${item.key}`"
-            type="text"
-            class="color-value-input"
-            :value="colors[item.key]"
-            @input="handleInput(item.key, $event)"
-            @blur="handleBlur(item.key, $event)"
-            :aria-label="item.label"
-          />
-          <div
-            v-if="item.contrastWith && colors[item.contrastWith]"
-            class="mini-contrast"
-            :class="
-              getContrastClass(colors[item.key], colors[item.contrastWith])
-            "
-            :title="
-              getContrastTooltip(colors[item.key], colors[item.contrastWith])
-            "
-          >
+          <div class="color-swatch" :style="{ backgroundColor: colors[item.key] }" :title="colors[item.key]" />
+          <input :id="`color-${item.key}`" type="text" class="color-value-input" :value="colors[item.key]"
+            @input="handleInput(item.key, $event)" @blur="handleBlur(item.key, $event)" :aria-label="item.label" />
+          <div v-if="item.contrastWith && colors[item.contrastWith]" class="mini-contrast" :class="getContrastClass(colors[item.key], colors[item.contrastWith])
+            " :title="getContrastTooltip(colors[item.key], colors[item.contrastWith])
+              ">
             {{ getContrastRatio(colors[item.key], colors[item.contrastWith]) }}
           </div>
         </div>

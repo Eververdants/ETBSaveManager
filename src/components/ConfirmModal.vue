@@ -24,7 +24,7 @@
               </span>
               <span class="detail-value">{{
                 archiveDetails.currentLevel || t("common.unknown")
-              }}</span>
+                }}</span>
             </div>
             <div class="archive-detail-row">
               <span class="detail-label">
@@ -32,10 +32,7 @@
                 {{ t("confirmModal.archiveDetails.difficulty") }}
               </span>
               <span class="detail-value">
-                <span
-                  class="difficulty-badge"
-                  :class="archiveDetails.archiveDifficulty"
-                >
+                <span class="difficulty-badge" :class="archiveDetails.archiveDifficulty">
                   {{ getDifficultyText(archiveDetails.archiveDifficulty) }}
                 </span>
               </span>
@@ -47,7 +44,7 @@
               </span>
               <span class="detail-value">{{
                 formatDate(archiveDetails.date)
-              }}</span>
+                }}</span>
             </div>
           </div>
 
@@ -55,19 +52,10 @@
         </div>
 
         <div class="modal-footer">
-          <button
-            class="btn btn-secondary"
-            @click="handleCancel"
-            :disabled="loading"
-          >
+          <button class="btn btn-secondary" @click="handleCancel" :disabled="loading">
             {{ cancelText }}
           </button>
-          <button
-            class="btn"
-            :class="`btn-${type}`"
-            @click="handleConfirm"
-            :disabled="loading"
-          >
+          <button class="btn" :class="`btn-${type}`" @click="handleConfirm" :disabled="loading">
             <span v-if="loading" class="loading-spinner"></span>
             {{ confirmText }}
           </button>

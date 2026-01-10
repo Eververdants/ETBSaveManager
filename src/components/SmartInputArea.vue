@@ -13,46 +13,26 @@
     <div class="section-content">
       <!-- 输入方式按钮 -->
       <div class="input-methods">
-        <button
-          class="input-method-btn"
-          @click="handlePasteNames"
-          :title="$t('quickCreate.inputArea.pasteNames')"
-        >
+        <button class="input-method-btn" @click="handlePasteNames" :title="$t('quickCreate.inputArea.pasteNames')">
           <font-awesome-icon :icon="['fas', 'paste']" />
           <span>{{ $t("quickCreate.inputArea.pasteNames") }}</span>
         </button>
-        <button
-          class="input-method-btn"
-          @click="handleImportFile"
-          :title="$t('quickCreate.inputArea.importFile')"
-        >
+        <button class="input-method-btn" @click="handleImportFile" :title="$t('quickCreate.inputArea.importFile')">
           <font-awesome-icon :icon="['fas', 'file-import']" />
           <span>{{ $t("quickCreate.inputArea.importFile") }}</span>
         </button>
-        <button
-          class="input-method-btn"
-          @click="handleManualAdd"
-          :title="$t('quickCreate.inputArea.manualAdd')"
-        >
+        <button class="input-method-btn" @click="handleManualAdd" :title="$t('quickCreate.inputArea.manualAdd')">
           <font-awesome-icon :icon="['fas', 'plus']" />
           <span>{{ $t("quickCreate.inputArea.manualAdd") }}</span>
         </button>
       </div>
 
       <!-- 拖放区域 -->
-      <div
-        class="drop-zone"
-        @dragover.prevent="onDragOver"
-        @dragleave="onDragLeave"
-        @drop.prevent="onDrop"
-        :class="dropZoneClass"
-      >
+      <div class="drop-zone" @dragover.prevent="onDragOver" @dragleave="onDragLeave" @drop.prevent="onDrop"
+        :class="dropZoneClass">
         <!-- 空状态 -->
         <template v-if="nameCount === 0 && !hasErrors">
-          <font-awesome-icon
-            :icon="['fas', 'cloud-upload-alt']"
-            class="drop-icon"
-          />
+          <font-awesome-icon :icon="['fas', 'cloud-upload-alt']" class="drop-icon" />
           <p class="drop-hint">{{ $t("quickCreate.inputArea.emptyHint") }}</p>
           <p class="drop-sub-hint">
             {{ $t("quickCreate.inputArea.supportedFormats") }}
@@ -65,20 +45,13 @@
         <!-- 错误状态 -->
         <template v-else-if="hasErrors">
           <div class="status-info">
-            <font-awesome-icon
-              :icon="['fas', 'exclamation-circle']"
-              class="status-icon error"
-            />
+            <font-awesome-icon :icon="['fas', 'exclamation-circle']" class="status-icon error" />
             <span class="status-text error">{{
               $t("quickCreate.inputArea.importFailed")
             }}</span>
           </div>
           <div class="error-list">
-            <p
-              v-for="(err, idx) in lastParseResult.errors"
-              :key="idx"
-              class="error-item"
-            >
+            <p v-for="(err, idx) in lastParseResult.errors" :key="idx" class="error-item">
               {{ err }}
             </p>
           </div>
@@ -91,38 +64,25 @@
         <!-- 有数据状态 -->
         <template v-else>
           <div class="status-info">
-            <font-awesome-icon
-              :icon="['fas', 'check-circle']"
-              class="status-icon success"
-            />
+            <font-awesome-icon :icon="['fas', 'check-circle']" class="status-icon success" />
             <span class="status-text">
               {{ $t("quickCreate.inputArea.recognized", { count: nameCount }) }}
             </span>
           </div>
 
-          <div
-            class="detected-info"
-            v-if="levelDetectedCount > 0 || difficultyDetectedCount > 0"
-          >
+          <div class="detected-info" v-if="levelDetectedCount > 0 || difficultyDetectedCount > 0">
             <span v-if="levelDetectedCount > 0" class="detected-tag level">
               <font-awesome-icon :icon="['fas', 'map-marker-alt']" />
               {{ levelDetectedCount }} 个层级
             </span>
-            <span
-              v-if="difficultyDetectedCount > 0"
-              class="detected-tag difficulty"
-            >
+            <span v-if="difficultyDetectedCount > 0" class="detected-tag difficulty">
               <font-awesome-icon :icon="['fas', 'skull']" />
               {{ difficultyDetectedCount }} 个难度
             </span>
           </div>
 
           <div class="warning-list" v-if="hasWarnings">
-            <p
-              v-for="(warn, idx) in displayWarnings"
-              :key="idx"
-              class="warning-item"
-            >
+            <p v-for="(warn, idx) in displayWarnings" :key="idx" class="warning-item">
               <font-awesome-icon :icon="['fas', 'exclamation-triangle']" />
               {{ warn }}
             </p>
@@ -132,11 +92,7 @@
           </div>
 
           <div class="info-list" v-if="hasInfo">
-            <p
-              v-for="(info, idx) in lastParseResult.info"
-              :key="idx"
-              class="info-item"
-            >
+            <p v-for="(info, idx) in lastParseResult.info" :key="idx" class="info-item">
               <font-awesome-icon :icon="['fas', 'info-circle']" />
               {{ info }}
             </p>
@@ -150,18 +106,8 @@
       </div>
     </div>
 
-    <input
-      ref="fileInput"
-      type="file"
-      accept=".txt,.csv,.json"
-      style="display: none"
-      @change="onFileSelected"
-    />
-    <textarea
-      ref="pasteArea"
-      class="hidden-paste-area"
-      @paste="onPaste"
-    ></textarea>
+    <input ref="fileInput" type="file" accept=".txt,.csv,.json" style="display: none" @change="onFileSelected" />
+    <textarea ref="pasteArea" class="hidden-paste-area" @paste="onPaste"></textarea>
   </section>
 </template>
 
@@ -250,7 +196,7 @@ export default {
               processTextInput(text);
             }
           })
-          .catch(() => {});
+          .catch(() => { });
       }
     };
 
@@ -346,7 +292,7 @@ export default {
           .then((text) => {
             if (text && text.trim()) processTextInput(text);
           })
-          .catch(() => {});
+          .catch(() => { });
       }
     };
 
@@ -641,6 +587,7 @@ export default {
 .status-icon.success {
   color: var(--success-color);
 }
+
 .status-icon.error {
   color: var(--error-color);
 }
@@ -702,9 +649,11 @@ export default {
 .error-item {
   color: var(--error-color);
 }
+
 .warning-item {
   color: var(--warning-color);
 }
+
 .info-item {
   color: var(--accent-color);
 }

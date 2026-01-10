@@ -1,80 +1,34 @@
 <template>
-  <div
-    class="color-picker"
-    role="group"
-    :aria-label="label"
-    @keydown="handleKeydown"
-  >
+  <div class="color-picker" role="group" :aria-label="label" @keydown="handleKeydown">
     <!-- Color Preview Swatch -->
-    <div
-      class="color-preview"
-      :style="{ backgroundColor: currentColor }"
-      :title="currentColor"
-      @click="focusInput"
-      role="button"
-      :aria-label="$t('theme.colorPreview', { color: currentColor })"
-      tabindex="0"
-    >
+    <div class="color-preview" :style="{ backgroundColor: currentColor }" :title="currentColor" @click="focusInput"
+      role="button" :aria-label="$t('theme.colorPreview', { color: currentColor })" tabindex="0">
       <span v-if="!isValidColor" class="invalid-indicator">!</span>
     </div>
 
     <!-- Color Input -->
     <div class="color-input-wrapper">
-      <input
-        ref="inputRef"
-        type="text"
-        class="color-input"
-        v-model="inputValue"
-        @input="handleInput"
-        @blur="handleBlur"
-        @focus="handleFocus"
-        :placeholder="placeholder"
-        :aria-label="`${label} ${$t('theme.colorValue')}`"
-        :aria-invalid="!isValidColor"
-        :aria-describedby="errorId"
-      />
-      <span
-        v-if="!isValidColor && showError"
-        :id="errorId"
-        class="error-message"
-        role="alert"
-      >
+      <input ref="inputRef" type="text" class="color-input" v-model="inputValue" @input="handleInput" @blur="handleBlur"
+        @focus="handleFocus" :placeholder="placeholder" :aria-label="`${label} ${$t('theme.colorValue')}`"
+        :aria-invalid="!isValidColor" :aria-describedby="errorId" />
+      <span v-if="!isValidColor && showError" :id="errorId" class="error-message" role="alert">
         {{ $t("theme.invalidColor") }}
       </span>
     </div>
 
     <!-- Contrast Indicator -->
-    <div
-      v-if="contrastWith"
-      class="contrast-indicator"
-      :class="contrastClass"
-      :aria-label="$t('theme.contrastRatio', { ratio: contrastRatio })"
-      :title="contrastTooltip"
-    >
+    <div v-if="contrastWith" class="contrast-indicator" :class="contrastClass"
+      :aria-label="$t('theme.contrastRatio', { ratio: contrastRatio })" :title="contrastTooltip">
       <span class="contrast-value">{{ contrastRatio }}:1</span>
       <span class="contrast-level">{{ contrastLevel }}</span>
     </div>
 
     <!-- Preset Colors Panel -->
-    <div
-      v-if="showPresets"
-      class="preset-panel"
-      role="listbox"
-      :aria-label="$t('theme.presetColors')"
-    >
-      <button
-        v-for="(color, index) in presetColors"
-        :key="color"
-        class="preset-color"
-        :style="{ backgroundColor: color }"
-        @click="selectPreset(color)"
-        @keydown.enter="selectPreset(color)"
-        @keydown.space.prevent="selectPreset(color)"
-        role="option"
-        :aria-selected="currentColor === color"
-        :aria-label="$t('theme.selectColor', { color })"
-        :tabindex="index === 0 ? 0 : -1"
-      />
+    <div v-if="showPresets" class="preset-panel" role="listbox" :aria-label="$t('theme.presetColors')">
+      <button v-for="(color, index) in presetColors" :key="color" class="preset-color"
+        :style="{ backgroundColor: color }" @click="selectPreset(color)" @keydown.enter="selectPreset(color)"
+        @keydown.space.prevent="selectPreset(color)" role="option" :aria-selected="currentColor === color"
+        :aria-label="$t('theme.selectColor', { color })" :tabindex="index === 0 ? 0 : -1" />
     </div>
   </div>
 </template>

@@ -49,34 +49,20 @@
 
     <!-- 操作按钮 -->
     <div class="action-buttons">
-      <button
-        class="action-btn cancel-btn"
-        @click="handleCancel"
-        :disabled="isCreating"
-      >
+      <button class="action-btn cancel-btn" @click="handleCancel" :disabled="isCreating">
         <font-awesome-icon :icon="['fas', 'times']" />
         {{ $t("common.cancel") }}
       </button>
 
-      <button
-        class="action-btn template-btn"
-        @click="handleSaveTemplate"
-        :disabled="isCreating || archives.length === 0"
-      >
+      <button class="action-btn template-btn" @click="handleSaveTemplate"
+        :disabled="isCreating || archives.length === 0">
         <font-awesome-icon :icon="['fas', 'save']" />
         {{ $t("quickCreate.preview.saveTemplate") }}
       </button>
 
-      <button
-        class="action-btn create-btn"
-        @click="handleCreate"
-        :disabled="!canCreate || isCreating"
-        :title="createButtonTooltip"
-      >
-        <font-awesome-icon
-          :icon="isCreating ? ['fas', 'spinner'] : ['fas', 'plus']"
-          :spin="isCreating"
-        />
+      <button class="action-btn create-btn" @click="handleCreate" :disabled="!canCreate || isCreating"
+        :title="createButtonTooltip">
+        <font-awesome-icon :icon="isCreating ? ['fas', 'spinner'] : ['fas', 'plus']" :spin="isCreating" />
         {{ createButtonText }}
       </button>
     </div>

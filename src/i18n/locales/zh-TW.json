@@ -53,13 +53,6 @@
   "plugin": {
     "marketDescription": "瀏覽與安裝插件",
     "searchPlaceholder": "搜尋插件…",
-    "betaNotAvailable": "外掛程式系統暫未開放",
-    "betaNotAvailableDesc": "外掛程式系統目前處於灰度測試階段，僅對部分使用者開放。感謝您的理解與支援！",
-    "secretUnlockTitle": "🤫 噓...發現秘密通道",
-    "secretUnlockMessage": "好吧，既然你找到了這裡，我就給你開放外掛程式系統吧！",
-    "secretUnlockHint": "但是...這是我們之間的小秘密，不要告訴別人哦~ 😉",
-    "secretUnlocked": "✨ 外掛程式系統已解鎖！正在重新整理...",
-    "secretUnlockConfirm": "我保證不說！",
     "description": "描述",
     "features": "功能特性",
     "downloads": "下載數",
@@ -133,14 +126,6 @@
   },
   "app": {
     "name": "逃離後室存檔工具"
-  },
-  "pluginBeta": {
-    "title": "🎉 恭喜！您已被選為外掛程式系統灰度測試用戶",
-    "message": "您現在可以使用外掛程式系統的所有功能，包括安裝語言包、主題和其他擴充功能。",
-    "feature1": "安裝多語言翻譯外掛程式",
-    "feature2": "使用社群自訂主題",
-    "feature3": "體驗更多擴充功能",
-    "confirm": "開始體驗"
   },
   "about": {
     "description": "關於應用信息",

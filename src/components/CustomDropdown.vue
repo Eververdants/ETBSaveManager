@@ -1,43 +1,22 @@
 <template>
-  <div
-    class="custom-dropdown"
-    :class="{ disabled: disabled }"
-    ref="dropdownRef"
-  >
+  <div class="custom-dropdown" :class="{ disabled: disabled }" ref="dropdownRef">
     <div class="dropdown-display" @click="toggleDropdown">
       <transition name="text-swift" mode="out-in">
-        <span
-          :key="(selectedLabel || placeholder) + '-' + $i18n.locale"
-          class="dropdown-text"
-          >{{ selectedLabel || placeholder }}</span
-        >
+        <span :key="(selectedLabel || placeholder) + '-' + $i18n.locale" class="dropdown-text">{{ selectedLabel ||
+          placeholder }}</span>
       </transition>
       <span class="dropdown-icon">▼</span>
     </div>
 
     <Teleport to="body">
-      <transition
-        name="dropdown"
-        @enter="handleMenuEnter"
-        @leave="handleMenuLeave"
-      >
-        <div
-          v-if="isOpen"
-          class="dropdown-menu"
-          :style="menuStyle"
-          ref="menuRef"
-        >
-          <div
-            v-for="option in options"
-            :key="option.value + '-' + $i18n.locale"
-            class="dropdown-option"
-            :class="{ selected: option.value === modelValue }"
-            @click="selectOption(option)"
-          >
+      <transition name="dropdown" @enter="handleMenuEnter" @leave="handleMenuLeave">
+        <div v-if="isOpen" class="dropdown-menu" :style="menuStyle" ref="menuRef">
+          <div v-for="option in options" :key="option.value + '-' + $i18n.locale" class="dropdown-option"
+            :class="{ selected: option.value === modelValue }" @click="selectOption(option)">
             <transition name="text-swift" mode="out-in">
               <span :key="option.label + '-' + $i18n.locale">{{
                 option.label
-              }}</span>
+                }}</span>
             </transition>
           </div>
         </div>

@@ -1,56 +1,36 @@
 <template>
-  <div
-    class="create-archive-container"
-    :class="{ 'sidebar-expanded': isSidebarExpanded }"
-  >
+  <div class="create-archive-container" :class="{ 'sidebar-expanded': isSidebarExpanded }">
     <!-- 步骤指示器 -->
     <div class="step-indicator">
       <!-- 左侧按钮区域 -->
       <div class="step-indicator-left">
         <!-- 返回快速模式按钮 - 只在快速模式下显示，且只在第一步显示 -->
-        <button
-          v-if="isQuickMode && currentStep === 1"
-          class="back-to-quick-mode-btn"
-          @click="goBackToQuickMode"
-        >
+        <button v-if="isQuickMode && currentStep === 1" class="back-to-quick-mode-btn" @click="goBackToQuickMode">
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
           <span>{{ $t("createArchive.backToQuickMode") }}</span>
         </button>
         <!-- 选择创建模式按钮 - 只在非快速模式下显示，且只在第一步显示 -->
-        <button
-          v-else-if="currentStep === 1"
-          class="mode-select-button"
-          @click="goToSelectMode"
-        >
+        <button v-else-if="currentStep === 1" class="mode-select-button" @click="goToSelectMode">
           <font-awesome-icon :icon="['fas', 'th-large']" />
           <span>{{ $t("createMode.title") }}</span>
         </button>
       </div>
 
-      <div
-        class="step"
-        :class="{ active: currentStep >= 1, completed: currentStep > 1 }"
-      >
+      <div class="step" :class="{ active: currentStep >= 1, completed: currentStep > 1 }">
         <span class="step-number">{{ $t("common.step", { number: 1 }) }}</span>
         <span class="step-label">{{
           $t("createArchive.steps.selectLevel")
         }}</span>
       </div>
       <div class="step-connector"></div>
-      <div
-        class="step"
-        :class="{ active: currentStep >= 2, completed: currentStep > 2 }"
-      >
+      <div class="step" :class="{ active: currentStep >= 2, completed: currentStep > 2 }">
         <span class="step-number">{{ $t("common.step", { number: 2 }) }}</span>
         <span class="step-label">{{
           $t("createArchive.steps.configureArchive")
         }}</span>
       </div>
       <div class="step-connector"></div>
-      <div
-        class="step"
-        :class="{ active: currentStep >= 3, completed: currentStep > 3 }"
-      >
+      <div class="step" :class="{ active: currentStep >= 3, completed: currentStep > 3 }">
         <span class="step-number">{{ $t("common.step", { number: 3 }) }}</span>
         <span class="step-label">{{
           $t("createArchive.steps.editInventory")
@@ -62,64 +42,32 @@
     </div>
 
     <!-- 主要内容区域 -->
-    <div
-      class="content-wrapper"
-      :class="{ 'no-ending-selector': currentStep !== 1 }"
-    >
-      <transition
-        name="step-transition"
-        mode="out-in"
-        @enter="onStepEnter"
-        @leave="onStepLeave"
-      >
+    <div class="content-wrapper" :class="{ 'no-ending-selector': currentStep !== 1 }">
+      <transition name="step-transition" mode="out-in" @enter="onStepEnter" @leave="onStepLeave">
         <div :key="currentStep" class="step-container">
           <!-- 步骤1: 选择层级 -->
-          <Step1SelectLevel
-            v-if="currentStep === 1"
-            :selected-level="selectedLevel"
-            :selected-ending="selectedEnding"
-            :available-levels="availableLevels"
-            :endings="endings"
-            @select-level="selectLevel"
-            @select-ending="selectEnding"
-          />
+          <Step1SelectLevel v-if="currentStep === 1" :selected-level="selectedLevel" :selected-ending="selectedEnding"
+            :available-levels="availableLevels" :endings="endings" @select-level="selectLevel"
+            @select-ending="selectEnding" />
 
           <!-- 步骤2: 配置存档 -->
-          <Step2ConfigArchive
-            v-else-if="currentStep === 2"
-            v-model:archive-name="archiveName"
-            :selected-game-mode="selectedGameMode"
-            :selected-difficulty="selectedDifficulty"
-            :selected-actual-difficulty="selectedActualDifficulty"
-            :difficulty-levels="difficultyLevels"
-            @select-difficulty="selectDifficulty"
-            @select-actual-difficulty="selectActualDifficulty"
-          />
+          <Step2ConfigArchive v-else-if="currentStep === 2" v-model:archive-name="archiveName"
+            :selected-game-mode="selectedGameMode" :selected-difficulty="selectedDifficulty"
+            :selected-actual-difficulty="selectedActualDifficulty" :difficulty-levels="difficultyLevels"
+            @select-difficulty="selectDifficulty" @select-actual-difficulty="selectActualDifficulty" />
 
           <!-- 步骤3: 编辑背包 -->
-          <Step3EditInventory
-            v-else-if="currentStep === 3"
-            v-model:new-steam-id="newSteamId"
-            :players="players"
-            :active-player-index="activePlayerIndex"
-            :player-input-message="playerInputMessage"
-            :player-input-message-type="playerInputMessageType"
-            @add-steam-id="addSteamId"
-            @remove-player="removePlayer"
-            @select-player="selectPlayer"
-            @edit-slot="editSlot"
-          />
+          <Step3EditInventory v-else-if="currentStep === 3" v-model:new-steam-id="newSteamId" :players="players"
+            :active-player-index="activePlayerIndex" :player-input-message="playerInputMessage"
+            :player-input-message-type="playerInputMessageType" @add-steam-id="addSteamId" @remove-player="removePlayer"
+            @select-player="selectPlayer" @edit-slot="editSlot" />
         </div>
       </transition>
     </div>
 
     <!-- 底部操作按钮 -->
     <div class="bottom-actions">
-      <button
-        @click="previousStep"
-        class="action-button secondary"
-        :disabled="currentStep === 1"
-      >
+      <button @click="previousStep" class="action-button secondary" :disabled="currentStep === 1">
         <font-awesome-icon :icon="['fas', 'arrow-left']" />
         {{ $t("createArchive.previous") }}
       </button>
@@ -132,11 +80,7 @@
         / 3
       </div>
 
-      <button
-        @click="nextStep"
-        class="action-button primary"
-        :disabled="!canProceed"
-      >
+      <button @click="nextStep" class="action-button primary" :disabled="!canProceed">
         <template v-if="currentStep === 3 && isCreating">
           {{ $t("createArchive.creating") }}
           <font-awesome-icon :icon="['fas', 'spinner']" spin />
@@ -151,19 +95,14 @@
               ? $t("createArchive.createArchive")
               : $t("createArchive.next")
           }}
-          <font-awesome-icon
-            :icon="['fas', currentStep === 3 ? 'check' : 'arrow-right']"
-          />
+          <font-awesome-icon :icon="['fas', currentStep === 3 ? 'check' : 'arrow-right']" />
         </template>
       </button>
     </div>
 
     <!-- 物品选择器 -->
-    <InventoryItemSelector
-      :visible="showItemSelector"
-      @select="handleItemSelect"
-      @update:visible="showItemSelector = $event"
-    />
+    <InventoryItemSelector :visible="showItemSelector" @select="handleItemSelect"
+      @update:visible="showItemSelector = $event" />
   </div>
 </template>
 
@@ -182,7 +121,7 @@ import { gsap } from "gsap";
 import { useI18n } from "vue-i18n";
 import { useRouter, useRoute } from "vue-router";
 import InventoryItemSelector from "@/components/InventoryItemSelector.vue";
-import { showError } from "@/services/popupService";
+import { notify } from "@/services/notificationService";
 import Step1SelectLevel from "./Step1SelectLevel.vue";
 import Step2ConfigArchive from "./Step2ConfigArchive.vue";
 import Step3EditInventory from "./Step3EditInventory.vue";
@@ -196,9 +135,14 @@ export default {
     Step3EditInventory,
   },
   setup() {
-    const { t } = useI18n({ useScope: "global" });
+    const { t, te } = useI18n({ useScope: "global" });
     const router = useRouter();
     const route = useRoute();
+
+    const getLevelName = (levelKey) => {
+      const translationKey = `LevelName_Display.${levelKey}`;
+      return te(translationKey) ? t(translationKey) : levelKey;
+    };
 
     // 检测是否从快速模式进入
     const isQuickMode = computed(() => route.query.quickMode === "true");
@@ -296,7 +240,7 @@ export default {
       }
     });
 
-    watch(selectedEnding, () => {});
+    watch(selectedEnding, () => { });
 
     const selectDifficulty = (difficulty) => {
       selectedDifficulty.value = difficulty;
@@ -392,7 +336,7 @@ export default {
     const loadLevelsForEnding = async (endingIndex) => {
       const endingLevels = endings.value[endingIndex].levels;
       const newLevels = endingLevels.map((levelKey) => ({
-        name: t(`LevelName_Display.${levelKey}`),
+        name: getLevelName(levelKey),
         image: `/images/ETB/${levelKey}.jpg`,
         levelKey: levelKey,
       }));
@@ -670,7 +614,7 @@ export default {
             error: errorMessage,
           });
         }
-        showError(userFriendlyMessage);
+        notify.error(userFriendlyMessage);
       }
     };
 
@@ -717,16 +661,16 @@ export default {
           game_mode: "multiplayer",
           difficulty:
             selectedDifficulty.value.charAt(0).toUpperCase() +
-              selectedDifficulty.value.slice(1) || "Normal",
+            selectedDifficulty.value.slice(1) || "Normal",
           actual_difficulty:
             selectedActualDifficulty.value.charAt(0).toUpperCase() +
-              selectedActualDifficulty.value.slice(1) || "Normal",
+            selectedActualDifficulty.value.slice(1) || "Normal",
           players: players.map((p) => ({
             steam_id: p.steamId || "",
             inventory: Array.isArray(p.inventory)
               ? p.inventory
-                  .filter((item) => item !== null && item !== undefined)
-                  .map((item) => getItemIdByName(item))
+                .filter((item) => item !== null && item !== undefined)
+                .map((item) => getItemIdByName(item))
               : [],
           })),
           basic_archive: basicArchive || {},
@@ -799,8 +743,8 @@ export default {
           </div></div>
           <h2 class="success-title">${t("createArchive.archiveCreated")}</h2>
           <p class="success-subtitle">${t(
-            "createArchive.archiveCreatedMessage"
-          )}</p>
+        "createArchive.archiveCreatedMessage"
+      )}</p>
         </div>`;
 
       // 动态注入样式（因为元素添加到 body，scoped 样式无法生效）

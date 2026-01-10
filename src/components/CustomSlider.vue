@@ -1,19 +1,9 @@
 <template>
-  <div
-    class="custom-slider"
-    ref="sliderRef"
-    :class="{ dragging: isDragging }"
-    :style="sliderStyle"
-  >
+  <div class="custom-slider" ref="sliderRef" :class="{ dragging: isDragging }" :style="sliderStyle">
     <div class="slider-track" @click="handleTrackClick">
       <div class="slider-fill" :style="{ width: `${percentage}%` }"></div>
-      <div
-        class="slider-thumb"
-        :style="{ left: `calc(${percentage}% - 12px)` }"
-        @mousedown="startDrag"
-        @touchstart="startDragTouch"
-        ref="thumbRef"
-      >
+      <div class="slider-thumb" :style="{ left: `calc(${percentage}% - 12px)` }" @mousedown="startDrag"
+        @touchstart="startDragTouch" ref="thumbRef">
         <div class="thumb-indicator">
           <span class="thumb-value">{{ displayValue }}%</span>
         </div>

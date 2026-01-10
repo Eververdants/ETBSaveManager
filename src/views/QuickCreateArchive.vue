@@ -31,10 +31,7 @@
           }}</span>
         </div>
         <div class="stat-divider"></div>
-        <div
-          class="stat-item"
-          :class="{ 'has-error': summaryStats.missingCount > 0 }"
-        >
+        <div class="stat-item" :class="{ 'has-error': summaryStats.missingCount > 0 }">
           <span class="stat-value">{{ summaryStats.missingCount }}</span>
           <span class="stat-label">{{
             $t("quickCreate.preview.missing")
@@ -54,35 +51,20 @@
         <!-- 进度条 (创建中显示) -->
         <div class="progress-section" v-if="state.isCreating">
           <div class="progress-bar">
-            <div
-              class="progress-fill"
-              :style="{ width: `${state.creationProgress}%` }"
-            ></div>
+            <div class="progress-fill" :style="{ width: `${state.creationProgress}%` }"></div>
           </div>
-          <span class="progress-text"
-            >{{ Math.round(state.creationProgress) }}%</span
-          >
+          <span class="progress-text">{{ Math.round(state.creationProgress) }}%</span>
         </div>
 
-        <button
-          class="action-btn template-btn"
-          @click="handleSaveTemplate"
-          :disabled="state.isCreating || state.archives.length === 0"
-        >
+        <button class="action-btn template-btn" @click="handleSaveTemplate"
+          :disabled="state.isCreating || state.archives.length === 0">
           <font-awesome-icon :icon="['fas', 'save']" />
           {{ $t("quickCreate.preview.saveTemplate") }}
         </button>
 
-        <button
-          class="create-btn"
-          :disabled="!canCreate || state.isCreating"
-          @click="handleCreate"
-          :title="createButtonTooltip"
-        >
-          <font-awesome-icon
-            :icon="state.isCreating ? ['fas', 'spinner'] : ['fas', 'plus']"
-            :spin="state.isCreating"
-          />
+        <button class="create-btn" :disabled="!canCreate || state.isCreating" @click="handleCreate"
+          :title="createButtonTooltip">
+          <font-awesome-icon :icon="state.isCreating ? ['fas', 'spinner'] : ['fas', 'plus']" :spin="state.isCreating" />
           {{ createButtonText }}
         </button>
       </div>
@@ -93,81 +75,43 @@
       <!-- 左侧边栏：智能输入 + 统一配置 -->
       <aside class="left-sidebar">
         <!-- 智能输入区 -->
-        <SmartInputArea
-          v-model="inputNames"
-          :archive-count="state.archives.length"
-          :level-detected-count="detectedStats.levelCount"
-          :difficulty-detected-count="detectedStats.difficultyCount"
-          @parse-complete="onParseComplete"
-          @manual-add="handleManualAdd"
-          @load-template="handleLoadTemplate"
-        />
+        <SmartInputArea v-model="inputNames" :archive-count="state.archives.length"
+          :level-detected-count="detectedStats.levelCount" :difficulty-detected-count="detectedStats.difficultyCount"
+          @parse-complete="onParseComplete" @manual-add="handleManualAdd" @load-template="handleLoadTemplate" />
 
         <!-- 统一配置区 -->
-        <UniformConfigPanel
-          :config="state.uniformConfig"
-          :smart-rules="state.smartRules"
-          @update:config="handleConfigUpdate"
-          @update:smart-rules="handleSmartRulesUpdate"
-        />
+        <UniformConfigPanel :config="state.uniformConfig" :smart-rules="state.smartRules"
+          @update:config="handleConfigUpdate" @update:smart-rules="handleSmartRulesUpdate" />
       </aside>
 
       <!-- 右侧主体：存档预览卡片流 -->
       <section class="card-flow-area">
-        <ArchiveCardFlow
-          :archives="state.archives"
-          :selected-ids="state.selectedArchiveIds"
-          :uniform-config="state.uniformConfig"
-          :smart-rules="state.smartRules"
-          @select="toggleArchiveSelection"
-          @select-all="selectAll"
-          @invert-selection="invertSelection"
-          @edit="openEditModal"
-          @copy="copyArchive"
-          @remove="removeArchive"
-          @batch-edit="openBatchEditModal"
-        />
+        <ArchiveCardFlow :archives="state.archives" :selected-ids="state.selectedArchiveIds"
+          :uniform-config="state.uniformConfig" :smart-rules="state.smartRules" @select="toggleArchiveSelection"
+          @select-all="selectAll" @invert-selection="invertSelection" @edit="openEditModal" @copy="copyArchive"
+          @remove="removeArchive" @batch-edit="openBatchEditModal" />
       </section>
     </main>
 
     <!-- 单个存档编辑模态框 -->
-    <ArchiveEditModal
-      :visible="state.showIndividualEditModal"
-      :archive="editingArchive"
-      :available-levels="availableLevels"
-      @close="closeEditModal"
-      @save="handleEditSave"
-    />
+    <ArchiveEditModal :visible="state.showIndividualEditModal" :archive="editingArchive"
+      :available-levels="availableLevels" @close="closeEditModal" @save="handleEditSave" />
 
     <!-- 批量编辑模态框 -->
-    <BatchEditModal
-      :visible="state.showBatchEditModal"
-      :selected-count="state.selectedArchiveIds.size"
-      :available-levels="availableLevels"
-      @close="closeBatchEditModal"
-      @apply="handleBatchEditApply"
-    />
+    <BatchEditModal :visible="state.showBatchEditModal" :selected-count="state.selectedArchiveIds.size"
+      :available-levels="availableLevels" @close="closeBatchEditModal" @apply="handleBatchEditApply" />
 
     <!-- 创建结果模态框 -->
     <Teleport to="body">
-      <div
-        v-if="showResultModal"
-        class="result-modal-overlay"
-        @click.self="closeResultModal"
-      >
+      <div v-if="showResultModal" class="result-modal-overlay" @click.self="closeResultModal">
         <div class="result-modal">
           <div class="result-modal-header">
             <h3 class="result-modal-title">
-              <font-awesome-icon
-                :icon="
-                  creationResult?.failed > 0
-                    ? ['fas', 'exclamation-triangle']
-                    : ['fas', 'check-circle']
-                "
-                :class="
-                  creationResult?.failed > 0 ? 'warning-icon' : 'success-icon'
-                "
-              />
+              <font-awesome-icon :icon="creationResult?.failed > 0
+                ? ['fas', 'exclamation-triangle']
+                : ['fas', 'check-circle']
+                " :class="creationResult?.failed > 0 ? 'warning-icon' : 'success-icon'
+                  " />
               {{
                 creationResult?.failed > 0
                   ? $t("quickCreate.result.partialTitle")
@@ -200,19 +144,12 @@
             </div>
 
             <!-- 错误详情 -->
-            <div
-              v-if="creationResult?.errors?.length > 0"
-              class="error-details"
-            >
+            <div v-if="creationResult?.errors?.length > 0" class="error-details">
               <h4 class="error-details-title">
                 {{ $t("quickCreate.result.errorDetails") }}
               </h4>
               <ul class="error-list">
-                <li
-                  v-for="(error, index) in creationResult.errors"
-                  :key="index"
-                  class="error-item"
-                >
+                <li v-for="(error, index) in creationResult.errors" :key="index" class="error-item">
                   <span class="error-name">{{ error.name }}</span>
                   <span class="error-message">{{ error.error }}</span>
                 </li>
@@ -225,21 +162,13 @@
               {{ $t("quickCreate.result.continueEditing") }}
             </button>
             <!-- Requirements 19.3, 19.4: 根据创建数量显示不同的导航按钮 -->
-            <button
-              v-if="
-                creationResult?.success === 1 && creationResult?.failed === 0
-              "
-              class="action-btn primary-btn"
-              @click="editSingleArchive"
-            >
+            <button v-if="
+              creationResult?.success === 1 && creationResult?.failed === 0
+            " class="action-btn primary-btn" @click="editSingleArchive">
               <font-awesome-icon :icon="['fas', 'edit']" />
               {{ $t("quickCreate.result.editArchive") }}
             </button>
-            <button
-              v-else
-              class="action-btn primary-btn"
-              @click="navigateToArchives"
-            >
+            <button v-else class="action-btn primary-btn" @click="navigateToArchives">
               <font-awesome-icon :icon="['fas', 'list']" />
               {{ $t("quickCreate.result.viewArchives") }}
             </button>
@@ -248,18 +177,11 @@
       </div>
 
       <!-- 草稿恢复提示模态框 -->
-      <div
-        v-if="showDraftRecoveryPrompt"
-        class="result-modal-overlay"
-        @click.self="ignoreDraft"
-      >
+      <div v-if="showDraftRecoveryPrompt" class="result-modal-overlay" @click.self="ignoreDraft">
         <div class="result-modal draft-recovery-modal">
           <div class="result-modal-header">
             <h3 class="result-modal-title">
-              <font-awesome-icon
-                :icon="['fas', 'file-alt']"
-                class="draft-icon"
-              />
+              <font-awesome-icon :icon="['fas', 'file-alt']" class="draft-icon" />
               {{ $t("quickCreate.draft.title") }}
             </h3>
             <button class="close-btn" @click="ignoreDraft">
@@ -294,18 +216,11 @@
       </div>
 
       <!-- 大量数据警告模态框 -->
-      <div
-        v-if="showLargeDataWarning"
-        class="result-modal-overlay"
-        @click.self="dismissLargeDataWarning"
-      >
+      <div v-if="showLargeDataWarning" class="result-modal-overlay" @click.self="dismissLargeDataWarning">
         <div class="result-modal large-data-warning-modal">
           <div class="result-modal-header">
             <h3 class="result-modal-title">
-              <font-awesome-icon
-                :icon="['fas', 'exclamation-triangle']"
-                class="warning-icon"
-              />
+              <font-awesome-icon :icon="['fas', 'exclamation-triangle']" class="warning-icon" />
               {{ $t("quickCreate.largeData.title") }}
             </h3>
             <button class="close-btn" @click="dismissLargeDataWarning">
@@ -315,9 +230,7 @@
 
           <div class="result-modal-body">
             <p class="large-data-message">
-              <template
-                v-if="largeDataWarningInfo?.type === 'very_large_input'"
-              >
+              <template v-if="largeDataWarningInfo?.type === 'very_large_input'">
                 {{
                   $t("quickCreate.largeData.veryLargeMessage", {
                     count: largeDataWarningInfo?.count || 0,
@@ -347,10 +260,7 @@
           </div>
 
           <div class="result-modal-footer">
-            <button
-              class="action-btn primary-btn"
-              @click="dismissLargeDataWarning"
-            >
+            <button class="action-btn primary-btn" @click="dismissLargeDataWarning">
               <font-awesome-icon :icon="['fas', 'check']" />
               {{ $t("quickCreate.largeData.understand") }}
             </button>
@@ -360,12 +270,7 @@
     </Teleport>
 
     <!-- 新手引导 -->
-    <TutorialOverlay
-      :visible="showTutorial"
-      @close="closeTutorial"
-      @skip="closeTutorial"
-      @complete="closeTutorial"
-    />
+    <TutorialOverlay :visible="showTutorial" @close="closeTutorial" @skip="closeTutorial" @complete="closeTutorial" />
   </div>
 </template>
 
@@ -395,8 +300,13 @@ export default {
   },
   setup() {
     const router = useRouter();
-    const { t } = useI18n({ useScope: "global" });
+    const { t, te } = useI18n({ useScope: "global" });
     const { showSuccess, showError, showInfo } = useToast();
+
+    const getLevelName = (levelKey) => {
+      const translationKey = `LevelName_Display.${levelKey}`;
+      return te(translationKey) ? t(translationKey) : levelKey;
+    };
 
     // 创建结果状态
     const creationResult = ref(null);
@@ -515,7 +425,6 @@ export default {
 
     // 可用层级列表
     const availableLevels = computed(() => {
-      // 从 LevelName_Display 获取所有层级
       const levels = [
         "Level0",
         "TopFloor",
@@ -568,7 +477,7 @@ export default {
       ];
       return levels.map((level) => ({
         value: level,
-        label: t(`LevelName_Display.${level}`) || level,
+        label: getLevelName(level),
       }));
     });
 
@@ -710,9 +619,9 @@ export default {
           const successMessage =
             results.failed > 0
               ? t("quickCreate.result.partialSuccess", {
-                  success: results.success,
-                  failed: results.failed,
-                })
+                success: results.success,
+                failed: results.failed,
+              })
               : t("quickCreate.result.success", { count: results.success });
 
           showSuccess(successMessage, "✓");
@@ -827,8 +736,8 @@ export default {
         console.error("保存模板失败:", error);
         showError(
           t("quickCreate.template.saveFailed") +
-            ": " +
-            (error.message || "未知错误"),
+          ": " +
+          (error.message || "未知错误"),
           "✗"
         );
       }
@@ -914,8 +823,8 @@ export default {
         console.error("加载模板失败:", error);
         showError(
           t("quickCreate.template.loadFailed") +
-            ": " +
-            (error.message || "未知错误"),
+          ": " +
+          (error.message || "未知错误"),
           "✗"
         );
       } finally {
@@ -1601,7 +1510,7 @@ export default {
     flex-shrink: 0;
   }
 
-  .left-sidebar > * {
+  .left-sidebar>* {
     flex: 1;
     min-width: 0;
   }
@@ -1645,7 +1554,7 @@ export default {
     flex-direction: column;
   }
 
-  .left-sidebar > * {
+  .left-sidebar>* {
     flex: none;
   }
 
@@ -1895,7 +1804,7 @@ export default {
   line-height: 1.4;
 }
 
-.tip-item + .tip-item {
+.tip-item+.tip-item {
   margin-top: var(--space-2);
 }
 

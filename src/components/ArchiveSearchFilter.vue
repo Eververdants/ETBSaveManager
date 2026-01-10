@@ -2,35 +2,17 @@
   <div class="archive-search-filter">
     <div class="search-filter-wrapper">
       <!-- 一体化搜索筛选区域 -->
-      <transition
-        name="search-filter"
-        appear
-        :duration="{ enter: 400, leave: 300 }"
-        @before-enter="beforeEnter"
-        @enter="enter"
-        @leave="leave"
-      >
+      <transition name="search-filter" appear :duration="{ enter: 400, leave: 300 }" @before-enter="beforeEnter"
+        @enter="enter" @leave="leave">
         <div class="unified-search-filter" v-show="showComponent">
           <!-- 搜索区域 -->
           <div class="search-section">
             <div class="search-input-group">
-              <font-awesome-icon
-                icon="fa-solid fa-search"
-                class="search-icon"
-              />
-              <input
-                v-model="searchQuery"
-                type="text"
-                :placeholder="$t('archiveSearch.searchPlaceholder')"
-                class="search-input"
-              />
+              <font-awesome-icon icon="fa-solid fa-search" class="search-icon" />
+              <input v-model="searchQuery" type="text" :placeholder="$t('archiveSearch.searchPlaceholder')"
+                class="search-input" />
               <transition name="clear-btn" mode="out-in">
-                <button
-                  v-if="searchQuery"
-                  @click="clearSearch"
-                  class="clear-btn"
-                  key="clear-btn"
-                >
+                <button v-if="searchQuery" @click="clearSearch" class="clear-btn" key="clear-btn">
                   <font-awesome-icon icon="fa-solid fa-times" />
                 </button>
               </transition>
@@ -44,36 +26,24 @@
                 <label class="filter-label">{{
                   $t("archiveSearch.archiveDifficulty")
                 }}</label>
-                <CustomDropdown
-                  v-model="selectedArchiveDifficulty"
-                  :options="difficultyOptions"
-                  :placeholder="$t('archiveSearch.archiveDifficulty')"
-                  @change="handleFilterChange"
-                />
+                <CustomDropdown v-model="selectedArchiveDifficulty" :options="difficultyOptions"
+                  :placeholder="$t('archiveSearch.archiveDifficulty')" @change="handleFilterChange" />
               </div>
 
               <div class="filter-item">
                 <label class="filter-label">{{
                   $t("archiveSearch.actualDifficulty")
                 }}</label>
-                <CustomDropdown
-                  v-model="selectedActualDifficulty"
-                  :options="difficultyOptions"
-                  :placeholder="$t('archiveSearch.actualDifficulty')"
-                  @change="handleFilterChange"
-                />
+                <CustomDropdown v-model="selectedActualDifficulty" :options="difficultyOptions"
+                  :placeholder="$t('archiveSearch.actualDifficulty')" @change="handleFilterChange" />
               </div>
 
               <div class="filter-item">
                 <label class="filter-label">{{
                   $t("archiveSearch.visibility")
                 }}</label>
-                <CustomDropdown
-                  v-model="selectedVisibility"
-                  :options="visibilityOptions"
-                  :placeholder="$t('archiveSearch.visibility')"
-                  @change="handleFilterChange"
-                />
+                <CustomDropdown v-model="selectedVisibility" :options="visibilityOptions"
+                  :placeholder="$t('archiveSearch.visibility')" @change="handleFilterChange" />
               </div>
             </div>
           </div>
@@ -463,7 +433,8 @@ const leave = (el, done) => {
 /* 一体化搜索筛选区域 - 移除性能消耗大的效果 */
 .unified-search-filter {
   display: flex;
-  flex-direction: column; /* 改为垂直布局，适应小屏幕 */
+  flex-direction: column;
+  /* 改为垂直布局，适应小屏幕 */
   gap: 16px;
   background: var(--glass-bg, rgba(30, 30, 30, 0.95));
   border-radius: 16px;

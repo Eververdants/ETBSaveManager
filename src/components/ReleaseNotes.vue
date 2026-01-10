@@ -2,18 +2,14 @@
   <div class="release-notes-container">
     <!-- 简洁版本显示 -->
     <div class="release-notes-compact" v-if="!showDetails">
-      <div
-        v-for="(note, index) in releaseNotes.slice(0, 2)"
-        :key="note.version"
-        class="compact-note-item"
-        :class="note.type"
-      >
+      <div v-for="(note, index) in releaseNotes.slice(0, 2)" :key="note.version" class="compact-note-item"
+        :class="note.type">
         <div class="compact-header">
           <span class="version-tag" :class="note.type">{{ note.version }}</span>
           <span class="compact-date">{{ formatDate(note.date) }}</span>
           <span v-if="note.isHighlight" class="compact-highlight">{{
             $t("featured")
-          }}</span>
+            }}</span>
         </div>
         <div class="compact-title">{{ note.title }}</div>
         <div class="compact-summary" v-if="note.categories.newFeatures?.[0]">
@@ -21,11 +17,7 @@
         </div>
       </div>
 
-      <div
-        v-if="releaseNotes.length > 2"
-        class="show-more-btn"
-        @click="showDetails = true"
-      >
+      <div v-if="releaseNotes.length > 2" class="show-more-btn" @click="showDetails = true">
         {{ $t("viewAllVersions", { count: releaseNotes.length }) }}
       </div>
     </div>
@@ -44,52 +36,33 @@
       </div>
 
       <div class="detailed-content">
-        <div
-          v-for="note in releaseNotes"
-          :key="note.version"
-          class="detailed-note-item"
-          :class="note.type"
-        >
+        <div v-for="note in releaseNotes" :key="note.version" class="detailed-note-item" :class="note.type">
           <div class="detailed-version-header">
             <span class="version-tag" :class="note.type">{{
               note.version
-            }}</span>
+              }}</span>
             <span class="detailed-date">{{ formatDate(note.date) }}</span>
             <span v-if="note.isHighlight" class="detailed-highlight">{{
               $t("featured")
-            }}</span>
+              }}</span>
           </div>
           <div class="detailed-title">{{ note.title }}</div>
 
-          <div
-            v-if="note.categories.newFeatures?.length"
-            class="category-block"
-          >
+          <div v-if="note.categories.newFeatures?.length" class="category-block">
             <div class="category-title">{{ $t("categories.newFeatures") }}</div>
             <div class="category-items">
-              <div
-                v-for="(item, idx) in note.categories.newFeatures"
-                :key="idx"
-                class="category-item"
-              >
+              <div v-for="(item, idx) in note.categories.newFeatures" :key="idx" class="category-item">
                 {{ item }}
               </div>
             </div>
           </div>
 
-          <div
-            v-if="note.categories.improvements?.length"
-            class="category-block"
-          >
+          <div v-if="note.categories.improvements?.length" class="category-block">
             <div class="category-title">
               {{ $t("categories.improvements") }}
             </div>
             <div class="category-items">
-              <div
-                v-for="(item, idx) in note.categories.improvements"
-                :key="idx"
-                class="category-item"
-              >
+              <div v-for="(item, idx) in note.categories.improvements" :key="idx" class="category-item">
                 {{ item }}
               </div>
             </div>
@@ -98,27 +71,16 @@
           <div v-if="note.categories.bugFixes?.length" class="category-block">
             <div class="category-title">{{ $t("categories.bugFixes") }}</div>
             <div class="category-items">
-              <div
-                v-for="(item, idx) in note.categories.bugFixes"
-                :key="idx"
-                class="category-item"
-              >
+              <div v-for="(item, idx) in note.categories.bugFixes" :key="idx" class="category-item">
                 {{ item }}
               </div>
             </div>
           </div>
 
-          <div
-            v-if="note.categories.performance?.length"
-            class="category-block"
-          >
+          <div v-if="note.categories.performance?.length" class="category-block">
             <div class="category-title">{{ $t("categories.performance") }}</div>
             <div class="category-items">
-              <div
-                v-for="(item, idx) in note.categories.performance"
-                :key="idx"
-                class="category-item"
-              >
+              <div v-for="(item, idx) in note.categories.performance" :key="idx" class="category-item">
                 {{ item }}
               </div>
             </div>

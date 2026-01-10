@@ -616,82 +616,6 @@
         </div>
       </transition>
     </div>
-
-    <!-- 更新提示 -->
-    <transition name="slide">
-      <div
-        v-if="updateMessage"
-        :class="['update-message', updateMessage.type]"
-        :key="updateMessage.key || updateMessage.text"
-      >
-        <font-awesome-icon :icon="updateMessage.icon" />
-        <transition name="text-swift" mode="out-in">
-          <span :key="currentLanguage + '-' + updateMessage.text">{{
-            updateMessage.text
-          }}</span>
-        </transition>
-
-        <!-- 更新操作按钮 -->
-        <transition name="expand" mode="out-in">
-          <div
-            v-if="updateStatus === UpdateStatus.AVAILABLE"
-            class="update-actions"
-            :key="'actions-' + updateMessage.key"
-          >
-            <button
-              class="update-btn"
-              @click="downloadAndInstall"
-              :disabled="isProcessing"
-            >
-              <font-awesome-icon :icon="['fas', 'external-link-alt']" />
-              {{ t("settings.goToDownload") }}
-            </button>
-            <button class="update-btn secondary" @click="closeUpdateMessage">
-              {{ t("common.later") }}
-            </button>
-          </div>
-        </transition>
-
-        <!-- 自定义操作按钮 -->
-        <transition name="expand" mode="out-in">
-          <div
-            v-if="updateMessage.showActions"
-            class="update-actions"
-            :key="'custom-actions-' + updateMessage.key"
-          >
-            <button
-              v-for="(action, index) in updateMessage.actions"
-              :key="index"
-              :class="['update-btn', action.class]"
-              @click="action.action"
-            >
-              {{ action.text }}
-            </button>
-          </div>
-        </transition>
-
-        <!-- 更新详情 -->
-        <transition name="expand" mode="out-in">
-          <div
-            v-if="updateInfo && updateStatus === UpdateStatus.AVAILABLE"
-            class="update-details"
-            :key="'details-' + updateMessage.key"
-          >
-            <h4>
-              {{
-                t("settings.updateNotesForVersion", {
-                  version: updateInfo.version,
-                })
-              }}
-            </h4>
-            <div
-              class="update-content"
-              v-html="formatUpdateNotes(updateInfo.body)"
-            ></div>
-          </div>
-        </transition>
-      </div>
-    </transition>
   </div>
 </template>
 
@@ -712,6 +636,7 @@ import themeManager from "../styles/theme-config.js";
 import { themeStorage } from "../services/themeStorage.js";
 import { getAllAvailableLanguages, getInstalledThemePlugins } from "../plugins";
 import storage from "../services/storageService";
+import { notify } from "../services/notificationService";
 
 export default {
   name: "Settings",
@@ -739,14 +664,12 @@ export default {
       showApiKey: false,
       cacheEntryCount: 0,
       checkingUpdate: false,
-      updateMessage: null,
       appVersion: "3.0.0-Alpha-8",
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
       UpdateStatus: UpdateStatus, // 将UpdateStatus暴露给模板使用
       isProcessing: false,
-      messageId: 0,
       // 存档文件工具相关
       parseDragOver: false,
       packDragOver: false,
@@ -1082,27 +1005,12 @@ export default {
         storage.setItem("updateSource", source);
 
         // 显示成功提示
-        this.updateMessage = {
-          text: this.t("settings.updateSourceChanged", {
-            source: option.label,
-          }),
-          type: "success",
-          icon: ["fas", "check"],
-          key: `source-changed-${this.messageId++}`,
-        };
-
-        // 3秒后自动隐藏提示
-        setTimeout(() => {
-          this.closeUpdateMessage();
-        }, 3000);
+        notify.success(this.t("settings.updateSourceChanged", {
+          source: option.label,
+        }));
       } catch (error) {
         console.error(this.t("settings.updateSourceChangeFailed"), error);
-        this.updateMessage = {
-          text: this.t("settings.updateSourceChangeFailed"),
-          type: "error",
-          icon: ["fas", "times"],
-          key: `source-error-${this.messageId++}`,
-        };
+        notify.error(this.t("settings.updateSourceChangeFailed"));
       }
     },
 
@@ -1111,9 +1019,7 @@ export default {
 
       this.isProcessing = true;
       this.checkingUpdate = true;
-      this.updateMessage = null;
       this.updateStatus = UpdateStatus.CHECKING;
-      this.messageId++;
 
       try {
         const update = await updateService.checkForUpdates();
@@ -1121,66 +1027,47 @@ export default {
         if (update.shouldUpdate) {
           this.updateInfo = update;
           this.updateStatus = UpdateStatus.AVAILABLE;
-          this.updateMessage = {
-            text: this.t("settings.newVersionAvailable", {
-              version: update.version,
-            }),
-            type: "info",
-            icon: ["fas", "external-link-alt"],
-            key: `available-${this.messageId}`,
-          };
+          
+          // 使用新通知系统，带按钮
+          notify.info(this.t("settings.newVersionAvailable", { version: update.version }), {
+            title: this.t("settings.updateAvailable"),
+            icon: ["fas", "download"],
+            details: update.releaseNotes ? { description: update.releaseNotes.substring(0, 100) + '...' } : null,
+            actions: [
+              {
+                text: this.t("settings.goToDownload"),
+                type: 'primary',
+                icon: ["fas", "external-link-alt"],
+                onClick: () => this.downloadAndInstall()
+              },
+              {
+                text: this.t("common.later"),
+                type: 'secondary'
+              }
+            ]
+          });
         } else {
           this.updateStatus = UpdateStatus.NOT_AVAILABLE;
-          this.updateMessage = {
-            text: this.$t("settings.latestVersion"),
-            type: "success",
-            icon: ["fas", "check"],
-            key: `latest-${this.messageId}`,
-          };
+          notify.success(this.$t("settings.latestVersion"));
         }
       } catch (error) {
         this.updateStatus = UpdateStatus.ERROR;
-        this.messageId++;
 
-        // 使用更详细的错误信息
         let errorText = this.$t("settings.updateFailed");
-        if (
-          error.type === this.t("settings.errorType.rateLimit") ||
-          error.message?.includes("rate limit") ||
-          error.message?.includes("429")
-        ) {
+        if (error.message?.includes("rate limit") || error.message?.includes("429")) {
           errorText = this.$t("settings.rateLimitError");
-        } else if (
-          error.type === this.t("settings.errorType.networkConnection")
-        ) {
+        } else if (error.type === this.t("settings.errorType.networkConnection")) {
           errorText = this.$t("settings.networkError");
-        } else if (
-          error.type === this.t("settings.errorType.resourceNotFound")
-        ) {
+        } else if (error.type === this.t("settings.errorType.resourceNotFound")) {
           errorText = this.$t("settings.resourceNotFound");
         } else if (error.type === this.t("settings.errorType.accessDenied")) {
           errorText = this.$t("settings.accessDenied");
         }
 
-        this.updateMessage = {
-          text: errorText,
-          type: "error",
-          icon: ["fas", "times"],
-          key: `error-${this.messageId}`,
-        };
+        notify.error(errorText, { duration: 8000 });
       } finally {
         this.checkingUpdate = false;
         this.isProcessing = false;
-
-        // 8秒后自动隐藏错误提示（给更多时间阅读错误信息）
-        setTimeout(
-          () => {
-            if (this.updateStatus !== UpdateStatus.AVAILABLE) {
-              this.closeUpdateMessage();
-            }
-          },
-          this.updateStatus === UpdateStatus.ERROR ? 8000 : 5000
-        );
       }
     },
     handlePerformanceMonitorToggle() {
@@ -1339,15 +1226,7 @@ export default {
       this.activeDropdown = null;
 
       // 显示提示
-      this.updateMessage = {
-        text: this.t("settings.seasonalThemeModeChanged"),
-        type: "success",
-        icon: ["fas", "check"],
-        key: `seasonal-mode-${this.messageId++}`,
-      };
-      setTimeout(() => {
-        this.closeUpdateMessage();
-      }, 2000);
+      notify.success(this.t("settings.seasonalThemeModeChanged"));
     },
 
     handleResetTutorial() {
@@ -1355,17 +1234,7 @@ export default {
       storage.removeItem("quick_create_tutorial_completed");
 
       // 显示成功提示
-      this.updateMessage = {
-        text: this.t("settings.tutorialReset"),
-        type: "success",
-        icon: ["fas", "check"],
-        key: `tutorial-reset-${this.messageId++}`,
-      };
-
-      // 3秒后自动隐藏提示
-      setTimeout(() => {
-        this.closeUpdateMessage();
-      }, 3000);
+      notify.success(this.t("settings.tutorialReset"));
     },
 
     // ========== 存档文件工具方法 ==========
@@ -1441,26 +1310,15 @@ export default {
           const { writeTextFile } = await import("@tauri-apps/plugin-fs");
           await writeTextFile(outputPath, result.json);
 
-          this.updateMessage = {
-            text: this.t("settings.parseSuccess", { filename: outputFileName }),
-            type: "success",
-            icon: ["fas", "check"],
-            key: `parse-success-${this.messageId++}`,
-          };
+          notify.success(this.t("settings.parseSuccess", { filename: outputFileName }));
         } else {
           throw new Error("解析结果无效");
         }
       } catch (error) {
         console.error("解析存档文件失败:", error);
-        this.updateMessage = {
-          text: this.t("settings.parseError", { error: error.toString() }),
-          type: "error",
-          icon: ["fas", "times"],
-          key: `parse-error-${this.messageId++}`,
-        };
+        notify.error(this.t("settings.parseError", { error: error.toString() }));
       } finally {
         this.isParsing = false;
-        setTimeout(() => this.closeUpdateMessage(), 5000);
       }
     },
 
@@ -1504,26 +1362,15 @@ export default {
         });
 
         if (result.success) {
-          this.updateMessage = {
-            text: this.t("settings.packSuccess", { filename: outputFileName }),
-            type: "success",
-            icon: ["fas", "check"],
-            key: `pack-success-${this.messageId++}`,
-          };
+          notify.success(this.t("settings.packSuccess", { filename: outputFileName }));
         } else {
           throw new Error(result.message || "打包失败");
         }
       } catch (error) {
         console.error("打包存档文件失败:", error);
-        this.updateMessage = {
-          text: this.t("settings.packError", { error: error.toString() }),
-          type: "error",
-          icon: ["fas", "times"],
-          key: `pack-error-${this.messageId++}`,
-        };
+        notify.error(this.t("settings.packError", { error: error.toString() }));
       } finally {
         this.isPacking = false;
-        setTimeout(() => this.closeUpdateMessage(), 5000);
       }
     },
 
@@ -1545,17 +1392,7 @@ export default {
           ? this.t("settings.gpuAccelerationDisabled")
           : this.t("settings.gpuAccelerationEnabled");
 
-        this.updateMessage = {
-          text: message,
-          type: "info",
-          icon: ["fas", "info-circle"],
-          key: `gpu-info-${this.messageId++}`,
-        };
-
-        // 5秒后自动隐藏提示
-        setTimeout(() => {
-          this.closeUpdateMessage();
-        }, 5000);
+        notify.info(message, { duration: 5000 });
       } catch (error) {
         console.error(this.t("settings.gpuAccelerationChangeFailed"), error);
         // 恢复开关状态
@@ -1566,68 +1403,27 @@ export default {
         );
 
         // 显示错误提示
-        this.updateMessage = {
-          text: this.t("settings.gpuAccelerationChangeFailed") + ": " + error,
-          type: "error",
-          icon: ["fas", "times"],
-          key: `gpu-error-${this.messageId++}`,
-        };
-
-        // 3秒后自动隐藏提示
-        setTimeout(() => {
-          this.closeUpdateMessage();
-        }, 3000);
+        notify.error(this.t("settings.gpuAccelerationChangeFailed") + ": " + error);
       }
-    },
-
-    closeUpdateMessage() {
-      this.updateMessage = null;
-      // 添加延迟确保动画完成
-      setTimeout(() => {
-        this.updateStatus = UpdateStatus.IDLE;
-        this.updateInfo = null;
-      }, 400);
     },
 
     async downloadAndInstall() {
       if (!this.updateInfo || this.isProcessing) return;
 
       this.isProcessing = true;
-      this.messageId++;
 
       try {
         this.updateStatus = UpdateStatus.AVAILABLE;
-        this.updateMessage = {
-          text: this.t("settings.openingDownloadPage"),
-          type: "info",
-          icon: ["fas", "external-link-alt"],
-          key: `downloading-${this.messageId}`,
-        };
+        notify.info(this.t("settings.openingDownloadPage"));
 
         await updateService.downloadAndInstall();
 
         // 成功打开下载页面
-        this.updateMessage = {
-          text: this.t("settings.downloadPageOpened"),
-          type: "success",
-          icon: ["fas", "check"],
-          key: `success-${this.messageId}`,
-        };
-
-        // 3秒后清除提示
-        setTimeout(() => {
-          this.closeUpdateMessage();
-        }, 3000);
+        notify.success(this.t("settings.downloadPageOpened"));
       } catch (error) {
         console.error(this.t("settings.openDownloadPageFailed"), error);
         this.updateStatus = UpdateStatus.ERROR;
-        this.messageId++;
-        this.updateMessage = {
-          text: this.t("settings.openDownloadPageFailed"),
-          type: "error",
-          icon: ["fas", "times"],
-          key: `error-${this.messageId}`,
-        };
+        notify.error(this.t("settings.openDownloadPageFailed"));
       } finally {
         this.isProcessing = false;
       }
@@ -1752,24 +1548,13 @@ export default {
     // 保存Steam API密钥
     async saveSteamApiKey() {
       if (!this.steamApiKey.trim()) {
-        this.updateMessage = {
-          text: this.t("settings.steamApi.apiKeyPlaceholder"),
-          type: "error",
-          icon: ["fas", "times"],
-          key: `api-key-error-${this.messageId++}`,
-        };
+        notify.error(this.t("settings.steamApi.apiKeyPlaceholder"));
         return;
       }
 
       try {
         // 显示测试中提示
-        this.updateMessage = {
-          text: this.t("settings.steamApi.validatingKey"),
-          type: "info",
-          icon: ["fas", "spinner"],
-          spin: true,
-          key: `api-key-testing-${this.messageId++}`,
-        };
+        notify.info(this.t("settings.steamApi.validatingKey"));
 
         // 生成一个随机的Steam ID用于测试
         const testSteamId = this.generateRandomSteamId();
@@ -1799,12 +1584,7 @@ export default {
           // 如果是403错误，说明API密钥无效
           if (errorMsg.includes("403") || errorMsg.includes("Forbidden")) {
             console.log(this.t("settings.steamApi.detected403Error"));
-            this.updateMessage = {
-              text: this.t("settings.steamApi.keyInvalid"),
-              type: "error",
-              icon: ["fas", "times"],
-              key: `api-key-invalid-${this.messageId++}`,
-            };
+            notify.error(this.t("settings.steamApi.keyInvalid"));
             return; // 直接返回，不保存密钥
           }
 
@@ -1836,12 +1616,7 @@ export default {
         // 只有API测试通过时才保存密钥
         if (!apiTestPassed) {
           console.log(this.t("settings.steamApi.apiTestFailed"));
-          this.updateMessage = {
-            text: this.t("settings.steamApi.keyTestFailed"),
-            type: "error",
-            icon: ["fas", "times"],
-            key: `api-key-test-failed-${this.messageId++}`,
-          };
+          notify.error(this.t("settings.steamApi.keyTestFailed"));
           return;
         }
 
@@ -1858,25 +1633,10 @@ export default {
         console.log(this.t("settings.steamApi.keySavedToLocalStorage"));
 
         // 显示成功提示
-        this.updateMessage = {
-          text: this.t("settings.steamApi.keySaved"),
-          type: "success",
-          icon: ["fas", "check"],
-          key: `api-key-success-${this.messageId++}`,
-        };
-
-        // 3秒后自动隐藏提示
-        setTimeout(() => {
-          this.closeUpdateMessage();
-        }, 3000);
+        notify.success(this.t("settings.steamApi.keySaved"));
       } catch (error) {
         console.error(this.t("settings.steamApi.saveKeyFailed"), error);
-        this.updateMessage = {
-          text: this.t("settings.steamApi.saveKeyFailed") + ": " + error,
-          type: "error",
-          icon: ["fas", "times"],
-          key: `api-key-error-${this.messageId++}`,
-        };
+        notify.error(this.t("settings.steamApi.saveKeyFailed") + ": " + error);
       }
     },
 
@@ -1901,25 +1661,10 @@ export default {
         this.updateCacheEntryCount();
 
         // 显示成功提示
-        this.updateMessage = {
-          text: this.t("settings.steamApi.cacheCleared"),
-          type: "success",
-          icon: ["fas", "check"],
-          key: `cache-clear-success-${this.messageId++}`,
-        };
-
-        // 3秒后自动隐藏提示
-        setTimeout(() => {
-          this.closeUpdateMessage();
-        }, 3000);
+        notify.success(this.t("settings.steamApi.cacheCleared"));
       } catch (error) {
         console.error(this.t("settings.steamApi.clearCacheFailed"), error);
-        this.updateMessage = {
-          text: this.t("settings.steamApi.clearCacheFailed") + ": " + error,
-          type: "error",
-          icon: ["fas", "times"],
-          key: `cache-clear-error-${this.messageId++}`,
-        };
+        notify.error(this.t("settings.steamApi.clearCacheFailed") + ": " + error);
       }
     },
 
@@ -1975,13 +1720,7 @@ export default {
     // 处理主题删除
     handleDeleteTheme(theme) {
       // ThemeList 组件已处理删除逻辑，这里可以添加额外的提示
-      this.updateMessage = {
-        text: this.t("theme.themeDeleted", { name: theme.name }),
-        type: "success",
-        icon: ["fas", "check"],
-        key: `theme-deleted-${this.messageId++}`,
-      };
-      setTimeout(() => this.closeUpdateMessage(), 3000);
+      notify.success(this.t("theme.themeDeleted", { name: theme.name }));
     },
 
     // 处理主题选择
@@ -2005,12 +1744,7 @@ export default {
           const saveResult = await themeManager.addCustomTheme(result.theme);
 
           if (saveResult.success) {
-            this.updateMessage = {
-              text: this.t("theme.importSuccess", { name: result.theme.name }),
-              type: "success",
-              icon: ["fas", "check"],
-              key: `theme-import-success-${this.messageId++}`,
-            };
+            notify.success(this.t("theme.importSuccess", { name: result.theme.name }));
           } else {
             throw new Error(saveResult.error || this.t("theme.importFailed"));
           }
@@ -2020,15 +1754,9 @@ export default {
         // 如果 result.success 为 false 且没有 error，说明用户取消了对话框
       } catch (error) {
         console.error("Failed to import theme:", error);
-        this.updateMessage = {
-          text: this.t("theme.importFailed") + ": " + (error.message || error),
-          type: "error",
-          icon: ["fas", "times"],
-          key: `theme-import-error-${this.messageId++}`,
-        };
+        notify.error(this.t("theme.importFailed") + ": " + (error.message || error));
       } finally {
         this.isImporting = false;
-        setTimeout(() => this.closeUpdateMessage(), 5000);
       }
     },
 
@@ -2042,25 +1770,14 @@ export default {
         const exportPath = await themeStorage.exportTheme(theme.id);
 
         if (exportPath) {
-          this.updateMessage = {
-            text: this.t("theme.exportSuccess", { name: theme.name }),
-            type: "success",
-            icon: ["fas", "check"],
-            key: `theme-export-success-${this.messageId++}`,
-          };
+          notify.success(this.t("theme.exportSuccess", { name: theme.name }));
         }
         // 如果 exportPath 为 null，说明用户取消了对话框
       } catch (error) {
         console.error("Failed to export theme:", error);
-        this.updateMessage = {
-          text: this.t("theme.exportFailed") + ": " + (error.message || error),
-          type: "error",
-          icon: ["fas", "times"],
-          key: `theme-export-error-${this.messageId++}`,
-        };
+        notify.error(this.t("theme.exportFailed") + ": " + (error.message || error));
       } finally {
         this.isExporting = false;
-        setTimeout(() => this.closeUpdateMessage(), 5000);
       }
     },
 
@@ -2077,26 +1794,14 @@ export default {
           await themeManager.setTheme(themeData.id);
           this.currentTheme = themeData.id;
 
-          this.updateMessage = {
-            text: this.t("theme.themeSaved", { name: themeData.name }),
-            type: "success",
-            icon: ["fas", "check"],
-            key: `theme-saved-${this.messageId++}`,
-          };
+          notify.success(this.t("theme.themeSaved", { name: themeData.name }));
         } else {
           throw new Error(result.error || this.t("theme.saveFailed"));
         }
       } catch (error) {
         console.error("Failed to save theme:", error);
-        this.updateMessage = {
-          text: this.t("theme.saveFailed") + ": " + (error.message || error),
-          type: "error",
-          icon: ["fas", "times"],
-          key: `theme-save-error-${this.messageId++}`,
-        };
+        notify.error(this.t("theme.saveFailed") + ": " + (error.message || error));
       }
-
-      setTimeout(() => this.closeUpdateMessage(), 3000);
     },
 
     // 取消主题编辑

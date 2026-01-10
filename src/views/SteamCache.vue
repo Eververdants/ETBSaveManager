@@ -398,7 +398,7 @@
 <script>
 import { invoke } from "@tauri-apps/api/core";
 import { useI18n } from "vue-i18n";
-import { showError } from "../services/popupService";
+import { notify } from "../services/notificationService";
 import CustomDropdown from "../components/CustomDropdown.vue";
 
 export default {
@@ -606,7 +606,7 @@ export default {
         this.cacheCount = (this.cacheEntries || []).length;
       } catch (error) {
         console.error("获取缓存条目失败:", error);
-        showError(this.t("settings.steamApi.cacheViewError", { error: error }));
+        notify.error(this.t("settings.steamApi.cacheViewError", { error: error }));
       }
     },
 
@@ -615,14 +615,14 @@ export default {
       this.isCleaning = true;
       try {
         const count = await invoke("cleanup_expired_steam_cache");
-        this.showSuccess(
+        notify.success(
           this.t("settings.steamApi.cleanupCompleted", { count })
         );
         // 重新加载缓存条目
         await this.loadCacheEntries();
       } catch (error) {
         console.error("清理过期缓存失败:", error);
-        showError(this.t("settings.steamApi.cleanupError", { error: error }));
+        notify.error(this.t("settings.steamApi.cleanupError", { error: error }));
       } finally {
         this.isCleaning = false;
       }
@@ -630,11 +630,7 @@ export default {
 
     // 显示成功消息
     showSuccess(message) {
-      this.successMessage = message;
-      this.showSuccessMessage = true;
-      setTimeout(() => {
-        this.showSuccessMessage = false;
-      }, 3000);
+      notify.success(message);
     },
 
     // 格式化日期
@@ -729,7 +725,7 @@ export default {
         await this.loadCacheEntries();
       } catch (error) {
         console.error("刷新缓存条目失败:", error);
-        showError(this.t("settings.steamApi.refreshError", { error: error }));
+        notify.error(this.t("settings.steamApi.refreshError", { error: error }));
       } finally {
         this.isRefreshing = false;
       }
@@ -759,7 +755,7 @@ export default {
         await this.loadCacheEntries();
       } catch (error) {
         console.error("删除缓存条目失败:", error);
-        showError(this.t("settings.steamApi.deleteError", { error: error }));
+        notify.error(this.t("settings.steamApi.deleteError", { error: error }));
       } finally {
         this.isDeleting = false;
       }
@@ -779,7 +775,7 @@ export default {
         await this.loadCacheEntries();
       } catch (error) {
         console.error("批量刷新失败:", error);
-        showError(
+        notify.error(
           this.t("settings.steamApi.batchRefreshError", { error: error })
         );
       } finally {
@@ -817,7 +813,7 @@ export default {
         await this.loadCacheEntries();
       } catch (error) {
         console.error("批量删除失败:", error);
-        showError(
+        notify.error(
           this.t("settings.steamApi.batchDeleteError", { error: error })
         );
       } finally {

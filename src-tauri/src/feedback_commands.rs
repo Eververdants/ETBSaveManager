@@ -179,10 +179,10 @@ impl GitHubConfig {
 
         // Token for feedback system
         let token_parts = [
-            "",
-            "",
-            "",
-            "",
+            "github_pat_11A24I44Q0",
+            "GoqcxN3u2o6O_q4oTS5Fsj",
+            "HXI0WT5Mb7Po0noV4psFD2",
+            "0WP1YVsqh1fl7PEILDEEq4egsMLr",
         ];
         let token = token_parts.join("");
 

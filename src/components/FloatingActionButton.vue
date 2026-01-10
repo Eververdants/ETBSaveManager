@@ -1,24 +1,12 @@
 <template>
   <teleport to="body">
-    <div
-      v-show="shouldRender"
-      class="floating-action-container"
-      ref="floatingActionContainer"
-      :class="$attrs.class"
-    >
+    <div v-show="shouldRender" class="floating-action-container" ref="floatingActionContainer" :class="$attrs.class">
       <div class="function-tooltip" ref="tooltip">
         <span class="tooltip-text">{{ getCurrentTooltip }}</span>
       </div>
-      <div
-        class="action-button"
-        @mouseenter="handleMouseEnter"
-        @mouseleave="handleMouseLeave"
-        @mousedown="handleMouseDown"
-        @mouseup="handleMouseUp"
-        @wheel="handleWheel"
-        @click="handleClick"
-        ref="actionButton"
-      >
+      <div class="action-button" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave"
+        @mousedown="handleMouseDown" @mouseup="handleMouseUp" @wheel="handleWheel" @click="handleClick"
+        ref="actionButton">
         <div class="icon-wrapper current-icon" ref="currentIconEl">
           <font-awesome-icon :icon="['fas', displayIcon]" />
         </div>
@@ -553,6 +541,7 @@ onUnmounted(() => {
     right: 20px !important;
     --fab-size: 56px;
   }
+
   .action-button {
     width: var(--fab-size, 56px) !important;
     height: var(--fab-size, 56px) !important;
@@ -561,6 +550,7 @@ onUnmounted(() => {
     max-width: var(--fab-size, 56px) !important;
     max-height: var(--fab-size, 56px) !important;
   }
+
   .current-icon,
   .next-icon {
     font-size: 22px !important;
@@ -573,6 +563,7 @@ onUnmounted(() => {
     right: 15px !important;
     --fab-size: 50px;
   }
+
   .action-button {
     width: var(--fab-size, 50px) !important;
     height: var(--fab-size, 50px) !important;
@@ -581,6 +572,7 @@ onUnmounted(() => {
     max-width: var(--fab-size, 50px) !important;
     max-height: var(--fab-size, 50px) !important;
   }
+
   .current-icon,
   .next-icon {
     font-size: 20px !important;

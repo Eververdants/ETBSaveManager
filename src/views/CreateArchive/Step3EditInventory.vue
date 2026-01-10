@@ -11,14 +11,9 @@
           <span>{{ $t("createArchive.steamIdInfo") }}</span>
         </div>
         <div class="steam-id-input-group">
-          <input
-            :value="newSteamId"
-            @input="$emit('update:newSteamId', $event.target.value)"
-            type="text"
-            class="form-input"
-            :placeholder="$t('createArchive.steamIdPlaceholder')"
-            @keyup.enter="$emit('add-steam-id')"
-          />
+          <input :value="newSteamId" @input="$emit('update:newSteamId', $event.target.value)" type="text"
+            class="form-input" :placeholder="$t('createArchive.steamIdPlaceholder')"
+            @keyup.enter="$emit('add-steam-id')" />
           <button @click="$emit('add-steam-id')" class="add-button">
             <font-awesome-icon :icon="['fas', 'plus']" />
             {{ $t("createArchive.add") }}
@@ -27,37 +22,21 @@
 
         <!-- 玩家输入提示信息 -->
         <transition name="message-fade" mode="out-in">
-          <div
-            v-if="playerInputMessage"
-            class="player-input-message"
-            :class="playerInputMessageType"
-            key="message"
-          >
-            <font-awesome-icon
-              :icon="
-                playerInputMessageType === 'success'
-                  ? ['fas', 'check-circle']
-                  : ['fas', 'exclamation-circle']
-              "
-            />
+          <div v-if="playerInputMessage" class="player-input-message" :class="playerInputMessageType" key="message">
+            <font-awesome-icon :icon="playerInputMessageType === 'success'
+                ? ['fas', 'check-circle']
+                : ['fas', 'exclamation-circle']
+              " />
             {{ playerInputMessage }}
           </div>
         </transition>
 
         <!-- Steam ID 列表 -->
         <div class="steam-id-list">
-          <div
-            v-for="(player, index) in players"
-            :key="index"
-            class="steam-id-item"
-            :class="{ active: activePlayerIndex === index }"
-            @click="$emit('select-player', index)"
-          >
+          <div v-for="(player, index) in players" :key="index" class="steam-id-item"
+            :class="{ active: activePlayerIndex === index }" @click="$emit('select-player', index)">
             <div class="player-info">
-              <div
-                class="player-id"
-                :class="{ 'has-username': player.username }"
-              >
+              <div class="player-id" :class="{ 'has-username': player.username }">
                 <template v-if="player.username">
                   {{ player.username }}
                 </template>
@@ -72,10 +51,7 @@
                 </template>
               </div>
             </div>
-            <button
-              @click.stop="$emit('remove-player', index)"
-              class="remove-button"
-            >
+            <button @click.stop="$emit('remove-player', index)" class="remove-button">
               <font-awesome-icon :icon="['fas', 'times']" />
             </button>
           </div>
@@ -85,9 +61,7 @@
       <!-- 背包编辑器 -->
       <div class="inventory-card">
         <h3 class="form-section-title">
-          <template
-            v-if="activePlayerIndex !== -1 && players[activePlayerIndex]"
-          >
+          <template v-if="activePlayerIndex !== -1 && players[activePlayerIndex]">
             {{
               $t("createArchive.editInventoryFor", {
                 playerName:
@@ -103,37 +77,21 @@
         <div v-if="activePlayerIndex !== -1" class="inventory-grid">
           <!-- 主手和副手位置 -->
           <div class="inventory-column">
-            <div
-              v-for="slot in 3"
-              :key="`weapon-${slot - 1}`"
-              class="inventory-slot weapon-slot"
-              :class="{
-                'main-hand': slot === 1,
-                'off-hand': slot > 1,
-                empty: !getSlotContent(activePlayerIndex, slot - 1),
-              }"
-              @click="$emit('edit-slot', activePlayerIndex, slot - 1)"
-            >
+            <div v-for="slot in 3" :key="`weapon-${slot - 1}`" class="inventory-slot weapon-slot" :class="{
+              'main-hand': slot === 1,
+              'off-hand': slot > 1,
+              empty: !getSlotContent(activePlayerIndex, slot - 1),
+            }" @click="$emit('edit-slot', activePlayerIndex, slot - 1)">
               <div class="slot-label">
-                {{ $t(`createArchive.${getSlotLabel(slot - 1)}`) }}
+                {{ getSlotLabelText(slot - 1) }}
               </div>
               <div class="slot-content">
                 <transition name="item-fade" mode="out-in">
-                  <img
-                    v-if="getSlotContent(activePlayerIndex, slot - 1)"
-                    :src="`/icons/ETB_UI/${getItemImageFile(
-                      getSlotContent(activePlayerIndex, slot - 1)
-                    )}.png`"
-                    :alt="getSlotContent(activePlayerIndex, slot - 1)"
-                    class="item-image"
-                    :key="getSlotContent(activePlayerIndex, slot - 1)"
-                  />
-                  <font-awesome-icon
-                    v-else
-                    :icon="['fas', 'hand-paper']"
-                    class="slot-icon"
-                    key="empty"
-                  />
+                  <img v-if="getSlotContent(activePlayerIndex, slot - 1)" :src="`/icons/ETB_UI/${getItemImageFile(
+                    getSlotContent(activePlayerIndex, slot - 1)
+                  )}.png`" :alt="getSlotContent(activePlayerIndex, slot - 1)" class="item-image"
+                    :key="getSlotContent(activePlayerIndex, slot - 1)" />
+                  <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-icon" key="empty" />
                 </transition>
               </div>
             </div>
@@ -141,31 +99,17 @@
 
           <!-- 背包格子 -->
           <div class="inventory-backpack">
-            <div
-              v-for="slot in 9"
-              :key="`backpack-${slot + 2}`"
-              class="inventory-slot backpack-slot"
+            <div v-for="slot in 9" :key="`backpack-${slot + 2}`" class="inventory-slot backpack-slot"
               :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
-              @click="$emit('edit-slot', activePlayerIndex, slot + 2)"
-            >
+              @click="$emit('edit-slot', activePlayerIndex, slot + 2)">
               <div class="slot-number">{{ slot }}</div>
               <div class="slot-content">
                 <transition name="item-fade" mode="out-in">
-                  <img
-                    v-if="getSlotContent(activePlayerIndex, slot + 2)"
-                    :src="`/icons/ETB_UI/${getItemImageFile(
-                      getSlotContent(activePlayerIndex, slot + 2)
-                    )}.png`"
-                    :alt="getSlotContent(activePlayerIndex, slot + 2)"
-                    class="item-image"
-                    :key="getSlotContent(activePlayerIndex, slot + 2)"
-                  />
-                  <font-awesome-icon
-                    v-else
-                    :icon="['fas', 'square']"
-                    class="slot-icon"
-                    key="empty"
-                  />
+                  <img v-if="getSlotContent(activePlayerIndex, slot + 2)" :src="`/icons/ETB_UI/${getItemImageFile(
+                    getSlotContent(activePlayerIndex, slot + 2)
+                  )}.png`" :alt="getSlotContent(activePlayerIndex, slot + 2)" class="item-image"
+                    :key="getSlotContent(activePlayerIndex, slot + 2)" />
+                  <font-awesome-icon v-else :icon="['fas', 'square']" class="slot-icon" key="empty" />
                 </transition>
               </div>
             </div>
@@ -181,8 +125,24 @@
 </template>
 
 <script>
+import { useI18n } from "vue-i18n";
+
 export default {
   name: "Step3EditInventory",
+  setup() {
+    const { t, te } = useI18n();
+
+    const getSlotLabelText = (slotIndex) => {
+      const labels = ["mainHand", "offHand1", "offHand2"];
+      const label = labels[slotIndex] || "";
+      const translationKey = `createArchive.${label}`;
+      return te(translationKey) ? t(translationKey) : label;
+    };
+
+    return {
+      getSlotLabelText,
+    };
+  },
   props: {
     newSteamId: {
       type: String,
@@ -243,11 +203,9 @@ export default {
 
 .steam-id-card,
 .inventory-card {
-  background: linear-gradient(
-    145deg,
-    var(--bg-secondary) 0%,
-    var(--bg-tertiary) 100%
-  );
+  background: linear-gradient(145deg,
+      var(--bg-secondary) 0%,
+      var(--bg-tertiary) 100%);
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05),
@@ -266,12 +224,10 @@ export default {
   left: 20px;
   right: 20px;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent);
   pointer-events: none;
 }
 
@@ -296,11 +252,9 @@ export default {
   content: "";
   width: 4px;
   height: 16px;
-  background: linear-gradient(
-    180deg,
-    var(--accent-color),
-    rgba(var(--accent-color-rgb), 0.5)
-  );
+  background: linear-gradient(180deg,
+      var(--accent-color),
+      rgba(var(--accent-color-rgb), 0.5));
   border-radius: 2px;
 }
 
@@ -309,11 +263,9 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(var(--accent-color-rgb), 0.12) 0%,
-    rgba(var(--accent-color-rgb), 0.06) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(var(--accent-color-rgb), 0.12) 0%,
+      rgba(var(--accent-color-rgb), 0.06) 100%);
   border-radius: 12px;
   color: var(--accent-color);
   font-size: 13px;
@@ -332,11 +284,9 @@ export default {
   padding: 14px 18px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(
-    145deg,
-    var(--bg-tertiary) 0%,
-    var(--bg-secondary) 100%
-  );
+  background: linear-gradient(145deg,
+      var(--bg-tertiary) 0%,
+      var(--bg-secondary) 100%);
   color: var(--text-primary);
   font-size: 14px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -367,11 +317,9 @@ export default {
   padding: 14px 22px;
   border-radius: 14px;
   border: none;
-  background: linear-gradient(
-    135deg,
-    var(--accent-color) 0%,
-    var(--accent-hover) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--accent-color) 0%,
+      var(--accent-hover) 100%);
   color: white;
   font-size: 14px;
   font-weight: 600;
@@ -435,11 +383,9 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  background: linear-gradient(
-    145deg,
-    var(--bg-tertiary) 0%,
-    var(--bg-secondary) 100%
-  );
+  background: linear-gradient(145deg,
+      var(--bg-tertiary) 0%,
+      var(--bg-secondary) 100%);
   border-radius: 14px;
   border: 2px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
@@ -454,11 +400,9 @@ export default {
 
 .steam-id-item.active {
   border-color: var(--accent-color);
-  background: linear-gradient(
-    145deg,
-    rgba(var(--accent-color-rgb), 0.12) 0%,
-    rgba(var(--accent-color-rgb), 0.06) 100%
-  );
+  background: linear-gradient(145deg,
+      rgba(var(--accent-color-rgb), 0.12) 0%,
+      rgba(var(--accent-color-rgb), 0.06) 100%);
   box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.15);
 }
 
@@ -544,11 +488,9 @@ export default {
 
 .inventory-slot {
   aspect-ratio: 1;
-  background: linear-gradient(
-    145deg,
-    var(--bg-tertiary) 0%,
-    var(--bg-secondary) 100%
-  );
+  background: linear-gradient(145deg,
+      var(--bg-tertiary) 0%,
+      var(--bg-secondary) 100%);
   border-radius: 14px;
   border: 2px solid rgba(255, 255, 255, 0.08);
   display: flex;

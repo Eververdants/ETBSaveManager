@@ -1,45 +1,20 @@
 <template>
   <div class="theme-selector">
     <div class="theme-scroll-container">
-      <button
-        v-show="needsScroll && canScrollLeft"
-        class="scroll-btn scroll-left"
-        @click="scrollLeft"
-        aria-label="向左滚动"
-      >
+      <button v-show="needsScroll && canScrollLeft" class="scroll-btn scroll-left" @click="scrollLeft"
+        aria-label="向左滚动">
         <font-awesome-icon :icon="['fas', 'chevron-left']" />
       </button>
-      <div
-        class="theme-scroll"
-        ref="scrollContainer"
-        @scroll="updateScrollState"
-      >
-        <div
-          v-for="theme in themes"
-          :key="theme.id"
-          class="theme-card"
-          :class="{ active: currentTheme === theme.id }"
-          @click="selectTheme(theme.id)"
-        >
+      <div class="theme-scroll" ref="scrollContainer" @scroll="updateScrollState">
+        <div v-for="theme in themes" :key="theme.id" class="theme-card" :class="{ active: currentTheme === theme.id }"
+          @click="selectTheme(theme.id)">
           <div class="theme-preview" :style="getPreviewStyle(theme)">
-            <div
-              class="preview-sidebar"
-              :style="{ background: theme.colors.sidebar }"
-            ></div>
+            <div class="preview-sidebar" :style="{ background: theme.colors.sidebar }"></div>
             <div class="preview-content">
-              <div
-                class="preview-header"
-                :style="{ background: theme.colors.header }"
-              ></div>
-              <div
-                class="preview-card"
-                :style="{ background: theme.colors.card }"
-              ></div>
+              <div class="preview-header" :style="{ background: theme.colors.header }"></div>
+              <div class="preview-card" :style="{ background: theme.colors.card }"></div>
             </div>
-            <div
-              class="preview-accent"
-              :style="{ background: theme.colors.accent }"
-            ></div>
+            <div class="preview-accent" :style="{ background: theme.colors.accent }"></div>
           </div>
           <transition name="text-swift" mode="out-in">
             <div class="theme-name" :key="locale + '-' + theme.id">
@@ -48,12 +23,8 @@
           </transition>
         </div>
       </div>
-      <button
-        v-show="needsScroll && canScrollRight"
-        class="scroll-btn scroll-right"
-        @click="scrollRight"
-        aria-label="向右滚动"
-      >
+      <button v-show="needsScroll && canScrollRight" class="scroll-btn scroll-right" @click="scrollRight"
+        aria-label="向右滚动">
         <font-awesome-icon :icon="['fas', 'chevron-right']" />
       </button>
     </div>
@@ -65,7 +36,7 @@ import { computed, onMounted, onUnmounted, ref, nextTick, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { getInstalledThemePlugins, PluginStatus } from "../plugins";
 
-const { t, locale } = useI18n();
+const { t, te, locale } = useI18n();
 
 const props = defineProps({
   modelValue: {
@@ -91,19 +62,19 @@ let resizeObserver = null;
 
 const updateScrollState = () => {
   if (!scrollContainer.value) return;
-  
+
   // 使用 requestAnimationFrame 确保 DOM 已完全渲染
   requestAnimationFrame(() => {
     if (!scrollContainer.value) return;
-    
+
     const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value;
     // 添加一个小的容差值，避免浮点数精度问题
     const tolerance = 2;
-    
+
     const newNeedsScroll = scrollWidth > clientWidth + tolerance;
     const newCanScrollLeft = scrollLeft > tolerance;
     const newCanScrollRight = scrollLeft + clientWidth < scrollWidth - tolerance;
-    
+
     // 只在值真正改变时更新，避免不必要的重渲染
     if (needsScroll.value !== newNeedsScroll) {
       needsScroll.value = newNeedsScroll;
@@ -170,7 +141,7 @@ const handleThemePluginChanged = () => {
 
 onMounted(() => {
   window.addEventListener("theme-plugin-changed", handleThemePluginChanged);
-  
+
   // 使用 ResizeObserver 监听容器大小变化
   if (scrollContainer.value) {
     resizeObserver = new ResizeObserver(() => {
@@ -178,7 +149,7 @@ onMounted(() => {
     });
     resizeObserver.observe(scrollContainer.value);
   }
-  
+
   // 初始化时多次检查，确保正确计算
   nextTick(() => {
     updateScrollState();
@@ -205,24 +176,29 @@ onUnmounted(() => {
 defineExpose({ refreshPluginThemes });
 
 const getThemeName = (themeId) => {
-  // 先检查是否是插件主题
   const pluginTheme = pluginThemes.value.find((t) => t.id === themeId);
   if (pluginTheme) {
     return pluginTheme.name;
   }
 
-  // 限时主题名称映射
-  const seasonalThemeKeys = {
+  const themeIdToKey = {
+    light: "light",
+    dark: "dark",
+    ocean: "ocean",
+    forest: "forest",
+    sunset: "sunset",
+    lavender: "lavender",
+    rose: "rose",
+    mint: "mint",
+    peach: "peach",
+    sky: "sky",
     "new-year": "newYear",
     "spring-festival-dark": "springFestivalDark",
     "spring-festival-light": "springFestivalLight",
   };
 
-  if (seasonalThemeKeys[themeId]) {
-    return t(`common.${seasonalThemeKeys[themeId]}`);
-  }
-
-  return t(`common.${themeId}`);
+  const translationKey = `common.${themeIdToKey[themeId] || themeId}`;
+  return te(translationKey) ? t(translationKey) : themeId;
 };
 
 const themeColors = {
@@ -401,7 +377,8 @@ const selectTheme = (themeId) => {
   position: relative;
   margin: 0 -4px;
   padding: 4px;
-  overflow: visible; /* 确保按钮不被裁剪 */
+  overflow: visible;
+  /* 确保按钮不被裁剪 */
 }
 
 /* 滚动按钮 */
@@ -409,7 +386,8 @@ const selectTheme = (themeId) => {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 100; /* 提高 z-index 确保按钮在最上层 */
+  z-index: 100;
+  /* 提高 z-index 确保按钮在最上层 */
   width: 32px;
   height: 32px;
   border: none;
@@ -422,7 +400,8 @@ const selectTheme = (themeId) => {
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transition: all 0.2s ease;
-  pointer-events: auto; /* 确保按钮可点击 */
+  pointer-events: auto;
+  /* 确保按钮可点击 */
 }
 
 .scroll-btn:hover {
@@ -449,8 +428,10 @@ const selectTheme = (themeId) => {
   padding: 4px 8px 8px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge */
 }
 
 /* 隐藏滚动条 */

@@ -13,8 +13,8 @@ dist-ssr
 *.local
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+.vscode
+.trae
 .idea
 .DS_Store
 *.suo
@@ -22,8 +22,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# 用户安装的插件（开发示例插件保留）
-# plugins/*/
-# !plugins/lang-ja-JP/
-# !plugins/README.md

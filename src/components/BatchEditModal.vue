@@ -31,28 +31,15 @@
                 $t("quickCreate.editModal.level")
               }}</label>
               <div class="batch-field">
-                <label
-                  class="custom-radio"
-                  @click.prevent="batchValues.level = KEEP_ORIGINAL"
-                >
-                  <span
-                    class="radio-mark"
-                    :class="{ checked: batchValues.level === KEEP_ORIGINAL }"
-                  ></span>
+                <label class="custom-radio" @click.prevent="batchValues.level = KEEP_ORIGINAL">
+                  <span class="radio-mark" :class="{ checked: batchValues.level === KEEP_ORIGINAL }"></span>
                   <span class="radio-text">{{
                     $t("quickCreate.batchEdit.keepOriginal")
                   }}</span>
                 </label>
-                <CustomDropdown
-                  class="batch-dropdown"
-                  :model-value="
-                    batchValues.level === KEEP_ORIGINAL ? '' : batchValues.level
-                  "
-                  :options="levelDropdownOptions"
-                  :placeholder="$t('quickCreate.batchEdit.selectToChange')"
-                  :disabled="batchValues.level === KEEP_ORIGINAL"
-                  @update:model-value="handleLevelChange"
-                />
+                <CustomDropdown class="batch-dropdown" :model-value="batchValues.level === KEEP_ORIGINAL ? '' : batchValues.level
+                  " :options="levelDropdownOptions" :placeholder="$t('quickCreate.batchEdit.selectToChange')"
+                  :disabled="batchValues.level === KEEP_ORIGINAL" @update:model-value="handleLevelChange" />
               </div>
             </div>
 
@@ -62,32 +49,19 @@
                 $t("quickCreate.editModal.difficulty")
               }}</label>
               <div class="batch-field">
-                <label
-                  class="custom-radio"
-                  @click.prevent="batchValues.difficulty = KEEP_ORIGINAL"
-                >
-                  <span
-                    class="radio-mark"
-                    :class="{
-                      checked: batchValues.difficulty === KEEP_ORIGINAL,
-                    }"
-                  ></span>
+                <label class="custom-radio" @click.prevent="batchValues.difficulty = KEEP_ORIGINAL">
+                  <span class="radio-mark" :class="{
+                    checked: batchValues.difficulty === KEEP_ORIGINAL,
+                  }"></span>
                   <span class="radio-text">{{
                     $t("quickCreate.batchEdit.keepOriginal")
                   }}</span>
                 </label>
-                <CustomDropdown
-                  class="batch-dropdown"
-                  :model-value="
-                    batchValues.difficulty === KEEP_ORIGINAL
-                      ? ''
-                      : batchValues.difficulty
-                  "
-                  :options="difficultyDropdownOptions"
-                  :placeholder="$t('quickCreate.batchEdit.selectToChange')"
-                  :disabled="batchValues.difficulty === KEEP_ORIGINAL"
-                  @update:model-value="handleDifficultyChange"
-                />
+                <CustomDropdown class="batch-dropdown" :model-value="batchValues.difficulty === KEEP_ORIGINAL
+                    ? ''
+                    : batchValues.difficulty
+                  " :options="difficultyDropdownOptions" :placeholder="$t('quickCreate.batchEdit.selectToChange')"
+                  :disabled="batchValues.difficulty === KEEP_ORIGINAL" @update:model-value="handleDifficultyChange" />
               </div>
             </div>
 
@@ -97,32 +71,20 @@
                 $t("quickCreate.editModal.actualDifficulty")
               }}</label>
               <div class="batch-field">
-                <label
-                  class="custom-radio"
-                  @click.prevent="batchValues.actualDifficulty = KEEP_ORIGINAL"
-                >
-                  <span
-                    class="radio-mark"
-                    :class="{
-                      checked: batchValues.actualDifficulty === KEEP_ORIGINAL,
-                    }"
-                  ></span>
+                <label class="custom-radio" @click.prevent="batchValues.actualDifficulty = KEEP_ORIGINAL">
+                  <span class="radio-mark" :class="{
+                    checked: batchValues.actualDifficulty === KEEP_ORIGINAL,
+                  }"></span>
                   <span class="radio-text">{{
                     $t("quickCreate.batchEdit.keepOriginal")
                   }}</span>
                 </label>
-                <CustomDropdown
-                  class="batch-dropdown"
-                  :model-value="
-                    batchValues.actualDifficulty === KEEP_ORIGINAL
-                      ? ''
-                      : batchValues.actualDifficulty
-                  "
-                  :options="difficultyDropdownOptions"
-                  :placeholder="$t('quickCreate.batchEdit.selectToChange')"
+                <CustomDropdown class="batch-dropdown" :model-value="batchValues.actualDifficulty === KEEP_ORIGINAL
+                    ? ''
+                    : batchValues.actualDifficulty
+                  " :options="difficultyDropdownOptions" :placeholder="$t('quickCreate.batchEdit.selectToChange')"
                   :disabled="batchValues.actualDifficulty === KEEP_ORIGINAL"
-                  @update:model-value="handleActualDifficultyChange"
-                />
+                  @update:model-value="handleActualDifficultyChange" />
               </div>
             </div>
 
@@ -132,32 +94,20 @@
                 $t("quickCreate.editModal.inventory")
               }}</label>
               <div class="batch-field">
-                <label
-                  class="custom-radio"
-                  @click.prevent="batchValues.inventoryTemplate = KEEP_ORIGINAL"
-                >
-                  <span
-                    class="radio-mark"
-                    :class="{
-                      checked: batchValues.inventoryTemplate === KEEP_ORIGINAL,
-                    }"
-                  ></span>
+                <label class="custom-radio" @click.prevent="batchValues.inventoryTemplate = KEEP_ORIGINAL">
+                  <span class="radio-mark" :class="{
+                    checked: batchValues.inventoryTemplate === KEEP_ORIGINAL,
+                  }"></span>
                   <span class="radio-text">{{
                     $t("quickCreate.batchEdit.keepOriginal")
                   }}</span>
                 </label>
-                <CustomDropdown
-                  class="batch-dropdown"
-                  :model-value="
-                    batchValues.inventoryTemplate === KEEP_ORIGINAL
-                      ? ''
-                      : batchValues.inventoryTemplate
-                  "
-                  :options="inventoryDropdownOptions"
-                  :placeholder="$t('quickCreate.batchEdit.selectToChange')"
+                <CustomDropdown class="batch-dropdown" :model-value="batchValues.inventoryTemplate === KEEP_ORIGINAL
+                    ? ''
+                    : batchValues.inventoryTemplate
+                  " :options="inventoryDropdownOptions" :placeholder="$t('quickCreate.batchEdit.selectToChange')"
                   :disabled="batchValues.inventoryTemplate === KEEP_ORIGINAL"
-                  @update:model-value="handleInventoryChange"
-                />
+                  @update:model-value="handleInventoryChange" />
               </div>
             </div>
           </div>
@@ -167,11 +117,7 @@
             <button class="btn btn-secondary" @click="handleClose">
               {{ $t("common.cancel") }}
             </button>
-            <button
-              class="btn btn-primary"
-              @click="handleApply"
-              :disabled="!hasChanges"
-            >
+            <button class="btn btn-primary" @click="handleApply" :disabled="!hasChanges">
               {{ $t("quickCreate.batchEdit.apply") }}
             </button>
           </div>
@@ -483,7 +429,7 @@ const handleApply = () => {
   color: var(--text-primary);
 }
 
-.radio-mark.checked ~ .radio-text {
+.radio-mark.checked~.radio-text {
   color: var(--text-primary);
 }
 

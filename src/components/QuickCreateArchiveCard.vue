@@ -1,26 +1,16 @@
 <template>
-  <div
-    class="quick-archive-card"
-    :class="[borderStatusClass, { selected: selected }]"
-    @click="$emit('select', archive.id)"
-  >
+  <div class="quick-archive-card" :class="[borderStatusClass, { selected: selected }]"
+    @click="$emit('select', archive.id)">
     <!-- 卡片头部：名称和状态图标 -->
     <div class="card-header">
       <div class="card-name-wrapper">
         <span class="card-name" :title="archive.name">{{ archive.name }}</span>
         <div class="status-icons">
-          <span
-            v-if="hasMissingParams"
-            class="status-icon warning"
-            :title="$t('quickCreate.card.missingParams')"
-          >
+          <span v-if="hasMissingParams" class="status-icon warning" :title="$t('quickCreate.card.missingParams')">
             ⚠️
           </span>
-          <span
-            v-if="archive.hasIndividualSettings"
-            class="status-icon modified"
-            :title="$t('quickCreate.card.modified')"
-          >
+          <span v-if="archive.hasIndividualSettings" class="status-icon modified"
+            :title="$t('quickCreate.card.modified')">
             🔧
           </span>
         </div>
@@ -60,10 +50,7 @@
             }}</span>
             <span class="inherit-arrow">→</span>
           </template>
-          <span
-            class="value-text"
-            :class="difficultyClass(archive.finalDifficulty)"
-          >
+          <span class="value-text" :class="difficultyClass(archive.finalDifficulty)">
             {{ displayDifficulty }}
           </span>
         </span>
@@ -81,10 +68,7 @@
             }}</span>
             <span class="inherit-arrow">→</span>
           </template>
-          <span
-            class="value-text"
-            :class="difficultyClass(archive.finalActualDifficulty)"
-          >
+          <span class="value-text" :class="difficultyClass(archive.finalActualDifficulty)">
             {{ displayActualDifficulty }}
           </span>
         </span>
@@ -107,25 +91,14 @@
 
     <!-- 卡片操作按钮 -->
     <div class="card-actions">
-      <button
-        class="action-btn edit"
-        @click.stop="$emit('edit', archive.id)"
-        :title="$t('common.edit')"
-      >
+      <button class="action-btn edit" @click.stop="$emit('edit', archive.id)" :title="$t('common.edit')">
         <font-awesome-icon :icon="['fas', 'edit']" />
       </button>
-      <button
-        class="action-btn copy"
-        @click.stop="$emit('copy', archive.id)"
-        :title="$t('quickCreate.card.copy')"
-      >
+      <button class="action-btn copy" @click.stop="$emit('copy', archive.id)" :title="$t('quickCreate.card.copy')">
         <font-awesome-icon :icon="['fas', 'copy']" />
       </button>
-      <button
-        class="action-btn remove"
-        @click.stop="$emit('remove', archive.id)"
-        :title="$t('quickCreate.card.remove')"
-      >
+      <button class="action-btn remove" @click.stop="$emit('remove', archive.id)"
+        :title="$t('quickCreate.card.remove')">
         <font-awesome-icon :icon="['fas', 'times']" />
       </button>
     </div>
@@ -136,7 +109,17 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
-const { t } = useI18n({ useScope: "global" });
+const { t, te } = useI18n({ useScope: "global" });
+
+const getLevelName = (levelKey) => {
+  const translationKey = `LevelName_Display.${levelKey}`;
+  return te(translationKey) ? t(translationKey) : levelKey;
+};
+
+const getDifficultyText = (difficultyKey) => {
+  const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
+  return te(translationKey) ? t(translationKey) : difficultyKey;
+};
 
 const props = defineProps({
   archive: {
@@ -210,25 +193,23 @@ const displayLevel = computed(() => {
   if (!level) {
     return t("quickCreate.card.notSet");
   }
-  return t(`LevelName_Display.${level}`) || level;
+  return getLevelName(level);
 });
 
-// 显示存档难度
 const displayDifficulty = computed(() => {
   const difficulty = props.archive.finalDifficulty;
   if (!difficulty) {
     return t("quickCreate.card.notSet");
   }
-  return t(`createArchive.difficultyLevels.${difficulty}`) || difficulty;
+  return getDifficultyText(difficulty);
 });
 
-// 显示实际难度
 const displayActualDifficulty = computed(() => {
   const difficulty = props.archive.finalActualDifficulty;
   if (!difficulty) {
     return t("quickCreate.card.notSet");
   }
-  return t(`createArchive.difficultyLevels.${difficulty}`) || difficulty;
+  return getDifficultyText(difficulty);
 });
 
 // 显示背包状态

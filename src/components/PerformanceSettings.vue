@@ -6,13 +6,9 @@
       <div class="setting-item">
         <label class="setting-label">{{
           t("performanceSettings.title")
-        }}</label>
+          }}</label>
         <div class="setting-control">
-          <select
-            v-model="localPerformanceMode"
-            class="setting-select"
-            @change="updatePerformanceMode"
-          >
+          <select v-model="localPerformanceMode" class="setting-select" @change="updatePerformanceMode">
             <option value="auto">
               {{ t("common.auto") }} ({{ t("common.recommended") }})
             </option>
@@ -30,13 +26,9 @@
       <div class="setting-item">
         <label class="setting-label">{{
           t("performanceSettings.updateInterval")
-        }}</label>
+          }}</label>
         <div class="setting-control">
-          <select
-            v-model="localAnimationQuality"
-            class="setting-select"
-            @change="updateAnimationQuality"
-          >
+          <select v-model="localAnimationQuality" class="setting-select" @change="updateAnimationQuality">
             <option value="high">{{ t("common.high") }}</option>
             <option value="medium">{{ t("common.medium") }}</option>
             <option value="low">{{ t("common.low") }}</option>
@@ -51,14 +43,10 @@
       <div class="setting-item">
         <label class="setting-label">{{
           t("settings.disableGpuAcceleration")
-        }}</label>
+          }}</label>
         <div class="setting-control">
           <label class="toggle-switch">
-            <input
-              type="checkbox"
-              v-model="localHardwareAcceleration"
-              @change="updateHardwareAcceleration"
-            />
+            <input type="checkbox" v-model="localHardwareAcceleration" @change="updateHardwareAcceleration" />
             <span class="toggle-slider"></span>
           </label>
           <div class="setting-description">
@@ -70,14 +58,10 @@
       <div class="setting-item">
         <label class="setting-label">{{
           t("performanceSettings.maxDataPoints")
-        }}</label>
+          }}</label>
         <div class="setting-control">
           <label class="toggle-switch">
-            <input
-              type="checkbox"
-              v-model="localVirtualizationEnabled"
-              @change="updateVirtualization"
-            />
+            <input type="checkbox" v-model="localVirtualizationEnabled" @change="updateVirtualization" />
             <span class="toggle-slider"></span>
           </label>
           <div class="setting-description">
@@ -102,14 +86,11 @@
           <span class="info-label">{{ t("common.deviceType") }}:</span>
           <span class="info-value">{{
             deviceInfo.isMobile ? t("common.mobile") : t("common.desktop")
-          }}</span>
+            }}</span>
         </div>
         <div class="info-item">
           <span class="info-label">{{ t("performanceSettings.title") }}:</span>
-          <span
-            class="info-value"
-            :class="`perf-${deviceInfo.performanceLevel}`"
-          >
+          <span class="info-value" :class="`perf-${deviceInfo.performanceLevel}`">
             {{ getPerformanceLevelText(deviceInfo.performanceLevel) }}
           </span>
         </div>
@@ -416,11 +397,11 @@ export default {
   border-radius: 50%;
 }
 
-input:checked + .toggle-slider {
+input:checked+.toggle-slider {
   background-color: var(--primary-color);
 }
 
-input:checked + .toggle-slider:before {
+input:checked+.toggle-slider:before {
   transform: translateX(26px);
 }
 

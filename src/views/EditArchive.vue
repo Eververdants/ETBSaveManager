@@ -3,17 +3,11 @@
     <!-- 顶部标题栏 + 标签导航 -->
     <div class="page-header">
       <h1 class="page-title">{{ $t("editArchive.title") }}</h1>
-      
+
       <div class="tab-nav">
         <div class="tab-highlight" :style="highlightStyle"></div>
-        <button 
-          v-for="(tab, index) in tabs" 
-          :key="tab.id"
-          :ref="el => tabRefs[index] = el"
-          class="tab-btn"
-          :class="{ active: activeTab === tab.id }"
-          @click="switchTab(tab.id, index)"
-        >
+        <button v-for="(tab, index) in tabs" :key="tab.id" :ref="el => tabRefs[index] = el" class="tab-btn"
+          :class="{ active: activeTab === tab.id }" @click="switchTab(tab.id, index)">
           <font-awesome-icon :icon="tab.icon" />
           <span>{{ $t(tab.label) }}</span>
         </button>
@@ -38,41 +32,28 @@
         <div class="panel-grid">
           <div class="form-card">
             <label class="form-label">{{ $t("editArchive.archiveName") }}</label>
-            <input
-              v-model="archiveData.name"
-              type="text"
-              class="form-input"
-              :placeholder="$t('editArchive.archiveNamePlaceholder')"
-              maxlength="50"
-            />
+            <input v-model="archiveData.name" type="text" class="form-input"
+              :placeholder="$t('editArchive.archiveNamePlaceholder')" maxlength="50" />
           </div>
           <div class="form-card">
             <label class="form-label">{{ $t("editArchive.difficulty") }}</label>
             <div class="difficulty-options">
-              <div
-                v-for="d in difficultyLevels"
-                :key="d.value"
-                class="difficulty-btn"
+              <div v-for="d in difficultyLevels" :key="d.value" class="difficulty-btn"
                 :class="{ selected: archiveData.archiveDifficulty === d.value }"
-                @click="archiveData.archiveDifficulty = d.value"
-              >
+                @click="archiveData.archiveDifficulty = d.value">
                 <font-awesome-icon :icon="d.icon" />
-                <span>{{ $t(`editArchive.difficultyLevels.${d.value}`) }}</span>
+                <span>{{ getDifficultyText(d.value) }}</span>
               </div>
             </div>
           </div>
           <div class="form-card">
             <label class="form-label">{{ $t("editArchive.actualDifficulty") }}</label>
             <div class="difficulty-options">
-              <div
-                v-for="d in difficultyLevels"
-                :key="`actual-${d.value}`"
-                class="difficulty-btn"
+              <div v-for="d in difficultyLevels" :key="`actual-${d.value}`" class="difficulty-btn"
                 :class="{ selected: archiveData.actualDifficulty === d.value }"
-                @click="archiveData.actualDifficulty = d.value"
-              >
+                @click="archiveData.actualDifficulty = d.value">
                 <font-awesome-icon :icon="d.icon" />
-                <span>{{ $t(`editArchive.difficultyLevels.${d.value}`) }}</span>
+                <span>{{ getDifficultyText(d.value) }}</span>
               </div>
             </div>
           </div>
@@ -89,13 +70,8 @@
       <!-- 层级选择 -->
       <div class="tab-panel" :class="{ 'tab-active': activeTab === 'level' }">
         <div class="level-grid">
-          <div
-            v-for="(level, index) in availableLevels"
-            :key="index"
-            class="level-card"
-            :class="{ selected: archiveData.currentLevel === level.levelKey }"
-            @click="selectLevel(level.levelKey)"
-          >
+          <div v-for="(level, index) in availableLevels" :key="index" class="level-card"
+            :class="{ selected: archiveData.currentLevel === level.levelKey }" @click="selectLevel(level.levelKey)">
             <div class="level-img-wrap">
               <LazyImage :src="level.image" :alt="level.name" image-class="level-img" />
               <div class="level-check" v-if="archiveData.currentLevel === level.levelKey">
@@ -118,13 +94,8 @@
             </div>
 
             <div class="player-list" v-if="archiveData.players.length > 0">
-              <div
-                v-for="(player, index) in archiveData.players"
-                :key="index"
-                class="player-item"
-                :class="{ active: activePlayerIndex === index }"
-                @click="selectPlayer(index)"
-              >
+              <div v-for="(player, index) in archiveData.players" :key="index" class="player-item"
+                :class="{ active: activePlayerIndex === index }" @click="selectPlayer(index)">
                 <div class="player-avatar">
                   <font-awesome-icon :icon="['fas', 'user']" />
                 </div>
@@ -147,13 +118,8 @@
             </div>
 
             <div class="add-player-row">
-              <input
-                v-model="newSteamId"
-                type="text"
-                class="form-input"
-                :placeholder="$t('editArchive.steamIdPlaceholder')"
-                @keyup.enter="addPlayer"
-              />
+              <input v-model="newSteamId" type="text" class="form-input"
+                :placeholder="$t('editArchive.steamIdPlaceholder')" @keyup.enter="addPlayer" />
               <button class="add-btn" @click="addPlayer">
                 <font-awesome-icon :icon="['fas', 'plus']" />
               </button>
@@ -179,16 +145,20 @@
                   {{ $t("editArchive.playerSanity") }}
                 </div>
                 <div class="sanity-display">
-                  <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)">{{ currentPlayerSanity }}%</span>
+                  <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)">{{ currentPlayerSanity
+                  }}%</span>
                   <div class="sanity-bar">
-                    <div class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }" :class="getSanityClass(currentPlayerSanity)"></div>
+                    <div class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }"
+                      :class="getSanityClass(currentPlayerSanity)"></div>
                   </div>
                 </div>
                 <div class="sanity-ctrl">
                   <CustomSlider v-model="currentPlayerSanity" :min="0" :max="100" :step="1" />
                   <div class="quick-btns">
-                    <button class="qbtn danger" @click="setMinSanity()"><font-awesome-icon :icon="['fas', 'skull']" /></button>
-                    <button class="qbtn success" @click="setMaxSanity()"><font-awesome-icon :icon="['fas', 'heart']" /></button>
+                    <button class="qbtn danger" @click="setMinSanity()"><font-awesome-icon
+                        :icon="['fas', 'skull']" /></button>
+                    <button class="qbtn success" @click="setMaxSanity()"><font-awesome-icon
+                        :icon="['fas', 'heart']" /></button>
                   </div>
                 </div>
               </div>
@@ -201,36 +171,24 @@
                 </div>
                 <div class="inventory-wrap">
                   <div class="hand-slots">
-                    <div
-                      v-for="slot in 3"
-                      :key="`h-${slot}`"
-                      class="inv-slot"
+                    <div v-for="slot in 3" :key="`h-${slot}`" class="inv-slot"
                       :class="{ empty: !getSlotContent(activePlayerIndex, slot - 1) }"
-                      @click="editSlot(activePlayerIndex, slot - 1)"
-                    >
-                      <span class="slot-label">{{ $t(`editArchive.${getSlotLabel(slot - 1)}`) }}</span>
-                      <LazyImage
-                        v-if="getSlotContent(activePlayerIndex, slot - 1)"
+                      @click="editSlot(activePlayerIndex, slot - 1)">
+                      <span class="slot-label">{{ getSlotLabelText(slot - 1) }}</span>
+                      <LazyImage v-if="getSlotContent(activePlayerIndex, slot - 1)"
                         :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}`"
-                        image-class="slot-img"
-                      />
+                        image-class="slot-img" />
                       <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-placeholder" />
                     </div>
                   </div>
                   <div class="backpack-slots">
-                    <div
-                      v-for="slot in 9"
-                      :key="`b-${slot}`"
-                      class="inv-slot"
+                    <div v-for="slot in 9" :key="`b-${slot}`" class="inv-slot"
                       :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
-                      @click="editSlot(activePlayerIndex, slot + 2)"
-                    >
+                      @click="editSlot(activePlayerIndex, slot + 2)">
                       <span class="slot-num">{{ slot }}</span>
-                      <LazyImage
-                        v-if="getSlotContent(activePlayerIndex, slot + 2)"
+                      <LazyImage v-if="getSlotContent(activePlayerIndex, slot + 2)"
                         :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}`"
-                        image-class="slot-img"
-                      />
+                        image-class="slot-img" />
                       <font-awesome-icon v-else :icon="['fas', 'cube']" class="slot-placeholder" />
                     </div>
                   </div>
@@ -241,18 +199,16 @@
 
           <div class="player-detail-section empty-detail" v-else>
             <font-awesome-icon :icon="['fas', 'hand-pointer']" />
-            <p>{{ archiveData.players.length > 0 ? $t("editArchive.selectPlayerHint") : $t("editArchive.addPlayerFirst") }}</p>
+            <p>{{ archiveData.players.length > 0 ? $t("editArchive.selectPlayerHint") : $t("editArchive.addPlayerFirst")
+            }}</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- 物品选择器 -->
-    <InventoryItemSelector
-      :visible="showItemSelector"
-      @select="handleItemSelect"
-      @update:visible="showItemSelector = $event"
-    />
+    <InventoryItemSelector :visible="showItemSelector" @select="handleItemSelect"
+      @update:visible="showItemSelector = $event" />
   </div>
 </template>
 
@@ -265,14 +221,24 @@ import { invoke } from "@tauri-apps/api/core";
 import InventoryItemSelector from "../components/InventoryItemSelector.vue";
 import LazyImage from "../components/LazyImage.vue";
 import CustomSlider from "../components/CustomSlider.vue";
-import { showError, showSuccess } from "../services/popupService";
+import { notify } from "../services/notificationService";
 
 const props = defineProps({
   archiveData: { type: String, default: "" },
 });
 
-const { t } = useI18n({ useScope: "global" });
+const { t, te } = useI18n({ useScope: "global" });
 const router = useRouter();
+
+const getLevelName = (levelKey) => {
+  const translationKey = `LevelName_Display.${levelKey}`;
+  return te(translationKey) ? t(translationKey) : levelKey;
+};
+
+const getDifficultyText = (difficultyKey) => {
+  const translationKey = `editArchive.difficultyLevels.${difficultyKey}`;
+  return te(translationKey) ? t(translationKey) : difficultyKey;
+};
 
 // 标签页配置
 const tabs = [
@@ -468,10 +434,7 @@ const loadLevels = () => {
   ];
 
   availableLevels.value = levelMappings.map((levelKey) => {
-    let levelName;
-    try { levelName = t(`LevelName_Display.${levelKey}`); } 
-    catch { levelName = levelKey; }
-    return { name: levelName, image: `/images/ETB/${levelKey}.jpg`, levelKey };
+    return { name: getLevelName(levelKey), image: `/images/ETB/${levelKey}.jpg`, levelKey };
   });
 };
 
@@ -581,6 +544,12 @@ const getSlotContent = (playerIndex, slotIndex) => {
 
 const getSlotLabel = (slotIndex) => ["mainHand", "offHand1", "offHand2"][slotIndex] || "";
 
+const getSlotLabelText = (slotIndex) => {
+  const label = getSlotLabel(slotIndex);
+  const translationKey = `editArchive.${label}`;
+  return te(translationKey) ? t(translationKey) : label;
+};
+
 const getItemImageFile = (itemName) => {
   if (!itemName || itemName === "None") return null;
   if (itemName === "Toy") return "Teddy_Bear.png";
@@ -611,16 +580,16 @@ const closeEdit = () => router.push({ name: "Home" });
 // 解锁全部枢纽门
 const unlockAllHubDoors = async () => {
   if (!originalArchive.value?.path) {
-    showError(t("editArchive.noArchiveLoaded"));
+    notify.error(t("editArchive.noArchiveLoaded"));
     return;
   }
-  
+
   try {
     await invoke("unlock_all_hub_doors", { filePath: originalArchive.value.path });
-    showSuccess(t("editArchive.hubDoorsUnlocked"));
+    notify.success(t("editArchive.hubDoorsUnlocked"));
   } catch (error) {
     console.error("解锁枢纽门失败:", error);
-    showError(String(error));
+    notify.error(String(error));
   }
 };
 
@@ -672,7 +641,8 @@ onMounted(() => {
   gap: 10px;
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary,
+.btn-secondary {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -685,10 +655,24 @@ onMounted(() => {
   transition: all 0.2s;
 }
 
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { background: var(--primary-hover); }
-.btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
-.btn-secondary:hover { background: var(--hover-bg); }
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--hover-bg);
+}
 
 /* 标签导航 - 浮动式 */
 .tab-nav {
@@ -730,8 +714,13 @@ onMounted(() => {
   transition: color 0.2s;
 }
 
-.tab-btn:hover { color: var(--text-primary); }
-.tab-btn.active { color: white; }
+.tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.tab-btn.active {
+  color: white;
+}
 
 /* 内容区域 */
 .tab-content {
@@ -805,7 +794,9 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-.form-input:focus { border-color: var(--primary); }
+.form-input:focus {
+  border-color: var(--primary);
+}
 
 .difficulty-options {
   display: flex;
@@ -827,8 +818,15 @@ onMounted(() => {
   border: 2px solid transparent;
 }
 
-.difficulty-btn:hover { background: var(--hover-bg); }
-.difficulty-btn.selected { background: rgba(0, 122, 255, 0.1); color: var(--primary); border-color: var(--primary); }
+.difficulty-btn:hover {
+  background: var(--hover-bg);
+}
+
+.difficulty-btn.selected {
+  background: rgba(0, 122, 255, 0.1);
+  color: var(--primary);
+  border-color: var(--primary);
+}
 
 .action-btn {
   display: flex;
@@ -847,8 +845,16 @@ onMounted(() => {
   transition: all 0.2s;
 }
 
-.action-btn:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); }
-.action-btn:active { transform: translateY(0); box-shadow: none; }
+.action-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+.action-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
 
 /* 层级选择 */
 .level-grid {
@@ -866,15 +872,25 @@ onMounted(() => {
   border: 2px solid transparent;
 }
 
-.level-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
-.level-card.selected { border-color: var(--primary); }
+.level-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.level-card.selected {
+  border-color: var(--primary);
+}
 
 .level-img-wrap {
   position: relative;
   aspect-ratio: 16/9;
 }
 
-.level-img { width: 100%; height: 100%; object-fit: cover; }
+.level-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 .level-check {
   position: absolute;
@@ -882,7 +898,7 @@ onMounted(() => {
   right: 8px;
   color: var(--primary);
   font-size: 22px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .level-name {
@@ -907,7 +923,8 @@ onMounted(() => {
   max-height: 100%;
 }
 
-.player-list-section, .player-detail-section {
+.player-list-section,
+.player-detail-section {
   background: var(--card-bg);
   border-radius: 12px;
   border: 1px solid var(--border-color);
@@ -957,8 +974,14 @@ onMounted(() => {
   transition: all 0.15s;
 }
 
-.player-item:hover { background: var(--hover-bg); }
-.player-item.active { background: rgba(0, 122, 255, 0.1); outline: 2px solid var(--primary); }
+.player-item:hover {
+  background: var(--hover-bg);
+}
+
+.player-item.active {
+  background: rgba(0, 122, 255, 0.1);
+  outline: 2px solid var(--primary);
+}
 
 .player-avatar {
   width: 36px;
@@ -971,10 +994,25 @@ onMounted(() => {
   color: var(--text-tertiary);
 }
 
-.player-item.active .player-avatar { background: var(--primary); color: white; }
+.player-item.active .player-avatar {
+  background: var(--primary);
+  color: white;
+}
 
-.player-info { flex: 1; min-width: 0; }
-.player-name { display: block; font-size: 13px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .sanity-tag {
   display: inline-block;
@@ -985,10 +1023,25 @@ onMounted(() => {
   margin-top: 4px;
 }
 
-.sanity-tag.sanity-high { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-.sanity-tag.sanity-medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-.sanity-tag.sanity-low { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-.sanity-tag.sanity-critical { background: rgba(220, 38, 38, 0.15); color: #dc2626; }
+.sanity-tag.sanity-high {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.sanity-tag.sanity-medium {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.sanity-tag.sanity-low {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.sanity-tag.sanity-critical {
+  background: rgba(220, 38, 38, 0.15);
+  color: #dc2626;
+}
 
 .del-btn {
   opacity: 0;
@@ -1001,8 +1054,14 @@ onMounted(() => {
   transition: all 0.15s;
 }
 
-.player-item:hover .del-btn { opacity: 1; }
-.del-btn:hover { background: rgba(255, 59, 48, 0.1); color: #ff3b30; }
+.player-item:hover .del-btn {
+  opacity: 1;
+}
+
+.del-btn:hover {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+}
 
 .empty-hint {
   flex: 1;
@@ -1014,8 +1073,16 @@ onMounted(() => {
   padding: 40px;
 }
 
-.empty-hint svg { font-size: 36px; margin-bottom: 12px; opacity: 0.5; }
-.empty-hint p { font-size: 13px; margin: 0; }
+.empty-hint svg {
+  font-size: 36px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.empty-hint p {
+  font-size: 13px;
+  margin: 0;
+}
 
 .add-player-row {
   display: flex;
@@ -1034,7 +1101,9 @@ onMounted(() => {
   transition: all 0.15s;
 }
 
-.add-btn:hover { background: var(--primary-hover); }
+.add-btn:hover {
+  background: var(--primary-hover);
+}
 
 .msg-tip {
   padding: 10px 12px;
@@ -1043,14 +1112,41 @@ onMounted(() => {
   font-size: 12px;
 }
 
-.msg-tip.error { background: rgba(255, 59, 48, 0.1); color: #ff3b30; }
-.msg-tip.success { background: rgba(52, 199, 89, 0.1); color: #34c759; }
+.msg-tip.error {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+}
+
+.msg-tip.success {
+  background: rgba(52, 199, 89, 0.1);
+  color: #34c759;
+}
 
 /* 玩家详情 */
-.player-detail-section { padding: 16px; overflow-y: auto; flex: 1; }
-.player-detail-section.empty-detail { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-tertiary); }
-.player-detail-section.empty-detail svg { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
-.player-detail-section.empty-detail p { font-size: 13px; margin: 0; }
+.player-detail-section {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.player-detail-section.empty-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+}
+
+.player-detail-section.empty-detail svg {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+.player-detail-section.empty-detail p {
+  font-size: 13px;
+  margin: 0;
+}
 
 .detail-header {
   font-size: 16px;
@@ -1083,26 +1179,84 @@ onMounted(() => {
   margin-bottom: 12px;
 }
 
-.block-title svg { color: var(--primary); }
+.block-title svg {
+  color: var(--primary);
+}
 
-.sanity-display { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.sanity-num { font-size: 24px; font-weight: 700; min-width: 60px; }
-.sanity-num.sanity-high { color: #10b981; }
-.sanity-num.sanity-medium { color: #f59e0b; }
-.sanity-num.sanity-low { color: #ef4444; }
-.sanity-num.sanity-critical { color: #dc2626; }
+.sanity-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
 
-.sanity-bar { flex: 1; height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; }
-.sanity-fill { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.4s; }
-.sanity-fill.sanity-high { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-.sanity-fill.sanity-medium { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-.sanity-fill.sanity-low { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-.sanity-fill.sanity-critical { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+.sanity-num {
+  font-size: 24px;
+  font-weight: 700;
+  min-width: 60px;
+}
 
-.sanity-ctrl { display: flex; align-items: center; gap: 12px; }
-.sanity-ctrl > :first-child { flex: 1; }
+.sanity-num.sanity-high {
+  color: #10b981;
+}
 
-.quick-btns { display: flex; gap: 6px; }
+.sanity-num.sanity-medium {
+  color: #f59e0b;
+}
+
+.sanity-num.sanity-low {
+  color: #ef4444;
+}
+
+.sanity-num.sanity-critical {
+  color: #dc2626;
+}
+
+.sanity-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sanity-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s, background 0.4s;
+}
+
+.sanity-fill.sanity-high {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.sanity-fill.sanity-medium {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.sanity-fill.sanity-low {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.sanity-fill.sanity-critical {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.sanity-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sanity-ctrl> :first-child {
+  flex: 1;
+}
+
+.quick-btns {
+  display: flex;
+  gap: 6px;
+}
+
 .qbtn {
   width: 32px;
   height: 32px;
@@ -1115,15 +1269,41 @@ onMounted(() => {
   transition: all 0.15s;
 }
 
-.qbtn.danger { background: rgba(255, 59, 48, 0.1); color: #ff3b30; }
-.qbtn.danger:hover { background: rgba(255, 59, 48, 0.2); }
-.qbtn.success { background: rgba(52, 199, 89, 0.1); color: #34c759; }
-.qbtn.success:hover { background: rgba(52, 199, 89, 0.2); }
+.qbtn.danger {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+}
+
+.qbtn.danger:hover {
+  background: rgba(255, 59, 48, 0.2);
+}
+
+.qbtn.success {
+  background: rgba(52, 199, 89, 0.1);
+  color: #34c759;
+}
+
+.qbtn.success:hover {
+  background: rgba(52, 199, 89, 0.2);
+}
 
 /* 背包 */
-.inventory-wrap { display: flex; gap: 16px; }
-.hand-slots { display: flex; flex-direction: column; gap: 8px; }
-.backpack-slots { display: grid; grid-template-columns: repeat(3, 56px); gap: 8px; }
+.inventory-wrap {
+  display: flex;
+  gap: 16px;
+}
+
+.hand-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.backpack-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 56px);
+  gap: 8px;
+}
 
 .inv-slot {
   position: relative;
@@ -1139,37 +1319,127 @@ onMounted(() => {
   transition: all 0.15s;
 }
 
-.inv-slot:hover { border-color: var(--primary); transform: scale(1.05); }
-.inv-slot.empty { border-style: dashed; }
+.inv-slot:hover {
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
 
-.slot-label { position: absolute; top: 3px; left: 3px; font-size: 8px; color: var(--text-tertiary); background: var(--bg-secondary); padding: 1px 4px; border-radius: 3px; }
-.slot-num { position: absolute; top: 3px; right: 4px; font-size: 10px; font-weight: 600; color: var(--text-tertiary); }
-.slot-img { width: 36px; height: 36px; object-fit: contain; }
-.slot-placeholder { font-size: 18px; color: var(--text-tertiary); opacity: 0.4; }
+.inv-slot.empty {
+  border-style: dashed;
+}
+
+.slot-label {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  font-size: 8px;
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.slot-num {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.slot-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.slot-placeholder {
+  font-size: 18px;
+  color: var(--text-tertiary);
+  opacity: 0.4;
+}
 
 /* 动画 */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 
 /* 响应式 */
 @media (max-width: 900px) {
-  .players-layout { grid-template-columns: 1fr; }
-  .player-list-section { max-height: 300px; }
-  .detail-grid { grid-template-columns: 1fr; }
-  .page-header { flex-wrap: wrap; gap: 12px; }
-  .tab-nav { order: 3; width: 100%; justify-content: center; }
+  .players-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .player-list-section {
+    max-height: 300px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .tab-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 600px) {
-  .page-header { padding: 12px 16px; }
-  .page-title { font-size: 16px; }
-  .tab-nav { overflow-x: auto; }
-  .tab-btn { padding: 6px 12px; font-size: 12px; white-space: nowrap; }
-  .tab-content { padding: 16px; }
-  .level-grid { grid-template-columns: repeat(2, 1fr); }
-  .detail-grid { grid-template-columns: 1fr; }
-  .inventory-wrap { flex-direction: column; }
-  .btn-primary span, .btn-secondary span { display: none; }
-  .btn-primary, .btn-secondary { padding: 8px 12px; }
+  .page-header {
+    padding: 12px 16px;
+  }
+
+  .page-title {
+    font-size: 16px;
+  }
+
+  .tab-nav {
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .tab-content {
+    padding: 16px;
+  }
+
+  .level-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-wrap {
+    flex-direction: column;
+  }
+
+  .btn-primary span,
+  .btn-secondary span {
+    display: none;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 8px 12px;
+  }
 }
 </style>

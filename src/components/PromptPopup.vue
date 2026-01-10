@@ -1,15 +1,8 @@
 <!-- src/components/PromptPopup.vue -->
 <template>
   <transition :css="false" @enter="enterAnimation" @leave="leaveAnimation">
-    <div
-      v-if="isVisible"
-      class="prompt-popup"
-      :class="popupClass"
-      :style="popupStyle"
-      ref="popupRef"
-      @mouseenter="pauseAutoClose"
-      @mouseleave="resumeAutoClose"
-    >
+    <div v-if="isVisible" class="prompt-popup" :class="popupClass" :style="popupStyle" ref="popupRef"
+      @mouseenter="pauseAutoClose" @mouseleave="resumeAutoClose">
       <div class="popup-content">
         <div class="popup-icon-container" v-if="computedIcon">
           <div class="popup-icon-wrapper" :class="iconClass">
@@ -19,12 +12,7 @@
         <div class="popup-text-container">
           <span class="popup-message">{{ message }}</span>
         </div>
-        <button
-          class="close-btn"
-          @click="closePopup"
-          @mouseenter="hoverClose = true"
-          @mouseleave="hoverClose = false"
-        >
+        <button class="close-btn" @click="closePopup" @mouseenter="hoverClose = true" @mouseleave="hoverClose = false">
           <font-awesome-icon :icon="['fas', 'times']" class="close-icon" />
         </button>
       </div>
@@ -240,12 +228,10 @@ const resumeAutoClose = () => {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 100%);
   z-index: 1;
 }
 
@@ -271,11 +257,9 @@ const resumeAutoClose = () => {
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  background: linear-gradient(
-    135deg,
-    var(--primary, #007aff) 0%,
-    rgba(0, 122, 255, 0.95) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--primary, #007aff) 0%,
+      rgba(0, 122, 255, 0.95) 100%);
   box-shadow: 0 6px 16px rgba(0, 122, 255, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.15) inset;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -412,11 +396,9 @@ const resumeAutoClose = () => {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--primary, #007aff) 0%,
-    rgba(0, 122, 255, 0.8) 100%
-  );
+  background: linear-gradient(90deg,
+      var(--primary, #007aff) 0%,
+      rgba(0, 122, 255, 0.8) 100%);
   border-radius: 0 0 20px 20px;
   transition: width 0.1s ease;
   box-shadow: 0 0 12px rgba(0, 122, 255, 0.5);
@@ -432,12 +414,10 @@ const resumeAutoClose = () => {
   }
 
   .prompt-popup::before {
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.2) 50%,
-      transparent 100%
-    );
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        transparent 100%);
   }
 
   .popup-message {
@@ -579,6 +559,7 @@ const resumeAutoClose = () => {
 
 /* Subtle animations */
 @keyframes subtlePulse {
+
   0%,
   100% {
     transform: scale(1);
@@ -590,6 +571,7 @@ const resumeAutoClose = () => {
 }
 
 @keyframes subtleShake {
+
   0%,
   100% {
     transform: translateX(0);

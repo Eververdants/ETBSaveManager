@@ -381,16 +381,35 @@ class FeedbackService {
   }
 
   /**
-   * 提交反馈到 Gist（无需 Token）
+   * 直接发送反馈到 Cloudflare Worker（简化版）
+   * @param {string} content - 反馈内容
+   * @param {string} [email] - 可选的联系邮箱
+   * @returns {Promise<{success: boolean, error?: string}>} 提交结果
+   */
+  async sendFeedback(content, email = null) {
+    try {
+      const result = await invoke("send_feedback", {
+        content,
+        email,
+      });
+      return result;
+    } catch (error) {
+      console.error("发送反馈失败:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * 提交反馈到 Cloudflare Worker（完整版，带系统信息）
    * @param {Object} data - 反馈数据
    * @param {string} data.type - 反馈类型 (bug, idea, general, ui)
    * @param {string} [data.severity] - Bug 严重程度 (仅 bug 类型)
-   * @param {string} [data.sender] - 发送人名称（可选）
+   * @param {string} [data.sender] - 发送人名称/邮箱（可选）
    * @param {string} data.title - 反馈标题
    * @param {string} data.description - 反馈描述
    * @param {string} [data.language] - 应用语言设置
    * @param {string} [data.screenResolution] - 屏幕分辨率
-   * @param {boolean} [data.includeLogs] - 是否包含日志，默认 true
+   * @param {boolean} [data.includeLogs] - 是否包含日志，默认 false
    * @returns {Promise<Object>} 提交结果
    */
   async submitFeedback(data) {

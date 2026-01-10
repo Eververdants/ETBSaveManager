@@ -435,7 +435,7 @@ pub fn run() {
             steam_api::get_steam_usernames_command,
             set_window_title,
             feedback_commands::submit_feedback,
-            feedback_commands::send_feedback_to_gist,
+            feedback_commands::send_feedback,
             feedback_commands::get_feedback_history,
             feedback_commands::retry_feedback,
             feedback_commands::delete_feedback,

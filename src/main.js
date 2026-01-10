@@ -262,3 +262,10 @@ requestIdleCallback(() => {
     initGlobalFloatingButtonProtection();
   });
 }, { timeout: 3000 });
+
+// 生产模式下禁用交互（防止快捷键、文字选中等）
+if (import.meta.env.PROD) {
+  import("./utils/disableInteractions.js").then(({ disableInteractions }) => {
+    disableInteractions();
+  });
+}

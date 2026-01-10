@@ -1,223 +1,30 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { getI18n } from "./i18n/loader.js";
-import Sidebar from "./components/Sidebar.vue";
-import TitleBar from "./components/TitleBar.vue";
-import PerformanceMonitor from "./components/PerformanceMonitor.vue";
-import {
-  protectFloatingButtonPosition,
-  safeModifyBodyStyles,
-} from "./utils/floatingButtonProtection.js";
-import storage from "./services/storageService";
+import { ref, onMounted, shallowRef } from "vue";
+import { useRouter } from "vue-router";
 
-const i18n = getI18n();
+// 延迟导入非关键组件
+const Sidebar = shallowRef(null);
+const TitleBar = shallowRef(null);
+
+// 立即加载关键组件
+import SidebarComponent from "./components/Sidebar.vue";
+import TitleBarComponent from "./components/TitleBar.vue";
+
+Sidebar.value = SidebarComponent;
+TitleBar.value = TitleBarComponent;
+
 const router = useRouter();
-
 const sidebarExpanded = ref(false);
-// 发行版禁用性能监控 - 设置为false确保默认不显示
-const performanceMonitorEnabled = ref(false);
 
-// 组件缓存管理
-const cachedComponents = ref([
-  "Home",
-  "Settings",
-  "CreateArchive",
-  "PluginMarket",
-  "CoreArchive",
-  "Log",
-]);
-const excludedComponents = ref([
-  "BatchCreateArchive",
-  "EditArchive",
-  "SteamCache",
-]);
+// 组件缓存配置
+const cachedComponents = ["Home", "Settings", "CreateArchive", "PluginMarket", "CoreArchive", "Log"];
+const excludedComponents = ["BatchCreateArchive", "EditArchive", "SteamCache"];
 
 const handleSidebarExpand = (expanded) => {
   sidebarExpanded.value = expanded;
 };
 
 onMounted(() => {
-
-  // 强制启用硬件加速，防止图层合成问题
-  const forceHardwareAcceleration = () => {
-    const elements = document.querySelectorAll(
-      ".main-content, .sidebar, .archive-grid, .archive-card"
-    );
-    elements.forEach((el) => {
-      if (el && !el.classList.contains("floating-action-container")) {
-        el.style.transform = "translateZ(0)";
-        el.style.willChange = "transform";
-      }
-    });
-  };
-
-  // 确保浮动按钮固定定位的函数
-  const ensureFloatingButtonPosition = () => {
-    protectFloatingButtonPosition();
-  };
-
-  // 检查当前日期是否在元旦期间 (12.31 - 1.3)
-  const isNewYearPeriod = () => {
-    const now = new Date();
-    const month = now.getMonth() + 1;
-    const day = now.getDate();
-    return (
-      (month === 12 && day === 31) || (month === 1 && day >= 1 && day <= 3)
-    );
-  };
-
-  // 检查当前日期是否在春节期间 (2.13 - 2.24)
-  const isSpringFestivalPeriod = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const day = now.getDate();
-    return year === 2026 && month === 2 && day >= 13 && day <= 24;
-  };
-
-  // 检查主题是否是限时主题
-  const isSeasonalTheme = (themeId) => {
-    return [
-      "new-year",
-      "spring-festival-dark",
-      "spring-festival-light",
-    ].includes(themeId);
-  };
-
-  // 检查限时主题是否可用
-  const isSeasonalThemeAvailable = (themeId) => {
-    const mode = storage.getItem("seasonalThemeMode") || "auto";
-    if (mode === "force") return true;
-    if (mode === "hide") return false;
-
-    if (themeId === "new-year") return isNewYearPeriod();
-    if (
-      themeId === "spring-festival-dark" ||
-      themeId === "spring-festival-light"
-    ) {
-      return isSpringFestivalPeriod();
-    }
-    return true;
-  };
-
-  // 应用保存的主题，如果是限时主题但不可用则恢复之前的主题
-  let savedTheme = storage.getItem("theme") || "light";
-
-  // 确保 themeBeforeNewYear 有值（用于恢复）
-  // 如果当前主题不是限时主题且没有记录过，就用当前主题作为备份
-  if (!storage.getItem("themeBeforeNewYear") && !isSeasonalTheme(savedTheme)) {
-    storage.setItem("themeBeforeNewYear", savedTheme);
-  }
-
-  if (isSeasonalTheme(savedTheme) && !isSeasonalThemeAvailable(savedTheme)) {
-    // 限时主题不可用，恢复之前的主题
-    const themeBeforeSeasonal =
-      storage.getItem("themeBeforeNewYear") || "light";
-    savedTheme = themeBeforeSeasonal;
-    storage.setItem("theme", savedTheme);
-  }
-
-  if (window.themeManager) {
-    window.themeManager.setTheme(savedTheme);
-  } else {
-    document.documentElement.setAttribute("data-theme", savedTheme);
-  }
-
-  // 强制更新body背景色，确保主题立即生效
-  const updateBodyBackground = (theme) => {
-    const body = document.body;
-    if (body) {
-      if (theme === "dark") {
-        body.style.backgroundColor = "#1c1c1e";
-        body.style.setProperty("--bg", "#1c1c1e");
-      } else if (theme === "new-year") {
-        // 元旦主题 - 喜庆红金配色
-        body.style.backgroundColor = "#1a0a0a";
-        body.style.setProperty("--bg", "#1a0a0a");
-      } else if (theme === "spring-festival-dark") {
-        // 春节深色主题 - 紫檀色
-        body.style.backgroundColor = "#1c0a14";
-        body.style.setProperty("--bg", "#1c0a14");
-      } else if (theme === "spring-festival-light") {
-        // 春节浅色主题 - 宣纸色
-        body.style.backgroundColor = "#fefce8";
-        body.style.setProperty("--bg", "#fefce8");
-      } else {
-        body.style.backgroundColor = "#f8f9fa";
-        body.style.setProperty("--bg", "#f8f9fa");
-      }
-
-      // 延迟清除内联样式，让CSS变量接管
-      setTimeout(() => {
-        body.style.backgroundColor = "";
-        body.style.setProperty("--bg", "");
-      }, 100);
-    }
-  };
-
-  updateBodyBackground(savedTheme);
-
-  // 延迟执行硬件加速强制，确保DOM完全加载
-  setTimeout(forceHardwareAcceleration, 100);
-
-  // 延迟执行浮动按钮位置确保，确保组件已挂载
-  setTimeout(ensureFloatingButtonPosition, 200);
-
-  // 定期检查并修复浮动按钮位置
-  setInterval(ensureFloatingButtonPosition, 1000);
-
-  // 在午夜检查限时主题是否过期
-  const checkSeasonalThemeExpiry = () => {
-    const currentTheme = storage.getItem("theme");
-    if (
-      isSeasonalTheme(currentTheme) &&
-      !isSeasonalThemeAvailable(currentTheme)
-    ) {
-      // 限时主题已过期，回退到之前的非限时主题
-      const themeBeforeSeasonal =
-        storage.getItem("themeBeforeNewYear") || "light";
-      storage.setItem("theme", themeBeforeSeasonal);
-
-      if (window.themeManager) {
-        window.themeManager.setTheme(themeBeforeSeasonal);
-      } else {
-        document.documentElement.setAttribute(
-          "data-theme",
-          themeBeforeSeasonal
-        );
-      }
-      updateBodyBackground(themeBeforeSeasonal);
-
-      console.log(
-        `Seasonal theme "${currentTheme}" expired, reverted to "${themeBeforeSeasonal}"`
-      );
-    }
-  };
-
-  // 计算距离下一个午夜的毫秒数
-  const scheduleNextMidnightCheck = () => {
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    const msUntilMidnight = tomorrow.getTime() - now.getTime();
-
-    setTimeout(() => {
-      checkSeasonalThemeExpiry();
-      // 检查完后，设置下一个午夜的检查
-      scheduleNextMidnightCheck();
-    }, msUntilMidnight);
-  };
-
-  // 启动午夜检查调度
-  scheduleNextMidnightCheck();
-
-  // 监听性能监控开关事件 - 发行版禁用
-  // window.addEventListener('performance-monitor-toggle', (event) => {
-  //   performanceMonitorEnabled.value = event.detail.enabled;
-  // });
-
   // 监听路由变更事件
   window.addEventListener("sidebar-route-change", (event) => {
     const routeName = event.detail.route;
@@ -226,50 +33,112 @@ onMounted(() => {
     }
   });
 
-  // 路由切换时处理滚动位置
+  // 路由切换时处理滚动
   router.afterEach((to, from) => {
-    const mainContent = document.querySelector(".main-content");
-    if (mainContent) {
-      // 只在页面底部时才重置滚动位置
-      const scrollThreshold = 100; // 距离底部100px内视为底部
-      const isAtBottom =
-        mainContent.scrollHeight - mainContent.scrollTop <=
-        mainContent.clientHeight + scrollThreshold;
-
-      // 如果在页面底部且切换到不同页面，则重置滚动位置
-      if (isAtBottom && to.name !== from.name) {
-        mainContent.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        });
-      }
-    }
-
-    // 路由切换后强制重绘，防止图层卡住
-    // 使用更温和的方式触发重绘，避免页面闪烁
-    requestAnimationFrame(() => {
+    if (to.name !== from.name) {
       const mainContent = document.querySelector(".main-content");
       if (mainContent) {
-        // 通过修改 transform 触发重绘，不会导致视觉闪烁
-        mainContent.style.transform = "translateZ(0)";
-        void mainContent.offsetHeight; // 触发重排
+        mainContent.scrollTop = 0;
       }
-    });
-
-    // 路由切换后多重保护浮动按钮位置
-    setTimeout(ensureFloatingButtonPosition, 50);
-    setTimeout(ensureFloatingButtonPosition, 200);
-    setTimeout(ensureFloatingButtonPosition, 500);
-    setTimeout(ensureFloatingButtonPosition, 1000);
+    }
   });
+
+  // 延迟初始化非关键功能
+  requestIdleCallback(() => {
+    initThemeSystem();
+    initFloatingButtonProtection();
+  }, { timeout: 1000 });
 });
+
+// 主题系统初始化（延迟）
+async function initThemeSystem() {
+  const storage = (await import("./services/storageService")).default;
+  
+  // 等待存储初始化完成
+  if (!storage.isInitialized()) {
+    await storage.initStorage();
+  }
+  
+  const isSeasonalTheme = (id) => ["new-year", "spring-festival-dark", "spring-festival-light"].includes(id);
+  
+  const isSeasonalAvailable = (id) => {
+    const mode = storage.getItem("seasonalThemeMode") || "auto";
+    if (mode === "force") return true;
+    if (mode === "hide") return false;
+    
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    
+    if (id === "new-year") {
+      return (month === 12 && day === 31) || (month === 1 && day <= 3);
+    }
+    if (id.includes("spring-festival")) {
+      return now.getFullYear() === 2026 && month === 2 && day >= 13 && day <= 24;
+    }
+    return true;
+  };
+
+  // 从存储读取主题，如果没有则使用初始主题
+  let theme = storage.getItem("theme") || window.__initialTheme || "light";
+  
+  // 如果存储中的主题与初始主题不同，需要更新
+  const initialTheme = window.__initialTheme;
+  
+  if (isSeasonalTheme(theme) && !isSeasonalAvailable(theme)) {
+    theme = storage.getItem("themeBeforeNewYear") || "light";
+    storage.setItem("theme", theme);
+  }
+
+  // 应用主题
+  if (window.themeManager) {
+    window.themeManager.setTheme(theme);
+  } else {
+    document.documentElement.setAttribute("data-theme", theme);
+  }
+  
+  // 如果主题与初始不同，需要更新 body 背景
+  if (theme !== initialTheme) {
+    updateBodyBackground(theme);
+  }
+}
+
+// 更新 body 背景色
+function updateBodyBackground(theme) {
+  const body = document.body;
+  if (!body) return;
+  
+  const bgColors = {
+    'dark': '#1c1c1e',
+    'light': '#f8f9fa',
+    'new-year': '#1a0a0a',
+    'spring-festival-dark': '#1c0a14',
+    'spring-festival-light': '#fefce8',
+  };
+  
+  const bg = bgColors[theme] || bgColors['light'];
+  body.style.backgroundColor = bg;
+  
+  // 延迟清除，让 CSS 变量接管
+  setTimeout(() => {
+    body.style.backgroundColor = '';
+  }, 100);
+}
+
+// 浮动按钮保护（延迟）
+async function initFloatingButtonProtection() {
+  const { protectFloatingButtonPosition } = await import("./utils/floatingButtonProtection.js");
+  
+  // 定期检查（降低频率）
+  setInterval(protectFloatingButtonPosition, 2000);
+}
 </script>
 
 <template>
   <div class="app-container">
-    <TitleBar />
+    <component :is="TitleBar" v-if="TitleBar" />
     <div class="content-wrapper">
-      <Sidebar @sidebar-expand="handleSidebarExpand" />
+      <component :is="Sidebar" v-if="Sidebar" @sidebar-expand="handleSidebarExpand" />
       <main
         class="main-content"
         :class="{
@@ -279,17 +148,11 @@ onMounted(() => {
       >
         <router-view v-slot="{ Component, route }">
           <transition name="page-fade" mode="out-in">
-            <!-- 使用keep-alive缓存常用组件 -->
-            <keep-alive
-              :include="cachedComponents"
-              :exclude="excludedComponents"
-            >
+            <keep-alive :include="cachedComponents" :exclude="excludedComponents">
               <component :is="Component" :key="route.fullPath" />
             </keep-alive>
           </transition>
         </router-view>
-        <!-- 性能监控组件 - 发行版禁用 -->
-        <!-- <PerformanceMonitor v-if="performanceMonitorEnabled" class="performance-monitor" /> -->
       </main>
     </div>
   </div>

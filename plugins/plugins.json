@@ -65,6 +65,54 @@
       "icon": "palette",
       "license": "MIT",
       "downloadUrl": "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/theme-cyberpunk"
+    },
+    {
+      "id": "theme-nord",
+      "name": "Nord Theme",
+      "type": "theme",
+      "version": "1.0.0",
+      "author": "Eververdants & Kiro",
+      "description": "A clean arctic-inspired theme with cool blue tones",
+      "themeId": "nord",
+      "icon": "palette",
+      "license": "MIT",
+      "downloadUrl": "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/theme-nord"
+    },
+    {
+      "id": "theme-dracula",
+      "name": "Dracula Theme",
+      "type": "theme",
+      "version": "1.0.0",
+      "author": "Eververdants & Kiro",
+      "description": "A dark theme with vibrant purple and pink accents",
+      "themeId": "dracula",
+      "icon": "palette",
+      "license": "MIT",
+      "downloadUrl": "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/theme-dracula"
+    },
+    {
+      "id": "theme-monokai",
+      "name": "Monokai Theme",
+      "type": "theme",
+      "version": "1.0.0",
+      "author": "Eververdants & Kiro",
+      "description": "Classic Monokai color scheme with warm tones",
+      "themeId": "monokai",
+      "icon": "palette",
+      "license": "MIT",
+      "downloadUrl": "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/theme-monokai"
+    },
+    {
+      "id": "theme-solarized",
+      "name": "Solarized Dark Theme",
+      "type": "theme",
+      "version": "1.0.0",
+      "author": "Eververdants & Kiro",
+      "description": "Eye-friendly Solarized dark color scheme",
+      "themeId": "solarized",
+      "icon": "palette",
+      "license": "MIT",
+      "downloadUrl": "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/theme-solarized"
     }
   ]
 }

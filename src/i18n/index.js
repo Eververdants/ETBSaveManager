@@ -6,7 +6,7 @@ import zhCN from "./locales/zh-CN.json";
 import zhTW from "./locales/zh-TW.json";
 import enUS from "./locales/en-US.json";
 
-// 更新公告数据（确保被打包）
+// 更新公告数据（确保被打包）- 现在是单个对象而不是数组
 import releaseNotesZhCN from "./locales/release-notes.zh-CN.json";
 import releaseNotesEnUS from "./locales/release-notes.en-US.json";
 import releaseNotesZhTW from "./locales/release-notes.zh-TW.json";
@@ -30,9 +30,7 @@ console.log(
   "📋 [i18n/index.js] 更新公告数据已加载:",
   Object.keys(releaseNotesData)
 );
-console.log("📊 [i18n/index.js] 简体中文公告数量:", releaseNotesZhCN.length);
-console.log("📊 [i18n/index.js] 繁体中文公告数量:", releaseNotesZhTW.length);
-console.log("📊 [i18n/index.js] 英文公告数量:", releaseNotesEnUS.length);
+console.log("📊 [i18n/index.js] 当前版本:", releaseNotesZhCN?.version || "未知");
 
 function getUserLocale() {
   const saved = storage.getItem("locale");

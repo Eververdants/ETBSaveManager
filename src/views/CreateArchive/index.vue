@@ -851,6 +851,15 @@ export default {
     const isSidebarExpanded = ref(false);
     const handleSidebarExpand = (event) => {
       isSidebarExpanded.value = event.detail;
+      updateBottomActionsPosition();
+    };
+
+    const updateBottomActionsPosition = () => {
+      const bottomActions = document.querySelector(".bottom-actions");
+      if (bottomActions) {
+        const sidebarWidth = isSidebarExpanded.value ? 220 : 70;
+        bottomActions.style.left = `calc(50% + ${sidebarWidth / 2}px)`;
+      }
     };
 
     onMounted(async () => {
@@ -859,6 +868,7 @@ export default {
       await loadLevels();
       window.addEventListener("sidebar-expand", handleSidebarExpand);
       if (players.length > 0) await fetchSteamUsernames();
+      updateBottomActionsPosition();
     });
 
     // 由于路由设置了 keepAlive，组件会被缓存
@@ -1124,14 +1134,15 @@ export default {
   border: 1px solid var(--divider-light);
   border-radius: 20px;
   position: fixed;
-  bottom: 52px;
-  left: 50%;
+  bottom: 16px;
+  left: calc(50% + 35px);
   transform: translateX(-50%);
-  width: 95%;
-  max-width: calc(100% - 48px);
+  width: calc(100% - 88px);
+  max-width: 1200px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(12px);
   z-index: 100;
+  transition: left 0.3s ease;
 }
 
 .action-button {
@@ -1236,11 +1247,9 @@ export default {
   .bottom-actions {
     flex-direction: column;
     gap: 12px;
-    min-width: auto;
     width: calc(100% - 32px);
-    left: 16px;
-    right: 16px;
-    transform: none;
+    left: 50%;
+    transform: translateX(-50%);
     bottom: 16px;
     padding: 16px;
   }

@@ -46,28 +46,39 @@
       <section class="list-section">
         <h3 class="section-title">{{ $t("about.releaseNotes") }}</h3>
         <div class="release-summary" v-if="latestRelease">
-          <div class="latest-version-header">
-            <span class="version-badge" :class="latestRelease.type">{{
-              latestRelease.version
-            }}</span>
-            <span class="version-date">{{
-              formatDate(latestRelease.date)
-            }}</span>
-            <span v-if="latestRelease.isHighlight" class="featured-badge">{{
-              $t("featured")
-            }}</span>
+          <div class="release-header">
+            <span class="version-tag">{{ latestRelease.version }}</span>
+            <span class="release-date">{{ formatDate(latestRelease.date) }}</span>
           </div>
-          <h4 class="latest-version-title">{{ latestRelease.title }}</h4>
-          <div
-            class="latest-feature"
-            v-if="latestRelease.categories.newFeatures?.[0]"
-          >
-            <span class="feature-icon">✨</span>
-            <span>{{ latestRelease.categories.newFeatures[0] }}</span>
+          <div class="release-title">{{ latestRelease.title }}</div>
+          
+          <!-- 更新内容列表 -->
+          <div class="release-content">
+            <template v-if="latestRelease.categories.newFeatures?.length">
+              <div v-for="(item, idx) in latestRelease.categories.newFeatures" :key="'new-' + idx" class="release-item">
+                <span class="item-dot new"></span>
+                <span>{{ item }}</span>
+              </div>
+            </template>
+            <template v-if="latestRelease.categories.improvements?.length">
+              <div v-for="(item, idx) in latestRelease.categories.improvements" :key="'imp-' + idx" class="release-item">
+                <span class="item-dot improve"></span>
+                <span>{{ item }}</span>
+              </div>
+            </template>
+            <template v-if="latestRelease.categories.bugFixes?.length">
+              <div v-for="(item, idx) in latestRelease.categories.bugFixes" :key="'fix-' + idx" class="release-item">
+                <span class="item-dot fix"></span>
+                <span>{{ item }}</span>
+              </div>
+            </template>
+            <template v-if="latestRelease.categories.performance?.length">
+              <div v-for="(item, idx) in latestRelease.categories.performance" :key="'perf-' + idx" class="release-item">
+                <span class="item-dot perf"></span>
+                <span>{{ item }}</span>
+              </div>
+            </template>
           </div>
-          <button class="view-all-btn" @click="goToReleaseNotes">
-            {{ $t("viewAllVersions", { count: totalCount }) }}
-          </button>
         </div>
         <div v-else class="no-release-notes">
           <p>{{ $t("noReleaseNotes") }}</p>
@@ -86,25 +97,25 @@
       <section class="list-section">
         <h3 class="section-title">{{ $t("about.contact") }}</h3>
         <div class="icon-row">
-          <a href="mailto:llzgd@outlook.com" target="_blank">
+          <a class="social-btn email" href="mailto:llzgd@outlook.com" target="_blank">
             <font-awesome-icon :icon="['fas', 'envelope']" />
+            <span class="social-label">Email</span>
           </a>
-          <a href="https://github.com/Eververdants" target="_blank">
+          <a class="social-btn github" href="https://github.com/Eververdants" target="_blank">
             <font-awesome-icon :icon="['fab', 'github']" />
+            <span class="social-label">GitHub</span>
           </a>
-          <a
-            v-if="showChineseSocial"
-            href="https://space.bilibili.com/2019959464"
-            target="_blank"
-          >
+          <a class="social-btn x-twitter" href="https://x.com/Eververdants" target="_blank">
+            <font-awesome-icon :icon="['fab', 'x-twitter']" />
+            <span class="social-label">X</span>
+          </a>
+          <a class="social-btn bilibili" href="https://space.bilibili.com/2019959464" target="_blank">
             <font-awesome-icon :icon="['fab', 'bilibili']" />
+            <span class="social-label">Bilibili</span>
           </a>
-          <a
-            v-if="showChineseSocial"
-            href="https://www.douyin.com/user/MS4wLjABAAAA8MEFE6VVh4_nWkTLPbueZYywgSyN19xhUFkmDF-nkhlnWytZWiBZ9YWM5s3RsprJ"
-            target="_blank"
-          >
+          <a class="social-btn tiktok" href="https://www.douyin.com/user/MS4wLjABAAAA8MEFE6VVh4_nWkTLPbueZYywgSyN19xhUFkmDF-nkhlnWytZWiBZ9YWM5s3RsprJ" target="_blank">
             <font-awesome-icon :icon="['fab', 'tiktok']" />
+            <span class="social-label">抖音</span>
           </a>
         </div>
       </section>
@@ -123,21 +134,16 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import { computed, ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
 import { useReleaseNotes } from "@/composables";
 import storage from "@/services/storageService";
 
 const { t, locale } = useI18n({ useScope: "global" });
-const router = useRouter();
 const version = "3.0.0-Alpha-8"; // TODO: 从 package.json 动态获取
 
 // 使用公告数据 composable
-const { releaseNotes, latestRelease, totalCount, formatShortDate } =
+const { latestRelease, formatShortDate } =
   useReleaseNotes();
 
-const showChineseSocial = computed(() =>
-  ["zh-CN", "zh-TW"].includes(locale.value)
-);
 const showEasterEgg = ref(false);
 const iconLoaded = ref(false);
 const easterEggImageLoaded = ref(false);
@@ -162,10 +168,6 @@ const handleImageLoad = () => {
 
 // 使用 composable 提供的日期格式化
 const formatDate = (dateString) => formatShortDate(dateString);
-
-const goToReleaseNotes = () => {
-  router.push({ name: "ReleaseNotes" });
-};
 
 onMounted(() => {
   const img = new Image();
@@ -434,19 +436,72 @@ const handleAppIconClick = () => {
 .icon-row {
   display: flex;
   justify-content: center;
-  gap: 1.5rem;
-  padding: 0.8rem 0;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  flex-wrap: wrap;
 }
 
-.icon-row a {
-  font-size: 1.4rem;
-  color: var(--text-primary);
-  transition: transform 0.2s ease, color 0.2s ease;
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
-.icon-row a:hover {
-  color: var(--accent-color);
-  transform: scale(1.15);
+.social-label {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-left: 0;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.social-btn:hover {
+  transform: translateY(-2px);
+  color: white;
+}
+
+.social-btn:hover .social-label {
+  max-width: 80px;
+  margin-left: 8px;
+  opacity: 1;
+}
+
+.social-btn.email:hover {
+  background: #667eea;
+  border-color: #667eea;
+}
+
+.social-btn.github:hover {
+  background: #333;
+  border-color: #333;
+}
+
+.social-btn.x-twitter:hover {
+  background: #000;
+  border-color: #000;
+}
+
+.social-btn.bilibili:hover {
+  background: #fb7299;
+  border-color: #fb7299;
+}
+
+.social-btn.tiktok:hover {
+  background: #000;
+  border-color: #000;
 }
 
 /* 底部版权 */
@@ -476,332 +531,78 @@ const handleAppIconClick = () => {
   cursor: pointer;
 }
 
-/* 更新公告摘要样式 */
+/* 更新公告样式 - 简洁版 */
 .release-summary {
-  position: relative;
-  padding: 1.5rem;
-  background: linear-gradient(
-    135deg,
-    var(--bg-secondary) 0%,
-    var(--bg-tertiary, #2a2a3a) 100%
-  );
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 1rem;
 }
 
-.release-summary:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  z-index: 1;
-}
-
-.release-summary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.release-summary.major {
-  border-left: 3px solid #ff6b6b;
-  background: linear-gradient(
-    135deg,
-    var(--bg-secondary) 0%,
-    rgba(255, 107, 107, 0.03) 50%,
-    var(--bg-tertiary, #2a2a3a) 100%
-  );
-  box-shadow: 0 4px 16px rgba(255, 107, 107, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.release-summary.minor {
-  border-left: 3px solid #4ecdc4;
-  background: linear-gradient(
-    135deg,
-    var(--bg-secondary) 0%,
-    rgba(78, 205, 196, 0.03) 50%,
-    var(--bg-tertiary, #2a2a3a) 100%
-  );
-  box-shadow: 0 4px 16px rgba(78, 205, 196, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.release-summary.patch {
-  border-left: 3px solid #45b7d1;
-  background: linear-gradient(
-    135deg,
-    var(--bg-secondary) 0%,
-    rgba(69, 183, 209, 0.03) 50%,
-    var(--bg-tertiary, #2a2a3a) 100%
-  );
-  box-shadow: 0 4px 16px rgba(69, 183, 209, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.latest-version-header {
+.release-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  flex-wrap: wrap;
-  position: relative;
-  z-index: 2;
+  margin-bottom: 0.5rem;
 }
 
-.version-badge {
-  position: relative;
-  padding: 0.4rem 0.75rem;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: white;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease;
-}
-
-.version-badge.major {
-  background: linear-gradient(135deg, #ff6b6b, #ff5252);
-  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
-}
-
-.version-badge.minor {
-  background: linear-gradient(135deg, #4ecdc4, #26a69a);
-  box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
-}
-
-.version-badge.patch {
-  background: linear-gradient(135deg, #45b7d1, #1976d2);
-  box-shadow: 0 2px 8px rgba(69, 183, 209, 0.3);
-}
-
-.version-badge.feature {
-  background: linear-gradient(135deg, #9c88ff, #7c4dff);
-  box-shadow: 0 2px 8px rgba(156, 136, 255, 0.3);
-}
-
-.version-badge.enhancement {
-  background: linear-gradient(135deg, #ff8a65, #ff5722);
-  box-shadow: 0 2px 8px rgba(255, 138, 101, 0.3);
-}
-
-.version-badge.improvement {
-  background: linear-gradient(135deg, #81c784, #4caf50);
-  box-shadow: 0 2px 8px rgba(129, 199, 132, 0.3);
-}
-
-.version-badge.stability {
-  background: linear-gradient(135deg, #ffd54f, #ffb300);
-  box-shadow: 0 2px 8px rgba(255, 213, 79, 0.3);
-}
-
-.version-badge:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.version-date {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  font-weight: 500;
-  background: rgba(255, 255, 255, 0.05);
+.version-tag {
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-}
-
-.featured-badge {
-  background: linear-gradient(45deg, #ffd700, #ffed4e);
-  color: #8b5cf6;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
-  animation: shimmer 2s ease-in-out infinite alternate;
-}
-
-@keyframes shimmer {
-  0% {
-    filter: brightness(1);
-  }
-
-  100% {
-    filter: brightness(1.1);
-  }
-}
-
-.latest-version-title {
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--text-primary);
-  line-height: 1.4;
-  position: relative;
-  z-index: 2;
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.08));
 }
 
-.latest-version-title:after {
-  content: "";
-  position: absolute;
-  bottom: -0.25rem;
-  left: 0;
-  width: 30px;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-color), transparent);
-  border-radius: 1px;
+.release-date {
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
 }
 
-.latest-feature {
+.release-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.release-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.release-item {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-  padding: 0.75rem;
-  background: linear-gradient(
-    135deg,
-    rgba(var(--accent-color-rgb), 0.08) 0%,
-    rgba(var(--accent-color-rgb), 0.03) 100%
-  );
-  border: 1px solid rgba(var(--accent-color-rgb), 0.2);
-  border-radius: 10px;
-  font-size: 0.9rem;
+  gap: 0.5rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
+  line-height: 1.5;
 }
 
-.latest-feature:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(var(--accent-color-rgb), 0.3),
-    transparent
-  );
+.item-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 0.45rem;
+  flex-shrink: 0;
 }
 
-.latest-feature:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--accent-color-rgb), 0.12) 0%,
-    rgba(var(--accent-color-rgb), 0.05) 100%
-  );
-  transform: translateX(4px);
-}
-
-.feature-icon {
-  font-size: 1.1rem;
-  margin-top: 0.1rem;
-  color: var(--accent-color);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
-}
-
-.view-all-btn {
-  position: relative;
-  width: 100%;
-  padding: 1rem 1.25rem;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
-  color: var(--text-primary);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  overflow: hidden;
-  z-index: 2;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.view-all-btn:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(var(--accent-color-rgb), 0.3),
-    transparent
-  );
-  transition: left 0.6s ease;
-  z-index: -1;
-}
-
-.view-all-btn:hover:before {
-  left: 100%;
-}
-
-.view-all-btn:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--accent-color-rgb), 0.2) 0%,
-    rgba(var(--accent-color-rgb), 0.1) 50%,
-    rgba(var(--accent-color-rgb), 0.05) 100%
-  );
-  border-color: rgba(var(--accent-color-rgb), 0.4);
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 12px 40px rgba(var(--accent-color-rgb), 0.3),
-    0 6px 20px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  color: var(--accent-color);
-}
-
-.view-all-btn:active {
-  transform: translateY(-1px) scale(1.01);
-  box-shadow: 0 6px 20px rgba(var(--accent-color-rgb), 0.2),
-    0 3px 10px rgba(0, 0, 0, 0.1);
-}
+.item-dot.new { background: #4ecdc4; }
+.item-dot.improve { background: #f59e0b; }
+.item-dot.fix { background: #ef4444; }
+.item-dot.perf { background: #8b5cf6; }
 
 .no-release-notes {
-  padding: 1.5rem;
+  padding: 1rem;
   text-align: center;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  position: relative;
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
 }
 
-.no-release-notes:before {
-  content: "📋";
-  font-size: 1.5rem;
-  display: block;
-  margin-bottom: 0.5rem;
-  opacity: 0.6;
+.no-release-notes p {
+  margin: 0;
 }
 
 /* 深色模式适配 */

@@ -1,7 +1,0 @@
-{
-  "type": "module",
-  "dependencies": {
-    "@octokit/rest": "^20.0.2",
-    "@actions/core": "^1.10.0"
-  }
-}

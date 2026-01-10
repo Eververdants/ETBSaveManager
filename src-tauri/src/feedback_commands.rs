@@ -144,38 +144,49 @@ impl Default for FeedbackState {
     }
 }
 
-/// Gist configuration for feedback
-const GIST_ID: &str = "89e5ee33efd53a221ee572aa2af7a06d";
-const GIST_URL: &str = "https://gist.github.com/Eververdants/89e5ee33efd53a221ee572aa2af7a06d";
+/// Cloudflare Worker URL for feedback
+const WORKER_URL: &str = "https://etbsavemanager-feedback.llzgd.workers.dev";
 
-/// Sends feedback to Gist as a public comment (no authentication required)
+/// Cloudflare Worker 反馈响应
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WorkerResponse {
+    pub success: bool,
+    #[serde(default)]
+    pub error: Option<String>,
+}
+
+/// Sends feedback to Cloudflare Worker
 #[tauri::command]
-pub async fn send_feedback_to_gist(
-    gist_id: String,
+pub async fn send_feedback(
     content: String,
-) -> Result<String, String> {
+    email: Option<String>,
+) -> Result<WorkerResponse, String> {
     let client = reqwest::Client::new();
-    let url = format!("https://api.github.com/gists/{}/comments", gist_id);
 
-    // 必须设置 User-Agent（GitHub API 要求）
     let res = client
-        .post(&url)
+        .post(WORKER_URL)
         .header("User-Agent", "ETBSaveManager/3.0")
-        .json(&serde_json::json!({ "body": content }))
+        .json(&serde_json::json!({
+            "content": content,
+            "email": email
+        }))
         .send()
         .await
         .map_err(|e| format!("Network error: {}", e))?;
 
-    if res.status().is_success() {
-        Ok("Feedback sent successfully!".to_string())
+    let status = res.status();
+    let text = res.text().await.map_err(|e| e.to_string())?;
+
+    if status.is_success() {
+        let resp: WorkerResponse =
+            serde_json::from_str(&text).map_err(|e| format!("Parse response error: {}", e))?;
+        Ok(resp)
     } else {
-        let status = res.status();
-        let text = res.text().await.unwrap_or_default();
-        Err(format!("Failed: {} - {}", status, text))
+        Err(format!("Server error {}: {}", status, text))
     }
 }
 
-/// Submits feedback to Gist or queues it for later
+/// Submits feedback to Cloudflare Worker or queues it for later
 #[tauri::command]
 pub async fn submit_feedback(
     data: FeedbackData,
@@ -190,7 +201,7 @@ pub async fn submit_feedback(
     // Collect system info
     let system_info = SystemInfo::collect(language, screen_resolution);
 
-    // Format feedback content for Gist comment
+    // Format feedback content
     let content = format_feedback_content(&data, &system_info);
 
     // Create feedback record
@@ -203,11 +214,10 @@ pub async fn submit_feedback(
         vec![],
     );
 
-    // Try to submit to Gist
-    match send_feedback_to_gist(GIST_ID.to_string(), content).await {
-        Ok(_) => {
+    // Try to submit to Cloudflare Worker
+    match send_feedback(content, data.sender.clone()).await {
+        Ok(resp) if resp.success => {
             record.status = FeedbackStatus::Submitted.as_str().to_string();
-            record.discussion_url = Some(GIST_URL.to_string());
 
             // Save to local history
             state.with_queue(|queue| queue.enqueue(&record).map_err(|e| e.to_string()))?;
@@ -216,13 +226,28 @@ pub async fn submit_feedback(
                 success: true,
                 feedback_id: record.id,
                 queued: false,
-                discussion_url: Some(GIST_URL.to_string()),
+                discussion_url: None,
                 error: None,
             })
         }
+        Ok(resp) => {
+            let error_msg = resp.error.unwrap_or_else(|| "Unknown error".to_string());
+            println!("Failed to submit feedback: {}", error_msg);
+
+            // Queue for later submission (offline)
+            state.with_queue(|queue| queue.enqueue(&record).map_err(|e| e.to_string()))?;
+
+            Ok(SubmitResult {
+                success: true,
+                feedback_id: record.id,
+                queued: true,
+                discussion_url: None,
+                error: Some(error_msg),
+            })
+        }
         Err(e) => {
-            println!("Failed to submit to Gist: {}", e);
-            
+            println!("Failed to submit feedback: {}", e);
+
             // Queue for later submission (offline)
             state.with_queue(|queue| queue.enqueue(&record).map_err(|e| e.to_string()))?;
 
@@ -237,13 +262,13 @@ pub async fn submit_feedback(
     }
 }
 
-/// Formats feedback content for Gist comment
+/// Formats feedback content for Worker
 fn format_feedback_content(data: &FeedbackData, system_info: &SystemInfo) -> String {
     let mut content = String::new();
-    
+
     // Title
     content.push_str(&format!("## {}\n\n", data.title));
-    
+
     // Type and Severity
     content.push_str(&format!("**Type:** {}\n", data.feedback_type));
     if let Some(ref severity) = data.severity {
@@ -253,20 +278,29 @@ fn format_feedback_content(data: &FeedbackData, system_info: &SystemInfo) -> Str
         content.push_str(&format!("**From:** {}\n", sender));
     }
     content.push_str("\n");
-    
+
     // Description
     content.push_str("### Description\n\n");
     content.push_str(&data.description);
     content.push_str("\n\n");
-    
+
     // System Info
     content.push_str("### System Information\n\n");
-    content.push_str(&format!("- **OS:** {} {}\n", system_info.os, system_info.os_version));
+    content.push_str(&format!(
+        "- **OS:** {} {}\n",
+        system_info.os, system_info.os_version
+    ));
     content.push_str(&format!("- **App Version:** {}\n", system_info.app_version));
     content.push_str(&format!("- **Language:** {}\n", system_info.language));
-    content.push_str(&format!("- **Resolution:** {}\n", system_info.screen_resolution));
-    content.push_str(&format!("- **Timestamp:** {}\n", Local::now().format("%Y-%m-%d %H:%M:%S")));
-    
+    content.push_str(&format!(
+        "- **Resolution:** {}\n",
+        system_info.screen_resolution
+    ));
+    content.push_str(&format!(
+        "- **Timestamp:** {}\n",
+        Local::now().format("%Y-%m-%d %H:%M:%S")
+    ));
+
     content
 }
 
@@ -322,17 +356,12 @@ pub async fn retry_feedback(
         &record.system_info,
     );
 
-    // Try to submit to Gist
-    match send_feedback_to_gist(GIST_ID.to_string(), content).await {
-        Ok(_) => {
+    // Try to submit to Cloudflare Worker
+    match send_feedback(content, None).await {
+        Ok(resp) if resp.success => {
             state.with_queue(|queue| {
                 queue
-                    .update_status(
-                        &id,
-                        FeedbackStatus::Submitted,
-                        None,
-                        Some(GIST_URL),
-                    )
+                    .update_status(&id, FeedbackStatus::Submitted, None, None)
                     .map_err(|e| e.to_string())
             })?;
 
@@ -340,15 +369,32 @@ pub async fn retry_feedback(
                 success: true,
                 feedback_id: id,
                 queued: false,
-                discussion_url: Some(GIST_URL.to_string()),
+                discussion_url: None,
                 error: None,
             })
         }
+        Ok(resp) => {
+            let error_msg = resp.error.unwrap_or_else(|| "Unknown error".to_string());
+
+            // Increment retry count
+            let retry_count = state
+                .with_queue(|queue| queue.increment_retry_count(&id).map_err(|e| e.to_string()))?;
+
+            // Mark as failed after 3 retries
+            if retry_count >= 3 {
+                state.with_queue(|queue| {
+                    queue
+                        .update_status(&id, FeedbackStatus::Failed, None, None)
+                        .map_err(|e| e.to_string())
+                })?;
+            }
+
+            Err(format!("Retry failed: {}", error_msg))
+        }
         Err(e) => {
             // Increment retry count
-            let retry_count = state.with_queue(|queue| {
-                queue.increment_retry_count(&id).map_err(|e| e.to_string())
-            })?;
+            let retry_count = state
+                .with_queue(|queue| queue.increment_retry_count(&id).map_err(|e| e.to_string()))?;
 
             // Mark as failed after 3 retries
             if retry_count >= 3 {

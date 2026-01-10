@@ -1,23 +1,8 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";
-import fs from "fs";
 
 const host = process.env.TAURI_DEV_HOST;
-
-// 读取公告数据文件
-const releaseNotesZhCN = fs.readFileSync(
-  path.resolve(__dirname, "src/i18n/locales/release-notes.zh-CN.json"),
-  "utf8"
-);
-const releaseNotesEnUS = fs.readFileSync(
-  path.resolve(__dirname, "src/i18n/locales/release-notes.en-US.json"),
-  "utf8"
-);
-const releaseNotesZhTW = fs.readFileSync(
-  path.resolve(__dirname, "src/i18n/locales/release-notes.zh-TW.json"),
-  "utf8"
-);
 
 export default defineConfig(async () => ({
   plugins: [vue()],
@@ -31,99 +16,127 @@ export default defineConfig(async () => ({
   },
 
   define: {
-    __VUE_I18N_FULL_INSTALL__: true,
+    __VUE_I18N_FULL_INSTALL__: false, // 禁用完整安装，减少包体积
     __VUE_I18N_LEGACY_API__: false,
     __VUE_I18N_PROD_DEVTOOLS__: false,
-
-    // 强制包含更新公告数据，防止Tree Shaking移除
-    __RELEASE_NOTES_ZH_CN__: releaseNotesZhCN,
-    __RELEASE_NOTES_EN_US__: releaseNotesEnUS,
-    __RELEASE_NOTES_ZH_TW__: releaseNotesZhTW,
   },
 
   // 构建优化配置
   build: {
     // 启用CSS代码分割
     cssCodeSplit: true,
+    // 目标现代浏览器
+    target: "esnext",
     // 启用Tree Shaking
     rollupOptions: {
       output: {
-        // 手动分割chunk，优化加载顺序
-        manualChunks: {
-          // Vue相关依赖
-          "vue-vendor": ["vue", "vue-router", "vue-i18n"],
-          // UI相关依赖
-          "ui-vendor": [
-            "@fortawesome/fontawesome-svg-core",
-            "@fortawesome/free-solid-svg-icons",
-            "@fortawesome/free-brands-svg-icons",
-          ],
-          // 其他工具库
-          utils: ["chart.js", "gsap", "vuedraggable"],
-          // Tauri相关
-          tauri: ["@tauri-apps/api"],
+        // 优化chunk分割策略
+        manualChunks(id) {
+          // Vue核心 - 最高优先级
+          if (id.includes("node_modules/vue/") || id.includes("node_modules/@vue/")) {
+            return "vue-core";
+          }
+          // Vue Router - 启动必需
+          if (id.includes("vue-router")) {
+            return "vue-router";
+          }
+          // i18n - 按需加载
+          if (id.includes("vue-i18n")) {
+            return "i18n";
+          }
+          // FontAwesome - 延迟加载
+          if (id.includes("@fortawesome")) {
+            return "icons";
+          }
+          // Tauri API - 延迟加载
+          if (id.includes("@tauri-apps")) {
+            return "tauri";
+          }
+          // 图表库 - 按需加载
+          if (id.includes("chart.js")) {
+            return "charts";
+          }
+          // 动画库 - 延迟加载
+          if (id.includes("gsap")) {
+            return "animations";
+          }
+          // 拖拽库 - 按需加载
+          if (id.includes("vuedraggable") || id.includes("sortablejs")) {
+            return "draggable";
+          }
+          // Markdown - 按需加载
+          if (id.includes("markdown-it") || id.includes("marked")) {
+            return "markdown";
+          }
+          // 虚拟滚动 - 首页需要
+          if (id.includes("@tanstack/vue-virtual") || id.includes("vue-virtual-scroller")) {
+            return "virtual-scroll";
+          }
         },
         // 优化chunk文件名
-        chunkFileNames: (chunkInfo) => {
-          const facadeModuleId = chunkInfo.facadeModuleId
-            ? chunkInfo.facadeModuleId.split("/").pop().replace(".vue", "")
-            : "chunk";
-          return `js/${facadeModuleId}-[hash].js`;
-        },
+        chunkFileNames: "js/[name]-[hash:8].js",
+        entryFileNames: "js/[name]-[hash:8].js",
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith(".css")) {
-            return "assets/[name]-[hash].css";
+            return "css/[name]-[hash:8].css";
           }
-          return "assets/[name]-[hash][extname]";
+          return "assets/[name]-[hash:8][extname]";
         },
       },
-      // 外部化大型依赖，减少bundle大小
-      external: (id) => {
-        // 在开发环境中外部化某些依赖
-        if (process.env.NODE_ENV === "development") {
-          return false;
-        }
-        return false;
-      },
     },
-    // 启用source map用于生产环境调试
+    // 禁用source map
     sourcemap: false,
     // 优化chunk大小警告阈值
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 500,
     // 启用压缩
     minify: "terser",
-    terser_options: {
+    terserOptions: {
       compress: {
-        // 移除console等调试代码
-        // drop_console: true,  // 注释掉，保留console输出
         drop_debugger: true,
-        // 移除未使用的代码
         dead_code: true,
-        // 优化条件语句
         conditionals: true,
-        // 合并变量声明
         collapse_vars: true,
-        // 移除未引用的参数
         unused: true,
+        passes: 2, // 多次压缩
       },
       mangle: {
-        // 保留类名
-        keep_fnames: true,
+        safari10: true,
       },
       format: {
-        // 保持注释
         comments: false,
       },
     },
+    // 启用模块预加载
+    modulePreload: {
+      polyfill: false, // 现代浏览器不需要polyfill
+    },
   },
 
-  // 依赖优化
+  // 依赖预构建优化
   optimizeDeps: {
-    include: ["vue", "vue-router", "vue-i18n", "@tauri-apps/api"],
-    exclude: [
-      // 排除大型依赖，让它们按需加载
-      "@fortawesome/fontawesome-svg-core",
+    // 预构建关键依赖
+    include: [
+      "vue",
+      "vue-router",
     ],
+    // 排除大型依赖，让它们按需加载
+    exclude: [
+      "@fortawesome/fontawesome-svg-core",
+      "@fortawesome/free-solid-svg-icons",
+      "@fortawesome/free-brands-svg-icons",
+      "chart.js",
+      "gsap",
+    ],
+    // 强制预构建
+    force: false,
+  },
+
+  // esbuild 优化
+  esbuild: {
+    // 移除console（生产环境）
+    drop: process.env.NODE_ENV === "production" ? ["debugger"] : [],
+    // 启用tree shaking
+    treeShaking: true,
   },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
@@ -150,23 +163,16 @@ export default defineConfig(async () => ({
 
   // CSS优化配置
   css: {
-    // CSS代码分割
-    codeSplit: true,
-    // CSS预处理器配置
-    preprocessorOptions: {
-      scss: {
-        additionalData: `@import "@/styles/variables.css";`,
-      },
-    },
+    // 开发环境禁用CSS代码分割以加快HMR
+    devSourcemap: false,
   },
 
-  // 服务器配置 - 用于gzip压缩
+  // 服务器配置
   preview: {
     port: 4173,
     strictPort: true,
     headers: {
       "Cache-Control": "public, max-age=31536000",
-      "Content-Encoding": "gzip",
     },
   },
 }));

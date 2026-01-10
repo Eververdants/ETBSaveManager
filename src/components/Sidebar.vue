@@ -109,12 +109,9 @@ const setActiveItemFromRoute = () => {
   // 查找与当前路由匹配的菜单项
   const allMenuItems = [...topMenuItems, ...bottomMenuItems];
 
-  // 特殊处理：更新公告页面激活"关于"按钮
+  // 特殊处理：某些页面需要激活特定的菜单项
   let activeItem = null;
-  if (route.name === "ReleaseNotes") {
-    // 查找"关于"菜单项
-    activeItem = allMenuItems.find((item) => item.route === "About");
-  } else if (route.name === "SelectCreateMode") {
+  if (route.name === "SelectCreateMode") {
     // 选择创建模式页面应该激活"创建存档"按钮
     activeItem = allMenuItems.find((item) => item.route === "CreateArchive");
   } else if (
@@ -576,6 +573,7 @@ const handleItemClick = (item, event) => {
   /* 减去标题栏高度 */
   width: 70px;
   /* 收起时的宽度 */
+  --sidebar-width: 70px;
   background: var(--sidebar-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -587,13 +585,14 @@ const handleItemClick = (item, event) => {
   font-family: -apple-system, BlinkMacSystemFont, "San Francisco",
     "Helvetica Neue", sans-serif;
   transition: background 0.25s ease, border-right 0.25s ease,
-    box-shadow 0.25s ease, width 0.3s ease;
+    box-shadow 0.25s ease, width 0.3s ease, --sidebar-width 0.3s ease;
 }
 
 /* 侧边栏展开样式 */
 .sidebar.expanded {
   width: 220px;
   /* 展开时的宽度 */
+  --sidebar-width: 220px;
 }
 
 /* 侧边栏图标样式 */

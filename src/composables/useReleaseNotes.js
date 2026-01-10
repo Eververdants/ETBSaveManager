@@ -1,12 +1,22 @@
 /**
  * 更新公告数据管理 composable
  * 统一管理公告数据的加载和访问，避免重复代码
+ * 现在只保留当前版本的公告数据
  */
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 import { useI18n } from "vue-i18n";
 
-// 单例缓存，避免重复创建
-let releaseNotesCache = null;
+// 直接导入公告数据
+import releaseNotesZhCN from "@/i18n/locales/release-notes.zh-CN.json";
+import releaseNotesEnUS from "@/i18n/locales/release-notes.en-US.json";
+import releaseNotesZhTW from "@/i18n/locales/release-notes.zh-TW.json";
+
+// 缓存数据
+const releaseNotesCache = {
+  "zh-CN": releaseNotesZhCN,
+  "en-US": releaseNotesEnUS,
+  "zh-TW": releaseNotesZhTW,
+};
 
 /**
  * 获取公告数据的 composable
@@ -15,60 +25,28 @@ let releaseNotesCache = null;
 export function useReleaseNotes() {
   const { locale } = useI18n();
 
-  // 使用单例模式缓存数据
-  if (!releaseNotesCache) {
-    releaseNotesCache = {
-      "zh-CN": [],
-      "en-US": [],
-      "zh-TW": [],
-    };
-
-    // 从 Vite 全局常量加载数据（只执行一次）
-    try {
-      if (typeof __RELEASE_NOTES_ZH_CN__ !== "undefined") {
-        releaseNotesCache["zh-CN"] = Array.isArray(__RELEASE_NOTES_ZH_CN__)
-          ? __RELEASE_NOTES_ZH_CN__
-          : [];
-      }
-      if (typeof __RELEASE_NOTES_EN_US__ !== "undefined") {
-        releaseNotesCache["en-US"] = Array.isArray(__RELEASE_NOTES_EN_US__)
-          ? __RELEASE_NOTES_EN_US__
-          : [];
-      }
-      if (typeof __RELEASE_NOTES_ZH_TW__ !== "undefined") {
-        releaseNotesCache["zh-TW"] = Array.isArray(__RELEASE_NOTES_ZH_TW__)
-          ? __RELEASE_NOTES_ZH_TW__
-          : [];
-      }
-    } catch (error) {
-      console.error("[useReleaseNotes] 加载公告数据失败:", error.message);
-    }
-  }
-
-  // 当前语言的公告数据（响应式）
+  // 当前语言的公告数据（响应式）- 现在是单个对象
   // 中文显示中文公告，其他语言显示英文公告
-  const releaseNotes = computed(() => {
+  const currentRelease = computed(() => {
     const currentLocale = locale.value || "zh-CN";
     
     // 中文语言使用对应的中文公告
     if (currentLocale === "zh-CN") {
-      return releaseNotesCache["zh-CN"] || [];
+      return releaseNotesCache["zh-CN"] || null;
     }
     if (currentLocale === "zh-TW") {
-      return releaseNotesCache["zh-TW"] || releaseNotesCache["zh-CN"] || [];
+      return releaseNotesCache["zh-TW"] || releaseNotesCache["zh-CN"] || null;
     }
     
     // 其他所有语言（包括插件语言）使用英文公告
-    return releaseNotesCache["en-US"] || [];
+    return releaseNotesCache["en-US"] || null;
   });
 
-  // 最新版本公告
-  const latestRelease = computed(() => {
-    return releaseNotes.value.length > 0 ? releaseNotes.value[0] : null;
-  });
+  // 兼容旧代码：latestRelease 现在直接返回当前版本公告
+  const latestRelease = computed(() => currentRelease.value);
 
-  // 公告总数
-  const totalCount = computed(() => releaseNotes.value.length);
+  // 公告总数（现在只有1个）
+  const totalCount = computed(() => currentRelease.value ? 1 : 0);
 
   // 格式化日期
   const formatDate = (dateString, options = {}) => {
@@ -92,24 +70,11 @@ export function useReleaseNotes() {
     });
   };
 
-  // 按类型筛选公告
-  const filterByType = (type) => {
-    if (!type) return releaseNotes.value;
-    return releaseNotes.value.filter((note) => note.type === type);
-  };
-
-  // 获取精选公告
-  const featuredReleases = computed(() => {
-    return releaseNotes.value.filter((note) => note.isHighlight);
-  });
-
   return {
-    releaseNotes,
+    currentRelease,
     latestRelease,
     totalCount,
-    featuredReleases,
     formatDate,
     formatShortDate,
-    filterByType,
   };
 }

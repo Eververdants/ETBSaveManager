@@ -17,7 +17,7 @@
         "height": 720,
         "decorations": false,
         "additionalBrowserArgs": "--disable-gpu-sandbox --disable-software-rasterizer --enable-gpu-rasterization --force-gpu-rasterization",
-        "visible": true,
+        "visible": false,
         "dragDropEnabled": false
       }
     ],

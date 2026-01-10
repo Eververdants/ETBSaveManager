@@ -1,39 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-// 预加载策略：定义常用路由进行预加载
-const PRELOAD_ROUTES = ["Home", "CreateArchive", "Settings"];
-
-// 预加载函数
-const preloadRoute = (routeName) => {
-  const route = routes.find((r) => r.name === routeName);
-  if (route && typeof route.component === "function") {
-    route.component();
-  }
-};
-
-// 延迟预加载实现
-const delayedPreload = (delay = 1000) => {
-  setTimeout(() => {
-    PRELOAD_ROUTES.forEach((routeName) => {
-      if (routeName !== "Home") {
-        // 首页已经预加载
-        preloadRoute(routeName);
-      }
-    });
-  }, delay);
-};
-
+// 路由配置 - 全部使用懒加载
 const routes = [
   {
     path: "/",
     name: "Home",
-    component: () => import("../views/Home.vue"),
-    // 首页预加载，提升用户体验
-    meta: {
-      preload: true,
-      keepAlive: true, // 缓存首页
-      priority: 1,
-    },
+    // 首页使用魔法注释优化
+    component: () => import(/* webpackChunkName: "home" */ "../views/Home.vue"),
+    meta: { keepAlive: true, priority: 1 },
   },
   {
     path: "/about",
@@ -45,10 +19,7 @@ const routes = [
     path: "/settings",
     name: "Settings",
     component: () => import("../views/Settings.vue"),
-    meta: {
-      keepAlive: false,
-      priority: 6,
-    },
+    meta: { keepAlive: false, priority: 2 },
   },
   {
     path: "/plugins",
@@ -60,35 +31,31 @@ const routes = [
     path: "/select-create-mode",
     name: "SelectCreateMode",
     component: () => import("../views/SelectCreateMode.vue"),
-    meta: { keepAlive: false, priority: 2 },
+    meta: { keepAlive: false },
   },
   {
     path: "/create-archive",
     name: "CreateArchive",
     component: () => import("../views/CreateArchive/index.vue"),
-    meta: {
-      keepAlive: true,
-      priority: 2,
-    },
+    meta: { keepAlive: true, priority: 2 },
   },
-
   {
     path: "/quick-create-archive",
     name: "QuickCreateArchive",
     component: () => import("../views/QuickCreateArchive.vue"),
-    meta: { keepAlive: false, priority: 3 },
+    meta: { keepAlive: false },
   },
   {
     path: "/blueprint-create-archive",
     name: "BlueprintCreateArchive",
     component: () => import("../views/BlueprintCreateArchive.vue"),
-    meta: { keepAlive: false, priority: 3 },
+    meta: { keepAlive: false },
   },
   {
     path: "/test-archive",
     name: "TestArchive",
     component: () => import("../views/TestArchive.vue"),
-    meta: { keepAlive: false, priority: 5 },
+    meta: { keepAlive: false },
   },
   {
     path: "/edit-archive/:archiveData?",
@@ -116,12 +83,6 @@ const routes = [
     meta: { keepAlive: false },
   },
   {
-    path: "/release-notes",
-    name: "ReleaseNotes",
-    component: () => import("../views/ReleaseNotes.vue"),
-    meta: { keepAlive: false },
-  },
-  {
     path: "/feedback",
     name: "Feedback",
     component: () => import("../views/Feedback.vue"),
@@ -131,62 +92,49 @@ const routes = [
     path: "/theme-editor",
     name: "ThemeEditor",
     component: () => import("../views/ThemeEditor.vue"),
-    meta: {
-      keepAlive: false,
-      title: "主题编辑器",
-    },
+    meta: { keepAlive: false },
   },
   {
     path: "/theme-editor/:themeId",
     name: "ThemeEditorEdit",
     component: () => import("../views/ThemeEditor.vue"),
-    meta: {
-      keepAlive: false,
-      title: "编辑主题",
-    },
+    meta: { keepAlive: false },
   },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(to, from, savedPosition) {
-    // 对于自定义滚动容器，返回 false 让 App.vue 中的 afterEach 处理
-    return false;
+  scrollBehavior() {
+    return false; // 让 App.vue 处理滚动
   },
 });
 
-// 优化后的路由预加载逻辑
-router.beforeEach((to, from, next) => {
-  // 预加载标记为preload的路由
-  if (to.meta.preload) {
-    const component = to.matched.find((record) => record.meta.preload)
-      ?.components?.default;
-    if (component && typeof component === "function") {
-      component();
-    }
-  }
+// 智能预加载 - 基于用户行为预测
+const preloadedRoutes = new Set();
 
-  // 预加载高优先级路由
-  if (to.meta.priority && to.meta.priority <= 2) {
-    const matchedRoute = to.matched.find((record) => record.meta.priority);
-    if (
-      matchedRoute &&
-      typeof matchedRoute.components?.default === "function"
-    ) {
-      matchedRoute.components.default();
-    }
-  }
+// 预加载高优先级路由（空闲时执行）
+const preloadPriorityRoutes = () => {
+  if (preloadedRoutes.has("priority")) return;
+  preloadedRoutes.add("priority");
+  
+  const priorityRoutes = routes.filter(r => r.meta?.priority && r.meta.priority <= 2);
+  
+  requestIdleCallback(() => {
+    priorityRoutes.forEach(route => {
+      if (typeof route.component === "function" && !preloadedRoutes.has(route.name)) {
+        route.component();
+        preloadedRoutes.add(route.name);
+      }
+    });
+  }, { timeout: 3000 });
+};
 
-  next();
-});
-
-// 路由后置处理 - 触发延迟预加载
-router.afterEach(() => {
-  // 只在用户首次访问时触发延迟预加载
-  if (!window.__routesPreloaded) {
-    delayedPreload();
-    window.__routesPreloaded = true;
+// 首次导航后触发预加载
+router.afterEach((to, from) => {
+  // 首次导航完成后，预加载高优先级路由
+  if (!from.name) {
+    preloadPriorityRoutes();
   }
 });
 

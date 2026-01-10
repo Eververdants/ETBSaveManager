@@ -1,216 +1,174 @@
-// src/i18n/loader.js
+/**
+ * i18n 加载器 - 优化版
+ * 支持按需加载语言包
+ */
 import { createI18n } from "vue-i18n";
 import storage from "../services/storageService";
 
-// 静态导入 JSON 文件（保证被打包）
-import zhCN from "./locales/zh-CN.json";
-import zhTW from "./locales/zh-TW.json";
-import enUS from "./locales/en-US.json";
+// 单例实例
+let i18nInstance = null;
 
-// 更新公告数据（确保被打包）
-import releaseNotesZhCN from "./locales/release-notes.zh-CN.json";
-import releaseNotesEnUS from "./locales/release-notes.en-US.json";
-import releaseNotesZhTW from "./locales/release-notes.zh-TW.json";
+// 语言包缓存
+const messagesCache = {};
+const releaseNotesCache = {};
 
-// 统一封装
-const loadLocaleMessages = () => {
-  console.log("🔄 [i18n/loader.js] 开始加载语言文件...");
-  const messages = {
-    "zh-CN": zhCN,
-    "zh-TW": zhTW,
-    "en-US": enUS,
-  };
-  console.log("✅ [i18n/loader.js] 语言文件已加载:", Object.keys(messages));
-  console.log("🔍 [i18n/loader.js] 语言包详情:", {
-    "zh-CN": zhCN,
-    "zh-TW": zhTW,
-    "en-US": enUS,
-  });
-  return messages;
-};
-
-// 加载更新公告数据
-const loadReleaseNotesData = () => {
-  console.log("🔄 [i18n/loader.js] 开始加载更新公告数据...");
-  const releaseNotes = {
-    "zh-CN": releaseNotesZhCN,
-    "zh-TW": releaseNotesZhTW,
-    "en-US": releaseNotesEnUS,
-  };
-  console.log(
-    "✅ [i18n/loader.js] 更新公告数据已加载:",
-    Object.keys(releaseNotes)
-  );
-  console.log("📊 [i18n/loader.js] 简体中文公告数量:", releaseNotesZhCN.length);
-  console.log("📊 [i18n/loader.js] 繁体中文公告数量:", releaseNotesZhTW.length);
-  console.log("📊 [i18n/loader.js] 英文公告数量:", releaseNotesEnUS.length);
-  console.log("🔍 [i18n/loader.js] 最新版本信息:", {
-    "zh-CN": releaseNotesZhCN[0]?.version,
-    "zh-TW": releaseNotesZhTW[0]?.version,
-    "en-US": releaseNotesEnUS[0]?.version,
-  });
-  return releaseNotes;
-};
-
-// 获取用户语言偏好
+/**
+ * 获取用户语言偏好
+ */
 const getUserLocale = () => {
-  const savedLocale = storage.getItem("locale");
-  console.log("🌐 [i18n/loader.js] 检测语言偏好...", {
-    保存的语言: savedLocale,
-    浏览器语言: navigator.language,
-    用户语言: navigator.userLanguage,
-  });
-
-  if (savedLocale && ["zh-CN", "zh-TW", "en-US"].includes(savedLocale)) {
-    console.log("✅ [i18n/loader.js] 使用保存的语言:", savedLocale);
-    return savedLocale;
+  const saved = storage.getItem("locale") || storage.getItem("language");
+  if (saved && ["zh-CN", "zh-TW", "en-US"].includes(saved)) {
+    return saved;
   }
 
-  const browserLanguage = navigator.language || navigator.userLanguage;
-  console.log("🌐 [i18n/loader.js] 浏览器检测到语言:", browserLanguage);
-
-  if (["zh-TW", "zh-HK", "zh-MO"].includes(browserLanguage)) {
-    console.log("✅ [i18n/loader.js] 选择繁体中文 (zh-TW)");
-    return "zh-TW";
-  } else if (browserLanguage.startsWith("zh")) {
-    console.log("✅ [i18n/loader.js] 选择简体中文 (zh-CN)");
-    return "zh-CN";
-  } else if (browserLanguage.startsWith("en")) {
-    console.log("✅ [i18n/loader.js] 选择英文 (en-US)");
-    return "en-US";
-  }
-  console.log("✅ [i18n/loader.js] 默认选择简体中文 (zh-CN)");
+  const lang = navigator.language || "zh-CN";
+  if (["zh-TW", "zh-HK", "zh-MO"].includes(lang)) return "zh-TW";
+  if (lang.startsWith("zh")) return "zh-CN";
+  if (lang.startsWith("en")) return "en-US";
   return "zh-CN";
 };
 
-// 单例 i18n 实例
-let i18nInstance = null;
+/**
+ * 加载语言包
+ */
+const loadLocaleMessages = async (locale) => {
+  if (messagesCache[locale]) {
+    return messagesCache[locale];
+  }
 
-export const createI18nInstance = () => {
+  let messages;
+  switch (locale) {
+    case "zh-CN":
+      messages = (await import("./locales/zh-CN.json")).default;
+      break;
+    case "zh-TW":
+      messages = (await import("./locales/zh-TW.json")).default;
+      break;
+    case "en-US":
+      messages = (await import("./locales/en-US.json")).default;
+      break;
+    default:
+      messages = (await import("./locales/zh-CN.json")).default;
+  }
+
+  messagesCache[locale] = messages;
+  return messages;
+};
+
+/**
+ * 加载更新公告数据（现在是单个对象而不是数组）
+ */
+const loadReleaseNotes = async (locale) => {
+  if (releaseNotesCache[locale]) {
+    return releaseNotesCache[locale];
+  }
+
+  let notes;
+  try {
+    switch (locale) {
+      case "zh-CN":
+        notes = (await import("./locales/release-notes.zh-CN.json")).default;
+        break;
+      case "zh-TW":
+        notes = (await import("./locales/release-notes.zh-TW.json")).default;
+        break;
+      case "en-US":
+        notes = (await import("./locales/release-notes.en-US.json")).default;
+        break;
+      default:
+        notes = (await import("./locales/release-notes.zh-CN.json")).default;
+    }
+    releaseNotesCache[locale] = notes;
+  } catch {
+    notes = null;
+  }
+
+  return notes;
+};
+
+/**
+ * 创建 i18n 实例
+ */
+export const createI18nInstance = async () => {
   if (i18nInstance) return i18nInstance;
 
-  console.log("🌍 正在加载国际化配置...");
-  const messages = loadLocaleMessages();
-  const releaseNotes = loadReleaseNotesData();
   const locale = getUserLocale();
+  const messages = await loadLocaleMessages(locale);
 
   i18nInstance = createI18n({
-    legacy: true,
+    legacy: false,
     locale,
     fallbackLocale: "en-US",
-    messages,
-    globalInjection: true,
+    messages: { [locale]: messages },
     silentTranslationWarn: true,
     missingWarn: false,
     fallbackWarn: false,
-    datetimeFormats: {
-      "zh-CN": {
-        short: { year: "numeric", month: "2-digit", day: "2-digit" },
-        long: {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        },
-      },
-      "zh-TW": {
-        short: { year: "numeric", month: "2-digit", day: "2-digit" },
-        long: {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        },
-      },
-      "en-US": {
-        short: { year: "numeric", month: "short", day: "numeric" },
-        long: {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        },
-      },
-    },
-    numberFormats: {
-      "zh-CN": { currency: { style: "currency", currency: "CNY" } },
-      "zh-TW": { currency: { style: "currency", currency: "TWD" } },
-      "en-US": { currency: { style: "currency", currency: "USD" } },
-    },
   });
 
-  console.log(`✅ 国际化加载完成，当前语言: ${locale}`);
-  console.log(`✅ 更新公告数据已准备:`, Object.keys(releaseNotes));
-
-  // 将 releaseNotes 数据挂载到 i18n 实例上
-  i18nInstance.releaseNotes = releaseNotes;
+  // 延迟加载其他语言
+  requestIdleCallback(async () => {
+    const otherLocales = ["zh-CN", "zh-TW", "en-US"].filter(l => l !== locale);
+    for (const loc of otherLocales) {
+      const msg = await loadLocaleMessages(loc);
+      i18nInstance.global.setLocaleMessage(loc, msg);
+    }
+  }, { timeout: 5000 });
 
   return i18nInstance;
 };
 
-// 获取当前 i18n 实例
+/**
+ * 获取当前 i18n 实例
+ */
 export const getI18n = () => i18nInstance;
 
-// 切换语言
-export const switchLanguage = (newLocale) => {
-  console.log("🔄 [i18n/loader.js] 开始切换语言...", newLocale);
-  console.log("📍 [i18n/loader.js] 当前语言:", i18n.global.locale.value);
-
-  if (!["zh-CN", "zh-TW", "en-US"].includes(newLocale)) {
-    console.warn("⚠️ [i18n/loader.js] 不支持的语言:", newLocale);
-    console.warn("📋 [i18n/loader.js] 支持的语言:", [
-      "zh-CN",
-      "zh-TW",
-      "en-US",
-    ]);
+/**
+ * 切换语言
+ */
+export const switchLanguage = async (newLocale) => {
+  if (!i18nInstance || !["zh-CN", "zh-TW", "en-US"].includes(newLocale)) {
     return;
   }
 
-  const oldLocale = i18n.global.locale.value;
-  i18n.global.locale.value = newLocale;
+  // 确保语言包已加载
+  if (!i18nInstance.global.messages.value[newLocale]) {
+    const messages = await loadLocaleMessages(newLocale);
+    i18nInstance.global.setLocaleMessage(newLocale, messages);
+  }
+
+  i18nInstance.global.locale.value = newLocale;
   storage.setItem("locale", newLocale);
+  storage.setItem("language", newLocale);
 
-  console.log("✅ [i18n/loader.js] 语言切换成功:", {
-    from: oldLocale,
-    to: newLocale,
-    saved: newLocale,
-    current: i18n.global.locale.value,
-  });
-
-  // 检查切换后的数据可用性
-  const currentReleaseNotes = i18n.global.releaseNotes?.[newLocale];
-  console.log(
-    "📋 [i18n/loader.js] 切换后可用公告数量:",
-    currentReleaseNotes?.length || 0
-  );
+  // 触发语言变化事件
+  window.dispatchEvent(new CustomEvent("language-changed", { detail: { locale: newLocale } }));
 };
 
+/**
+ * 获取当前语言
+ */
 export const getCurrentLanguage = () => {
-  return i18nInstance ? i18nInstance.global.locale.value : "zh-CN";
+  return i18nInstance?.global.locale.value || getUserLocale();
 };
 
-// 预加载器
-export const preloadI18n = () => {
-  return createI18nInstance();
+/**
+ * 获取更新公告数据
+ */
+export const getReleaseNotesData = async (locale) => {
+  const targetLocale = locale || getCurrentLanguage();
+  return loadReleaseNotes(targetLocale);
 };
 
-// 获取更新公告数据
-export const getReleaseNotesData = (locale) => {
-  if (!i18nInstance) {
-    createI18nInstance();
-  }
+/**
+ * 预加载 i18n
+ */
+export const preloadI18n = () => createI18nInstance();
 
-  if (i18nInstance && i18nInstance.releaseNotes) {
-    return (
-      i18nInstance.releaseNotes[locale] ||
-      i18nInstance.releaseNotes["zh-CN"] ||
-      []
-    );
-  }
-
-  console.warn("⚠️ 更新公告数据未准备好，返回空数组");
-  return [];
+export default {
+  createI18nInstance,
+  getI18n,
+  switchLanguage,
+  getCurrentLanguage,
+  getReleaseNotesData,
+  preloadI18n,
 };

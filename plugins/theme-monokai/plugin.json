@@ -1,0 +1,16 @@
+{
+  "id": "theme-monokai",
+  "name": "Monokai Theme",
+  "type": "theme",
+  "version": "1.0.0",
+  "author": "Eververdants & Kiro",
+  "description": "Classic Monokai color scheme with warm tones",
+  "themeId": "monokai",
+  "main": "theme.json",
+  "icon": "🎨",
+  "homepage": "",
+  "repository": "",
+  "license": "MIT",
+  "minAppVersion": "1.0.0",
+  "keywords": ["theme", "monokai", "classic", "warm", "dark"]
+}

@@ -1,471 +1,264 @@
+/**
+ * 应用入口 - 极致启动优化版
+ * 优化策略：
+ * 1. 延迟非关键模块加载
+ * 2. 并行初始化
+ * 3. 按需加载图标
+ * 4. 减少同步阻塞
+ */
+
+// Polyfills - 必须最先加载
+import "./utils/polyfills.js";
+
 import { createApp } from "vue";
-import { createI18n } from "vue-i18n";
-import { Window } from "@tauri-apps/api/window";
 import App from "./App.vue";
+
+// 立即创建应用实例（不等待任何异步操作）
+const app = createApp(App);
+
+// 关键路径：只加载启动必需的模块
 import router from "./router";
 import "./styles/animations.css";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { library } from "@fortawesome/fontawesome-svg-core";
-import storage, { initStorage } from "./services/storageService";
-// Solid icons
-import {
-  faArrowLeft,
-  faArrowRight,
-  faArrowRotateRight,
-  faBug,
-  faCheck,
-  faCheckCircle,
-  faCloud,
-  faCloudUploadAlt,
-  faCode,
-  faCog,
-  faDatabase,
-  faDownload,
-  faEdit,
-  faEnvelope,
-  faExclamationCircle,
-  faExclamationTriangle,
-  faExternalLinkAlt,
-  faEye,
-  faEyeSlash,
-  faFileAlt,
-  faFileArchive,
-  faFileCode,
-  faFlask,
-  faFolder,
-  faFrown,
-  faGear,
-  faGlobe,
-  faHandPaper,
-  faHeart,
-  faInfoCircle,
-  faKey,
-  faLayerGroup,
-  faList,
-  faLock,
-  faMagnifyingGlass,
-  faMeh,
-  faMicrochip,
-  faMinus,
-  faMousePointer,
-  faPalette,
-  faPlus,
-  faPlusCircle,
-  faPuzzlePiece,
-  faRedo,
-  faRefresh,
-  faSave,
-  faSearch,
-  faSkull,
-  faSmile,
-  faSpinner,
-  faSquare,
-  faStore,
-  faTachometerAlt,
-  faTimes,
-  faTrash,
-  faUsers,
-  faWindowMaximize,
-  faChartPie,
-  faThLarge,
-  faDraftingCompass,
-  faTimesCircle,
-  faRocket,
-  faSort,
-  faArrowsUpDown,
-  faHashtag,
-  faUser,
-  faBrain,
-  faSuitcase,
-  faChevronUp,
-  faChevronDown,
-  faKeyboard,
-  faPaste,
-  faFileImport,
-  faClipboardList,
-  faSlidersH,
-  faTrashAlt,
-  faCheckDouble,
-  faExchangeAlt,
-  faCopy,
-  faGraduationCap,
-  faPlayCircle,
-  faPlay,
-  faClock,
-  faUndo,
-  faFileExport,
-  faSnowflake,
-  faCommentDots,
-  faInbox,
-  faPaperPlane,
-  faComment,
-  faHistory,
-  faLightbulb,
-  faMap,
-  faUserPlus,
-  faHandPointer,
-  faCube,
-  faDoorOpen,
-  faGamepad,
-  faFolderOpen,
-  faCircle,
-  faToggleOn,
-  faToggleOff,
-  faPauseCircle,
-  faChevronLeft,
-  faChevronRight,
-  faCodeBranch,
-  faAlignLeft,
-  faCertificate,
-  faLanguage,
-  faBolt,
-  faPause,
-  faFolderTree
-} from "@fortawesome/free-solid-svg-icons";
 
-// Brand icons
-import {
-  faBilibili,
-  faGithub,
-  faTiktok,
-} from "@fortawesome/free-brands-svg-icons";
+// 延迟加载的模块引用
+let i18nInstance = null;
+let FontAwesomeIcon = null;
 
-library.add(
-  // Solid icons
-  faArrowLeft,
-  faArrowRight,
-  faArrowRotateRight,
-  faBug,
-  faCheck,
-  faCheckCircle,
-  faCloud,
-  faCloudUploadAlt,
-  faCode,
-  faCog,
-  faDatabase,
-  faDownload,
-  faEdit,
-  faEnvelope,
-  faExclamationCircle,
-  faExclamationTriangle,
-  faExternalLinkAlt,
-  faEye,
-  faEyeSlash,
-  faFileAlt,
-  faFileArchive,
-  faFileCode,
-  faFlask,
-  faFolder,
-  faFrown,
-  faGear,
-  faGlobe,
-  faHandPaper,
-  faHeart,
-  faInfoCircle,
-  faKey,
-  faLayerGroup,
-  faList,
-  faLock,
-  faMagnifyingGlass,
-  faMeh,
-  faMicrochip,
-  faMinus,
-  faMousePointer,
-  faPalette,
-  faPlus,
-  faPlusCircle,
-  faPuzzlePiece,
-  faRedo,
-  faRefresh,
-  faSave,
-  faSearch,
-  faSkull,
-  faSmile,
-  faSpinner,
-  faSquare,
-  faStore,
-  faTachometerAlt,
-  faTimes,
-  faTrash,
-  faUsers,
-  faWindowMaximize,
-  // Brand icons
-  faBilibili,
-  faGithub,
-  faTiktok,
-  faChartPie,
-  faThLarge,
-  faDraftingCompass,
-  faTimesCircle,
-  faRocket,
-  faSort,
-  faArrowsUpDown,
-  faHashtag,
-  faUser,
-  faBrain,
-  faSuitcase,
-  faChevronUp,
-  faChevronDown,
-  faKeyboard,
-  faPaste,
-  faFileImport,
-  faClipboardList,
-  faSlidersH,
-  faTrashAlt,
-  faCheckDouble,
-  faExchangeAlt,
-  faCopy,
-  faGraduationCap,
-  faPlayCircle,
-  faPlay,
-  faClock,
-  faUndo,
-  faFileExport,
-  faSnowflake,
-  faCommentDots,
-  faInbox,
-  faPaperPlane,
-  faComment,
-  faHistory,
-  faLightbulb,
-  faMap,
-  faUserPlus,
-  faHandPointer,
-  faCube,
-  faDoorOpen,
-  faGamepad,
-  faFolderOpen,
-  faCircle,
-  faToggleOn,
-  faToggleOff,
-  faPauseCircle,
-  faChevronLeft,
-  faChevronRight,
-  faCodeBranch,
-  faAlignLeft,
-  faCertificate,
-  faLanguage,
-  faBolt,
-  faPause,
-  faFolderTree
-);
-import "./styles/theme-config.js";
-import {
-  initGlobalFloatingButtonProtection,
-  protectFloatingButtonPosition,
-  safeModifyBodyStyles,
-} from "./utils/floatingButtonProtection.js";
-import { disableInteractions } from "./utils/disableInteractions";
+// 最小化图标集 - 只加载启动时必需的图标
+const loadCriticalIcons = async () => {
+  const { library } = await import("@fortawesome/fontawesome-svg-core");
+  const { FontAwesomeIcon: FAIcon } = await import("@fortawesome/vue-fontawesome");
+  FontAwesomeIcon = FAIcon;
+  
+  // 启动时必需的图标（侧边栏 + 标题栏）
+  const { 
+    faHome, faCog, faPlus, faStore, faInfoCircle,
+    faMinus, faWindowMaximize, faTimes, faList, faPlusCircle,
+    faCommentDots, faSearch, faMagnifyingGlass, faFolder, faEdit,
+    faEye, faEyeSlash, faTrash
+  } = await import("@fortawesome/free-solid-svg-icons");
+  
+  library.add(faHome, faCog, faPlus, faStore, faInfoCircle, faMinus,
+    faWindowMaximize, faTimes, faList, faPlusCircle, faCommentDots,
+    faSearch, faMagnifyingGlass, faFolder, faEdit, faEye, faEyeSlash,
+    faTrash);
+  
+  return FAIcon;
+};
 
-// 导入翻译文件
-import zhCN from "./i18n/locales/zh-CN.json";
-import enUS from "./i18n/locales/en-US.json";
-import zhTW from "./i18n/locales/zh-TW.json";
+// 延迟加载完整图标集
+const loadAllIcons = async () => {
+  const { library } = await import("@fortawesome/fontawesome-svg-core");
+  const solidIcons = await import("@fortawesome/free-solid-svg-icons");
+  const brandIcons = await import("@fortawesome/free-brands-svg-icons");
+  
+  // 批量添加所有图标
+  const iconsToAdd = [
+    solidIcons.faArrowLeft, solidIcons.faArrowRight, solidIcons.faArrowRotateRight,
+    solidIcons.faBug, solidIcons.faCheck, solidIcons.faCheckCircle,
+    solidIcons.faCloud, solidIcons.faCloudUploadAlt, solidIcons.faCode,
+    solidIcons.faDatabase, solidIcons.faDownload, 
+    solidIcons.faEnvelope, solidIcons.faExclamationCircle, solidIcons.faExclamationTriangle,
+    solidIcons.faExternalLinkAlt, 
+    solidIcons.faFileAlt, solidIcons.faFileArchive, solidIcons.faFileCode,
+    solidIcons.faFlask, solidIcons.faFrown,
+    solidIcons.faGear, solidIcons.faGlobe, solidIcons.faHandPaper,
+    solidIcons.faHeart, solidIcons.faKey, solidIcons.faLayerGroup,
+    solidIcons.faList, solidIcons.faLock, solidIcons.faMagnifyingGlass,
+    solidIcons.faMeh, solidIcons.faMicrochip, solidIcons.faMousePointer,
+    solidIcons.faPalette, solidIcons.faPlusCircle, solidIcons.faPuzzlePiece,
+    solidIcons.faRedo, solidIcons.faRefresh, solidIcons.faSave,
+    solidIcons.faSearch, solidIcons.faSkull, solidIcons.faSmile,
+    solidIcons.faSpinner, solidIcons.faSquare, solidIcons.faTachometerAlt,
+    solidIcons.faTrash, solidIcons.faUsers, solidIcons.faChartPie,
+    solidIcons.faThLarge, solidIcons.faDraftingCompass, solidIcons.faTimesCircle,
+    solidIcons.faRocket, solidIcons.faSort, solidIcons.faArrowsUpDown,
+    solidIcons.faHashtag, solidIcons.faUser, solidIcons.faBrain,
+    solidIcons.faSuitcase, solidIcons.faChevronUp, solidIcons.faChevronDown,
+    solidIcons.faKeyboard, solidIcons.faPaste, solidIcons.faFileImport,
+    solidIcons.faClipboardList, solidIcons.faSlidersH, solidIcons.faTrashAlt,
+    solidIcons.faCheckDouble, solidIcons.faExchangeAlt, solidIcons.faCopy,
+    solidIcons.faGraduationCap, solidIcons.faPlayCircle, solidIcons.faPlay,
+    solidIcons.faClock, solidIcons.faUndo, solidIcons.faFileExport,
+    solidIcons.faSnowflake, solidIcons.faCommentDots, solidIcons.faInbox,
+    solidIcons.faPaperPlane, solidIcons.faComment, solidIcons.faHistory,
+    solidIcons.faLightbulb, solidIcons.faMap, solidIcons.faUserPlus,
+    solidIcons.faHandPointer, solidIcons.faCube, solidIcons.faDoorOpen,
+    solidIcons.faGamepad, solidIcons.faFolderOpen, solidIcons.faCircle,
+    solidIcons.faToggleOn, solidIcons.faToggleOff, solidIcons.faPauseCircle,
+    solidIcons.faChevronLeft, solidIcons.faChevronRight, solidIcons.faCodeBranch,
+    solidIcons.faAlignLeft, solidIcons.faCertificate, solidIcons.faLanguage,
+    solidIcons.faBolt, solidIcons.faPause, solidIcons.faFolderTree,
+    brandIcons.faBilibili, brandIcons.faGithub, brandIcons.faTiktok,
+    brandIcons.faXTwitter
+  ];
+  
+  library.add(...iconsToAdd);
+};
 
-// 导入插件系统
-import { initializePluginSystem, languagePluginLoader } from "./plugins";
+// 初始化 i18n（轻量级）
+const initI18n = async () => {
+  const { createI18n } = await import("vue-i18n");
+  const storage = (await import("./services/storageService")).default;
+  
+  // 内联语言检测，避免额外导入
+  const getSavedLocale = () => {
+    const saved = storage.getItem("language");
+    if (saved && ["zh-CN", "en-US", "zh-TW"].includes(saved)) return saved;
+    const lang = navigator.language || "zh-CN";
+    if (["zh-TW", "zh-HK", "zh-MO"].includes(lang)) return "zh-TW";
+    if (lang.startsWith("zh")) return "zh-CN";
+    if (lang.startsWith("en")) return "en-US";
+    return "zh-CN";
+  };
 
-// 初始化更新公告数据（简化版，数据由 useReleaseNotes composable 按需加载）
-const initializeReleaseNotesData = () => {
-  // 验证全局常量是否可用
-  const hasData = typeof __RELEASE_NOTES_ZH_CN__ !== "undefined";
-  if (!hasData) {
-    console.warn("[main.js] 公告数据全局常量未定义");
+  // 动态导入语言文件
+  const locale = getSavedLocale();
+  const messages = {};
+  
+  // 只加载当前语言
+  if (locale === "zh-CN") {
+    messages["zh-CN"] = (await import("./i18n/locales/zh-CN.json")).default;
+  } else if (locale === "en-US") {
+    messages["en-US"] = (await import("./i18n/locales/en-US.json")).default;
+  } else if (locale === "zh-TW") {
+    messages["zh-TW"] = (await import("./i18n/locales/zh-TW.json")).default;
+  }
+
+  i18nInstance = createI18n({
+    legacy: false,
+    locale,
+    fallbackLocale: "en-US",
+    messages,
+    silentTranslationWarn: true,
+    missingWarn: false,
+    fallbackWarn: false,
+  });
+
+  return i18nInstance;
+};
+
+// 延迟加载其他语言
+const loadOtherLocales = async () => {
+  if (!i18nInstance) return;
+  
+  const currentLocale = i18nInstance.global.locale.value;
+  const locales = ["zh-CN", "en-US", "zh-TW"].filter(l => l !== currentLocale);
+  
+  for (const locale of locales) {
+    if (!i18nInstance.global.messages.value[locale]) {
+      const messages = (await import(`./i18n/locales/${locale}.json`)).default;
+      i18nInstance.global.setLocaleMessage(locale, messages);
+    }
   }
 };
 
-// 从本地存储读取保存的语言设置
-function getSavedLocale() {
-  const saved = storage.getItem("language");
-  if (saved && ["zh-CN", "en-US", "zh-TW"].includes(saved)) {
-    return saved;
-  }
-
-  // 如果没有保存的语言，使用系统语言
-  const lang = navigator.language || "zh-CN";
-  if (["zh-TW", "zh-HK", "zh-MO"].includes(lang)) return "zh-TW";
-  if (lang.startsWith("zh")) return "zh-CN";
-  if (lang.startsWith("en")) return "en-US";
-  return "zh-CN";
-}
-
-
-
-// 异步初始化应用
+// 主初始化流程
 async function initApp() {
-  // 1. 先初始化存储服务
-  await initStorage();
-  console.log("[main.js] 存储服务初始化完成");
+  const startTime = performance.now();
+  
+  // 阶段1：并行初始化关键模块
+  const [storage, FAIcon, i18n] = await Promise.all([
+    import("./services/storageService").then(m => {
+      m.initStorage();
+      return m.default;
+    }),
+    loadCriticalIcons(),
+    initI18n(),
+  ]);
 
-  // 2. 创建 Vue 应用
-  const app = createApp(App);
+  console.log(`[Startup] 关键模块加载: ${(performance.now() - startTime).toFixed(0)}ms`);
 
-  // disableInteractions();
-
-  // 3. 创建 i18n（现在可以正确读取存储的语言设置）
-  const i18n = createI18n({
-    legacy: false,
-    locale: getSavedLocale(),
-    fallbackLocale: "en-US",
-    messages: {
-      "zh-CN": zhCN,
-      "en-US": enUS,
-      "zh-TW": zhTW,
-    },
-  });
-
+  // 阶段2：配置 Vue 应用
   app.use(router);
   app.use(i18n);
-  app.component("font-awesome-icon", FontAwesomeIcon);
-
-  // 设置 i18n 实例到语言插件加载器
-  languagePluginLoader.setI18nInstance(i18n);
-
-  // 初始化更新公告数据
-  initializeReleaseNotesData();
-
-  // 4. 初始化插件系统
-  try {
-    await initializePluginSystem();
-    console.log("[main.js] 插件系统初始化完成");
-  } catch (error) {
-    console.error("[main.js] 插件系统初始化失败:", error);
-  }
-
-  // 将i18n实例暴露到全局window对象
+  app.component("font-awesome-icon", FAIcon);
+  
+  // 暴露 i18n 到全局
   window.$i18n = i18n.global;
 
-  // 打印一下看看
-  const currentLocale = i18n.global.locale.value || i18n.global.locale;
-  console.log("[i18n] current", currentLocale);
+  // 阶段3：挂载应用（用户可见）
+  app.mount("#app");
+  console.log(`[Startup] 应用挂载: ${(performance.now() - startTime).toFixed(0)}ms`);
 
-  // 根据语言设置窗口标题
-  const updateWindowTitle = async () => {
-    try {
-      const appWindow = new Window("main");
-      const title = i18n.global.t("app.name");
-      await appWindow.setTitle(title);
-      console.log("[main.js] 窗口标题已设置为:", title);
-    } catch (error) {
-      console.warn("[main.js] 设置窗口标题失败:", error);
-    }
-  };
-
-  // 启动时设置窗口标题
-  updateWindowTitle();
-
-  // 监听语言变化事件，更新窗口标题
-  window.addEventListener("language-changed", () => {
-    updateWindowTitle();
+  // 阶段4：等待渲染完成后显示窗口
+  // 禁用过渡动画，避免启动时主题切换闪烁
+  document.documentElement.classList.add("no-transition");
+  
+  await new Promise(resolve => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setTimeout(resolve, 50);
+      });
+    });
   });
 
-  // 5. 挂载应用
-  app.mount("#app");
+  try {
+    const { Window } = await import("@tauri-apps/api/window");
+    const appWindow = new Window("main");
+    await appWindow.show();
+    console.log(`[Startup] 窗口显示: ${(performance.now() - startTime).toFixed(0)}ms`);
+  } catch (error) {
+    console.warn("[Startup] 显示窗口失败:", error);
+  }
 
-  // 初始化全局浮动按钮保护
-  initGlobalFloatingButtonProtection();
+  // 窗口显示后恢复过渡动画
+  requestAnimationFrame(() => {
+    document.documentElement.classList.remove("no-transition");
+  });
+
+  // 阶段5：后台加载非关键模块（不阻塞渲染）
+  requestIdleCallback(() => {
+    Promise.all([
+      loadAllIcons(),
+      loadOtherLocales(),
+      initPluginSystem(),
+      initWindowTitle(i18n),
+    ]).then(() => {
+      console.log(`[Startup] 完整初始化: ${(performance.now() - startTime).toFixed(0)}ms`);
+    });
+  }, { timeout: 2000 });
 
   return app;
 }
 
+// 插件系统初始化（延迟）
+async function initPluginSystem() {
+  try {
+    const { initializePluginSystem, languagePluginLoader } = await import("./plugins");
+    languagePluginLoader.setI18nInstance(i18nInstance);
+    await initializePluginSystem();
+  } catch (error) {
+    console.warn("[Plugins] 初始化失败:", error);
+  }
+}
+
+// 窗口标题设置（延迟）
+async function initWindowTitle(i18n) {
+  try {
+    const { Window } = await import("@tauri-apps/api/window");
+    const appWindow = new Window("main");
+    const title = i18n.global.t("app.name");
+    await appWindow.setTitle(title);
+    
+    // 监听语言变化
+    window.addEventListener("language-changed", async () => {
+      const newTitle = i18n.global.t("app.name");
+      await appWindow.setTitle(newTitle);
+    });
+  } catch (error) {
+    console.warn("[Window] 设置标题失败:", error);
+  }
+}
+
 // 启动应用
 initApp().catch((error) => {
-  console.error("[main.js] 应用启动失败:", error);
+  console.error("[Startup] 应用启动失败:", error);
 });
 
-// 全局图层合成问题修复
-const fixCompositingLayerIssues = () => {
-  // 监听可能导致图层卡住的事件
-  const eventsThatMayCauseLayerIssues = [
-    "resize",
-    "scroll",
-    "visibilitychange",
-    "focus",
-  ];
-
-  eventsThatMayCauseLayerIssues.forEach((event) => {
-    window.addEventListener(
-      event,
-      () => {
-        requestAnimationFrame(() => {
-          // 强制重绘整个文档
-          document.documentElement.style.transform = "translateZ(0)";
-          setTimeout(() => {
-            document.documentElement.style.transform = "";
-          }, 0);
-        });
-      },
-      { passive: true }
-    );
+// 浮动按钮保护（延迟初始化）
+requestIdleCallback(() => {
+  import("./utils/floatingButtonProtection.js").then(({ initGlobalFloatingButtonProtection }) => {
+    initGlobalFloatingButtonProtection();
   });
-
-  // 监听WebView的GPU进程恢复
-  if (window.chrome && window.chrome.gpu) {
-    window.chrome.gpu.onGpuProcessCrashed?.addListener?.(() => {
-      console.warn("GPU进程崩溃，执行恢复操作");
-      location.reload();
-    });
-  }
-};
-
-// 应用挂载后修复图层问题
-fixCompositingLayerIssues();
-
-// 性能优化：使用更智能的强制重绘策略，减少不必要的重排
-let lastRepaintTime = 0;
-let isRepainting = false;
-const REPAINT_INTERVAL = 5000; // 增加间隔时间到5秒
-const MIN_REPAINT_INTERVAL = 1000; // 最小间隔1秒
-
-// 智能重绘函数，只在必要时执行
-const smartRepaint = () => {
-  const now = Date.now();
-
-  // 避免频繁重绘
-  if (isRepainting || now - lastRepaintTime < MIN_REPAINT_INTERVAL) {
-    return;
-  }
-
-  isRepainting = true;
-  lastRepaintTime = now;
-
-  window.requestAnimationFrame(() => {
-    // 检查页面是否可见，避免在后台执行重绘
-    if (document.hidden) {
-      isRepainting = false;
-      return;
-    }
-
-    // 使用更轻量的方式触发重绘
-    const body = document.body;
-    if (body) {
-      // 使用更高效的方式触发重绘，避免直接修改transform
-      body.style.willChange = "transform";
-      body.style.transform = "translateZ(0)";
-
-      setTimeout(() => {
-        body.style.willChange = "auto";
-        body.style.transform = "";
-        isRepainting = false;
-      }, 16); // 约一帧的时间
-    }
-
-    // 使用全局保护工具确保浮动按钮位置正确
-    protectFloatingButtonPosition();
-  });
-};
-
-// 使用更长的间隔和更智能的触发条件
-const repaintInterval = setInterval(smartRepaint, REPAINT_INTERVAL);
-
-// 页面不可见时停止重绘，可见时恢复
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    clearInterval(repaintInterval);
-  } else {
-    // 页面变为可见时立即执行一次重绘
-    smartRepaint();
-    // 重新设置定时器
-    setInterval(smartRepaint, REPAINT_INTERVAL);
-  }
-});
+}, { timeout: 3000 });

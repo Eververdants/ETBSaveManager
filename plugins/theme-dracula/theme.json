@@ -1,0 +1,79 @@
+{
+  "previewColors": {
+    "bg": "#282a36",
+    "sidebar": "#21222c",
+    "header": "#343746",
+    "card": "#21222c",
+    "accent": "#bd93f9"
+  },
+  "variables": {
+    "--bg": "#282a36",
+    "--bg-primary": "#282a36",
+    "--bg-secondary": "#21222c",
+    "--bg-tertiary": "#343746",
+    "--bg-elevated": "#44475a",
+
+    "--text": "#f8f8f2",
+    "--text-color": "#f8f8f2",
+    "--text-primary": "#f8f8f2",
+    "--text-secondary": "rgba(248, 248, 242, 0.72)",
+    "--text-tertiary": "rgba(248, 248, 242, 0.48)",
+    "--text-disabled": "rgba(248, 248, 242, 0.28)",
+
+    "--surface-color": "#21222c",
+    "--surface-hover": "#343746",
+    "--card-bg": "#21222c",
+
+    "--border-color": "rgba(189, 147, 249, 0.2)",
+    "--border-light": "rgba(189, 147, 249, 0.1)",
+    "--divider-color": "rgba(189, 147, 249, 0.15)",
+
+    "--primary": "#bd93f9",
+    "--primary-hover": "#caa9fa",
+    "--primary-color": "#bd93f9",
+    "--secondary-color": "#ff79c6",
+    "--accent-color": "#bd93f9",
+    "--accent-hover": "#caa9fa",
+
+    "--success-color": "#50fa7b",
+    "--error-color": "#ff5555",
+    "--warning-color": "#f1fa8c",
+    "--info-color": "#8be9fd",
+
+    "--sidebar-bg": "rgba(33, 34, 44, 0.95)",
+    "--sidebar-text-color": "#f8f8f2",
+    "--sidebar-border-color": "rgba(189, 147, 249, 0.1)",
+    "--sidebar-hover-bg": "rgba(189, 147, 249, 0.08)",
+    "--sidebar-item-hover-bg": "rgba(189, 147, 249, 0.08)",
+    "--sidebar-active-bg": "rgba(189, 147, 249, 0.15)",
+    "--sidebar-active-color": "#bd93f9",
+    "--sidebar-active-border": "rgba(189, 147, 249, 0.5)",
+
+    "--titlebar-bg": "rgba(33, 34, 44, 0.95)",
+    "--titlebar-border": "rgba(189, 147, 249, 0.1)",
+    "--titlebar-button-hover": "rgba(189, 147, 249, 0.1)",
+
+    "--scrollbar-track": "transparent",
+    "--scrollbar-thumb": "rgba(189, 147, 249, 0.25)",
+    "--scrollbar-thumb-hover": "rgba(189, 147, 249, 0.4)",
+
+    "--dropdown-bg": "rgba(33, 34, 44, 0.96)",
+    "--dropdown-border": "rgba(189, 147, 249, 0.15)",
+    "--dropdown-text": "#f8f8f2",
+    "--dropdown-shadow": "0 8px 32px rgba(0, 0, 0, 0.4)",
+    "--dropdown-hover-bg": "rgba(189, 147, 249, 0.08)",
+    "--dropdown-selected-bg": "#bd93f9",
+    "--dropdown-selected-text": "#282a36",
+
+    "--glass-bg": "rgba(33, 34, 44, 0.88)",
+    "--glass-border": "rgba(189, 147, 249, 0.1)",
+    "--glass-shadow-light": "0 4px 24px rgba(0, 0, 0, 0.25)",
+    "--glass-shadow-medium": "0 8px 32px rgba(0, 0, 0, 0.35)",
+
+    "--card-shadow": "0 2px 12px rgba(0, 0, 0, 0.25), 0 0 1px rgba(189, 147, 249, 0.2)",
+    "--card-shadow-hover": "0 8px 32px rgba(0, 0, 0, 0.35), 0 0 1px rgba(189, 147, 249, 0.3)",
+    "--card-border": "1px solid rgba(189, 147, 249, 0.15)",
+    "--card-radius": "16px"
+  },
+  "customCSS": ""
+}

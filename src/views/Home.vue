@@ -1,46 +1,26 @@
 <template>
   <div class="home-container">
-    <div
-      class="archive-list-container"
-      :class="{ 'no-scroll': showSearch }"
-      ref="scrollContainerRef"
-    >
+    <div class="archive-list-container" :class="{ 'no-scroll': showSearch }" ref="scrollContainerRef">
       <!-- 有存档时使用虚拟滚动 -->
       <template v-if="displayArchives.length > 0">
-        <div
-          class="archive-grid-virtual"
-          :style="{
-            height: `${rowVirtualizer.getTotalSize()}px`,
+        <div class="archive-grid-virtual" :style="{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }">
+          <div v-for="virtualRow in rowVirtualizer.getVirtualItems()" :key="virtualRow.key" class="archive-row" :style="{
+            position: 'absolute',
+            top: 0,
+            left: 0,
             width: '100%',
-            position: 'relative',
-          }"
-        >
-          <div
-            v-for="virtualRow in rowVirtualizer.getVirtualItems()"
-            :key="virtualRow.key"
-            class="archive-row"
-            :style="{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: `${virtualRow.size}px`,
-              transform: `translateY(${virtualRow.start}px)`,
-            }"
-          >
+            height: `${virtualRow.size}px`,
+            transform: `translateY(${virtualRow.start}px)`,
+          }">
             <div class="archive-grid">
-              <ArchiveCard
-                v-for="archive in getRowItems(virtualRow.index)"
-                :key="archive.id"
-                :archive="archive"
-                :index="archive._originalIndex"
-                :data-archive-id="archive.id"
-                :class="{ deleting: deletingCardId === archive.id }"
-                @toggle-visibility="handleToggleVisibility"
-                @edit="handleEdit"
-                @delete="deleteArchive"
-                @select="selectArchive"
-              />
+              <ArchiveCard v-for="archive in getRowItems(virtualRow.index)" :key="archive.id" :archive="archive"
+                :index="archive._originalIndex" :data-archive-id="archive.id"
+                :class="{ deleting: deletingCardId === archive.id }" @toggle-visibility="handleToggleVisibility"
+                @edit="handleEdit" @delete="deleteArchive" @select="selectArchive" />
             </div>
           </div>
         </div>
@@ -63,10 +43,7 @@
             </button>
           </div>
         </div>
-        <div
-          v-else-if="dataLoadComplete && archives.length === 0"
-          class="empty-state"
-        >
+        <div v-else-if="dataLoadComplete && archives.length === 0" class="empty-state">
           <div class="empty-content">
             <div class="empty-icon">📁</div>
             <h3 class="empty-title">{{ $t("archiveSearch.noArchives") }}</h3>
@@ -83,83 +60,44 @@
 
     <!-- 搜索面板 -->
     <Teleport to="body">
-      <transition
-        name="search-panel"
-        @before-enter="beforeSearchEnter"
-        @enter="searchEnter"
-        @leave="searchLeave"
-      >
+      <transition name="search-panel" @before-enter="beforeSearchEnter" @enter="searchEnter" @leave="searchLeave">
         <div v-show="showSearch && !loading" class="search-overlay">
-          <ArchiveSearchFilter
-            :archives="archives"
-            :initial-filters="lastSearchFilters"
-            :visible="showSearch"
-            @filtered="handleFilteredArchives"
-            @filters-changed="updateLastFilters"
-            @close="toggleSearch"
-            ref="archiveSearchFilter"
-          />
+          <ArchiveSearchFilter :archives="archives" :initial-filters="lastSearchFilters" :visible="showSearch"
+            @filtered="handleFilteredArchives" @filters-changed="updateLastFilters" @close="toggleSearch"
+            ref="archiveSearchFilter" />
         </div>
       </transition>
     </Teleport>
 
     <!-- 删除确认 -->
     <Teleport to="body">
-      <ConfirmModal
-        v-model:show="showDeleteConfirm"
-        :title="$t('confirmModal.deleteArchiveTitle')"
-        :message="
-          $t('confirmModal.deleteArchiveMessage', {
-            name: archiveToDelete?.name || '',
-          })
-        "
-        :description="$t('confirmModal.deleteArchiveDescription')"
-        type="danger"
-        :confirm-text="$t('confirmModal.confirm')"
-        :cancel-text="$t('confirmModal.cancel')"
-        :loading="isDeleting"
-        :archive-details="archiveToDelete"
-        @confirm="confirmDelete"
-        @cancel="cancelDelete"
-      />
+      <ConfirmModal v-model:show="showDeleteConfirm" :title="$t('confirmModal.deleteArchiveTitle')" :message="$t('confirmModal.deleteArchiveMessage', {
+        name: archiveToDelete?.name || '',
+      })
+        " :description="$t('confirmModal.deleteArchiveDescription')" type="danger"
+        :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isDeleting"
+        :archive-details="archiveToDelete" @confirm="confirmDelete" @cancel="cancelDelete" />
     </Teleport>
 
     <!-- 性能设置 -->
     <Teleport to="body">
       <transition name="modal">
-        <div
-          v-if="showPerformanceSettings"
-          class="modal-overlay"
-          @click.self="showPerformanceSettings = false"
-        >
+        <div v-if="showPerformanceSettings" class="modal-overlay" @click.self="showPerformanceSettings = false">
           <div class="modal-container">
             <div class="modal-header">
               <h2 class="modal-title">性能设置</h2>
-              <button
-                class="modal-close"
-                @click="showPerformanceSettings = false"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
+              <button class="modal-close" @click="showPerformanceSettings = false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </button>
             </div>
             <div class="modal-body">
-              <PerformanceSettings
-                v-model:performanceMode="performanceMode"
-                v-model:animationQuality="animationQuality"
+              <PerformanceSettings v-model:performanceMode="performanceMode" v-model:animationQuality="animationQuality"
                 v-model:hardwareAcceleration="hardwareAcceleration"
-                v-model:virtualizationEnabled="virtualizationEnabled"
-              />
+                v-model:virtualizationEnabled="virtualizationEnabled" />
             </div>
           </div>
         </div>
@@ -167,14 +105,9 @@
     </Teleport>
 
     <!-- 浮动按钮 -->
-    <FloatingActionButton
-      :class="loading ? 'loading' : ''"
-      :current-index="fabCurrentIndex"
-      @update:current-index="fabCurrentIndex = $event"
-      @search-click="toggleSearch"
-      @refresh-click="refreshArchives"
-      @folder-click="openSaveGamesFolder"
-    />
+    <FloatingActionButton :class="loading ? 'loading' : ''" :current-index="fabCurrentIndex"
+      @update:current-index="fabCurrentIndex = $event" @search-click="toggleSearch" @refresh-click="refreshArchives"
+      @folder-click="openSaveGamesFolder" />
   </div>
 </template>
 
@@ -202,6 +135,7 @@ import { useArchiveActions } from "../composables/useArchiveActions";
 import { usePerformanceMonitor } from "../composables/usePerformanceMonitor";
 import { useAnimations } from "../composables/useAnimations";
 import { useFloatingButton } from "../composables/useFloatingButton";
+import { useToast } from "../composables/useToast";
 
 // Composables
 const archiveData = useArchiveData();
@@ -262,6 +196,8 @@ const {
   startPositionChecker,
   cleanup: cleanupFloatingButton,
 } = floatingButton;
+
+const toast = useToast();
 
 // 本地状态
 const scrollContainerRef = ref(null);
@@ -363,6 +299,7 @@ const refreshArchives = async () => {
   debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
     displayArchives.value = filtered;
   });
+  toast.showSuccess("存档列表已刷新");
 };
 
 const openSaveGamesFolder = () => {
@@ -411,7 +348,7 @@ onMounted(async () => {
   isPageActive.value = true;
   await refreshArchivesSilent();
 
-  window.cleanupRouteWatcher = () => {};
+  window.cleanupRouteWatcher = () => { };
 
   const handleResize = () => {
     if (!isUnmounted) {
@@ -441,9 +378,9 @@ onUnmounted(() => {
     try {
       window.cleanupRouteWatcher();
       delete window.cleanupRouteWatcher;
-    } catch (e) {}
+    } catch (e) { }
   }
-  window.removeEventListener("resize", () => {});
+  window.removeEventListener("resize", () => { });
 });
 
 watch(
@@ -574,11 +511,9 @@ watch(
 }
 
 .empty-action {
-  background: linear-gradient(
-    135deg,
-    var(--primary-color),
-    var(--primary-light)
-  );
+  background: linear-gradient(135deg,
+      var(--primary-color),
+      var(--primary-light));
   color: white;
   border: none;
   padding: 12px 24px;
@@ -680,6 +615,7 @@ watch(
   .archive-list-container {
     padding: 12px;
   }
+
   .archive-grid {
     gap: 16px;
   }
@@ -689,6 +625,7 @@ watch(
   .archive-list-container {
     padding: 8px;
   }
+
   .archive-grid {
     gap: 12px;
     grid-template-columns: 1fr;

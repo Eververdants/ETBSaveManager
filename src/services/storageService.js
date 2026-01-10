@@ -1,180 +1,69 @@
 /**
- * 本地存储服务
- * 使用 Tauri 文件系统 API 完全替代 localStorage
- * 支持同步读取（从缓存）和异步持久化到本地文件
+ * 本地存储服务 - 优化版
+ * 支持同步读取（从缓存）和异步持久化
  */
 
-import {
-  BaseDirectory,
-  exists,
-  mkdir,
-  readTextFile,
-  writeTextFile,
-} from "@tauri-apps/plugin-fs";
-
-// 存储目录和文件名
-const STORAGE_DIR = "data";
-const STORAGE_FILE = "settings.json";
-
-// 内存缓存
+// 内存缓存 - 立即可用
 let cache = {};
 let initialized = false;
 let saveTimeout = null;
+let initPromise = null;
 
-// 需要从 localStorage 迁移的键（一次性迁移后删除）
+// 存储配置
+const STORAGE_DIR = "data";
+const STORAGE_FILE = "settings.json";
+
+// 需要迁移的键
 const KEYS_TO_MIGRATE = [
-  "theme",
-  "language",
-  "updateSource",
-  "performanceMonitor",
-  "developerMode",
-  "logMenuEnabled",
-  "testArchiveEnabled",
-  "gpuAccelerationDisabled",
-  "newYearThemeMode",
-  "themeBeforeNewYear",
-  "quick_create_tutorial_completed",
-  "steamApiKey",
-  "locale",
-  "fabScrollHintShown",
-  "hubUnlocked",
-  "lastUpdateCheck",
-  "user-custom-theme",
-  "pluginSystemBetaUser",
-  "pluginSystemBetaNotified",
+  "theme", "language", "updateSource", "performanceMonitor",
+  "developerMode", "logMenuEnabled", "testArchiveEnabled",
+  "gpuAccelerationDisabled", "newYearThemeMode", "themeBeforeNewYear",
+  "quick_create_tutorial_completed", "steamApiKey", "locale",
+  "fabScrollHintShown", "hubUnlocked", "lastUpdateCheck",
+  "user-custom-theme", "pluginSystemBetaUser", "pluginSystemBetaNotified",
+  "seasonalThemeMode"
 ];
 
-/**
- * 初始化存储服务（异步）
- */
-async function init() {
-  if (initialized) return;
-
-  try {
-    // 确保存储目录存在
-    const dirExists = await exists(STORAGE_DIR, {
-      baseDir: BaseDirectory.AppData,
-    });
-    if (!dirExists) {
-      await mkdir(STORAGE_DIR, {
-        baseDir: BaseDirectory.AppData,
-        recursive: true,
-      });
-      console.log("📁 [Storage] 创建存储目录");
-    }
-
-    // 读取现有数据
-    const filePath = `${STORAGE_DIR}/${STORAGE_FILE}`;
-    const fileExists = await exists(filePath, {
-      baseDir: BaseDirectory.AppData,
-    });
-
-    if (fileExists) {
-      const content = await readTextFile(filePath, {
-        baseDir: BaseDirectory.AppData,
-      });
-      cache = JSON.parse(content);
-      console.log(
-        `✅ [Storage] 已加载本地存储 (${Object.keys(cache).length} 项)`
-      );
-    }
-
-    initialized = true;
-
-    // 迁移 localStorage 数据（一次性）
-    await migrateFromLocalStorage();
-  } catch (error) {
-    console.error("❌ [Storage] 初始化失败:", error);
-    initialized = true;
-  }
-}
-
-/**
- * 保存到文件（防抖）
- */
-function debouncedSave() {
-  if (saveTimeout) {
-    clearTimeout(saveTimeout);
-  }
-  saveTimeout = setTimeout(async () => {
-    await saveToFile();
-  }, 300);
-}
-
-/**
- * 立即保存到文件
- */
-async function saveToFile() {
-  try {
-    const filePath = `${STORAGE_DIR}/${STORAGE_FILE}`;
-    const content = JSON.stringify(cache, null, 2);
-    await writeTextFile(filePath, content, { baseDir: BaseDirectory.AppData });
-    console.log(
-      `💾 [Storage] 已保存 (${(content.length / 1024).toFixed(1)} KB)`
-    );
-  } catch (error) {
-    console.error("❌ [Storage] 保存失败:", error);
-  }
-}
-
-/**
- * 从 localStorage 迁移数据（一次性迁移后清除）
- */
-async function migrateFromLocalStorage() {
-  // 检查是否已迁移
-  if (cache._migrated) return;
-
-  let migrated = false;
-
-  for (const key of KEYS_TO_MIGRATE) {
-    const value = localStorage.getItem(key);
-    if (value !== null && cache[key] === undefined) {
-      try {
-        cache[key] = JSON.parse(value);
-      } catch {
-        cache[key] = value;
-      }
-      migrated = true;
-    }
-  }
-
-  if (migrated) {
-    cache._migrated = true;
-    await saveToFile();
-
-    // 清除 localStorage 中的旧数据
-    for (const key of KEYS_TO_MIGRATE) {
-      localStorage.removeItem(key);
-    }
-
-    console.log("✅ [Storage] localStorage 数据迁移完成并已清除");
-  } else {
-    // 标记已检查过迁移
-    cache._migrated = true;
-    debouncedSave();
-  }
-}
+// 需要保留在 localStorage 的键（用于快速启动）
+const KEYS_TO_KEEP_IN_LOCALSTORAGE = ["theme", "language", "locale"];
 
 /**
  * 获取存储项（同步，从缓存读取）
- * @param {string} key - 键名
- * @param {any} defaultValue - 默认值
- * @returns {any}
  */
 export function getItem(key, defaultValue = null) {
+  // 优先从缓存读取
   if (cache[key] !== undefined) {
     return cache[key];
+  }
+  // 未初始化时尝试从 localStorage 读取（兼容）
+  if (!initialized) {
+    try {
+      const value = localStorage.getItem(key);
+      if (value !== null) {
+        try {
+          return JSON.parse(value);
+        } catch {
+          return value;
+        }
+      }
+    } catch {}
   }
   return defaultValue;
 }
 
 /**
  * 设置存储项
- * @param {string} key - 键名
- * @param {any} value - 值
  */
 export function setItem(key, value) {
   cache[key] = value;
+  
+  // 关键配置同步写入 localStorage（用于快速启动）
+  if (KEYS_TO_KEEP_IN_LOCALSTORAGE.includes(key)) {
+    try {
+      localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+    } catch {}
+  }
+  
   if (initialized) {
     debouncedSave();
   }
@@ -182,7 +71,6 @@ export function setItem(key, value) {
 
 /**
  * 移除存储项
- * @param {string} key - 键名
  */
 export function removeItem(key) {
   delete cache[key];
@@ -203,18 +91,38 @@ export function clear() {
 
 /**
  * 获取所有键
- * @returns {string[]}
  */
 export function keys() {
-  return Object.keys(cache).filter((k) => !k.startsWith("_"));
+  return Object.keys(cache).filter(k => !k.startsWith("_"));
 }
 
 /**
  * 检查是否已初始化
- * @returns {boolean}
  */
 export function isInitialized() {
   return initialized;
+}
+
+/**
+ * 防抖保存
+ */
+function debouncedSave() {
+  if (saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(saveToFile, 500);
+}
+
+/**
+ * 保存到文件
+ */
+async function saveToFile() {
+  try {
+    const { BaseDirectory, writeTextFile } = await import("@tauri-apps/plugin-fs");
+    const filePath = `${STORAGE_DIR}/${STORAGE_FILE}`;
+    const content = JSON.stringify(cache, null, 2);
+    await writeTextFile(filePath, content, { baseDir: BaseDirectory.AppData });
+  } catch (error) {
+    console.warn("[Storage] 保存失败:", error);
+  }
 }
 
 /**
@@ -232,7 +140,85 @@ export async function flush() {
  * 初始化存储服务
  */
 export async function initStorage() {
-  await init();
+  if (initialized) return;
+  if (initPromise) return initPromise;
+
+  initPromise = (async () => {
+    try {
+      const { BaseDirectory, exists, mkdir, readTextFile } = await import("@tauri-apps/plugin-fs");
+      
+      // 确保目录存在
+      const dirExists = await exists(STORAGE_DIR, { baseDir: BaseDirectory.AppData });
+      if (!dirExists) {
+        await mkdir(STORAGE_DIR, { baseDir: BaseDirectory.AppData, recursive: true });
+      }
+
+      // 读取现有数据
+      const filePath = `${STORAGE_DIR}/${STORAGE_FILE}`;
+      const fileExists = await exists(filePath, { baseDir: BaseDirectory.AppData });
+
+      if (fileExists) {
+        const content = await readTextFile(filePath, { baseDir: BaseDirectory.AppData });
+        cache = JSON.parse(content);
+      }
+
+      initialized = true;
+
+      // 迁移 localStorage（后台执行）
+      if (!cache._migrated) {
+        migrateFromLocalStorage();
+      }
+    } catch (error) {
+      console.warn("[Storage] 初始化失败，使用内存缓存:", error);
+      initialized = true;
+    }
+  })();
+
+  return initPromise;
+}
+
+/**
+ * 从 localStorage 迁移数据
+ */
+function migrateFromLocalStorage() {
+  let migrated = false;
+
+  for (const key of KEYS_TO_MIGRATE) {
+    const value = localStorage.getItem(key);
+    if (value !== null && cache[key] === undefined) {
+      try {
+        cache[key] = JSON.parse(value);
+      } catch {
+        cache[key] = value;
+      }
+      migrated = true;
+    }
+  }
+
+  if (migrated) {
+    cache._migrated = true;
+    debouncedSave();
+    
+    // 清除旧数据，但保留快速启动需要的键
+    for (const key of KEYS_TO_MIGRATE) {
+      if (!KEYS_TO_KEEP_IN_LOCALSTORAGE.includes(key)) {
+        localStorage.removeItem(key);
+      }
+    }
+  } else {
+    cache._migrated = true;
+    debouncedSave();
+  }
+  
+  // 确保快速启动键同步到 localStorage
+  for (const key of KEYS_TO_KEEP_IN_LOCALSTORAGE) {
+    if (cache[key] !== undefined) {
+      try {
+        const value = cache[key];
+        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+      } catch {}
+    }
+  }
 }
 
 // 导出默认对象

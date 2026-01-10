@@ -4,7 +4,7 @@
       :class="`notification-container-${position}`">
       <TransitionGroup tag="div" class="notification-list" :name="`notification-${position}`"
         @before-enter="(el) => onBeforeEnter(el, position)" @enter="(el, done) => onEnter(el, done, position)"
-        @leave="(el, done) => onLeave(el, done, position)">
+        @before-leave="(el) => onBeforeLeave(el, position)" @leave="(el, done) => onLeave(el, done, position)">
         <div v-for="notification in getNotificationsByPosition(position)" :key="notification.id"
           class="notification-item" :class="[
             `notification-${notification.type}`,
@@ -106,15 +106,56 @@ const onEnter = (el, done, position) => {
   gsap.to(el, { opacity: 1, x: 0, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.4, ease: 'power3.out', onComplete: done })
 }
 
-const onLeave = (el, done, position) => {
+const onBeforeLeave = (el, position) => {
   const rect = el.getBoundingClientRect()
+  const parent = el.parentElement
+  const parentRect = parent.getBoundingClientRect()
+  
+  // 创建占位元素，保持原有空间
+  const placeholder = document.createElement('div')
+  placeholder.className = 'notification-placeholder'
+  placeholder.style.height = `${rect.height}px`
+  placeholder.style.width = `${rect.width}px`
+  placeholder.style.flexShrink = '0'
+  el._placeholder = placeholder
+  
+  // 在当前元素位置插入占位符
+  parent.insertBefore(placeholder, el)
+  
+  // 将退场元素设为绝对定位
   el.style.position = 'absolute'
-  el.style.top = '0'
-  el.style.left = '0'
+  el.style.top = `${rect.top - parentRect.top}px`
+  el.style.left = `${rect.left - parentRect.left}px`
   el.style.width = `${rect.width}px`
+  el.style.margin = '0'
+  el.style.zIndex = '1'
+}
 
+const onLeave = (el, done, position) => {
   const dir = getAnimationDirection(position)
-  gsap.to(el, { opacity: 0, x: dir.x * 0.5, y: dir.y * 0.3, scale: 0.85, filter: 'blur(4px)', duration: 0.3, ease: 'power2.in', onComplete: done })
+  const placeholder = el._placeholder
+  
+  // 同时动画：退场元素淡出 + 占位符收缩
+  if (placeholder) {
+    gsap.to(placeholder, {
+      height: 0,
+      marginBottom: 0,
+      duration: 0.3,
+      ease: 'power2.inOut',
+      onComplete: () => placeholder.remove()
+    })
+  }
+  
+  gsap.to(el, {
+    opacity: 0,
+    x: dir.x * 0.5,
+    y: dir.y * 0.3,
+    scale: 0.85,
+    filter: 'blur(4px)',
+    duration: 0.3,
+    ease: 'power2.in',
+    onComplete: done
+  })
 }
 
 const addNotification = (options) => {
@@ -274,6 +315,10 @@ defineExpose({
   flex-direction: column;
   gap: 10px;
   position: relative;
+}
+
+.notification-placeholder {
+  pointer-events: none;
 }
 
 .notification-top-move,

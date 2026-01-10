@@ -1,21 +1,28 @@
 {
-  "version": "3.0.0-Alpha-8",
-  "date": "2026-01-05",
-  "title": "Plugin System (Gradual Rollout) & Spring Festival Theme",
+  "version": "3.0.0-Alpha-9",
+  "date": "2026-01-10",
+  "title": "Unified Notification System & Feedback System Refactor",
   "type": "major",
   "categories": {
     "newFeatures": [
-      "Language & theme plugin support (40% gradual rollout, hidden unlock available)",
-      "Remastered plugin market: hero section, gradient categories, card animations, keyboard nav, reduced-motion option",
-      "Multiple new color themes with unified light/dark base palettes",
-      "Spring Festival limited theme (2026.2.13-2026.2.24) in both light & dark versions"
+      "Added unified eight-directional notification service, replacing legacy popups and scattered toast implementations",
+      "Added multiple theme plugins: Cyberpunk, Dracula, Monokai, Nord, Solarized"
     ],
     "improvements": [
-      "Polished confirm-delete modal styling"
+      "Removed plugin system beta testing feature, fully opened plugin system",
+      "Refactored feedback system: migrated from GitHub Discussions to Cloudflare Worker",
+      "Refactored i18n loading logic for improved language pack loading performance",
+      "Optimized route lazy loading and preloading strategies",
+      "Refactored storage service with optimized initialization flow",
+      "Adjusted sidebar and bottom action bar styling and interactions",
+      "Optimized notification exit animations with placeholder elements to prevent layout shifts"
     ],
     "bugFixes": [
-      "Fixed floating-button tooltip not showing"
+      "Blocked invalid player ID \"ERROR, BAD UNIQUE NET ID\""
     ],
-    "performance": []
+    "performance": [
+      "Optimized build configuration to reduce bundle size",
+      "Cleaned up unused code and comments"
+    ]
   }
 }

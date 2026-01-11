@@ -7,20 +7,14 @@
             <font-awesome-icon :icon="['fas', 'arrow-left']" />
           </button>
 
-          <button
-            class="cleanup-expired-btn"
-            @click="cleanupExpiredCache"
-            :disabled="isCleaning"
-          >
+          <button class="cleanup-expired-btn" @click="cleanupExpiredCache" :disabled="isCleaning">
             <font-awesome-icon :icon="['fas', 'trash']" />
             {{ t("settings.steamApi.cleanupExpired") }}
           </button>
 
           <!-- SteamID显示切换按钮 -->
           <button class="toggle-steamid-btn" @click="toggleSteamIdDisplay">
-            <font-awesome-icon
-              :icon="showRawSteamId ? ['fas', 'eye-slash'] : ['fas', 'eye']"
-            />
+            <font-awesome-icon :icon="showRawSteamId ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
             {{
               showRawSteamId
                 ? t("settings.steamApi.hideRawSteamId")
@@ -44,11 +38,7 @@
             {{ t("settings.steamApi.search") }}
           </label>
           <div class="search-input-group">
-            <input
-              v-model="searchQuery"
-              :placeholder="t('settings.steamApi.searchPlaceholder')"
-              class="search-input"
-            />
+            <input v-model="searchQuery" :placeholder="t('settings.steamApi.searchPlaceholder')" class="search-input" />
           </div>
         </div>
 
@@ -57,48 +47,35 @@
             <font-awesome-icon :icon="['fas', 'sort']" class="label-icon" />
             {{ t("settings.steamApi.sortByLabel") }}
           </label>
-          <CustomDropdown
-            v-model="sortBy"
-            :options="[
-              {
-                value: 'lastUpdated',
-                label: t('settings.steamApi.sortBy.lastUpdated'),
-              },
-              {
-                value: 'username',
-                label: t('settings.steamApi.sortBy.username'),
-              },
-              {
-                value: 'callCount',
-                label: t('settings.steamApi.sortBy.callCount'),
-              },
-              {
-                value: 'steamId',
-                label: t('settings.steamApi.sortBy.steamId'),
-              },
-            ]"
-            :placeholder="t('settings.steamApi.sortBy.lastUpdated')"
-            class="dropdown-control"
-          />
+          <CustomDropdown v-model="sortBy" :options="[
+            {
+              value: 'lastUpdated',
+              label: t('settings.steamApi.sortBy.lastUpdated'),
+            },
+            {
+              value: 'username',
+              label: t('settings.steamApi.sortBy.username'),
+            },
+            {
+              value: 'callCount',
+              label: t('settings.steamApi.sortBy.callCount'),
+            },
+            {
+              value: 'steamId',
+              label: t('settings.steamApi.sortBy.steamId'),
+            },
+          ]" :placeholder="t('settings.steamApi.sortBy.lastUpdated')" class="dropdown-control" />
         </div>
 
         <div class="form-group">
           <label class="form-label">
-            <font-awesome-icon
-              :icon="['fas', 'arrows-up-down']"
-              class="label-icon"
-            />
+            <font-awesome-icon :icon="['fas', 'arrows-up-down']" class="label-icon" />
             {{ t("settings.steamApi.sortOrderLabel") }}
           </label>
-          <CustomDropdown
-            v-model="sortOrder"
-            :options="[
-              { value: 'desc', label: t('settings.steamApi.sortOrder.desc') },
-              { value: 'asc', label: t('settings.steamApi.sortOrder.asc') },
-            ]"
-            :placeholder="t('settings.steamApi.sortOrder.desc')"
-            class="dropdown-control"
-          />
+          <CustomDropdown v-model="sortOrder" :options="[
+            { value: 'desc', label: t('settings.steamApi.sortOrder.desc') },
+            { value: 'asc', label: t('settings.steamApi.sortOrder.asc') },
+          ]" :placeholder="t('settings.steamApi.sortOrder.desc')" class="dropdown-control" />
         </div>
 
         <div class="form-group">
@@ -107,28 +84,15 @@
             {{ t("settings.steamApi.minCallCount") }}
           </label>
           <div class="number-input-wrapper">
-            <input
-              v-model.number="minCallCount"
-              type="number"
-              :placeholder="t('settings.steamApi.minCallCount')"
-              class="filter-input"
-              min="0"
-            />
+            <input v-model.number="minCallCount" type="number" :placeholder="t('settings.steamApi.minCallCount')"
+              class="filter-input" min="0" />
             <div class="number-spinner">
-              <button
-                type="button"
-                class="spinner-btn spinner-up"
-                @click="minCallCount = Math.max(0, (minCallCount || 0) + 1)"
-                tabindex="-1"
-              >
+              <button type="button" class="spinner-btn spinner-up"
+                @click="minCallCount = Math.max(0, (minCallCount || 0) + 1)" tabindex="-1">
                 <font-awesome-icon :icon="['fas', 'chevron-up']" />
               </button>
-              <button
-                type="button"
-                class="spinner-btn spinner-down"
-                @click="minCallCount = Math.max(0, (minCallCount || 0) - 1)"
-                tabindex="-1"
-              >
+              <button type="button" class="spinner-btn spinner-down"
+                @click="minCallCount = Math.max(0, (minCallCount || 0) - 1)" tabindex="-1">
                 <font-awesome-icon :icon="['fas', 'chevron-down']" />
               </button>
             </div>
@@ -136,9 +100,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" style="opacity: 0; pointer-events: none"
-            >占位</label
-          >
+          <label class="form-label" style="opacity: 0; pointer-events: none">占位</label>
           <button @click="clearFilters" class="clear-filters-btn">
             <font-awesome-icon :icon="['fas', 'times']" />
             {{ t("settings.steamApi.clearFilters") }}
@@ -151,12 +113,7 @@
           <thead>
             <tr>
               <th>
-                <input
-                  type="checkbox"
-                  :checked="isAllSelected"
-                  @change="toggleSelectAll"
-                  class="checkbox"
-                />
+                <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="checkbox" />
               </th>
               <th>{{ t("settings.steamApi.cacheTable.steamId") }}</th>
               <th>{{ t("settings.steamApi.cacheTable.username") }}</th>
@@ -168,12 +125,8 @@
           <tbody>
             <tr v-for="entry in paginatedEntries || []" :key="entry.steamId">
               <td>
-                <input
-                  type="checkbox"
-                  :checked="selectedEntries.has(entry.steamId)"
-                  @change="toggleEntrySelection(entry.steamId)"
-                  class="checkbox"
-                />
+                <input type="checkbox" :checked="selectedEntries.has(entry.steamId)"
+                  @change="toggleEntrySelection(entry.steamId)" class="checkbox" />
               </td>
               <td class="steam-id-cell">{{ maskSteamId(entry.steamId) }}</td>
               <td>{{ entry.username }}</td>
@@ -181,19 +134,12 @@
               <td>{{ entry.callCount }}</td>
               <td class="actions-cell">
                 <div class="action-buttons">
-                  <button
-                    @click="showCacheDetail(entry)"
-                    class="action-btn detail-btn"
-                    :title="t('settings.steamApi.viewDetail')"
-                  >
+                  <button @click="showCacheDetail(entry)" class="action-btn detail-btn"
+                    :title="t('settings.steamApi.viewDetail')">
                     <font-awesome-icon :icon="['fas', 'info-circle']" />
                   </button>
-                  <button
-                    @click="deleteEntry(entry)"
-                    class="action-btn delete-btn"
-                    :title="t('settings.steamApi.deleteEntry')"
-                    :disabled="isDeleting"
-                  >
+                  <button @click="deleteEntry(entry)" class="action-btn delete-btn"
+                    :title="t('settings.steamApi.deleteEntry')" :disabled="isDeleting">
                     <font-awesome-icon :icon="['fas', 'trash']" />
                   </button>
                 </div>
@@ -216,22 +162,11 @@
           }}
         </div>
         <div class="batch-buttons">
-          <button
-            @click="batchRefresh"
-            class="batch-btn refresh-batch-btn"
-            :disabled="isRefreshing"
-          >
-            <font-awesome-icon
-              :icon="['fas', 'sync']"
-              :class="{ 'fa-spin': isRefreshing }"
-            />
+          <button @click="batchRefresh" class="batch-btn refresh-batch-btn" :disabled="isRefreshing">
+            <font-awesome-icon :icon="['fas', 'sync']" :class="{ 'fa-spin': isRefreshing }" />
             {{ t("settings.steamApi.batchRefresh") }}
           </button>
-          <button
-            @click="batchDelete"
-            class="batch-btn delete-batch-btn"
-            :disabled="isBatchDeleting"
-          >
+          <button @click="batchDelete" class="batch-btn delete-batch-btn" :disabled="isBatchDeleting">
             <font-awesome-icon :icon="['fas', 'trash']" />
             {{ t("settings.steamApi.batchDelete") }}
           </button>
@@ -250,44 +185,24 @@
           }}
         </div>
         <div class="pagination-controls">
-          <button
-            @click="changePage(1)"
-            :disabled="currentPage === 1"
-            class="pagination-btn"
-          >
+          <button @click="changePage(1)" :disabled="currentPage === 1" class="pagination-btn">
             <font-awesome-icon :icon="['fas', 'angle-double-left']" />
           </button>
-          <button
-            @click="changePage(currentPage - 1)"
-            :disabled="currentPage === 1"
-            class="pagination-btn"
-          >
+          <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="pagination-btn">
             <font-awesome-icon :icon="['fas', 'angle-left']" />
           </button>
 
           <span class="pagination-numbers">
-            <button
-              v-for="page in visiblePages"
-              :key="page"
-              @click="changePage(page)"
-              :class="['pagination-btn', { active: page === currentPage }]"
-            >
+            <button v-for="page in visiblePages" :key="page" @click="changePage(page)"
+              :class="['pagination-btn', { active: page === currentPage }]">
               {{ page }}
             </button>
           </span>
 
-          <button
-            @click="changePage(currentPage + 1)"
-            :disabled="currentPage === totalPages"
-            class="pagination-btn"
-          >
+          <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="pagination-btn">
             <font-awesome-icon :icon="['fas', 'angle-right']" />
           </button>
-          <button
-            @click="changePage(totalPages)"
-            :disabled="currentPage === totalPages"
-            class="pagination-btn"
-          >
+          <button @click="changePage(totalPages)" :disabled="currentPage === totalPages" class="pagination-btn">
             <font-awesome-icon :icon="['fas', 'angle-double-right']" />
           </button>
         </div>
@@ -295,23 +210,15 @@
         <div class="page-size-selector">
           <div class="form-group">
             <label class="form-label">
-              <font-awesome-icon
-                :icon="['fas', 'list-ol']"
-                class="label-icon"
-              />
+              <font-awesome-icon :icon="['fas', 'list-ol']" class="label-icon" />
               {{ t("settings.steamApi.pageSize") }}
             </label>
-            <CustomDropdown
-              v-model.number="pageSize"
-              :options="[
-                { value: 10, label: '10' },
-                { value: 20, label: '20' },
-                { value: 50, label: '50' },
-                { value: 100, label: '100' },
-              ]"
-              :placeholder="'10'"
-              class="dropdown-control"
-            />
+            <CustomDropdown v-model.number="pageSize" :options="[
+              { value: 10, label: '10' },
+              { value: 20, label: '20' },
+              { value: 50, label: '50' },
+              { value: 100, label: '100' },
+            ]" :placeholder="'10'" class="dropdown-control" />
           </div>
         </div>
       </div>
@@ -324,11 +231,7 @@
 
     <!-- 缓存详情弹窗 -->
     <Transition name="modal">
-      <div
-        v-if="showDetailModal && selectedCacheEntry"
-        class="modal-overlay"
-        @click="showDetailModal = false"
-      >
+      <div v-if="showDetailModal && selectedCacheEntry" class="modal-overlay" @click="showDetailModal = false">
         <div class="modal-content cache-detail-modal" @click.stop>
           <div class="modal-header">
             <h3>{{ t("settings.steamApi.cacheDetail") }}</h3>
@@ -342,16 +245,14 @@
               <label>{{ t("settings.steamApi.cacheTable.steamId") }}:</label>
               <span class="steam-id-display">{{
                 selectedCacheEntry.steamId
-              }}</span>
+                }}</span>
             </div>
             <div class="detail-item">
               <label>{{ t("settings.steamApi.cacheTable.username") }}:</label>
               <span>{{ selectedCacheEntry.username }}</span>
             </div>
             <div class="detail-item">
-              <label
-                >{{ t("settings.steamApi.cacheTable.lastUpdated") }}:</label
-              >
+              <label>{{ t("settings.steamApi.cacheTable.lastUpdated") }}:</label>
               <span>{{ formatDate(selectedCacheEntry.lastUpdated) }}</span>
             </div>
             <div class="detail-item">
@@ -866,12 +767,10 @@ export default {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--glass-border-light) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%,
+      var(--glass-border-light) 50%,
+      transparent 100%);
   pointer-events: none;
 }
 
@@ -946,12 +845,10 @@ export default {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--glass-border-light) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%,
+      var(--glass-border-light) 50%,
+      transparent 100%);
   transition: left 0.6s ease;
 }
 
@@ -1465,8 +1362,7 @@ export default {
   border: solid white;
   border-width: 0 2.5px 2.5px 0;
   opacity: 0;
-  animation: checkmarkAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s
-    forwards;
+  animation: checkmarkAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
 }
 
 @keyframes checkmarkAppear {
@@ -1482,6 +1378,7 @@ export default {
 }
 
 @keyframes checkboxPulse {
+
   0%,
   100% {
     transform: scale(1);
@@ -1749,12 +1646,10 @@ export default {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--glass-border-light) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%,
+      var(--glass-border-light) 50%,
+      transparent 100%);
   pointer-events: none;
 }
 
@@ -2131,12 +2026,10 @@ export default {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--glass-border-light) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%,
+      var(--glass-border-light) 50%,
+      transparent 100%);
   transition: left 0.6s ease;
 }
 

@@ -27,12 +27,7 @@
       </div>
 
       <div class="search-group">
-        <input
-          v-model="searchText"
-          :placeholder="t('logs.search')"
-          @input="applyFilter"
-          class="search-input"
-        />
+        <input v-model="searchText" :placeholder="t('logs.search')" @input="applyFilter" class="search-input" />
       </div>
     </div>
 
@@ -40,39 +35,24 @@
     <div class="console-section">
       <div class="console-input-line">
         <span class="console-prompt">$ </span>
-        <input
-          ref="consoleInput"
-          v-model="consoleCommand"
-          type="text"
-          placeholder="输入 help 查看可用命令"
-          class="console-input"
-          @keyup.enter="executeConsoleCommand"
-          @keyup.up="navigateHistory(-1)"
-          @keyup.down="navigateHistory(1)"
-        />
+        <input ref="consoleInput" v-model="consoleCommand" type="text" placeholder="输入 help 查看可用命令"
+          class="console-input" @keyup.enter="executeConsoleCommand" @keyup.up="navigateHistory(-1)"
+          @keyup.down="navigateHistory(1)" />
       </div>
     </div>
 
     <div class="log-container" ref="logContainer">
-      <div
-        v-for="(log, index) in filteredLogs"
-        :key="index"
-        :class="['log-entry', log.type]"
-      >
+      <div v-for="(log, index) in filteredLogs" :key="index" :class="['log-entry', log.type]">
         <div class="log-time">{{ formatTime(log.date) }}</div>
         <div class="log-level" :class="log.type">
           [{{ log.type.toUpperCase() }}]
         </div>
         <div class="log-message">
           <div v-if="Array.isArray(log.message)" class="log-multiline">
-            <div
-              v-for="(line, lineIndex) in log.message"
-              :key="lineIndex"
-              :class="{
-                'log-command': lineIndex === 0,
-                'log-result': lineIndex === 1 && log.message.length > 1,
-              }"
-            >
+            <div v-for="(line, lineIndex) in log.message" :key="lineIndex" :class="{
+              'log-command': lineIndex === 0,
+              'log-result': lineIndex === 1 && log.message.length > 1,
+            }">
               {{ line }}
             </div>
           </div>

@@ -3,29 +3,17 @@
     <main class="about-content">
       <!-- 毛玻璃卡片 -->
       <section class="glass-card app-info">
-        <img
-          class="app-icon"
-          :class="{ loaded: iconLoaded }"
-          src="/app-icon.png"
-          alt="App Icon"
-          @load="handleImageLoad"
-          @error="handleImageLoad"
-          @click="handleAppIconClick"
-        />
+        <img class="app-icon" :class="{ loaded: iconLoaded }" src="/app-icon.png" alt="App Icon" @load="handleImageLoad"
+          @error="handleImageLoad" @click="handleAppIconClick" />
         <div>
           <h2 class="app-title">{{ $t("app.name") }}</h2>
           <p class="app-version">{{ $t("about.version") }} {{ version }}</p>
           <p class="app-desc">{{ $t("about.tagline") }}</p>
         </div>
         <div v-if="showEasterEgg" class="easter-egg">
-          <img
-            src="/Written_by_Máo.png"
-            alt="Easter Egg"
-            class="easter-egg-image"
-            :class="{ loaded: easterEggImageLoaded }"
-            @load="easterEggImageLoaded = true"
-            @error="easterEggImageLoaded = true"
-          />
+          <img src="/Written_by_Máo.png" alt="Easter Egg" class="easter-egg-image"
+            :class="{ loaded: easterEggImageLoaded }" @load="easterEggImageLoaded = true"
+            @error="easterEggImageLoaded = true" />
         </div>
       </section>
 
@@ -51,7 +39,7 @@
             <span class="release-date">{{ formatDate(latestRelease.date) }}</span>
           </div>
           <div class="release-title">{{ latestRelease.title }}</div>
-          
+
           <!-- 更新内容列表 -->
           <div class="release-content">
             <template v-if="latestRelease.categories.newFeatures?.length">
@@ -61,7 +49,8 @@
               </div>
             </template>
             <template v-if="latestRelease.categories.improvements?.length">
-              <div v-for="(item, idx) in latestRelease.categories.improvements" :key="'imp-' + idx" class="release-item">
+              <div v-for="(item, idx) in latestRelease.categories.improvements" :key="'imp-' + idx"
+                class="release-item">
                 <span class="item-dot improve"></span>
                 <span>{{ item }}</span>
               </div>
@@ -73,7 +62,8 @@
               </div>
             </template>
             <template v-if="latestRelease.categories.performance?.length">
-              <div v-for="(item, idx) in latestRelease.categories.performance" :key="'perf-' + idx" class="release-item">
+              <div v-for="(item, idx) in latestRelease.categories.performance" :key="'perf-' + idx"
+                class="release-item">
                 <span class="item-dot perf"></span>
                 <span>{{ item }}</span>
               </div>
@@ -113,7 +103,9 @@
             <font-awesome-icon :icon="['fab', 'bilibili']" />
             <span class="social-label">Bilibili</span>
           </a>
-          <a class="social-btn tiktok" href="https://www.douyin.com/user/MS4wLjABAAAA8MEFE6VVh4_nWkTLPbueZYywgSyN19xhUFkmDF-nkhlnWytZWiBZ9YWM5s3RsprJ" target="_blank">
+          <a class="social-btn tiktok"
+            href="https://www.douyin.com/user/MS4wLjABAAAA8MEFE6VVh4_nWkTLPbueZYywgSyN19xhUFkmDF-nkhlnWytZWiBZ9YWM5s3RsprJ"
+            target="_blank">
             <font-awesome-icon :icon="['fab', 'tiktok']" />
             <span class="social-label">抖音</span>
           </a>
@@ -122,10 +114,8 @@
 
       <!-- 底部版权 -->
       <footer class="about-footer">
-        <p>© 2025 {{ $t("app.name") }}</p>
-        <small
-          >{{ $t("about.licenseName") }} | {{ $t("archive.disclaimer") }}</small
-        >
+        <p>© 2026 {{ $t("app.name") }}</p>
+        <small>{{ $t("about.licenseName") }} | {{ $t("archive.disclaimer") }}</small>
       </footer>
     </main>
   </div>
@@ -138,7 +128,7 @@ import { useReleaseNotes } from "@/composables";
 import storage from "@/services/storageService";
 
 const { t, locale } = useI18n({ useScope: "global" });
-const version = "3.0.0-Alpha-8"; // TODO: 从 package.json 动态获取
+const version = "3.0.0-Beta-1"; // TODO: 从 package.json 动态获取
 
 // 使用公告数据 composable
 const { latestRelease, formatShortDate } =
@@ -589,10 +579,21 @@ const handleAppIconClick = () => {
   flex-shrink: 0;
 }
 
-.item-dot.new { background: #4ecdc4; }
-.item-dot.improve { background: #f59e0b; }
-.item-dot.fix { background: #ef4444; }
-.item-dot.perf { background: #8b5cf6; }
+.item-dot.new {
+  background: #4ecdc4;
+}
+
+.item-dot.improve {
+  background: #f59e0b;
+}
+
+.item-dot.fix {
+  background: #ef4444;
+}
+
+.item-dot.perf {
+  background: #8b5cf6;
+}
 
 .no-release-notes {
   padding: 1rem;
@@ -607,10 +608,8 @@ const handleAppIconClick = () => {
 
 /* 深色模式适配 */
 [data-theme="dark"] .about-container {
-  background: linear-gradient(
-    to bottom,
-    var(--about-bg-gradient-start),
-    var(--about-bg-gradient-end)
-  );
+  background: linear-gradient(to bottom,
+      var(--about-bg-gradient-start),
+      var(--about-bg-gradient-end));
 }
 </style>

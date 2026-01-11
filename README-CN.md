@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.0.0--Alpha--8-blue.svg" alt="版本"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.0.0--Beta--1-blue.svg" alt="版本"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/许可证-MIT-green.svg" alt="许可证"></a>
   <img src="https://img.shields.io/badge/平台-Windows-0078D4.svg?logo=windows" alt="平台">
   <img src="https://img.shields.io/badge/框架-Tauri%202.0-orange.svg" alt="框架">
@@ -88,7 +88,7 @@
 
 ### 下载安装包
 
-1. 前往 [Releases 页面](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-8)
+1. 前往 [Releases 页面](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Beta-1)
 2. 下载 Windows 安装包（`.msi` 或 `.exe`）
 3. 运行安装程序
 
@@ -102,13 +102,13 @@ git clone https://github.com/Eververdants/ETBSaveManager.git
 cd ETBSaveManager
 
 # 安装依赖
-npm install
+pnpm install
 
 # 开发模式运行
-npm run tauri dev
+pnpm tauri dev
 
 # 构建生产版本
-npm run tauri build
+pnpm tauri build
 ```
 
 **环境要求：**
@@ -154,7 +154,9 @@ ETBSaveManager/
 
 ## 🚧 开发进度
 
-**当前版本：** `v3.0.0-Alpha-8`
+**当前版本：** `v3.0.0-Beta-1`
+
+> 🎉 **v3.0.0 正式版**将于 **2026年2月15日 12:00 (CST)** 发布
 
 | 功能         | 状态          |
 | ------------ | ------------- |
@@ -165,7 +167,7 @@ ETBSaveManager/
 | 存档数据编辑 | ✅ 已完成     |
 | 多种创建模式 | ✅ 已完成     |
 | 反馈系统     | ✅ 已完成     |
-| 插件系统     | 🧪 灰度测试中 |
+| 插件系统     | ✅ 已完成     |
 | 层级信息编辑 | 🔄 计划中     |
 
 ---

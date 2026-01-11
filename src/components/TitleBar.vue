@@ -27,7 +27,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
-import { Window } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const appName = ref("");
 const currentLanguage = ref("zh-CN");
@@ -47,7 +47,7 @@ const updateAppName = () => {
   }
 };
 
-const appWindow = new Window("main");
+const appWindow = getCurrentWindow();
 const sidebarCollapsed = ref(false);
 
 // Vue方法定义

@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.0.0--Alpha--8-blue.svg" alt="Version"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.0.0--Beta--1-blue.svg" alt="Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/Platform-Windows-0078D4.svg?logo=windows" alt="Platform">
   <img src="https://img.shields.io/badge/Framework-Tauri%202.0-orange.svg" alt="Framework">
@@ -88,7 +88,7 @@ Additional languages via plugins:
 
 ### Download Release
 
-1. Go to [Releases](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Alpha-7.3)
+1. Go to [Releases](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Beta-1)
 2. Download the Windows installer (`.msi` or `.exe`)
 3. Run the installer
 
@@ -102,13 +102,13 @@ git clone https://github.com/Eververdants/ETBSaveManager.git
 cd ETBSaveManager
 
 # Install dependencies
-npm install
+pnpm install
 
 # Development mode
-npm run tauri dev
+pnpm tauri dev
 
 # Build for production
-npm run tauri build
+pnpm tauri build
 ```
 
 **Prerequisites:**
@@ -154,7 +154,9 @@ ETBSaveManager/
 
 ## 🚧 Development Status
 
-**Current Version:** `v3.0.0-Alpha-7.3`
+**Current Version:** `v3.0.0-Beta-1`
+
+> 🎉 **v3.0.0 Stable Release** is scheduled for **February 15, 2026 at 12:00 CST**
 
 | Feature              | Status          |
 | -------------------- | --------------- |
@@ -165,7 +167,7 @@ ETBSaveManager/
 | Save Data Editor     | ✅ Complete     |
 | Creation Modes       | ✅ Complete     |
 | Feedback System      | ✅ Complete     |
-| Plugin System        | 🧪 Beta Testing |
+| Plugin System        | ✅ Complete     |
 | Level Info Editor    | 🔄 Planned      |
 
 ---

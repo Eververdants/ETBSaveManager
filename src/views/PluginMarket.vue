@@ -2,427 +2,336 @@
   <div class="plugin-market">
     <!-- 插件市场内容 -->
     <div class="plugin-market-content">
-    <!-- 搜索栏 -->
-    <div class="search-container">
-      <div class="search-bar">
-        <font-awesome-icon :icon="['fas', 'search']" class="search-icon" />
-        <input
-          v-model="searchQuery"
-          type="text"
-          :placeholder="t('plugin.searchPlaceholder')"
-          class="search-input"
-        />
-      </div>
-      <button class="local-install-button" @click="openLocalInstall">
-        <font-awesome-icon :icon="['fas', 'plus']" />
-        {{ t("plugin.installLocal") }}
-      </button>
-    </div>
-
-    <!-- 分类标签 -->
-    <div class="category-tabs">
-      <button
-        v-for="category in categories"
-        :key="category.id"
-        class="category-tab"
-        :class="{ active: selectedCategory === category.id }"
-        @click="selectCategory(category.id)"
-      >
-        {{ category.name }}
-        <span
-          v-if="category.id === 'installed' && installedPluginsList.length > 0"
-          class="tab-badge"
-        >
-          {{ installedPluginsList.length }}
-        </span>
-      </button>
-    </div>
-
-    <!-- 已安装插件管理 -->
-    <div
-      v-if="selectedCategory === 'installed'"
-      class="plugins-grid"
-      ref="pluginsGrid"
-    >
-      <!-- 空状态 -->
-      <div v-if="installedPluginsList.length === 0" class="empty-state">
-        <font-awesome-icon :icon="['fas', 'puzzle-piece']" />
-        <p>{{ $t('plugin.noInstalledPlugins') }}</p>
-        <p class="empty-hint">{{ $t('plugin.installFromStore') }}</p>
-      </div>
-
-      <!-- 已安装插件卡片 -->
-      <div
-        v-else
-        v-for="plugin in installedPluginsList"
-        :key="plugin.id"
-        class="installed-plugin-card"
-        @click="openInstalledPluginDetail(plugin)"
-      >
-        <div class="installed-card-header">
-          <div
-            class="installed-plugin-icon"
-            :class="getPluginTypeClass(plugin.type)"
-          >
-            <font-awesome-icon :icon="['fas', getPluginIcon(plugin.type)]" />
-          </div>
-          <div class="installed-plugin-info">
-            <h3 class="installed-plugin-name">{{ plugin.name }}</h3>
-            <div class="installed-plugin-meta">
-              <span
-                class="plugin-type-badge"
-                :class="getPluginTypeClass(plugin.type)"
-              >
-                {{ getPluginTypeLabel(plugin.type) }}
-              </span>
-              <span class="plugin-version">v{{ plugin.version }}</span>
-              <span v-if="plugin.locale" class="plugin-locale">{{
-                plugin.locale
-              }}</span>
-            </div>
-          </div>
+      <!-- 搜索栏 -->
+      <div class="search-container">
+        <div class="search-bar">
+          <font-awesome-icon :icon="['fas', 'search']" class="search-icon" />
+          <input v-model="searchQuery" type="text" :placeholder="t('plugin.searchPlaceholder')" class="search-input" />
         </div>
-        <div class="installed-card-body">
-          <p class="installed-plugin-desc">
-            {{ plugin.description || plugin.localeName || $t('plugin.noDescription') }}
-          </p>
-          <div class="installed-plugin-details">
-            <span v-if="plugin.author" class="detail-item">
-              <font-awesome-icon :icon="['fas', 'user']" />
-              {{ plugin.author }}
-            </span>
-            <span v-if="plugin.localeName" class="detail-item">
-              <font-awesome-icon :icon="['fas', 'globe']" />
-              {{ plugin.localeName }}
-            </span>
-          </div>
-        </div>
-        <div class="installed-card-footer">
-          <span
-            class="plugin-status"
-            :class="{
-              active: plugin.status === 'active',
-              inactive: plugin.status !== 'active',
-            }"
-          >
-            <font-awesome-icon
-              :icon="[
-                'fas',
-                plugin.status === 'active' ? 'check-circle' : 'pause-circle',
-              ]"
-            />
-            {{ plugin.status === "active" ? $t('plugin.enabled') : $t('plugin.disabled') }}
-          </span>
-          <div class="plugin-actions-group">
-            <button
-              class="toggle-btn"
-              :class="{ enabled: plugin.status === 'active' }"
-              @click.stop="handleTogglePlugin(plugin)"
-              :title="plugin.status === 'active' ? $t('plugin.disablePlugin') : $t('plugin.enablePlugin')"
-            >
-              <font-awesome-icon
-                :icon="[
-                  'fas',
-                  plugin.status === 'active' ? 'toggle-on' : 'toggle-off',
-                ]"
-              />
-            </button>
-            <button
-              class="uninstall-btn"
-              @click.stop="handleUninstallPlugin(plugin)"
-              :title="$t('plugin.uninstallPlugin')"
-            >
-              <font-awesome-icon :icon="['fas', 'trash']" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 插件网格（商店） -->
-    <div v-else class="plugins-grid" ref="pluginsGrid">
-      <!-- 加载状态 -->
-      <div v-if="loading" class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>{{ $t("plugin.loading") }}</p>
-      </div>
-
-      <!-- 错误状态 -->
-      <div v-else-if="error" class="error-state">
-        <font-awesome-icon :icon="['fas', 'exclamation-triangle']" />
-        <p>{{ error }}</p>
-        <button class="retry-button" @click="fetchPlugins">
-          <font-awesome-icon :icon="['fas', 'redo']" />
-          {{ $t("plugin.retry") }}
+        <button class="local-install-button" @click="openLocalInstall">
+          <font-awesome-icon :icon="['fas', 'plus']" />
+          {{ t("plugin.installLocal") }}
         </button>
       </div>
 
-      <!-- 空状态 -->
-      <div v-else-if="filteredPlugins.length === 0" class="empty-state">
-        <font-awesome-icon :icon="['fas', 'search']" />
-        <p>{{ $t("plugin.noResults") }}</p>
+      <!-- 分类标签 -->
+      <div class="category-tabs">
+        <button v-for="category in categories" :key="category.id" class="category-tab"
+          :class="{ active: selectedCategory === category.id }" @click="selectCategory(category.id)">
+          {{ category.name }}
+          <span v-if="category.id === 'installed' && installedPluginsList.length > 0" class="tab-badge">
+            {{ installedPluginsList.length }}
+          </span>
+        </button>
       </div>
 
-      <!-- 插件卡片 -->
-      <div
-        v-else
-        v-for="plugin in filteredPlugins"
-        :key="plugin.id"
-        class="installed-plugin-card store-plugin-card"
-        @click="openPluginDetail(plugin)"
-      >
-        <div class="installed-card-header">
-          <div
-            class="installed-plugin-icon"
-            :class="getPluginTypeClass(plugin.type)"
-          >
-            <font-awesome-icon :icon="['fas', getPluginIcon(plugin.type)]" />
+      <!-- 已安装插件管理 -->
+      <div v-if="selectedCategory === 'installed'" class="plugins-grid" ref="pluginsGrid">
+        <!-- 空状态 -->
+        <div v-if="installedPluginsList.length === 0" class="empty-state">
+          <font-awesome-icon :icon="['fas', 'puzzle-piece']" />
+          <p>{{ $t('plugin.noInstalledPlugins') }}</p>
+          <p class="empty-hint">{{ $t('plugin.installFromStore') }}</p>
+        </div>
+
+        <!-- 已安装插件卡片 -->
+        <div v-else v-for="plugin in installedPluginsList" :key="plugin.id" class="installed-plugin-card"
+          @click="openInstalledPluginDetail(plugin)">
+          <div class="installed-card-header">
+            <div class="installed-plugin-icon" :class="getPluginTypeClass(plugin.type)">
+              <font-awesome-icon :icon="['fas', getPluginIcon(plugin.type)]" />
+            </div>
+            <div class="installed-plugin-info">
+              <h3 class="installed-plugin-name">{{ plugin.name }}</h3>
+              <div class="installed-plugin-meta">
+                <span class="plugin-type-badge" :class="getPluginTypeClass(plugin.type)">
+                  {{ getPluginTypeLabel(plugin.type) }}
+                </span>
+                <span class="plugin-version">v{{ plugin.version }}</span>
+                <span v-if="plugin.locale" class="plugin-locale">{{
+                  plugin.locale
+                }}</span>
+              </div>
+            </div>
           </div>
-          <div class="installed-plugin-info">
-            <h3 class="installed-plugin-name">{{ plugin.name }}</h3>
-            <div class="installed-plugin-meta">
-              <span
-                class="plugin-type-badge"
-                :class="getPluginTypeClass(plugin.type)"
-              >
-                {{ getPluginTypeLabel(plugin.type) }}
+          <div class="installed-card-body">
+            <p class="installed-plugin-desc">
+              {{ plugin.description || plugin.localeName || $t('plugin.noDescription') }}
+            </p>
+            <div class="installed-plugin-details">
+              <span v-if="plugin.author" class="detail-item">
+                <font-awesome-icon :icon="['fas', 'user']" />
+                {{ plugin.author }}
               </span>
-              <span class="plugin-version">v{{ plugin.version }}</span>
-              <span v-if="plugin.locale" class="plugin-locale">{{
-                plugin.locale
-              }}</span>
+              <span v-if="plugin.localeName" class="detail-item">
+                <font-awesome-icon :icon="['fas', 'globe']" />
+                {{ plugin.localeName }}
+              </span>
+            </div>
+          </div>
+          <div class="installed-card-footer">
+            <span class="plugin-status" :class="{
+              active: plugin.status === 'active',
+              inactive: plugin.status !== 'active',
+            }">
+              <font-awesome-icon :icon="[
+                'fas',
+                plugin.status === 'active' ? 'check-circle' : 'pause-circle',
+              ]" />
+              {{ plugin.status === "active" ? $t('plugin.enabled') : $t('plugin.disabled') }}
+            </span>
+            <div class="plugin-actions-group">
+              <button class="toggle-btn" :class="{ enabled: plugin.status === 'active' }"
+                @click.stop="handleTogglePlugin(plugin)"
+                :title="plugin.status === 'active' ? $t('plugin.disablePlugin') : $t('plugin.enablePlugin')">
+                <font-awesome-icon :icon="[
+                  'fas',
+                  plugin.status === 'active' ? 'toggle-on' : 'toggle-off',
+                ]" />
+              </button>
+              <button class="uninstall-btn" @click.stop="handleUninstallPlugin(plugin)"
+                :title="$t('plugin.uninstallPlugin')">
+                <font-awesome-icon :icon="['fas', 'trash']" />
+              </button>
             </div>
           </div>
         </div>
-        <div class="installed-card-body">
-          <p class="installed-plugin-desc">
-            {{ plugin.description || t('plugin.noDescription') }}
-          </p>
-          <div class="installed-plugin-details">
-            <span v-if="plugin.author" class="detail-item">
-              <font-awesome-icon :icon="['fas', 'user']" />
-              {{ plugin.author }}
+      </div>
+
+      <!-- 插件网格（商店） -->
+      <div v-else class="plugins-grid" ref="pluginsGrid">
+        <!-- 加载状态 -->
+        <div v-if="loading" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>{{ $t("plugin.loading") }}</p>
+        </div>
+
+        <!-- 错误状态 -->
+        <div v-else-if="error" class="error-state">
+          <font-awesome-icon :icon="['fas', 'exclamation-triangle']" />
+          <p>{{ error }}</p>
+          <button class="retry-button" @click="fetchPlugins">
+            <font-awesome-icon :icon="['fas', 'redo']" />
+            {{ $t("plugin.retry") }}
+          </button>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else-if="filteredPlugins.length === 0" class="empty-state">
+          <font-awesome-icon :icon="['fas', 'search']" />
+          <p>{{ $t("plugin.noResults") }}</p>
+        </div>
+
+        <!-- 插件卡片 -->
+        <div v-else v-for="plugin in filteredPlugins" :key="plugin.id" class="installed-plugin-card store-plugin-card"
+          @click="openPluginDetail(plugin)">
+          <div class="installed-card-header">
+            <div class="installed-plugin-icon" :class="getPluginTypeClass(plugin.type)">
+              <font-awesome-icon :icon="['fas', getPluginIcon(plugin.type)]" />
+            </div>
+            <div class="installed-plugin-info">
+              <h3 class="installed-plugin-name">{{ plugin.name }}</h3>
+              <div class="installed-plugin-meta">
+                <span class="plugin-type-badge" :class="getPluginTypeClass(plugin.type)">
+                  {{ getPluginTypeLabel(plugin.type) }}
+                </span>
+                <span class="plugin-version">v{{ plugin.version }}</span>
+                <span v-if="plugin.locale" class="plugin-locale">{{
+                  plugin.locale
+                }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="installed-card-body">
+            <p class="installed-plugin-desc">
+              {{ plugin.description || t('plugin.noDescription') }}
+            </p>
+            <div class="installed-plugin-details">
+              <span v-if="plugin.author" class="detail-item">
+                <font-awesome-icon :icon="['fas', 'user']" />
+                {{ plugin.author }}
+              </span>
+              <span v-if="plugin.localeName" class="detail-item">
+                <font-awesome-icon :icon="['fas', 'globe']" />
+                {{ plugin.localeName }}
+              </span>
+            </div>
+          </div>
+          <div class="installed-card-footer">
+            <span v-if="plugin.installed" class="plugin-status active">
+              <font-awesome-icon :icon="['fas', 'check-circle']" />
+              {{ $t('plugin.installed') }}
             </span>
-            <span v-if="plugin.localeName" class="detail-item">
-              <font-awesome-icon :icon="['fas', 'globe']" />
-              {{ plugin.localeName }}
+            <span v-else class="plugin-status inactive">
+              <font-awesome-icon :icon="['fas', 'circle']" />
+              {{ $t('plugin.notInstalled') }}
             </span>
+            <button v-if="plugin.installed" class="uninstall-btn" @click.stop="togglePlugin(plugin)"
+              :title="$t('plugin.uninstallPlugin')">
+              <font-awesome-icon :icon="['fas', 'trash']" />
+            </button>
+            <button v-else class="install-btn" @click.stop="installPlugin(plugin)" :title="$t('plugin.installPlugin')">
+              <font-awesome-icon :icon="['fas', 'download']" />
+              {{ $t('plugin.install') }}
+            </button>
           </div>
         </div>
-        <div class="installed-card-footer">
-          <span v-if="plugin.installed" class="plugin-status active">
-            <font-awesome-icon :icon="['fas', 'check-circle']" />
-            {{ $t('plugin.installed') }}
-          </span>
-          <span v-else class="plugin-status inactive">
-            <font-awesome-icon :icon="['fas', 'circle']" />
-            {{ $t('plugin.notInstalled') }}
-          </span>
-          <button
-            v-if="plugin.installed"
-            class="uninstall-btn"
-            @click.stop="togglePlugin(plugin)"
-            :title="$t('plugin.uninstallPlugin')"
-          >
-            <font-awesome-icon :icon="['fas', 'trash']" />
-          </button>
-          <button
-            v-else
-            class="install-btn"
-            @click.stop="installPlugin(plugin)"
-            :title="$t('plugin.installPlugin')"
-          >
-            <font-awesome-icon :icon="['fas', 'download']" />
-            {{ $t('plugin.install') }}
-          </button>
-        </div>
       </div>
-    </div>
 
-    <!-- 插件详情模态框 - 重新设计 -->
-    <transition name="modal-fade">
-      <div
-        v-if="selectedPlugin"
-        class="plugin-detail-overlay"
-        @click="closePluginDetail"
-      >
-        <div class="plugin-detail-modal" @click.stop>
-          <!-- 关闭按钮 -->
-          <button class="modal-close-btn" @click="closePluginDetail">
-            <font-awesome-icon :icon="['fas', 'times']" />
-          </button>
+      <!-- 插件详情模态框 - 重新设计 -->
+      <transition name="modal-fade">
+        <div v-if="selectedPlugin" class="plugin-detail-overlay" @click="closePluginDetail">
+          <div class="plugin-detail-modal" @click.stop>
+            <!-- 关闭按钮 -->
+            <button class="modal-close-btn" @click="closePluginDetail">
+              <font-awesome-icon :icon="['fas', 'times']" />
+            </button>
 
-          <!-- 头部区域 -->
-          <div class="modal-hero">
-            <div class="hero-background" :class="getPluginTypeClass(selectedPlugin.type)"></div>
-            <div class="hero-content">
-              <div class="plugin-icon-wrapper">
-                <div class="plugin-icon-glow" :class="getPluginTypeClass(selectedPlugin.type)"></div>
-                <div class="plugin-icon-main" :class="getPluginTypeClass(selectedPlugin.type)">
-                  <font-awesome-icon :icon="['fas', getPluginIcon(selectedPlugin.type)]" />
-                </div>
-              </div>
-              <div class="plugin-title-section">
-                <h1 class="plugin-title">{{ selectedPlugin.name }}</h1>
-                <div class="plugin-meta-tags">
-                  <span class="meta-tag type-tag" :class="getPluginTypeClass(selectedPlugin.type)">
+            <!-- 头部区域 -->
+            <div class="modal-hero">
+              <div class="hero-background" :class="getPluginTypeClass(selectedPlugin.type)"></div>
+              <div class="hero-content">
+                <div class="plugin-icon-wrapper">
+                  <div class="plugin-icon-glow" :class="getPluginTypeClass(selectedPlugin.type)"></div>
+                  <div class="plugin-icon-main" :class="getPluginTypeClass(selectedPlugin.type)">
                     <font-awesome-icon :icon="['fas', getPluginIcon(selectedPlugin.type)]" />
-                    {{ getPluginTypeLabel(selectedPlugin.type) }}
-                  </span>
-                  <span class="meta-tag version-tag">
-                    <font-awesome-icon :icon="['fas', 'code-branch']" />
-                    v{{ selectedPlugin.version }}
-                  </span>
-                  <span v-if="selectedPlugin.status" class="meta-tag status-tag" :class="{ active: selectedPlugin.status === 'active' }">
-                    <font-awesome-icon :icon="['fas', selectedPlugin.status === 'active' ? 'check-circle' : 'pause-circle']" />
-                    {{ selectedPlugin.status === 'active' ? $t('plugin.enabled') : $t('plugin.disabled') }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 内容区域 -->
-          <div class="modal-content-area">
-            <!-- 描述部分 -->
-            <div class="content-section">
-              <div class="section-header">
-                <font-awesome-icon :icon="['fas', 'align-left']" class="section-icon" />
-                <h3>{{ $t("plugin.description") }}</h3>
-              </div>
-              <p class="plugin-description">
-                {{ selectedPlugin.description || $t('plugin.noDescription') }}
-              </p>
-            </div>
-
-            <!-- 详细信息 -->
-            <div class="content-section">
-              <div class="section-header">
-                <font-awesome-icon :icon="['fas', 'info-circle']" class="section-icon" />
-                <h3>{{ $t('plugin.detailsTitle') }}</h3>
-              </div>
-              <div class="info-grid">
-                <div class="info-card">
-                  <div class="info-icon">
-                    <font-awesome-icon :icon="['fas', 'user']" />
-                  </div>
-                  <div class="info-text">
-                    <span class="info-label">{{ $t("plugin.author") }}</span>
-                    <span class="info-value">{{ selectedPlugin.author || "Unknown" }}</span>
                   </div>
                 </div>
-                <div v-if="selectedPlugin.license" class="info-card">
-                  <div class="info-icon">
-                    <font-awesome-icon :icon="['fas', 'certificate']" />
-                  </div>
-                  <div class="info-text">
-                    <span class="info-label">{{ $t("plugin.license") }}</span>
-                    <span class="info-value">{{ selectedPlugin.license }}</span>
-                  </div>
-                </div>
-                <div v-if="selectedPlugin.locale" class="info-card">
-                  <div class="info-icon">
-                    <font-awesome-icon :icon="['fas', 'language']" />
-                  </div>
-                  <div class="info-text">
-                    <span class="info-label">{{ $t('plugin.languageCode') }}</span>
-                    <span class="info-value">{{ selectedPlugin.locale }}</span>
-                  </div>
-                </div>
-                <div v-if="selectedPlugin.localeName" class="info-card">
-                  <div class="info-icon">
-                    <font-awesome-icon :icon="['fas', 'globe']" />
-                  </div>
-                  <div class="info-text">
-                    <span class="info-label">{{ $t('plugin.languageName') }}</span>
-                    <span class="info-value">{{ selectedPlugin.localeName }}</span>
-                  </div>
-                </div>
-                <div v-if="selectedPlugin.themeId" class="info-card">
-                  <div class="info-icon">
-                    <font-awesome-icon :icon="['fas', 'palette']" />
-                  </div>
-                  <div class="info-text">
-                    <span class="info-label">{{ $t('plugin.themeId') }}</span>
-                    <span class="info-value">{{ selectedPlugin.themeId }}</span>
+                <div class="plugin-title-section">
+                  <h1 class="plugin-title">{{ selectedPlugin.name }}</h1>
+                  <div class="plugin-meta-tags">
+                    <span class="meta-tag type-tag" :class="getPluginTypeClass(selectedPlugin.type)">
+                      <font-awesome-icon :icon="['fas', getPluginIcon(selectedPlugin.type)]" />
+                      {{ getPluginTypeLabel(selectedPlugin.type) }}
+                    </span>
+                    <span class="meta-tag version-tag">
+                      <font-awesome-icon :icon="['fas', 'code-branch']" />
+                      v{{ selectedPlugin.version }}
+                    </span>
+                    <span v-if="selectedPlugin.status" class="meta-tag status-tag"
+                      :class="{ active: selectedPlugin.status === 'active' }">
+                      <font-awesome-icon
+                        :icon="['fas', selectedPlugin.status === 'active' ? 'check-circle' : 'pause-circle']" />
+                      {{ selectedPlugin.status === 'active' ? $t('plugin.enabled') : $t('plugin.disabled') }}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- 底部操作栏 -->
-          <div class="modal-actions">
-            <!-- 已安装插件的操作 -->
-            <template v-if="selectedPlugin.status !== undefined">
-              <button
-                class="action-btn secondary-btn"
-                :class="{ active: selectedPlugin.status === 'active' }"
-                @click="handleTogglePluginInModal"
-              >
-                <font-awesome-icon :icon="['fas', selectedPlugin.status === 'active' ? 'pause' : 'play']" />
-                <span>{{ selectedPlugin.status === "active" ? $t('plugin.disablePlugin') : $t('plugin.enablePlugin') }}</span>
-              </button>
-              <button class="action-btn danger-btn" @click="handleUninstallPluginInModal">
-                <font-awesome-icon :icon="['fas', 'trash-alt']" />
-                <span>{{ $t('plugin.uninstallPlugin') }}</span>
-              </button>
-            </template>
-            <!-- 商店插件的操作 -->
-            <template v-else>
-              <button
-                v-if="selectedPlugin.installed"
-                class="action-btn success-btn full-width"
-                @click="togglePlugin(selectedPlugin)"
-              >
-                <font-awesome-icon :icon="['fas', 'check-circle']" />
-                <span>{{ $t("plugin.installed") }}</span>
-              </button>
-              <button
-                v-else
-                class="action-btn primary-btn full-width"
-                @click="installPlugin(selectedPlugin)"
-              >
-                <font-awesome-icon :icon="['fas', 'download']" />
-                <span>{{ $t("plugin.install") }}</span>
-              </button>
-            </template>
+            <!-- 内容区域 -->
+            <div class="modal-content-area">
+              <!-- 描述部分 -->
+              <div class="content-section">
+                <div class="section-header">
+                  <font-awesome-icon :icon="['fas', 'align-left']" class="section-icon" />
+                  <h3>{{ $t("plugin.description") }}</h3>
+                </div>
+                <p class="plugin-description">
+                  {{ selectedPlugin.description || $t('plugin.noDescription') }}
+                </p>
+              </div>
+
+              <!-- 详细信息 -->
+              <div class="content-section">
+                <div class="section-header">
+                  <font-awesome-icon :icon="['fas', 'info-circle']" class="section-icon" />
+                  <h3>{{ $t('plugin.detailsTitle') }}</h3>
+                </div>
+                <div class="info-grid">
+                  <div class="info-card">
+                    <div class="info-icon">
+                      <font-awesome-icon :icon="['fas', 'user']" />
+                    </div>
+                    <div class="info-text">
+                      <span class="info-label">{{ $t("plugin.author") }}</span>
+                      <span class="info-value">{{ selectedPlugin.author || "Unknown" }}</span>
+                    </div>
+                  </div>
+                  <div v-if="selectedPlugin.license" class="info-card">
+                    <div class="info-icon">
+                      <font-awesome-icon :icon="['fas', 'certificate']" />
+                    </div>
+                    <div class="info-text">
+                      <span class="info-label">{{ $t("plugin.license") }}</span>
+                      <span class="info-value">{{ selectedPlugin.license }}</span>
+                    </div>
+                  </div>
+                  <div v-if="selectedPlugin.locale" class="info-card">
+                    <div class="info-icon">
+                      <font-awesome-icon :icon="['fas', 'language']" />
+                    </div>
+                    <div class="info-text">
+                      <span class="info-label">{{ $t('plugin.languageCode') }}</span>
+                      <span class="info-value">{{ selectedPlugin.locale }}</span>
+                    </div>
+                  </div>
+                  <div v-if="selectedPlugin.localeName" class="info-card">
+                    <div class="info-icon">
+                      <font-awesome-icon :icon="['fas', 'globe']" />
+                    </div>
+                    <div class="info-text">
+                      <span class="info-label">{{ $t('plugin.languageName') }}</span>
+                      <span class="info-value">{{ selectedPlugin.localeName }}</span>
+                    </div>
+                  </div>
+                  <div v-if="selectedPlugin.themeId" class="info-card">
+                    <div class="info-icon">
+                      <font-awesome-icon :icon="['fas', 'palette']" />
+                    </div>
+                    <div class="info-text">
+                      <span class="info-label">{{ $t('plugin.themeId') }}</span>
+                      <span class="info-value">{{ selectedPlugin.themeId }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 底部操作栏 -->
+            <div class="modal-actions">
+              <!-- 已安装插件的操作 -->
+              <template v-if="selectedPlugin.status !== undefined">
+                <button class="action-btn secondary-btn" :class="{ active: selectedPlugin.status === 'active' }"
+                  @click="handleTogglePluginInModal">
+                  <font-awesome-icon :icon="['fas', selectedPlugin.status === 'active' ? 'pause' : 'play']" />
+                  <span>{{ selectedPlugin.status === "active" ? $t('plugin.disablePlugin') : $t('plugin.enablePlugin')
+                  }}</span>
+                </button>
+                <button class="action-btn danger-btn" @click="handleUninstallPluginInModal">
+                  <font-awesome-icon :icon="['fas', 'trash-alt']" />
+                  <span>{{ $t('plugin.uninstallPlugin') }}</span>
+                </button>
+              </template>
+              <!-- 商店插件的操作 -->
+              <template v-else>
+                <button v-if="selectedPlugin.installed" class="action-btn success-btn full-width"
+                  @click="togglePlugin(selectedPlugin)">
+                  <font-awesome-icon :icon="['fas', 'check-circle']" />
+                  <span>{{ $t("plugin.installed") }}</span>
+                </button>
+                <button v-else class="action-btn primary-btn full-width" @click="installPlugin(selectedPlugin)">
+                  <font-awesome-icon :icon="['fas', 'download']" />
+                  <span>{{ $t("plugin.install") }}</span>
+                </button>
+              </template>
+            </div>
           </div>
         </div>
-      </div>
-    </transition>
+      </transition>
 
-    <!-- 本地插件安装模态框 - 重新设计 -->
-    <transition name="modal-fade">
-      <div
-        v-if="showLocalInstall"
-        class="plugin-detail-overlay"
-        @click="closeLocalInstall"
-      >
-        <div class="local-install-modal" @click.stop>
-          <!-- 关闭按钮 -->
-          <button class="modal-close-btn" @click="closeLocalInstall">
-            <font-awesome-icon :icon="['fas', 'times']" />
-          </button>
+      <!-- 本地插件安装模态框 -->
+      <transition name="modal-fade">
+        <div v-if="showLocalInstall" class="plugin-detail-overlay" @click="closeLocalInstall">
+          <div class="local-install-modal" @click.stop>
+            <!-- 关闭按钮 -->
+            <button class="modal-close-btn" @click="closeLocalInstall">
+              <font-awesome-icon :icon="['fas', 'times']" />
+            </button>
 
-          <!-- 头部 -->
-          <div class="local-modal-header">
-            <div class="header-icon">
-              <font-awesome-icon :icon="['fas', 'folder-open']" />
-            </div>
-            <h2>{{ t("plugin.installLocal") }}</h2>
-            <p class="header-subtitle">{{ t('plugin.installFromLocal') }}</p>
-          </div>
-
-          <!-- 内容区域 -->
-          <div class="local-modal-body">
-            <div
-              class="upload-zone"
-              :class="{ dragging: isDragging, loading: localInstallLoading }"
-              @dragover="handleDragOver"
-              @dragleave="handleDragLeave"
-              @drop="handleDrop"
-            >
+            <!-- 选择文件夹区域 -->
+            <div class="upload-zone" :class="{ dragging: isDragging, loading: localInstallLoading }"
+              @dragover="handleDragOver" @dragleave="handleDragLeave" @drop="handleDrop">
               <!-- 加载状态 -->
               <div v-if="localInstallLoading" class="upload-state">
                 <div class="state-spinner"></div>
@@ -475,32 +384,9 @@
                 </div>
               </template>
             </div>
-
-            <!-- 说明卡片 -->
-            <div class="info-cards">
-              <div class="info-card-item">
-                <div class="card-icon">
-                  <font-awesome-icon :icon="['fas', 'folder-tree']" />
-                </div>
-                <div class="card-content">
-                  <h4>{{ $t('plugin.pluginFolderStructure') }}</h4>
-                  <p>{{ $t('plugin.pluginJsonRequired') }}</p>
-                </div>
-              </div>
-              <div class="info-card-item">
-                <div class="card-icon">
-                  <font-awesome-icon :icon="['fas', 'file-code']" />
-                </div>
-                <div class="card-content">
-                  <h4>plugin.json</h4>
-                  <p>{{ $t('plugin.pluginJsonMetadata') }}</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
-      </div>
-    </transition>
+      </transition>
     </div>
   </div>
 </template>
@@ -563,7 +449,9 @@ const refreshInstalledPlugins = () => {
     plugins.length,
     plugins.map((p) => p.id)
   );
-  installedPluginsList.value = [...plugins];
+  installedPluginsList.value = [...plugins].sort((a, b) => {
+    return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+  });
 };
 
 // 获取插件类型图标
@@ -676,6 +564,11 @@ const filteredPlugins = computed(() => {
       (plugin) => plugin.category === selectedCategory.value
     );
   }
+
+  // 按首字母排序
+  filtered = filtered.sort((a, b) => {
+    return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+  });
 
   return filtered;
 });
@@ -794,10 +687,10 @@ const installPlugin = async (plugin) => {
 
       console.log("✅ 主题插件安装成功:", plugin.id);
       plugin.installed = true;
-      
+
       // 通知主题插件变化
       window.dispatchEvent(new CustomEvent("theme-plugin-changed"));
-      
+
       refreshInstalledPlugins();
     } else {
       console.warn(
@@ -1164,7 +1057,7 @@ onMounted(async () => {
   background: var(--bg-primary);
 }
 
-.search-input:focus + .search-icon {
+.search-input:focus+.search-icon {
   color: var(--accent-color);
 }
 
@@ -1341,6 +1234,7 @@ onMounted(async () => {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -1960,9 +1854,9 @@ onMounted(async () => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 32px 96px rgba(0, 0, 0, 0.5), 
-              0 8px 32px rgba(0, 0, 0, 0.3),
-              0 0 1px rgba(255, 255, 255, 0.1) inset;
+  box-shadow: 0 32px 96px rgba(0, 0, 0, 0.5),
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 1px rgba(255, 255, 255, 0.1) inset;
   animation: modalSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   margin: auto;
@@ -2003,7 +1897,7 @@ onMounted(async () => {
   font-size: 36px;
   flex-shrink: 0;
   box-shadow: 0 12px 32px rgba(0, 122, 255, 0.35),
-              0 4px 12px rgba(0, 122, 255, 0.2);
+    0 4px 12px rgba(0, 122, 255, 0.2);
   transition: transform 0.3s ease;
 }
 
@@ -2219,33 +2113,27 @@ onMounted(async () => {
   padding: 48px 32px;
   border: 2px dashed var(--border-color);
   border-radius: 20px;
-  background: linear-gradient(
-    135deg,
-    var(--bg-secondary) 0%,
-    var(--bg-tertiary) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--bg-secondary) 0%,
+      var(--bg-tertiary) 100%);
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .upload-zone-modern:hover {
   border-color: var(--accent-color);
-  background: linear-gradient(
-    135deg,
-    var(--bg-tertiary) 0%,
-    var(--bg-secondary) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--bg-tertiary) 0%,
+      var(--bg-secondary) 100%);
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .upload-zone-modern.dragging {
   border-color: var(--accent-color);
-  background: linear-gradient(
-    135deg,
-    rgba(0, 122, 255, 0.1) 0%,
-    rgba(0, 122, 255, 0.05) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(0, 122, 255, 0.1) 0%,
+      rgba(0, 122, 255, 0.05) 100%);
   transform: scale(1.02);
   box-shadow: 0 8px 32px rgba(0, 122, 255, 0.2);
 }
@@ -2576,7 +2464,7 @@ onMounted(async () => {
   background: var(--bg-secondary);
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 
+  box-shadow:
     0 32px 64px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.05);
   margin: auto;
@@ -3071,7 +2959,7 @@ onMounted(async () => {
   background: var(--bg-secondary);
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 
+  box-shadow:
     0 32px 64px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.05);
   margin: auto;
@@ -3387,6 +3275,7 @@ onMounted(async () => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -3467,9 +3356,12 @@ onMounted(async () => {
 
 /* 图标旋转动画 */
 @keyframes iconFloat {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -3482,9 +3374,12 @@ onMounted(async () => {
 
 /* 加载旋转器脉冲效果 */
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2);
   }
+
   50% {
     box-shadow: 0 4px 24px rgba(0, 122, 255, 0.4);
   }
@@ -3496,9 +3391,12 @@ onMounted(async () => {
 
 /* 徽章闪烁效果 */
 @keyframes badgePulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
   }
@@ -3581,6 +3479,7 @@ onMounted(async () => {
 
 /* 响应式动画优化 */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

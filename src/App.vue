@@ -53,23 +53,23 @@ onMounted(() => {
 // 主题系统初始化（延迟）
 async function initThemeSystem() {
   const storage = (await import("./services/storageService")).default;
-  
+
   // 等待存储初始化完成
   if (!storage.isInitialized()) {
     await storage.initStorage();
   }
-  
+
   const isSeasonalTheme = (id) => ["new-year", "spring-festival-dark", "spring-festival-light"].includes(id);
-  
+
   const isSeasonalAvailable = (id) => {
     const mode = storage.getItem("seasonalThemeMode") || "auto";
     if (mode === "force") return true;
     if (mode === "hide") return false;
-    
+
     const now = new Date();
     const month = now.getMonth() + 1;
     const day = now.getDate();
-    
+
     if (id === "new-year") {
       return (month === 12 && day === 31) || (month === 1 && day <= 3);
     }
@@ -81,10 +81,10 @@ async function initThemeSystem() {
 
   // 从存储读取主题，如果没有则使用初始主题
   let theme = storage.getItem("theme") || window.__initialTheme || "light";
-  
+
   // 如果存储中的主题与初始主题不同，需要更新
   const initialTheme = window.__initialTheme;
-  
+
   if (isSeasonalTheme(theme) && !isSeasonalAvailable(theme)) {
     theme = storage.getItem("themeBeforeNewYear") || "light";
     storage.setItem("theme", theme);
@@ -96,7 +96,7 @@ async function initThemeSystem() {
   } else {
     document.documentElement.setAttribute("data-theme", theme);
   }
-  
+
   // 如果主题与初始不同，需要更新 body 背景
   if (theme !== initialTheme) {
     updateBodyBackground(theme);
@@ -107,7 +107,7 @@ async function initThemeSystem() {
 function updateBodyBackground(theme) {
   const body = document.body;
   if (!body) return;
-  
+
   const bgColors = {
     'dark': '#1c1c1e',
     'light': '#f8f9fa',
@@ -115,10 +115,10 @@ function updateBodyBackground(theme) {
     'spring-festival-dark': '#1c0a14',
     'spring-festival-light': '#fefce8',
   };
-  
+
   const bg = bgColors[theme] || bgColors['light'];
   body.style.backgroundColor = bg;
-  
+
   // 延迟清除，让 CSS 变量接管
   setTimeout(() => {
     body.style.backgroundColor = '';
@@ -128,7 +128,7 @@ function updateBodyBackground(theme) {
 // 浮动按钮保护（延迟）
 async function initFloatingButtonProtection() {
   const { protectFloatingButtonPosition } = await import("./utils/floatingButtonProtection.js");
-  
+
   // 定期检查（降低频率）
   setInterval(protectFloatingButtonPosition, 2000);
 }
@@ -139,13 +139,10 @@ async function initFloatingButtonProtection() {
     <component :is="TitleBar" v-if="TitleBar" />
     <div class="content-wrapper">
       <component :is="Sidebar" v-if="Sidebar" @sidebar-expand="handleSidebarExpand" />
-      <main
-        class="main-content"
-        :class="{
-          'sidebar-collapsed': !sidebarExpanded,
-          'sidebar-expanded': sidebarExpanded,
-        }"
-      >
+      <main class="main-content" :class="{
+        'sidebar-collapsed': !sidebarExpanded,
+        'sidebar-expanded': sidebarExpanded,
+      }">
         <router-view v-slot="{ Component, route }">
           <transition name="page-fade" mode="out-in">
             <keep-alive :include="cachedComponents" :exclude="excludedComponents">

@@ -3,14 +3,7 @@
     <!-- Page Header -->
     <div class="page-header">
       <button class="back-btn" @click="goBack" :aria-label="$t('common.back')">
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
         <span>{{ $t("common.back") }}</span>
@@ -22,15 +15,9 @@
             : $t("theme.createCustomTheme")
         }}
       </h1>
-      <div
-        class="accessibility-badge"
-        :class="accessibilityClass"
-        :title="accessibilityTooltip"
-        role="status"
-        :aria-label="
-          $t('theme.accessibilityLevel', { level: accessibilityLevel })
-        "
-      >
+      <div class="accessibility-badge" :class="accessibilityClass" :title="accessibilityTooltip" role="status"
+        :aria-label="$t('theme.accessibilityLevel', { level: accessibilityLevel })
+          ">
         <span class="badge-icon">{{ accessibilityIcon }}</span>
         <span class="badge-text">{{ accessibilityLevel }}</span>
       </div>
@@ -45,16 +32,9 @@
           <label class="section-label" for="theme-name">{{
             $t("theme.themeName")
           }}</label>
-          <input
-            id="theme-name"
-            v-model="themeName"
-            type="text"
-            class="theme-name-input"
-            :placeholder="$t('theme.themeNamePlaceholder')"
-            :aria-label="$t('theme.themeName')"
-            :aria-invalid="!!nameError"
-            @input="validateName"
-          />
+          <input id="theme-name" v-model="themeName" type="text" class="theme-name-input"
+            :placeholder="$t('theme.themeNamePlaceholder')" :aria-label="$t('theme.themeName')"
+            :aria-invalid="!!nameError" @input="validateName" />
           <span v-if="nameError" class="name-error" role="alert">{{
             nameError
           }}</span>
@@ -63,44 +43,24 @@
         <!-- Color Sections -->
         <div class="color-sections">
           <!-- Background Colors -->
-          <ColorSection
-            :title="$t('theme.backgroundColors')"
-            :items="backgroundColorItems"
-            :colors="colors"
-            @update:color="handleColorUpdate"
-          />
+          <ColorSection :title="$t('theme.backgroundColors')" :items="backgroundColorItems" :colors="colors"
+            @update:color="handleColorUpdate" />
 
           <!-- Text Colors -->
-          <ColorSection
-            :title="$t('theme.textColors')"
-            :items="textColorItems"
-            :colors="colors"
-            @update:color="handleColorUpdate"
-          />
+          <ColorSection :title="$t('theme.textColors')" :items="textColorItems" :colors="colors"
+            @update:color="handleColorUpdate" />
 
           <!-- Accent Colors -->
-          <ColorSection
-            :title="$t('theme.accentColors')"
-            :items="accentColorItems"
-            :colors="colors"
-            @update:color="handleColorUpdate"
-          />
+          <ColorSection :title="$t('theme.accentColors')" :items="accentColorItems" :colors="colors"
+            @update:color="handleColorUpdate" />
 
           <!-- Sidebar Colors -->
-          <ColorSection
-            :title="$t('theme.sidebarColors')"
-            :items="sidebarColorItems"
-            :colors="colors"
-            @update:color="handleColorUpdate"
-          />
+          <ColorSection :title="$t('theme.sidebarColors')" :items="sidebarColorItems" :colors="colors"
+            @update:color="handleColorUpdate" />
 
           <!-- Card Colors -->
-          <ColorSection
-            :title="$t('theme.cardColors')"
-            :items="cardColorItems"
-            :colors="colors"
-            @update:color="handleColorUpdate"
-          />
+          <ColorSection :title="$t('theme.cardColors')" :items="cardColorItems" :colors="colors"
+            @update:color="handleColorUpdate" />
         </div>
       </div>
 

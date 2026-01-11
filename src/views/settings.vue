@@ -26,12 +26,8 @@
           </transition>
           <!-- 主题选择器 -->
           <div class="theme-selector-wrapper">
-            <ThemeSelector
-              ref="themeSelectorRef"
-              v-model="currentTheme"
-              :show-seasonal-themes="shouldShowSeasonalThemes"
-              @change="handleThemeChange"
-            />
+            <ThemeSelector ref="themeSelectorRef" v-model="currentTheme"
+              :show-seasonal-themes="shouldShowSeasonalThemes" @change="handleThemeChange" />
           </div>
         </div>
       </div>
@@ -54,14 +50,9 @@
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown
-            v-model="currentLanguage"
-            :options="languageOptions"
-            @change="handleLanguageChange"
-            @dropdown-open="handleDropdownOpen('language')"
-            :is-open="activeDropdown === 'language'"
-            :placeholder="t('common.select')"
-          />
+          <CustomDropdown v-model="currentLanguage" :options="languageOptions" @change="handleLanguageChange"
+            @dropdown-open="handleDropdownOpen('language')" :is-open="activeDropdown === 'language'"
+            :placeholder="t('common.select')" />
         </div>
       </div>
     </div>
@@ -75,24 +66,14 @@
       </transition>
 
       <div class="custom-theme-content">
-        <ThemeList
-          @create="handleCreateTheme"
-          @edit="handleEditTheme"
-          @delete="handleDeleteTheme"
-          @select="handleSelectTheme"
-          @import="handleImportTheme"
-          @export="handleExportTheme"
-        />
+        <ThemeList @create="handleCreateTheme" @edit="handleEditTheme" @delete="handleDeleteTheme"
+          @select="handleSelectTheme" @import="handleImportTheme" @export="handleExportTheme" />
       </div>
     </div>
 
     <!-- 主题编辑模态框 -->
     <transition name="modal-fade">
-      <div
-        v-if="showThemeEditor"
-        class="theme-editor-modal"
-        @click.self="handleCancelThemeEdit"
-      >
+      <div v-if="showThemeEditor" class="theme-editor-modal" @click.self="handleCancelThemeEdit">
         <div class="theme-editor-container">
           <div class="modal-header">
             <h2 class="modal-title">
@@ -100,20 +81,16 @@
                 themeEditorMode === "create"
                   ? t("theme.createCustomTheme")
                   : t("theme.editTheme", {
-                      name: editingTheme?.name || "",
-                    })
+                    name: editingTheme?.name || "",
+                  })
               }}
             </h2>
             <button class="modal-close-btn" @click="handleCancelThemeEdit">
               <font-awesome-icon :icon="['fas', 'times']" />
             </button>
           </div>
-          <ThemeEditor
-            :theme="editingTheme"
-            :mode="themeEditorMode"
-            @save="handleSaveTheme"
-            @cancel="handleCancelThemeEdit"
-          />
+          <ThemeEditor :theme="editingTheme" :mode="themeEditorMode" @save="handleSaveTheme"
+            @cancel="handleCancelThemeEdit" />
         </div>
       </div>
     </transition>
@@ -145,11 +122,7 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input
-              type="checkbox"
-              v-model="gpuAccelerationDisabled"
-              @change="handleGpuAccelerationToggle"
-            />
+            <input type="checkbox" v-model="gpuAccelerationDisabled" @change="handleGpuAccelerationToggle" />
             <span class="slider"></span>
           </label>
         </div>
@@ -163,42 +136,6 @@
           {{ t("settings.systemAndUpdates") }}
         </div>
       </transition>
-
-      <!-- 更新源设置 -->
-      <div class="setting-item">
-        <div class="setting-icon">
-          <font-awesome-icon :icon="['fas', 'cloud']" />
-        </div>
-        <div class="setting-details">
-          <transition name="text-swift" mode="out-in">
-            <div class="setting-title" :key="currentLanguage">
-              {{ t("settings.updateSource") }}
-            </div>
-          </transition>
-          <transition name="text-swift" mode="out-in">
-            <div class="setting-description" :key="currentLanguage">
-              {{ t("settings.updateSourceDescription") }}
-            </div>
-          </transition>
-          <!-- Gitee 更新源提示 -->
-          <transition name="fade">
-            <div v-if="currentUpdateSource === 'GITEE'" class="update-source-hint">
-              <font-awesome-icon :icon="['fas', 'info-circle']" />
-              <span>{{ t("settings.giteeUpdateHint") }}</span>
-            </div>
-          </transition>
-        </div>
-        <div class="setting-action">
-          <CustomDropdown
-            v-model="currentUpdateSource"
-            :options="updateSourceOptions"
-            @change="handleUpdateSourceChange"
-            @dropdown-open="handleDropdownOpen('updateSource')"
-            :is-open="activeDropdown === 'updateSource'"
-            :placeholder="t('common.select')"
-          />
-        </div>
-      </div>
 
       <!-- 检查更新 -->
       <div class="setting-item">
@@ -218,16 +155,8 @@
           </transition>
         </div>
         <div class="setting-action">
-          <button
-            class="check-update-btn"
-            @click="checkForUpdates"
-            :disabled="checkingUpdate"
-          >
-            <font-awesome-icon
-              v-if="checkingUpdate"
-              :icon="['fas', 'spinner']"
-              spin
-            />
+          <button class="check-update-btn" @click="checkForUpdates" :disabled="checkingUpdate">
+            <font-awesome-icon v-if="checkingUpdate" :icon="['fas', 'spinner']" spin />
             <transition name="text-swift" mode="out-in">
               <span :key="currentLanguage + '-' + checkingUpdate">
                 {{
@@ -268,30 +197,15 @@
         <div class="setting-action">
           <div class="api-key-container">
             <div class="api-key-input-wrapper">
-              <input
-                v-model="steamApiKey"
-                :type="showApiKey ? 'text' : 'password'"
-                class="api-key-input"
-                :placeholder="t('settings.steamApi.apiKeyPlaceholder')"
-              />
-              <button
-                class="toggle-visibility-btn"
-                @click="showApiKey = !showApiKey"
-                :title="
-                  showApiKey
-                    ? t('settings.steamApi.hideApiKey')
-                    : t('settings.steamApi.showApiKey')
-                "
-              >
-                <font-awesome-icon
-                  :icon="showApiKey ? ['fas', 'eye-slash'] : ['fas', 'eye']"
-                />
+              <input v-model="steamApiKey" :type="showApiKey ? 'text' : 'password'" class="api-key-input"
+                :placeholder="t('settings.steamApi.apiKeyPlaceholder')" />
+              <button class="toggle-visibility-btn" @click="showApiKey = !showApiKey" :title="showApiKey
+                ? t('settings.steamApi.hideApiKey')
+                : t('settings.steamApi.showApiKey')
+                ">
+                <font-awesome-icon :icon="showApiKey ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
               </button>
-              <button
-                class="save-api-key-btn"
-                @click="saveSteamApiKey"
-                :title="t('settings.steamApi.saveApiKey')"
-              >
+              <button class="save-api-key-btn" @click="saveSteamApiKey" :title="t('settings.steamApi.saveApiKey')">
                 <font-awesome-icon :icon="['fas', 'save']" />
               </button>
             </div>
@@ -319,12 +233,8 @@
         <div class="setting-action">
           <div class="cache-info">
             <transition name="text-swift" mode="out-in">
-              <span
-                class="cache-count"
-                :key="currentLanguage + '-' + cacheEntryCount"
-                >{{ cacheEntryCount }}
-                {{ t("settings.steamApi.cacheEntries") }}</span
-              >
+              <span class="cache-count" :key="currentLanguage + '-' + cacheEntryCount">{{ cacheEntryCount }}
+                {{ t("settings.steamApi.cacheEntries") }}</span>
             </transition>
             <button class="view-cache-btn" @click="navigateToSteamCache">
               <font-awesome-icon :icon="['fas', 'eye']" />
@@ -374,11 +284,7 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input
-              type="checkbox"
-              v-model="developerModeEnabled"
-              @change="handleDeveloperModeToggle"
-            />
+            <input type="checkbox" v-model="developerModeEnabled" @change="handleDeveloperModeToggle" />
             <span class="slider"></span>
           </label>
         </div>
@@ -403,11 +309,7 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input
-              type="checkbox"
-              v-model="logMenuEnabled"
-              @change="handleLogMenuToggle"
-            />
+            <input type="checkbox" v-model="logMenuEnabled" @change="handleLogMenuToggle" />
             <span class="slider"></span>
           </label>
         </div>
@@ -432,11 +334,7 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input
-              type="checkbox"
-              v-model="performanceMonitorEnabled"
-              @change="handlePerformanceMonitorToggle"
-            />
+            <input type="checkbox" v-model="performanceMonitorEnabled" @change="handlePerformanceMonitorToggle" />
             <span class="slider"></span>
           </label>
         </div>
@@ -461,11 +359,7 @@
         </div>
         <div class="setting-action">
           <label class="switch">
-            <input
-              type="checkbox"
-              v-model="testArchiveEnabled"
-              @change="handleTestArchiveToggle"
-            />
+            <input type="checkbox" v-model="testArchiveEnabled" @change="handleTestArchiveToggle" />
             <span class="slider"></span>
           </label>
         </div>
@@ -474,10 +368,7 @@
       <!-- 限时主题控制 -->
       <div class="setting-item" v-if="developerModeEnabled">
         <div class="setting-icon">
-          <font-awesome-icon
-            :icon="['fas', 'snowflake']"
-            style="color: #e53935"
-          />
+          <font-awesome-icon :icon="['fas', 'snowflake']" style="color: #e53935" />
         </div>
         <div class="setting-details">
           <transition name="text-swift" mode="out-in">
@@ -492,14 +383,9 @@
           </transition>
         </div>
         <div class="setting-action">
-          <CustomDropdown
-            v-model="seasonalThemeMode"
-            :options="seasonalThemeModeOptions"
-            @change="handleSeasonalThemeModeChange"
-            @dropdown-open="handleDropdownOpen('seasonalTheme')"
-            :is-open="activeDropdown === 'seasonalTheme'"
-            :placeholder="t('common.select')"
-          />
+          <CustomDropdown v-model="seasonalThemeMode" :options="seasonalThemeModeOptions"
+            @change="handleSeasonalThemeModeChange" @dropdown-open="handleDropdownOpen('seasonalTheme')"
+            :is-open="activeDropdown === 'seasonalTheme'" :placeholder="t('common.select')" />
         </div>
       </div>
 
@@ -546,22 +432,12 @@
 
           <div class="sav-tools-container">
             <!-- 解析存档文件 -->
-            <div
-              class="drop-zone"
-              :class="{ 'drag-over': parseDragOver, processing: isParsing }"
-              @dragover.prevent="parseDragOver = true"
-              @dragleave.prevent="parseDragOver = false"
-              @drop.prevent="handleParseDrop"
-              @click="triggerParseFileInput"
-            >
+            <div class="drop-zone" :class="{ 'drag-over': parseDragOver, processing: isParsing }"
+              @dragover.prevent="parseDragOver = true" @dragleave.prevent="parseDragOver = false"
+              @drop.prevent="handleParseDrop" @click="triggerParseFileInput">
               <div class="drop-zone-content">
-                <font-awesome-icon
-                  :icon="
-                    isParsing ? ['fas', 'spinner'] : ['fas', 'file-import']
-                  "
-                  :spin="isParsing"
-                  class="drop-icon"
-                />
+                <font-awesome-icon :icon="isParsing ? ['fas', 'spinner'] : ['fas', 'file-import']
+                  " :spin="isParsing" class="drop-icon" />
                 <div class="drop-title">
                   {{
                     isParsing
@@ -573,22 +449,12 @@
             </div>
 
             <!-- 打包存档文件 -->
-            <div
-              class="drop-zone"
-              :class="{ 'drag-over': packDragOver, processing: isPacking }"
-              @dragover.prevent="packDragOver = true"
-              @dragleave.prevent="packDragOver = false"
-              @drop.prevent="handlePackDrop"
-              @click="triggerPackFileInput"
-            >
+            <div class="drop-zone" :class="{ 'drag-over': packDragOver, processing: isPacking }"
+              @dragover.prevent="packDragOver = true" @dragleave.prevent="packDragOver = false"
+              @drop.prevent="handlePackDrop" @click="triggerPackFileInput">
               <div class="drop-zone-content">
-                <font-awesome-icon
-                  :icon="
-                    isPacking ? ['fas', 'spinner'] : ['fas', 'file-export']
-                  "
-                  :spin="isPacking"
-                  class="drop-icon"
-                />
+                <font-awesome-icon :icon="isPacking ? ['fas', 'spinner'] : ['fas', 'file-export']
+                  " :spin="isPacking" class="drop-icon" />
                 <div class="drop-title">
                   {{
                     isPacking
@@ -621,11 +487,6 @@
 
 <script>
 import { updateService, UpdateStatus } from "../services/updateService.js";
-import {
-  getAllUpdateSources,
-  getUserUpdateSource,
-  setUserUpdateSource,
-} from "../config/updateConfig.js";
 import CustomDropdown from "../components/CustomDropdown.vue";
 import ThemeSelector from "../components/ThemeSelector.vue";
 import ThemeList from "../components/ThemeList.vue";
@@ -650,7 +511,6 @@ export default {
     return {
       currentTheme: storage.getItem("theme", "light"),
       currentLanguage: storage.getItem("language", "zh-CN"),
-      currentUpdateSource: storage.getItem("updateSource", "GITEE"),
       performanceMonitorEnabled:
         storage.getItem("performanceMonitor", true) !== false, // 默认开启
       developerModeEnabled: storage.getItem("developerMode", false) === true, // 开发者模式状态
@@ -664,7 +524,7 @@ export default {
       showApiKey: false,
       cacheEntryCount: 0,
       checkingUpdate: false,
-      appVersion: "3.0.0-Alpha-8",
+      appVersion: "3.0.0-Beta-1",
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
@@ -738,18 +598,10 @@ export default {
       ];
     },
     languageOptions() {
-      // 获取内置语言 + 插件语言
       const languages = getAllAvailableLanguages();
       return languages.map((lang) => ({
         value: lang.locale,
         label: lang.name,
-      }));
-    },
-    updateSourceOptions() {
-      const sources = getAllUpdateSources();
-      return Object.entries(sources).map(([key, source]) => ({
-        value: key,
-        label: source.name,
       }));
     },
   },
@@ -997,23 +849,6 @@ export default {
       }
     },
 
-    handleUpdateSourceChange(option) {
-      const source = option.value;
-      try {
-        setUserUpdateSource(source);
-        this.currentUpdateSource = source;
-        storage.setItem("updateSource", source);
-
-        // 显示成功提示
-        notify.success(this.t("settings.updateSourceChanged", {
-          source: option.label,
-        }));
-      } catch (error) {
-        console.error(this.t("settings.updateSourceChangeFailed"), error);
-        notify.error(this.t("settings.updateSourceChangeFailed"));
-      }
-    },
-
     async checkForUpdates() {
       if (this.isProcessing) return;
 
@@ -1027,7 +862,7 @@ export default {
         if (update.shouldUpdate) {
           this.updateInfo = update;
           this.updateStatus = UpdateStatus.AVAILABLE;
-          
+
           // 使用新通知系统，带按钮
           notify.info(this.t("settings.newVersionAvailable", { version: update.version }), {
             title: this.t("settings.updateAvailable"),
@@ -1906,7 +1741,8 @@ export default {
 .setting-item.theme-setting-item {
   flex-direction: column;
   align-items: flex-start;
-  overflow: visible; /* 确保滚动按钮不被裁剪 */
+  overflow: visible;
+  /* 确保滚动按钮不被裁剪 */
 }
 
 .setting-item.theme-setting-item .setting-icon {
@@ -1917,12 +1753,14 @@ export default {
 
 .setting-item.theme-setting-item .setting-details {
   padding-left: 52px;
-  overflow: visible; /* 确保滚动按钮不被裁剪 */
+  overflow: visible;
+  /* 确保滚动按钮不被裁剪 */
 }
 
 .setting-details.full-width {
   width: 100%;
-  overflow: visible; /* 确保滚动按钮不被裁剪 */
+  overflow: visible;
+  /* 确保滚动按钮不被裁剪 */
 }
 
 .theme-selector-wrapper {
@@ -1930,7 +1768,8 @@ export default {
   padding-left: 0;
   margin-left: -52px;
   width: calc(100% + 52px);
-  overflow: visible; /* 确保滚动按钮不被裁剪 */
+  overflow: visible;
+  /* 确保滚动按钮不被裁剪 */
 }
 
 .setting-item:hover {
@@ -2028,11 +1867,11 @@ export default {
   border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: var(--accent-color);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(26px);
 }
 
@@ -2686,12 +2525,10 @@ input:checked + .slider:before {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent);
   transition: left 0.5s ease;
 }
 
@@ -2715,12 +2552,10 @@ input:checked + .slider:before {
 }
 
 .clear-cache-btn::before {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent);
 }
 
 .clear-cache-btn:hover {
@@ -2754,12 +2589,10 @@ input:checked + .slider:before {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent);
   transition: left 0.5s ease;
 }
 

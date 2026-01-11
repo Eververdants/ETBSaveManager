@@ -24,8 +24,8 @@
         <transition name="message-fade" mode="out-in">
           <div v-if="playerInputMessage" class="player-input-message" :class="playerInputMessageType" key="message">
             <font-awesome-icon :icon="playerInputMessageType === 'success'
-                ? ['fas', 'check-circle']
-                : ['fas', 'exclamation-circle']
+              ? ['fas', 'check-circle']
+              : ['fas', 'exclamation-circle']
               " />
             {{ playerInputMessage }}
           </div>

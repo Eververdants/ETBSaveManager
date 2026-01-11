@@ -7,10 +7,7 @@
         <div class="panel-card">
           <transition name="text-swift" mode="out-in">
             <div class="panel-header" :key="currentLanguage">
-              <font-awesome-icon
-                :icon="['fas', 'comment-dots']"
-                class="header-icon"
-              />
+              <font-awesome-icon :icon="['fas', 'comment-dots']" class="header-icon" />
               {{ t("feedback.title") }}
             </div>
           </transition>
@@ -23,11 +20,8 @@
                   {{ t("feedback.type") }}
                 </label>
               </transition>
-              <CustomDropdown
-                v-model="formData.type"
-                :options="feedbackTypeOptions"
-                :placeholder="t('feedback.selectType')"
-              />
+              <CustomDropdown v-model="formData.type" :options="feedbackTypeOptions"
+                :placeholder="t('feedback.selectType')" />
             </div>
 
             <!-- Bug 严重程度 -->
@@ -37,11 +31,8 @@
                   {{ t("feedback.severity") }}
                 </label>
               </transition>
-              <CustomDropdown
-                v-model="formData.severity"
-                :options="severityOptions"
-                :placeholder="t('feedback.selectSeverity')"
-              />
+              <CustomDropdown v-model="formData.severity" :options="severityOptions"
+                :placeholder="t('feedback.selectSeverity')" />
             </div>
 
             <!-- 发送人（可选） -->
@@ -54,13 +45,8 @@
                   }}</span>
                 </label>
               </transition>
-              <input
-                type="text"
-                v-model="formData.sender"
-                :placeholder="t('feedback.senderPlaceholder')"
-                class="form-input"
-                maxlength="50"
-              />
+              <input type="text" v-model="formData.sender" :placeholder="t('feedback.senderPlaceholder')"
+                class="form-input" maxlength="50" />
             </div>
 
             <!-- 标题输入 -->
@@ -68,19 +54,11 @@
               <transition name="text-swift" mode="out-in">
                 <label class="form-label" :key="currentLanguage">
                   {{ t("feedback.titleLabel") }}
-                  <span class="char-count"
-                    >{{ formData.title.length }}/100</span
-                  >
+                  <span class="char-count">{{ formData.title.length }}/100</span>
                 </label>
               </transition>
-              <input
-                type="text"
-                v-model="formData.title"
-                :placeholder="t('feedback.titlePlaceholder')"
-                class="form-input"
-                :class="{ 'input-error': titleError }"
-                maxlength="100"
-              />
+              <input type="text" v-model="formData.title" :placeholder="t('feedback.titlePlaceholder')"
+                class="form-input" :class="{ 'input-error': titleError }" maxlength="100" />
               <span v-if="titleError" class="error-text">{{ titleError }}</span>
             </div>
 
@@ -89,18 +67,11 @@
               <transition name="text-swift" mode="out-in">
                 <label class="form-label" :key="currentLanguage">
                   {{ t("feedback.description") }}
-                  <span class="char-count"
-                    >{{ formData.description.length }}/5000</span
-                  >
+                  <span class="char-count">{{ formData.description.length }}/5000</span>
                 </label>
               </transition>
-              <textarea
-                v-model="formData.description"
-                :placeholder="t('feedback.descriptionPlaceholder')"
-                class="form-textarea"
-                :class="{ 'input-error': descriptionError }"
-                maxlength="5000"
-              ></textarea>
+              <textarea v-model="formData.description" :placeholder="t('feedback.descriptionPlaceholder')"
+                class="form-textarea" :class="{ 'input-error': descriptionError }" maxlength="5000"></textarea>
               <span v-if="descriptionError" class="error-text">{{
                 descriptionError
               }}</span>
@@ -117,9 +88,7 @@
                   <div class="info-grid">
                     <div class="info-item">
                       <span class="info-label">{{ t("feedback.os") }}</span>
-                      <span class="info-value"
-                        >{{ systemInfo.os }} {{ systemInfo.osVersion }}</span
-                      >
+                      <span class="info-value">{{ systemInfo.os }} {{ systemInfo.osVersion }}</span>
                     </div>
                     <div class="info-item">
                       <span class="info-label">{{
@@ -150,16 +119,8 @@
 
             <!-- 提交按钮 -->
             <div class="form-actions">
-              <button
-                class="submit-btn"
-                :disabled="!isFormValid || isSubmitting"
-                @click="submitFeedback"
-              >
-                <font-awesome-icon
-                  v-if="isSubmitting"
-                  :icon="['fas', 'spinner']"
-                  spin
-                />
+              <button class="submit-btn" :disabled="!isFormValid || isSubmitting" @click="submitFeedback">
+                <font-awesome-icon v-if="isSubmitting" :icon="['fas', 'spinner']" spin />
                 <font-awesome-icon v-else :icon="['fas', 'paper-plane']" />
                 <span>{{
                   isSubmitting ? t("feedback.submitting") : t("feedback.submit")
@@ -175,10 +136,7 @@
         <div class="panel-card">
           <transition name="text-swift" mode="out-in">
             <div class="panel-header" :key="currentLanguage">
-              <font-awesome-icon
-                :icon="['fas', 'history']"
-                class="header-icon"
-              />
+              <font-awesome-icon :icon="['fas', 'history']" class="header-icon" />
               {{ t("feedback.history") }}
               <span v-if="feedbackHistory.length > 0" class="history-count">
                 {{ feedbackHistory.length }}
@@ -193,16 +151,10 @@
             </div>
 
             <div v-else class="history-list">
-              <div
-                v-for="item in feedbackHistory"
-                :key="item.id"
-                class="history-item"
-              >
+              <div v-for="item in feedbackHistory" :key="item.id" class="history-item">
                 <div class="history-header">
                   <span :class="['history-type', item.feedback_type]">
-                    <font-awesome-icon
-                      :icon="getTypeIcon(item.feedback_type)"
-                    />
+                    <font-awesome-icon :icon="getTypeIcon(item.feedback_type)" />
                     {{ getTypeLabel(item.feedback_type) }}
                   </span>
                   <span :class="['history-status', item.status]">
@@ -215,37 +167,17 @@
                   {{ formatDate(item.created_at) }}
                 </div>
                 <div class="history-actions">
-                  <a
-                    v-if="item.status === 'submitted' && item.discussion_url"
-                    :href="item.discussion_url"
-                    target="_blank"
-                    class="action-link"
-                  >
-                    <font-awesome-icon
-                      :icon="['fas', 'external-link-alt']"
-                      class="action-icon"
-                    />
+                  <a v-if="item.status === 'submitted' && item.discussion_url" :href="item.discussion_url"
+                    target="_blank" class="action-link">
+                    <font-awesome-icon :icon="['fas', 'external-link-alt']" class="action-icon" />
                     <span>{{ t("feedback.viewDiscussion") }}</span>
                   </a>
-                  <button
-                    v-if="item.status === 'failed'"
-                    class="action-btn retry"
-                    @click="retryFeedback(item.id)"
-                  >
-                    <font-awesome-icon
-                      :icon="['fas', 'redo']"
-                      class="action-icon"
-                    />
+                  <button v-if="item.status === 'failed'" class="action-btn retry" @click="retryFeedback(item.id)">
+                    <font-awesome-icon :icon="['fas', 'redo']" class="action-icon" />
                     <span>{{ t("feedback.retry") }}</span>
                   </button>
-                  <button
-                    class="action-btn delete"
-                    @click="deleteFeedback(item.id)"
-                  >
-                    <font-awesome-icon
-                      :icon="['fas', 'trash']"
-                      class="action-icon"
-                    />
+                  <button class="action-btn delete" @click="deleteFeedback(item.id)">
+                    <font-awesome-icon :icon="['fas', 'trash']" class="action-icon" />
                     <span>{{ t("feedback.delete") }}</span>
                   </button>
                 </div>
@@ -340,7 +272,7 @@ export default {
         this.systemInfo = {
           os: "Unknown",
           osVersion: "",
-          appVersion: "3.0.0-Alpha-8",
+          appVersion: "3.0.0-Beta-1",
           language: this.currentLanguage,
           screenResolution: `${window.screen.width}x${window.screen.height}`,
         };

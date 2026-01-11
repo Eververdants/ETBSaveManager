@@ -5,30 +5,30 @@ import { useI18n } from 'vue-i18n'
 const { t, locale } = useI18n()
 
 const screenshots = computed(() => [
-  { 
-    id: 1, 
-    titleKey: 'screenshots.items.list.title', 
+  {
+    id: 1,
+    titleKey: 'screenshots.items.list.title',
     descKey: 'screenshots.items.list.desc',
     imgZh: '/存档列表-zh.png',
     imgEn: '/存档列表-en.png'
   },
-  { 
-    id: 2, 
-    titleKey: 'screenshots.items.create.title', 
+  {
+    id: 2,
+    titleKey: 'screenshots.items.create.title',
     descKey: 'screenshots.items.create.desc',
     imgZh: '/创建存档页面第一步-zh.png',
     imgEn: '/创建存档页面第一步-en.png'
   },
-  { 
-    id: 3, 
-    titleKey: 'screenshots.items.quick.title', 
+  {
+    id: 3,
+    titleKey: 'screenshots.items.quick.title',
     descKey: 'screenshots.items.quick.desc',
     imgZh: '/快速创建存档页面-zh.png',
     imgEn: '/快速创建存档页面-en.png'
   },
-  { 
-    id: 4, 
-    titleKey: 'screenshots.items.edit.title', 
+  {
+    id: 4,
+    titleKey: 'screenshots.items.edit.title',
     descKey: 'screenshots.items.edit.desc',
     imgZh: '/编辑页面-zh.png',
     imgEn: '/编辑页面-en.png'
@@ -39,6 +39,7 @@ const activeIndex = ref(0)
 
 const currentImage = computed(() => {
   const shot = screenshots.value[activeIndex.value]
+  if (!shot) return ''
   return locale.value === 'zh-CN' ? shot.imgZh : shot.imgEn
 })
 
@@ -62,17 +63,9 @@ const getThumbImage = (shot: { imgZh: string; imgEn: string }) => {
       <div class="screenshots-wrapper">
         <!-- Main Preview -->
         <div class="screenshot-main glass-card">
-          <img 
-            :src="currentImage" 
-            :alt="t(screenshots[activeIndex].titleKey)"
-            class="screenshot-image"
-          />
+          <img :src="currentImage" :alt="screenshots[activeIndex]?.titleKey ? t(screenshots[activeIndex]!.titleKey) : ''" class="screenshot-image" />
           <div class="screenshot-overlay">
-            <a 
-              href="https://github.com/Eververdants/ETBSaveManager" 
-              target="_blank"
-              class="btn btn-secondary"
-            >
+            <a href="https://github.com/Eververdants/ETBSaveManager" target="_blank" class="btn btn-secondary">
               <font-awesome-icon :icon="['fas', 'external-link-alt']" />
               <span>{{ t('screenshots.viewMore') }}</span>
             </a>
@@ -81,13 +74,8 @@ const getThumbImage = (shot: { imgZh: string; imgEn: string }) => {
 
         <!-- Thumbnails -->
         <div class="screenshot-thumbs">
-          <button 
-            v-for="(shot, index) in screenshots" 
-            :key="shot.id"
-            class="thumb-item"
-            :class="{ active: activeIndex === index }"
-            @click="activeIndex = index"
-          >
+          <button v-for="(shot, index) in screenshots" :key="shot.id" class="thumb-item"
+            :class="{ active: activeIndex === index }" @click="activeIndex = index">
             <div class="thumb-preview">
               <img :src="getThumbImage(shot)" :alt="t(shot.titleKey)" />
             </div>

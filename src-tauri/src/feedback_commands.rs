@@ -468,5 +468,13 @@ pub fn get_backend_logs(log_state: State<'_, BackendLogState>) -> String {
 /// Adds a log entry to backend logs (for internal use)
 #[tauri::command]
 pub fn add_backend_log(level: String, message: String, log_state: State<'_, BackendLogState>) {
+    // 打印到后端控制台
+    match level.to_lowercase().as_str() {
+        "error" => eprintln!("[Frontend ERROR] {}", message),
+        "warn" => println!("[Frontend WARN] {}", message),
+        "debug" => println!("[Frontend DEBUG] {}", message),
+        _ => println!("[Frontend] {}", message),
+    }
+    // 同时保存到日志状态
     log_state.add_log(&level, &message);
 }

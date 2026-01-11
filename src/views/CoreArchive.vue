@@ -18,11 +18,7 @@
           </div>
           <div class="setting-action">
             <label class="switch">
-              <input
-                type="checkbox"
-                v-model="isHubUnlocked"
-                @change="handleHubUnlockChange"
-              />
+              <input type="checkbox" v-model="isHubUnlocked" @change="handleHubUnlockChange" />
               <span class="slider"></span>
             </label>
           </div>
@@ -204,11 +200,11 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: var(--accent-color, #007aff);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(20px);
 }
 

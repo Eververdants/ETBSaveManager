@@ -10,6 +10,10 @@
 // Polyfills - 必须最先加载
 import "./utils/polyfills.js";
 
+// 控制台转发 - 尽早初始化，便于调试
+import { initConsoleForwarder } from "./utils/consoleForwarder.js";
+initConsoleForwarder();
+
 import { createApp } from "vue";
 import App from "./App.vue";
 
@@ -22,78 +26,21 @@ import "./styles/animations.css";
 
 // 延迟加载的模块引用
 let i18nInstance = null;
-let FontAwesomeIcon = null;
 
-// 最小化图标集 - 只加载启动时必需的图标
+// 加载关键图标（启动必需）
 const loadCriticalIcons = async () => {
-  const { library } = await import("@fortawesome/fontawesome-svg-core");
   const { FontAwesomeIcon: FAIcon } = await import("@fortawesome/vue-fontawesome");
-  FontAwesomeIcon = FAIcon;
+  const { registerCriticalIcons } = await import("./utils/icons.js");
   
-  // 启动时必需的图标（侧边栏 + 标题栏）
-  const { 
-    faHome, faCog, faPlus, faStore, faInfoCircle,
-    faMinus, faWindowMaximize, faTimes, faList, faPlusCircle,
-    faCommentDots, faSearch, faMagnifyingGlass, faFolder, faEdit,
-    faEye, faEyeSlash, faTrash
-  } = await import("@fortawesome/free-solid-svg-icons");
-  
-  library.add(faHome, faCog, faPlus, faStore, faInfoCircle, faMinus,
-    faWindowMaximize, faTimes, faList, faPlusCircle, faCommentDots,
-    faSearch, faMagnifyingGlass, faFolder, faEdit, faEye, faEyeSlash,
-    faTrash);
+  registerCriticalIcons();
   
   return FAIcon;
 };
 
 // 延迟加载完整图标集
 const loadAllIcons = async () => {
-  const { library } = await import("@fortawesome/fontawesome-svg-core");
-  const solidIcons = await import("@fortawesome/free-solid-svg-icons");
-  const brandIcons = await import("@fortawesome/free-brands-svg-icons");
-  
-  // 批量添加所有图标
-  const iconsToAdd = [
-    solidIcons.faArrowLeft, solidIcons.faArrowRight, solidIcons.faArrowRotateRight,
-    solidIcons.faBug, solidIcons.faCheck, solidIcons.faCheckCircle,
-    solidIcons.faCloud, solidIcons.faCloudUploadAlt, solidIcons.faCode,
-    solidIcons.faDatabase, solidIcons.faDownload, 
-    solidIcons.faEnvelope, solidIcons.faExclamationCircle, solidIcons.faExclamationTriangle,
-    solidIcons.faExternalLinkAlt, 
-    solidIcons.faFileAlt, solidIcons.faFileArchive, solidIcons.faFileCode,
-    solidIcons.faFlask, solidIcons.faFrown,
-    solidIcons.faGear, solidIcons.faGlobe, solidIcons.faHandPaper,
-    solidIcons.faHeart, solidIcons.faKey, solidIcons.faLayerGroup,
-    solidIcons.faList, solidIcons.faLock, solidIcons.faMagnifyingGlass,
-    solidIcons.faMeh, solidIcons.faMicrochip, solidIcons.faMousePointer,
-    solidIcons.faPalette, solidIcons.faPlusCircle, solidIcons.faPuzzlePiece,
-    solidIcons.faRedo, solidIcons.faRefresh, solidIcons.faSave,
-    solidIcons.faSearch, solidIcons.faSkull, solidIcons.faSmile,
-    solidIcons.faSpinner, solidIcons.faSquare, solidIcons.faTachometerAlt,
-    solidIcons.faTrash, solidIcons.faUsers, solidIcons.faChartPie,
-    solidIcons.faThLarge, solidIcons.faDraftingCompass, solidIcons.faTimesCircle,
-    solidIcons.faRocket, solidIcons.faSort, solidIcons.faArrowsUpDown,
-    solidIcons.faHashtag, solidIcons.faUser, solidIcons.faBrain,
-    solidIcons.faSuitcase, solidIcons.faChevronUp, solidIcons.faChevronDown,
-    solidIcons.faKeyboard, solidIcons.faPaste, solidIcons.faFileImport,
-    solidIcons.faClipboardList, solidIcons.faSlidersH, solidIcons.faTrashAlt,
-    solidIcons.faCheckDouble, solidIcons.faExchangeAlt, solidIcons.faCopy,
-    solidIcons.faGraduationCap, solidIcons.faPlayCircle, solidIcons.faPlay,
-    solidIcons.faClock, solidIcons.faUndo, solidIcons.faFileExport,
-    solidIcons.faSnowflake, solidIcons.faCommentDots, solidIcons.faInbox,
-    solidIcons.faPaperPlane, solidIcons.faComment, solidIcons.faHistory,
-    solidIcons.faLightbulb, solidIcons.faMap, solidIcons.faUserPlus,
-    solidIcons.faHandPointer, solidIcons.faCube, solidIcons.faDoorOpen,
-    solidIcons.faGamepad, solidIcons.faFolderOpen, solidIcons.faCircle,
-    solidIcons.faToggleOn, solidIcons.faToggleOff, solidIcons.faPauseCircle,
-    solidIcons.faChevronLeft, solidIcons.faChevronRight, solidIcons.faCodeBranch,
-    solidIcons.faAlignLeft, solidIcons.faCertificate, solidIcons.faLanguage,
-    solidIcons.faBolt, solidIcons.faPause, solidIcons.faFolderTree,
-    brandIcons.faBilibili, brandIcons.faGithub, brandIcons.faTiktok,
-    brandIcons.faXTwitter
-  ];
-  
-  library.add(...iconsToAdd);
+  const { registerIcons } = await import("./utils/icons.js");
+  registerIcons();
 };
 
 // 初始化 i18n（轻量级）
@@ -158,7 +105,8 @@ async function initApp() {
   const startTime = performance.now();
   
   // 阶段1：并行初始化关键模块
-  const [storage, FAIcon, i18n] = await Promise.all([
+  console.log("[Startup] 开始初始化关键模块...");
+  const [, FAIcon, i18n] = await Promise.all([
     import("./services/storageService").then(m => {
       m.initStorage();
       return m.default;
@@ -170,6 +118,7 @@ async function initApp() {
   console.log(`[Startup] 关键模块加载: ${(performance.now() - startTime).toFixed(0)}ms`);
 
   // 阶段2：配置 Vue 应用
+  console.log("[Startup] 配置 Vue 应用...");
   app.use(router);
   app.use(i18n);
   app.component("font-awesome-icon", FAIcon);
@@ -178,6 +127,7 @@ async function initApp() {
   window.$i18n = i18n.global;
 
   // 阶段3：挂载应用（用户可见）
+  console.log("[Startup] 挂载应用...");
   app.mount("#app");
   console.log(`[Startup] 应用挂载: ${(performance.now() - startTime).toFixed(0)}ms`);
 
@@ -193,13 +143,14 @@ async function initApp() {
     });
   });
 
+  console.log("[Startup] 准备显示窗口...");
   try {
-    const { Window } = await import("@tauri-apps/api/window");
-    const appWindow = new Window("main");
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    const appWindow = getCurrentWindow();
     await appWindow.show();
     console.log(`[Startup] 窗口显示: ${(performance.now() - startTime).toFixed(0)}ms`);
   } catch (error) {
-    console.warn("[Startup] 显示窗口失败:", error);
+    console.warn("[Startup] 显示窗口失败:", error instanceof Error ? error.message : error);
   }
 
   // 窗口显示后恢复过渡动画
@@ -236,8 +187,8 @@ async function initPluginSystem() {
 // 窗口标题设置（延迟）
 async function initWindowTitle(i18n) {
   try {
-    const { Window } = await import("@tauri-apps/api/window");
-    const appWindow = new Window("main");
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    const appWindow = getCurrentWindow();
     const title = i18n.global.t("app.name");
     await appWindow.setTitle(title);
     
@@ -253,7 +204,10 @@ async function initWindowTitle(i18n) {
 
 // 启动应用
 initApp().catch((error) => {
-  console.error("[Startup] 应用启动失败:", error);
+  const errorMsg = error instanceof Error 
+    ? `${error.message}\n${error.stack}` 
+    : String(error);
+  console.error("[Startup] 应用启动失败:", errorMsg);
 });
 
 // 浮动按钮保护（延迟初始化）

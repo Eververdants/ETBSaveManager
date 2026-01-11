@@ -21,28 +21,28 @@
           <span class="stat-value">{{ summaryStats.uniformCount }}</span>
           <span class="stat-label">{{
             $t("quickCreate.preview.uniform")
-          }}</span>
+            }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-value">{{ summaryStats.individualCount }}</span>
           <span class="stat-label">{{
             $t("quickCreate.preview.individual")
-          }}</span>
+            }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item" :class="{ 'has-error': summaryStats.missingCount > 0 }">
           <span class="stat-value">{{ summaryStats.missingCount }}</span>
           <span class="stat-label">{{
             $t("quickCreate.preview.missing")
-          }}</span>
+            }}</span>
         </div>
         <div class="stat-divider" v-if="state.archives.length > 0"></div>
         <div class="stat-item estimated-time" v-if="state.archives.length > 0">
           <font-awesome-icon :icon="['fas', 'clock']" class="time-icon" />
           <span class="time-text">{{
             $t("quickCreate.preview.estimatedTime", { time: estimatedTime })
-          }}</span>
+            }}</span>
         </div>
       </div>
 
@@ -128,18 +128,18 @@
               <div class="result-stat success">
                 <span class="result-value">{{
                   creationResult?.success || 0
-                }}</span>
+                  }}</span>
                 <span class="result-label">{{
                   $t("quickCreate.result.successCount")
-                }}</span>
+                  }}</span>
               </div>
               <div class="result-stat error" v-if="creationResult?.failed > 0">
                 <span class="result-value">{{
                   creationResult?.failed || 0
-                }}</span>
+                  }}</span>
                 <span class="result-label">{{
                   $t("quickCreate.result.failedCount")
-                }}</span>
+                  }}</span>
               </div>
             </div>
 

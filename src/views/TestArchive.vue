@@ -7,11 +7,7 @@
 
     <div class="controls">
       <div class="button-group">
-        <button
-          @click="generateRandomArchives"
-          :disabled="isCreating"
-          class="primary-btn"
-        >
+        <button @click="generateRandomArchives" :disabled="isCreating" class="primary-btn">
           {{ isCreating ? "创建中..." : "生成100个随机临时存档" }}
         </button>
         <button @click="clearAllArchives" class="danger-btn">
@@ -35,8 +31,7 @@
         <div class="progress-header">
           <span class="progress-text">创建进度：{{ progress }}%</span>
           <span class="progress-status">
-            {{ progress < 100 ? "正在创建存档..." : "创建完成！" }}
-          </span>
+            {{ progress < 100 ? "正在创建存档..." : "创建完成！" }} </span>
         </div>
         <div class="progress-bar">
           <div class="progress-fill" :style="{ width: progress + '%' }"></div>
@@ -61,28 +56,20 @@
         <span class="stat-label">临时：</span>
         <span class="stat-value temp">{{
           tempArchives.length - savedArchives.length
-        }}</span>
+          }}</span>
       </div>
     </div>
 
     <div class="archives-grid">
-      <div
-        v-for="archive in filteredArchives"
-        :key="archive.id"
-        class="archive-card"
-        :class="{
-          saved: archive.isSaved,
-          selected: selectedArchives.includes(archive.id),
-        }"
-      >
+      <div v-for="archive in filteredArchives" :key="archive.id" class="archive-card" :class="{
+        saved: archive.isSaved,
+        selected: selectedArchives.includes(archive.id),
+      }">
         <div class="archive-header">
           <h3>{{ archive.archive_name }}</h3>
           <div class="archive-actions">
-            <button
-              @click="toggleArchiveSelection(archive.id)"
-              class="select-btn"
-              :class="{ selected: selectedArchives.includes(archive.id) }"
-            >
+            <button @click="toggleArchiveSelection(archive.id)" class="select-btn"
+              :class="{ selected: selectedArchives.includes(archive.id) }">
               {{ selectedArchives.includes(archive.id) ? "✓" : "○" }}
             </button>
             <button @click="deleteArchive(archive.id)" class="delete-btn">
@@ -111,20 +98,13 @@
         </div>
 
         <div class="archive-status">
-          <span
-            class="status-badge"
-            :class="archive.isSaved ? 'saved' : 'temp'"
-          >
+          <span class="status-badge" :class="archive.isSaved ? 'saved' : 'temp'">
             {{ archive.isSaved ? "已保存" : "临时" }}
           </span>
         </div>
 
         <div class="archive-controls">
-          <button
-            @click="toggleSaveStatus(archive)"
-            class="save-btn"
-            :class="{ saved: archive.isSaved }"
-          >
+          <button @click="toggleSaveStatus(archive)" class="save-btn" :class="{ saved: archive.isSaved }">
             {{ archive.isSaved ? "取消保存" : "标记保存" }}
           </button>
           <button @click="viewArchiveDetails(archive)" class="details-btn">
@@ -148,11 +128,7 @@
     </div>
 
     <!-- 存档详情模态框 -->
-    <div
-      v-if="showDetailsModal"
-      class="modal-overlay"
-      @click="closeDetailsModal"
-    >
+    <div v-if="showDetailsModal" class="modal-overlay" @click="closeDetailsModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h2>存档详情</h2>
@@ -167,7 +143,7 @@
                   <span class="detail-label">存档名称：</span>
                   <span class="detail-value">{{
                     selectedArchive.archive_name
-                  }}</span>
+                    }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">层级：</span>
@@ -177,47 +153,40 @@
                   <span class="detail-label">游戏模式：</span>
                   <span class="detail-value">{{
                     selectedArchive.game_mode
-                  }}</span>
+                    }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">难度：</span>
                   <span class="detail-value">{{
                     selectedArchive.difficulty
-                  }}</span>
+                    }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">实际难度：</span>
                   <span class="detail-value">{{
                     selectedArchive.actual_difficulty
-                  }}</span>
+                    }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">创建时间：</span>
                   <span class="detail-value">{{
                     formatTime(selectedArchive.createdAt)
-                  }}</span>
+                    }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">状态：</span>
                   <span class="detail-value">{{
                     selectedArchive.isSaved ? "已保存" : "临时"
-                  }}</span>
+                    }}</span>
                 </div>
               </div>
             </div>
 
-            <div
-              v-if="
-                selectedArchive.players && selectedArchive.players.length > 0
-              "
-              class="detail-section"
-            >
+            <div v-if="
+              selectedArchive.players && selectedArchive.players.length > 0
+            " class="detail-section">
               <h3>玩家信息</h3>
-              <div
-                v-for="(player, index) in selectedArchive.players"
-                :key="index"
-                class="player-detail"
-              >
+              <div v-for="(player, index) in selectedArchive.players" :key="index" class="player-detail">
                 <div class="player-header">
                   <span class="player-index">玩家 {{ index + 1 }}</span>
                   <span class="steam-id">{{ player.steam_id }}</span>
@@ -225,17 +194,10 @@
                 <div class="inventory-detail">
                   <span class="inventory-label">背包物品：</span>
                   <div class="inventory-items">
-                    <span
-                      v-for="(item, itemIndex) in player.inventory"
-                      :key="itemIndex"
-                      class="inventory-item"
-                    >
+                    <span v-for="(item, itemIndex) in player.inventory" :key="itemIndex" class="inventory-item">
                       {{ getItemNameById(item) }}
                     </span>
-                    <span
-                      v-if="!player.inventory || player.inventory.length === 0"
-                      class="empty-inventory"
-                    >
+                    <span v-if="!player.inventory || player.inventory.length === 0" class="empty-inventory">
                       空
                     </span>
                   </div>
@@ -372,7 +334,7 @@ const generateRandomArchives = async () => {
 const generateRandomArchiveData = async (index) => {
   const randomLevel =
     availableLevels.value[
-      Math.floor(Math.random() * availableLevels.value.length)
+    Math.floor(Math.random() * availableLevels.value.length)
     ];
   const randomDifficulty =
     difficultyLevels[Math.floor(Math.random() * difficultyLevels.length)];
@@ -670,12 +632,10 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent);
   animation: progress-shine 2s infinite;
 }
 
@@ -754,11 +714,9 @@ onMounted(() => {
 
 .archive-card.saved {
   border-color: var(--success-color);
-  background: linear-gradient(
-    135deg,
-    var(--bg-secondary) 0%,
-    rgba(0, 212, 170, 0.05) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--bg-secondary) 0%,
+      rgba(0, 212, 170, 0.05) 100%);
 }
 
 .archive-card.selected {

@@ -3,35 +3,36 @@ import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t, locale } = useI18n()
+const base = import.meta.env.BASE_URL
 
 const screenshots = computed(() => [
   {
     id: 1,
     titleKey: 'screenshots.items.list.title',
     descKey: 'screenshots.items.list.desc',
-    imgZh: '/存档列表-zh.png',
-    imgEn: '/存档列表-en.png'
+    imgZh: `${base}存档列表-zh.png`,
+    imgEn: `${base}存档列表-en.png`
   },
   {
     id: 2,
     titleKey: 'screenshots.items.create.title',
     descKey: 'screenshots.items.create.desc',
-    imgZh: '/创建存档页面第一步-zh.png',
-    imgEn: '/创建存档页面第一步-en.png'
+    imgZh: `${base}创建存档页面第一步-zh.png`,
+    imgEn: `${base}创建存档页面第一步-en.png`
   },
   {
     id: 3,
     titleKey: 'screenshots.items.quick.title',
     descKey: 'screenshots.items.quick.desc',
-    imgZh: '/快速创建存档页面-zh.png',
-    imgEn: '/快速创建存档页面-en.png'
+    imgZh: `${base}快速创建存档页面-zh.png`,
+    imgEn: `${base}快速创建存档页面-en.png`
   },
   {
     id: 4,
     titleKey: 'screenshots.items.edit.title',
     descKey: 'screenshots.items.edit.desc',
-    imgZh: '/编辑页面-zh.png',
-    imgEn: '/编辑页面-en.png'
+    imgZh: `${base}编辑页面-zh.png`,
+    imgEn: `${base}编辑页面-en.png`
   }
 ])
 

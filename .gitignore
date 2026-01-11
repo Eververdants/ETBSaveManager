@@ -16,6 +16,7 @@ dist-ssr
 .vscode
 .trae
 .idea
+.kiro
 .DS_Store
 *.suo
 *.ntvs*

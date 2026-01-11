@@ -71,3 +71,8 @@ jobs:
         with:
           tauriScript: pnpm tauri
           args: --target ${{ matrix.arch }}
+          tagName: ${{ github.ref_name }}
+          releaseName: 'v__VERSION__'
+          releaseBody: 'See the assets to download this version and install.'
+          releaseDraft: false
+          prerelease: false

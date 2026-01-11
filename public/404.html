@@ -4,17 +4,20 @@
     <meta charset="utf-8">
     <title>ETB Save Manager</title>
     <script>
-      // GitHub Pages SPA redirect
-      // 将 404 请求重定向到 index.html，保留路径信息
-      const pathSegmentsToKeep = 1; // /ETBSaveManager/ 保留一级路径
-      const l = window.location;
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
+      // GitHub Pages SPA 重定向
+      // 直接重定向到 index.html，让 Vue Router 处理路由
+      var repo = '/ETBSaveManager';
+      var fullPath = window.location.pathname;
+      
+      // 如果已经在正确的 repo 路径下，重定向到 repo 根目录让 SPA 处理
+      if (fullPath.startsWith(repo)) {
+        var path = fullPath.slice(repo.length) || '/';
+        var search = window.location.search;
+        var hash = window.location.hash;
+        // 将路径信息存储到 sessionStorage，让 index.html 恢复
+        sessionStorage.setItem('spa-redirect-path', path + search + hash);
+        window.location.replace(repo + '/');
+      }
     </script>
   </head>
   <body>

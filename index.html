@@ -1,112 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ETB Save Manager</title>
-    
-    <!-- 预连接关键资源 -->
-    <link rel="preconnect" href="/" crossorigin />
-    
-    <!-- 预加载关键CSS -->
-    <link rel="preload" href="./src/styles/variables.css" as="style" />
-    
-    <!-- 预加载关键JS模块 -->
-    <link rel="modulepreload" href="/src/main.js" />
-    
-    <!-- 内联关键CSS - 避免FOUC -->
-    <style>
-      /* 主题变量 */
-      :root {
-        --bg: #f8f9fa;
-        --text: #1c1c1e;
-      }
-      
-      html[data-theme="dark"] {
-        --bg: #1c1c1e;
-        --text: #f8f9fa;
-      }
-      
-      html[data-theme="new-year"] {
-        --bg: #1a0a0a;
-        --text: #f8f9fa;
-      }
-      
-      html[data-theme="spring-festival-dark"] {
-        --bg: #1c0a14;
-        --text: #f8f9fa;
-      }
-      
-      html[data-theme="spring-festival-light"] {
-        --bg: #fefce8;
-        --text: #1c1c1e;
-      }
-      
-      html, body {
-        margin: 0;
-        background-color: var(--bg);
-        color: var(--text);
-      }
-      
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
-      }
-      
-      #app {
-        min-height: 100vh;
-        background: var(--bg);
-      }
-      
-      /* 启动时禁用所有过渡动画 */
-      html.no-transition,
-      html.no-transition *,
-      html.no-transition *::before,
-      html.no-transition *::after {
-        transition: none !important;
-        animation-duration: 0s !important;
-      }
-    </style>
-    
-    <!-- 主题初始化脚本 - 必须在 style 之后立即执行 -->
-    <script>
-      (function() {
-        var theme = 'light';
-        try {
-          var saved = localStorage.getItem('theme');
-          if (saved) {
-            // 处理可能被 JSON.stringify 的值
-            theme = saved.replace(/^"|"$/g, '');
-          } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            theme = 'dark';
-          }
-        } catch(e) {}
-        
-        // 立即设置主题属性
-        document.documentElement.setAttribute('data-theme', theme);
-        
-        // 立即设置背景色，不等待 CSS 变量生效
-        var bgColors = {
-          'dark': '#1c1c1e',
-          'light': '#f8f9fa',
-          'new-year': '#1a0a0a',
-          'spring-festival-dark': '#1c0a14',
-          'spring-festival-light': '#fefce8'
-        };
-        var bg = bgColors[theme] || bgColors['light'];
-        document.documentElement.style.backgroundColor = bg;
-        
-        // 保存到全局变量
-        window.__initialTheme = theme;
-      })();
-    </script>
-    
-    <!-- 延迟加载非关键CSS -->
-    <link rel="stylesheet" href="./src/styles/variables.css" />
-    <link rel="icon" type="image/png" href="/app-icon.png" />
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETB Save Manager - 逃离后室存档管理器</title>
+    <meta name="description" content="一款现代化、跨平台的《逃离后室》存档管理工具，支持创建、编辑、备份存档等功能">
+    <meta name="keywords" content="逃离后室,Escape The Backrooms,存档管理,Save Manager,ETB">
+    <meta name="theme-color" content="#0F0F23">
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   </head>
-
   <body>
     <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

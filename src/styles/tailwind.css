@@ -1,0 +1,521 @@
+/**
+ * ============================================
+ * 🎨 Tailwind CSS 入口文件
+ * ============================================
+ * 
+ * 本文件是 Tailwind CSS v4 的入口文件
+ * 使用 CSS-first 配置方式，将现有 CSS 变量映射为 Tailwind 主题令牌
+ */
+
+@import "tailwindcss";
+
+/* 导入现有主题系统 */
+@import "./themes/index.css";
+@import "./variables.css";
+
+/* ==========================================
+ * Tailwind 主题配置 - 使用 CSS 变量
+ * ========================================== */
+@theme {
+  /* ==========================================
+   * 颜色令牌 - 背景 (Background Colors)
+   * ========================================== */
+  --color-bg: var(--bg);
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-bg-elevated: var(--bg-elevated);
+
+  /* ==========================================
+   * 颜色令牌 - 文本 (Text Colors)
+   * ========================================== */
+  --color-text: var(--text);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-disabled: var(--text-disabled);
+  --color-text-inverse: var(--text-inverse);
+
+  /* ==========================================
+   * 颜色令牌 - 主色调 (Primary Colors)
+   * ========================================== */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary-color);
+  --color-accent: var(--accent-color);
+  --color-accent-hover: var(--accent-hover);
+
+  /* ==========================================
+   * 颜色令牌 - 边框/分割线 (Border/Divider)
+   * ========================================== */
+  --color-border: var(--border-color);
+  --color-border-light: var(--border-light);
+  --color-divider: var(--divider-color);
+  --color-divider-light: var(--divider-light);
+
+  /* ==========================================
+   * 颜色令牌 - 状态颜色 (Status Colors)
+   * ========================================== */
+  --color-success: var(--success-color);
+  --color-success-light: var(--color-success-light);
+  --color-success-dark: var(--color-success-dark);
+  --color-success-hover: var(--color-success-hover);
+  --color-success-bg: var(--color-success-bg);
+  --color-success-border: var(--color-success-border);
+
+  --color-error: var(--error-color);
+  --color-error-light: var(--color-error-light);
+  --color-error-dark: var(--color-error-dark);
+  --color-error-hover: var(--color-error-hover);
+  --color-error-bg: var(--color-error-bg);
+  --color-error-border: var(--color-error-border);
+
+  --color-warning: var(--warning-color);
+  --color-warning-light: var(--color-warning-light);
+  --color-warning-dark: var(--color-warning-dark);
+  --color-warning-hover: var(--color-warning-hover);
+  --color-warning-bg: var(--color-warning-bg);
+  --color-warning-border: var(--color-warning-border);
+
+  --color-info: var(--info-color);
+  --color-info-light: var(--color-info-light);
+  --color-info-dark: var(--color-info-dark);
+  --color-info-hover: var(--color-info-hover);
+  --color-info-bg: var(--color-info-bg);
+  --color-info-border: var(--color-info-border);
+
+  /* ==========================================
+   * 颜色令牌 - 表面/卡片 (Surface/Card)
+   * ========================================== */
+  --color-surface: var(--surface-color);
+  --color-surface-hover: var(--surface-hover);
+  --color-card-bg: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-card-active: var(--card-active-indicator);
+
+  /* ==========================================
+   * 颜色令牌 - 侧边栏 (Sidebar)
+   * ========================================== */
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-text: var(--sidebar-text-color);
+  --color-sidebar-border: var(--sidebar-border-color);
+  --color-sidebar-hover: var(--sidebar-hover-bg);
+  --color-sidebar-item-hover: var(--sidebar-item-hover-bg);
+  --color-sidebar-active: var(--sidebar-active-bg);
+  --color-sidebar-active-text: var(--sidebar-active-color);
+  --color-sidebar-active-border: var(--sidebar-active-border);
+  --color-sidebar-active-hover: var(--sidebar-active-hover-bg);
+
+  /* ==========================================
+   * 颜色令牌 - 标题栏 (Titlebar)
+   * ========================================== */
+  --color-titlebar-bg: var(--titlebar-bg);
+  --color-titlebar-border: var(--titlebar-border);
+  --color-titlebar-btn-hover: var(--titlebar-button-hover);
+  --color-titlebar-close: var(--titlebar-close-bg);
+  --color-titlebar-close-hover: var(--titlebar-close-bg-hover);
+  --color-titlebar-close-active: var(--titlebar-close-bg-active);
+  --color-titlebar-minimize: var(--titlebar-minimize-bg);
+  --color-titlebar-minimize-hover: var(--titlebar-minimize-bg-hover);
+  --color-titlebar-maximize: var(--titlebar-maximize-bg);
+  --color-titlebar-maximize-hover: var(--titlebar-maximize-bg-hover);
+
+  /* ==========================================
+   * 颜色令牌 - 下拉菜单 (Dropdown)
+   * ========================================== */
+  --color-dropdown-bg: var(--dropdown-bg);
+  --color-dropdown-border: var(--dropdown-border);
+  --color-dropdown-border-hover: var(--dropdown-border-hover);
+  --color-dropdown-text: var(--dropdown-text);
+  --color-dropdown-icon: var(--dropdown-icon);
+  --color-dropdown-hover: var(--dropdown-hover-bg);
+  --color-dropdown-selected: var(--dropdown-selected-bg);
+  --color-dropdown-selected-text: var(--dropdown-selected-text);
+
+  /* ==========================================
+   * 颜色令牌 - 滚动条 (Scrollbar)
+   * ========================================== */
+  --color-scrollbar-track: var(--scrollbar-track);
+  --color-scrollbar-thumb: var(--scrollbar-thumb);
+  --color-scrollbar-thumb-hover: var(--scrollbar-thumb-hover);
+
+  /* ==========================================
+   * 颜色令牌 - 毛玻璃效果 (Glass Effect)
+   * ========================================== */
+  --color-glass-bg: var(--glass-bg);
+  --color-glass-border: var(--glass-border);
+  --color-glass-border-light: var(--glass-border-light);
+
+  /* ==========================================
+   * 颜色令牌 - 搜索遮罩 (Search Overlay)
+   * ========================================== */
+  --color-search-overlay: var(--search-overlay-bg);
+
+  /* ==========================================
+   * 颜色令牌 - 按钮 (Buttons)
+   * ========================================== */
+  --color-btn-primary: var(--btn-primary-bg);
+  --color-btn-primary-hover: var(--btn-primary-bg-hover);
+  --color-btn-primary-text: var(--btn-primary-text);
+
+  --color-btn-secondary: var(--btn-secondary-bg);
+  --color-btn-secondary-hover: var(--btn-secondary-bg-hover);
+  --color-btn-secondary-text: var(--btn-secondary-text);
+
+  --color-btn-success: var(--btn-success-bg);
+  --color-btn-success-hover: var(--btn-success-bg-hover);
+  --color-btn-success-text: var(--btn-success-text);
+
+  --color-btn-danger: var(--btn-danger-bg);
+  --color-btn-danger-hover: var(--btn-danger-bg-hover);
+  --color-btn-danger-text: var(--btn-danger-text);
+
+  --color-btn-warning: var(--btn-warning-bg);
+  --color-btn-warning-hover: var(--btn-warning-bg-hover);
+  --color-btn-warning-text: var(--btn-warning-text);
+
+  --color-btn-info: var(--btn-info-bg);
+  --color-btn-info-hover: var(--btn-info-bg-hover);
+  --color-btn-info-text: var(--btn-info-text);
+
+  --color-btn-outline-border: var(--btn-outline-border);
+  --color-btn-outline-text: var(--btn-outline-text);
+  --color-btn-outline-hover: var(--btn-outline-bg-hover);
+
+  /* ==========================================
+   * 颜色令牌 - 弹窗/提示框 (Popup/Toast)
+   * ========================================== */
+  --color-popup-success-bg: var(--popup-success-bg);
+  --color-popup-success-border: var(--popup-success-border);
+  --color-popup-error-bg: var(--popup-error-bg);
+  --color-popup-error-border: var(--popup-error-border);
+  --color-popup-warning-bg: var(--popup-warning-bg);
+  --color-popup-warning-border: var(--popup-warning-border);
+  --color-popup-info-bg: var(--popup-info-bg);
+  --color-popup-info-border: var(--popup-info-border);
+
+  --color-toast-success: var(--toast-success);
+  --color-toast-success-dark: var(--toast-success-dark);
+  --color-toast-error: var(--toast-error);
+  --color-toast-error-dark: var(--toast-error-dark);
+  --color-toast-info: var(--toast-info);
+  --color-toast-info-dark: var(--toast-info-dark);
+  --color-toast-warning: var(--toast-warning);
+  --color-toast-warning-dark: var(--toast-warning-dark);
+  --color-toast-folder: var(--toast-folder);
+  --color-toast-folder-dark: var(--toast-folder-dark);
+
+  /* ==========================================
+   * 颜色令牌 - 日志页面 (Log Page)
+   * ========================================== */
+  --color-log-bg: var(--log-bg);
+  --color-log-bg-secondary: var(--log-bg-secondary);
+  --color-log-bg-tertiary: var(--log-bg-tertiary);
+  --color-log-bg-hover: var(--log-bg-hover);
+  --color-log-header: var(--log-header-bg);
+  --color-log-border: var(--log-border);
+  --color-log-text: var(--log-text);
+  --color-log-text-secondary: var(--log-text-secondary);
+  --color-log-text-muted: var(--log-text-muted);
+  --color-log-btn-primary: var(--log-btn-primary);
+  --color-log-btn-primary-hover: var(--log-btn-primary-hover);
+  --color-log-btn-secondary: var(--log-btn-secondary);
+  --color-log-btn-secondary-hover: var(--log-btn-secondary-hover);
+  --color-log-level-error: var(--log-level-error);
+  --color-log-level-warn: var(--log-level-warn);
+  --color-log-level-info: var(--log-level-info);
+  --color-log-command: var(--log-command);
+
+  /* ==========================================
+   * 颜色令牌 - 版本标签 (Version Tags)
+   * ========================================== */
+  --color-version-major: var(--version-major);
+  --color-version-major-dark: var(--version-major-dark);
+  --color-version-major-bg: var(--version-major-bg);
+  --color-version-minor: var(--version-minor);
+  --color-version-minor-dark: var(--version-minor-dark);
+  --color-version-minor-bg: var(--version-minor-bg);
+  --color-version-patch: var(--version-patch);
+  --color-version-patch-dark: var(--version-patch-dark);
+  --color-version-patch-bg: var(--version-patch-bg);
+  --color-version-feature: var(--version-feature);
+  --color-version-feature-dark: var(--version-feature-dark);
+  --color-version-feature-bg: var(--version-feature-bg);
+  --color-version-enhancement: var(--version-enhancement);
+  --color-version-enhancement-dark: var(--version-enhancement-dark);
+  --color-version-enhancement-bg: var(--version-enhancement-bg);
+  --color-version-improvement: var(--version-improvement);
+  --color-version-improvement-dark: var(--version-improvement-dark);
+  --color-version-improvement-bg: var(--version-improvement-bg);
+  --color-version-stability: var(--version-stability);
+  --color-version-stability-dark: var(--version-stability-dark);
+  --color-version-stability-bg: var(--version-stability-bg);
+
+  /* ==========================================
+   * 颜色令牌 - 复选框/单选框 (Checkbox/Radio)
+   * ========================================== */
+  --color-checkbox-bg: var(--checkbox-bg);
+  --color-checkbox-border: var(--checkbox-border);
+  --color-checkbox-border-hover: var(--checkbox-border-hover);
+  --color-checkbox-checked: var(--checkbox-checked-bg);
+  --color-checkbox-checked-border: var(--checkbox-checked-border);
+  --color-checkbox-checkmark: var(--checkbox-checkmark-color);
+  --color-checkbox-disabled: var(--checkbox-disabled-bg);
+  --color-checkbox-disabled-border: var(--checkbox-disabled-border);
+
+  /* ==========================================
+   * 颜色令牌 - 开关控件 (Switch)
+   * ========================================== */
+  --color-switch-off: var(--switch-bg-off);
+  --color-switch-on: var(--switch-bg-on);
+  --color-switch-thumb: var(--switch-thumb);
+
+  /* ==========================================
+   * 颜色令牌 - 性能指示器 (Performance)
+   * ========================================== */
+  --color-perf-high: var(--perf-high);
+  --color-perf-medium: var(--perf-medium);
+  --color-perf-low: var(--perf-low);
+
+  /* ==========================================
+   * 颜色令牌 - 特殊 UI (Special UI)
+   * ========================================== */
+  --color-star: var(--color-star);
+  --color-star-empty: var(--color-star-empty);
+  --color-highlight: var(--color-highlight);
+  --color-badge-featured: var(--color-badge-featured);
+  --color-badge-featured-light: var(--color-badge-featured-light);
+  --color-badge-featured-text: var(--color-badge-featured-text);
+
+  /* ==========================================
+   * 颜色令牌 - About 页面 (About Page)
+   * ========================================== */
+  --color-about-glass-bg: var(--about-glass-bg);
+  --color-about-glass-border: var(--about-glass-border);
+  --color-about-list-bg: var(--about-list-bg);
+  --color-about-hover-bg: var(--about-hover-bg);
+  --color-about-border-light: var(--about-border-light);
+  --color-about-header-bg: var(--about-header-bg);
+  --color-about-header-border: var(--about-header-border);
+
+  /* ==========================================
+   * 颜色令牌 - 基础色板 (Color Palette)
+   * ========================================== */
+  /* 品牌色 */
+  --color-brand-primary: var(--color-brand-primary);
+  --color-brand-secondary: var(--color-brand-secondary);
+
+  /* 中性色 */
+  --color-white: var(--color-white);
+  --color-black: var(--color-black);
+  --color-gray-50: var(--color-gray-50);
+  --color-gray-100: var(--color-gray-100);
+  --color-gray-200: var(--color-gray-200);
+  --color-gray-300: var(--color-gray-300);
+  --color-gray-400: var(--color-gray-400);
+  --color-gray-500: var(--color-gray-500);
+  --color-gray-600: var(--color-gray-600);
+  --color-gray-700: var(--color-gray-700);
+  --color-gray-800: var(--color-gray-800);
+  --color-gray-900: var(--color-gray-900);
+  --color-gray-950: var(--color-gray-950);
+
+  /* 功能色 - 蓝色 */
+  --color-blue-50: var(--color-blue-50);
+  --color-blue-100: var(--color-blue-100);
+  --color-blue-200: var(--color-blue-200);
+  --color-blue-300: var(--color-blue-300);
+  --color-blue-400: var(--color-blue-400);
+  --color-blue-500: var(--color-blue-500);
+  --color-blue-600: var(--color-blue-600);
+  --color-blue-700: var(--color-blue-700);
+  --color-blue-800: var(--color-blue-800);
+  --color-blue-900: var(--color-blue-900);
+  --color-blue-apple: var(--color-blue-apple);
+
+  /* 功能色 - 绿色 */
+  --color-green-50: var(--color-green-50);
+  --color-green-100: var(--color-green-100);
+  --color-green-200: var(--color-green-200);
+  --color-green-300: var(--color-green-300);
+  --color-green-400: var(--color-green-400);
+  --color-green-500: var(--color-green-500);
+  --color-green-600: var(--color-green-600);
+  --color-green-700: var(--color-green-700);
+  --color-green-800: var(--color-green-800);
+  --color-green-900: var(--color-green-900);
+  --color-green-apple: var(--color-green-apple);
+
+  /* 功能色 - 红色 */
+  --color-red-50: var(--color-red-50);
+  --color-red-100: var(--color-red-100);
+  --color-red-200: var(--color-red-200);
+  --color-red-300: var(--color-red-300);
+  --color-red-400: var(--color-red-400);
+  --color-red-500: var(--color-red-500);
+  --color-red-600: var(--color-red-600);
+  --color-red-700: var(--color-red-700);
+  --color-red-800: var(--color-red-800);
+  --color-red-900: var(--color-red-900);
+  --color-red-apple: var(--color-red-apple);
+
+  /* 功能色 - 橙色 */
+  --color-orange-50: var(--color-orange-50);
+  --color-orange-100: var(--color-orange-100);
+  --color-orange-200: var(--color-orange-200);
+  --color-orange-300: var(--color-orange-300);
+  --color-orange-400: var(--color-orange-400);
+  --color-orange-500: var(--color-orange-500);
+  --color-orange-600: var(--color-orange-600);
+  --color-orange-700: var(--color-orange-700);
+  --color-orange-800: var(--color-orange-800);
+  --color-orange-900: var(--color-orange-900);
+  --color-orange-apple: var(--color-orange-apple);
+
+  /* 功能色 - 黄色 */
+  --color-yellow-50: var(--color-yellow-50);
+  --color-yellow-100: var(--color-yellow-100);
+  --color-yellow-200: var(--color-yellow-200);
+  --color-yellow-300: var(--color-yellow-300);
+  --color-yellow-400: var(--color-yellow-400);
+  --color-yellow-500: var(--color-yellow-500);
+  --color-yellow-600: var(--color-yellow-600);
+  --color-yellow-700: var(--color-yellow-700);
+  --color-yellow-800: var(--color-yellow-800);
+  --color-yellow-900: var(--color-yellow-900);
+  --color-gold: var(--color-gold);
+  --color-gold-light: var(--color-gold-light);
+  --color-gold-dark: var(--color-gold-dark);
+
+  /* 功能色 - 紫色 */
+  --color-purple-50: var(--color-purple-50);
+  --color-purple-100: var(--color-purple-100);
+  --color-purple-200: var(--color-purple-200);
+  --color-purple-300: var(--color-purple-300);
+  --color-purple-400: var(--color-purple-400);
+  --color-purple-500: var(--color-purple-500);
+  --color-purple-600: var(--color-purple-600);
+  --color-purple-700: var(--color-purple-700);
+  --color-purple-800: var(--color-purple-800);
+  --color-purple-900: var(--color-purple-900);
+  --color-purple-apple: var(--color-purple-apple);
+  --color-purple-feature: var(--color-purple-feature);
+
+  /* 功能色 - 青色 */
+  --color-cyan-50: var(--color-cyan-50);
+  --color-cyan-100: var(--color-cyan-100);
+  --color-cyan-200: var(--color-cyan-200);
+  --color-cyan-300: var(--color-cyan-300);
+  --color-cyan-400: var(--color-cyan-400);
+  --color-cyan-500: var(--color-cyan-500);
+  --color-cyan-600: var(--color-cyan-600);
+  --color-cyan-700: var(--color-cyan-700);
+  --color-cyan-800: var(--color-cyan-800);
+  --color-cyan-900: var(--color-cyan-900);
+
+  /* 功能色 - 蓝绿色 */
+  --color-teal-50: var(--color-teal-50);
+  --color-teal-100: var(--color-teal-100);
+  --color-teal-200: var(--color-teal-200);
+  --color-teal-300: var(--color-teal-300);
+  --color-teal-400: var(--color-teal-400);
+  --color-teal-500: var(--color-teal-500);
+  --color-teal-600: var(--color-teal-600);
+  --color-teal-700: var(--color-teal-700);
+  --color-teal-800: var(--color-teal-800);
+  --color-teal-900: var(--color-teal-900);
+  --color-teal-accent: var(--color-teal-accent);
+
+
+  /* ==========================================
+   * 间距令牌 (Spacing Tokens)
+   * 基于 8px 网格系统
+   * ========================================== */
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-5: var(--space-5);
+  --spacing-6: var(--space-6);
+  --spacing-8: var(--space-8);
+  --spacing-10: var(--space-10);
+  --spacing-12: var(--space-12);
+  --spacing-16: var(--space-16);
+
+  /* 组件特定间距 */
+  --spacing-component-padding: var(--spacing-component-padding);
+  --spacing-component-margin: var(--spacing-component-margin);
+  --spacing-section-gap: var(--spacing-section-gap);
+  --spacing-list-gap: var(--spacing-list-gap);
+  --spacing-form-gap: var(--spacing-form-gap);
+  --spacing-card-padding: var(--spacing-card-padding);
+  --spacing-modal-padding: var(--spacing-modal-padding);
+
+  /* ==========================================
+   * 圆角令牌 (Border Radius Tokens)
+   * ========================================== */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-pill: var(--radius-pill);
+  --radius-circle: var(--radius-circle);
+
+  /* 组件特定圆角 */
+  --radius-sidebar: var(--radius-sidebar);
+  --radius-card: var(--radius-card);
+  --radius-modal: var(--radius-modal);
+  --radius-dropdown: var(--radius-dropdown);
+  --radius-button: var(--radius-button);
+  --radius-input: var(--radius-input);
+  --radius-tag: var(--radius-tag);
+  --radius-tooltip: var(--radius-tooltip);
+  --radius-image: var(--radius-image);
+
+
+  /* ==========================================
+   * 阴影令牌 (Shadow Tokens)
+   * ========================================== */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+  --shadow-inner: var(--shadow-inner);
+  --shadow-outline: var(--shadow-outline);
+
+  /* 组件特定阴影 */
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--card-shadow-hover);
+  --shadow-modal: var(--shadow-modal);
+  --shadow-dropdown: var(--shadow-dropdown);
+  --shadow-button: var(--shadow-button);
+  --shadow-button-hover: var(--shadow-button-hover);
+  --shadow-tooltip: var(--shadow-tooltip);
+
+  /* 毛玻璃阴影 */
+  --shadow-glass-light: var(--glass-shadow-light);
+  --shadow-glass-medium: var(--glass-shadow-medium);
+
+  /* ==========================================
+   * 过渡令牌 (Transition Tokens)
+   * ========================================== */
+  --transition-fast: var(--transition-fast);
+  --transition-normal: var(--transition-normal);
+  --transition-slow: var(--transition-slow);
+
+  /* 缓动函数 */
+  --ease-default: var(--ease-default);
+  --ease-in: var(--ease-in);
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+  --ease-bounce: var(--ease-bounce);
+  --ease-spring: var(--ease-spring);
+
+  /* 组件过渡 */
+  --transition-dropdown: var(--dropdown-transition-duration);
+  --transition-card: var(--card-transition);
+}

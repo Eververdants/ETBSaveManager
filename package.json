@@ -43,9 +43,14 @@
   "devDependencies": {
     "@tauri-apps/cli": "^2",
     "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/test-utils": "^2.4.6",
+    "fast-check": "^4.5.3",
+    "happy-dom": "^20.3.1",
+    "jsdom": "^27.4.0",
     "sass-embedded": "^1.90.0",
     "terser": "^5.44.1",
     "vite": "^6.0.3",
-    "vite-bundle-analyzer": "^0.8.0"
+    "vite-bundle-analyzer": "^0.8.0",
+    "vitest": "^4.0.17"
   }
 }

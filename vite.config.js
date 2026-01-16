@@ -1,12 +1,11 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig(async () => ({
-  plugins: [vue(), tailwindcss()],
+  plugins: [vue()],
   base: "./",
   assetsInclude: ["**/*.md"],
   publicDir: "public",

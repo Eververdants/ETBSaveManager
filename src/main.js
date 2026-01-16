@@ -22,7 +22,6 @@ const app = createApp(App);
 
 // 关键路径：只加载启动必需的模块
 import router from "./router";
-import "./styles/tailwind.css";
 import "./styles/animations.css";
 
 // 延迟加载的模块引用

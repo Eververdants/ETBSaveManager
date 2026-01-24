@@ -123,8 +123,14 @@ async function initApp() {
   app.use(i18n);
   app.component("font-awesome-icon", FAIcon);
   
-  // 暴露 i18n 到全局
+  // 暴露到全局供插件使用
   window.$i18n = i18n.global;
+  window.$router = router;
+  window.Vue = await import('vue');
+  
+  // 暴露存储服务
+  const storageModule = await import("./services/storageService");
+  window.storageService = storageModule.default;
 
   // 阶段3：挂载应用（用户可见）
   console.log("[Startup] 挂载应用...");
@@ -176,8 +182,12 @@ async function initApp() {
 // 插件系统初始化（延迟）
 async function initPluginSystem() {
   try {
-    const { initializePluginSystem, languagePluginLoader } = await import("./plugins");
+    const { initializePluginSystem, languagePluginLoader, pagePluginLoader } = await import("./plugins");
     languagePluginLoader.setI18nInstance(i18nInstance);
+    pagePluginLoader.setRouterInstance(router);
+    
+    // router 已经在上面暴露到全局了
+    
     await initializePluginSystem();
   } catch (error) {
     console.warn("[Plugins] 初始化失败:", error);

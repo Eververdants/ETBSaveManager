@@ -7,10 +7,12 @@ import { invoke } from "@tauri-apps/api/core";
 import { pluginManager, PluginType, PluginStatus } from "./core/PluginManager";
 import { languagePluginLoader } from "./loaders/LanguagePluginLoader";
 import { themePluginLoader } from "./loaders/ThemePluginLoader";
+import { pagePluginLoader } from "./loaders/PagePluginLoader";
 
 // 注册内置加载器
 pluginManager.registerLoader(PluginType.LANGUAGE, languagePluginLoader);
 pluginManager.registerLoader(PluginType.THEME, themePluginLoader);
+pluginManager.registerLoader(PluginType.PAGE, pagePluginLoader);
 
 /**
  * 初始化插件系统
@@ -162,11 +164,58 @@ export function getAllAvailableThemes() {
   return themePluginLoader.getAvailableThemes();
 }
 
+/**
+ * 安装页面插件
+ * @param {Object} options - 插件选项
+ */
+export async function installPagePlugin(options) {
+  const {
+    id,
+    name,
+    data,
+    version = "1.0.0",
+    author = "Unknown",
+    description = "",
+  } = options;
+
+  const pluginMeta = {
+    id,
+    type: PluginType.PAGE,
+    name,
+    version,
+    author,
+    description,
+    data,
+    autoLoad: true,
+  };
+
+  await pluginManager.registerPlugin(pluginMeta);
+  await pluginManager.loadPlugin(id);
+
+  return pluginMeta;
+}
+
+/**
+ * 卸载页面插件
+ * @param {string} pluginId - 插件ID
+ */
+export async function uninstallPagePlugin(pluginId) {
+  return pluginManager.removePlugin(pluginId);
+}
+
+/**
+ * 获取已安装的页面插件
+ */
+export function getInstalledPagePlugins() {
+  return pluginManager.getPluginsByType(PluginType.PAGE);
+}
+
 // 导出
 export {
   pluginManager,
   languagePluginLoader,
   themePluginLoader,
+  pagePluginLoader,
   PluginType,
   PluginStatus,
 };
@@ -175,6 +224,7 @@ export default {
   pluginManager,
   languagePluginLoader,
   themePluginLoader,
+  pagePluginLoader,
   initializePluginSystem,
   installLanguagePlugin,
   uninstallLanguagePlugin,
@@ -184,6 +234,9 @@ export default {
   uninstallThemePlugin,
   getInstalledThemePlugins,
   getAllAvailableThemes,
+  installPagePlugin,
+  uninstallPagePlugin,
+  getInstalledPagePlugins,
   PluginType,
   PluginStatus,
 };

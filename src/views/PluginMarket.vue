@@ -119,7 +119,7 @@ import LocalInstallModal from '@/components/plugin/LocalInstallModal.vue';
 import PluginEmptyState from '@/components/plugin/PluginEmptyState.vue';
 import {
   installLanguagePlugin, uninstallLanguagePlugin, getInstalledLanguagePlugins,
-  installThemePlugin, uninstallThemePlugin, pluginManager,
+  installThemePlugin, uninstallThemePlugin, installPagePlugin, pluginManager,
 } from '../plugins';
 
 const { t } = useI18n({ useScope: 'global' });
@@ -267,6 +267,7 @@ const processPluginFolder = async (folderPath) => {
     if (pluginManager.getPlugin(pluginMeta.id)) { localInstallError.value = `插件「${pluginMeta.name}」已安装`; return; }
     if (pluginMeta.type === 'language') await processLanguagePlugin(folderPath, pluginMeta);
     else if (pluginMeta.type === 'theme') await processThemePlugin(folderPath, pluginMeta);
+    else if (pluginMeta.type === 'page') await processPagePlugin(folderPath, pluginMeta);
     else localInstallError.value = `暂不支持的插件类型: ${pluginMeta.type}`;
   } catch (err) { console.error('处理插件文件夹失败:', err); localInstallError.value = `安装失败: ${err.message}`; }
   finally { localInstallLoading.value = false; }
@@ -293,6 +294,48 @@ const processThemePlugin = async (folderPath, meta) => {
   await installThemePlugin({ id: meta.id, name: meta.name, themeId: meta.themeId || meta.id, data, version: meta.version || '1.0.0', author: meta.author || 'Unknown', description: meta.description || '' });
   localInstallSuccess.value = `成功安装主题插件: ${meta.name}`;
   window.dispatchEvent(new CustomEvent('theme-plugin-changed'));
+  await fetchPlugins();
+  refreshInstalledPlugins();
+};
+
+const processPagePlugin = async (folderPath, meta) => {
+  // 读取配置文件
+  const configFile = meta.main || 'config.json';
+  let config;
+  try {
+    config = JSON.parse(await readTextFile(`${folderPath}/${configFile}`));
+  } catch (error) {
+    localInstallError.value = `无法读取配置文件 ${configFile}: ${error.message}`;
+    return;
+  }
+  
+  // 读取组件文件
+  const componentFile = meta.componentFile || 'component.vue';
+  let componentCode;
+  try {
+    componentCode = await readTextFile(`${folderPath}/${componentFile}`);
+  } catch (error) {
+    localInstallError.value = `无法读取组件文件 ${componentFile}: ${error.message}`;
+    return;
+  }
+  
+  // 安装插件
+  await installPagePlugin({
+    id: meta.id,
+    name: meta.name,
+    version: meta.version || '1.0.0',
+    author: meta.author || 'Unknown',
+    description: meta.description || '',
+    data: {
+      route: {
+        ...config.route,
+        componentCode: componentCode
+      },
+      menu: config.menu
+    }
+  });
+  
+  localInstallSuccess.value = `成功安装页面插件: ${meta.name}`;
   await fetchPlugins();
   refreshInstalledPlugins();
 };

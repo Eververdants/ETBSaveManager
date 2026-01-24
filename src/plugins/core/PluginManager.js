@@ -13,6 +13,7 @@ export const PluginType = {
   LANGUAGE: "language",
   THEME: "theme",
   FEATURE: "feature",
+  PAGE: "page", // 新增：页面插件类型
 };
 
 // 插件状态枚举

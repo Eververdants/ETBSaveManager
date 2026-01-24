@@ -498,6 +498,7 @@ import { themeStorage } from "../services/themeStorage.js";
 import { getAllAvailableLanguages, getInstalledThemePlugins } from "../plugins";
 import storage from "../services/storageService";
 import { notify } from "../services/notificationService";
+import { APP_VERSION } from "../config/version";
 
 export default {
   name: "Settings",
@@ -524,7 +525,7 @@ export default {
       showApiKey: false,
       cacheEntryCount: 0,
       checkingUpdate: false,
-      appVersion: "3.0.0-Beta-1",
+      appVersion: APP_VERSION,
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,

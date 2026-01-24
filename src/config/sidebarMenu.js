@@ -1,3 +1,5 @@
+import { ref } from 'vue';
+
 // 侧边栏菜单配置（支持i18n国际化）
 // 使用国际化键值，实际文本在i18n语言包中定义
 
@@ -5,7 +7,7 @@
  * 顶部菜单项配置
  * 用于侧边栏上半部分的菜单
  */
-export const topMenuItems = [
+export const topMenuItems = ref([
   {
     id: 1,
     textKey: "sidebar.archiveList", // i18n键值
@@ -22,15 +24,14 @@ export const topMenuItems = [
     descriptionKey: "archive.createDescription",
     route: "CreateArchive",
   },
-  // 核心存档功能暂时隐藏
-  // {
-  //   id: 3,
-  //   textKey: "sidebar.coreArchive",
-  //   icon: ["fas", "database"],
-  //   action: "openCoreArchive",
-  //   descriptionKey: "archive.coreDescription",
-  //   route: "CoreArchive",
-  // },
+  {
+    id: 3,
+    textKey: "sidebar.coreArchive",
+    icon: ["fas", "database"],
+    action: "openCoreArchive",
+    descriptionKey: "archive.coreDescription",
+    route: "CoreArchive",
+  },
   {
     id: 4,
     textKey: "sidebar.pluginMarket",
@@ -39,13 +40,13 @@ export const topMenuItems = [
     descriptionKey: "plugin.marketDescription",
     route: "PluginMarket",
   },
-];
+]);
 
 /**
  * 底部菜单项配置
  * 用于侧边栏下半部分的菜单
  */
-export const bottomMenuItems = [
+export const bottomMenuItems = ref([
   {
     id: 7,
     textKey: "sidebar.feedback",
@@ -70,7 +71,7 @@ export const bottomMenuItems = [
     descriptionKey: "settings.description",
     route: "Settings",
   },
-];
+]);
 
 /**
  * 获取所有菜单项

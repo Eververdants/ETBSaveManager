@@ -12,6 +12,8 @@ export default defineConfig(async () => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
+      // 使用包含编译器的 Vue 版本以支持运行时模板编译
+      "vue": "vue/dist/vue.esm-bundler.js",
     },
   },
 

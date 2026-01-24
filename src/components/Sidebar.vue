@@ -76,12 +76,11 @@ import {
   onUnmounted,
   nextTick,
   watch,
-  reactive,
 } from "vue";
 import { useRoute } from "vue-router";
 import {
-  topMenuItems as originalTopMenuItems,
-  bottomMenuItems as originalBottomMenuItems,
+  topMenuItems,
+  bottomMenuItems,
   addBottomMenuItem,
 } from "../config/sidebarMenu.js";
 import { gsap } from "gsap";
@@ -95,19 +94,17 @@ const isDarkTheme = ref(false);
 const sidebarRef = ref(null);
 const activeItemId = ref(null);
 
-// 创建响应式的菜单项数组
-const topMenuItems = reactive([...originalTopMenuItems]);
-const bottomMenuItems = reactive([...originalBottomMenuItems]);
+// 直接使用导入的响应式数组，不创建副本
 
 // 过滤后的顶部菜单项
 const filteredTopMenuItems = computed(() => {
-  return [...topMenuItems];
+  return [...topMenuItems.value];
 });
 
 // 根据当前路由设置激活的菜单项
 const setActiveItemFromRoute = () => {
   // 查找与当前路由匹配的菜单项
-  const allMenuItems = [...topMenuItems, ...bottomMenuItems];
+  const allMenuItems = [...topMenuItems.value, ...bottomMenuItems.value];
 
   // 特殊处理：某些页面需要激活特定的菜单项
   let activeItem = null;
@@ -227,6 +224,24 @@ onMounted(() => {
     }
   });
 
+  // 监听插件菜单添加事件
+  window.addEventListener("plugin-menu-added", (event) => {
+    console.log("插件菜单已添加:", event.detail);
+    // 触发重新渲染
+    nextTick(() => {
+      setActiveItemFromRoute();
+    });
+  });
+
+  // 监听插件菜单移除事件
+  window.addEventListener("plugin-menu-removed", (event) => {
+    console.log("插件菜单已移除:", event.detail);
+    // 触发重新渲染
+    nextTick(() => {
+      setActiveItemFromRoute();
+    });
+  });
+
   // 监听测试存档显示开关事件（与日志菜单相同的动态模式）
   window.addEventListener("test-archive-toggle", (event) => {
     if (event.detail.enabled) {
@@ -280,18 +295,18 @@ const safeT = (key) => {
 // 添加日志菜单项
 const addLogMenuItem = () => {
   // 检查是否已存在日志菜单项
-  const existingLogItem = [...topMenuItems, ...bottomMenuItems].find(
+  const existingLogItem = [...topMenuItems.value, ...bottomMenuItems.value].find(
     (item) => item.action === "openLog"
   );
 
   if (!existingLogItem) {
     // 生成一个唯一的ID，确保不与其他菜单项冲突
-    const allItems = [...topMenuItems, ...bottomMenuItems];
+    const allItems = [...topMenuItems.value, ...bottomMenuItems.value];
     const maxId = Math.max(...allItems.map((item) => item.id));
     const uniqueLogId = maxId + 1;
 
     // 使用textKey属性，保持与其他菜单项一致
-    bottomMenuItems.push({
+    bottomMenuItems.value.push({
       id: uniqueLogId,
       textKey: "sidebar.logs",
       icon: ["fas", "bug"],
@@ -310,15 +325,15 @@ const addLogMenuItem = () => {
 // 移除日志菜单项
 const removeLogMenuItem = () => {
   // 找到日志菜单项的索引
-  const logItemIndex = bottomMenuItems.findIndex(
+  const logItemIndex = bottomMenuItems.value.findIndex(
     (item) => item.action === "openLog"
   );
 
   if (logItemIndex !== -1) {
-    const logItemId = bottomMenuItems[logItemIndex].id;
+    const logItemId = bottomMenuItems.value[logItemIndex].id;
 
     // 移除日志菜单项
-    bottomMenuItems.splice(logItemIndex, 1);
+    bottomMenuItems.value.splice(logItemIndex, 1);
 
     // 如果当前激活的是日志项，需要重置激活状态
     if (activeItemId.value === logItemId) {
@@ -335,18 +350,18 @@ const removeLogMenuItem = () => {
 // 添加测试存档菜单项
 const addTestArchiveMenuItem = () => {
   // 检查是否已存在测试存档菜单项
-  const existingTestArchiveItem = [...topMenuItems, ...bottomMenuItems].find(
+  const existingTestArchiveItem = [...topMenuItems.value, ...bottomMenuItems.value].find(
     (item) => item.action === "openTestArchive"
   );
 
   if (!existingTestArchiveItem) {
     // 生成一个唯一的ID，确保不与其他菜单项冲突
-    const allItems = [...topMenuItems, ...bottomMenuItems];
+    const allItems = [...topMenuItems.value, ...bottomMenuItems.value];
     const maxId = Math.max(...allItems.map((item) => item.id));
     const uniqueTestArchiveId = maxId + 1;
 
     // 使用textKey属性，保持与其他菜单项一致
-    topMenuItems.push({
+    topMenuItems.value.push({
       id: uniqueTestArchiveId,
       textKey: "sidebar.testArchive",
       icon: ["fas", "flask"],
@@ -365,15 +380,15 @@ const addTestArchiveMenuItem = () => {
 // 移除测试存档菜单项
 const removeTestArchiveMenuItem = () => {
   // 找到测试存档菜单项的索引
-  const testArchiveItemIndex = topMenuItems.findIndex(
+  const testArchiveItemIndex = topMenuItems.value.findIndex(
     (item) => item.action === "openTestArchive"
   );
 
   if (testArchiveItemIndex !== -1) {
-    const testArchiveItemId = topMenuItems[testArchiveItemIndex].id;
+    const testArchiveItemId = topMenuItems.value[testArchiveItemIndex].id;
 
     // 移除测试存档菜单项
-    topMenuItems.splice(testArchiveItemIndex, 1);
+    topMenuItems.value.splice(testArchiveItemIndex, 1);
 
     // 如果当前激活的是测试存档项，需要重置激活状态
     if (activeItemId.value === testArchiveItemId) {

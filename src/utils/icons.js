@@ -121,7 +121,7 @@ import {
   faAngleDoubleLeft,
   faAngleDoubleRight,
   faListOl,
-  faAlignLeft,
+  faAlignLeft
 } from "@fortawesome/free-solid-svg-icons";
 
 // 按需导入 - Brand 图标
@@ -164,7 +164,6 @@ export function registerIcons() {
     faCommentDots,
     faCopy,
     faCube,
-    faDatabase,
     faDoorOpen,
     faDownload,
     faDraftingCompass,
@@ -269,7 +268,7 @@ export function registerCriticalIcons() {
       faHome, faCog, faPlus, faStore, faInfoCircle,
       faMinus, faWindowMaximize, faTimes, faList, faPlusCircle,
       faCommentDots, faSearch, faMagnifyingGlass, faFolder, faEdit,
-      faEye, faEyeSlash, faTrash
+      faEye, faEyeSlash, faTrash, faDatabase
   );
 }
 

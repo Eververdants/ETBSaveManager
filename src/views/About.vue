@@ -127,8 +127,10 @@ import { computed, ref, onMounted } from "vue";
 import { useReleaseNotes } from "@/composables";
 import storage from "@/services/storageService";
 
+import { APP_VERSION } from "../config/version";
+
 const { t, locale } = useI18n({ useScope: "global" });
-const version = "3.0.0-Beta-1"; // TODO: 从 package.json 动态获取
+const version = APP_VERSION;
 
 // 使用公告数据 composable
 const { latestRelease, formatShortDate } =

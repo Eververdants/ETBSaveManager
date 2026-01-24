@@ -195,6 +195,7 @@ import { useI18n } from "vue-i18n";
 import CustomDropdown from "../components/CustomDropdown.vue";
 import { feedbackService } from "../services/feedbackService.js";
 import storage from "../services/storageService";
+import { APP_VERSION } from "../config/version";
 
 export default {
   name: "Feedback",
@@ -272,7 +273,7 @@ export default {
         this.systemInfo = {
           os: "Unknown",
           osVersion: "",
-          appVersion: "3.0.0-Beta-1",
+          appVersion: APP_VERSION,
           language: this.currentLanguage,
           screenResolution: `${window.screen.width}x${window.screen.height}`,
         };

@@ -76,7 +76,7 @@ library.add(
 
 // 路由配置
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory('/ETBSaveManager/'),
   routes: [
     { path: '/', component: () => import('./views/Home.vue') },
     { path: '/:pathMatch(.*)*', redirect: '/' }

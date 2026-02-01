@@ -37,7 +37,7 @@ onUnmounted(() => {
 <template>
   <nav class="navbar" :class="{ scrolled: isScrolled }">
     <div class="container navbar-content">
-      <a href="/" class="logo">
+      <a href="#" class="logo" @click.prevent>
         <img src="/icon.ico" alt="ETB Save Manager" class="logo-icon" />
         <span class="logo-text">ETB Save Manager</span>
       </a>

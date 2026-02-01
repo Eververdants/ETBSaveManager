@@ -24,7 +24,7 @@ const links = computed(() => ({
       <div class="footer-main">
         <!-- Brand -->
         <div class="footer-brand">
-          <a href="/" class="footer-logo">
+          <a href="#" class="footer-logo" @click.prevent>
             <img src="/icon.ico" alt="ETB Save Manager" class="logo-icon" />
             <span>ETB Save Manager</span>
           </a>

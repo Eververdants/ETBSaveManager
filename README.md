@@ -1,48 +1,90 @@
-# .
+# ETB Save Manager
 
-This template should help get you started developing with Vue 3 in Vite.
+<div align="center">
 
-## Recommended IDE Setup
+![ETB Save Manager](public/icon.ico)
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+**A Modern, Cross-Platform Save Manager for Escape The Backrooms**
 
-## Recommended Browser Setup
+[中文文档](./README-CN.md) | [Download](https://github.com/Eververdants/ETBSaveManager/releases) | [Website](https://eververdants.github.io/ETBSaveManager/)
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+[![License](https://img.shields.io/github/license/Eververdants/ETBSaveManager)](./LICENSE)
+[![Release](https://img.shields.io/github/v/release/Eververdants/ETBSaveManager)](https://github.com/Eververdants/ETBSaveManager/releases)
+[![Stars](https://img.shields.io/github/stars/Eververdants/ETBSaveManager)](https://github.com/Eververdants/ETBSaveManager/stargazers)
 
-## Type Support for `.vue` Imports in TS
+</div>
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## ✨ Features
 
-## Customize configuration
+- 🎮 **Save Management** - Create, edit, backup and restore game saves
+- 🌍 **Multi-language** - Support for Chinese, English, and more
+- 🎨 **Theme System** - Multiple built-in themes with plugin support
+- ⚡ **High Performance** - Built with Tauri + Vue 3 for native performance
+- 🔌 **Plugin System** - Extensible with custom themes and languages
+- 💾 **Backup & Restore** - Automatic backup and one-click restore
+- 🖥️ **Cross-Platform** - Windows support (Linux & macOS coming soon)
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## 📦 Installation
 
-## Project Setup
+### Download Pre-built Binary
 
-```sh
+Download the latest version from [Releases](https://github.com/Eververdants/ETBSaveManager/releases) page.
+
+### Build from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/Eververdants/ETBSaveManager.git
+cd ETBSaveManager
+
+# Install dependencies
 npm install
-```
 
-### Compile and Hot-Reload for Development
-
-```sh
+# Development
 npm run dev
-```
 
-### Type-Check, Compile and Minify for Production
-
-```sh
+# Build
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+## 🚀 Quick Start
 
-```sh
-npm run lint
-```
+1. Launch ETB Save Manager
+2. Select your game save directory
+3. Create or edit saves
+4. Backup important saves
+5. Enjoy the game!
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Vue 3 + TypeScript + Vite
+- **Desktop**: Tauri 2.0
+- **UI**: Custom CSS + FontAwesome
+- **i18n**: Vue I18n
+- **Charts**: Chart.js
+- **Animation**: GSAP
+
+## 🔌 Plugin Development
+
+ETB Save Manager supports custom plugins for themes and languages. See [Plugin Development Guide](./plugins/PLUGIN_DEV_GUIDE_EN.md) for details.
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📧 Contact
+
+- Email: llzgd@outlook.com
+- GitHub: [@Eververdants](https://github.com/Eververdants)
+
+## ⭐ Star History
+
+If you find this project helpful, please consider giving it a star!
+
+---
+
+Made with ❤️ by [Eververdants](https://github.com/Eververdants)

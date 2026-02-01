@@ -1,5 +1,4 @@
 import { createApp } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 import i18n from './i18n'
 import './styles/main.css'
@@ -74,23 +73,7 @@ library.add(
   faRust
 )
 
-// 路由配置
-const router = createRouter({
-  history: createWebHistory('/ETBSaveManager/'),
-  routes: [
-    { path: '/', component: () => import('./views/Home.vue') },
-    { path: '/:pathMatch(.*)*', redirect: '/' }
-  ],
-  scrollBehavior(to, _from, savedPosition) {
-    if (to.hash) {
-      return { el: to.hash, behavior: 'smooth' }
-    }
-    return savedPosition || { top: 0 }
-  }
-})
-
 const app = createApp(App)
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.use(i18n)
-app.use(router)
 app.mount('#app')

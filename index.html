@@ -11,17 +11,6 @@
     <!-- Preconnect to Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- GitHub Pages SPA redirect handler -->
-    <script>
-      (function() {
-        var redirect = sessionStorage.getItem('spa-redirect-path');
-        if (redirect) {
-          sessionStorage.removeItem('spa-redirect-path');
-          // Vue Router 会处理这个路径
-          history.replaceState(null, null, redirect);
-        }
-      })();
-    </script>
   </head>
   <body>
     <div id="app"></div>

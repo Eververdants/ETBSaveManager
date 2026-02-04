@@ -121,7 +121,9 @@ import {
   faAngleDoubleLeft,
   faAngleDoubleRight,
   faListOl,
-  faAlignLeft
+  faAlignLeft,
+  faStar,
+  faColumns
 } from "@fortawesome/free-solid-svg-icons";
 
 // 按需导入 - Brand 图标
@@ -256,7 +258,9 @@ export function registerIcons() {
     faBilibili,
     faGithub,
     faTiktok,
-    faXTwitter
+    faXTwitter,
+    faStar,
+    faColumns
   );
 }
 

@@ -818,8 +818,6 @@ export default {
         // 使用全局 i18n 实例设置语言
         if (this.$i18n) {
           this.$i18n.locale = lang;
-        } else if (window.$i18n) {
-          window.$i18n.locale = lang;
         }
         storage.setItem("language", lang);
 
@@ -1272,8 +1270,6 @@ export default {
         // 使用全局 i18n 实例设置语言
         if (this.$i18n) {
           this.$i18n.locale = savedLanguage;
-        } else if (window.$i18n) {
-          window.$i18n.locale = savedLanguage;
         }
       } catch (error) {
         console.error(this.t("settings.languageInitFailed"), error);

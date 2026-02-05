@@ -84,7 +84,8 @@ import {
   addBottomMenuItem,
 } from "../config/sidebarMenu.js";
 import { gsap } from "gsap";
-import storage from "../services/storageService";
+import storageService from "@/services/storageService";
+import { getAppContext } from "@/appContext.js";
 
 const emit = defineEmits(["sidebar-action", "sidebar-expand"]);
 
@@ -157,7 +158,7 @@ const detectTheme = () => {
     typeof window.themeManager.applyTheme === "function"
   ) {
     // 获取当前主题设置
-    const savedTheme = storage.getItem("theme") || "light";
+    const savedTheme = storageService.getItem("theme") || "light";
     // 应用主题
     window.themeManager.applyTheme(savedTheme);
   } else {
@@ -217,7 +218,7 @@ onMounted(() => {
 
   // 监听开发者模式变化事件
   window.addEventListener("developer-mode-changed", (event) => {
-    if (event.detail.enabled && storage.getItem("logMenuEnabled") === "true") {
+    if (event.detail.enabled && storageService.getItem("logMenuEnabled") === "true") {
       addLogMenuItem();
     } else if (!event.detail.enabled) {
       removeLogMenuItem();
@@ -262,7 +263,7 @@ onMounted(() => {
   });
 
   // 初始化时检查测试存档功能状态
-  const testArchiveEnabled = storage.getItem("testArchiveEnabled");
+  const testArchiveEnabled = storageService.getItem("testArchiveEnabled");
   // 只有在明确启用时才添加测试存档菜单项（与Settings.vue的默认值逻辑保持一致）
   if (testArchiveEnabled === "true") {
     addTestArchiveMenuItem();
@@ -270,20 +271,20 @@ onMounted(() => {
 
   // 初始化时检查日志功能状态
   if (
-    storage.getItem("developerMode") === "true" &&
-    storage.getItem("logMenuEnabled") === "true"
+    storageService.getItem("developerMode") === "true" &&
+    storageService.getItem("logMenuEnabled") === "true"
   ) {
     addLogMenuItem();
   }
 });
 
 const t = computed(() => {
-  const globalI18n = window.$i18n;
-  return globalI18n ? globalI18n.t : (key) => key;
+  const { i18n } = getAppContext();
+  return i18n ? i18n.t : (key) => key;
 });
 const currentLanguage = computed(() => {
-  const globalI18n = window.$i18n;
-  return globalI18n ? globalI18n.locale.value || globalI18n.locale : "zh-CN";
+  const { i18n } = getAppContext();
+  return i18n ? i18n.locale.value || i18n.locale : "zh-CN";
 });
 
 // 安全的翻译函数

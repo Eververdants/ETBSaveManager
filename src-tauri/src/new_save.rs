@@ -111,6 +111,7 @@ pub struct SaveData {
 pub struct PlayerData {
     pub steam_id: String,
     pub inventory: Vec<i32>,
+    pub sanity: f32,
 }
 
 pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
@@ -633,7 +634,7 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> Result<(), Str
                     id: None,
                     data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
                 },
-                inner: PropertyInner::Float(100.0),
+                inner: PropertyInner::Float(player.sanity.clamp(0.0, 100.0)),
             };
 
             // Inventory 属性

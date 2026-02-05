@@ -26,7 +26,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { getAppContext } from "@/appContext.js";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const appName = ref("");
@@ -35,7 +36,7 @@ const currentLanguage = ref("zh-CN");
 // 更新应用名称的函数
 const updateAppName = () => {
   try {
-    const i18n = window.$i18n;
+    const { i18n } = getAppContext();
     if (i18n && i18n.t) {
       appName.value = i18n.t("app.name");
       currentLanguage.value = i18n.locale.value || i18n.locale || "zh-CN";
@@ -137,8 +138,6 @@ onMounted(() => {
   -webkit-app-region: drag;
   user-select: none;
   border-bottom: 1px solid var(--titlebar-border);
-  --titlebar-border: rgba(125, 125, 125, 0.3);
-  --titlebar-button-hover: rgba(255, 255, 255, 0.1);
   transition: background 0.25s ease, border-bottom 0.25s ease,
     backdrop-filter 0.25s ease;
 }
@@ -196,12 +195,12 @@ onMounted(() => {
 }
 
 .titlebar-button:hover {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--titlebar-button-hover);
   backdrop-filter: blur(5px);
 }
 
 .titlebar-button:active {
-  background-color: rgba(255, 255, 255, 0.25);
+  background-color: var(--titlebar-button-hover);
 }
 
 .titlebar-button.close:hover {

@@ -65,12 +65,6 @@ const routes = [
     meta: { keepAlive: false },
   },
   {
-    path: "/core-archive",
-    name: "CoreArchive",
-    component: () => import("../views/CoreArchive.vue"),
-    meta: { keepAlive: true },
-  },
-  {
     path: "/logs",
     name: "Log",
     component: () => import("../views/Log.vue"),

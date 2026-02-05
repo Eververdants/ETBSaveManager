@@ -4,6 +4,7 @@
  */
 
 import storage from "../../services/storageService";
+import { getAppContext } from "../../appContext.js";
 
 // 语言插件必需的字段（用于验证翻译完整性）
 const REQUIRED_FIELDS = ["common", "sidebar", "settings"];
@@ -32,8 +33,9 @@ class LanguagePluginLoader {
     if (this.i18nInstance) {
       return this.i18nInstance;
     }
-    if (window.$i18n) {
-      return { global: window.$i18n };
+    const ctx = getAppContext();
+    if (ctx.i18n) {
+      return { global: ctx.i18n };
     }
     return null;
   }

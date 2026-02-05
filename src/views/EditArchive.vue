@@ -87,49 +87,18 @@
       <div class="tab-panel" :class="{ 'tab-active': activeTab === 'players' }">
         <div class="players-layout">
           <!-- 玩家列表 -->
-          <div class="player-list-section">
-            <div class="section-title">
-              <span>{{ $t("editArchive.playerManagement") }}</span>
-              <span class="count-badge">{{ archiveData.players.length }}</span>
-            </div>
-
-            <div class="player-list" v-if="archiveData.players.length > 0">
-              <div v-for="(player, index) in archiveData.players" :key="index" class="player-item"
-                :class="{ active: activePlayerIndex === index }" @click="selectPlayer(index)">
-                <div class="player-avatar">
-                  <font-awesome-icon :icon="['fas', 'user']" />
-                </div>
-                <div class="player-info">
-                  <span class="player-name">
-                    {{ player.username || (player.isOfflinePlayer ? `${player.steamId}(本地)` : player.steamId) }}
-                  </span>
-                  <span class="sanity-tag" :class="getSanityClass(player.sanity ?? 100)">
-                    {{ player.sanity ?? 100 }}%
-                  </span>
-                </div>
-                <button class="del-btn" @click.stop="removePlayer(index)">
-                  <font-awesome-icon :icon="['fas', 'trash']" />
-                </button>
-              </div>
-            </div>
-            <div class="empty-hint" v-else>
-              <font-awesome-icon :icon="['fas', 'user-plus']" />
-              <p>{{ $t("editArchive.noPlayersHint") }}</p>
-            </div>
-
-            <div class="add-player-row">
-              <input v-model="newSteamId" type="text" class="form-input"
-                :placeholder="$t('editArchive.steamIdPlaceholder')" @keyup.enter="addPlayer" />
-              <button class="add-btn" @click="addPlayer">
-                <font-awesome-icon :icon="['fas', 'plus']" />
-              </button>
-            </div>
-            <transition name="fade">
-              <div v-if="playerInputMessage" class="msg-tip" :class="playerInputMessageType">
-                {{ playerInputMessage }}
-              </div>
-            </transition>
-          </div>
+          <PlayerManager
+            :players="archiveData.players"
+            :active-player-index="activePlayerIndex"
+            :new-steam-id="newSteamId"
+            :player-input-message="playerInputMessage"
+            :player-input-message-type="playerInputMessageType"
+            :show-sanity="true"
+            @update:newSteamId="(val) => (newSteamId.value = val)"
+            @add-steam-id="addPlayer"
+            @remove-player="removePlayer"
+            @select-player="selectPlayer"
+          />
 
           <!-- 玩家详情 -->
           <div class="player-detail-section" v-if="activePlayerIndex !== -1 && archiveData.players.length > 0">
@@ -221,6 +190,7 @@ import { invoke } from "@tauri-apps/api/core";
 import InventoryItemSelector from "../components/InventoryItemSelector.vue";
 import LazyImage from "../components/LazyImage.vue";
 import CustomSlider from "../components/CustomSlider.vue";
+import PlayerManager from "../components/PlayerManager.vue";
 import { notify } from "../services/notificationService";
 
 const props = defineProps({

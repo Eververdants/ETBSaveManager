@@ -227,7 +227,7 @@ async function initFloatingButtonProtection() {
 body {
   font-family: -apple-system, BlinkMacSystemFont, "San Francisco",
     "Helvetica Neue", sans-serif;
-  background: var(--bg);
+  background: var(--app-bg, var(--bg));
   color: var(--text);
   transition: background 0.3s ease, color 0.3s ease;
   overflow: hidden;

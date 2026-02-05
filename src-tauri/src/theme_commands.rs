@@ -6,6 +6,8 @@ use std::fs;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 
+use crate::error::AppResult;
+
 /// Maximum number of custom themes allowed
 const MAX_CUSTOM_THEMES: usize = 10;
 
@@ -304,10 +306,10 @@ fn get_timestamp() -> u64 {
 // ============================================================================
 
 #[tauri::command]
-pub async fn save_custom_theme(app: AppHandle, theme: CustomTheme) -> Result<(), String> {
+pub async fn save_custom_theme(app: AppHandle, theme: CustomTheme) -> AppResult<()> {
     validate_theme_id(&theme.id)?;
     if theme.name.trim().is_empty() {
-        return Err("Theme name cannot be empty".to_string());
+        return Err("Theme name cannot be empty".to_string().into());
     }
     validate_theme_colors(&theme.colors)?;
 
@@ -324,7 +326,8 @@ pub async fn save_custom_theme(app: AppHandle, theme: CustomTheme) -> Result<(),
             return Err(format!(
                 "Maximum {} custom themes reached. Delete one first.",
                 MAX_CUSTOM_THEMES
-            ));
+            )
+            .into());
         }
     }
 
@@ -346,7 +349,7 @@ pub async fn save_custom_theme(app: AppHandle, theme: CustomTheme) -> Result<(),
 }
 
 #[tauri::command]
-pub async fn load_custom_themes(app: AppHandle) -> Result<Vec<CustomTheme>, String> {
+pub async fn load_custom_themes(app: AppHandle) -> AppResult<Vec<CustomTheme>> {
     let themes_dir = get_themes_dir(&app)?;
     let mut themes = Vec::new();
     let entries =
@@ -367,7 +370,7 @@ pub async fn load_custom_themes(app: AppHandle) -> Result<Vec<CustomTheme>, Stri
 }
 
 #[tauri::command]
-pub async fn delete_custom_theme(app: AppHandle, theme_id: String) -> Result<bool, String> {
+pub async fn delete_custom_theme(app: AppHandle, theme_id: String) -> AppResult<bool> {
     validate_theme_id(&theme_id)?;
     let themes_dir = get_themes_dir(&app)?;
     let app_data_dir = app
@@ -391,18 +394,18 @@ pub async fn delete_custom_theme(app: AppHandle, theme_id: String) -> Result<boo
 }
 
 #[tauri::command]
-pub async fn get_theme_config(app: AppHandle) -> Result<ThemeConfig, String> {
+pub async fn get_theme_config(app: AppHandle) -> AppResult<ThemeConfig> {
     let config_path = get_config_path(&app)?;
     if !config_path.exists() {
         return Ok(ThemeConfig::default());
     }
     let content =
         fs::read_to_string(&config_path).map_err(|e| format!("Failed to read config: {}", e))?;
-    serde_json::from_str(&content).map_err(|_| "Config file corrupted".to_string())
+    Ok(serde_json::from_str(&content).map_err(|_| "Config file corrupted".to_string())?)
 }
 
 #[tauri::command]
-pub async fn set_active_theme(app: AppHandle, theme_id: String) -> Result<(), String> {
+pub async fn set_active_theme(app: AppHandle, theme_id: String) -> AppResult<()> {
     let config_path = get_config_path(&app)?;
     let config = ThemeConfig {
         version: 1,
@@ -424,7 +427,7 @@ pub async fn export_theme_to_file(
     app: AppHandle,
     theme_id: String,
     path: String,
-) -> Result<(), String> {
+) -> AppResult<()> {
     validate_theme_id(&theme_id)?;
     let themes_dir = get_themes_dir(&app)?;
     let app_data_dir = app
@@ -435,7 +438,7 @@ pub async fn export_theme_to_file(
     validate_path_security(&theme_path, &app_data_dir)?;
 
     if !theme_path.exists() {
-        return Err(format!("Theme not found: {}", theme_id));
+        return Err(format!("Theme not found: {}", theme_id).into());
     }
 
     let content = fs::read_to_string(&theme_path).map_err(|e| format!("Failed to read: {}", e))?;
@@ -455,16 +458,16 @@ pub async fn export_theme_to_file(
 }
 
 #[tauri::command]
-pub async fn import_theme_from_file(app: AppHandle, path: String) -> Result<CustomTheme, String> {
+pub async fn import_theme_from_file(app: AppHandle, path: String) -> AppResult<CustomTheme> {
     let file_path = PathBuf::from(&path);
     if !file_path.exists() {
-        return Err("Import file not found".to_string());
+        return Err("Import file not found".to_string().into());
     }
 
     let metadata =
         fs::metadata(&file_path).map_err(|e| format!("Failed to read file info: {}", e))?;
     if metadata.len() > MAX_IMPORT_SIZE {
-        return Err(format!("File too large. Max {}KB", MAX_IMPORT_SIZE / 1024));
+        return Err(format!("File too large. Max {}KB", MAX_IMPORT_SIZE / 1024).into());
     }
 
     let content = fs::read_to_string(&file_path).map_err(|e| format!("Failed to read: {}", e))?;
@@ -481,7 +484,7 @@ pub async fn import_theme_from_file(app: AppHandle, path: String) -> Result<Cust
 
     validate_theme_id(&export_data.theme.id)?;
     if export_data.theme.name.trim().is_empty() {
-        return Err("Imported theme has empty name".to_string());
+        return Err("Imported theme has empty name".to_string().into());
     }
     validate_theme_colors(&export_data.theme.colors)?;
 

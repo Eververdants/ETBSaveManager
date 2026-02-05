@@ -412,10 +412,11 @@ watch(
   position: relative;
   height: 100%;
   width: 100%;
+  background: var(--bg-primary);
 }
 
 .archive-list-container {
-  height: calc(100vh - 60px);
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--bg-primary);

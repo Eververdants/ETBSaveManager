@@ -60,7 +60,7 @@
           <Step3EditInventory v-else-if="currentStep === 3" v-model:new-steam-id="newSteamId" :players="players"
             :active-player-index="activePlayerIndex" :player-input-message="playerInputMessage"
             :player-input-message-type="playerInputMessageType" @add-steam-id="addSteamId" @remove-player="removePlayer"
-            @select-player="selectPlayer" @edit-slot="editSlot" />
+            @select-player="selectPlayer" @edit-slot="editSlot" @update-player-sanity="updatePlayerSanity" />
         </div>
       </transition>
     </div>
@@ -362,8 +362,7 @@ export default {
           return {
             valid: true,
             isOfflinePlayer: true,
-            processedSteamId: steamId,
-            displayId: parts[0],
+            processedSteamId: parts[0],
           };
         }
         return { valid: false, message: t("createArchive.steamIdInvalid") };
@@ -415,9 +414,10 @@ export default {
         steamId: validation.processedSteamId,
         inventory: Array(12).fill(null),
         username: validation.isOfflinePlayer
-          ? `${validation.displayId}(本地)`
+          ? `${validation.processedSteamId}(本地)`
           : null,
         isOfflinePlayer: validation.isOfflinePlayer,
+        sanity: 100,
       };
       players.push(newPlayer);
       newSteamId.value = "";
@@ -434,6 +434,14 @@ export default {
 
     const selectPlayer = (index) => {
       activePlayerIndex.value = index;
+    };
+
+    const updatePlayerSanity = ({ playerIndex, sanity }) => {
+      if (playerIndex < 0 || playerIndex >= players.length) return;
+      const val = Number(sanity);
+      players[playerIndex].sanity = Number.isFinite(val)
+        ? Math.max(0, Math.min(100, val))
+        : 100;
     };
 
     const getItemIdByName = (itemName) => {
@@ -565,7 +573,12 @@ export default {
       try {
         const { invoke } = await import("@tauri-apps/api/core");
         const steamIds = players
-          .filter((p) => !p.isOfflinePlayer)
+          .filter(
+            (p) =>
+              !p.isOfflinePlayer &&
+              p.steamId?.length === 17 &&
+              /^\d+$/.test(p.steamId)
+          )
           .map((p) => p.steamId);
         if (steamIds.length === 0) return;
         const usernames = await invoke("get_steam_usernames_command", {
@@ -592,23 +605,6 @@ export default {
           userFriendlyMessage = t("createArchive.steamApiRateLimit");
         } else if (errorMessage.includes("Steam API密钥未配置")) {
           userFriendlyMessage = t("createArchive.steamApiKeyNotConfigured");
-        } else if (errorMessage.includes("无效的Steam ID格式")) {
-          userFriendlyMessage = t("createArchive.steamIdValidationError", {
-            error: errorMessage,
-          });
-          players.forEach((player) => {
-            if (
-              !player.isOfflinePlayer &&
-              player.steamId &&
-              player.steamId.includes("-")
-            ) {
-              const parts = player.steamId.split("-");
-              if (parts.length > 1) {
-                player.username = `${parts[0]}(本地)`;
-                player.isOfflinePlayer = true;
-              }
-            }
-          });
         } else {
           userFriendlyMessage = t("createArchive.steamIdValidationError", {
             error: errorMessage,
@@ -672,6 +668,7 @@ export default {
                 .filter((item) => item !== null && item !== undefined)
                 .map((item) => getItemIdByName(item))
               : [],
+            sanity: typeof p.sanity === "number" ? p.sanity : 100,
           })),
           basic_archive: basicArchive || {},
           main_ending: !isMainEnding,
@@ -937,6 +934,7 @@ export default {
       addSteamId,
       removePlayer,
       selectPlayer,
+      updatePlayerSanity,
       editSlot,
       handleItemSelect,
       nextStep,

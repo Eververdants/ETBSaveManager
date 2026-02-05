@@ -1,4 +1,6 @@
 use crate::common::get_app_config_dir;
+use crate::error::AppError;
+use crate::error::AppResult;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
@@ -78,7 +80,7 @@ pub struct SteamCacheManager {
 }
 
 impl SteamCacheManager {
-    pub fn new() -> Result<Self, String> {
+    pub fn new() -> AppResult<Self> {
         let cache_dir = get_app_config_dir()?.join("steam_cache");
 
         if !cache_dir.exists() {
@@ -98,7 +100,7 @@ impl SteamCacheManager {
     }
 
     /// 从文件加载缓存
-    fn load_cache(&mut self) -> Result<(), String> {
+    fn load_cache(&mut self) -> AppResult<()> {
         if !self.cache_path.exists() {
             return Ok(());
         }
@@ -128,7 +130,7 @@ impl SteamCacheManager {
     }
 
     /// 保存缓存到文件（仅在 dirty 时保存）
-    fn save_cache(&mut self) -> Result<(), String> {
+    fn save_cache(&mut self) -> AppResult<()> {
         if !self.dirty {
             return Ok(());
         }
@@ -234,7 +236,7 @@ impl SteamCacheManager {
     }
 
     /// 清空所有缓存
-    pub fn clear_cache(&mut self) -> Result<(), String> {
+    pub fn clear_cache(&mut self) -> AppResult<()> {
         self.cache.clear();
         self.call_count = 0;
         self.dirty = true;
@@ -252,7 +254,7 @@ fn validate_steam_id(steam_id: &str) -> bool {
 pub async fn get_steam_usernames(
     steam_ids: Vec<String>,
     api_key: String,
-) -> Result<HashMap<String, String>, String> {
+) -> AppResult<HashMap<String, String>> {
     if steam_ids.is_empty() {
         return Ok(HashMap::new());
     }
@@ -260,7 +262,7 @@ pub async fn get_steam_usernames(
     // 验证Steam ID格式
     for steam_id in &steam_ids {
         if !validate_steam_id(steam_id) {
-            return Err(format!("无效的Steam ID格式: {}", steam_id));
+            return Err(format!("无效的Steam ID格式: {}", steam_id).into());
         }
     }
 
@@ -311,7 +313,7 @@ pub async fn get_steam_usernames(
 async fn fetch_steam_usernames_batch(
     steam_ids: &[String],
     api_key: &str,
-) -> Result<HashMap<String, String>, String> {
+) -> AppResult<HashMap<String, String>> {
     let url = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/";
 
     let client = reqwest::Client::new();
@@ -326,7 +328,7 @@ async fn fetch_steam_usernames_batch(
         .map_err(|e| format!("请求Steam API失败: {}", e))?;
 
     if !response.status().is_success() {
-        return Err(format!("Steam API返回错误状态码: {}", response.status()));
+        return Err(format!("Steam API返回错误状态码: {}", response.status()).into());
     }
 
     let api_response: SteamApiResponse = response
@@ -345,7 +347,7 @@ async fn fetch_steam_usernames_batch(
 // ==================== Tauri Commands ====================
 
 #[tauri::command]
-pub async fn encrypt_steam_api_key(api_key: String) -> Result<String, String> {
+pub async fn encrypt_steam_api_key(api_key: String) -> AppResult<String> {
     use crate::encryption;
     use rand::RngCore;
 
@@ -357,40 +359,41 @@ pub async fn encrypt_steam_api_key(api_key: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub async fn decrypt_steam_api_key(encrypted_key: String) -> Result<String, String> {
+pub async fn decrypt_steam_api_key(encrypted_key: String) -> AppResult<String> {
     use crate::encryption;
 
     let parts: Vec<&str> = encrypted_key.split(':').collect();
     if parts.len() != 2 {
-        return Err("无效的加密密钥格式".to_string());
+        return Err("无效的加密密钥格式".to_string().into());
     }
 
     let key = hex::decode(parts[0]).map_err(|e| format!("解码密钥失败: {}", e))?;
     let encrypted_data = hex::decode(parts[1]).map_err(|e| format!("解码加密数据失败: {}", e))?;
 
     if key.len() != 32 {
-        return Err("无效的密钥长度".to_string());
+        return Err("无效的密钥长度".to_string().into());
     }
 
     let mut key_array = [0u8; 32];
     key_array.copy_from_slice(&key);
 
     let decrypted = encryption::decrypt_data(&key_array, &encrypted_data)?;
-    String::from_utf8(decrypted).map_err(|e| format!("转换解密数据为字符串失败: {}", e))
+    Ok(String::from_utf8(decrypted)
+        .map_err(|e| format!("转换解密数据为字符串失败: {}", e))?)
 }
 
 #[tauri::command]
-pub async fn clear_steam_cache() -> Result<(), String> {
+pub async fn clear_steam_cache() -> AppResult<()> {
     SteamCacheManager::new()?.clear_cache()
 }
 
 #[tauri::command]
-pub async fn get_steam_cache_count() -> Result<usize, String> {
+pub async fn get_steam_cache_count() -> AppResult<usize> {
     Ok(SteamCacheManager::new()?.get_cache_size())
 }
 
 #[tauri::command]
-pub async fn get_all_steam_cache_entries() -> Result<Vec<(String, String, u64, u32)>, String> {
+pub async fn get_all_steam_cache_entries() -> AppResult<Vec<(String, String, u64, u32)>> {
     let cache_manager = SteamCacheManager::new()?;
     Ok(cache_manager
         .get_all_cache_entries()
@@ -400,7 +403,7 @@ pub async fn get_all_steam_cache_entries() -> Result<Vec<(String, String, u64, u
 }
 
 #[tauri::command]
-pub async fn cleanup_expired_steam_cache() -> Result<usize, String> {
+pub async fn cleanup_expired_steam_cache() -> AppResult<usize> {
     Ok(SteamCacheManager::new()?.cleanup_expired_cache())
 }
 
@@ -408,18 +411,18 @@ pub async fn cleanup_expired_steam_cache() -> Result<usize, String> {
 pub async fn test_steam_api_key(
     api_key: String,
     steam_id: String,
-) -> Result<HashMap<String, String>, String> {
+) -> AppResult<HashMap<String, String>> {
     get_steam_usernames(vec![steam_id], api_key).await
 }
 
 #[tauri::command]
 pub async fn get_steam_usernames_command(
     steam_ids: Vec<String>,
-) -> Result<HashMap<String, String>, String> {
+) -> AppResult<HashMap<String, String>> {
     let config_path = get_app_config_dir()?.join("config.json");
 
     if !config_path.exists() {
-        return Err("Steam API密钥未配置".to_string());
+        return Err("Steam API密钥未配置".to_string().into());
     }
 
     let config_content =
@@ -431,14 +434,16 @@ pub async fn get_steam_usernames_command(
     let encrypted_api_key = config
         .get("steamApiKey")
         .and_then(|v| v.as_str())
-        .ok_or("Steam API密钥未配置")?;
+        .ok_or_else(|| AppError {
+            message: "Steam API密钥未配置".to_string(),
+        })?;
 
     let api_key = decrypt_steam_api_key(encrypted_api_key.to_string()).await?;
     get_steam_usernames(steam_ids, api_key).await
 }
 
 #[tauri::command]
-pub async fn save_steam_api_key(api_key: String) -> Result<(), String> {
+pub async fn save_steam_api_key(api_key: String) -> AppResult<()> {
     let config_dir = get_app_config_dir()?;
     let config_path = config_dir.join("config.json");
 

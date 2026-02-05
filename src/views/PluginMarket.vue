@@ -188,18 +188,89 @@ const selectCategory = (id) => { selectedCategory.value = id; };
 const openPluginDetail = (plugin) => { selectedPlugin.value = plugin; };
 const closePluginDetail = () => { selectedPlugin.value = null; };
 
+const MAX_PLUGIN_JSON_BYTES = 512 * 1024;
+const MAX_PLUGIN_STRING_LEN = 20000;
+
+const validateDownloadUrl = (url) => {
+  if (!url || typeof url !== 'string') throw new Error('无效的下载地址');
+  let u;
+  try { u = new URL(url); } catch { throw new Error('无效的下载地址'); }
+  if (!['https:', 'http:'].includes(u.protocol)) throw new Error('不支持的下载协议');
+  return u.toString().replace(/\/$/, '');
+};
+
+const readJsonWithLimit = async (res) => {
+  const lenHeader = res.headers.get('content-length');
+  if (lenHeader) {
+    const n = Number(lenHeader);
+    if (Number.isFinite(n) && n > MAX_PLUGIN_JSON_BYTES) {
+      throw new Error('下载内容过大');
+    }
+  }
+  const text = await res.text();
+  if (text.length > MAX_PLUGIN_JSON_BYTES) throw new Error('下载内容过大');
+  let data;
+  try { data = JSON.parse(text); } catch { throw new Error('插件文件不是合法 JSON'); }
+  return data;
+};
+
+const validateString = (v, field) => {
+  if (v == null) return;
+  if (typeof v !== 'string') throw new Error(`${field} 必须是字符串`);
+  if (v.length > MAX_PLUGIN_STRING_LEN) throw new Error(`${field} 内容过长`);
+};
+
+const validateLanguagePack = (data) => {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('翻译文件格式不正确');
+  const requiredTop = ['common', 'sidebar', 'settings'];
+  for (const k of requiredTop) {
+    if (!(k in data)) throw new Error(`翻译文件缺少字段: ${k}`);
+    if (!data[k] || typeof data[k] !== 'object' || Array.isArray(data[k])) throw new Error(`翻译字段 ${k} 格式不正确`);
+  }
+  const walk = (obj, depth = 0) => {
+    if (depth > 20) throw new Error('翻译文件嵌套过深');
+    for (const [k, v] of Object.entries(obj)) {
+      validateString(k, '翻译键');
+      if (typeof v === 'string') validateString(v, '翻译值');
+      else if (v && typeof v === 'object' && !Array.isArray(v)) walk(v, depth + 1);
+      else throw new Error('翻译文件包含不支持的值类型');
+    }
+  };
+  walk(data);
+  return true;
+};
+
+const validateThemePack = (data) => {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('主题文件格式不正确');
+  if (!data.variables || typeof data.variables !== 'object' || Array.isArray(data.variables)) {
+    throw new Error('主题文件缺少 variables');
+  }
+  for (const [k, v] of Object.entries(data.variables)) {
+    validateString(k, 'CSS 变量名');
+    validateString(String(v), 'CSS 变量值');
+  }
+  if (data.customCSS != null) validateString(String(data.customCSS), 'customCSS');
+  return true;
+};
+
 const installPlugin = async (plugin) => {
   try {
     if (plugin.type === 'language' && plugin.downloadUrl) {
-      const res = await fetch(`${plugin.downloadUrl}/translations.json`);
+      const baseUrl = validateDownloadUrl(plugin.downloadUrl);
+      const res = await fetch(`${baseUrl}/translations.json`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`下载翻译文件失败: HTTP ${res.status}`);
-      await installLanguagePlugin({ id: plugin.id, name: plugin.name, locale: plugin.locale, localeName: plugin.localeName, data: await res.json(), version: plugin.version, author: plugin.author, description: plugin.description });
+      const data = await readJsonWithLimit(res);
+      validateLanguagePack(data);
+      await installLanguagePlugin({ id: plugin.id, name: plugin.name, locale: plugin.locale, localeName: plugin.localeName, data, version: plugin.version, author: plugin.author, description: plugin.description });
       plugin.installed = true;
       refreshInstalledPlugins();
     } else if (plugin.type === 'theme' && plugin.downloadUrl) {
-      const res = await fetch(`${plugin.downloadUrl}/theme.json`);
+      const baseUrl = validateDownloadUrl(plugin.downloadUrl);
+      const res = await fetch(`${baseUrl}/theme.json`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`下载主题文件失败: HTTP ${res.status}`);
-      await installThemePlugin({ id: plugin.id, name: plugin.name, themeId: plugin.themeId || plugin.id, data: await res.json(), version: plugin.version, author: plugin.author, description: plugin.description });
+      const data = await readJsonWithLimit(res);
+      validateThemePack(data);
+      await installThemePlugin({ id: plugin.id, name: plugin.name, themeId: plugin.themeId || plugin.id, data, version: plugin.version, author: plugin.author, description: plugin.description });
       plugin.installed = true;
       window.dispatchEvent(new CustomEvent('theme-plugin-changed'));
       refreshInstalledPlugins();

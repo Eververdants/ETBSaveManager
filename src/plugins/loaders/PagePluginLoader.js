@@ -6,6 +6,7 @@
 
 import { topMenuItems, bottomMenuItems } from "../../config/sidebarMenu.js";
 import { compile } from "vue";
+import { getAppContext } from "../../appContext.js";
 
 class PagePluginLoader {
   constructor() {
@@ -30,9 +31,6 @@ class PagePluginLoader {
   getRouter() {
     if (this.routerInstance) {
       return this.routerInstance;
-    }
-    if (window.$router) {
-      return window.$router;
     }
     return null;
   }
@@ -202,21 +200,23 @@ class PagePluginLoader {
     const declarations = this.parseDeclarations(cleanScript);
     
     return function setup() {
-      // 提供 Vue API（从全局获取）
-      const { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } = window.Vue || {};
-      
+      const ctx = getAppContext();
+
+      // 提供 Vue API
+      const { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } = ctx.vue || {};
+
       // 提供路由 API
-      const useRouter = () => window.$router;
-      const useRoute = () => window.$router?.currentRoute?.value;
-      
+      const useRouter = () => ctx.router;
+      const useRoute = () => ctx.router?.currentRoute?.value;
+
       // 提供 i18n API
       const useI18n = () => ({
-        t: window.$i18n?.t || ((key) => key),
-        locale: window.$i18n?.locale,
+        t: ctx.i18n?.t || ((key) => key),
+        locale: ctx.i18n?.locale,
       });
-      
-      // 提供服务（从全局获取）
-      const storage = window.storageService;
+
+      // 提供服务
+      const storage = ctx.storage;
       
       try {
         // 执行脚本并捕获所有声明

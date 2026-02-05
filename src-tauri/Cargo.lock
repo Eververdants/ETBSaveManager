@@ -1063,6 +1063,7 @@ dependencies = [
  "tauri-plugin-opener",
  "tauri-plugin-process",
  "tauri-plugin-updater",
+ "thiserror 1.0.69",
  "tokio",
  "uesave",
  "urlencoding",

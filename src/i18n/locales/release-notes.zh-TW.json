@@ -1,28 +1,24 @@
 {
-  "version": "3.0.0-Beta-1",
-  "date": "2026-01-10",
-  "title": "通知系統統一與回饋系統重構",
+  "version": "3.0.0-Beta-2",
+  "date": "2026-02-05",
+  "title": "外掛系統全面升級",
   "type": "major",
   "categories": {
     "newFeatures": [
-      "新增八方向統一通知服務，取代舊版彈窗和分散的 toast 實現",
-      "新增多款主題外掛：Cyberpunk、Dracula、Monokai、Nord、Solarized"
+      "新增外掛系統支援，支援頁面外掛擴展",
+      "新增外掛管理相關組件和功能"
     ],
     "improvements": [
-      "移除外掛系統灰度測試功能，全面開放外掛系統",
-      "回饋系統重構：從 GitHub Discussions 遷移至 Cloudflare Worker",
-      "重構國際化載入邏輯，優化語言包載入效能",
+      "重構應用上下文管理，優化狀態管理邏輯",
+      "新增錯誤處理模組，提升應用穩定性",
+      "移除tailwindcss依賴，簡化樣式變數系統",
+      "優化國際化載入邏輯，提升語言包載入效能",
       "優化路由懶載入和預載入策略",
       "重構儲存服務，優化初始化流程",
       "調整側邊欄和底部操作欄的樣式與互動",
       "優化通知退場動畫，新增佔位元素防止佈局跳動"
     ],
-    "bugFixes": [
-      "屏蔽無效玩家ID \"ERROR, BAD UNIQUE NET ID\""
-    ],
-    "performance": [
-      "優化建構配置，減少套件體積",
-      "清理無用程式碼和註解"
-    ]
+    "bugFixes": [],
+    "performance": []
   }
 }

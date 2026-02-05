@@ -17,6 +17,7 @@ const STORAGE_FILE = "settings.json";
 const KEYS_TO_MIGRATE = [
   "theme", "language", "updateSource", "performanceMonitor",
   "developerMode", "logMenuEnabled", "testArchiveEnabled",
+  "blueprintModeEnabled",
   "gpuAccelerationDisabled", "newYearThemeMode", "themeBeforeNewYear",
   "quick_create_tutorial_completed", "steamApiKey", "locale",
   "fabScrollHintShown", "hubUnlocked", "lastUpdateCheck",

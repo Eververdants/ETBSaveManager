@@ -290,6 +290,35 @@
         </div>
       </div>
 
+      <!-- 蓝图模式开关 -->
+      <div class="setting-item" v-if="developerModeEnabled">
+        <div class="setting-icon">
+          <font-awesome-icon :icon="['fas', 'code-branch']" />
+        </div>
+        <div class="setting-details">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.enableBlueprintMode") }}
+            </div>
+          </transition>
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.enableBlueprintModeDescription") }}
+            </div>
+          </transition>
+        </div>
+        <div class="setting-action">
+          <label class="switch">
+            <input
+              type="checkbox"
+              v-model="blueprintModeEnabled"
+              @change="handleBlueprintModeToggle"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
       <!-- 日志功能开关 -->
       <div class="setting-item" v-if="developerModeEnabled">
         <div class="setting-icon">
@@ -516,6 +545,9 @@ export default {
         storage.getItem("performanceMonitor", true) !== false, // 默认开启
       developerModeEnabled: storage.getItem("developerMode", false) === true, // 开发者模式状态
       developerOptionsEnabled: storage.getItem("developerMode", false) === true, // 开发者选项是否显示
+      blueprintModeEnabled:
+        storage.getItem("blueprintModeEnabled", false) === true ||
+        storage.getItem("blueprintModeEnabled") === "true", // 蓝图模式开关状态
       logMenuEnabled: storage.getItem("logMenuEnabled", false) === true, // 日志功能开关状态
       testArchiveEnabled: storage.getItem("testArchiveEnabled", true) !== false, // 测试存档显示开关状态，默认开启
       gpuAccelerationDisabled:
@@ -927,6 +959,15 @@ export default {
 
       // 如果关闭开发者模式，同时关闭所有相关设置
       if (!this.developerModeEnabled) {
+        // 关闭蓝图模式
+        this.blueprintModeEnabled = false;
+        storage.setItem("blueprintModeEnabled", "false");
+        window.dispatchEvent(
+          new CustomEvent("blueprint-mode-toggle", {
+            detail: { enabled: false },
+          })
+        );
+
         // 关闭日志功能
         this.logMenuEnabled = false;
         storage.setItem("logMenuEnabled", "false");
@@ -949,6 +990,15 @@ export default {
           })
         );
       }
+    },
+
+    handleBlueprintModeToggle() {
+      storage.setItem("blueprintModeEnabled", this.blueprintModeEnabled);
+      window.dispatchEvent(
+        new CustomEvent("blueprint-mode-toggle", {
+          detail: { enabled: this.blueprintModeEnabled },
+        })
+      );
     },
 
     handleLogMenuToggle() {
@@ -1301,6 +1351,15 @@ export default {
 
       // 如果关闭开发者模式，重置所有相关设置
       if (!enabled) {
+        // 关闭蓝图模式
+        this.blueprintModeEnabled = false;
+        storage.setItem("blueprintModeEnabled", "false");
+        window.dispatchEvent(
+          new CustomEvent("blueprint-mode-toggle", {
+            detail: { enabled: false },
+          })
+        );
+
         // 关闭日志功能
         this.logMenuEnabled = false;
         storage.setItem("logMenuEnabled", "false");

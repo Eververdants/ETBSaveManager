@@ -25,6 +25,9 @@ const app = createApp(App);
 // 关键路径：只加载启动必需的模块
 import router from "./router";
 import "./styles/animations.css";
+import "@vue-flow/core/dist/style.css";
+import "@vue-flow/core/dist/theme-default.css";
+import "@vue-flow/controls/dist/style.css";
 
 // 延迟加载的模块引用
 let i18nInstance = null;

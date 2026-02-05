@@ -25,14 +25,6 @@ export const topMenuItems = ref([
     route: "CreateArchive",
   },
   {
-    id: 3,
-    textKey: "sidebar.coreArchive",
-    icon: ["fas", "database"],
-    action: "openCoreArchive",
-    descriptionKey: "archive.coreDescription",
-    route: "CoreArchive",
-  },
-  {
     id: 4,
     textKey: "sidebar.pluginMarket",
     icon: ["fas", "store"],

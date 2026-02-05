@@ -67,8 +67,8 @@
  * ========================================== */
 :root {
   /* 主要按钮 */
-  --btn-primary-bg: #4b5563;
-  --btn-primary-bg-hover: #374151;
+  --btn-primary-bg: var(--primary);
+  --btn-primary-bg-hover: var(--primary-hover);
   --btn-primary-text: #ffffff;
 
   /* 成功按钮 */
@@ -104,8 +104,8 @@
 
 [data-theme="dark"] {
   /* 主要按钮 - 使用柔和的灰色 */
-  --btn-primary-bg: #6b7280;
-  --btn-primary-bg-hover: #9ca3af;
+  --btn-primary-bg: var(--primary);
+  --btn-primary-bg-hover: var(--primary-hover);
   --btn-primary-text: #ffffff;
 
   /* 次要按钮 */

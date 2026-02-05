@@ -4,6 +4,8 @@
 //! Provides commands for submitting feedback via Gist comments (no authentication required).
 
 use crate::feedback_queue::{FeedbackQueue, FeedbackRecord, FeedbackStatus};
+use crate::error::AppError;
+use crate::error::AppResult;
 use crate::system_info::SystemInfo;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
@@ -120,20 +122,27 @@ impl FeedbackState {
         }
     }
 
-    pub fn init(&self, app_data_dir: &std::path::Path) -> Result<(), String> {
-        let queue = FeedbackQueue::new(app_data_dir)
-            .map_err(|e| format!("Failed to initialize feedback queue: {}", e))?;
-        let mut guard = self.queue.lock().map_err(|e| e.to_string())?;
+    pub fn init(&self, app_data_dir: &std::path::Path) -> AppResult<()> {
+        let queue = FeedbackQueue::new(app_data_dir).map_err(|e| AppError {
+            message: e.to_string(),
+        })?;
+        let mut guard = self.queue.lock().map_err(|e| AppError {
+            message: e.to_string(),
+        })?;
         *guard = Some(queue);
         Ok(())
     }
 
-    pub fn with_queue<F, R>(&self, f: F) -> Result<R, String>
+    pub fn with_queue<F, R>(&self, f: F) -> AppResult<R>
     where
-        F: FnOnce(&FeedbackQueue) -> Result<R, String>,
+        F: FnOnce(&FeedbackQueue) -> AppResult<R>,
     {
-        let guard = self.queue.lock().map_err(|e| e.to_string())?;
-        let queue = guard.as_ref().ok_or("Feedback queue not initialized")?;
+        let guard = self.queue.lock().map_err(|e| AppError {
+            message: format!("Lock error: {}", e),
+        })?;
+        let queue = guard.as_ref().ok_or(AppError {
+            message: "Feedback queue not initialized".to_string(),
+        })?;
         f(queue)
     }
 }
@@ -160,7 +169,7 @@ pub struct WorkerResponse {
 pub async fn send_feedback(
     content: String,
     email: Option<String>,
-) -> Result<WorkerResponse, String> {
+) -> AppResult<WorkerResponse> {
     let client = reqwest::Client::new();
 
     let res = client
@@ -172,17 +181,22 @@ pub async fn send_feedback(
         }))
         .send()
         .await
-        .map_err(|e| format!("Network error: {}", e))?;
+        .map_err(|e| AppError {
+            message: format!("Network error: {}", e),
+        })?;
 
     let status = res.status();
-    let text = res.text().await.map_err(|e| e.to_string())?;
+    let text = res.text().await.map_err(|e| AppError {
+        message: e.to_string(),
+    })?;
 
     if status.is_success() {
-        let resp: WorkerResponse =
-            serde_json::from_str(&text).map_err(|e| format!("Parse response error: {}", e))?;
+        let resp: WorkerResponse = serde_json::from_str(&text).map_err(|e| AppError {
+            message: format!("Parse response error: {}", e),
+        })?;
         Ok(resp)
     } else {
-        Err(format!("Server error {}: {}", status, text))
+        Err(format!("Server error {}: {}", status, text).into())
     }
 }
 
@@ -194,7 +208,7 @@ pub async fn submit_feedback(
     screen_resolution: String,
     state: State<'_, FeedbackState>,
     _app_handle: tauri::AppHandle,
-) -> Result<SubmitResult, String> {
+) -> AppResult<SubmitResult> {
     // Validate input
     validate_feedback_input(&data)?;
 
@@ -220,7 +234,11 @@ pub async fn submit_feedback(
             record.status = FeedbackStatus::Submitted.as_str().to_string();
 
             // Save to local history
-            state.with_queue(|queue| queue.enqueue(&record).map_err(|e| e.to_string()))?;
+            state.with_queue(|queue| {
+                queue.enqueue(&record).map_err(|e| AppError {
+                    message: e.to_string(),
+                })
+            })?;
 
             Ok(SubmitResult {
                 success: true,
@@ -235,7 +253,11 @@ pub async fn submit_feedback(
             println!("Failed to submit feedback: {}", error_msg);
 
             // Queue for later submission (offline)
-            state.with_queue(|queue| queue.enqueue(&record).map_err(|e| e.to_string()))?;
+            state.with_queue(|queue| {
+                queue.enqueue(&record).map_err(|e| AppError {
+                    message: e.to_string(),
+                })
+            })?;
 
             Ok(SubmitResult {
                 success: true,
@@ -249,14 +271,18 @@ pub async fn submit_feedback(
             println!("Failed to submit feedback: {}", e);
 
             // Queue for later submission (offline)
-            state.with_queue(|queue| queue.enqueue(&record).map_err(|e| e.to_string()))?;
+            state.with_queue(|queue| {
+                queue.enqueue(&record).map_err(|e| AppError {
+                    message: e.to_string(),
+                })
+            })?;
 
             Ok(SubmitResult {
                 success: true,
                 feedback_id: record.id,
                 queued: true,
                 discussion_url: None,
-                error: Some(e),
+                error: Some(e.to_string()),
             })
         }
     }
@@ -308,9 +334,11 @@ fn format_feedback_content(data: &FeedbackData, system_info: &SystemInfo) -> Str
 #[tauri::command]
 pub fn get_feedback_history(
     state: State<'_, FeedbackState>,
-) -> Result<Vec<FeedbackHistoryItem>, String> {
+) -> AppResult<Vec<FeedbackHistoryItem>> {
     state.with_queue(|queue| {
-        let records = queue.get_all().map_err(|e| e.to_string())?;
+        let records = queue.get_all().map_err(|e| AppError {
+            message: e.to_string(),
+        })?;
         Ok(records
             .into_iter()
             .map(|r| FeedbackHistoryItem {
@@ -331,17 +359,25 @@ pub fn get_feedback_history(
 pub async fn retry_feedback(
     id: String,
     state: State<'_, FeedbackState>,
-) -> Result<SubmitResult, String> {
+) -> AppResult<SubmitResult> {
     // Get the feedback record
     let record = state
-        .with_queue(|queue| queue.get_by_id(&id).map_err(|e| e.to_string()))?
-        .ok_or("Feedback not found")?;
+        .with_queue(|queue| {
+            queue.get_by_id(&id).map_err(|e| AppError {
+                message: e.to_string(),
+            })
+        })?
+        .ok_or_else(|| AppError {
+            message: "Feedback not found".to_string(),
+        })?;
 
     // Check if it can be retried
     if record.status != FeedbackStatus::Pending.as_str()
         && record.status != FeedbackStatus::Failed.as_str()
     {
-        return Err("Feedback cannot be retried".to_string());
+        return Err(AppError {
+            message: "Feedback cannot be retried".to_string(),
+        });
     }
 
     // Format feedback content
@@ -362,7 +398,7 @@ pub async fn retry_feedback(
             state.with_queue(|queue| {
                 queue
                     .update_status(&id, FeedbackStatus::Submitted, None, None)
-                    .map_err(|e| e.to_string())
+                    .map_err(|e| e.to_string().into())
             })?;
 
             Ok(SubmitResult {
@@ -378,42 +414,46 @@ pub async fn retry_feedback(
 
             // Increment retry count
             let retry_count = state
-                .with_queue(|queue| queue.increment_retry_count(&id).map_err(|e| e.to_string()))?;
+                .with_queue(|queue| queue.increment_retry_count(&id).map_err(|e| e.to_string().into()))?;
 
             // Mark as failed after 3 retries
             if retry_count >= 3 {
                 state.with_queue(|queue| {
                     queue
                         .update_status(&id, FeedbackStatus::Failed, None, None)
-                        .map_err(|e| e.to_string())
+                        .map_err(|e| e.to_string().into())
                 })?;
             }
 
-            Err(format!("Retry failed: {}", error_msg))
+            Err(format!("Retry failed: {}", error_msg).into())
         }
         Err(e) => {
             // Increment retry count
             let retry_count = state
-                .with_queue(|queue| queue.increment_retry_count(&id).map_err(|e| e.to_string()))?;
+                .with_queue(|queue| queue.increment_retry_count(&id).map_err(|e| e.to_string().into()))?;
 
             // Mark as failed after 3 retries
             if retry_count >= 3 {
                 state.with_queue(|queue| {
                     queue
                         .update_status(&id, FeedbackStatus::Failed, None, None)
-                        .map_err(|e| e.to_string())
+                        .map_err(|e| e.to_string().into())
                 })?;
             }
 
-            Err(format!("Retry failed: {}", e))
+            Err(format!("Retry failed: {}", e).into())
         }
     }
 }
 
 /// Deletes a feedback entry
 #[tauri::command]
-pub fn delete_feedback(id: String, state: State<'_, FeedbackState>) -> Result<(), String> {
-    state.with_queue(|queue| queue.delete(&id).map_err(|e| e.to_string()))
+pub fn delete_feedback(id: String, state: State<'_, FeedbackState>) -> AppResult<()> {
+    Ok(state.with_queue(|queue| {
+        queue.delete(&id).map_err(|e| AppError {
+            message: e.to_string(),
+        })
+    })?)
 }
 
 /// Gets system information
@@ -423,27 +463,33 @@ pub fn get_system_info(language: String, screen_resolution: String) -> SystemInf
 }
 
 /// Validates feedback input data
-fn validate_feedback_input(data: &FeedbackData) -> Result<(), String> {
+fn validate_feedback_input(data: &FeedbackData) -> AppResult<()> {
     // Check required fields
     if data.title.trim().is_empty() {
-        return Err("Title is required".to_string());
+        return Err("Title is required".to_string().into());
     }
     if data.description.trim().is_empty() {
-        return Err("Description is required".to_string());
+        return Err("Description is required".to_string().into());
     }
 
     // Check length limits
     if data.title.len() > 100 {
-        return Err("Title must be 100 characters or less".to_string());
+        return Err(AppError {
+            message: "Title must be 100 characters or less".to_string(),
+        });
     }
     if data.description.len() > 60000 {
-        return Err("Description must be 60000 characters or less".to_string());
+        return Err(AppError {
+            message: "Description must be 60000 characters or less".to_string(),
+        });
     }
 
     // Validate feedback type
     let valid_types = ["bug", "idea", "general", "ui"];
     if !valid_types.contains(&data.feedback_type.to_lowercase().as_str()) {
-        return Err("Invalid feedback type".to_string());
+        return Err(AppError {
+            message: "Invalid feedback type".to_string(),
+        });
     }
 
     // Validate severity for bug type
@@ -451,7 +497,9 @@ fn validate_feedback_input(data: &FeedbackData) -> Result<(), String> {
         if let Some(ref severity) = data.severity {
             let valid_severities = ["low", "medium", "high", "critical"];
             if !valid_severities.contains(&severity.to_lowercase().as_str()) {
-                return Err("Invalid severity level".to_string());
+                return Err(AppError {
+                    message: "Invalid severity level".to_string(),
+                });
             }
         }
     }

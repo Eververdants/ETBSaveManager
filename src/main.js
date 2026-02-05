@@ -17,6 +17,8 @@ initConsoleForwarder();
 import { createApp } from "vue";
 import App from "./App.vue";
 
+import { setAppContext } from "./appContext.js";
+
 // 立即创建应用实例（不等待任何异步操作）
 const app = createApp(App);
 
@@ -122,15 +124,13 @@ async function initApp() {
   app.use(router);
   app.use(i18n);
   app.component("font-awesome-icon", FAIcon);
-  
-  // 暴露到全局供插件使用
-  window.$i18n = i18n.global;
-  window.$router = router;
-  window.Vue = await import('vue');
+
+  setAppContext({ i18n: i18n.global, router, vue: await import("vue") });
   
   // 暴露存储服务
   const storageModule = await import("./services/storageService");
   window.storageService = storageModule.default;
+  setAppContext({ storage: storageModule.default });
 
   // 阶段3：挂载应用（用户可见）
   console.log("[Startup] 挂载应用...");

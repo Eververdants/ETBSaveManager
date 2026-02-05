@@ -43,6 +43,7 @@ memmap2 = "0.9"
 rusqlite = { version = "0.31", features = ["bundled"] }
 base64 = "0.22"
 urlencoding = "2.1"
+thiserror = "1"
 
 # 仅在发布时启用优化，不影响开发编译速度
 [profile.release]

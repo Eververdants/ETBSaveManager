@@ -105,7 +105,6 @@ export const preloadCriticalCDNResources = async () => {
 export const checkCDNAvailability = () => {
   const checks = {
     fontawesome: () => !!window.FontAwesomeIcon,
-    vue: () => !!window.Vue,
   };
 
   const results = {};

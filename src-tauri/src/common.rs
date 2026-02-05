@@ -4,7 +4,7 @@
 use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::{BufReader, BufWriter, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, OnceLock};
 use uesave::{
     Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial, PropertyType,
@@ -185,4 +185,59 @@ pub fn remove_save_from_mainsave(archive_name: &str) -> Result<bool, String> {
 #[inline(always)]
 pub fn extract_archive_name(filename: &str) -> &str {
     filename.strip_suffix(".sav").unwrap_or(filename)
+}
+
+pub fn normalize_existing_path(path: &Path) -> Result<PathBuf, String> {
+    path.canonicalize()
+        .map_err(|e| format!("路径解析失败: {}", e))
+}
+
+pub fn normalize_path_for_write(path: &Path) -> Result<PathBuf, String> {
+    if path.exists() {
+        return normalize_existing_path(path);
+    }
+
+    let parent = path
+        .parent()
+        .ok_or_else(|| "无效路径".to_string())?;
+    if !parent.exists() {
+        return Err("父目录不存在".to_string());
+    }
+
+    let parent_canon = normalize_existing_path(parent)?;
+    let filename = path
+        .file_name()
+        .ok_or_else(|| "无效文件名".to_string())?;
+    Ok(parent_canon.join(filename))
+}
+
+pub fn validate_path_under_base(path: &Path, allowed_base: &Path) -> Result<(), String> {
+    let path_str = path.to_string_lossy();
+    if path_str.contains("..") {
+        return Err("检测到非法路径".to_string());
+    }
+
+    let allowed = normalize_existing_path(allowed_base)?;
+    let normalized = if path.exists() {
+        normalize_existing_path(path)?
+    } else {
+        normalize_path_for_write(path)?
+    };
+
+    if !normalized.starts_with(&allowed) {
+        return Err("路径不在允许范围内".to_string());
+    }
+
+    Ok(())
+}
+
+pub fn validate_save_games_path(path: &Path) -> Result<(), String> {
+    let base = get_save_games_dir()?;
+    validate_path_under_base(path, &base)
+}
+
+#[allow(dead_code)]
+pub fn validate_app_config_path(path: &Path) -> Result<(), String> {
+    let base = get_app_config_dir()?;
+    validate_path_under_base(path, &base)
 }

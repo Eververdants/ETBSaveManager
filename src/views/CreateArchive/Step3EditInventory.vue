@@ -1,124 +1,124 @@
 <template>
   <div class="step-content" data-step="3">
-    <div class="inventory-section">
-      <!-- Steam ID 管理 -->
-      <div class="steam-id-card">
-        <h3 class="form-section-title">
-          {{ $t("createArchive.playerManagement") }}
-        </h3>
-        <div class="steam-id-info">
-          <font-awesome-icon :icon="['fas', 'info-circle']" />
-          <span>{{ $t("createArchive.steamIdInfo") }}</span>
-        </div>
-        <div class="steam-id-input-group">
-          <input :value="newSteamId" @input="$emit('update:newSteamId', $event.target.value)" type="text"
-            class="form-input" :placeholder="$t('createArchive.steamIdPlaceholder')"
-            @keyup.enter="$emit('add-steam-id')" />
-          <button @click="$emit('add-steam-id')" class="add-button">
-            <font-awesome-icon :icon="['fas', 'plus']" />
-            {{ $t("createArchive.add") }}
-          </button>
+    <div class="players-layout">
+      <PlayerManager
+        :players="players"
+        :active-player-index="activePlayerIndex"
+        :new-steam-id="newSteamId"
+        :player-input-message="playerInputMessage"
+        :player-input-message-type="playerInputMessageType"
+        title-key="createArchive.playerManagement"
+        empty-hint-key="createArchive.noPlayersHint"
+        steam-id-placeholder-key="createArchive.steamIdPlaceholder"
+        :show-sanity="true"
+        @update:newSteamId="$emit('update:newSteamId', $event)"
+        @add-steam-id="$emit('add-steam-id')"
+        @remove-player="$emit('remove-player', $event)"
+        @select-player="$emit('select-player', $event)"
+      />
+
+      <div class="player-detail-section" v-if="activePlayerIndex !== -1 && players[activePlayerIndex]">
+        <div class="detail-header">
+          <span>
+            {{
+              players[activePlayerIndex].username ||
+              (players[activePlayerIndex].isOfflinePlayer
+                ? `${players[activePlayerIndex].steamId}(本地)`
+                : players[activePlayerIndex].steamId)
+            }}
+          </span>
         </div>
 
-        <!-- 玩家输入提示信息 -->
-        <transition name="message-fade" mode="out-in">
-          <div v-if="playerInputMessage" class="player-input-message" :class="playerInputMessageType" key="message">
-            <font-awesome-icon :icon="playerInputMessageType === 'success'
-              ? ['fas', 'check-circle']
-              : ['fas', 'exclamation-circle']
-              " />
-            {{ playerInputMessage }}
-          </div>
-        </transition>
-
-        <!-- Steam ID 列表 -->
-        <div class="steam-id-list">
-          <div v-for="(player, index) in players" :key="index" class="steam-id-item"
-            :class="{ active: activePlayerIndex === index }" @click="$emit('select-player', index)">
-            <div class="player-info">
-              <div class="player-id" :class="{ 'has-username': player.username }">
-                <template v-if="player.username">
-                  {{ player.username }}
-                </template>
-                <template v-else>
-                  {{ player.steamId }}
-                </template>
-              </div>
-              <div class="username" :class="{ loading: !player.username }">
-                <template v-if="!player.username">
-                  <div class="loading-spinner"></div>
-                  {{ $t("createArchive.loadingUsername") }}
-                </template>
+        <div class="detail-grid">
+          <div class="detail-block">
+            <div class="block-title">
+              <font-awesome-icon :icon="['fas', 'brain']" />
+              {{ $t("editArchive.playerSanity") }}
+            </div>
+            <div class="sanity-display">
+              <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)">
+                {{ currentPlayerSanity }}%
+              </span>
+              <div class="sanity-bar">
+                <div
+                  class="sanity-fill"
+                  :style="{ width: currentPlayerSanity + '%' }"
+                  :class="getSanityClass(currentPlayerSanity)"
+                ></div>
               </div>
             </div>
-            <button @click.stop="$emit('remove-player', index)" class="remove-button">
-              <font-awesome-icon :icon="['fas', 'times']" />
-            </button>
+            <div class="sanity-ctrl">
+              <div class="sanity-slider-wrap">
+                <CustomSlider v-model="currentPlayerSanity" :min="0" :max="100" :step="1" />
+              </div>
+              <div class="quick-btns">
+                <button class="qbtn danger" @click="setMinSanity()">
+                  <font-awesome-icon :icon="['fas', 'skull']" />
+                </button>
+                <button class="qbtn success" @click="setMaxSanity()">
+                  <font-awesome-icon :icon="['fas', 'heart']" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-block">
+            <div class="block-title">
+              <font-awesome-icon :icon="['fas', 'suitcase']" />
+              {{ $t("editArchive.inventory") }}
+            </div>
+            <div class="inventory-wrap">
+              <div class="hand-slots">
+                <div
+                  v-for="slot in 3"
+                  :key="`h-${slot}`"
+                  class="inv-slot hand-slot"
+                  :class="{ empty: !getSlotContent(activePlayerIndex, slot - 1) }"
+                  @click="$emit('edit-slot', activePlayerIndex, slot - 1)"
+                >
+                  <span class="slot-label">{{ getSlotLabelText(slot - 1) }}</span>
+                  <img
+                    v-if="getSlotContent(activePlayerIndex, slot - 1)"
+                    :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}.png`"
+                    class="slot-img"
+                    :alt="getSlotContent(activePlayerIndex, slot - 1)"
+                  />
+                  <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-placeholder" />
+                </div>
+              </div>
+
+              <div class="backpack-slots">
+                <div
+                  v-for="slot in 9"
+                  :key="`b-${slot}`"
+                  class="inv-slot backpack-slot"
+                  :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
+                  @click="$emit('edit-slot', activePlayerIndex, slot + 2)"
+                >
+                  <span class="slot-num">{{ slot }}</span>
+                  <img
+                    v-if="getSlotContent(activePlayerIndex, slot + 2)"
+                    :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}.png`"
+                    class="slot-img"
+                    :alt="getSlotContent(activePlayerIndex, slot + 2)"
+                  />
+                  <font-awesome-icon v-else :icon="['fas', 'cube']" class="slot-placeholder" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 背包编辑器 -->
-      <div class="inventory-card">
-        <h3 class="form-section-title">
-          <template v-if="activePlayerIndex !== -1 && players[activePlayerIndex]">
-            {{
-              $t("createArchive.editInventoryFor", {
-                playerName:
-                  players[activePlayerIndex].username ||
-                  players[activePlayerIndex].steamId,
-              })
-            }}
-          </template>
-          <template v-else>
-            {{ $t("createArchive.editInventory") }}
-          </template>
-        </h3>
-        <div v-if="activePlayerIndex !== -1" class="inventory-grid">
-          <!-- 主手和副手位置 -->
-          <div class="inventory-column">
-            <div v-for="slot in 3" :key="`weapon-${slot - 1}`" class="inventory-slot weapon-slot" :class="{
-              'main-hand': slot === 1,
-              'off-hand': slot > 1,
-              empty: !getSlotContent(activePlayerIndex, slot - 1),
-            }" @click="$emit('edit-slot', activePlayerIndex, slot - 1)">
-              <div class="slot-label">
-                {{ getSlotLabelText(slot - 1) }}
-              </div>
-              <div class="slot-content">
-                <transition name="item-fade" mode="out-in">
-                  <img v-if="getSlotContent(activePlayerIndex, slot - 1)" :src="`/icons/ETB_UI/${getItemImageFile(
-                    getSlotContent(activePlayerIndex, slot - 1)
-                  )}.png`" :alt="getSlotContent(activePlayerIndex, slot - 1)" class="item-image"
-                    :key="getSlotContent(activePlayerIndex, slot - 1)" />
-                  <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-icon" key="empty" />
-                </transition>
-              </div>
-            </div>
-          </div>
-
-          <!-- 背包格子 -->
-          <div class="inventory-backpack">
-            <div v-for="slot in 9" :key="`backpack-${slot + 2}`" class="inventory-slot backpack-slot"
-              :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
-              @click="$emit('edit-slot', activePlayerIndex, slot + 2)">
-              <div class="slot-number">{{ slot }}</div>
-              <div class="slot-content">
-                <transition name="item-fade" mode="out-in">
-                  <img v-if="getSlotContent(activePlayerIndex, slot + 2)" :src="`/icons/ETB_UI/${getItemImageFile(
-                    getSlotContent(activePlayerIndex, slot + 2)
-                  )}.png`" :alt="getSlotContent(activePlayerIndex, slot + 2)" class="item-image"
-                    :key="getSlotContent(activePlayerIndex, slot + 2)" />
-                  <font-awesome-icon v-else :icon="['fas', 'square']" class="slot-icon" key="empty" />
-                </transition>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div v-else class="empty-inventory-message">
-          <font-awesome-icon :icon="['fas', 'info-circle']" />
-          <p>{{ $t("createArchive.selectPlayerMessage") }}</p>
-        </div>
+      <div class="player-detail-section empty-detail" v-else>
+        <font-awesome-icon :icon="['fas', 'hand-pointer']" />
+        <p>
+          {{
+            players.length > 0
+              ? $t("editArchive.selectPlayerHint")
+              : $t("editArchive.addPlayerFirst")
+          }}
+        </p>
       </div>
     </div>
   </div>
@@ -126,9 +126,15 @@
 
 <script>
 import { useI18n } from "vue-i18n";
+import PlayerManager from "@/components/PlayerManager.vue";
+import CustomSlider from "@/components/CustomSlider.vue";
 
 export default {
   name: "Step3EditInventory",
+  components: {
+    PlayerManager,
+    CustomSlider,
+  },
   setup() {
     const { t, te } = useI18n();
 
@@ -141,6 +147,11 @@ export default {
 
     return {
       getSlotLabelText,
+    };
+  },
+  data() {
+    return {
+      currentPlayerSanity: 100,
     };
   },
   props: {
@@ -171,8 +182,38 @@ export default {
     "remove-player",
     "select-player",
     "edit-slot",
+    "update-player-sanity",
   ],
+  watch: {
+    activePlayerIndex: {
+      immediate: true,
+      handler(newIndex) {
+        if (newIndex === -1) return;
+        const player = this.players?.[newIndex];
+        this.currentPlayerSanity = player?.sanity ?? 100;
+      },
+    },
+    currentPlayerSanity(newVal) {
+      if (this.activePlayerIndex === -1) return;
+      this.$emit("update-player-sanity", {
+        playerIndex: this.activePlayerIndex,
+        sanity: newVal,
+      });
+    },
+  },
   methods: {
+    getSanityClass(val) {
+      if (val >= 80) return "sanity-high";
+      if (val >= 50) return "sanity-medium";
+      if (val >= 20) return "sanity-low";
+      return "sanity-critical";
+    },
+    setMinSanity() {
+      this.currentPlayerSanity = 0;
+    },
+    setMaxSanity() {
+      this.currentPlayerSanity = 100;
+    },
     getSlotContent(playerIndex, slotIndex) {
       if (this.players[playerIndex] && this.players[playerIndex].inventory) {
         return this.players[playerIndex].inventory[slotIndex];
@@ -194,15 +235,27 @@ export default {
 
 <style scoped>
 /* 背包编辑区域 */
-.inventory-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  padding: 4px;
+.step-content {
+  height: 100%;
+  min-height: 0;
 }
 
-.steam-id-card,
-.inventory-card {
+.players-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+  padding: 4px;
+  min-height: 0;
+  height: 100%;
+  align-items: stretch;
+}
+
+:deep(.player-list-section) {
+  height: 100%;
+  min-height: 0;
+}
+
+.player-detail-section {
   background: linear-gradient(145deg,
       var(--bg-secondary) 0%,
       var(--bg-tertiary) 100%);
@@ -214,10 +267,11 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.08);
   position: relative;
   transition: all 0.3s ease;
+  min-height: 0;
+  overflow-y: auto;
 }
 
-.steam-id-card::before,
-.inventory-card::before {
+.player-detail-section::before {
   content: "";
   position: absolute;
   top: 0;
@@ -231,10 +285,31 @@ export default {
   pointer-events: none;
 }
 
-.steam-id-card:hover,
-.inventory-card:hover {
+.player-detail-section:hover {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.player-detail-section.empty-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-tertiary);
+  text-align: center;
+  gap: 12px;
+}
+
+.player-detail-section.empty-detail svg {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+.player-detail-section.empty-detail p {
+  font-size: 13px;
+  margin: 0;
 }
 
 .form-section-title {
@@ -258,267 +333,192 @@ export default {
   border-radius: 2px;
 }
 
-.steam-id-info {
+.detail-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.detail-block {
+  background: linear-gradient(145deg,
+      var(--bg-tertiary) 0%,
+      var(--bg-secondary) 100%);
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.block-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px;
-  background: linear-gradient(135deg,
-      rgba(var(--accent-color-rgb), 0.12) 0%,
-      rgba(var(--accent-color-rgb), 0.06) 100%);
-  border-radius: 12px;
-  color: var(--accent-color);
+  margin-bottom: 12px;
+  font-weight: 700;
   font-size: 13px;
-  margin-bottom: 18px;
-  border: 1px solid rgba(var(--accent-color-rgb), 0.15);
-}
-
-.steam-id-input-group {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.form-input {
-  flex: 1;
-  padding: 14px 18px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(145deg,
-      var(--bg-tertiary) 0%,
-      var(--bg-secondary) 100%);
   color: var(--text-primary);
-  font-size: 14px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.form-input:hover {
-  border-color: rgba(var(--accent-color-rgb), 0.3);
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15),
-    inset 0 1px 2px rgba(0, 0, 0, 0.05);
-  background: var(--bg-tertiary);
-}
-
-.form-input::placeholder {
-  color: var(--text-tertiary);
-  opacity: 0.7;
-}
-
-.add-button {
+.sanity-display {
   display: flex;
   align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sanity-num {
+  font-weight: 800;
+  min-width: 52px;
+  text-align: right;
+}
+
+.sanity-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.sanity-fill {
+  height: 100%;
+  transition: width 0.2s ease;
+}
+
+.sanity-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.sanity-slider-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+:deep(.sanity-slider-wrap .custom-slider) {
+  padding: 14px 0 10px;
+  margin-top: 4px;
+}
+
+:deep(.sanity-slider-wrap .slider-labels) {
+  margin-top: 6px;
+}
+
+.quick-btns {
+  display: flex;
   gap: 8px;
-  padding: 14px 22px;
-  border-radius: 14px;
+}
+
+.qbtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg,
-      var(--accent-color) 0%,
-      var(--accent-hover) 100%);
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(var(--accent-color-rgb), 0.3);
-}
-
-.add-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(var(--accent-color-rgb), 0.4);
-}
-
-.add-button:active {
-  transform: translateY(0);
-}
-
-/* 玩家输入提示 */
-.player-input-message {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  margin-bottom: 16px;
+  justify-content: center;
+  color: white;
 }
 
-.player-input-message.success {
-  background: rgba(var(--success-color-rgb), 0.1);
+.qbtn.danger {
+  background: rgba(239, 68, 68, 0.9);
+}
+
+.qbtn.success {
+  background: rgba(34, 197, 94, 0.9);
+}
+
+.sanity-high {
   color: var(--success-color);
 }
 
-.player-input-message.error {
-  background: rgba(255, 59, 48, 0.1);
+.sanity-medium {
+  color: var(--warning-color);
+}
+
+.sanity-low,
+.sanity-critical {
   color: var(--error-color);
 }
 
-.message-fade-enter-active,
-.message-fade-leave-active {
-  transition: all 0.3s ease;
+.sanity-fill.sanity-high {
+  background: rgba(34, 197, 94, 0.85);
 }
 
-.message-fade-enter-from,
-.message-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
+.sanity-fill.sanity-medium {
+  background: rgba(245, 158, 11, 0.85);
 }
 
-/* Steam ID 列表 */
-.steam-id-list {
+.sanity-fill.sanity-low,
+.sanity-fill.sanity-critical {
+  background: rgba(239, 68, 68, 0.85);
+}
+
+.inventory-wrap {
+  display: flex;
+  gap: 14px;
+}
+
+.hand-slots {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-height: 300px;
-  overflow-y: auto;
+  gap: 10px;
 }
 
-.steam-id-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  background: linear-gradient(145deg,
-      var(--bg-tertiary) 0%,
-      var(--bg-secondary) 100%);
-  border-radius: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.05);
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.steam-id-item:hover {
-  background: var(--bg-hover);
-  transform: translateX(4px);
-  border-color: rgba(var(--accent-color-rgb), 0.2);
-}
-
-.steam-id-item.active {
-  border-color: var(--accent-color);
-  background: linear-gradient(145deg,
-      rgba(var(--accent-color-rgb), 0.12) 0%,
-      rgba(var(--accent-color-rgb), 0.06) 100%);
-  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.15);
-}
-
-.player-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.player-id {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.player-id.has-username {
-  font-size: 15px;
-}
-
-.username {
-  font-size: 12px;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.username.loading {
-  color: var(--text-tertiary);
-}
-
-.loading-spinner {
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--divider-color);
-  border-top-color: var(--accent-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.remove-button {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: none;
-  background: rgba(255, 59, 48, 0.1);
-  color: var(--error-color);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.remove-button:hover {
-  background: rgba(255, 59, 48, 0.2);
-}
-
-/* 背包网格 */
-.inventory-grid {
-  display: flex;
-  gap: 20px;
-}
-
-.inventory-column {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.inventory-backpack {
+.backpack-slots {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, 56px);
+  gap: 10px;
   flex: 1;
+  justify-content: start;
+  align-content: start;
 }
 
-.inventory-slot {
+.inv-slot {
+  position: relative;
   aspect-ratio: 1;
-  background: linear-gradient(145deg,
-      var(--bg-tertiary) 0%,
-      var(--bg-secondary) 100%);
+  min-width: 56px;
+  min-height: 56px;
   border-radius: 14px;
   border: 2px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(145deg,
+      var(--bg-tertiary) 0%,
+      var(--bg-secondary) 100%);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  min-width: 70px;
-  min-height: 70px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
 }
 
-.inventory-slot:hover {
-  border-color: var(--accent-color);
-  background: var(--bg-hover);
-  transform: scale(1.05);
-  box-shadow: 0 4px 16px rgba(var(--accent-color-rgb), 0.15);
+.inv-slot.backpack-slot {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  aspect-ratio: auto;
+  border-radius: 14px;
 }
 
-.inventory-slot.empty {
+.inv-slot:hover {
+  border-color: rgba(var(--accent-color-rgb), 0.35);
+  transform: scale(1.03);
+}
+
+.inv-slot.empty {
   border-style: dashed;
   border-color: rgba(255, 255, 255, 0.12);
-}
-
-.inventory-slot.empty:hover {
-  border-style: solid;
 }
 
 .slot-label {
@@ -531,7 +531,7 @@ export default {
   white-space: nowrap;
 }
 
-.slot-number {
+.slot-num {
   position: absolute;
   top: 4px;
   right: 6px;
@@ -539,65 +539,36 @@ export default {
   color: var(--text-tertiary);
 }
 
-.slot-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.item-image {
-  width: 48px;
-  height: 48px;
+.slot-img {
+  width: 40px;
+  height: 40px;
   object-fit: contain;
 }
 
-.slot-icon {
-  font-size: 24px;
+.inv-slot.backpack-slot .slot-img {
+  width: 40px;
+  height: 40px;
+}
+
+.slot-placeholder {
+  font-size: 20px;
   color: var(--text-tertiary);
 }
 
-.item-fade-enter-active,
-.item-fade-leave-active {
-  transition: all 0.2s ease;
-}
-
-.item-fade-enter-from,
-.item-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-/* 空背包提示 */
-.empty-inventory-message {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  color: var(--text-tertiary);
-  text-align: center;
-  gap: 12px;
-}
-
-.empty-inventory-message svg {
-  font-size: 32px;
-}
-
-.empty-inventory-message p {
-  margin: 0;
-  font-size: 14px;
+.inv-slot.backpack-slot .slot-placeholder {
+  font-size: 20px;
 }
 
 @media (max-width: 768px) {
-  .inventory-section {
+  .players-layout {
     grid-template-columns: 1fr;
   }
 
-  .inventory-grid {
+  .inventory-wrap {
     flex-direction: column;
   }
 
-  .inventory-column {
+  .hand-slots {
     flex-direction: row;
     justify-content: center;
   }

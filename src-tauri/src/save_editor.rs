@@ -1,4 +1,4 @@
-use crate::common::{add_save_to_mainsave, extract_archive_name};
+use crate::common::{add_save_to_mainsave, extract_archive_name, validate_save_games_path};
 use serde_json::Value as JsonValue;
 use std::fs::{self, File};
 use std::io::{BufReader, BufWriter};
@@ -281,6 +281,9 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
         .ok_or("Missing path in JSON data")?
         .to_string();
 
+    validate_save_games_path(Path::new(&original_path))?;
+    validate_save_games_path(Path::new(output_dir))?;
+
     // 提取必要的字段
     let name = json_data["name"].as_str().ok_or("Invalid name")?;
     let mode = json_data["mode"].as_str().ok_or("Invalid mode")?;
@@ -310,6 +313,8 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> Result<String,
         capitalized_difficulty
     );
     let output_path = Path::new(output_dir).join(&new_filename);
+
+    validate_save_games_path(&output_path)?;
 
     println!("📂 正在读取原始存档文件: {:?}", original_path);
 
@@ -638,6 +643,8 @@ fn create_level_struct(display_name: &str, level_name: &str) -> StructValue {
 /// 读取存档中的 LevelsCompleted_0，补全到 ALL_LEVELS 的数量，并将所有 Bool 值设为 true
 pub fn unlock_all_hub_doors(file_path: &str) -> Result<String, String> {
     println!("🔓 开始解锁全部枢纽门: {}", file_path);
+
+    validate_save_games_path(Path::new(file_path))?;
 
     let file = File::open(file_path).map_err(|e| format!("打开存档文件失败: {}", e))?;
     let mut reader = BufReader::new(file);

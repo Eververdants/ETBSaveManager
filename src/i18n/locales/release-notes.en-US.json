@@ -1,28 +1,24 @@
 {
-  "version": "3.0.0-Beta-1",
-  "date": "2026-01-10",
-  "title": "Unified Notification System & Feedback System Refactor",
+  "version": "3.0.0-Beta-2",
+  "date": "2026-02-05",
+  "title": "Plugin System Major Upgrade",
   "type": "major",
   "categories": {
     "newFeatures": [
-      "Added unified eight-directional notification service, replacing legacy popups and scattered toast implementations",
-      "Added multiple theme plugins: Cyberpunk, Dracula, Monokai, Nord, Solarized"
+      "Added plugin system with page plugin support",
+      "Added plugin management components and features"
     ],
     "improvements": [
-      "Removed plugin system beta testing feature, fully opened plugin system",
-      "Refactored feedback system: migrated from GitHub Discussions to Cloudflare Worker",
-      "Refactored i18n loading logic for improved language pack loading performance",
+      "Refactored application context management with optimized state management logic",
+      "Added error handling module to improve application stability",
+      "Removed tailwindcss dependency, simplified style variable system",
+      "Optimized i18n loading logic for improved language pack loading performance",
       "Optimized route lazy loading and preloading strategies",
       "Refactored storage service with optimized initialization flow",
       "Adjusted sidebar and bottom action bar styling and interactions",
       "Optimized notification exit animations with placeholder elements to prevent layout shifts"
     ],
-    "bugFixes": [
-      "Blocked invalid player ID \"ERROR, BAD UNIQUE NET ID\""
-    ],
-    "performance": [
-      "Optimized build configuration to reduce bundle size",
-      "Cleaned up unused code and comments"
-    ]
+    "bugFixes": [],
+    "performance": []
   }
 }

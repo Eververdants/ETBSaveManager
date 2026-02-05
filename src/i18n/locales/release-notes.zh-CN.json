@@ -1,28 +1,24 @@
 {
-  "version": "3.0.0-Beta-1",
-  "date": "2026-01-10",
-  "title": "通知系统统一与反馈系统重构",
+  "version": "3.0.0-Beta-2",
+  "date": "2026-02-05",
+  "title": "插件系统全面升级",
   "type": "major",
   "categories": {
     "newFeatures": [
-      "新增八方向统一通知服务，替代旧版弹窗和分散的 toast 实现",
-      "新增多款主题插件：Cyberpunk、Dracula、Monokai、Nord、Solarized"
+      "新增插件系统支持，支持页面插件扩展",
+      "新增插件管理相关组件和功能"
     ],
     "improvements": [
-      "移除插件系统灰度测试功能，全面开放插件系统",
-      "反馈系统重构：从 GitHub Discussions 迁移至 Cloudflare Worker",
-      "重构国际化加载逻辑，优化语言包加载性能",
+      "重构应用上下文管理，优化状态管理逻辑",
+      "新增错误处理模块，提升应用稳定性",
+      "移除tailwindcss依赖，简化样式变量系统",
+      "优化国际化加载逻辑，提升语言包加载性能",
       "优化路由懒加载和预加载策略",
       "重构存储服务，优化初始化流程",
       "调整侧边栏和底部操作栏的样式与交互",
       "优化通知退场动画，添加占位元素防止布局跳动"
     ],
-    "bugFixes": [
-      "屏蔽无效玩家ID \"ERROR, BAD UNIQUE NET ID\""
-    ],
-    "performance": [
-      "优化构建配置，减少包体积",
-      "清理无用代码和注释"
-    ]
+    "bugFixes": [],
+    "performance": []
   }
 }

@@ -58,8 +58,9 @@ Additional languages via plugins:
 
 - **Multiple Creation Modes**
   - Quick Create — Streamlined workflow for fast save generation
-  - Blueprint Create — Template-based save creation
+  - Blueprint Create (Experimental) — Node-based graph, enable in Settings > Developer Options
   - Standard Create — Full customization options
+- **Blueprint Templates** — Save and reuse blueprint graphs
 - **Inventory Editor** — Modify player inventory directly
 - **Steam Cache Management** — Manage local Steam cache data
 - **Feedback System** — Built-in feedback submission to developers
@@ -88,7 +89,7 @@ Additional languages via plugins:
 
 ### Download Release
 
-1. Go to [Releases](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Beta-1)
+1. Go to [Releases](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Beta-2)
 2. Download the Windows installer (`.msi` or `.exe`)
 3. Run the installer
 
@@ -154,7 +155,7 @@ ETBSaveManager/
 
 ## 🚧 Development Status
 
-**Current Version:** `v3.0.0-Beta-1`
+**Current Version:** `v3.0.0-Beta-2`
 
 > 🎉 **v3.0.0 Stable Release** is scheduled for **February 15, 2026 at 12:00 CST**
 
@@ -165,7 +166,7 @@ ETBSaveManager/
 | Theme System         | ✅ Complete     |
 | Multi-language       | ✅ Complete     |
 | Save Data Editor     | ✅ Complete     |
-| Creation Modes       | ✅ Complete     |
+| Creation Modes       | ✅ Complete (Blueprint experimental) |
 | Feedback System      | ✅ Complete     |
 | Plugin System        | ✅ Complete     |
 | Level Info Editor    | 🔄 Planned      |

@@ -6,7 +6,7 @@ export default {
     download: 'Download'
   },
   hero: {
-    badge: 'v3.0.0-Beta-1 Now Available',
+    badge: 'v3.0.0-Beta-2 Now Available',
     title1: 'Escape The Backrooms',
     title2: 'Save Manager',
     subtitle: 'A modern save management tool for "Escape The Backrooms"',

@@ -26,13 +26,13 @@ const { t } = useI18n()
             </div>
             <div class="version-info">
               <span class="version-tag">{{ t('download.version') }}</span>
-              <span class="version-number">v3.0.0-Beta-1</span>
+              <span class="version-number">v3.0.0-Beta-2</span>
             </div>
           </div>
 
           <div class="download-body">
             <a 
-              href="https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Beta-1" 
+              href="https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Beta-2" 
               target="_blank"
               class="btn btn-primary btn-download"
             >

@@ -16,20 +16,22 @@
 
     <!-- 层级选择卡片 -->
     <div class="section-card">
-      <div class="level-grid">
-        <div v-for="(level, index) in availableLevels" :key="level.levelKey" class="level-card"
-          :class="{ selected: selectedLevel === index }" @click="handleSelectLevel(index, $event)">
-          <div class="level-image-container">
-            <LazyImage :src="level.image" :alt="level.name" image-class="level-image" />
-            <div class="level-overlay">
-              <font-awesome-icon :icon="['fas', 'check']" class="check-icon" v-if="selectedLevel === index" />
+      <Transition name="level-grid-fade" mode="out-in">
+        <div class="level-grid" :key="selectedEnding">
+          <div v-for="(level, index) in availableLevels" :key="level.levelKey" class="level-card"
+            :class="{ selected: selectedLevel === index }" @click="handleSelectLevel(index, $event)">
+            <div class="level-image-container">
+              <LazyImage :src="level.image" :alt="level.name" image-class="level-image" />
+              <div class="level-overlay">
+                <font-awesome-icon :icon="['fas', 'check']" class="check-icon" v-if="selectedLevel === index" />
+              </div>
+            </div>
+            <div class="level-info">
+              <h3 class="level-name">{{ level.name }}</h3>
             </div>
           </div>
-          <div class="level-info">
-            <h3 class="level-name">{{ level.name }}</h3>
-          </div>
         </div>
-      </div>
+      </Transition>
     </div>
   </div>
 </template>
@@ -225,6 +227,16 @@ export default {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 18px;
   padding: 4px;
+}
+
+.level-grid-fade-enter-active,
+.level-grid-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+
+.level-grid-fade-enter-from,
+.level-grid-fade-leave-to {
+  opacity: 0;
 }
 
 .level-card {

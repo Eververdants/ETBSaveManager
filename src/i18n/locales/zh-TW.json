@@ -371,6 +371,11 @@
   "inventory": {
     "selectItem": "選擇物品",
     "removeItem": "移除物品",
+    "searchPlaceholder": "搜尋物品...",
+    "searchEmpty": "找不到符合的物品",
+    "resultCount": "顯示 {count} / {total}",
+    "clearSearch": "清除搜尋",
+    "currentSelection": "目前選擇: {name}",
     "emptySlot": "空槽",
     "items": {
       "AlmondConcentrate": "杏仁濃縮液",

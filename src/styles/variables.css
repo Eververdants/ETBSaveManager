@@ -121,6 +121,41 @@
 }
 
 /* ==========================================
+ * 性能降级样式 (Performance Modes)
+ * 通过 data-performance-mode / data-animation-quality 控制
+ * ========================================== */
+:root[data-performance-mode="low"] {
+  --glass-backdrop-filter: none;
+  --glass-shadow-light: none;
+  --glass-shadow-medium: none;
+
+  --shadow-card: var(--shadow-sm);
+  --shadow-modal: var(--shadow-md);
+  --shadow-dropdown: var(--shadow-md);
+  --shadow-button-hover: var(--shadow-sm);
+
+  --transition-fast: 0.08s;
+  --transition-normal: 0.12s;
+  --transition-slow: 0.16s;
+}
+
+:root[data-performance-mode="low"] * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+:root[data-animation-quality="low"] {
+  --transition-fast: 0.1s;
+  --transition-normal: 0.15s;
+  --transition-slow: 0.2s;
+}
+
+:root[data-animation-quality="disabled"] * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* ==========================================
  * 全局按钮样式 (Global Button Styles)
  * ========================================== */
 button {

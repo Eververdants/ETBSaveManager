@@ -72,8 +72,14 @@ export default {
       loadTime: 0,
       _frame: null,
       _lastFrameTime: performance.now(),
+      _lastFpsTime: performance.now(),
+      _lastSampleTime: performance.now(),
       _lastCpuCheck: performance.now(),
       _cpuIdle: 0,
+      _visibilityHandler: null,
+      _paused: false,
+      sampleInterval: 500,
+      frameCount: 0,
       fpsData: [],
       memData: [],
       cpuData: [],
@@ -210,28 +216,48 @@ export default {
     }
 
     this.initCharts();
+    this._visibilityHandler = () => {
+      if (document.hidden) {
+        this._paused = true;
+        if (this._frame) {
+          cancelAnimationFrame(this._frame);
+          this._frame = null;
+        }
+        return;
+      }
+      this._paused = false;
+      this._lastFrameTime = performance.now();
+      this._lastFpsTime = performance.now();
+      this._lastSampleTime = performance.now();
+      this.startMonitoring();
+    };
+    document.addEventListener("visibilitychange", this._visibilityHandler);
     this.startMonitoring();
   },
   beforeUnmount() {
     cancelAnimationFrame(this._frame);
+    if (this._visibilityHandler) {
+      document.removeEventListener("visibilitychange", this._visibilityHandler);
+      this._visibilityHandler = null;
+    }
     this.fpsChart && this.fpsChart.destroy();
     this.memChart && this.memChart.destroy();
     this.cpuChart && this.cpuChart.destroy();
   },
   methods: {
     startMonitoring() {
+      if (this._frame || this._paused) return;
       const loop = (now) => {
-        // FPS
-        const delta = now - this._lastFrameTime;
-        this.fps = Math.round(1000 / delta);
-        this._lastFrameTime = now;
+        if (this._paused) return;
 
-        // Memory
-        if (performance.memory) {
-          this.memory = {
-            usedJSHeapSize: performance.memory.usedJSHeapSize,
-            totalJSHeapSize: performance.memory.totalJSHeapSize,
-          };
+        // FPS (每秒统计一次，更稳定)
+        this.frameCount++;
+        if (now - this._lastFpsTime >= 1000) {
+          this.fps = Math.round(
+            (this.frameCount * 1000) / (now - this._lastFpsTime)
+          );
+          this.frameCount = 0;
+          this._lastFpsTime = now;
         }
 
         // CPU (事件循环延迟估算)
@@ -240,8 +266,18 @@ export default {
         this.cpuLoad = Math.min(100, (1 - this._cpuIdle / 50) * 100);
         this._lastCpuCheck = now;
 
-        // 更新数据数组（最多保存 60 点，代表最近 1 分钟）
-        this.updateData();
+        // 低频率采样，降低监控开销
+        if (now - this._lastSampleTime >= this.sampleInterval) {
+          if (performance.memory) {
+            this.memory = {
+              usedJSHeapSize: performance.memory.usedJSHeapSize,
+              totalJSHeapSize: performance.memory.totalJSHeapSize,
+            };
+          }
+          // 更新数据数组（最多保存 60 点）
+          this.updateData();
+          this._lastSampleTime = now;
+        }
 
         // 下一帧
         this._frame = requestAnimationFrame(loop);
@@ -265,6 +301,9 @@ export default {
       const commonOptions = {
         responsive: true,
         animation: false,
+        devicePixelRatio: 1,
+        maintainAspectRatio: false,
+        elements: { point: { radius: 0 } },
         scales: {
           x: { display: false },
           y: { beginAtZero: true },
@@ -310,15 +349,15 @@ export default {
 
       this.fpsChart.data.labels = [...labels];
       this.fpsChart.data.datasets[0].data = [...this.fpsData];
-      this.fpsChart.update();
+      this.fpsChart.update("none");
 
       this.memChart.data.labels = [...labels];
       this.memChart.data.datasets[0].data = [...this.memData];
-      this.memChart.update();
+      this.memChart.update("none");
 
       this.cpuChart.data.labels = [...labels];
       this.cpuChart.data.datasets[0].data = [...this.cpuData];
-      this.cpuChart.update();
+      this.cpuChart.update("none");
     },
     formatMemory(bytes) {
       if (!bytes) return "N/A";

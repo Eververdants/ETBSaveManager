@@ -1,6 +1,8 @@
 <script setup>
-import { ref, onMounted, shallowRef } from "vue";
+import { ref, onMounted, shallowRef, computed } from "vue";
 import { useRouter } from "vue-router";
+import storage from "./services/storageService";
+import PerformanceMonitor from "./components/PerformanceMonitor.vue";
 
 // 延迟导入非关键组件
 const Sidebar = shallowRef(null);
@@ -15,6 +17,16 @@ TitleBar.value = TitleBarComponent;
 
 const router = useRouter();
 const sidebarExpanded = ref(false);
+const normalizeBool = (value) => value === true || value === "true";
+const performanceMonitorEnabled = ref(
+  normalizeBool(storage.getItem("performanceMonitor", false))
+);
+const developerModeEnabled = ref(
+  normalizeBool(storage.getItem("developerMode", false))
+);
+const shouldShowPerformanceMonitor = computed(
+  () => performanceMonitorEnabled.value && developerModeEnabled.value
+);
 
 // 组件缓存配置
 const cachedComponents = ["Home", "Settings", "CreateArchive", "PluginMarket", "CoreArchive", "Log"];
@@ -25,6 +37,16 @@ const handleSidebarExpand = (expanded) => {
 };
 
 onMounted(() => {
+  window.addEventListener("performance-monitor-toggle", (event) => {
+    performanceMonitorEnabled.value = !!event.detail?.enabled;
+  });
+  window.addEventListener("developer-mode-changed", (event) => {
+    developerModeEnabled.value = !!event.detail?.enabled;
+    if (!developerModeEnabled.value) {
+      performanceMonitorEnabled.value = false;
+    }
+  });
+
   // 监听路由变更事件
   window.addEventListener("sidebar-route-change", (event) => {
     const routeName = event.detail.route;
@@ -137,6 +159,7 @@ async function initFloatingButtonProtection() {
 <template>
   <div class="app-container">
     <component :is="TitleBar" v-if="TitleBar" />
+    <PerformanceMonitor v-if="shouldShowPerformanceMonitor" class="performance-monitor" />
     <div class="content-wrapper">
       <component :is="Sidebar" v-if="Sidebar" @sidebar-expand="handleSidebarExpand" />
       <main class="main-content" :class="{
@@ -178,18 +201,16 @@ async function initFloatingButtonProtection() {
   transform: scale(0.9) translateZ(0);
 }
 
-/* 性能监控组件样式 - 发行版禁用 */
-/*
 .performance-monitor {
   position: fixed;
-  top: 50px;
+  top: 56px;
   right: 20px;
   width: 300px;
   z-index: 1000;
   background: rgba(0, 0, 0, 0.7);
-  border: 1px solid #0f0;
+  border: 1px solid rgba(0, 255, 0, 0.4);
   border-radius: var(--radius-lg);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
   pointer-events: auto;
   transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
 }
@@ -202,7 +223,6 @@ async function initFloatingButtonProtection() {
 .performance-monitor * {
   pointer-events: none !important;
 }
-*/
 </style>
 <style>
 /* 页面切换过渡动画 - 统一的淡入淡出效果 */

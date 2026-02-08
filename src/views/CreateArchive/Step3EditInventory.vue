@@ -19,95 +19,99 @@
 
       <div class="player-detail-section" v-if="activePlayerIndex !== -1 && players[activePlayerIndex]">
         <div class="detail-header">
-          <span>
-            {{
-              players[activePlayerIndex].username ||
-              (players[activePlayerIndex].isOfflinePlayer
-                ? `${players[activePlayerIndex].steamId}(本地)`
-                : players[activePlayerIndex].steamId)
-            }}
-          </span>
+          <Transition name="player-name-switch" mode="out-in">
+            <span :key="activePlayerIndex">
+              {{
+                players[activePlayerIndex].username ||
+                (players[activePlayerIndex].isOfflinePlayer
+                  ? `${players[activePlayerIndex].steamId}(本地)`
+                  : players[activePlayerIndex].steamId)
+              }}
+            </span>
+          </Transition>
         </div>
 
-        <div class="detail-grid">
-          <div class="detail-block">
-            <div class="block-title">
-              <font-awesome-icon :icon="['fas', 'brain']" />
-              {{ $t("editArchive.playerSanity") }}
-            </div>
-            <div class="sanity-display">
-              <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)">
-                {{ currentPlayerSanity }}%
-              </span>
-              <div class="sanity-bar">
-                <div
-                  class="sanity-fill"
-                  :style="{ width: currentPlayerSanity + '%' }"
-                  :class="getSanityClass(currentPlayerSanity)"
-                ></div>
+        <Transition name="player-detail-grid-switch" mode="out-in">
+          <div class="detail-grid" :key="activePlayerIndex">
+            <div class="detail-block">
+              <div class="block-title">
+                <font-awesome-icon :icon="['fas', 'brain']" />
+                {{ $t("editArchive.playerSanity") }}
               </div>
-            </div>
-            <div class="sanity-ctrl">
-              <div class="sanity-slider-wrap">
-                <CustomSlider v-model="currentPlayerSanity" :min="0" :max="100" :step="1" />
-              </div>
-              <div class="quick-btns">
-                <button class="qbtn danger" @click="setMinSanity()">
-                  <font-awesome-icon :icon="['fas', 'skull']" />
-                </button>
-                <button class="qbtn success" @click="setMaxSanity()">
-                  <font-awesome-icon :icon="['fas', 'heart']" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="detail-block">
-            <div class="block-title">
-              <font-awesome-icon :icon="['fas', 'suitcase']" />
-              {{ $t("editArchive.inventory") }}
-            </div>
-            <div class="inventory-wrap">
-              <div class="hand-slots">
-                <div
-                  v-for="slot in 3"
-                  :key="`h-${slot}`"
-                  class="inv-slot hand-slot"
-                  :class="{ empty: !getSlotContent(activePlayerIndex, slot - 1) }"
-                  @click="$emit('edit-slot', activePlayerIndex, slot - 1)"
-                >
-                  <span class="slot-label">{{ getSlotLabelText(slot - 1) }}</span>
-                  <img
-                    v-if="getSlotContent(activePlayerIndex, slot - 1)"
-                    :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}.png`"
-                    class="slot-img"
-                    :alt="getSlotContent(activePlayerIndex, slot - 1)"
-                  />
-                  <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-placeholder" />
+              <div class="sanity-display">
+                <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)">
+                  {{ currentPlayerSanity }}%
+                </span>
+                <div class="sanity-bar">
+                  <div
+                    class="sanity-fill"
+                    :style="{ width: currentPlayerSanity + '%' }"
+                    :class="getSanityClass(currentPlayerSanity)"
+                  ></div>
                 </div>
               </div>
-
-              <div class="backpack-slots">
-                <div
-                  v-for="slot in 9"
-                  :key="`b-${slot}`"
-                  class="inv-slot backpack-slot"
-                  :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
-                  @click="$emit('edit-slot', activePlayerIndex, slot + 2)"
-                >
-                  <span class="slot-num">{{ slot }}</span>
-                  <img
-                    v-if="getSlotContent(activePlayerIndex, slot + 2)"
-                    :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}.png`"
-                    class="slot-img"
-                    :alt="getSlotContent(activePlayerIndex, slot + 2)"
-                  />
-                  <font-awesome-icon v-else :icon="['fas', 'cube']" class="slot-placeholder" />
+              <div class="sanity-ctrl">
+                <div class="sanity-slider-wrap">
+                  <CustomSlider v-model="currentPlayerSanity" :min="0" :max="100" :step="1" />
+                </div>
+                <div class="quick-btns">
+                  <button class="qbtn danger" @click="setMinSanity()">
+                    <font-awesome-icon :icon="['fas', 'skull']" />
+                  </button>
+                  <button class="qbtn success" @click="setMaxSanity()">
+                    <font-awesome-icon :icon="['fas', 'heart']" />
+                  </button>
                 </div>
               </div>
             </div>
+
+            <div class="detail-block">
+              <div class="block-title">
+                <font-awesome-icon :icon="['fas', 'suitcase']" />
+                {{ $t("editArchive.inventory") }}
+              </div>
+              <div class="inventory-wrap">
+                <div class="hand-slots">
+                  <div
+                    v-for="slot in 3"
+                    :key="`h-${slot}`"
+                    class="inv-slot hand-slot"
+                    :class="{ empty: !getSlotContent(activePlayerIndex, slot - 1) }"
+                    @click="$emit('edit-slot', activePlayerIndex, slot - 1)"
+                  >
+                    <span class="slot-label">{{ getSlotLabelText(slot - 1) }}</span>
+                    <img
+                      v-if="getSlotContent(activePlayerIndex, slot - 1)"
+                      :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}.png`"
+                      class="slot-img"
+                      :alt="getSlotContent(activePlayerIndex, slot - 1)"
+                    />
+                    <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-placeholder" />
+                  </div>
+                </div>
+
+                <div class="backpack-slots">
+                  <div
+                    v-for="slot in 9"
+                    :key="`b-${slot}`"
+                    class="inv-slot backpack-slot"
+                    :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
+                    @click="$emit('edit-slot', activePlayerIndex, slot + 2)"
+                  >
+                    <span class="slot-num">{{ slot }}</span>
+                    <img
+                      v-if="getSlotContent(activePlayerIndex, slot + 2)"
+                      :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}.png`"
+                      class="slot-img"
+                      :alt="getSlotContent(activePlayerIndex, slot + 2)"
+                    />
+                    <font-awesome-icon v-else :icon="['fas', 'cube']" class="slot-placeholder" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        </Transition>
       </div>
 
       <div class="player-detail-section empty-detail" v-else>
@@ -269,6 +273,36 @@ export default {
   transition: all 0.3s ease;
   min-height: 0;
   overflow-y: auto;
+}
+
+.player-name-switch-enter-active,
+.player-name-switch-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.player-name-switch-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.player-name-switch-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.player-detail-grid-switch-enter-active,
+.player-detail-grid-switch-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.player-detail-grid-switch-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.player-detail-grid-switch-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 
 .player-detail-section::before {

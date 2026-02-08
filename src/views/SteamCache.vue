@@ -1,35 +1,33 @@
 <template>
   <div class="steam-cache-container">
-    <div class="cache-content">
-      <div class="cache-actions">
-        <div class="cache-actions-left">
-          <button class="back-btn" @click="goBack" :title="t('common.back')">
-            <font-awesome-icon :icon="['fas', 'arrow-left']" />
-          </button>
-
-          <button class="cleanup-expired-btn" @click="cleanupExpiredCache" :disabled="isCleaning">
-            <font-awesome-icon :icon="['fas', 'trash']" />
-            {{ t("settings.steamApi.cleanupExpired") }}
-          </button>
-
-          <!-- SteamID显示切换按钮 -->
-          <button class="toggle-steamid-btn" @click="toggleSteamIdDisplay">
-            <font-awesome-icon :icon="showRawSteamId ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
-            {{
-              showRawSteamId
-                ? t("settings.steamApi.hideRawSteamId")
-                : t("settings.steamApi.showRawSteamId")
-            }}
-          </button>
-        </div>
-
-        <div class="cache-actions-right">
-          <div class="cache-count-info">
+    <div class="page-header">
+      <div class="header-left">
+        <button class="back-btn" @click="goBack" :title="t('common.back')">
+          <font-awesome-icon :icon="['fas', 'arrow-left']" />
+        </button>
+        <div class="title-group">
+          <h1 class="page-title">{{ t("settings.steamApi.cacheTitle") }}</h1>
+          <span class="page-subtitle">
             {{ t("settings.steamApi.cacheCount", { count: cacheCount }) }}
-          </div>
+          </span>
         </div>
       </div>
-
+      <div class="header-actions">
+        <button class="header-btn cleanup-expired-btn" @click="cleanupExpiredCache" :disabled="isCleaning">
+          <font-awesome-icon :icon="['fas', 'trash']" />
+          {{ t("settings.steamApi.cleanupExpired") }}
+        </button>
+        <button class="header-btn toggle-steamid-btn" @click="toggleSteamIdDisplay">
+          <font-awesome-icon :icon="showRawSteamId ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
+          {{
+            showRawSteamId
+              ? t("settings.steamApi.hideRawSteamId")
+              : t("settings.steamApi.showRawSteamId")
+          }}
+        </button>
+      </div>
+    </div>
+    <div class="cache-content">
       <!-- 搜索和过滤区域 -->
       <div class="search-filter-section">
         <div class="form-group">
@@ -750,47 +748,99 @@ export default {
   flex-direction: column;
   height: 100%;
   padding: 0;
-  padding-bottom: 30px;
   margin: 0;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-backdrop-filter);
+  background: var(--bg-primary);
   overflow: hidden;
-  position: relative;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.steam-cache-container::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      var(--glass-border-light) 50%,
-      transparent 100%);
-  pointer-events: none;
 }
 
 /* 返回按钮 - 多主题适配 */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+  gap: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.page-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.header-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.header-btn:hover:not(:disabled) {
+  background: var(--hover-bg);
+  border-color: var(--accent-color);
+  color: var(--text-primary);
+}
+
+.header-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .back-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   padding: 0;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-backdrop-filter);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: var(--card-shadow);
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease, transform 0.2s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .back-btn svg {
@@ -798,24 +848,23 @@ export default {
 }
 
 .back-btn:hover {
-  background: var(--surface-hover);
-  color: var(--primary);
-  transform: translateX(-4px) scale(1.1);
-  box-shadow: var(--card-shadow-hover);
-  border-color: var(--primary);
+  background: var(--hover-bg);
+  color: var(--text-primary);
+  border-color: var(--accent-color);
+  transform: translateX(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .back-btn:active {
-  transform: translateX(-2px) scale(1.05);
-  transition-duration: 0.1s;
+  transform: translateX(-1px);
 }
 
 /* 缓存内容区域 */
 .cache-content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 20px 24px;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
   flex: 1;
   overflow: hidden;
   min-height: 0;
@@ -874,108 +923,30 @@ export default {
 
 /* 清理过期缓存按钮 - 多主题适配 */
 .cleanup-expired-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 20px;
   background: var(--btn-danger-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  font-weight: 600;
-  font-size: 14px;
-  box-shadow: var(--card-shadow);
-  position: relative;
-  overflow: hidden;
-}
-
-.cleanup-expired-btn::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
-}
-
-.cleanup-expired-btn:hover::before {
-  width: 300px;
-  height: 300px;
+  color: #fff;
+  border-color: var(--btn-danger-bg);
+  box-shadow: var(--shadow-sm);
 }
 
 .cleanup-expired-btn:hover:not(:disabled) {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .cleanup-expired-btn:active:not(:disabled) {
-  transform: translateY(-1px) scale(0.98);
-  transition-duration: 0.1s;
+  transform: translateY(0);
 }
 
 .cleanup-expired-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  filter: grayscale(30%);
+  opacity: 0.6;
 }
 
 /* SteamID显示切换按钮 - 多主题适配 */
 .toggle-steamid-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 20px;
-  background: var(--btn-primary-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  font-weight: 600;
-  font-size: 14px;
-  box-shadow: var(--card-shadow);
-  position: relative;
-  overflow: hidden;
-}
-
-.toggle-steamid-btn::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
-}
-
-.toggle-steamid-btn:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
-.toggle-steamid-btn:hover {
-  background: var(--btn-primary-hover);
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: var(--card-shadow-hover);
-}
-
-.toggle-steamid-btn:active {
-  transform: translateY(-1px) scale(0.98);
-  transition-duration: 0.1s;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 /* 缓存计数信息 - 多主题适配 */
@@ -1001,23 +972,16 @@ export default {
 
 /* 搜索和过滤区域 - 多主题适配 */
 .search-filter-section {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-backdrop-filter);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
   padding: 20px 24px;
   display: flex;
   align-items: flex-end;
   gap: 16px;
   flex-wrap: wrap;
-  box-shadow: var(--card-shadow);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.search-filter-section:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .form-group {
@@ -1036,26 +1000,14 @@ export default {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
   user-select: none;
   transition: color 0.2s ease;
 }
 
-.form-group:hover .form-label {
-  color: var(--primary);
-}
-
 .label-icon {
-  font-size: 11px;
-  color: var(--primary);
-  opacity: 0.7;
-  transition: all 0.3s ease;
-}
-
-.form-group:hover .label-icon {
-  opacity: 1;
-  transform: scale(1.1);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  opacity: 0.8;
 }
 
 .search-input-group {
@@ -1065,32 +1017,26 @@ export default {
 
 .search-input {
   width: 100%;
-  padding: 12px 16px;
-  border: 1.5px solid var(--border-color);
-  border-radius: 12px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-input);
+  background: var(--bg-secondary);
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 500;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  height: 44px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  height: 40px;
   box-sizing: border-box;
-  box-shadow: var(--card-shadow);
 }
 
 .search-input:hover {
-  border-color: var(--primary);
-  background: var(--surface-hover);
+  border-color: var(--accent-color);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: var(--primary);
-  background: var(--surface-color);
-  box-shadow: var(--card-shadow-hover);
-  transform: translateY(-1px);
+  border-color: var(--accent-color);
+  background: var(--bg-secondary);
 }
 
 .search-input::placeholder {
@@ -1110,20 +1056,17 @@ export default {
 /* 过滤选择器和输入框 - 多主题适配 */
 .filter-select,
 .filter-input {
-  padding: 12px 16px;
-  border: 1.5px solid var(--border-color);
-  border-radius: 12px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-input);
+  background: var(--bg-secondary);
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 500;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
   min-width: 160px;
-  height: 44px;
+  height: 40px;
   box-sizing: border-box;
-  box-shadow: var(--card-shadow);
   cursor: pointer;
 }
 
@@ -1167,42 +1110,35 @@ export default {
   justify-content: center;
   width: 24px;
   height: 18px;
-  background: var(--card-highlight);
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  color: var(--primary);
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
   font-size: 10px;
   padding: 0;
 }
 
 .spinner-btn:hover {
-  background: var(--surface-hover);
-  border-color: var(--primary);
-  transform: scale(1.1);
-  box-shadow: var(--card-shadow);
+  background: var(--hover-bg);
+  border-color: var(--accent-color);
 }
 
 .spinner-btn:active {
-  transform: scale(0.95);
-  transition-duration: 0.1s;
+  transform: none;
 }
 
 .filter-select:hover,
 .filter-input:hover {
-  border-color: var(--primary);
-  background: var(--surface-hover);
-  transform: translateY(-1px);
+  border-color: var(--accent-color);
 }
 
 .filter-select:focus,
 .filter-input:focus {
   outline: none;
-  border-color: var(--primary);
-  background: var(--surface-color);
-  box-shadow: var(--card-shadow-hover);
-  transform: translateY(-1px);
+  border-color: var(--accent-color);
+  background: var(--bg-secondary);
 }
 
 .filter-input {
@@ -1216,47 +1152,43 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 18px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1.5px solid var(--border-color);
-  border-radius: 12px;
+  padding: 8px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
   color: var(--text-secondary);
   cursor: pointer;
   font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: var(--card-shadow);
-  height: 44px;
+  font-size: 13px;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  height: 40px;
   box-sizing: border-box;
   white-space: nowrap;
 }
 
 .clear-filters-btn:hover {
-  background: var(--surface-hover);
+  background: var(--hover-bg);
   color: var(--text-primary);
-  border-color: var(--primary);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: var(--card-shadow-hover);
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-md);
 }
 
 /* 缓存表格容器 - 多主题适配 */
 .cache-table-container {
   flex: 1;
   overflow: auto;
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-backdrop-filter);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  background: var(--bg-secondary);
   min-height: 0;
-  box-shadow: var(--card-shadow);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease;
 }
 
 .cache-table-container:hover {
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-sm);
 }
 
 /* 缓存表格 */
@@ -1275,19 +1207,16 @@ export default {
 }
 
 .cache-table th {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  font-weight: 700;
+  background: var(--bg-tertiary);
+  font-weight: 600;
   font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--text-secondary);
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 2px solid var(--border-color);
-  box-shadow: var(--card-shadow);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .cache-table td {
@@ -1301,23 +1230,21 @@ export default {
 }
 
 .cache-table tbody tr {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.2s ease;
   cursor: pointer;
 }
 
 .cache-table tbody tr:hover {
-  background: var(--card-highlight);
-  transform: translateX(4px);
-  box-shadow: -4px 0 0 0 var(--primary), var(--card-shadow);
+  background: var(--hover-bg);
 }
 
 /* SteamID单元格 */
 .steam-id-cell {
   font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace;
   font-size: 13px;
-  font-weight: 600;
-  color: var(--primary);
-  letter-spacing: 0.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0;
 }
 
 /* 复选框 - 多主题适配 */
@@ -1327,21 +1254,16 @@ export default {
   -moz-appearance: none;
   width: 20px;
   height: 20px;
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   cursor: pointer;
   position: relative;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: var(--card-shadow);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  background: var(--bg-secondary);
 }
 
 .checkbox:hover {
-  border-color: var(--primary);
-  transform: scale(1.15);
-  box-shadow: var(--card-shadow-hover);
+  border-color: var(--accent-color);
 }
 
 .checkbox:checked {
@@ -1404,58 +1326,39 @@ export default {
 .action-btn {
   width: 32px;
   height: 32px;
-  border: none;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  position: relative;
-  overflow: hidden;
-}
-
-.action-btn::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
-}
-
-.action-btn:hover::before {
-  width: 100px;
-  height: 100px;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
 }
 
 .detail-btn {
   background: var(--info-color);
   color: white;
-  box-shadow: var(--card-shadow);
+  border-color: transparent;
+  box-shadow: var(--shadow-sm);
 }
 
 .detail-btn:hover {
-  transform: translateY(-3px) scale(1.08);
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .refresh-btn {
   background: var(--btn-success-bg);
   color: white;
-  box-shadow: var(--card-shadow);
+  border-color: transparent;
+  box-shadow: var(--shadow-sm);
 }
 
 .refresh-btn:hover:not(:disabled) {
-  transform: translateY(-3px) scale(1.08) rotate(180deg);
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .refresh-btn:disabled {
@@ -1467,12 +1370,12 @@ export default {
 .delete-btn {
   background: var(--btn-danger-bg);
   color: white;
-  box-shadow: var(--card-shadow);
+  border-color: transparent;
+  box-shadow: var(--shadow-sm);
 }
 
 .delete-btn:hover:not(:disabled) {
-  transform: translateY(-3px) scale(1.08);
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .delete-btn:disabled {
@@ -1483,20 +1386,13 @@ export default {
 
 /* 无缓存条目提示 - 多主题适配 */
 .no-cache-entries {
-  padding: 80px 40px;
+  padding: 64px 32px;
   text-align: center;
   color: var(--text-tertiary);
-  font-style: italic;
-  font-size: 15px;
-  background: var(--card-highlight);
-  border-radius: 16px;
-  border: 2px dashed var(--border-color);
-  transition: all 0.3s ease;
-}
-
-.no-cache-entries:hover {
-  border-color: var(--primary);
-  background: var(--surface-hover);
+  font-size: 14px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-card);
+  border: 1px dashed var(--border-color);
 }
 
 /* 成功消息 - 多主题适配 */
@@ -2003,49 +1899,21 @@ export default {
 
 /* 批量操作工具栏 - 多主题适配 */
 .batch-actions-toolbar {
-  background: var(--card-highlight);
-  backdrop-filter: var(--glass-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-backdrop-filter);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: var(--radius-card);
   padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  animation: slideInDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: var(--card-shadow);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.batch-actions-toolbar::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      var(--glass-border-light) 50%,
-      transparent 100%);
-  transition: left 0.6s ease;
-}
-
-.batch-actions-toolbar:hover::before {
-  left: 100%;
-}
-
-.batch-actions-toolbar:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease;
 }
 
 .batch-info {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2060,85 +1928,60 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 18px;
-  border: none;
-  border-radius: 12px;
-  font-size: 14px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  position: relative;
-  overflow: hidden;
-}
-
-.batch-btn::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
-}
-
-.batch-btn:hover::before {
-  width: 300px;
-  height: 300px;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .refresh-batch-btn {
   background: var(--btn-success-bg);
   color: white;
-  box-shadow: var(--card-shadow);
+  border-color: transparent;
+  box-shadow: var(--shadow-sm);
 }
 
 .refresh-batch-btn:hover:not(:disabled) {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .delete-batch-btn {
   background: var(--btn-danger-bg);
   color: white;
-  box-shadow: var(--card-shadow);
+  border-color: transparent;
+  box-shadow: var(--shadow-sm);
 }
 
 .delete-batch-btn:hover:not(:disabled) {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .batch-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
-  filter: grayscale(30%);
 }
 
 /* 分页控件 - 多主题适配 */
 .pagination-container {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-backdrop-filter);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
   padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
-  box-shadow: var(--card-shadow);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease;
 }
 
 .pagination-container:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--shadow-sm);
 }
 
 .pagination-info {
@@ -2157,10 +2000,8 @@ export default {
 .pagination-btn {
   width: 38px;
   height: 38px;
-  border: 1.5px solid var(--border-color);
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
   color: var(--text-secondary);
   border-radius: 10px;
   cursor: pointer;
@@ -2169,16 +2010,16 @@ export default {
   justify-content: center;
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: var(--card-shadow);
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background: var(--surface-hover);
-  color: var(--primary);
-  border-color: var(--primary);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: var(--card-shadow-hover);
+  background: var(--hover-bg);
+  color: var(--text-primary);
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-md);
 }
 
 .pagination-btn:disabled {
@@ -2191,12 +2032,11 @@ export default {
   background: var(--primary);
   color: white;
   border-color: var(--primary);
-  box-shadow: var(--card-shadow-hover);
-  transform: scale(1.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .pagination-btn.active:hover {
-  transform: translateY(-2px) scale(1.12);
+  box-shadow: var(--shadow-md);
 }
 
 .pagination-numbers {
@@ -2226,10 +2066,17 @@ export default {
 @media (max-width: 768px) {
   .page-header {
     padding: 16px 20px;
+    align-items: flex-start;
+    flex-direction: column;
   }
 
-  .page-header h1 {
-    font-size: 20px;
+  .page-title {
+    font-size: 18px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .cache-content {
@@ -2342,6 +2189,16 @@ export default {
     align-items: flex-start;
     gap: 12px;
     padding: 12px 16px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-btn {
+    justify-content: center;
   }
 
   .back-btn {

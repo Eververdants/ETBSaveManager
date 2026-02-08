@@ -20,7 +20,11 @@ export function useAnimations(performanceMode, animationQuality) {
    * 卡片进入动画
    */
   const cardEnter = (el, done, cardCount) => {
-    if (cardCount > 30 || performanceMode.value === "low") {
+    if (
+      animationQuality.value === "disabled" ||
+      cardCount > 30 ||
+      performanceMode.value === "low"
+    ) {
       el.style.opacity = "1";
       el.style.transform = "translateY(0)";
       done();
@@ -41,6 +45,12 @@ export function useAnimations(performanceMode, animationQuality) {
    * 卡片离开动画
    */
   const cardLeave = (el, done) => {
+    if (animationQuality.value === "disabled") {
+      el.style.opacity = "0";
+      el.style.transform = "scale(0.95)";
+      done();
+      return;
+    }
     gsap.to(el, {
       opacity: 0,
       scale: 0.95,

@@ -103,67 +103,71 @@
           <!-- 玩家详情 -->
           <div class="player-detail-section" v-if="activePlayerIndex !== -1 && archiveData.players.length > 0">
             <div class="detail-header">
-              <span>{{ getCurrentPlayerDisplayName() }}</span>
+              <Transition name="player-name-switch" mode="out-in">
+                <span :key="activePlayerIndex">{{ getCurrentPlayerDisplayName() }}</span>
+              </Transition>
             </div>
 
-            <div class="detail-grid">
-              <!-- 理智值 -->
-              <div class="detail-block">
-                <div class="block-title">
-                  <font-awesome-icon :icon="['fas', 'brain']" />
-                  {{ $t("editArchive.playerSanity") }}
-                </div>
-                <div class="sanity-display">
-                  <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)">{{ currentPlayerSanity
-                  }}%</span>
-                  <div class="sanity-bar">
-                    <div class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }"
-                      :class="getSanityClass(currentPlayerSanity)"></div>
+            <Transition name="player-detail-grid-switch" mode="out-in">
+              <div class="detail-grid" :key="activePlayerIndex">
+                <!-- 理智值 -->
+                <div class="detail-block">
+                  <div class="block-title">
+                    <font-awesome-icon :icon="['fas', 'brain']" />
+                    {{ $t("editArchive.playerSanity") }}
                   </div>
-                </div>
-                <div class="sanity-ctrl">
-                  <CustomSlider v-model="currentPlayerSanity" :min="0" :max="100" :step="1" />
-                  <div class="quick-btns">
-                    <button class="qbtn danger" @click="setMinSanity()"><font-awesome-icon
-                        :icon="['fas', 'skull']" /></button>
-                    <button class="qbtn success" @click="setMaxSanity()"><font-awesome-icon
-                        :icon="['fas', 'heart']" /></button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 背包 -->
-              <div class="detail-block">
-                <div class="block-title">
-                  <font-awesome-icon :icon="['fas', 'suitcase']" />
-                  {{ $t("editArchive.inventory") }}
-                </div>
-                <div class="inventory-wrap">
-                  <div class="hand-slots">
-                    <div v-for="slot in 3" :key="`h-${slot}`" class="inv-slot"
-                      :class="{ empty: !getSlotContent(activePlayerIndex, slot - 1) }"
-                      @click="editSlot(activePlayerIndex, slot - 1)">
-                      <span class="slot-label">{{ getSlotLabelText(slot - 1) }}</span>
-                      <LazyImage v-if="getSlotContent(activePlayerIndex, slot - 1)"
-                        :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}`"
-                        image-class="slot-img" />
-                      <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-placeholder" />
+                  <div class="sanity-display">
+                    <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)">{{ currentPlayerSanity
+                    }}%</span>
+                    <div class="sanity-bar">
+                      <div class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }"
+                        :class="getSanityClass(currentPlayerSanity)"></div>
                     </div>
                   </div>
-                  <div class="backpack-slots">
-                    <div v-for="slot in 9" :key="`b-${slot}`" class="inv-slot"
-                      :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
-                      @click="editSlot(activePlayerIndex, slot + 2)">
-                      <span class="slot-num">{{ slot }}</span>
-                      <LazyImage v-if="getSlotContent(activePlayerIndex, slot + 2)"
-                        :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}`"
-                        image-class="slot-img" />
-                      <font-awesome-icon v-else :icon="['fas', 'cube']" class="slot-placeholder" />
+                  <div class="sanity-ctrl">
+                    <CustomSlider v-model="currentPlayerSanity" :min="0" :max="100" :step="1" />
+                    <div class="quick-btns">
+                      <button class="qbtn danger" @click="setMinSanity()"><font-awesome-icon
+                          :icon="['fas', 'skull']" /></button>
+                      <button class="qbtn success" @click="setMaxSanity()"><font-awesome-icon
+                          :icon="['fas', 'heart']" /></button>
                     </div>
                   </div>
                 </div>
+
+                <!-- 背包 -->
+                <div class="detail-block">
+                  <div class="block-title">
+                    <font-awesome-icon :icon="['fas', 'suitcase']" />
+                    {{ $t("editArchive.inventory") }}
+                  </div>
+                  <div class="inventory-wrap">
+                    <div class="hand-slots">
+                      <div v-for="slot in 3" :key="`h-${slot}`" class="inv-slot"
+                        :class="{ empty: !getSlotContent(activePlayerIndex, slot - 1) }"
+                        @click="editSlot(activePlayerIndex, slot - 1)">
+                        <span class="slot-label">{{ getSlotLabelText(slot - 1) }}</span>
+                        <LazyImage v-if="getSlotContent(activePlayerIndex, slot - 1)"
+                          :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}`"
+                          image-class="slot-img" />
+                        <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-placeholder" />
+                      </div>
+                    </div>
+                    <div class="backpack-slots">
+                      <div v-for="slot in 9" :key="`b-${slot}`" class="inv-slot"
+                        :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
+                        @click="editSlot(activePlayerIndex, slot + 2)">
+                        <span class="slot-num">{{ slot }}</span>
+                        <LazyImage v-if="getSlotContent(activePlayerIndex, slot + 2)"
+                          :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}`"
+                          image-class="slot-img" />
+                        <font-awesome-icon v-else :icon="['fas', 'cube']" class="slot-placeholder" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            </Transition>
           </div>
 
           <div class="player-detail-section empty-detail" v-else>
@@ -176,7 +180,7 @@
     </div>
 
     <!-- 物品选择器 -->
-    <InventoryItemSelector :visible="showItemSelector" @select="handleItemSelect"
+    <InventoryItemSelector :visible="showItemSelector" :selected-item="selectedItem" @select="handleItemSelect"
       @update:visible="showItemSelector = $event" />
   </div>
 </template>
@@ -264,7 +268,13 @@ const originalArchive = ref(null);
 const newSteamId = ref("");
 const activePlayerIndex = ref(-1);
 const showItemSelector = ref(false);
-const editingSlot = ref({ playerIndex: 0, slotIndex: 0 });
+const editingSlot = ref({ playerIndex: -1, slotIndex: -1 });
+const selectedItem = computed(() => {
+  const { playerIndex, slotIndex } = editingSlot.value;
+  const item = archiveData.players?.[playerIndex]?.inventory?.[slotIndex];
+  if (!item || item === "None") return null;
+  return item;
+});
 const playerInputMessage = ref("");
 const playerInputMessageType = ref("");
 const currentPlayerSanity = ref(100);
@@ -902,6 +912,36 @@ onMounted(() => {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+}
+
+.player-name-switch-enter-active,
+.player-name-switch-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.player-name-switch-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.player-name-switch-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.player-detail-grid-switch-enter-active,
+.player-detail-grid-switch-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.player-detail-grid-switch-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.player-detail-grid-switch-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 
 .section-title {

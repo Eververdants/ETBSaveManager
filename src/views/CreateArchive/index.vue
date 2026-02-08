@@ -101,7 +101,7 @@
     </div>
 
     <!-- 物品选择器 -->
-    <InventoryItemSelector :visible="showItemSelector" @select="handleItemSelect"
+    <InventoryItemSelector :visible="showItemSelector" :selected-item="selectedItem" @select="handleItemSelect"
       @update:visible="showItemSelector = $event" />
   </div>
 </template>
@@ -158,6 +158,12 @@ export default {
     const activePlayerIndex = ref(-1);
     const showItemSelector = ref(false);
     const editingSlot = ref({ playerIndex: -1, slotIndex: -1 });
+    const selectedItem = computed(() => {
+      const { playerIndex, slotIndex } = editingSlot.value;
+      const item = players[playerIndex]?.inventory?.[slotIndex];
+      if (!item || item === "None") return null;
+      return item;
+    });
     const isSwitching = ref(false);
     const isCreating = ref(false);
     const playerInputMessage = ref("");
@@ -926,6 +932,7 @@ export default {
       isSwitching,
       isCreating,
       showItemSelector,
+      selectedItem,
       editingSlot,
       canProceed,
       isQuickMode,

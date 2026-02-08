@@ -399,6 +399,11 @@
   "inventory": {
     "selectItem": "选择物品",
     "removeItem": "移除物品",
+    "searchPlaceholder": "搜索物品...",
+    "searchEmpty": "没有找到匹配的物品",
+    "resultCount": "显示 {count} / {total}",
+    "clearSearch": "清除搜索",
+    "currentSelection": "当前选择: {name}",
     "emptySlot": "空槽位",
     "items": {
       "AlmondConcentrate": "杏仁浓缩液",

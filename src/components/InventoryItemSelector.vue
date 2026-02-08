@@ -3,7 +3,7 @@
     <Transition name="modal-fade" appear>
       <div v-if="visible" class="inventory-item-selector" @click.self="close">
         <Transition name="modal-scale" appear>
-          <div class="selector-modal">
+          <div class="selector-modal" role="dialog" :aria-label="$t('inventory.selectItem')" aria-modal="true">
             <div class="modal-header">
               <h3>{{ $t("inventory.selectItem") }}</h3>
               <button class="close-btn" @click="close">
@@ -14,9 +14,43 @@
               </button>
             </div>
 
-            <div class="items-grid">
-              <TransitionGroup name="item-appear" appear>
-                <div v-for="item in availableItems" :key="item.id" class="item-card"
+            <div class="selector-body">
+              <div class="modal-toolbar">
+                <div class="search-input-wrap">
+                  <span class="search-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <circle cx="7" cy="7" r="4.75" stroke="currentColor" stroke-width="1.5" />
+                      <path d="M11 11L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                  </span>
+                  <input ref="searchInput" v-model="searchQuery" type="text" class="search-input"
+                    :placeholder="$t('inventory.searchPlaceholder')" />
+                  <button v-if="searchQuery" class="clear-search" type="button" @click="clearSearch"
+                    :aria-label="$t('inventory.clearSearch')">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                      <path d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="toolbar-meta">
+                  <span class="result-count">{{
+                    $t("inventory.resultCount", {
+                      count: filteredItems.length,
+                      total: availableItems.length,
+                    })
+                  }}</span>
+                  <span v-if="selectedItemLabel" class="selected-badge">{{
+                    $t("inventory.currentSelection", { name: selectedItemLabel })
+                  }}</span>
+                  <button class="remove-btn" type="button" @click="selectItem(null)">
+                    {{ $t("inventory.removeItem") }}
+                  </button>
+                </div>
+              </div>
+
+              <TransitionGroup v-if="filteredItems.length" name="item-appear" appear tag="div" class="items-grid">
+                <div v-for="item in filteredItems" :key="item.id" class="item-card"
                   :class="{ selected: selectedItem === item.id }" @click="selectItem(item.id)">
                   <div class="item-image-wrapper">
                     <LazyImage :src="`/icons/ETB_UI/${item.image}`" :alt="getItemName(item.id)"
@@ -24,18 +58,10 @@
                   </div>
                   <span class="item-name">{{ getItemName(item.id) }}</span>
                 </div>
-
-                <div key="remove" class="item-card remove-card" @click="selectItem(null)">
-                  <div class="remove-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                    </svg>
-                  </div>
-                  <span class="item-name">{{
-                    $t("inventory.removeItem")
-                  }}</span>
-                </div>
               </TransitionGroup>
+              <div v-else class="empty-state">
+                {{ $t("inventory.searchEmpty") }}
+              </div>
             </div>
           </div>
         </Transition>
@@ -63,6 +89,11 @@ export default {
 
     return {
       getItemName,
+    };
+  },
+  data() {
+    return {
+      searchQuery: "",
     };
   },
   props: {
@@ -106,6 +137,30 @@ export default {
         { id: "MothJelly", image: "MothJelly.png" },
       ];
     },
+    filteredItems() {
+      const keyword = this.searchQuery.trim().toLowerCase();
+      if (!keyword) return this.availableItems;
+      return this.availableItems.filter((item) => {
+        const itemId = String(item.id || "").toLowerCase();
+        const itemName = String(this.getItemName(item.id) || "").toLowerCase();
+        return itemId.includes(keyword) || itemName.includes(keyword);
+      });
+    },
+    selectedItemLabel() {
+      if (!this.selectedItem) return "";
+      return this.getItemName(this.selectedItem);
+    },
+  },
+  watch: {
+    visible(isVisible) {
+      if (isVisible) {
+        this.$nextTick(() => {
+          this.$refs.searchInput?.focus?.();
+        });
+        return;
+      }
+      this.searchQuery = "";
+    },
   },
   methods: {
     close() {
@@ -115,6 +170,29 @@ export default {
       this.$emit("select", itemId);
       this.close();
     },
+    clearSearch() {
+      this.searchQuery = "";
+      this.$nextTick(() => {
+        this.$refs.searchInput?.focus?.();
+      });
+    },
+    handleKeydown(event) {
+      if (!this.visible) return;
+      if (event.key === "Escape") {
+        if (this.searchQuery) {
+          this.searchQuery = "";
+          event.preventDefault();
+          return;
+        }
+        this.close();
+      }
+    },
+  },
+  mounted() {
+    window.addEventListener("keydown", this.handleKeydown);
+  },
+  beforeUnmount() {
+    window.removeEventListener("keydown", this.handleKeydown);
   },
 };
 </script>
@@ -146,10 +224,12 @@ export default {
   box-shadow: 0 8px 32px var(--glass-shadow-light);
   width: 90%;
   max-width: 600px;
-  max-height: 80vh;
+  height: min(80vh, 680px);
   overflow: hidden;
   position: relative;
   margin: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 淡入淡出动画 */
@@ -227,13 +307,124 @@ export default {
   color: var(--text-primary);
 }
 
+.selector-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 24px 24px;
+  flex: 1;
+  min-height: 0;
+}
+
+.modal-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search-input-wrap {
+  position: relative;
+  flex: 1 1 240px;
+  min-width: 220px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 36px 10px 36px;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.search-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+}
+
+.clear-search {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px;
+}
+
+.clear-search:hover {
+  color: var(--text-primary);
+}
+
+.toolbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.result-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.selected-badge {
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--sidebar-active-bg);
+  border: 1px solid var(--glass-border);
+  padding: 4px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.remove-btn {
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  background: rgba(255, 59, 48, 0.1);
+  color: var(--error-color);
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  font-size: 12px;
+}
+
+.remove-btn:hover {
+  background: rgba(255, 59, 48, 0.2);
+  border-color: rgba(255, 59, 48, 0.5);
+}
+
 .items-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-auto-rows: max-content;
   gap: 16px;
-  padding: 24px;
-  max-height: 60vh;
   overflow-y: auto;
+  padding-right: 4px;
+  flex: 1;
+  min-height: 0;
+  align-content: start;
+  align-items: start;
 }
 
 .item-card {
@@ -281,23 +472,17 @@ export default {
   line-height: 1.2;
 }
 
-.remove-card {
-  background: rgba(255, 59, 48, 0.1);
-  border-color: rgba(255, 59, 48, 0.2);
-}
-
-.remove-card:hover {
-  background: rgba(255, 59, 48, 0.2);
-}
-
-.remove-icon {
-  width: 48px;
-  height: 48px;
+.empty-state {
+  padding: 28px 12px;
+  text-align: center;
+  color: var(--text-secondary);
+  border: 1px dashed var(--glass-border);
+  border-radius: 12px;
+  background: var(--glass-bg);
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
-  color: var(--error-color);
 }
 
 @media (max-width: 768px) {
@@ -306,10 +491,22 @@ export default {
     margin: 20px;
   }
 
+  .selector-body {
+    padding: 12px 16px 20px;
+  }
+
+  .search-input-wrap {
+    min-width: 100%;
+  }
+
+  .toolbar-meta {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .items-grid {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 12px;
-    padding: 16px;
   }
 
   .item-image-wrapper {

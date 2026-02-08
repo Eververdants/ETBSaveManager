@@ -395,6 +395,11 @@
   "inventory": {
     "selectItem": "Select Item",
     "removeItem": "Remove Item",
+    "searchPlaceholder": "Search items...",
+    "searchEmpty": "No matching items",
+    "resultCount": "Showing {count} / {total}",
+    "clearSearch": "Clear search",
+    "currentSelection": "Current: {name}",
     "emptySlot": "Empty Slot",
     "items": {
       "AlmondConcentrate": "Almond Concentrate",

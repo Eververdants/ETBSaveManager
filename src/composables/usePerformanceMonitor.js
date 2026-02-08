@@ -1,8 +1,10 @@
-import { ref, onUnmounted } from "vue";
+import { ref, onUnmounted, watch } from "vue";
 import {
   detectDevicePerformance,
   createPerformanceMonitor,
 } from "../utils/performance.js";
+
+let monitorInitialized = false;
 
 /**
  * 性能监控 composable
@@ -21,9 +23,27 @@ export function usePerformanceMonitor() {
   let longTaskObserver = null;
   let longTaskCount = 0;
   let fpsCheckTimer = null;
+  let cleanupDisplayWatcher = null;
 
   const LONG_TASK_THRESHOLD = 50;
   const LONG_TASK_LIMIT = 3;
+
+  const applyDisplayEffects = () => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.dataset.performanceMode = performanceMode.value || "auto";
+    root.dataset.animationQuality = animationQuality.value || "medium";
+  };
+
+  const startDisplayWatcher = () => {
+    if (cleanupDisplayWatcher) return;
+    const stop = watch(
+      [performanceMode, animationQuality],
+      () => applyDisplayEffects(),
+      { immediate: true }
+    );
+    cleanupDisplayWatcher = stop;
+  };
 
   /**
    * 初始化性能观察器
@@ -117,6 +137,11 @@ export function usePerformanceMonitor() {
    * 初始化性能监控
    */
   const initPerformanceMonitor = () => {
+    if (monitorInitialized) {
+      startDisplayWatcher();
+      return;
+    }
+    monitorInitialized = true;
     cleanupPerformanceObserver = initPerformanceObserver();
 
     performanceMonitor = createPerformanceMonitor({
@@ -150,6 +175,10 @@ export function usePerformanceMonitor() {
       performanceMode.value = "auto";
       animationQuality.value = "high";
     }
+    if (devicePerf.prefersReducedMotion) {
+      animationQuality.value = "disabled";
+    }
+    startDisplayWatcher();
   };
 
   /**
@@ -171,12 +200,19 @@ export function usePerformanceMonitor() {
 
     if (cleanupPerformanceObserver) {
       cleanupPerformanceObserver();
+      cleanupPerformanceObserver = null;
     }
 
     if (longTaskObserver) {
       longTaskObserver.disconnect();
       longTaskObserver = null;
     }
+
+    if (cleanupDisplayWatcher) {
+      cleanupDisplayWatcher();
+      cleanupDisplayWatcher = null;
+    }
+    monitorInitialized = false;
   };
 
   return {

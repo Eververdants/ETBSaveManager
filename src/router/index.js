@@ -46,12 +46,6 @@ const routes = [
     meta: { keepAlive: false },
   },
   {
-    path: "/blueprint-create-archive",
-    name: "BlueprintCreateArchive",
-    component: () => import("../views/BlueprintCreateArchive.vue"),
-    meta: { keepAlive: false },
-  },
-  {
     path: "/test-archive",
     name: "TestArchive",
     component: () => import("../views/TestArchive.vue"),

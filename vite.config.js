@@ -4,7 +4,10 @@ import path from "path";
 
 const host = process.env.TAURI_DEV_HOST;
 
-export default defineConfig(async () => ({
+export default defineConfig(async ({ mode }) => {
+  const isProd = mode === "production";
+
+  return {
   plugins: [vue()],
   base: "./",
   assetsInclude: ["**/*.md"],
@@ -100,6 +103,8 @@ export default defineConfig(async () => ({
         collapse_vars: true,
         unused: true,
         passes: 2, // 多次压缩
+        // 生产环境去除低价值日志，保留 warn/error 便于排障
+        pure_funcs: isProd ? ["console.log", "console.info", "console.debug"] : [],
       },
       mangle: {
         safari10: true,
@@ -135,8 +140,8 @@ export default defineConfig(async () => ({
 
   // esbuild 优化
   esbuild: {
-    // 移除console（生产环境）
-    drop: process.env.NODE_ENV === "production" ? ["debugger"] : [],
+    // 生产环境移除 debugger
+    drop: isProd ? ["debugger"] : [],
     // 启用tree shaking
     treeShaking: true,
   },
@@ -177,4 +182,5 @@ export default defineConfig(async () => ({
       "Cache-Control": "public, max-age=31536000",
     },
   },
-}));
+  };
+});

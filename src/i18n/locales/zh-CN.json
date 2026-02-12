@@ -270,8 +270,6 @@
     "developerOptions": "开发者选项",
     "developerMode": "开发者模式",
     "developerModeDescription": "启用开发者模式以访问高级功能",
-    "enableBlueprintMode": "启用蓝图模式",
-    "enableBlueprintModeDescription": "解锁蓝图创建模式（实验功能）",
     "enableLogMenu": "启用日志功能",
     "enableLogMenuDescription": "显示日志菜单和日志记录功能",
     "savFileTools": "存档文件工具",
@@ -309,12 +307,10 @@
       "cleanupCompleted": "清理完成，已删除 {count} 个过期条目",
       "noExpiredEntries": "没有过期的缓存条目",
       "noCacheEntries": "暂无缓存条目",
-
       "showRawSteamId": "显示原始SteamID",
       "hideRawSteamId": "隐藏原始SteamID",
       "showingRawSteamId": "已显示原始SteamID",
       "hidingRawSteamId": "已隐藏原始SteamID",
-
       "search": "搜索",
       "sortByLabel": "排序方式",
       "sortOrderLabel": "排序顺序",
@@ -333,10 +329,8 @@
       "clearFilters": "清除筛选",
       "showStats": "显示统计",
       "filtersCleared": "筛选条件已清除",
-
       "paginationInfo": "第 {current} 页，共 {total} 页，共 {count} 条记录",
       "pageSize": "每页显示",
-
       "viewDetail": "查看详情",
       "refreshEntry": "刷新条目",
       "deleteEntry": "删除条目",
@@ -344,7 +338,6 @@
       "entryDeleted": "条目已删除",
       "refreshError": "刷新失败: {error}",
       "deleteError": "删除失败: {error}",
-
       "batchRefresh": "批量刷新",
       "batchDelete": "批量删除",
       "selectedCount": "已选择 {count} 项",
@@ -352,12 +345,10 @@
       "batchDeleteCompleted": "批量删除完成，已删除 {count} 个条目",
       "batchRefreshError": "批量刷新失败: {error}",
       "batchDeleteError": "批量删除失败: {error}",
-
       "confirmDelete": "确认删除",
       "confirmDeleteMessage": "确定要删除用户 {username} 的缓存条目吗？",
       "confirmBatchDelete": "确认批量删除",
       "confirmBatchDeleteMessage": "确定要删除选中的 {count} 个缓存条目吗？此操作不可撤销。",
-
       "cacheDetail": "缓存详情",
       "systemStats": "系统统计",
       "totalCacheSize": "总缓存大小",
@@ -822,10 +813,6 @@
     "quick": {
       "title": "快速模式",
       "desc": "快速批量创建多个存档，简化配置流程"
-    },
-    "blueprint": {
-      "title": "蓝图模式",
-      "desc": "用节点图自由拼装任意逻辑"
     }
   },
   "quickCreate": {
@@ -980,249 +967,6 @@
       }
     }
   },
-  "blueprintCreate": {
-    "title": "蓝图创建",
-    "subtitle": "用节点图编排逻辑，批量生成存档",
-    "comingSoon": "功能开发中",
-    "comingSoonDesc": "蓝图创建模式正在开发中，敬请期待",
-    "library": {
-      "title": "节点库",
-      "desc": "拖拽节点到画布，连接端口即可组成蓝图",
-      "source": "输入",
-      "randomOps": "随机与权重",
-      "nameOps": "名称处理",
-      "archiveOps": "存档处理",
-      "logicOps": "规则分支",
-      "output": "输出"
-    },
-    "canvas": {
-      "title": "蓝图画布",
-      "fit": "适配画布",
-      "reset": "重置蓝图"
-    },
-    "properties": {
-      "title": "节点属性",
-      "empty": "选择一个节点来编辑配置",
-      "delete": "删除节点",
-      "outputHint": "输出节点无需额外配置"
-    },
-    "preview": {
-      "title": "生成预览",
-      "errorTitle": "当前存在错误",
-      "warningTitle": "提示",
-      "empty": "完成连接后将在此显示预览",
-      "showing": "显示前 {count} 条"
-    },
-    "actions": {
-      "title": "创建操作",
-      "create": "创建存档",
-      "creating": "创建中...",
-      "disabledHint": "请先修复错误或补全流程",
-      "progress": "已创建 {count}/{total}"
-    },
-    "nodes": {
-      "nameList": "名称列表",
-      "nameSequence": "序列名称",
-      "levelPool": "层级池",
-      "weightedNamePool": "权重名称池",
-      "weightedLevelPool": "权重层级池",
-      "buildArchives": "生成存档",
-      "filterNames": "名称过滤",
-      "renameNames": "名称改写",
-      "replaceNames": "名称替换",
-      "dedupeNames": "名称去重",
-      "sortNames": "名称排序",
-      "shuffleNames": "名称打乱",
-      "mergeNames": "名称合并",
-      "randomPickNames": "随机抽取名称",
-      "setLevel": "设置层级",
-      "setDifficulty": "设置难度",
-      "setActualDifficulty": "设置实际难度",
-      "filterArchives": "存档过滤",
-      "renameArchives": "存档改名",
-      "limitArchives": "数量限制",
-      "mergeArchives": "规则合并",
-      "randomPickArchives": "随机抽取存档",
-      "branchArchives": "规则分支",
-      "playerSetup": "玩家与理智",
-      "archiveOutput": "输出",
-      "source": "输入节点",
-      "transform": "处理节点",
-      "logic": "逻辑节点",
-      "output": "输出节点",
-      "count": "{count} 项",
-      "randomCount": "抽取 {count} 条",
-      "playersCount": "{count} 位玩家",
-      "sanityLabel": "理智 {value}%",
-      "mergeHint": "合并两路输入",
-      "outputHint": "连接输出以完成流程",
-      "renameEmpty": "不改名",
-      "renamePrefix": "{prefix} + 名称",
-      "renameSuffix": "名称 + {suffix}",
-      "renameBoth": "{prefix} + 名称 + {suffix}",
-      "limitCount": "限制 {count} 条",
-      "replaceEmpty": "未设置替换",
-      "replaceLabel": "{search} → {replace}",
-      "dedupeLabel": "保留唯一名称",
-      "shuffleLabel": "随机打乱"
-    },
-    "nodeDesc": {
-      "nameList": "输入存档名称，每行一个",
-      "nameSequence": "按规则生成一组名称",
-      "levelPool": "提供可选层级列表",
-      "weightedNamePool": "按权重生成名称列表",
-      "weightedLevelPool": "按权重生成层级列表",
-      "buildArchives": "将名称与层级组装为存档",
-      "filterNames": "按关键词筛选名称",
-      "renameNames": "为名称添加前缀或后缀",
-      "replaceNames": "替换名称中的文本",
-      "dedupeNames": "移除重复名称",
-      "sortNames": "按名称排序",
-      "shuffleNames": "随机打乱名称顺序",
-      "mergeNames": "合并两路名称列表",
-      "randomPickNames": "从名称中随机抽取",
-      "setLevel": "统一设置层级",
-      "setDifficulty": "统一设置难度",
-      "setActualDifficulty": "只设置实际难度",
-      "filterArchives": "按名称筛选存档",
-      "renameArchives": "为存档名称添加前后缀",
-      "limitArchives": "限制生成数量",
-      "mergeArchives": "合并两路存档列表",
-      "randomPickArchives": "从存档中随机抽取",
-      "branchArchives": "根据规则分流存档",
-      "playerSetup": "设置玩家数量、理智与背包",
-      "archiveOutput": "输出最终存档列表"
-    },
-    "fields": {
-      "namesText": "存档名称",
-      "namesPlaceholder": "每行一个名称",
-      "namePrefix": "名称前缀",
-      "nameSuffix": "名称后缀",
-      "archivePrefix": "存档前缀",
-      "archiveSuffix": "存档后缀",
-      "startIndex": "起始编号",
-      "count": "数量",
-      "padDigits": "补零位数",
-      "levelsText": "层级列表",
-      "levelsPlaceholder": "每行一个层级 Key",
-      "levelKey": "层级 Key",
-      "quickLevels": "常用层级",
-      "weightEntries": "权重条目",
-      "weightEntriesPlaceholder": "示例：Level0|3",
-      "assignMode": "分配方式",
-      "keyword": "关键词",
-      "filterMode": "过滤方式",
-      "searchText": "查找文本",
-      "replaceText": "替换为",
-      "sortOrder": "排序方式",
-      "dedupeHint": "自动移除重复名称",
-      "shuffleHint": "每次预览都会随机打乱",
-      "randomCount": "抽取数量",
-      "allowDuplicates": "允许重复",
-      "mergeHint": "连接两路输入即可合并",
-      "limitCount": "限制数量",
-      "difficulty": "存档难度",
-      "actualDifficulty": "实际难度",
-      "playerCount": "玩家人数",
-      "playerPrefix": "玩家前缀",
-      "playerStartIndex": "起始编号",
-      "playerPadDigits": "补零位数",
-      "defaultSanity": "默认理智",
-      "inventoryMode": "背包模式",
-      "inventoryPreset": "背包预设",
-      "inventoryItems": "背包物品",
-      "inventoryItemsPlaceholder": "每行一个物品 Key 或数字 ID",
-      "inventoryCount": "随机物品数量",
-      "branchField": "判断字段",
-      "branchOperator": "判断方式",
-      "branchValue": "匹配内容"
-    },
-    "sortOrder": {
-      "asc": "升序",
-      "desc": "降序"
-    },
-    "filterMode": {
-      "include": "包含",
-      "exclude": "排除"
-    },
-    "random": {
-      "unique": "不重复",
-      "allowDuplicates": "允许重复"
-    },
-    "assignMode": {
-      "roundRobin": "轮换分配",
-      "random": "随机分配",
-      "first": "固定第一个"
-    },
-    "inventoryMode": {
-      "empty": "空背包",
-      "preset": "预设背包",
-      "custom": "自定义",
-      "random": "随机"
-    },
-    "inventoryPreset": {
-      "starter": "新手包",
-      "medic": "医疗包",
-      "scout": "探索包",
-      "survivor": "生存包"
-    },
-    "branchField": {
-      "name": "名称",
-      "level": "层级",
-      "difficulty": "难度"
-    },
-    "branchOperator": {
-      "contains": "包含",
-      "equals": "等于"
-    },
-    "branch": {
-      "true": "通过",
-      "false": "未通过",
-      "ruleEmpty": "未设置规则"
-    },
-    "difficulty": {
-      "easy": "简单",
-      "normal": "普通",
-      "hard": "困难",
-      "nightmare": "噩梦"
-    },
-    "templates": {
-      "title": "蓝图模板",
-      "nameLabel": "模板名称",
-      "namePlaceholder": "例如：四人普通模式",
-      "save": "保存模板",
-      "empty": "暂无模板",
-      "load": "加载",
-      "delete": "删除",
-      "deleteConfirm": "确定删除模板「{name}」吗？",
-      "untitled": "未命名模板 {index}",
-      "saved": "模板已保存",
-      "loaded": "已加载模板：{name}",
-      "deleted": "已删除模板：{name}"
-    },
-    "errors": {
-      "missingOutput": "需要一个输出节点",
-      "multipleOutputs": "只能存在一个输出节点",
-      "cycleDetected": "检测到循环连接",
-      "missingNamesInput": "名称输入缺失",
-      "missingArchiveInput": "处理节点缺少存档输入",
-      "missingFilterInput": "名称过滤节点缺少名称输入",
-      "missingBranchInput": "分支节点缺少存档输入",
-      "missingArchiveOutputInput": "输出节点未连接",
-      "unknownNodeType": "存在未知节点类型"
-    },
-    "warnings": {
-      "unknownNodeType": "检测到未知节点类型"
-    },
-    "messages": {
-      "fixErrors": "请先修复蓝图中的错误",
-      "noArchives": "没有可创建的存档",
-      "invalidNames": "有 {count} 个存档名称无效或包含下划线",
-      "templateMissing": "基础模板加载失败",
-      "createSuccess": "成功创建 {count} 个存档",
-      "createFailed": "创建失败：{error}"
-    }
-  },
   "theme": {
     "themeList": "主题列表",
     "presetThemes": "预设主题",
@@ -1357,6 +1101,7 @@
     "savedOffline": "已保存，将在网络恢复后自动提交",
     "history": "反馈历史",
     "noHistory": "暂无反馈记录",
+    "loadMore": "加载更多",
     "statuses": {
       "pending": "待提交",
       "submitted": "已提交",

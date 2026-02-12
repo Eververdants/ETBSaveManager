@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.0.0--Beta--1-blue.svg" alt="版本"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.0.0-blue.svg" alt="版本"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/许可证-MIT-green.svg" alt="许可证"></a>
   <img src="https://img.shields.io/badge/平台-Windows-0078D4.svg?logo=windows" alt="平台">
   <img src="https://img.shields.io/badge/框架-Tauri%202.0-orange.svg" alt="框架">
@@ -58,9 +58,7 @@
 
 - **多种创建模式**
   - 快速创建 — 简化流程，快速生成存档
-  - 蓝图创建（实验功能）— 节点图编排，需在 设置 > 开发者选项 启用
   - 标准创建 — 完整的自定义选项
-- **蓝图模板** — 保存并复用蓝图流程
 - **背包编辑器** — 直接修改玩家背包物品
 - **Steam 缓存管理** — 管理本地 Steam 缓存数据
 - **反馈系统** — 内置反馈提交功能，直达开发者
@@ -89,7 +87,7 @@
 
 ### 下载安装包
 
-1. 前往 [Releases 页面](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Beta-2)
+1. 前往 [Releases 页面](https://github.com/Eververdants/ETBSaveManager/releases/latest)
 2. 下载 Windows 安装包（`.msi` 或 `.exe`）
 3. 运行安装程序
 
@@ -155,9 +153,7 @@ ETBSaveManager/
 
 ## 🚧 开发进度
 
-**当前版本：** `v3.0.0-Beta-2`
-
-> 🎉 **v3.0.0 正式版**将于 **2026年2月15日 12:00 (CST)** 发布
+**当前版本：** `v3.0.0`
 
 | 功能         | 状态          |
 | ------------ | ------------- |
@@ -166,7 +162,7 @@ ETBSaveManager/
 | 主题系统     | ✅ 已完成     |
 | 多语言支持   | ✅ 已完成     |
 | 存档数据编辑 | ✅ 已完成     |
-| 多种创建模式 | ✅ 已完成（蓝图为实验功能） |
+| 多种创建模式 | ✅ 已完成     |
 | 反馈系统     | ✅ 已完成     |
 | 插件系统     | ✅ 已完成     |
 | 层级信息编辑 | 🔄 计划中     |

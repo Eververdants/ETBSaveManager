@@ -8,6 +8,7 @@ use crate::error::AppError;
 use crate::error::AppResult;
 use crate::system_info::SystemInfo;
 use chrono::Local;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use std::sync::Mutex;
@@ -156,6 +157,9 @@ impl Default for FeedbackState {
 /// Cloudflare Worker URL for feedback
 const WORKER_URL: &str = "https://etbsavemanager-feedback.llzgd.workers.dev";
 
+const TITLE_MAX_LEN: usize = 100;
+const DESCRIPTION_MAX_LEN: usize = 60000;
+
 /// Cloudflare Worker 反馈响应
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkerResponse {
@@ -291,23 +295,26 @@ pub async fn submit_feedback(
 /// Formats feedback content for Worker
 fn format_feedback_content(data: &FeedbackData, system_info: &SystemInfo) -> String {
     let mut content = String::new();
+    let safe_title = sanitize_text(&data.title);
+    let safe_description = sanitize_text(&data.description);
+    let safe_sender = data.sender.as_ref().map(|s| sanitize_text(s));
 
     // Title
-    content.push_str(&format!("## {}\n\n", data.title));
+    content.push_str(&format!("## {}\n\n", safe_title));
 
     // Type and Severity
     content.push_str(&format!("**Type:** {}\n", data.feedback_type));
     if let Some(ref severity) = data.severity {
         content.push_str(&format!("**Severity:** {}\n", severity));
     }
-    if let Some(ref sender) = data.sender {
+    if let Some(sender) = safe_sender {
         content.push_str(&format!("**From:** {}\n", sender));
     }
     content.push_str("\n");
 
     // Description
     content.push_str("### Description\n\n");
-    content.push_str(&data.description);
+    content.push_str(&safe_description);
     content.push_str("\n\n");
 
     // System Info
@@ -334,12 +341,16 @@ fn format_feedback_content(data: &FeedbackData, system_info: &SystemInfo) -> Str
 #[tauri::command]
 pub fn get_feedback_history(
     state: State<'_, FeedbackState>,
+    limit: Option<u32>,
+    offset: Option<u32>,
 ) -> AppResult<Vec<FeedbackHistoryItem>> {
+    let limit = limit.unwrap_or(200).min(500) as usize;
+    let offset = offset.unwrap_or(0) as usize;
     state.with_queue(|queue| {
-        let records = queue.get_all().map_err(|e| AppError {
+        let rows = queue.get_history_rows(limit, offset).map_err(|e| AppError {
             message: e.to_string(),
         })?;
-        Ok(records
+        Ok(rows
             .into_iter()
             .map(|r| FeedbackHistoryItem {
                 id: r.id,
@@ -473,12 +484,12 @@ fn validate_feedback_input(data: &FeedbackData) -> AppResult<()> {
     }
 
     // Check length limits
-    if data.title.len() > 100 {
+    if data.title.len() > TITLE_MAX_LEN {
         return Err(AppError {
             message: "Title must be 100 characters or less".to_string(),
         });
     }
-    if data.description.len() > 60000 {
+    if data.description.len() > DESCRIPTION_MAX_LEN {
         return Err(AppError {
             message: "Description must be 60000 characters or less".to_string(),
         });
@@ -510,7 +521,51 @@ fn validate_feedback_input(data: &FeedbackData) -> AppResult<()> {
 /// Gets backend logs for feedback
 #[tauri::command]
 pub fn get_backend_logs(log_state: State<'_, BackendLogState>) -> String {
-    log_state.get_logs_as_string()
+    sanitize_text(&log_state.get_logs_as_string())
+}
+
+fn sanitize_text(input: &str) -> String {
+    if input.is_empty() {
+        return String::new();
+    }
+
+    let mut output = input.to_string();
+    let patterns = [
+        (
+            Regex::new(r"(?i)[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}").unwrap(),
+            "[REDACTED_EMAIL]",
+        ),
+        (
+            Regex::new(r"(?i)\b(Authorization:\s*Bearer\s+)[A-Za-z0-9._-]+").unwrap(),
+            "$1[REDACTED_TOKEN]",
+        ),
+        (
+            Regex::new(r"(?i)\b(Bearer\s+)[A-Za-z0-9._-]+").unwrap(),
+            "$1[REDACTED_TOKEN]",
+        ),
+        (
+            Regex::new(r"(?i)\b(api[_-]?key|token|password|secret)\b\s*[:=]\s*[^\s]+").unwrap(),
+            "$1=[REDACTED]",
+        ),
+        (
+            Regex::new(r"([A-Z]:\\Users\\)[^\\]+").unwrap(),
+            "$1[REDACTED_USER]",
+        ),
+        (
+            Regex::new(r"(/Users/)[^/]+").unwrap(),
+            "$1[REDACTED_USER]",
+        ),
+        (
+            Regex::new(r"(/home/)[^/]+").unwrap(),
+            "$1[REDACTED_USER]",
+        ),
+    ];
+
+    for (re, rep) in patterns.iter() {
+        output = re.replace_all(&output, *rep).to_string();
+    }
+
+    output
 }
 
 /// Adds a log entry to backend logs (for internal use)

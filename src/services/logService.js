@@ -2,7 +2,7 @@
 class LogService {
   constructor() {
     this.logs = [];
-    this.maxLogs = 1000;
+    this.maxLogs = import.meta.env.PROD ? 200 : 1000;
     this.isVisible = false;
     this.clickCount = 0;
     this.clickTimeout = null;

@@ -46,10 +46,61 @@ export const BugSeverity = {
  */
 export const ValidationLimits = {
   TITLE_MAX_LENGTH: 100,
-  DESCRIPTION_MAX_LENGTH: 5000,
+  DESCRIPTION_MAX_LENGTH: 60000,
   MAX_ATTACHMENT_SIZE: 25 * 1024 * 1024, // 25MB
   MAX_ATTACHMENT_COUNT: 5,
 };
+
+const LOG_MAX_CHARS = 20000;
+
+// 基础脱敏规则（仅用于日志与描述字段）
+const REDACTION_PATTERNS = [
+  {
+    regex: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
+    replacement: "[REDACTED_EMAIL]",
+  },
+  {
+    regex: /\b(Authorization:\s*Bearer\s+)[A-Za-z0-9._-]+/gi,
+    replacement: "$1[REDACTED_TOKEN]",
+  },
+  {
+    regex: /\b(Bearer\s+)[A-Za-z0-9._-]+/gi,
+    replacement: "$1[REDACTED_TOKEN]",
+  },
+  {
+    regex: /\b(api[_-]?key|token|password|secret)\b\s*[:=]\s*[^\s]+/gi,
+    replacement: "$1=[REDACTED]",
+  },
+  {
+    regex: /([A-Z]:\\Users\\)[^\\]+/g,
+    replacement: "$1[REDACTED_USER]",
+  },
+  {
+    regex: /(\/Users\/)[^/]+/g,
+    replacement: "$1[REDACTED_USER]",
+  },
+  {
+    regex: /(\/home\/)[^/]+/g,
+    replacement: "$1[REDACTED_USER]",
+  },
+];
+
+function sanitizeText(text) {
+  if (!text) return "";
+  let result = String(text);
+  for (const { regex, replacement } of REDACTION_PATTERNS) {
+    result = result.replace(regex, replacement);
+  }
+  return result;
+}
+
+function truncateText(text, maxLength) {
+  if (!text) return "";
+  if (text.length <= maxLength) return text;
+  const suffix = "\n[TRUNCATED]";
+  const maxBody = Math.max(0, maxLength - suffix.length);
+  return text.slice(0, maxBody) + suffix;
+}
 
 /**
  * 允许的附件文件扩展名
@@ -428,12 +479,15 @@ class FeedbackService {
         `${window.screen.width}x${window.screen.height}`;
 
       // 收集日志（默认不包含，可通过 includeLogs: true 启用）
-      let descriptionWithLogs = data.description;
+      let descriptionWithLogs = data.description || "";
       const includeLogs = data.includeLogs === true; // 默认不包含日志
 
       if (includeLogs) {
         // 获取前端日志（包含所有 console 输出和 Tauri 调用错误）
-        const frontendLogs = logService.getRecentLogs(100);
+        const frontendLogs = truncateText(
+          sanitizeText(logService.getRecentLogs(100)),
+          LOG_MAX_CHARS
+        );
 
         // 获取后端日志
         let backendLogs = "";
@@ -442,6 +496,7 @@ class FeedbackService {
         } catch (e) {
           console.warn("获取后端日志失败:", e);
         }
+        backendLogs = truncateText(sanitizeText(backendLogs), LOG_MAX_CHARS);
 
         // 将日志附加到描述末尾
         descriptionWithLogs += "\n\n---\n\n## 📋 Application Logs\n";
@@ -460,6 +515,13 @@ class FeedbackService {
           descriptionWithLogs += "\n```\n</details>\n";
         }
       }
+
+      // 脱敏并截断，保证不超过后端限制
+      descriptionWithLogs = sanitizeText(descriptionWithLogs);
+      descriptionWithLogs = truncateText(
+        descriptionWithLogs,
+        ValidationLimits.DESCRIPTION_MAX_LENGTH
+      );
 
       const result = await invoke("submit_feedback", {
         data: {
@@ -483,9 +545,9 @@ class FeedbackService {
    * 获取反馈历史记录
    * @returns {Promise<Array<Object>>} 反馈历史列表
    */
-  async getHistory() {
+  async getHistory({ limit = 50, offset = 0 } = {}) {
     try {
-      const history = await invoke("get_feedback_history");
+      const history = await invoke("get_feedback_history", { limit, offset });
       return history;
     } catch (error) {
       console.error("获取反馈历史失败:", error);

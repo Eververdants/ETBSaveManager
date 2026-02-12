@@ -177,7 +177,6 @@
       "resourceNotFound": "資源未找到",
       "accessDenied": "存取受限"
     },
-
     "appearanceAndLanguage": "外觀與語言",
     "advancedSettings": "進階設定",
     "systemAndUpdates": "系統與更新",
@@ -235,8 +234,6 @@
     "developerOptions": "開發者選項",
     "developerMode": "開發者模式",
     "developerModeDescription": "啟用開發者模式以訪問高級功能",
-    "enableBlueprintMode": "啟用藍圖模式",
-    "enableBlueprintModeDescription": "解鎖藍圖建立模式（實驗功能）",
     "savFileTools": "存檔文件工具",
     "parseSavFile": "解析存檔文件",
     "parseSavFileDescription": "將 .sav 存檔文件解析為 JSON 格式",
@@ -827,10 +824,6 @@
     "quick": {
       "title": "快速模式",
       "desc": "快速批量建立多個存檔，簡化配置流程"
-    },
-    "blueprint": {
-      "title": "藍圖模式",
-      "desc": "用節點圖自由拼裝任意邏輯"
     }
   },
   "quickCreate": {
@@ -985,249 +978,6 @@
       }
     }
   },
-  "blueprintCreate": {
-    "title": "藍圖建立",
-    "subtitle": "用節點圖編排邏輯，批量生成存檔",
-    "comingSoon": "功能開發中",
-    "comingSoonDesc": "藍圖建立模式正在開發中，敬請期待",
-    "library": {
-      "title": "節點庫",
-      "desc": "拖拽節點到畫布，連線端口即可組成藍圖",
-      "source": "輸入",
-      "randomOps": "隨機與權重",
-      "nameOps": "名稱處理",
-      "archiveOps": "存檔處理",
-      "logicOps": "規則分支",
-      "output": "輸出"
-    },
-    "canvas": {
-      "title": "藍圖畫布",
-      "fit": "適配畫布",
-      "reset": "重置藍圖"
-    },
-    "properties": {
-      "title": "節點屬性",
-      "empty": "請先選取節點",
-      "delete": "刪除節點",
-      "outputHint": "輸出節點無需額外設定"
-    },
-    "preview": {
-      "title": "生成預覽",
-      "errorTitle": "目前存在錯誤",
-      "warningTitle": "提示",
-      "empty": "完成連線後將在此顯示預覽",
-      "showing": "顯示前 {count} 條"
-    },
-    "actions": {
-      "title": "建立操作",
-      "create": "建立存檔",
-      "creating": "建立中...",
-      "disabledHint": "請先修復錯誤或補全流程",
-      "progress": "已建立 {count}/{total}"
-    },
-    "nodes": {
-      "nameList": "名稱清單",
-      "nameSequence": "序列名稱",
-      "levelPool": "層級池",
-      "weightedNamePool": "權重名稱池",
-      "weightedLevelPool": "權重層級池",
-      "buildArchives": "生成存檔",
-      "filterNames": "名稱過濾",
-      "renameNames": "名稱改寫",
-      "replaceNames": "名稱替換",
-      "dedupeNames": "名稱去重",
-      "sortNames": "名稱排序",
-      "shuffleNames": "名稱打亂",
-      "mergeNames": "名稱合併",
-      "randomPickNames": "隨機抽取名稱",
-      "setLevel": "設定層級",
-      "setDifficulty": "設定難度",
-      "setActualDifficulty": "設定實際難度",
-      "filterArchives": "存檔過濾",
-      "renameArchives": "存檔改名",
-      "limitArchives": "數量限制",
-      "mergeArchives": "規則合併",
-      "randomPickArchives": "隨機抽取存檔",
-      "branchArchives": "規則分支",
-      "playerSetup": "玩家與理智",
-      "archiveOutput": "輸出",
-      "source": "輸入節點",
-      "transform": "處理節點",
-      "logic": "邏輯節點",
-      "output": "輸出節點",
-      "count": "{count} 項",
-      "randomCount": "抽取 {count} 條",
-      "playersCount": "{count} 位玩家",
-      "sanityLabel": "理智 {value}%",
-      "mergeHint": "合併兩路輸入",
-      "outputHint": "連接輸出以完成流程",
-      "renameEmpty": "不改名",
-      "renamePrefix": "{prefix} + 名稱",
-      "renameSuffix": "名稱 + {suffix}",
-      "renameBoth": "{prefix} + 名稱 + {suffix}",
-      "limitCount": "限制 {count} 條",
-      "replaceEmpty": "未設定替換",
-      "replaceLabel": "{search} → {replace}",
-      "dedupeLabel": "保留唯一名稱",
-      "shuffleLabel": "隨機打亂"
-    },
-    "nodeDesc": {
-      "nameList": "輸入存檔名稱，每行一個",
-      "nameSequence": "依規則生成一組名稱",
-      "levelPool": "提供可選層級列表",
-      "weightedNamePool": "依權重生成名稱列表",
-      "weightedLevelPool": "依權重生成層級列表",
-      "buildArchives": "將名稱與層級組裝為存檔",
-      "filterNames": "依關鍵字篩選名稱",
-      "renameNames": "為名稱加入前綴或後綴",
-      "replaceNames": "替換名稱中的文字",
-      "dedupeNames": "移除重複名稱",
-      "sortNames": "依名稱排序",
-      "shuffleNames": "隨機打亂名稱順序",
-      "mergeNames": "合併兩路名稱列表",
-      "randomPickNames": "從名稱中隨機抽取",
-      "setLevel": "統一設定層級",
-      "setDifficulty": "統一設定難度",
-      "setActualDifficulty": "只設定實際難度",
-      "filterArchives": "依名稱篩選存檔",
-      "renameArchives": "為存檔名稱加入前後綴",
-      "limitArchives": "限制生成數量",
-      "mergeArchives": "合併兩路存檔列表",
-      "randomPickArchives": "從存檔中隨機抽取",
-      "branchArchives": "依規則分流存檔",
-      "playerSetup": "設定玩家數量、理智與背包",
-      "archiveOutput": "輸出最終存檔列表"
-    },
-    "fields": {
-      "namesText": "存檔名稱",
-      "namesPlaceholder": "每行一個名稱",
-      "namePrefix": "名稱前綴",
-      "nameSuffix": "名稱後綴",
-      "archivePrefix": "存檔前綴",
-      "archiveSuffix": "存檔後綴",
-      "startIndex": "起始編號",
-      "count": "數量",
-      "padDigits": "補零位數",
-      "levelsText": "層級列表",
-      "levelsPlaceholder": "每行一個層級 Key",
-      "levelKey": "層級 Key",
-      "quickLevels": "常用層級",
-      "weightEntries": "權重條目",
-      "weightEntriesPlaceholder": "範例：Level0|3",
-      "assignMode": "分配方式",
-      "keyword": "關鍵字",
-      "filterMode": "過濾方式",
-      "searchText": "查找文字",
-      "replaceText": "替換為",
-      "sortOrder": "排序方式",
-      "dedupeHint": "自動移除重複名稱",
-      "shuffleHint": "每次預覽都會隨機打亂",
-      "randomCount": "抽取數量",
-      "allowDuplicates": "允許重複",
-      "mergeHint": "連接兩路輸入即可合併",
-      "limitCount": "限制數量",
-      "difficulty": "存檔難度",
-      "actualDifficulty": "實際難度",
-      "playerCount": "玩家人數",
-      "playerPrefix": "玩家前綴",
-      "playerStartIndex": "起始編號",
-      "playerPadDigits": "補零位數",
-      "defaultSanity": "預設理智",
-      "inventoryMode": "背包模式",
-      "inventoryPreset": "背包預設",
-      "inventoryItems": "背包物品",
-      "inventoryItemsPlaceholder": "每行一個物品 Key 或數字 ID",
-      "inventoryCount": "隨機物品數量",
-      "branchField": "判斷欄位",
-      "branchOperator": "判斷方式",
-      "branchValue": "匹配內容"
-    },
-    "sortOrder": {
-      "asc": "升序",
-      "desc": "降序"
-    },
-    "filterMode": {
-      "include": "包含",
-      "exclude": "排除"
-    },
-    "random": {
-      "unique": "不重複",
-      "allowDuplicates": "允許重複"
-    },
-    "assignMode": {
-      "roundRobin": "輪換分配",
-      "random": "隨機分配",
-      "first": "固定第一個"
-    },
-    "inventoryMode": {
-      "empty": "空背包",
-      "preset": "預設背包",
-      "custom": "自訂",
-      "random": "隨機"
-    },
-    "inventoryPreset": {
-      "starter": "新手包",
-      "medic": "醫療包",
-      "scout": "探索包",
-      "survivor": "生存包"
-    },
-    "branchField": {
-      "name": "名稱",
-      "level": "層級",
-      "difficulty": "難度"
-    },
-    "branchOperator": {
-      "contains": "包含",
-      "equals": "等於"
-    },
-    "branch": {
-      "true": "通過",
-      "false": "未通過",
-      "ruleEmpty": "尚未設定規則"
-    },
-    "difficulty": {
-      "easy": "簡單",
-      "normal": "普通",
-      "hard": "困難",
-      "nightmare": "惡夢"
-    },
-    "templates": {
-      "title": "藍圖模板",
-      "nameLabel": "模板名稱",
-      "namePlaceholder": "例如：四人普通模式",
-      "save": "保存模板",
-      "empty": "尚無模板",
-      "load": "載入",
-      "delete": "刪除",
-      "deleteConfirm": "確定刪除模板「{name}」嗎？",
-      "untitled": "未命名模板 {index}",
-      "saved": "模板已保存",
-      "loaded": "已載入模板：{name}",
-      "deleted": "已刪除模板：{name}"
-    },
-    "errors": {
-      "missingOutput": "需要一個輸出節點",
-      "multipleOutputs": "只能存在一個輸出節點",
-      "cycleDetected": "偵測到循環連線",
-      "missingNamesInput": "名稱輸入缺失",
-      "missingArchiveInput": "處理節點缺少存檔輸入",
-      "missingFilterInput": "名稱過濾節點缺少名稱輸入",
-      "missingBranchInput": "分支節點缺少存檔輸入",
-      "missingArchiveOutputInput": "輸出節點未連線",
-      "unknownNodeType": "存在未知節點類型"
-    },
-    "warnings": {
-      "unknownNodeType": "偵測到未知節點類型"
-    },
-    "messages": {
-      "fixErrors": "請先修復藍圖中的錯誤",
-      "noArchives": "沒有可建立的存檔",
-      "invalidNames": "有 {count} 個存檔名稱無效或包含底線",
-      "templateMissing": "基礎模板載入失敗",
-      "createSuccess": "成功建立 {count} 個存檔",
-      "createFailed": "建立失敗：{error}"
-    }
-  },
   "theme": {
     "themeList": "主題列表",
     "presetThemes": "預設主題",
@@ -1362,6 +1112,7 @@
     "savedOffline": "已儲存，將在網路恢復後自動提交",
     "history": "反饋歷史",
     "noHistory": "暫無反饋記錄",
+    "loadMore": "載入更多",
     "statuses": {
       "pending": "待提交",
       "submitted": "已提交",

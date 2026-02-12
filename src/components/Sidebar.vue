@@ -116,7 +116,6 @@ const setActiveItemFromRoute = () => {
     [
       "CreateArchive",
       "QuickCreateArchive",
-      "BlueprintCreateArchive",
       "BatchCreateArchive",
     ].includes(route.name)
   ) {

@@ -56,24 +56,6 @@
               </div>
             </div>
 
-            <!-- 蓝图模式 -->
-            <div class="mode-card" :class="{ selected: selectedMode === 'blueprint' }" @click="goToMode('blueprint')">
-              <div class="mode-card-image">
-                <LazyImage :src="quickModeImage" alt="Blueprint Mode" :image-class="'mode-card-img'" />
-                <div class="mode-card-overlay">
-                  <font-awesome-icon v-if="selectedMode === 'blueprint'" :icon="['fas', 'check-circle']"
-                    class="check-icon" />
-                </div>
-              </div>
-              <div class="mode-card-info">
-                <h4 class="mode-card-title">
-                  {{ $t("createMode.blueprint.title") }}
-                </h4>
-                <p class="mode-card-desc">
-                  {{ $t("createMode.blueprint.desc") }}
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -171,10 +153,11 @@ export default {
       const modeRoutes = {
         classic: "/create-archive",
         quick: "/quick-create-archive",
-        blueprint: "/blueprint-create-archive",
       };
 
-      router.push(modeRoutes[mode]);
+      if (modeRoutes[mode]) {
+        router.push(modeRoutes[mode]);
+      }
     };
 
     return {

@@ -1037,7 +1037,7 @@ dependencies = [
 
 [[package]]
 name = "etbsavemanager"
-version = "3.0.0-Beta-2"
+version = "3.0.0"
 dependencies = [
  "aes-gcm",
  "argon2",

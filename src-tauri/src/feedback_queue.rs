@@ -82,6 +82,18 @@ pub struct FeedbackQueue {
     conn: Connection,
 }
 
+/// Lightweight feedback history row (no system_info parsing)
+#[derive(Debug, Clone)]
+pub struct FeedbackHistoryRow {
+    pub id: String,
+    pub feedback_type: String,
+    pub title: String,
+    pub status: String,
+    pub created_at: String,
+    pub discussion_url: Option<String>,
+    pub discussion_id: Option<String>,
+}
+
 impl FeedbackQueue {
     /// Creates a new FeedbackQueue with the database in the specified directory
     pub fn new(app_data_dir: &Path) -> SqliteResult<Self> {
@@ -215,6 +227,34 @@ impl FeedbackQueue {
 
         let records = stmt.query_map([], |row| self.row_to_record(row))?;
         records.collect()
+    }
+
+    /// Gets lightweight feedback history rows with a limit and offset
+    pub fn get_history_rows(
+        &self,
+        limit: usize,
+        offset: usize,
+    ) -> SqliteResult<Vec<FeedbackHistoryRow>> {
+        let mut stmt = self.conn.prepare_cached(
+            "SELECT id, feedback_type, title, status, created_at, discussion_url, discussion_id
+             FROM feedbacks ORDER BY created_at DESC LIMIT ?1 OFFSET ?2",
+        )?;
+
+        let limit_value = i64::try_from(limit).unwrap_or(200);
+        let offset_value = i64::try_from(offset).unwrap_or(0);
+        let rows = stmt.query_map([limit_value, offset_value], |row| {
+            Ok(FeedbackHistoryRow {
+                id: row.get(0)?,
+                feedback_type: row.get(1)?,
+                title: row.get(2)?,
+                status: row.get(3)?,
+                created_at: row.get(4)?,
+                discussion_url: row.get(5)?,
+                discussion_id: row.get(6)?,
+            })
+        })?;
+
+        rows.collect()
     }
 
     /// Gets a single feedback record by ID

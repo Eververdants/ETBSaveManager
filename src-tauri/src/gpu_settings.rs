@@ -4,7 +4,6 @@ use std::fs;
 
 /// GPU 加速启用时的浏览器参数
 const GPU_ENABLED_ARGS: &[&str] = &[
-    "--disable-gpu-sandbox",
     "--disable-software-rasterizer",
     "--enable-gpu-rasterization",
     "--force-gpu-rasterization",
@@ -13,7 +12,6 @@ const GPU_ENABLED_ARGS: &[&str] = &[
 /// GPU 加速禁用时的浏览器参数
 const GPU_DISABLED_ARGS: &[&str] = &[
     "--disable-gpu",
-    "--disable-gpu-sandbox",
     "--disable-software-rasterizer",
 ];
 

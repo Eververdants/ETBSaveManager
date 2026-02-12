@@ -10,9 +10,10 @@
 // Polyfills - 必须最先加载
 import "./utils/polyfills.js";
 
-// 控制台转发 - 尽早初始化，便于调试
-import { initConsoleForwarder } from "./utils/consoleForwarder.js";
-initConsoleForwarder();
+// FontAwesome 样式（避免生产环境样式注入失败导致图标尺寸异常）
+import "@fortawesome/fontawesome-svg-core/styles.css";
+import { config as faConfig } from "@fortawesome/fontawesome-svg-core";
+faConfig.autoAddCss = false;
 
 import { createApp } from "vue";
 import App from "./App.vue";
@@ -130,9 +131,8 @@ async function initApp() {
 
   setAppContext({ i18n: i18n.global, router, vue: await import("vue") });
   
-  // 暴露存储服务
+  // 暴露存储服务（通过 appContext）
   const storageModule = await import("./services/storageService");
-  window.storageService = storageModule.default;
   setAppContext({ storage: storageModule.default });
 
   // 阶段3：挂载应用（用户可见）

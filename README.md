@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.0.0--Beta--1-blue.svg" alt="Version"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.0.0-blue.svg" alt="Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/Platform-Windows-0078D4.svg?logo=windows" alt="Platform">
   <img src="https://img.shields.io/badge/Framework-Tauri%202.0-orange.svg" alt="Framework">
@@ -58,9 +58,7 @@ Additional languages via plugins:
 
 - **Multiple Creation Modes**
   - Quick Create — Streamlined workflow for fast save generation
-  - Blueprint Create (Experimental) — Node-based graph, enable in Settings > Developer Options
   - Standard Create — Full customization options
-- **Blueprint Templates** — Save and reuse blueprint graphs
 - **Inventory Editor** — Modify player inventory directly
 - **Steam Cache Management** — Manage local Steam cache data
 - **Feedback System** — Built-in feedback submission to developers
@@ -89,7 +87,7 @@ Additional languages via plugins:
 
 ### Download Release
 
-1. Go to [Releases](https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Beta-2)
+1. Go to [Releases](https://github.com/Eververdants/ETBSaveManager/releases/latest)
 2. Download the Windows installer (`.msi` or `.exe`)
 3. Run the installer
 
@@ -155,9 +153,7 @@ ETBSaveManager/
 
 ## 🚧 Development Status
 
-**Current Version:** `v3.0.0-Beta-2`
-
-> 🎉 **v3.0.0 Stable Release** is scheduled for **February 15, 2026 at 12:00 CST**
+**Current Version:** `v3.0.0`
 
 | Feature              | Status          |
 | -------------------- | --------------- |
@@ -166,7 +162,7 @@ ETBSaveManager/
 | Theme System         | ✅ Complete     |
 | Multi-language       | ✅ Complete     |
 | Save Data Editor     | ✅ Complete     |
-| Creation Modes       | ✅ Complete (Blueprint experimental) |
+| Creation Modes       | ✅ Complete     |
 | Feedback System      | ✅ Complete     |
 | Plugin System        | ✅ Complete     |
 | Level Info Editor    | 🔄 Planned      |

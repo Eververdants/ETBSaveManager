@@ -54,11 +54,11 @@
               <transition name="text-swift" mode="out-in">
                 <label class="form-label" :key="currentLanguage">
                   {{ t("feedback.titleLabel") }}
-                  <span class="char-count">{{ formData.title.length }}/100</span>
+                  <span class="char-count">{{ formData.title.length }}/{{ titleMaxLength }}</span>
                 </label>
               </transition>
               <input type="text" v-model="formData.title" :placeholder="t('feedback.titlePlaceholder')"
-                class="form-input" :class="{ 'input-error': titleError }" maxlength="100" />
+                class="form-input" :class="{ 'input-error': titleError }" :maxlength="titleMaxLength" />
               <span v-if="titleError" class="error-text">{{ titleError }}</span>
             </div>
 
@@ -67,11 +67,12 @@
               <transition name="text-swift" mode="out-in">
                 <label class="form-label" :key="currentLanguage">
                   {{ t("feedback.description") }}
-                  <span class="char-count">{{ formData.description.length }}/5000</span>
+                  <span class="char-count">{{ formData.description.length }}/{{ descriptionMaxLength }}</span>
                 </label>
               </transition>
               <textarea v-model="formData.description" :placeholder="t('feedback.descriptionPlaceholder')"
-                class="form-textarea" :class="{ 'input-error': descriptionError }" maxlength="5000"></textarea>
+                class="form-textarea" :class="{ 'input-error': descriptionError }"
+                :maxlength="descriptionMaxLength"></textarea>
               <span v-if="descriptionError" class="error-text">{{
                 descriptionError
               }}</span>
@@ -79,12 +80,15 @@
 
             <!-- 系统信息预览 -->
             <div class="form-group">
-              <details class="system-info-details">
+              <details class="system-info-details" @toggle="handleSystemInfoToggle">
                 <summary>
                   <font-awesome-icon :icon="['fas', 'info-circle']" />
                   {{ t("feedback.systemInfo") }}
                 </summary>
-                <div class="system-info-content" v-if="systemInfo">
+                <div class="system-info-content" v-if="isSystemInfoLoading">
+                  <span class="system-info-loading">{{ t("common.loading") }}</span>
+                </div>
+                <div class="system-info-content" v-else-if="systemInfo">
                   <div class="info-grid">
                     <div class="info-item">
                       <span class="info-label">{{ t("feedback.os") }}</span>
@@ -145,9 +149,15 @@
           </transition>
 
           <div class="panel-content">
-            <div v-if="feedbackHistory.length === 0" class="empty-history">
-              <font-awesome-icon :icon="['fas', 'inbox']" class="empty-icon" />
-              <span>{{ t("feedback.noHistory") }}</span>
+            <div v-if="feedbackHistory.length === 0">
+              <div v-if="isHistoryLoading" class="history-loading">
+                <font-awesome-icon :icon="['fas', 'spinner']" spin />
+                <span>{{ t("common.loading") }}</span>
+              </div>
+              <div v-else class="empty-history">
+                <font-awesome-icon :icon="['fas', 'inbox']" class="empty-icon" />
+                <span>{{ t("feedback.noHistory") }}</span>
+              </div>
             </div>
 
             <div v-else class="history-list">
@@ -182,6 +192,12 @@
                   </button>
                 </div>
               </div>
+              <button v-if="hasMoreHistory" class="history-load-more" :disabled="isHistoryLoading"
+                @click="loadMoreHistory">
+                <font-awesome-icon v-if="isHistoryLoading" :icon="['fas', 'spinner']" spin />
+                <font-awesome-icon v-else :icon="['fas', 'chevron-down']" />
+                <span>{{ isHistoryLoading ? t("common.loading") : t("feedback.loadMore") }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -193,7 +209,7 @@
 <script>
 import { useI18n } from "vue-i18n";
 import CustomDropdown from "../components/CustomDropdown.vue";
-import { feedbackService } from "../services/feedbackService.js";
+import { feedbackService, ValidationLimits } from "../services/feedbackService.js";
 import storage from "../services/storageService";
 import { APP_VERSION } from "../config/version";
 
@@ -213,13 +229,24 @@ export default {
       },
       systemInfo: null,
       feedbackHistory: [],
+      isHistoryLoading: false,
+      hasMoreHistory: true,
+      historyOffset: 0,
+      historyPageSize: 30,
       isSubmitting: false,
       titleError: "",
       descriptionError: "",
       currentLanguage: storage.getItem("language") || "zh-CN",
+      isSystemInfoLoading: false,
     };
   },
   computed: {
+    titleMaxLength() {
+      return ValidationLimits.TITLE_MAX_LENGTH;
+    },
+    descriptionMaxLength() {
+      return ValidationLimits.DESCRIPTION_MAX_LENGTH;
+    },
     feedbackTypeOptions() {
       return [
         { value: "bug", label: this.$t("feedback.types.bug") },
@@ -240,9 +267,9 @@ export default {
       return (
         this.formData.type &&
         this.formData.title.trim().length > 0 &&
-        this.formData.title.length <= 100 &&
+        this.formData.title.length <= this.titleMaxLength &&
         this.formData.description.trim().length > 0 &&
-        this.formData.description.length <= 5000
+        this.formData.description.length <= this.descriptionMaxLength
       );
     },
   },
@@ -252,8 +279,12 @@ export default {
   },
 
   async mounted() {
-    await this.loadSystemInfo();
-    await this.loadHistory();
+    const loadHistoryTask = () => this.loadHistory();
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(loadHistoryTask, { timeout: 1200 });
+    } else {
+      setTimeout(loadHistoryTask, 0);
+    }
     window.addEventListener("language-changed", this.handleLanguageChange);
   },
   beforeUnmount() {
@@ -266,6 +297,8 @@ export default {
     },
 
     async loadSystemInfo() {
+      if (this.systemInfo || this.isSystemInfoLoading) return;
+      this.isSystemInfoLoading = true;
       try {
         this.systemInfo = await feedbackService.getSystemInfo();
       } catch (error) {
@@ -277,16 +310,44 @@ export default {
           language: this.currentLanguage,
           screenResolution: `${window.screen.width}x${window.screen.height}`,
         };
+      } finally {
+        this.isSystemInfoLoading = false;
       }
     },
 
-    async loadHistory() {
+    async loadHistory({ reset = false } = {}) {
+      if (this.isHistoryLoading) return;
+      if (!this.hasMoreHistory && !reset) return;
+      if (reset) {
+        this.feedbackHistory = [];
+        this.historyOffset = 0;
+        this.hasMoreHistory = true;
+      }
+      this.isHistoryLoading = true;
       try {
-        this.feedbackHistory = await feedbackService.getHistory();
+        const items = await feedbackService.getHistory({
+          limit: this.historyPageSize,
+          offset: this.historyOffset,
+        });
+        if (this.historyOffset === 0) {
+          this.feedbackHistory = items;
+        } else {
+          this.feedbackHistory = [...this.feedbackHistory, ...items];
+        }
+        this.historyOffset += items.length;
+        if (items.length < this.historyPageSize) {
+          this.hasMoreHistory = false;
+        }
       } catch (error) {
         console.error("加载反馈历史失败:", error);
-        this.feedbackHistory = [];
+        this.hasMoreHistory = false;
+      } finally {
+        this.isHistoryLoading = false;
       }
+    },
+
+    async loadMoreHistory() {
+      await this.loadHistory();
     },
 
     async submitFeedback() {
@@ -310,7 +371,7 @@ export default {
           this.$toast?.success(this.$t("feedback.submitSuccess"));
         }
         this.resetForm();
-        await this.loadHistory();
+        await this.loadHistory({ reset: true });
       } catch (error) {
         console.error("提交反馈失败:", error);
         this.$toast?.error(this.$t("feedback.submitError"));
@@ -323,7 +384,7 @@ export default {
       try {
         await feedbackService.retryFeedback(id);
         this.$toast?.success(this.$t("feedback.retrySuccess"));
-        await this.loadHistory();
+        await this.loadHistory({ reset: true });
       } catch (error) {
         console.error("重试失败:", error);
         this.$toast?.error(this.$t("feedback.retryError"));
@@ -334,7 +395,7 @@ export default {
       try {
         await feedbackService.deleteFeedback(id);
         this.$toast?.success(this.$t("feedback.deleteSuccess"));
-        await this.loadHistory();
+        await this.loadHistory({ reset: true });
       } catch (error) {
         console.error("删除失败:", error);
         this.$toast?.error(this.$t("feedback.deleteError"));
@@ -390,6 +451,12 @@ export default {
       if (!dateStr) return "";
       const date = new Date(dateStr);
       return date.toLocaleString(this.currentLanguage);
+    },
+
+    handleSystemInfoToggle(event) {
+      if (event?.target?.open) {
+        this.loadSystemInfo();
+      }
     },
   },
 };
@@ -641,6 +708,11 @@ export default {
   border-top: 1px solid var(--border-color);
 }
 
+.system-info-loading {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
 .info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -890,6 +962,40 @@ export default {
 
 .action-btn.delete:hover {
   background: rgba(220, 53, 69, 0.2);
+}
+
+.history-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.history-load-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.history-load-more:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.history-load-more:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* 响应式布局 */

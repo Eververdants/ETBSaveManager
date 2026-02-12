@@ -11,7 +11,7 @@ use chrono::Local;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex, OnceLock};
 use tauri::State;
 
 // ============================================
@@ -113,13 +113,13 @@ pub struct FeedbackHistoryItem {
 
 /// State for managing the feedback queue
 pub struct FeedbackState {
-    pub queue: Mutex<Option<FeedbackQueue>>,
+    pub queue: Arc<Mutex<Option<FeedbackQueue>>>,
 }
 
 impl FeedbackState {
     pub fn new() -> Self {
         FeedbackState {
-            queue: Mutex::new(None),
+            queue: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -148,6 +148,27 @@ impl FeedbackState {
     }
 }
 
+async fn with_queue_blocking<F, R>(state: &FeedbackState, f: F) -> AppResult<R>
+where
+    F: FnOnce(&FeedbackQueue) -> AppResult<R> + Send + 'static,
+    R: Send + 'static,
+{
+    let queue = Arc::clone(&state.queue);
+    tokio::task::spawn_blocking(move || {
+        let guard = queue.lock().map_err(|e| AppError {
+            message: format!("Lock error: {}", e),
+        })?;
+        let queue = guard.as_ref().ok_or(AppError {
+            message: "Feedback queue not initialized".to_string(),
+        })?;
+        f(queue)
+    })
+    .await
+    .map_err(|e| AppError {
+        message: format!("Queue task failed: {}", e),
+    })?
+}
+
 impl Default for FeedbackState {
     fn default() -> Self {
         Self::new()
@@ -159,6 +180,8 @@ const WORKER_URL: &str = "https://etbsavemanager-feedback.llzgd.workers.dev";
 
 const TITLE_MAX_LEN: usize = 100;
 const DESCRIPTION_MAX_LEN: usize = 60000;
+static FEEDBACK_HTTP_CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
+static SANITIZE_PATTERNS: OnceLock<Vec<(Regex, &'static str)>> = OnceLock::new();
 
 /// Cloudflare Worker 反馈响应
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -168,15 +191,56 @@ pub struct WorkerResponse {
     pub error: Option<String>,
 }
 
+#[inline]
+fn feedback_http_client() -> &'static reqwest::Client {
+    FEEDBACK_HTTP_CLIENT.get_or_init(reqwest::Client::new)
+}
+
+#[inline]
+fn sanitize_patterns() -> &'static [(Regex, &'static str)] {
+    SANITIZE_PATTERNS.get_or_init(|| {
+        vec![
+            (
+                Regex::new(r"(?i)[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}").expect("valid regex"),
+                "[REDACTED_EMAIL]",
+            ),
+            (
+                Regex::new(r"(?i)\b(Authorization:\s*Bearer\s+)[A-Za-z0-9._-]+")
+                    .expect("valid regex"),
+                "$1[REDACTED_TOKEN]",
+            ),
+            (
+                Regex::new(r"(?i)\b(Bearer\s+)[A-Za-z0-9._-]+").expect("valid regex"),
+                "$1[REDACTED_TOKEN]",
+            ),
+            (
+                Regex::new(r"(?i)\b(api[_-]?key|token|password|secret)\b\s*[:=]\s*[^\s]+")
+                    .expect("valid regex"),
+                "$1=[REDACTED]",
+            ),
+            (
+                Regex::new(r"([A-Z]:\\Users\\)[^\\]+").expect("valid regex"),
+                "$1[REDACTED_USER]",
+            ),
+            (
+                Regex::new(r"(/Users/)[^/]+").expect("valid regex"),
+                "$1[REDACTED_USER]",
+            ),
+            (
+                Regex::new(r"(/home/)[^/]+").expect("valid regex"),
+                "$1[REDACTED_USER]",
+            ),
+        ]
+    })
+}
+
 /// Sends feedback to Cloudflare Worker
 #[tauri::command]
 pub async fn send_feedback(
     content: String,
     email: Option<String>,
 ) -> AppResult<WorkerResponse> {
-    let client = reqwest::Client::new();
-
-    let res = client
+    let res = feedback_http_client()
         .post(WORKER_URL)
         .header("User-Agent", "ETBSaveManager/3.0")
         .json(&serde_json::json!({
@@ -220,7 +284,14 @@ pub async fn submit_feedback(
     let system_info = SystemInfo::collect(language, screen_resolution);
 
     // Format feedback content
-    let content = format_feedback_content(&data, &system_info);
+    let content = format_feedback_content(
+        &data.feedback_type,
+        data.severity.as_deref(),
+        data.sender.as_deref(),
+        &data.title,
+        &data.description,
+        &system_info,
+    );
 
     // Create feedback record
     let mut record = FeedbackRecord::new(
@@ -228,87 +299,78 @@ pub async fn submit_feedback(
         data.severity.clone(),
         data.title.clone(),
         data.description.clone(),
-        system_info.clone(),
+        system_info,
         vec![],
     );
+    let feedback_id = record.id.clone();
 
     // Try to submit to Cloudflare Worker
-    match send_feedback(content, data.sender.clone()).await {
+    let (queued, error) = match send_feedback(content, data.sender.clone()).await {
         Ok(resp) if resp.success => {
             record.status = FeedbackStatus::Submitted.as_str().to_string();
-
-            // Save to local history
-            state.with_queue(|queue| {
-                queue.enqueue(&record).map_err(|e| AppError {
-                    message: e.to_string(),
-                })
-            })?;
-
-            Ok(SubmitResult {
-                success: true,
-                feedback_id: record.id,
-                queued: false,
-                discussion_url: None,
-                error: None,
-            })
+            (false, None)
         }
         Ok(resp) => {
             let error_msg = resp.error.unwrap_or_else(|| "Unknown error".to_string());
             println!("Failed to submit feedback: {}", error_msg);
-
-            // Queue for later submission (offline)
-            state.with_queue(|queue| {
-                queue.enqueue(&record).map_err(|e| AppError {
-                    message: e.to_string(),
-                })
-            })?;
-
-            Ok(SubmitResult {
-                success: true,
-                feedback_id: record.id,
-                queued: true,
-                discussion_url: None,
-                error: Some(error_msg),
-            })
+            (true, Some(error_msg))
         }
         Err(e) => {
             println!("Failed to submit feedback: {}", e);
-
-            // Queue for later submission (offline)
-            state.with_queue(|queue| {
-                queue.enqueue(&record).map_err(|e| AppError {
-                    message: e.to_string(),
-                })
-            })?;
-
-            Ok(SubmitResult {
-                success: true,
-                feedback_id: record.id,
-                queued: true,
-                discussion_url: None,
-                error: Some(e.to_string()),
-            })
+            (true, Some(e.to_string()))
         }
-    }
+    };
+
+    // Save to local history (blocking SQLite moved off async runtime worker)
+    with_queue_blocking(&state, move |queue| {
+        queue.enqueue(&record).map_err(|e| AppError {
+            message: e.to_string(),
+        })
+    })
+    .await?;
+
+    Ok(SubmitResult {
+        success: true,
+        feedback_id,
+        queued,
+        discussion_url: None,
+        error,
+    })
 }
 
 /// Formats feedback content for Worker
-fn format_feedback_content(data: &FeedbackData, system_info: &SystemInfo) -> String {
-    let mut content = String::new();
-    let safe_title = sanitize_text(&data.title);
-    let safe_description = sanitize_text(&data.description);
-    let safe_sender = data.sender.as_ref().map(|s| sanitize_text(s));
+fn format_feedback_content(
+    feedback_type: &str,
+    severity: Option<&str>,
+    sender: Option<&str>,
+    title: &str,
+    description: &str,
+    system_info: &SystemInfo,
+) -> String {
+    let mut content = String::with_capacity(title.len() + description.len() + 320);
+    let safe_title = sanitize_text(title);
+    let safe_description = sanitize_text(description);
+    let safe_sender = sender.map(sanitize_text);
+    let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
     // Title
-    content.push_str(&format!("## {}\n\n", safe_title));
+    content.push_str("## ");
+    content.push_str(&safe_title);
+    content.push_str("\n\n");
 
     // Type and Severity
-    content.push_str(&format!("**Type:** {}\n", data.feedback_type));
-    if let Some(ref severity) = data.severity {
-        content.push_str(&format!("**Severity:** {}\n", severity));
+    content.push_str("**Type:** ");
+    content.push_str(feedback_type);
+    content.push('\n');
+    if let Some(severity) = severity {
+        content.push_str("**Severity:** ");
+        content.push_str(severity);
+        content.push('\n');
     }
     if let Some(sender) = safe_sender {
-        content.push_str(&format!("**From:** {}\n", sender));
+        content.push_str("**From:** ");
+        content.push_str(&sender);
+        content.push('\n');
     }
     content.push_str("\n");
 
@@ -319,20 +381,23 @@ fn format_feedback_content(data: &FeedbackData, system_info: &SystemInfo) -> Str
 
     // System Info
     content.push_str("### System Information\n\n");
-    content.push_str(&format!(
-        "- **OS:** {} {}\n",
-        system_info.os, system_info.os_version
-    ));
-    content.push_str(&format!("- **App Version:** {}\n", system_info.app_version));
-    content.push_str(&format!("- **Language:** {}\n", system_info.language));
-    content.push_str(&format!(
-        "- **Resolution:** {}\n",
-        system_info.screen_resolution
-    ));
-    content.push_str(&format!(
-        "- **Timestamp:** {}\n",
-        Local::now().format("%Y-%m-%d %H:%M:%S")
-    ));
+    content.push_str("- **OS:** ");
+    content.push_str(&system_info.os);
+    content.push(' ');
+    content.push_str(&system_info.os_version);
+    content.push('\n');
+    content.push_str("- **App Version:** ");
+    content.push_str(&system_info.app_version);
+    content.push('\n');
+    content.push_str("- **Language:** ");
+    content.push_str(&system_info.language);
+    content.push('\n');
+    content.push_str("- **Resolution:** ");
+    content.push_str(&system_info.screen_resolution);
+    content.push('\n');
+    content.push_str("- **Timestamp:** ");
+    content.push_str(&timestamp);
+    content.push('\n');
 
     content
 }
@@ -372,12 +437,13 @@ pub async fn retry_feedback(
     state: State<'_, FeedbackState>,
 ) -> AppResult<SubmitResult> {
     // Get the feedback record
-    let record = state
-        .with_queue(|queue| {
-            queue.get_by_id(&id).map_err(|e| AppError {
+    let lookup_id = id.clone();
+    let record = with_queue_blocking(&state, move |queue| {
+            queue.get_by_id(&lookup_id).map_err(|e| AppError {
                 message: e.to_string(),
             })
-        })?
+        })
+        .await?
         .ok_or_else(|| AppError {
             message: "Feedback not found".to_string(),
         })?;
@@ -393,24 +459,24 @@ pub async fn retry_feedback(
 
     // Format feedback content
     let content = format_feedback_content(
-        &FeedbackData {
-            feedback_type: record.feedback_type.clone(),
-            severity: record.severity.clone(),
-            sender: None,
-            title: record.title.clone(),
-            description: record.description.clone(),
-        },
+        &record.feedback_type,
+        record.severity.as_deref(),
+        None,
+        &record.title,
+        &record.description,
         &record.system_info,
     );
 
     // Try to submit to Cloudflare Worker
     match send_feedback(content, None).await {
         Ok(resp) if resp.success => {
-            state.with_queue(|queue| {
+            let id_for_update = id.clone();
+            with_queue_blocking(&state, move |queue| {
                 queue
-                    .update_status(&id, FeedbackStatus::Submitted, None, None)
+                    .update_status(&id_for_update, FeedbackStatus::Submitted, None, None)
                     .map_err(|e| e.to_string().into())
-            })?;
+            })
+            .await?;
 
             Ok(SubmitResult {
                 success: true,
@@ -424,32 +490,46 @@ pub async fn retry_feedback(
             let error_msg = resp.error.unwrap_or_else(|| "Unknown error".to_string());
 
             // Increment retry count
-            let retry_count = state
-                .with_queue(|queue| queue.increment_retry_count(&id).map_err(|e| e.to_string().into()))?;
+            let id_for_retry = id.clone();
+            let retry_count = with_queue_blocking(&state, move |queue| {
+                queue
+                    .increment_retry_count(&id_for_retry)
+                    .map_err(|e| e.to_string().into())
+            })
+            .await?;
 
             // Mark as failed after 3 retries
             if retry_count >= 3 {
-                state.with_queue(|queue| {
+                let id_for_fail = id.clone();
+                with_queue_blocking(&state, move |queue| {
                     queue
-                        .update_status(&id, FeedbackStatus::Failed, None, None)
+                        .update_status(&id_for_fail, FeedbackStatus::Failed, None, None)
                         .map_err(|e| e.to_string().into())
-                })?;
+                })
+                .await?;
             }
 
             Err(format!("Retry failed: {}", error_msg).into())
         }
         Err(e) => {
             // Increment retry count
-            let retry_count = state
-                .with_queue(|queue| queue.increment_retry_count(&id).map_err(|e| e.to_string().into()))?;
+            let id_for_retry = id.clone();
+            let retry_count = with_queue_blocking(&state, move |queue| {
+                queue
+                    .increment_retry_count(&id_for_retry)
+                    .map_err(|e| e.to_string().into())
+            })
+            .await?;
 
             // Mark as failed after 3 retries
             if retry_count >= 3 {
-                state.with_queue(|queue| {
+                let id_for_fail = id.clone();
+                with_queue_blocking(&state, move |queue| {
                     queue
-                        .update_status(&id, FeedbackStatus::Failed, None, None)
+                        .update_status(&id_for_fail, FeedbackStatus::Failed, None, None)
                         .map_err(|e| e.to_string().into())
-                })?;
+                })
+                .await?;
             }
 
             Err(format!("Retry failed: {}", e).into())
@@ -496,18 +576,20 @@ fn validate_feedback_input(data: &FeedbackData) -> AppResult<()> {
     }
 
     // Validate feedback type
+    let feedback_type = data.feedback_type.to_ascii_lowercase();
     let valid_types = ["bug", "idea", "general", "ui"];
-    if !valid_types.contains(&data.feedback_type.to_lowercase().as_str()) {
+    if !valid_types.contains(&feedback_type.as_str()) {
         return Err(AppError {
             message: "Invalid feedback type".to_string(),
         });
     }
 
     // Validate severity for bug type
-    if data.feedback_type.to_lowercase() == "bug" {
+    if feedback_type == "bug" {
         if let Some(ref severity) = data.severity {
+            let severity = severity.to_ascii_lowercase();
             let valid_severities = ["low", "medium", "high", "critical"];
-            if !valid_severities.contains(&severity.to_lowercase().as_str()) {
+            if !valid_severities.contains(&severity.as_str()) {
                 return Err(AppError {
                     message: "Invalid severity level".to_string(),
                 });
@@ -530,38 +612,7 @@ fn sanitize_text(input: &str) -> String {
     }
 
     let mut output = input.to_string();
-    let patterns = [
-        (
-            Regex::new(r"(?i)[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}").unwrap(),
-            "[REDACTED_EMAIL]",
-        ),
-        (
-            Regex::new(r"(?i)\b(Authorization:\s*Bearer\s+)[A-Za-z0-9._-]+").unwrap(),
-            "$1[REDACTED_TOKEN]",
-        ),
-        (
-            Regex::new(r"(?i)\b(Bearer\s+)[A-Za-z0-9._-]+").unwrap(),
-            "$1[REDACTED_TOKEN]",
-        ),
-        (
-            Regex::new(r"(?i)\b(api[_-]?key|token|password|secret)\b\s*[:=]\s*[^\s]+").unwrap(),
-            "$1=[REDACTED]",
-        ),
-        (
-            Regex::new(r"([A-Z]:\\Users\\)[^\\]+").unwrap(),
-            "$1[REDACTED_USER]",
-        ),
-        (
-            Regex::new(r"(/Users/)[^/]+").unwrap(),
-            "$1[REDACTED_USER]",
-        ),
-        (
-            Regex::new(r"(/home/)[^/]+").unwrap(),
-            "$1[REDACTED_USER]",
-        ),
-    ];
-
-    for (re, rep) in patterns.iter() {
+    for (re, rep) in sanitize_patterns() {
         output = re.replace_all(&output, *rep).to_string();
     }
 

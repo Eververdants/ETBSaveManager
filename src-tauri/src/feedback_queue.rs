@@ -197,14 +197,12 @@ impl FeedbackQueue {
     pub fn increment_retry_count(&self, id: &str) -> SqliteResult<i32> {
         let now = Utc::now().to_rfc3339();
 
-        self.conn.execute(
-            "UPDATE feedbacks SET retry_count = retry_count + 1, updated_at = ?1 WHERE id = ?2",
-            params![now, id],
-        )?;
-
         self.conn.query_row(
-            "SELECT retry_count FROM feedbacks WHERE id = ?1",
-            [id],
+            "UPDATE feedbacks
+             SET retry_count = retry_count + 1, updated_at = ?1
+             WHERE id = ?2
+             RETURNING retry_count",
+            params![now, id],
             |row| row.get(0),
         )
     }
@@ -217,6 +215,7 @@ impl FeedbackQueue {
     }
 
     /// Gets all feedback records
+    #[cfg(test)]
     pub fn get_all(&self) -> SqliteResult<Vec<FeedbackRecord>> {
         let mut stmt = self.conn.prepare_cached(
             "SELECT id, feedback_type, severity, title, description,

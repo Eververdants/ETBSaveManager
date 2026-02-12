@@ -5,6 +5,10 @@
 
 use serde::{Deserialize, Serialize};
 use std::env;
+use std::sync::OnceLock;
+
+static OS_NAME_CACHE: OnceLock<String> = OnceLock::new();
+static OS_VERSION_CACHE: OnceLock<String> = OnceLock::new();
 
 /// System information structure for feedback submissions.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -21,13 +25,23 @@ impl SystemInfo {
     #[inline]
     pub fn collect(language: String, screen_resolution: String) -> Self {
         SystemInfo {
-            os: get_os_name(),
-            os_version: get_os_version(),
+            os: get_os_name_cached().to_string(),
+            os_version: get_os_version_cached().to_string(),
             app_version: env!("CARGO_PKG_VERSION").to_string(),
             language,
             screen_resolution,
         }
     }
+}
+
+#[inline]
+fn get_os_name_cached() -> &'static str {
+    OS_NAME_CACHE.get_or_init(get_os_name).as_str()
+}
+
+#[inline]
+fn get_os_version_cached() -> &'static str {
+    OS_VERSION_CACHE.get_or_init(get_os_version).as_str()
 }
 
 /// Gets the operating system name.
@@ -112,8 +126,8 @@ fn get_os_version() -> String {
 impl Default for SystemInfo {
     fn default() -> Self {
         SystemInfo {
-            os: get_os_name(),
-            os_version: get_os_version(),
+            os: get_os_name_cached().to_string(),
+            os_version: get_os_version_cached().to_string(),
             app_version: env!("CARGO_PKG_VERSION").to_string(),
             language: "unknown".to_string(),
             screen_resolution: "unknown".to_string(),

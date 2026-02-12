@@ -65,10 +65,8 @@ fn process_save_file(
     visible_saves: &std::collections::HashSet<String>,
 ) -> Option<SaveFileInfo> {
     let save = cli_handlers::parse_sav_file(path).ok()?;
-    let save_json = serde_json::to_value(&save).ok()?;
-
-    let current_level = cli_handlers::extract_current_level(&save_json);
-    let actual_difficulty: Cow<'static, str> = cli_handlers::extract_difficulty_label(&save_json);
+    let current_level = cli_handlers::extract_current_level(&save);
+    let actual_difficulty: Cow<'static, str> = cli_handlers::extract_difficulty_label(&save);
     let date = cli_handlers::get_modified_date(path).ok()?;
 
     let file_name = path.file_name()?.to_str()?;

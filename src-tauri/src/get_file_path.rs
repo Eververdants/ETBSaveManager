@@ -7,28 +7,53 @@ use std::ffi::OsStr;
 use std::path::PathBuf;
 use walkdir::WalkDir;
 
+#[inline]
+fn starts_with_ascii_case_insensitive(s: &str, prefix: &str) -> bool {
+    s.get(..prefix.len())
+        .is_some_and(|head| head.eq_ignore_ascii_case(prefix))
+}
+
+#[inline]
+fn ends_with_ascii_case_insensitive(s: &str, suffix: &str) -> bool {
+    if s.len() < suffix.len() {
+        return false;
+    }
+    let start = s.len() - suffix.len();
+    s.get(start..)
+        .is_some_and(|tail| tail.eq_ignore_ascii_case(suffix))
+}
+
+#[inline]
+fn strip_suffix_ascii_case_insensitive<'a>(s: &'a str, suffix: &str) -> Option<&'a str> {
+    if !ends_with_ascii_case_insensitive(s, suffix) {
+        return None;
+    }
+    let end = s.len() - suffix.len();
+    s.get(..end)
+}
+
 /// 快速检查文件名是否可能是存档文件（避免正则开销）
 #[inline]
 fn is_potential_save_file(name: &str) -> bool {
-    let name_upper = name.to_uppercase();
-    (name_upper.starts_with("MULTIPLAYER_") || name_upper.starts_with("SINGLEPLAYER_"))
-        && name.ends_with(".sav")
+    (starts_with_ascii_case_insensitive(name, "MULTIPLAYER_")
+        || starts_with_ascii_case_insensitive(name, "SINGLEPLAYER_"))
+        && ends_with_ascii_case_insensitive(name, ".sav")
 }
 
 /// 验证存档文件名格式（简化版，不使用正则）
 #[inline]
 fn validate_save_filename(name: &str) -> bool {
-    let name_lower = name.to_lowercase();
-
     // 检查后缀
-    let without_ext = match name_lower.strip_suffix(".sav") {
+    let without_ext = match strip_suffix_ascii_case_insensitive(name, ".sav") {
         Some(s) => s,
         None => return false,
     };
 
     // 检查难度后缀
     let valid_difficulties = ["_easy", "_normal", "_hard", "_nightmare"];
-    let has_valid_difficulty = valid_difficulties.iter().any(|d| without_ext.ends_with(d))
+    let has_valid_difficulty = valid_difficulties
+        .iter()
+        .any(|d| ends_with_ascii_case_insensitive(without_ext, d))
         || without_ext
             .chars()
             .last()
@@ -39,7 +64,8 @@ fn validate_save_filename(name: &str) -> bool {
     }
 
     // 检查前缀
-    without_ext.starts_with("multiplayer_") || without_ext.starts_with("singleplayer_")
+    starts_with_ascii_case_insensitive(without_ext, "multiplayer_")
+        || starts_with_ascii_case_insensitive(without_ext, "singleplayer_")
 }
 
 /// 列出所有存档文件路径（优化版）

@@ -3,12 +3,11 @@
 
 use chrono::{DateTime, Local};
 use memmap2::Mmap;
-use serde_json::Value;
 use std::borrow::Cow;
 use std::fs::File;
 use std::io::{Cursor, Read};
 use std::path::Path;
-use uesave::Save;
+use uesave::{Property, PropertyInner, Save};
 
 /// 小文件阈值（32KB），低于此值直接读取
 const SMALL_FILE_THRESHOLD: u64 = 32768;
@@ -57,19 +56,33 @@ pub fn get_modified_date(path: &Path) -> Result<String, String> {
     Ok(datetime.format("%Y-%m-%d").to_string())
 }
 
-/// 提取 CurrentLevel_0.Name 字段值，并根据 UnlockedFun_0 判断 Pipes1/Pipes2
-/// 使用 Cow 避免不必要的字符串分配
+/// 辅助函数：按名称查找属性（忽略类型 ID）
 #[inline]
-pub fn extract_current_level(json: &Value) -> String {
-    let current_level = json
-        .pointer("/root/properties/CurrentLevel_0/Name")
-        .and_then(Value::as_str)
+fn get_property_by_name<'a>(save: &'a Save, name: &str) -> Option<&'a Property> {
+    save.root
+        .properties
+        .0
+        .iter()
+        .find(|(key, _)| key.1 == name)
+        .map(|(_, prop)| prop)
+}
+
+/// 提取 CurrentLevel_0.Name 字段值，并根据 UnlockedFun_0 判断 Pipes1/Pipes2
+#[inline]
+pub fn extract_current_level(save: &Save) -> String {
+    let current_level = get_property_by_name(save, "CurrentLevel")
+        .and_then(|prop| match &prop.inner {
+            PropertyInner::Name(level) => Some(level.as_str()),
+            _ => None,
+        })
         .unwrap_or("Level0");
 
     if current_level == "Pipes" {
-        let is_unlocked = json
-            .pointer("/root/properties/UnlockedFun_0/Bool")
-            .and_then(Value::as_bool)
+        let is_unlocked = get_property_by_name(save, "UnlockedFun")
+            .and_then(|prop| match &prop.inner {
+                PropertyInner::Bool(value) => Some(*value),
+                _ => None,
+            })
             .unwrap_or(false);
         if is_unlocked {
             "Pipes2".to_string()
@@ -84,19 +97,16 @@ pub fn extract_current_level(json: &Value) -> String {
 /// 提取 Difficulty_0.Byte.Label 并映射难度等级
 /// 返回 Cow 以避免静态字符串的分配
 #[inline]
-pub fn extract_difficulty_label(json: &Value) -> Cow<'static, str> {
-    json.pointer("/root/properties/Difficulty_0/Byte/Label")
-        .and_then(Value::as_str)
-        .map(|s| {
-            if s.contains("NewEnumerator0") {
-                Cow::Borrowed("简单难度")
-            } else if s.contains("NewEnumerator1") {
-                Cow::Borrowed("困难难度")
-            } else if s.contains("NewEnumerator2") {
-                Cow::Borrowed("噩梦难度")
-            } else {
-                Cow::Borrowed("普通难度")
-            }
-        })
-        .unwrap_or(Cow::Borrowed("普通难度"))
+pub fn extract_difficulty_label(save: &Save) -> Cow<'static, str> {
+    let difficulty_label = get_property_by_name(save, "Difficulty").and_then(|prop| match &prop.inner {
+        PropertyInner::Byte(uesave::Byte::Label(label)) => Some(label.as_str()),
+        _ => None,
+    });
+
+    match difficulty_label {
+        Some(s) if s.contains("NewEnumerator0") => Cow::Borrowed("简单难度"),
+        Some(s) if s.contains("NewEnumerator1") => Cow::Borrowed("困难难度"),
+        Some(s) if s.contains("NewEnumerator2") => Cow::Borrowed("噩梦难度"),
+        _ => Cow::Borrowed("普通难度"),
+    }
 }

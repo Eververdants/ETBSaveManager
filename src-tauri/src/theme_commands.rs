@@ -301,6 +301,25 @@ fn get_timestamp() -> u64 {
         .as_millis() as u64
 }
 
+fn count_custom_theme_files(themes_dir: &PathBuf) -> Result<usize, String> {
+    let entries =
+        fs::read_dir(themes_dir).map_err(|e| format!("Failed to read themes dir: {}", e))?;
+    let mut count = 0usize;
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("json"))
+        {
+            count += 1;
+        }
+    }
+
+    Ok(count)
+}
+
 // ============================================================================
 // Tauri Commands - CRUD Operations
 // ============================================================================
@@ -321,8 +340,8 @@ pub async fn save_custom_theme(app: AppHandle, theme: CustomTheme) -> AppResult<
     let theme_path = themes_dir.join(format!("{}.json", theme.id));
 
     if !theme_path.exists() {
-        let existing = load_custom_themes(app.clone()).await?;
-        if existing.len() >= MAX_CUSTOM_THEMES {
+        let existing_count = count_custom_theme_files(&themes_dir)?;
+        if existing_count >= MAX_CUSTOM_THEMES {
             return Err(format!(
                 "Maximum {} custom themes reached. Delete one first.",
                 MAX_CUSTOM_THEMES

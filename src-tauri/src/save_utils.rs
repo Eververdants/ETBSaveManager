@@ -53,22 +53,28 @@ pub struct SaveFileInfo {
 /// 难度映射（使用 match 比查表更快）
 #[inline]
 fn map_difficulty(raw: &str) -> (Cow<'static, str>, Cow<'static, str>) {
-    match raw {
-        "easy" => (Cow::Borrowed("简单难度"), Cow::Borrowed("Easy")),
-        "normal" => (Cow::Borrowed("普通难度"), Cow::Borrowed("Normal")),
-        "hard" => (Cow::Borrowed("困难难度"), Cow::Borrowed("Hard")),
-        "nightmare" => (Cow::Borrowed("噩梦难度"), Cow::Borrowed("Nightmare")),
-        _ => (Cow::Borrowed("普通难度"), Cow::Borrowed("Normal")),
+    if raw.eq_ignore_ascii_case("easy") {
+        (Cow::Borrowed("简单难度"), Cow::Borrowed("Easy"))
+    } else if raw.eq_ignore_ascii_case("normal") {
+        (Cow::Borrowed("普通难度"), Cow::Borrowed("Normal"))
+    } else if raw.eq_ignore_ascii_case("hard") {
+        (Cow::Borrowed("困难难度"), Cow::Borrowed("Hard"))
+    } else if raw.eq_ignore_ascii_case("nightmare") {
+        (Cow::Borrowed("噩梦难度"), Cow::Borrowed("Nightmare"))
+    } else {
+        (Cow::Borrowed("普通难度"), Cow::Borrowed("Normal"))
     }
 }
 
 /// 游戏模式映射
 #[inline]
 fn map_mode(raw: &str) -> &'static str {
-    match raw.to_uppercase().as_str() {
-        "MULTIPLAYER" => "多人模式",
-        "SINGLEPLAYER" => "单人模式",
-        _ => "未知模式",
+    if raw.eq_ignore_ascii_case("MULTIPLAYER") {
+        "多人模式"
+    } else if raw.eq_ignore_ascii_case("SINGLEPLAYER") {
+        "单人模式"
+    } else {
+        "未知模式"
     }
 }
 
@@ -92,7 +98,7 @@ pub fn build_save_info<S: Into<String>>(
     let name = caps.get(2).ok_or("无法提取存档名称")?.as_str();
     let difficulty_raw = caps.get(3).ok_or("无法提取难度")?.as_str();
 
-    let (difficulty, difficulty_class) = map_difficulty(&difficulty_raw.to_lowercase());
+    let (difficulty, difficulty_class) = map_difficulty(difficulty_raw);
     let hidden = path.parent() != get_save_games_base_dir().map(|p| p.as_path());
 
     Ok(SaveFileInfo {

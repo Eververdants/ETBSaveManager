@@ -29,6 +29,7 @@ pub fn run() {
     // 初始化反馈系统状态
     let feedback_state = feedback_commands::FeedbackState::new();
     let backend_log_state = feedback_commands::BackendLogState::new();
+    let steam_cache_state = steam_api::SteamCacheState::new();
 
     // 构建Tauri应用
     tauri::Builder::default()
@@ -39,6 +40,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .manage(feedback_state)
         .manage(backend_log_state)
+        .manage(steam_cache_state)
         .setup(|app| {
             // 初始化反馈队列数据库
             let app_data_dir = app.path().app_data_dir();
@@ -64,6 +66,13 @@ pub fn run() {
                 Err(e) => {
                     println!("Warning: Could not get app data dir: {}", e);
                 }
+            }
+
+            let steam_state = app.state::<steam_api::SteamCacheState>();
+            if let Err(e) = steam_state.init() {
+                println!("Warning: Failed to initialize steam cache: {}", e);
+            } else {
+                println!("Steam cache initialized successfully");
             }
             Ok(())
         })

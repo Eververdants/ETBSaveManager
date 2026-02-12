@@ -5,7 +5,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::{Mutex, OnceLock};
 use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::State;
 use tokio::time::{sleep, Duration};
 
 /// 缓存过期时间（30天，单位：秒）
@@ -20,6 +22,7 @@ const API_TIMEOUT_SECONDS: u64 = 10;
 const BATCH_DELAY_MS: u64 = 1000;
 /// 每批最大 Steam ID 数量
 const MAX_BATCH_SIZE: usize = 100;
+static STEAM_HTTP_CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
 
 // Steam API响应结构
 #[derive(Debug, Deserialize)]
@@ -46,6 +49,20 @@ pub struct CacheEntry {
     pub last_updated: u64,
 }
 
+#[derive(Debug, Deserialize)]
+struct SteamCacheFile {
+    #[serde(default)]
+    entries: HashMap<String, CacheEntry>,
+    #[serde(default)]
+    call_count: u32,
+}
+
+#[derive(Serialize)]
+struct SteamCacheFileRef<'a> {
+    entries: &'a HashMap<String, CacheEntry>,
+    call_count: u32,
+}
+
 impl CacheEntry {
     #[inline]
     fn new(username: String) -> Self {
@@ -69,6 +86,16 @@ fn current_timestamp() -> u64 {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs()
+}
+
+#[inline]
+fn steam_http_client() -> &'static reqwest::Client {
+    STEAM_HTTP_CLIENT.get_or_init(|| {
+        reqwest::Client::builder()
+            .timeout(Duration::from_secs(API_TIMEOUT_SECONDS))
+            .build()
+            .unwrap_or_else(|_| reqwest::Client::new())
+    })
 }
 
 // 缓存管理器
@@ -108,23 +135,11 @@ impl SteamCacheManager {
         let cache_content =
             fs::read_to_string(&self.cache_path).map_err(|e| format!("读取缓存文件失败: {}", e))?;
 
-        let cache_data: serde_json::Value =
+        let cache_data: SteamCacheFile =
             serde_json::from_str(&cache_content).map_err(|e| format!("解析缓存文件失败: {}", e))?;
 
-        // 加载缓存条目
-        if let Some(entries) = cache_data.get("entries").and_then(|v| v.as_object()) {
-            self.cache.reserve(entries.len());
-            for (steam_id, entry_data) in entries {
-                if let Ok(entry) = serde_json::from_value::<CacheEntry>(entry_data.clone()) {
-                    self.cache.insert(steam_id.clone(), entry);
-                }
-            }
-        }
-
-        // 加载调用计数
-        if let Some(count) = cache_data.get("call_count").and_then(|v| v.as_u64()) {
-            self.call_count = count as u32;
-        }
+        self.cache = cache_data.entries;
+        self.call_count = cache_data.call_count;
 
         Ok(())
     }
@@ -135,20 +150,10 @@ impl SteamCacheManager {
             return Ok(());
         }
 
-        let entries: serde_json::Map<String, serde_json::Value> = self
-            .cache
-            .iter()
-            .filter_map(|(steam_id, entry)| {
-                serde_json::to_value(entry)
-                    .ok()
-                    .map(|v| (steam_id.clone(), v))
-            })
-            .collect();
-
-        let cache_data = serde_json::json!({
-            "entries": entries,
-            "call_count": self.call_count
-        });
+        let cache_data = SteamCacheFileRef {
+            entries: &self.cache,
+            call_count: self.call_count,
+        };
 
         let cache_json = serde_json::to_string(&cache_data) // 不使用 pretty，减少文件大小
             .map_err(|e| format!("序列化缓存失败: {}", e))?;
@@ -181,7 +186,6 @@ impl SteamCacheManager {
         // 每20次调用保存一次
         if entry.call_count % 20 == 0 {
             self.dirty = true;
-            let _ = self.save_cache();
         }
 
         Some(username)
@@ -203,7 +207,6 @@ impl SteamCacheManager {
 
         if removed_count > 0 {
             self.dirty = true;
-            let _ = self.save_cache();
         }
 
         removed_count
@@ -220,8 +223,6 @@ impl SteamCacheManager {
         if self.cache.len() > SMART_CLEANUP_THRESHOLD {
             self.smart_cleanup();
         }
-
-        let _ = self.save_cache();
     }
 
     /// 智能清理缓存
@@ -242,6 +243,50 @@ impl SteamCacheManager {
         self.dirty = true;
         self.save_cache()
     }
+
+    pub fn flush(&mut self) -> AppResult<()> {
+        self.save_cache()
+    }
+}
+
+pub struct SteamCacheState {
+    manager: Mutex<Option<SteamCacheManager>>,
+}
+
+impl SteamCacheState {
+    pub fn new() -> Self {
+        Self {
+            manager: Mutex::new(None),
+        }
+    }
+
+    pub fn init(&self) -> AppResult<()> {
+        let manager = SteamCacheManager::new()?;
+        let mut guard = self.manager.lock().map_err(|e| AppError {
+            message: format!("Steam cache lock error: {}", e),
+        })?;
+        *guard = Some(manager);
+        Ok(())
+    }
+
+    pub fn with_manager<F, R>(&self, f: F) -> AppResult<R>
+    where
+        F: FnOnce(&mut SteamCacheManager) -> AppResult<R>,
+    {
+        let mut guard = self.manager.lock().map_err(|e| AppError {
+            message: format!("Steam cache lock error: {}", e),
+        })?;
+        let manager = guard.as_mut().ok_or_else(|| AppError {
+            message: "Steam cache not initialized".to_string(),
+        })?;
+        f(manager)
+    }
+}
+
+impl Default for SteamCacheState {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 /// 验证 Steam ID 格式（优化版）
@@ -254,6 +299,7 @@ fn validate_steam_id(steam_id: &str) -> bool {
 pub async fn get_steam_usernames(
     steam_ids: Vec<String>,
     api_key: String,
+    cache_state: &SteamCacheState,
 ) -> AppResult<HashMap<String, String>> {
     if steam_ids.is_empty() {
         return Ok(HashMap::new());
@@ -266,22 +312,28 @@ pub async fn get_steam_usernames(
         }
     }
 
-    let mut cache_manager = SteamCacheManager::new()?;
+    let steam_id_count = steam_ids.len();
+    let (mut result, uncached_ids) = cache_state.with_manager(move |cache_manager| {
+        // 自动清理过期的缓存条目
+        cache_manager.cleanup_expired_cache();
 
-    // 自动清理过期的缓存条目
-    cache_manager.cleanup_expired_cache();
+        // 分离缓存命中和未命中的 ID
+        let mut result = HashMap::with_capacity(steam_id_count);
+        let mut uncached_ids = Vec::with_capacity(steam_id_count);
 
-    // 分离缓存命中和未命中的 ID
-    let mut result = HashMap::with_capacity(steam_ids.len());
-    let mut uncached_ids = Vec::new();
-
-    for steam_id in &steam_ids {
-        if let Some(username) = cache_manager.get_cached_username(steam_id) {
-            result.insert(steam_id.clone(), username);
-        } else {
-            uncached_ids.push(steam_id.clone());
+        for steam_id in steam_ids {
+            if let Some(username) = cache_manager.get_cached_username(&steam_id) {
+                result.insert(steam_id, username);
+            } else {
+                uncached_ids.push(steam_id);
+            }
         }
-    }
+
+        // 将命中计数与清理结果批量刷盘
+        cache_manager.flush()?;
+
+        Ok((result, uncached_ids))
+    })?;
 
     // 如果所有ID都在缓存中，直接返回
     if uncached_ids.is_empty() {
@@ -289,22 +341,28 @@ pub async fn get_steam_usernames(
     }
 
     // 分批处理未缓存的ID
-    let chunks: Vec<_> = uncached_ids.chunks(MAX_BATCH_SIZE).collect();
-    let chunk_count = chunks.len();
-
-    for (i, chunk) in chunks.into_iter().enumerate() {
+    let mut fetched_pairs = Vec::with_capacity(uncached_ids.len());
+    let chunk_count = uncached_ids.len().div_ceil(MAX_BATCH_SIZE);
+    for (i, chunk) in uncached_ids.chunks(MAX_BATCH_SIZE).enumerate() {
         let chunk_result = fetch_steam_usernames_batch(chunk, &api_key).await?;
 
         for (steam_id, username) in chunk_result {
             result.insert(steam_id.clone(), username.clone());
-            cache_manager.update_cache(&steam_id, username);
+            fetched_pairs.push((steam_id, username));
         }
 
         // 批次间延迟（最后一批不需要）
-        if i < chunk_count - 1 {
+        if i + 1 < chunk_count {
             sleep(Duration::from_millis(BATCH_DELAY_MS)).await;
         }
     }
+
+    cache_state.with_manager(move |cache_manager| {
+        for (steam_id, username) in fetched_pairs {
+            cache_manager.update_cache(&steam_id, username);
+        }
+        cache_manager.flush()
+    })?;
 
     Ok(result)
 }
@@ -316,13 +374,11 @@ async fn fetch_steam_usernames_batch(
 ) -> AppResult<HashMap<String, String>> {
     let url = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/";
 
-    let client = reqwest::Client::new();
     let params = [("key", api_key), ("steamids", &steam_ids.join(","))];
 
-    let response = client
+    let response = steam_http_client()
         .get(url)
         .query(&params)
-        .timeout(Duration::from_secs(API_TIMEOUT_SECONDS))
         .send()
         .await
         .map_err(|e| format!("请求Steam API失败: {}", e))?;
@@ -344,6 +400,58 @@ async fn fetch_steam_usernames_batch(
         .collect())
 }
 
+fn read_encrypted_steam_api_key_from_config() -> AppResult<String> {
+    let config_path = get_app_config_dir()?.join("config.json");
+
+    if !config_path.exists() {
+        return Err("Steam API密钥未配置".to_string().into());
+    }
+
+    let config_content =
+        fs::read_to_string(&config_path).map_err(|e| format!("读取配置文件失败: {}", e))?;
+
+    let config: serde_json::Value =
+        serde_json::from_str(&config_content).map_err(|e| format!("解析配置文件失败: {}", e))?;
+
+    config
+        .get("steamApiKey")
+        .and_then(|v| v.as_str())
+        .map(|v| v.to_string())
+        .ok_or_else(|| AppError {
+            message: "Steam API密钥未配置".to_string(),
+        })
+}
+
+fn write_encrypted_steam_api_key_to_config(encrypted_api_key: String) -> AppResult<()> {
+    let config_dir = get_app_config_dir()?;
+    let config_path = config_dir.join("config.json");
+
+    if !config_dir.exists() {
+        fs::create_dir_all(&config_dir).map_err(|e| format!("创建配置目录失败: {}", e))?;
+    }
+
+    let mut config: serde_json::Value = if config_path.exists() {
+        let content =
+            fs::read_to_string(&config_path).map_err(|e| format!("读取配置文件失败: {}", e))?;
+        serde_json::from_str(&content).map_err(|e| format!("解析配置文件失败: {}", e))?
+    } else {
+        serde_json::json!({})
+    };
+
+    if let Some(obj) = config.as_object_mut() {
+        obj.insert(
+            "steamApiKey".to_string(),
+            serde_json::Value::String(encrypted_api_key),
+        );
+    }
+
+    let config_json =
+        serde_json::to_string_pretty(&config).map_err(|e| format!("序列化配置失败: {}", e))?;
+
+    fs::write(&config_path, config_json).map_err(|e| format!("写入配置文件失败: {}", e))?;
+    Ok(())
+}
+
 // ==================== Tauri Commands ====================
 
 #[tauri::command]
@@ -362,13 +470,15 @@ pub async fn encrypt_steam_api_key(api_key: String) -> AppResult<String> {
 pub async fn decrypt_steam_api_key(encrypted_key: String) -> AppResult<String> {
     use crate::encryption;
 
-    let parts: Vec<&str> = encrypted_key.split(':').collect();
-    if parts.len() != 2 {
-        return Err("无效的加密密钥格式".to_string().into());
-    }
+    let (key_hex, encrypted_data_hex) = encrypted_key
+        .split_once(':')
+        .ok_or_else(|| AppError {
+            message: "无效的加密密钥格式".to_string(),
+        })?;
 
-    let key = hex::decode(parts[0]).map_err(|e| format!("解码密钥失败: {}", e))?;
-    let encrypted_data = hex::decode(parts[1]).map_err(|e| format!("解码加密数据失败: {}", e))?;
+    let key = hex::decode(key_hex).map_err(|e| format!("解码密钥失败: {}", e))?;
+    let encrypted_data =
+        hex::decode(encrypted_data_hex).map_err(|e| format!("解码加密数据失败: {}", e))?;
 
     if key.len() != 32 {
         return Err("无效的密钥长度".to_string().into());
@@ -383,95 +493,71 @@ pub async fn decrypt_steam_api_key(encrypted_key: String) -> AppResult<String> {
 }
 
 #[tauri::command]
-pub async fn clear_steam_cache() -> AppResult<()> {
-    SteamCacheManager::new()?.clear_cache()
+pub async fn clear_steam_cache(cache_state: State<'_, SteamCacheState>) -> AppResult<()> {
+    cache_state.with_manager(|manager| manager.clear_cache())
 }
 
 #[tauri::command]
-pub async fn get_steam_cache_count() -> AppResult<usize> {
-    Ok(SteamCacheManager::new()?.get_cache_size())
+pub async fn get_steam_cache_count(cache_state: State<'_, SteamCacheState>) -> AppResult<usize> {
+    cache_state.with_manager(|manager| Ok(manager.get_cache_size()))
 }
 
 #[tauri::command]
-pub async fn get_all_steam_cache_entries() -> AppResult<Vec<(String, String, u64, u32)>> {
-    let cache_manager = SteamCacheManager::new()?;
-    Ok(cache_manager
-        .get_all_cache_entries()
-        .into_iter()
-        .map(|(id, entry)| (id, entry.username, entry.last_updated, entry.call_count))
-        .collect())
+pub async fn get_all_steam_cache_entries(
+    cache_state: State<'_, SteamCacheState>,
+) -> AppResult<Vec<(String, String, u64, u32)>> {
+    cache_state.with_manager(|manager| {
+        Ok(manager
+            .get_all_cache_entries()
+            .into_iter()
+            .map(|(id, entry)| (id, entry.username, entry.last_updated, entry.call_count))
+            .collect())
+    })
 }
 
 #[tauri::command]
-pub async fn cleanup_expired_steam_cache() -> AppResult<usize> {
-    Ok(SteamCacheManager::new()?.cleanup_expired_cache())
+pub async fn cleanup_expired_steam_cache(
+    cache_state: State<'_, SteamCacheState>,
+) -> AppResult<usize> {
+    cache_state.with_manager(|manager| {
+        let removed = manager.cleanup_expired_cache();
+        manager.flush()?;
+        Ok(removed)
+    })
 }
 
 #[tauri::command]
 pub async fn test_steam_api_key(
     api_key: String,
     steam_id: String,
+    cache_state: State<'_, SteamCacheState>,
 ) -> AppResult<HashMap<String, String>> {
-    get_steam_usernames(vec![steam_id], api_key).await
+    get_steam_usernames(vec![steam_id], api_key, &cache_state).await
 }
 
 #[tauri::command]
 pub async fn get_steam_usernames_command(
     steam_ids: Vec<String>,
+    cache_state: State<'_, SteamCacheState>,
 ) -> AppResult<HashMap<String, String>> {
-    let config_path = get_app_config_dir()?.join("config.json");
+    let encrypted_api_key = tokio::task::spawn_blocking(read_encrypted_steam_api_key_from_config)
+        .await
+        .map_err(|e| AppError {
+            message: format!("读取Steam配置任务失败: {}", e),
+        })??;
 
-    if !config_path.exists() {
-        return Err("Steam API密钥未配置".to_string().into());
-    }
-
-    let config_content =
-        fs::read_to_string(&config_path).map_err(|e| format!("读取配置文件失败: {}", e))?;
-
-    let config: serde_json::Value =
-        serde_json::from_str(&config_content).map_err(|e| format!("解析配置文件失败: {}", e))?;
-
-    let encrypted_api_key = config
-        .get("steamApiKey")
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| AppError {
-            message: "Steam API密钥未配置".to_string(),
-        })?;
-
-    let api_key = decrypt_steam_api_key(encrypted_api_key.to_string()).await?;
-    get_steam_usernames(steam_ids, api_key).await
+    let api_key = decrypt_steam_api_key(encrypted_api_key).await?;
+    get_steam_usernames(steam_ids, api_key, &cache_state).await
 }
 
 #[tauri::command]
 pub async fn save_steam_api_key(api_key: String) -> AppResult<()> {
-    let config_dir = get_app_config_dir()?;
-    let config_path = config_dir.join("config.json");
-
-    if !config_dir.exists() {
-        fs::create_dir_all(&config_dir).map_err(|e| format!("创建配置目录失败: {}", e))?;
-    }
-
-    let mut config: serde_json::Value = if config_path.exists() {
-        let content =
-            fs::read_to_string(&config_path).map_err(|e| format!("读取配置文件失败: {}", e))?;
-        serde_json::from_str(&content).map_err(|e| format!("解析配置文件失败: {}", e))?
-    } else {
-        serde_json::json!({})
-    };
-
     let encrypted_api_key = encrypt_steam_api_key(api_key).await?;
-
-    if let Some(obj) = config.as_object_mut() {
-        obj.insert(
-            "steamApiKey".to_string(),
-            serde_json::Value::String(encrypted_api_key),
-        );
-    }
-
-    let config_json =
-        serde_json::to_string_pretty(&config).map_err(|e| format!("序列化配置失败: {}", e))?;
-
-    fs::write(&config_path, config_json).map_err(|e| format!("写入配置文件失败: {}", e))?;
-
-    Ok(())
+    tokio::task::spawn_blocking(move || {
+        write_encrypted_steam_api_key_to_config(encrypted_api_key)
+    })
+    .await
+    .map_err(|e| AppError {
+        message: format!("保存Steam配置任务失败: {}", e),
+    })?
 }

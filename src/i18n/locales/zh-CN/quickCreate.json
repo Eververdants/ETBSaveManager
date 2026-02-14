@@ -1,0 +1,152 @@
+{
+  "title": "快速创建存档",
+  "subtitle": "快速批量创建多个游戏存档",
+  "switchMode": "切换模式",
+  "inputArea": {
+    "title": "智能输入",
+    "pasteNames": "粘贴名称",
+    "importFile": "导入文件",
+    "manualAdd": "手动添加",
+    "emptyHint": "粘贴存档名称列表，或点击上方按钮添加",
+    "supportedFormats": "支持 .txt / .csv / .json 文件，或 Ctrl+V 粘贴",
+    "sequenceHint": "支持序号展开：存档_{'{'} 1-10 {'}'} → 生成10个存档",
+    "importFailed": "导入失败",
+    "recognized": "已识别 {count} 个名称",
+    "clear": "清空"
+  },
+  "configArea": {
+    "title": "统一配置",
+    "level": "关卡路线",
+    "difficulty": "存档难度",
+    "actualDifficulty": "实际难度",
+    "inventory": "物品栏模板",
+    "noUnify": "不统一设置",
+    "setAllTo": "全部设为",
+    "useTemplate": "使用模板",
+    "smartRules": "智能规则",
+    "autoAssignLevel": "根据名称自动分配关卡",
+    "autoDetectDifficulty": "根据名称自动识别难度",
+    "autoRenameDuplicates": "自动重命名重复项"
+  },
+  "cardFlow": {
+    "title": "存档预览",
+    "selectAll": "全选",
+    "invertSelection": "反选",
+    "selected": "已选择 {count}/{total}",
+    "emptyHint": "添加名称后，存档卡片将显示在此处",
+    "batchEdit": "批量编辑",
+    "gridView": "网格视图",
+    "listView": "列表视图",
+    "virtualScrollHint": "已启用虚拟滚动以优化性能"
+  },
+  "card": {
+    "level": "关卡",
+    "difficulty": "难度",
+    "actualDifficulty": "实际难度",
+    "inventory": "物品栏",
+    "inherit": "继承",
+    "notSet": "未设置",
+    "emptyInventory": "空",
+    "customInventory": "自定义",
+    "missingParams": "缺少必要参数",
+    "modified": "已单独修改",
+    "copy": "复制",
+    "remove": "移除"
+  },
+  "preview": {
+    "total": "总计",
+    "uniform": "统一配置",
+    "individual": "单独设置",
+    "missing": "缺少参数",
+    "create": "创建所选项（{count}）",
+    "creating": "创建中...",
+    "estimatedTime": "预计耗时：{time}",
+    "saveTemplate": "保存为模板",
+    "noArchives": "请先添加存档",
+    "hasMissingParams": "有 {count} 个存档缺少必要参数"
+  },
+  "result": {
+    "success": "成功创建 {count} 个存档",
+    "partialSuccess": "成功创建 {success} 个存档，{failed} 个失败",
+    "failed": "创建失败",
+    "error": "创建过程中发生错误",
+    "successTitle": "创建完成",
+    "partialTitle": "部分创建成功",
+    "successCount": "成功",
+    "failedCount": "失败",
+    "errorDetails": "错误详情",
+    "continueEditing": "继续编辑",
+    "viewArchives": "查看存档",
+    "editArchive": "编辑此存档"
+  },
+  "draft": {
+    "title": "发现未保存的草稿",
+    "message": "检测到上次编辑的 {count} 个存档草稿，是否恢复？",
+    "savedAt": "保存时间",
+    "recover": "恢复草稿",
+    "ignore": "忽略",
+    "recovered": "草稿已恢复",
+    "justNow": "刚刚",
+    "minutesAgo": "{count} 分钟前",
+    "hoursAgo": "{count} 小时前"
+  },
+  "largeData": {
+    "title": "大量数据提示",
+    "largeMessage": "您已添加 {count} 个存档，超过了建议的 {threshold} 个。大量存档可能会影响界面响应速度。",
+    "veryLargeMessage": "您已添加 {count} 个名称，超过了建议的 {threshold} 个。建议分批处理以获得更好的体验。",
+    "tip1": "建议分批创建，每批不超过 100 个存档",
+    "tip2": "创建过程中请勿关闭页面，以免丢失进度",
+    "understand": "我知道了"
+  },
+  "batchEdit": {
+    "title": "批量编辑",
+    "keepOriginal": "保留原值",
+    "selectToChange": "选择要更改的项",
+    "apply": "应用",
+    "selectedCount": "已选择 {count} 个存档",
+    "hint": "选择“保留原值”以保持字段不变，或选择一个值将其应用于所有选中的存档"
+  },
+  "editModal": {
+    "title": "编辑存档",
+    "archiveName": "存档名称",
+    "archiveNamePlaceholder": "请输入存档名称",
+    "level": "关卡",
+    "difficulty": "存档难度",
+    "actualDifficulty": "实际难度",
+    "inventory": "物品栏模板",
+    "inheritFromUniform": "继承统一配置"
+  },
+  "template": {
+    "saveTitle": "保存模板",
+    "noArchives": "没有可保存的存档",
+    "saved": "模板保存成功",
+    "saveFailed": "保存模板失败",
+    "loadTitle": "加载模板",
+    "loaded": "模板加载成功",
+    "loadFailed": "加载模板失败",
+    "invalidFormat": "无效的模板格式"
+  },
+  "tutorial": {
+    "skip": "跳过",
+    "prev": "上一步",
+    "next": "下一步",
+    "start": "开始体验",
+    "watchVideo": "查看视频教程",
+    "step1": {
+      "title": "智能输入区",
+      "description": "在这里粘贴存档名称列表，或从文件导入。系统会自动识别名称中的序号和关键词，并高亮显示。"
+    },
+    "step2": {
+      "title": "统一配置区",
+      "description": "设置统一的关卡、难度和背包模板。启用智能规则可以根据名称自动分配配置。"
+    },
+    "step3": {
+      "title": "存档预览区",
+      "description": "预览所有存档卡片，可以单独编辑、复制或删除。支持批量选择和批量编辑。"
+    },
+    "step4": {
+      "title": "创建操作区",
+      "description": "查看统计摘要，确认无误后点击创建按钮批量生成存档。"
+    }
+  }
+}

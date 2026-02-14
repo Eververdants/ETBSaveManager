@@ -27,7 +27,8 @@
           <!-- 主题选择器 -->
           <div class="theme-selector-wrapper">
             <ThemeSelector ref="themeSelectorRef" v-model="currentTheme"
-              :show-seasonal-themes="shouldShowSeasonalThemes" @change="handleThemeChange" />
+              :show-seasonal-themes="shouldShowSeasonalThemes" :seasonal-theme-mode="seasonalThemeMode"
+              @change="handleThemeChange" />
           </div>
         </div>
       </div>
@@ -123,6 +124,31 @@
         <div class="setting-action">
           <label class="switch">
             <input type="checkbox" v-model="gpuAccelerationDisabled" @change="handleGpuAccelerationToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 自动反馈开关（所有用户可用） -->
+      <div class="setting-item">
+        <div class="setting-icon">
+          <font-awesome-icon :icon="['fas', 'exclamation-triangle']" />
+        </div>
+        <div class="setting-details">
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-title" :key="currentLanguage">
+              {{ t("settings.autoFeedbackEnabled") }}
+            </div>
+          </transition>
+          <transition name="text-swift" mode="out-in">
+            <div class="setting-description" :key="currentLanguage">
+              {{ t("settings.autoFeedbackEnabledDescription") }}
+            </div>
+          </transition>
+        </div>
+        <div class="setting-action">
+          <label class="switch">
+            <input type="checkbox" v-model="autoFeedbackEnabled" @change="handleAutoFeedbackToggle" />
             <span class="slider"></span>
           </label>
         </div>
@@ -499,6 +525,11 @@ import { getAllAvailableLanguages, getInstalledThemePlugins } from "../plugins";
 import storage from "../services/storageService";
 import { notify } from "../services/notificationService";
 import { APP_VERSION } from "../config/version";
+import {
+  isNewYearPeriod as checkNewYearPeriod,
+  isSpringFestivalPeriod as checkSpringFestivalPeriod,
+  isSeasonalThemeAvailable as checkSeasonalThemeAvailable,
+} from "../config/seasonalThemeConfig";
 
 export default {
   name: "Settings",
@@ -517,6 +548,9 @@ export default {
       developerModeEnabled: storage.getItem("developerMode", false) === true, // 开发者模式状态
       developerOptionsEnabled: storage.getItem("developerMode", false) === true, // 开发者选项是否显示
       logMenuEnabled: storage.getItem("logMenuEnabled", false) === true, // 日志功能开关状态
+      autoFeedbackEnabled:
+        storage.getItem("autoFeedbackEnabled", true) !== false &&
+        storage.getItem("autoFeedbackEnabled", true) !== "false", // 自动反馈开关状态，默认开启
       testArchiveEnabled: storage.getItem("testArchiveEnabled", true) !== false, // 测试存档显示开关状态，默认开启
       gpuAccelerationDisabled:
         storage.getItem("gpuAccelerationDisabled", false) === true, // GPU加速开关状态
@@ -961,6 +995,15 @@ export default {
       );
     },
 
+    handleAutoFeedbackToggle() {
+      storage.setItem("autoFeedbackEnabled", this.autoFeedbackEnabled);
+      window.dispatchEvent(
+        new CustomEvent("auto-feedback-toggle", {
+          detail: { enabled: this.autoFeedbackEnabled },
+        })
+      );
+    },
+
     handleTestArchiveToggle() {
       storage.setItem("testArchiveEnabled", this.testArchiveEnabled);
       // 触发自定义事件通知侧边栏更新状态
@@ -971,25 +1014,14 @@ export default {
       );
     },
 
-    // 检查当前日期是否在元旦期间 (12.31 - 1.3)
+    // 检查当前日期是否在元旦期间 (12.31 - 1.4)
     isNewYearPeriod() {
-      const now = new Date();
-      const month = now.getMonth() + 1; // 0-11 -> 1-12
-      const day = now.getDate();
-      // 12月31日 或 1月1-3日
-      return (
-        (month === 12 && day === 31) || (month === 1 && day >= 1 && day <= 3)
-      );
+      return checkNewYearPeriod();
     },
 
-    // 检查当前日期是否在春节期间 (2.13 - 2.24)
+    // 检查当前日期是否在春节期间（日期从 seasonalThemeConfig 读取）
     isSpringFestivalPeriod() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth() + 1;
-      const day = now.getDate();
-      // 2026年2月13日 - 2月24日
-      return year === 2026 && month === 2 && day >= 13 && day <= 24;
+      return checkSpringFestivalPeriod();
     },
 
     // 检查主题是否是限时主题
@@ -1003,14 +1035,9 @@ export default {
 
     // 检查限时主题当前是否可用
     isSeasonalThemeAvailable(themeId) {
-      if (themeId === "new-year") return this.isNewYearPeriod();
-      if (
-        themeId === "spring-festival-dark" ||
-        themeId === "spring-festival-light"
-      ) {
-        return this.isSpringFestivalPeriod();
-      }
-      return true;
+      return checkSeasonalThemeAvailable(themeId, {
+        mode: this.seasonalThemeMode,
+      });
     },
 
     handleSeasonalThemeModeChange(option) {

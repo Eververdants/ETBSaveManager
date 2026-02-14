@@ -1,0 +1,14 @@
+{
+  "title": "System Logs",
+  "description": "View application runtime logs",
+  "clear": "Clear Logs",
+  "export": "Export Logs",
+  "filter": "Filter Level",
+  "allLevels": "All Levels",
+  "error": "Error",
+  "warn": "Warning",
+  "info": "Info",
+  "debug": "Debug",
+  "search": "Search logs...",
+  "noLogs": "No logs recorded"
+}

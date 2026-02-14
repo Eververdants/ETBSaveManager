@@ -1,0 +1,14 @@
+{
+  "deleteArchiveTitle": "刪除存檔",
+  "deleteArchiveMessage": "確定要刪除存檔「{name}」嗎？",
+  "deleteArchiveDescription": "此操作將永久刪除存檔檔案，無法復原。",
+  "confirm": "刪除",
+  "cancel": "取消",
+  "archiveDetails": {
+    "gameMode": "遊戲模式",
+    "currentLevel": "目前關卡",
+    "difficulty": "難度",
+    "modifiedTime": "修改時間",
+    "dateFormat": "{year}年{month}月{day}日"
+  }
+}

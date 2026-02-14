@@ -1,0 +1,19 @@
+{
+  "archiveList": "存檔列表",
+  "createArchive": "建立存檔",
+  "coreArchive": "核心存檔",
+  "unlockHub": "解鎖樞紐",
+  "unlockHubSubtitle": "啟用此開關以解鎖核心存檔編輯功能",
+  "hubLockedNotice": "請先解鎖樞紐以使用核心存檔編輯功能",
+  "hubUnlockedNotice": "樞紐已解鎖，您現在可以使用核心存檔編輯功能",
+  "featureOptions": "功能選項",
+  "archiveDataEdit": "存檔資料編輯",
+  "archiveDataEditDesc": "編輯遊戲核心存檔資料",
+  "pluginMarket": "外掛市場",
+  "testArchive": "測試存檔",
+  "howToUse": "如何使用",
+  "about": "關於",
+  "settings": "設定",
+  "logs": "日誌",
+  "feedback": "回饋"
+}

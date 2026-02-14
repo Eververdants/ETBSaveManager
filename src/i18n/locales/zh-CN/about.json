@@ -1,0 +1,14 @@
+{
+  "description": "关于应用信息",
+  "version": "版本",
+  "tagline": "专为逃离后室设计的存档管理工具",
+  "appInfo": "应用信息",
+  "author": "作者",
+  "license": "开源协议",
+  "acknowledgements": "致谢",
+  "contact": "联系方式",
+  "authorName": "Eververdants",
+  "licenseName": "MIT License",
+  "developerModeActivated": "开发者模式已激活！",
+  "releaseNotes": "更新公告"
+}

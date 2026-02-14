@@ -1,0 +1,14 @@
+{
+  "title": "系統日誌",
+  "description": "檢視應用程式執行日誌",
+  "clear": "清空日誌",
+  "export": "匯出日誌",
+  "filter": "過濾等級",
+  "allLevels": "所有等級",
+  "error": "錯誤",
+  "warn": "警告",
+  "info": "資訊",
+  "debug": "除錯",
+  "search": "搜尋日誌……",
+  "noLogs": "暫無日誌記錄"
+}

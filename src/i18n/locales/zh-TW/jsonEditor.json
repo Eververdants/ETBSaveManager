@@ -1,0 +1,14 @@
+{
+  "title": "JSON編輯器",
+  "fileInfo": "檔案資訊",
+  "fileName": "檔案名稱",
+  "filePath": "檔案路徑",
+  "editorTitle": "JSON編輯器",
+  "placeholder": "在此編輯JSON內容……",
+  "syntaxError": "JSON語法錯誤",
+  "formatJson": "格式化JSON",
+  "minifyJson": "壓縮JSON",
+  "copyJson": "複製JSON",
+  "convertError": "轉換sav檔案失敗",
+  "saveError": "儲存JSON失敗"
+}

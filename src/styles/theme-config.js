@@ -15,19 +15,26 @@ import {
 } from "../services/themeValidator.js";
 import { themeStorage } from "../services/themeStorage.js";
 import storage from "../services/storageService";
+import {
+  NEW_YEAR_AVAILABILITY_TEXT,
+  SPRING_FESTIVAL_AVAILABILITY_TEXT,
+  getSeasonalThemeAvailability as getSeasonalThemeAvailabilityFromConfig,
+  isSeasonalThemeAvailable as checkSeasonalThemeAvailable,
+} from "../config/seasonalThemeConfig.js";
 
 /**
  * 限时主题配置
  * 定义主题的可用时间范围
  */
 export const SEASONAL_THEMES = {
+  "new-year": {
+    availability: NEW_YEAR_AVAILABILITY_TEXT,
+  },
   "spring-festival-dark": {
-    startDate: "2026-02-13",
-    endDate: "2026-02-24",
+    availability: SPRING_FESTIVAL_AVAILABILITY_TEXT,
   },
   "spring-festival-light": {
-    startDate: "2026-02-13",
-    endDate: "2026-02-24",
+    availability: SPRING_FESTIVAL_AVAILABILITY_TEXT,
   },
 };
 
@@ -37,25 +44,8 @@ export const SEASONAL_THEMES = {
  * @returns {boolean} 是否可用
  */
 export function isSeasonalThemeAvailable(themeId) {
-  const config = SEASONAL_THEMES[themeId];
-  if (!config) {
-    return true; // 非限时主题始终可用
-  }
-
-  // 检查开发者选项中的限时主题模式
-  try {
-    const mode = localStorage.getItem("seasonalThemeMode") || "auto";
-    if (mode === "force") return true;
-    if (mode === "hide") return false;
-  } catch (e) {
-    // localStorage 不可用时忽略
-  }
-
-  const now = new Date();
-  const start = new Date(config.startDate + "T00:00:00");
-  const end = new Date(config.endDate + "T23:59:59");
-
-  return now >= start && now <= end;
+  const mode = storage.getItem("seasonalThemeMode", "auto") || "auto";
+  return checkSeasonalThemeAvailable(themeId, { mode });
 }
 
 /**
@@ -64,11 +54,7 @@ export function isSeasonalThemeAvailable(themeId) {
  * @returns {string|null} 时间描述或 null
  */
 export function getSeasonalThemeAvailability(themeId) {
-  const config = SEASONAL_THEMES[themeId];
-  if (!config) {
-    return null;
-  }
-  return `${config.startDate} ~ ${config.endDate}`;
+  return getSeasonalThemeAvailabilityFromConfig(themeId);
 }
 
 /**

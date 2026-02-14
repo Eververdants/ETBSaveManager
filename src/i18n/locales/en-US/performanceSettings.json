@@ -1,0 +1,16 @@
+{
+  "title": "Performance Settings",
+  "description": "Adjust application performance-related settings",
+  "enablePerformanceMonitoring": "Enable Performance Monitoring",
+  "enablePerformanceMonitoringDescription": "Display real-time performance data and charts",
+  "updateInterval": "Update Interval",
+  "updateIntervalDescription": "Performance data update frequency (milliseconds)",
+  "maxDataPoints": "Max Data Points",
+  "maxDataPointsDescription": "Maximum number of data points to display in the chart",
+  "enableLogging": "Enable Logging",
+  "enableLoggingDescription": "Record performance data to log files",
+  "logLevel": "Log Level",
+  "logLevelDescription": "Minimum level for performance logs",
+  "resetToDefaults": "Reset to Defaults",
+  "saveSettings": "Save Settings"
+}

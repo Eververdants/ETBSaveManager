@@ -1,0 +1,152 @@
+{
+  "title": "Quick Create Archives",
+  "subtitle": "Quickly create multiple game archives",
+  "switchMode": "Switch Mode",
+  "inputArea": {
+    "title": "Smart Input",
+    "pasteNames": "Paste Names",
+    "importFile": "Import File",
+    "manualAdd": "Manual Add",
+    "emptyHint": "Paste archive name list or click buttons above to add",
+    "supportedFormats": "Supports .txt / .csv / .json files, or Ctrl+V to paste",
+    "sequenceHint": "Supports sequence expansion: archive_{'{'} 1-10 {'}'} → generates 10 archives",
+    "importFailed": "Import failed",
+    "recognized": "{count} names recognized",
+    "clear": "Clear"
+  },
+  "configArea": {
+    "title": "Uniform Config",
+    "level": "Level Route",
+    "difficulty": "Archive Difficulty",
+    "actualDifficulty": "Actual Difficulty",
+    "inventory": "Inventory Template",
+    "noUnify": "Don't unify",
+    "setAllTo": "Set all to",
+    "useTemplate": "Use template",
+    "smartRules": "Smart Rules",
+    "autoAssignLevel": "Auto-assign level by name",
+    "autoDetectDifficulty": "Auto-detect difficulty by name",
+    "autoRenameDuplicates": "Auto-rename duplicates"
+  },
+  "cardFlow": {
+    "title": "Archive Preview",
+    "selectAll": "Select All",
+    "invertSelection": "Invert",
+    "selected": "Selected {count}/{total}",
+    "emptyHint": "Archive cards will appear here after adding names",
+    "batchEdit": "Batch Edit",
+    "gridView": "Grid View",
+    "listView": "List View",
+    "virtualScrollHint": "Virtual scrolling enabled for better performance"
+  },
+  "card": {
+    "level": "Level",
+    "difficulty": "Difficulty",
+    "actualDifficulty": "Actual Diff",
+    "inventory": "Inventory",
+    "inherit": "Inherit",
+    "notSet": "Not Set",
+    "emptyInventory": "Empty",
+    "customInventory": "Custom",
+    "missingParams": "Missing required parameters",
+    "modified": "Individually modified",
+    "copy": "Copy",
+    "remove": "Remove"
+  },
+  "preview": {
+    "total": "Total",
+    "uniform": "Uniform Config",
+    "individual": "Individual",
+    "missing": "Missing Params",
+    "create": "Create Selected({count})",
+    "creating": "Creating...",
+    "estimatedTime": "Estimated time: {time}",
+    "saveTemplate": "Save as Template",
+    "noArchives": "Please add archives first",
+    "hasMissingParams": "{count} archives have missing parameters"
+  },
+  "result": {
+    "success": "Successfully created {count} archives",
+    "partialSuccess": "Created {success} archives, {failed} failed",
+    "failed": "Creation failed",
+    "error": "Error occurred during creation",
+    "successTitle": "Creation Complete",
+    "partialTitle": "Partial Success",
+    "successCount": "Success",
+    "failedCount": "Failed",
+    "errorDetails": "Error Details",
+    "continueEditing": "Continue Editing",
+    "viewArchives": "View Archives",
+    "editArchive": "Edit This Archive"
+  },
+  "draft": {
+    "title": "Unsaved Draft Found",
+    "message": "Found {count} archive(s) from your last session. Would you like to recover?",
+    "savedAt": "Saved at",
+    "recover": "Recover Draft",
+    "ignore": "Ignore",
+    "recovered": "Draft recovered",
+    "justNow": "Just now",
+    "minutesAgo": "{count} minute(s) ago",
+    "hoursAgo": "{count} hour(s) ago"
+  },
+  "largeData": {
+    "title": "Large Data Notice",
+    "largeMessage": "You have added {count} archives, exceeding the recommended {threshold}. Large numbers of archives may affect interface responsiveness.",
+    "veryLargeMessage": "You have added {count} names, exceeding the recommended {threshold}. Consider processing in batches for a better experience.",
+    "tip1": "Consider creating in batches, no more than 100 archives per batch",
+    "tip2": "Do not close the page during creation to avoid losing progress",
+    "understand": "I Understand"
+  },
+  "batchEdit": {
+    "title": "Batch Edit",
+    "keepOriginal": "Keep Original",
+    "selectToChange": "Select to change",
+    "apply": "Apply",
+    "selectedCount": "{count} archives selected",
+    "hint": "Select 'Keep Original' to leave the field unchanged, or select a value to apply to all selected archives"
+  },
+  "editModal": {
+    "title": "Edit Archive",
+    "archiveName": "Archive Name",
+    "archiveNamePlaceholder": "Enter archive name",
+    "level": "Level",
+    "difficulty": "Archive Difficulty",
+    "actualDifficulty": "Actual Difficulty",
+    "inventory": "Inventory Template",
+    "inheritFromUniform": "Inherit from uniform config"
+  },
+  "template": {
+    "saveTitle": "Save Template",
+    "noArchives": "No archives to save",
+    "saved": "Template saved successfully",
+    "saveFailed": "Failed to save template",
+    "loadTitle": "Load Template",
+    "loaded": "Template loaded successfully",
+    "loadFailed": "Failed to load template",
+    "invalidFormat": "Invalid template format"
+  },
+  "tutorial": {
+    "skip": "Skip",
+    "prev": "Previous",
+    "next": "Next",
+    "start": "Get Started",
+    "watchVideo": "Watch Video Tutorial",
+    "step1": {
+      "title": "Smart Input Area",
+      "description": "Paste your archive name list here, or import from a file. The system will automatically recognize numbers and keywords in names and highlight them."
+    },
+    "step2": {
+      "title": "Uniform Config Area",
+      "description": "Set uniform level, difficulty, and inventory template. Enable smart rules to automatically assign configurations based on names."
+    },
+    "step3": {
+      "title": "Archive Preview Area",
+      "description": "Preview all archive cards. You can edit, copy, or delete individual cards. Supports batch selection and batch editing."
+    },
+    "step4": {
+      "title": "Create Action Area",
+      "description": "View summary statistics, confirm everything is correct, then click the create button to batch generate archives."
+    }
+  }
+}

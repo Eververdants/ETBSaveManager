@@ -35,6 +35,7 @@
 import { computed, onMounted, onUnmounted, ref, nextTick, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { getInstalledThemePlugins, PluginStatus } from "../plugins";
+import { isSeasonalThemeAvailable } from "../config/seasonalThemeConfig";
 
 const { t, te, locale } = useI18n();
 
@@ -46,6 +47,10 @@ const props = defineProps({
   showSeasonalThemes: {
     type: Boolean,
     default: false,
+  },
+  seasonalThemeMode: {
+    type: String,
+    default: "auto",
   },
 });
 
@@ -311,15 +316,29 @@ const themes = computed(() => {
 
   // 添加限时主题
   if (props.showSeasonalThemes) {
-    baseThemes.push({ id: "new-year", colors: themeColors["new-year"] });
-    baseThemes.push({
-      id: "spring-festival-dark",
-      colors: themeColors["spring-festival-dark"],
-    });
-    baseThemes.push({
-      id: "spring-festival-light",
-      colors: themeColors["spring-festival-light"],
-    });
+    if (isSeasonalThemeAvailable("new-year", { mode: props.seasonalThemeMode })) {
+      baseThemes.push({ id: "new-year", colors: themeColors["new-year"] });
+    }
+    if (
+      isSeasonalThemeAvailable("spring-festival-dark", {
+        mode: props.seasonalThemeMode,
+      })
+    ) {
+      baseThemes.push({
+        id: "spring-festival-dark",
+        colors: themeColors["spring-festival-dark"],
+      });
+    }
+    if (
+      isSeasonalThemeAvailable("spring-festival-light", {
+        mode: props.seasonalThemeMode,
+      })
+    ) {
+      baseThemes.push({
+        id: "spring-festival-light",
+        colors: themeColors["spring-festival-light"],
+      });
+    }
   }
 
   // 添加插件主题

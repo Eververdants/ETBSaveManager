@@ -1,0 +1,10 @@
+{
+  "listDescription": "查看和管理所有存档",
+  "createDescription": "创建新的游戏存档",
+  "coreDescription": "编辑游戏核心存档数据",
+  "testDescription": "临时存档测试和管理功能",
+  "updated": "更新内容",
+  "updateDetails": "调整了存档卡片的样式，修复了部分bug",
+  "thanks": "感谢所有为本项目提供反馈、建议与支持的朋友们",
+  "disclaimer": "本工具仅供学习交流使用"
+}

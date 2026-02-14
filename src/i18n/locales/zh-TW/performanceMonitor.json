@@ -1,0 +1,19 @@
+{
+  "title": "效能監控",
+  "description": "即時監控應用程式效能",
+  "fps": "影格率",
+  "cpu": "CPU使用率",
+  "memory": "記憶體使用",
+  "network": "網路狀態",
+  "disk": "磁碟I/O",
+  "renderTime": "渲染時間",
+  "frameTime": "影格時間",
+  "updateTime": "更新時間",
+  "drawTime": "繪製時間",
+  "gcTime": "垃圾回收時間",
+  "pause": "暫停",
+  "resume": "恢復",
+  "reset": "重設",
+  "export": "匯出資料",
+  "close": "關閉"
+}

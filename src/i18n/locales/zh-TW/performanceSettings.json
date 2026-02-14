@@ -1,0 +1,10 @@
+{
+  "title": "效能設定",
+  "description": "調整應用程式效能相關設定",
+  "enablePerformanceMonitoring": "啟用效能監控",
+  "enablePerformanceMonitoringDescription": "顯示即時效能資料和圖表",
+  "updateInterval": "更新間隔",
+  "updateIntervalDescription": "效能資料更新頻率（毫秒）",
+  "maxDataPoints": "最大資料點",
+  "maxDataPointsDescription": "圖表中顯示的最大資料點數量"
+}

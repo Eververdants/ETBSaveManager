@@ -1,0 +1,14 @@
+{
+  "deleteArchiveTitle": "Delete Archive",
+  "deleteArchiveMessage": "Are you sure you want to delete the archive '{name}'?",
+  "deleteArchiveDescription": "This action will permanently delete the archive file and cannot be recovered.",
+  "confirm": "Delete",
+  "cancel": "Cancel",
+  "archiveDetails": {
+    "gameMode": "Game Mode",
+    "currentLevel": "Current Level",
+    "difficulty": "Difficulty",
+    "modifiedTime": "Modified Time",
+    "dateFormat": "{month}/{day}/{year}"
+  }
+}

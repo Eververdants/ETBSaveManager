@@ -71,11 +71,11 @@ const initI18n = async () => {
   
   // 只加载当前语言
   if (locale === "zh-CN") {
-    messages["zh-CN"] = (await import("./i18n/locales/zh-CN.json")).default;
+    messages["zh-CN"] = (await import("./i18n/locales/zh-CN/index.js")).default;
   } else if (locale === "en-US") {
-    messages["en-US"] = (await import("./i18n/locales/en-US.json")).default;
+    messages["en-US"] = (await import("./i18n/locales/en-US/index.js")).default;
   } else if (locale === "zh-TW") {
-    messages["zh-TW"] = (await import("./i18n/locales/zh-TW.json")).default;
+    messages["zh-TW"] = (await import("./i18n/locales/zh-TW/index.js")).default;
   }
 
   i18nInstance = createI18n({
@@ -100,7 +100,7 @@ const loadOtherLocales = async () => {
   
   for (const locale of locales) {
     if (!i18nInstance.global.messages.value[locale]) {
-      const messages = (await import(`./i18n/locales/${locale}.json`)).default;
+      const messages = (await import(`./i18n/locales/${locale}/index.js`)).default;
       i18nInstance.global.setLocaleMessage(locale, messages);
     }
   }
@@ -174,6 +174,7 @@ async function initApp() {
       loadOtherLocales(),
       initPluginSystem(),
       initWindowTitle(i18n),
+      initAutoFeedbackMonitoring(),
     ]).then(() => {
       console.log(`[Startup] 完整初始化: ${(performance.now() - startTime).toFixed(0)}ms`);
     });
@@ -212,6 +213,16 @@ async function initWindowTitle(i18n) {
     });
   } catch (error) {
     console.warn("[Window] 设置标题失败:", error);
+  }
+}
+
+// 自动反馈初始化（延迟）
+async function initAutoFeedbackMonitoring() {
+  try {
+    const { autoFeedbackService } = await import("./services/autoFeedbackService");
+    autoFeedbackService.init();
+  } catch (error) {
+    console.warn("[AutoFeedback] 初始化失败:", error);
   }
 }
 

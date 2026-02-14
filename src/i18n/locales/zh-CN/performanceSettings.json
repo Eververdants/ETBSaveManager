@@ -1,0 +1,10 @@
+{
+  "title": "性能设置",
+  "description": "调整应用程序性能相关设置",
+  "enablePerformanceMonitoring": "启用性能监控",
+  "enablePerformanceMonitoringDescription": "显示实时性能数据和图表",
+  "updateInterval": "更新间隔",
+  "updateIntervalDescription": "性能数据更新频率（毫秒）",
+  "maxDataPoints": "最大数据点",
+  "maxDataPointsDescription": "图表中显示的最大数据点数量"
+}

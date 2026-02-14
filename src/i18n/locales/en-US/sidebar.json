@@ -1,0 +1,19 @@
+{
+  "archiveList": "Archive List",
+  "createArchive": "Create Archive",
+  "coreArchive": "Core Archive",
+  "unlockHub": "Unlock The Hub",
+  "unlockHubSubtitle": "Enable this switch to unlock core archive editing features",
+  "hubLockedNotice": "Please unlock The Hub first to use core archive editing features",
+  "hubUnlockedNotice": "Hub unlocked, you can now use core archive editing features",
+  "featureOptions": "Feature Options",
+  "archiveDataEdit": "Archive Data Edit",
+  "archiveDataEditDesc": "Edit game core archive data",
+  "pluginMarket": "Plugin Market",
+  "testArchive": "Test Archive",
+  "howToUse": "How to Use",
+  "about": "About",
+  "settings": "Settings",
+  "logs": "Logs",
+  "feedback": "Feedback"
+}

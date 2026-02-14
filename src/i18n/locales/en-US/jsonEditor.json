@@ -1,0 +1,14 @@
+{
+  "title": "JSON Editor",
+  "fileInfo": "File Info",
+  "fileName": "File Name",
+  "filePath": "File Path",
+  "editorTitle": "JSON Editor",
+  "placeholder": "Edit JSON content here...",
+  "syntaxError": "JSON syntax error",
+  "formatJson": "Format JSON",
+  "minifyJson": "Minify JSON",
+  "copyJson": "Copy JSON",
+  "convertError": "Failed to convert sav file",
+  "saveError": "Failed to save JSON"
+}

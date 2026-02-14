@@ -1,0 +1,19 @@
+{
+  "title": "Performance Monitor",
+  "description": "Real-time application performance monitoring",
+  "fps": "Frame Rate",
+  "cpu": "CPU Usage",
+  "memory": "Memory Usage",
+  "network": "Network Status",
+  "disk": "Disk I/O",
+  "renderTime": "Render Time",
+  "frameTime": "Frame Time",
+  "updateTime": "Update Time",
+  "drawTime": "Draw Time",
+  "gcTime": "Garbage Collection Time",
+  "pause": "Pause",
+  "resume": "Resume",
+  "reset": "Reset",
+  "export": "Export Data",
+  "close": "Close"
+}

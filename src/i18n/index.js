@@ -2,9 +2,9 @@ import { createI18n } from "vue-i18n";
 import storage from "../services/storageService";
 
 // 本地写死的语言包
-import zhCN from "./locales/zh-CN.json";
-import zhTW from "./locales/zh-TW.json";
-import enUS from "./locales/en-US.json";
+import zhCN from "./locales/zh-CN/index.js";
+import zhTW from "./locales/zh-TW/index.js";
+import enUS from "./locales/en-US/index.js";
 
 // 更新公告数据（确保被打包）- 现在是单个对象而不是数组
 import releaseNotesZhCN from "./locales/release-notes.zh-CN.json";

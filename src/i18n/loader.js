@@ -39,16 +39,16 @@ const loadLocaleMessages = async (locale) => {
   let messages;
   switch (locale) {
     case "zh-CN":
-      messages = (await import("./locales/zh-CN.json")).default;
+      messages = (await import("./locales/zh-CN/index.js")).default;
       break;
     case "zh-TW":
-      messages = (await import("./locales/zh-TW.json")).default;
+      messages = (await import("./locales/zh-TW/index.js")).default;
       break;
     case "en-US":
-      messages = (await import("./locales/en-US.json")).default;
+      messages = (await import("./locales/en-US/index.js")).default;
       break;
     default:
-      messages = (await import("./locales/zh-CN.json")).default;
+      messages = (await import("./locales/zh-CN/index.js")).default;
   }
 
   messagesCache[locale] = messages;

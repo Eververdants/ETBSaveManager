@@ -3,6 +3,7 @@ import { ref, onMounted, shallowRef, computed } from "vue";
 import { useRouter } from "vue-router";
 import storage from "./services/storageService";
 import PerformanceMonitor from "./components/PerformanceMonitor.vue";
+import { isSeasonalThemeAvailable } from "./config/seasonalThemeConfig";
 
 // 延迟导入非关键组件
 const Sidebar = shallowRef(null);
@@ -83,23 +84,9 @@ async function initThemeSystem() {
 
   const isSeasonalTheme = (id) => ["new-year", "spring-festival-dark", "spring-festival-light"].includes(id);
 
-  const isSeasonalAvailable = (id) => {
-    const mode = storage.getItem("seasonalThemeMode") || "auto";
-    if (mode === "force") return true;
-    if (mode === "hide") return false;
-
-    const now = new Date();
-    const month = now.getMonth() + 1;
-    const day = now.getDate();
-
-    if (id === "new-year") {
-      return (month === 12 && day === 31) || (month === 1 && day <= 3);
-    }
-    if (id.includes("spring-festival")) {
-      return now.getFullYear() === 2026 && month === 2 && day >= 13 && day <= 24;
-    }
-    return true;
-  };
+  const seasonalMode = storage.getItem("seasonalThemeMode") || "auto";
+  const isSeasonalAvailable = (id) =>
+    isSeasonalThemeAvailable(id, { mode: seasonalMode });
 
   // 从存储读取主题，如果没有则使用初始主题
   let theme = storage.getItem("theme") || window.__initialTheme || "light";

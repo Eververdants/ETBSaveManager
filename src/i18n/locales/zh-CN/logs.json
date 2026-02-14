@@ -1,0 +1,14 @@
+{
+  "title": "系统日志",
+  "description": "查看应用运行日志",
+  "clear": "清空日志",
+  "export": "导出日志",
+  "filter": "过滤级别",
+  "allLevels": "所有级别",
+  "error": "错误",
+  "warn": "警告",
+  "info": "信息",
+  "debug": "调试",
+  "search": "搜索日志...",
+  "noLogs": "暂无日志记录"
+}

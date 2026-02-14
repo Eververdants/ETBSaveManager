@@ -1,0 +1,16 @@
+{
+  "archiveDifficulty": "Archive Difficulty",
+  "actualDifficulty": "Actual Difficulty",
+  "currentLevel": "Current Level",
+  "gameMode": "Game Mode",
+  "singleplayer": "Singleplayer",
+  "multiplayer": "Multiplayer",
+  "easy": "Easy",
+  "normal": "Normal",
+  "hard": "Hard",
+  "nightmare": "Nightmare",
+  "visible": "Visible",
+  "hidden": "Hidden",
+  "lastModified": "Last Modified",
+  "id": "Archive ID"
+}

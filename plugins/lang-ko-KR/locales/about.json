@@ -1,0 +1,14 @@
+{
+  "description": "앱 정보",
+  "version": "버전",
+  "tagline": "백룸 탈출을 위한 전용 아카이브 관리 도구",
+  "appInfo": "앱 정보",
+  "author": "제작자",
+  "license": "오픈소스 라이선스",
+  "acknowledgements": "감사의 글",
+  "contact": "연락처",
+  "authorName": "Eververdants",
+  "licenseName": "MIT 라이선스",
+  "developerModeActivated": "개발자 모드가 활성화되었습니다!",
+  "releaseNotes": "업데이트 공지"
+}

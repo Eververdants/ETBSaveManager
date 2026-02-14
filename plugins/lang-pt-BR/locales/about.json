@@ -1,0 +1,14 @@
+{
+  "description": "Informações sobre o aplicativo",
+  "version": "Versão",
+  "tagline": "Ferramenta de gerenciamento de arquivos projetada para Escape the Backrooms",
+  "appInfo": "Informações do Aplicativo",
+  "author": "Autor",
+  "license": "Licença de Código Aberto",
+  "acknowledgements": "Agradecimentos",
+  "contact": "Contato",
+  "authorName": "Eververdants",
+  "licenseName": "Licença MIT",
+  "developerModeActivated": "Modo Desenvolvedor Ativado!",
+  "releaseNotes": "Notas de Atualização"
+}

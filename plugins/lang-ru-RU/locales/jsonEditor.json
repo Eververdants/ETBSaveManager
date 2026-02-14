@@ -1,0 +1,14 @@
+{
+  "title": "JSON редактор",
+  "fileInfo": "Информация о файле",
+  "fileName": "Имя файла",
+  "filePath": "Путь к файлу",
+  "editorTitle": "JSON редактор",
+  "placeholder": "Редактируйте содержимое JSON здесь...",
+  "syntaxError": "Ошибка синтаксиса JSON",
+  "formatJson": "Форматировать JSON",
+  "minifyJson": "Сжать JSON",
+  "copyJson": "Копировать JSON",
+  "convertError": "Не удалось преобразовать файл sav",
+  "saveError": "Не удалось сохранить JSON"
+}

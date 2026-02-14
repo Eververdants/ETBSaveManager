@@ -1,0 +1,19 @@
+{
+  "archiveList": "아카이브 목록",
+  "createArchive": "아카이브 생성",
+  "coreArchive": "코어 아카이브",
+  "unlockHub": "허브 잠금 해제",
+  "unlockHubSubtitle": "이 스위치를 켜서 코어 아카이브 편집 기능을 잠금 해제하세요",
+  "hubLockedNotice": "코어 아카이브 편집 기능을 사용하려면 먼저 허브를 잠금 해제하세요",
+  "hubUnlockedNotice": "허브가 잠금 해제되었습니다. 이제 코어 아카이브 편집 기능을 사용할 수 있습니다",
+  "featureOptions": "기능 옵션",
+  "archiveDataEdit": "아카이브 데이터 편집",
+  "archiveDataEditDesc": "게임 코어 아카이브 데이터 편집",
+  "pluginMarket": "플러그인 마켓",
+  "testArchive": "테스트 아카이브",
+  "howToUse": "사용 방법",
+  "about": "정보",
+  "settings": "설정",
+  "logs": "로그",
+  "feedback": "피드백"
+}

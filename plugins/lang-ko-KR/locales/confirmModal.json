@@ -1,0 +1,14 @@
+{
+  "deleteArchiveTitle": "아카이브 삭제",
+  "deleteArchiveMessage": "아카이브 '{name}'을(를) 삭제하시겠습니까?",
+  "deleteArchiveDescription": "이 작업은 아카이브 파일을 영구적으로 삭제하며 복구할 수 없습니다.",
+  "confirm": "삭제",
+  "cancel": "취소",
+  "archiveDetails": {
+    "gameMode": "게임 모드",
+    "currentLevel": "현재 레벨",
+    "difficulty": "난이도",
+    "modifiedTime": "수정 시간",
+    "dateFormat": "{year}년 {month}월 {day}일"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "title": "パフォーマンスモニター",
+  "description": "アプリケーションのパフォーマンスをリアルタイム監視",
+  "fps": "FPS",
+  "cpu": "CPU使用率",
+  "memory": "メモリ使用量",
+  "network": "ネットワーク状態",
+  "disk": "ディスクI/O",
+  "renderTime": "レンダリング時間",
+  "frameTime": "フレーム時間",
+  "updateTime": "更新時間",
+  "drawTime": "描画時間",
+  "gcTime": "ガベージコレクション時間",
+  "pause": "一時停止",
+  "resume": "再開",
+  "reset": "リセット",
+  "export": "データをエクスポート",
+  "close": "閉じる"
+}

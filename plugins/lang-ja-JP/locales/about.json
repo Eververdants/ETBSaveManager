@@ -1,0 +1,14 @@
+{
+  "description": "アプリ情報",
+  "version": "バージョン",
+  "tagline": "バックルームズ脱出専用アーカイブ管理ツール",
+  "appInfo": "アプリ情報",
+  "author": "作者",
+  "license": "ライセンス",
+  "acknowledgements": "謝辞",
+  "contact": "連絡先",
+  "authorName": "Eververdants",
+  "licenseName": "MIT License",
+  "developerModeActivated": "開発者モードが有効化されました！",
+  "releaseNotes": "リリースノート"
+}

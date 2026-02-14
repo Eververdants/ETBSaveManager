@@ -22,7 +22,6 @@ import k_confirmModal from "./confirmModal.json";
 import k_createArchive from "./createArchive.json";
 import k_editArchive from "./editArchive.json";
 import k_archiveSearch from "./archiveSearch.json";
-import k_batchCreate from "./batchCreate.json";
 import k_floatingButton from "./floatingButton.json";
 import k_jsonEditor from "./jsonEditor.json";
 import k_performanceSettings from "./performanceSettings.json";
@@ -58,7 +57,6 @@ export default {
   "createArchive": k_createArchive,
   "editArchive": k_editArchive,
   "archiveSearch": k_archiveSearch,
-  "batchCreate": k_batchCreate,
   "floatingButton": k_floatingButton,
   "jsonEditor": k_jsonEditor,
   "performanceSettings": k_performanceSettings,

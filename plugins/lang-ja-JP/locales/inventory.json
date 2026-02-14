@@ -1,0 +1,32 @@
+{
+  "selectItem": "アイテムを選択",
+  "removeItem": "アイテムを削除",
+  "emptySlot": "空きスロット",
+  "items": {
+    "AlmondConcentrate": "アーモンド濃縮液",
+    "BugSpray": "殺虫剤",
+    "Camera": "カメラ",
+    "AlmondWater": "アーモンドウォーター",
+    "Chainsaw": "チェーンソー",
+    "Crowbar": "バール",
+    "DivingHelmet": "潜水ヘルメット",
+    "EnergyBar": "エネルギーバー",
+    "Firework": "花火",
+    "Flaregun": "信号拳銃",
+    "Flashlight": "懐中電灯",
+    "GlowstickBlue": "青色ケミカルライト",
+    "GlowStick": "緑色ケミカルライト",
+    "GlowstickRed": "赤色ケミカルライト",
+    "GlowstickYellow": "黄色ケミカルライト",
+    "Knife": "ナイフ",
+    "LiquidPain": "液体の痛み",
+    "Juice": "ジュース",
+    "Rope": "ロープ",
+    "LiDAR": "スキャナー",
+    "Thermometer": "温度計",
+    "Ticket": "チケット",
+    "Toy": "テディベア",
+    "WalkieTalkie": "トランシーバー",
+    "MothJelly": "蛾のゼリー"
+  }
+}

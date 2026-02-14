@@ -1,0 +1,19 @@
+{
+  "title": "Selecionar Modo de Criação",
+  "subtitle": "Escolha o método de criação de arquivo adequado às suas necessidades",
+  "singleArchive": "Criar Arquivo Único",
+  "multiArchive": "Criar Múltiplos Arquivos",
+  "confirm": "Confirmar Seleção",
+  "classic": {
+    "title": "Modo Clássico",
+    "desc": "Configure arquivo individual passo a passo, suporta opções completas de personalização"
+  },
+  "quick": {
+    "title": "Modo Rápido",
+    "desc": "Crie rapidamente múltiplos arquivos em lote, simplificando o processo de configuração"
+  },
+  "blueprint": {
+    "title": "Modo Blueprint",
+    "desc": "Monte qualquer lógica livremente com gráfico de nós"
+  }
+}

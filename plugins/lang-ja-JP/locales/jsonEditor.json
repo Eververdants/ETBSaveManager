@@ -1,0 +1,14 @@
+{
+  "title": "JSONエディター",
+  "fileInfo": "ファイル情報",
+  "fileName": "ファイル名",
+  "filePath": "ファイルパス",
+  "editorTitle": "JSONエディター",
+  "placeholder": "ここでJSONコンテンツを編集...",
+  "syntaxError": "JSON構文エラー",
+  "formatJson": "JSONをフォーマット",
+  "minifyJson": "JSONを圧縮",
+  "copyJson": "JSONをコピー",
+  "convertError": "savファイルの変換に失敗",
+  "saveError": "JSONの保存に失敗"
+}

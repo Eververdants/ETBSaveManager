@@ -1,0 +1,10 @@
+{
+  "title": "パフォーマンス設定",
+  "description": "アプリケーションのパフォーマンス関連設定を調整",
+  "enablePerformanceMonitoring": "パフォーマンスモニタリングを有効化",
+  "enablePerformanceMonitoringDescription": "リアルタイムパフォーマンスデータとグラフを表示",
+  "updateInterval": "更新間隔",
+  "updateIntervalDescription": "パフォーマンスデータの更新頻度（ミリ秒）",
+  "maxDataPoints": "最大データポイント",
+  "maxDataPointsDescription": "グラフに表示する最大データポイント数"
+}

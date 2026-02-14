@@ -2,7 +2,7 @@
   "id": "lang-ru-RU",
   "name": "Русский языковой пакет",
   "type": "language",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "Eververdants & Tongyi",
   "description": "Русский перевод для инструмента сохранений Escape the Backrooms",
   "locale": "ru-RU",
@@ -12,7 +12,7 @@
   "homepage": "",
   "repository": "",
   "license": "MIT",
-  "minAppVersion": "1.0.0",
+  "minAppVersion": "3.0.0",
   "keywords": [
     "language",
     "russian",

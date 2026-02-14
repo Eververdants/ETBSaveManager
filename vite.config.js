@@ -91,6 +91,8 @@ export default defineConfig(async ({ mode }) => {
     },
     // 禁用source map
     sourcemap: false,
+    // 跳过 gzip/brotli 体积统计，减少构建时间
+    reportCompressedSize: false,
     // 优化chunk大小警告阈值
     chunkSizeWarningLimit: 500,
     // 启用压缩
@@ -102,7 +104,7 @@ export default defineConfig(async ({ mode }) => {
         conditionals: true,
         collapse_vars: true,
         unused: true,
-        passes: 2, // 多次压缩
+        passes: 1,
         // 生产环境去除低价值日志，保留 warn/error 便于排障
         pure_funcs: isProd ? ["console.log", "console.info", "console.debug"] : [],
       },

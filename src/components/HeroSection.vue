@@ -1,19 +1,65 @@
 <script setup lang="ts">
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+const { t, tm } = useI18n()
+const heroRef = ref<HTMLElement | null>(null)
+const scrollY = ref(0)
+const reduceMotion = ref(false)
+let rafId = 0
+
+const heroProofs = computed(() => tm('hero.proofs') as string[])
+
+const parallaxStyles = computed(() => {
+  if (reduceMotion.value) {
+    return {
+      glow1: { transform: 'translate3d(-50%, 0, 0)' },
+      glow2: { transform: 'translate3d(0, 0, 0)' },
+      grid: { transform: 'translate3d(0, 0, 0)' },
+      content: { transform: 'translate3d(0, 0, 0)' }
+    }
+  }
+
+  const y = Math.max(0, Math.min(scrollY.value, 1000))
+
+  return {
+    glow1: { transform: `translate3d(-50%, ${y * -0.18}px, 0)` },
+    glow2: { transform: `translate3d(${y * 0.1}px, ${y * -0.12}px, 0)` },
+    grid: { transform: `translate3d(0, ${y * -0.08}px, 0)` },
+    content: { transform: `translate3d(0, ${y * -0.14}px, 0)` }
+  }
+})
+
+const updateParallax = () => {
+  if (rafId) return
+  rafId = window.requestAnimationFrame(() => {
+    scrollY.value = window.scrollY
+    rafId = 0
+  })
+}
+
+onMounted(() => {
+  reduceMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  window.addEventListener('scroll', updateParallax, { passive: true })
+  updateParallax()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', updateParallax)
+  if (rafId) window.cancelAnimationFrame(rafId)
+})
 </script>
 
 <template>
-  <section class="hero">
+  <section ref="heroRef" class="hero">
     <!-- Background Effects -->
     <div class="hero-bg">
-      <div class="hero-glow hero-glow-1"></div>
-      <div class="hero-glow hero-glow-2"></div>
-      <div class="hero-grid"></div>
+      <div class="hero-glow hero-glow-1" :style="parallaxStyles.glow1"></div>
+      <div class="hero-glow hero-glow-2" :style="parallaxStyles.glow2"></div>
+      <div class="hero-grid" :style="parallaxStyles.grid"></div>
     </div>
     
-    <div class="container hero-content">
+    <div class="container hero-content" :style="parallaxStyles.content">
       <!-- Badge -->
       <a 
         href="https://github.com/Eververdants/ETBSaveManager/releases" 
@@ -42,7 +88,7 @@ const { t } = useI18n()
         <a 
           href="https://github.com/Eververdants/ETBSaveManager/releases" 
           target="_blank"
-          class="btn btn-primary btn-lg"
+          class="btn btn-primary btn-lg btn-download-hero"
         >
           <font-awesome-icon :icon="['fas', 'download']" />
           <span>{{ t('hero.downloadBtn') }}</span>
@@ -55,6 +101,14 @@ const { t } = useI18n()
           <font-awesome-icon :icon="['fab', 'github']" />
           <span>{{ t('hero.sourceBtn') }}</span>
         </a>
+      </div>
+
+      <p class="hero-download-note">{{ t('hero.downloadNote') }}</p>
+
+      <div class="hero-proofs">
+        <span v-for="proof in heroProofs" :key="proof" class="hero-proof-chip">
+          {{ proof }}
+        </span>
       </div>
 
       <!-- Stats -->
@@ -109,6 +163,7 @@ const { t } = useI18n()
   border-radius: 50%;
   filter: blur(100px);
   opacity: 0.4;
+  will-change: transform;
 }
 
 .hero-glow-1 {
@@ -137,11 +192,13 @@ const { t } = useI18n()
     linear-gradient(90deg, rgba(124, 58, 237, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+  will-change: transform;
 }
 
 .hero-content {
   text-align: center;
   position: relative;
+  will-change: transform;
 }
 
 .hero-badge {
@@ -217,12 +274,53 @@ const { t } = useI18n()
   gap: 16px;
   justify-content: center;
   flex-wrap: wrap;
-  margin-bottom: 64px;
+  margin-bottom: 14px;
 }
 
 .btn-lg {
   padding: 16px 32px;
   font-size: 1rem;
+}
+
+.btn-download-hero {
+  position: relative;
+  overflow: hidden;
+  animation: cta-pulse 2.4s ease-in-out infinite;
+}
+
+.btn-download-hero::before {
+  content: '';
+  position: absolute;
+  top: -120%;
+  left: -40%;
+  width: 40%;
+  height: 300%;
+  background: linear-gradient(120deg, transparent 20%, rgba(255, 255, 255, 0.35) 45%, transparent 70%);
+  transform: rotate(18deg);
+  animation: cta-shine 2.8s linear infinite;
+}
+
+.hero-download-note {
+  font-size: 0.9375rem;
+  color: var(--text-dim);
+  margin-bottom: 18px;
+}
+
+.hero-proofs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 52px;
+}
+
+.hero-proof-chip {
+  padding: 7px 12px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
 }
 
 .hero-stats {
@@ -280,6 +378,10 @@ const { t } = useI18n()
     font-size: 1.0625rem;
   }
 
+  .hero-download-note {
+    font-size: 0.875rem;
+  }
+
   .hide-mobile {
     display: none;
   }
@@ -290,6 +392,10 @@ const { t } = useI18n()
     padding: 24px 32px;
   }
 
+  .hero-content {
+    transform: none !important;
+  }
+
   .stat-divider {
     width: 100%;
     height: 1px;
@@ -298,6 +404,24 @@ const { t } = useI18n()
   .stat-item {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@keyframes cta-shine {
+  0% {
+    left: -45%;
+  }
+  100% {
+    left: 140%;
+  }
+}
+
+@keyframes cta-pulse {
+  0%, 100% {
+    box-shadow: 0 0 28px rgba(124, 58, 237, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 45px rgba(124, 58, 237, 0.55);
   }
 }
 </style>

@@ -43,6 +43,9 @@ onUnmounted(() => {
       </a>
 
       <div class="nav-links" :class="{ open: isMobileMenuOpen }">
+        <a @click="scrollTo('overview')" class="nav-link">
+          <span>{{ t('nav.overview') }}</span>
+        </a>
         <a @click="scrollTo('features')" class="nav-link">
           <span>{{ t('nav.features') }}</span>
         </a>

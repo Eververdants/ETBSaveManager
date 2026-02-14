@@ -1,12 +1,33 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+const { t, tm } = useI18n()
+const hotPoints = computed(() => tm('download.hot.points') as string[])
 </script>
 
 <template>
   <section id="download" class="section">
     <div class="container">
+      <div class="hot-banner glass-card">
+        <div class="hot-content">
+          <span class="hot-badge">{{ t('download.hot.badge') }}</span>
+          <h3>{{ t('download.hot.title') }}</h3>
+          <p>{{ t('download.hot.subtitle') }}</p>
+          <div class="hot-points">
+            <span v-for="point in hotPoints" :key="point" class="hot-point">{{ point }}</span>
+          </div>
+        </div>
+        <a
+          href="https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0"
+          target="_blank"
+          class="btn btn-primary hot-btn"
+        >
+          <font-awesome-icon :icon="['fas', 'download']" />
+          <span>{{ t('download.hot.cta') }}</span>
+        </a>
+      </div>
+
       <div class="section-header">
         <div class="section-badge">
           <font-awesome-icon :icon="['fas', 'download']" />
@@ -26,13 +47,13 @@ const { t } = useI18n()
             </div>
             <div class="version-info">
               <span class="version-tag">{{ t('download.version') }}</span>
-              <span class="version-number">v3.0.0-Beta-2</span>
+              <span class="version-number">v3.0.0</span>
             </div>
           </div>
 
           <div class="download-body">
             <a 
-              href="https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0-Beta-2" 
+              href="https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0" 
               target="_blank"
               class="btn btn-primary btn-download"
             >
@@ -112,6 +133,71 @@ pnpm tauri build</code></pre>
 </template>
 
 <style scoped>
+.hot-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 30px;
+  margin-bottom: 28px;
+  background: linear-gradient(130deg, rgba(124, 58, 237, 0.24) 0%, rgba(244, 63, 94, 0.16) 55%, rgba(6, 182, 212, 0.12) 100%);
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
+.hot-content h3 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.hot-content p {
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  margin-bottom: 12px;
+}
+
+.hot-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  margin-bottom: 10px;
+}
+
+.hot-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hot-point {
+  padding: 5px 10px;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.15);
+  font-size: 0.75rem;
+  color: rgba(241, 245, 249, 0.9);
+}
+
+.hot-btn {
+  min-width: 220px;
+  padding: 16px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hot-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.2), transparent 45%);
+  pointer-events: none;
+}
+
 .download-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -300,6 +386,16 @@ pnpm tauri build</code></pre>
 }
 
 @media (max-width: 900px) {
+  .hot-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hot-btn {
+    width: 100%;
+    min-width: 0;
+  }
+
   .download-grid {
     grid-template-columns: 1fr;
   }

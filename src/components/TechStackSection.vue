@@ -3,13 +3,18 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
-const techStack = [
-  { name: 'Vue 3', desc: 'Composition API', icon: 'vuejs', brand: true, color: '#42B883' },
-  { name: 'Tauri 2.0', desc: 'Rust Backend', icon: 'rust', brand: true, color: '#DEA584' },
-  { name: 'Vite 6', desc: 'Build Tool', icon: 'bolt', brand: false, color: '#646CFF' },
-  { name: 'vue-i18n', desc: 'i18n', icon: 'language', brand: false, color: '#42B883' },
-  { name: 'GSAP', desc: 'Animation', icon: 'film', brand: false, color: '#88CE02' },
-  { name: 'CSS Variables', desc: 'Theming', icon: 'brush', brand: false, color: '#F43F5E' }
+const frontendStack = [
+  'Vue 3',
+  'Vite',
+  'vue-i18n',
+  'Tailwind CSS + CSS Variables'
+]
+
+const backendStack = [
+  'Tauri 2.0',
+  'uesave',
+  'tokio',
+  'rusqlite (SQLite)'
 ]
 </script>
 
@@ -25,23 +30,34 @@ const techStack = [
         <p class="section-subtitle">{{ t('tech.subtitle') }}</p>
       </div>
 
-      <div class="tech-grid">
-        <div 
-          v-for="tech in techStack" 
-          :key="tech.name" 
-          class="tech-card glass-card"
-        >
-          <div class="tech-icon-wrapper" :style="{ '--tech-color': tech.color }">
-            <font-awesome-icon 
-              :icon="tech.brand ? ['fab', tech.icon] : ['fas', tech.icon]" 
-              class="tech-icon" 
-            />
+      <div class="stack-grid">
+        <article class="stack-card glass-card">
+          <div class="stack-header">
+            <div class="stack-icon">
+              <font-awesome-icon :icon="['fab', 'vuejs']" />
+            </div>
+            <h3>{{ t('tech.frontendTitle') }}</h3>
           </div>
-          <div class="tech-info">
-            <h4 class="tech-name">{{ tech.name }}</h4>
-            <p class="tech-desc">{{ tech.desc }}</p>
+          <div class="stack-tags">
+            <span v-for="item in frontendStack" :key="item" class="stack-tag">
+              {{ item }}
+            </span>
           </div>
-        </div>
+        </article>
+
+        <article class="stack-card glass-card">
+          <div class="stack-header">
+            <div class="stack-icon">
+              <font-awesome-icon :icon="['fab', 'rust']" />
+            </div>
+            <h3>{{ t('tech.backendTitle') }}</h3>
+          </div>
+          <div class="stack-tags">
+            <span v-for="item in backendStack" :key="item" class="stack-tag">
+              {{ item }}
+            </span>
+          </div>
+        </article>
       </div>
 
       <!-- Open Source Banner -->
@@ -73,22 +89,25 @@ const techStack = [
   background: linear-gradient(180deg, transparent 0%, rgba(124, 58, 237, 0.03) 50%, transparent 100%);
 }
 
-.tech-grid {
+.stack-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
   margin-bottom: 48px;
 }
 
-.tech-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.stack-card {
   padding: 24px;
-  cursor: pointer;
 }
 
-.tech-icon-wrapper {
+.stack-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stack-icon {
   width: 52px;
   height: 52px;
   display: flex;
@@ -96,24 +115,28 @@ const techStack = [
   justify-content: center;
   background: rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-md);
-  flex-shrink: 0;
-}
-
-.tech-icon {
+  color: var(--primary-light);
   font-size: 1.5rem;
-  color: var(--tech-color, var(--primary));
 }
 
-.tech-name {
-  font-size: 1rem;
+.stack-header h3 {
+  font-size: 1.0625rem;
   font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--text);
 }
 
-.tech-desc {
-  font-size: 0.875rem;
+.stack-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.stack-tag {
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 0.8125rem;
   color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
 }
 
 .opensource-banner {
@@ -154,8 +177,8 @@ const techStack = [
 }
 
 @media (max-width: 900px) {
-  .tech-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .stack-grid {
+    grid-template-columns: 1fr;
   }
 
   .opensource-banner {
@@ -167,12 +190,6 @@ const techStack = [
 
   .banner-content {
     flex-direction: column;
-  }
-}
-
-@media (max-width: 640px) {
-  .tech-grid {
-    grid-template-columns: 1fr;
   }
 }
 </style>

@@ -75,8 +75,6 @@ onMounted(() => {
 
 // 主题系统初始化（延迟）
 async function initThemeSystem() {
-  const storage = (await import("./services/storageService")).default;
-
   // 等待存储初始化完成
   if (!storage.isInitialized()) {
     await storage.initStorage();

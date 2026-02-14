@@ -2,7 +2,7 @@
   "id": "lang-pt-BR",
   "name": "Pacote de Idioma Português",
   "type": "language",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "Eververdants & Tongyi",
   "description": "Tradução em português para a ferramenta de saves do Escape the Backrooms",
   "locale": "pt-BR",
@@ -12,7 +12,7 @@
   "homepage": "",
   "repository": "",
   "license": "MIT",
-  "minAppVersion": "1.0.0",
+  "minAppVersion": "3.0.0",
   "keywords": [
     "language",
     "portuguese",

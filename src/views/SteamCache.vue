@@ -759,8 +759,13 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-secondary);
+  margin: var(--space-4) var(--space-6) 0;
+  border: 1px solid var(--glass-border, var(--border-color));
+  border-radius: var(--radius-card);
+  background: var(--glass-bg, var(--bg-secondary));
+  backdrop-filter: var(--glass-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-backdrop-filter);
+  box-shadow: var(--card-shadow);
   flex-shrink: 0;
   gap: 16px;
 }
@@ -1230,12 +1235,16 @@ export default {
 }
 
 .cache-table tbody tr {
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
   cursor: pointer;
 }
 
 .cache-table tbody tr:hover {
-  background: var(--hover-bg);
+  transform: translateY(-1px);
+}
+
+.cache-table tbody tr:hover td {
+  background: var(--surface-hover, var(--bg-tertiary));
 }
 
 /* SteamID单元格 */
@@ -2066,6 +2075,7 @@ export default {
 @media (max-width: 768px) {
   .page-header {
     padding: 16px 20px;
+    margin: 16px 20px 0;
     align-items: flex-start;
     flex-direction: column;
   }
@@ -2189,6 +2199,7 @@ export default {
     align-items: flex-start;
     gap: 12px;
     padding: 12px 16px;
+    margin: 12px 16px 0;
   }
 
   .header-actions {

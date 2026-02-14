@@ -15,10 +15,12 @@ import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config as faConfig } from "@fortawesome/fontawesome-svg-core";
 faConfig.autoAddCss = false;
 
-import { createApp } from "vue";
+import * as vueRuntime from "vue";
 import App from "./App.vue";
 
 import { setAppContext } from "./appContext.js";
+import storage, { initStorage } from "./services/storageService";
+const { createApp } = vueRuntime;
 
 // 立即创建应用实例（不等待任何异步操作）
 const app = createApp(App);
@@ -36,7 +38,7 @@ let i18nInstance = null;
 // 加载关键图标（启动必需）
 const loadCriticalIcons = async () => {
   const { FontAwesomeIcon: FAIcon } = await import("@fortawesome/vue-fontawesome");
-  const { registerCriticalIcons } = await import("./utils/icons.js");
+  const { registerCriticalIcons } = await import("./utils/icons-critical.js");
   
   registerCriticalIcons();
   
@@ -45,14 +47,13 @@ const loadCriticalIcons = async () => {
 
 // 延迟加载完整图标集
 const loadAllIcons = async () => {
-  const { registerIcons } = await import("./utils/icons.js");
+  const { registerIcons } = await import("./utils/icons-full.js");
   registerIcons();
 };
 
 // 初始化 i18n（轻量级）
 const initI18n = async () => {
   const { createI18n } = await import("vue-i18n");
-  const storage = (await import("./services/storageService")).default;
   
   // 内联语言检测，避免额外导入
   const getSavedLocale = () => {
@@ -113,10 +114,7 @@ async function initApp() {
   // 阶段1：并行初始化关键模块
   console.log("[Startup] 开始初始化关键模块...");
   const [, FAIcon, i18n] = await Promise.all([
-    import("./services/storageService").then(m => {
-      m.initStorage();
-      return m.default;
-    }),
+    initStorage(),
     loadCriticalIcons(),
     initI18n(),
   ]);
@@ -129,11 +127,7 @@ async function initApp() {
   app.use(i18n);
   app.component("font-awesome-icon", FAIcon);
 
-  setAppContext({ i18n: i18n.global, router, vue: await import("vue") });
-  
-  // 暴露存储服务（通过 appContext）
-  const storageModule = await import("./services/storageService");
-  setAppContext({ storage: storageModule.default });
+  setAppContext({ i18n: i18n.global, router, vue: vueRuntime, storage });
 
   // 阶段3：挂载应用（用户可见）
   console.log("[Startup] 挂载应用...");

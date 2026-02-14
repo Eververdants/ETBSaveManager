@@ -1,0 +1,152 @@
+{
+  "title": "クイックアーカイブ作成",
+  "subtitle": "複数のゲームアーカイブを高速で一括作成",
+  "switchMode": "モードを切り替え",
+  "inputArea": {
+    "title": "スマート入力",
+    "pasteNames": "名前を貼り付け",
+    "importFile": "ファイルをインポート",
+    "manualAdd": "手動で追加",
+    "emptyHint": "アーカイブ名リストを貼り付けるか、上のボタンをクリックして追加",
+    "supportedFormats": ".txt/.csv/.jsonファイル、またはCtrl+Vで貼り付けに対応",
+    "sequenceHint": "連番展開に対応：アーカイブ_{'{'} 1-10 {'}'} → 10個のアーカイブを生成",
+    "importFailed": "インポートに失敗",
+    "recognized": "{count}個の名前を認識しました",
+    "clear": "クリア"
+  },
+  "configArea": {
+    "title": "統一設定",
+    "level": "ステージルート",
+    "difficulty": "アーカイブ難易度",
+    "actualDifficulty": "実際の難易度",
+    "inventory": "インベントリテンプレート",
+    "noUnify": "統一設定なし",
+    "setAllTo": "すべてに設定",
+    "useTemplate": "テンプレートを使用",
+    "smartRules": "スマートルール",
+    "autoAssignLevel": "名前に基づいて自動的にステージを割り当て",
+    "autoDetectDifficulty": "名前に基づいて自動的に難易度を認識",
+    "autoRenameDuplicates": "重複項目を自動的にリネーム"
+  },
+  "cardFlow": {
+    "title": "アーカイブプレビュー",
+    "selectAll": "すべて選択",
+    "invertSelection": "選択を反転",
+    "selected": "{count}/{total}個選択済み",
+    "emptyHint": "名前を追加すると、アーカイブカードがここに表示されます",
+    "batchEdit": "一括編集",
+    "gridView": "グリッドビュー",
+    "listView": "リストビュー",
+    "virtualScrollHint": "パフォーマンス最適化のため仮想スクロールを有効化"
+  },
+  "card": {
+    "level": "ステージ",
+    "difficulty": "難易度",
+    "actualDifficulty": "実際の難易度",
+    "inventory": "インベントリ",
+    "inherit": "継承",
+    "notSet": "未設定",
+    "emptyInventory": "空",
+    "customInventory": "カスタム",
+    "missingParams": "必須パラメータが不足",
+    "modified": "個別に変更済み",
+    "copy": "コピー",
+    "remove": "削除"
+  },
+  "preview": {
+    "total": "合計",
+    "uniform": "統一設定",
+    "individual": "個別設定",
+    "missing": "パラメータ不足",
+    "create": "選択項目を作成（{count}）",
+    "creating": "作成中...",
+    "estimatedTime": "推定所要時間：{time}",
+    "saveTemplate": "テンプレートとして保存",
+    "noArchives": "まずアーカイブを追加してください",
+    "hasMissingParams": "{count}個のアーカイブに必須パラメータが不足しています"
+  },
+  "result": {
+    "success": "{count}個のアーカイブを正常に作成",
+    "partialSuccess": "{success}個のアーカイブを正常に作成、{failed}個が失敗",
+    "failed": "作成に失敗",
+    "error": "作成中にエラーが発生しました",
+    "successTitle": "作成完了",
+    "partialTitle": "一部のみ作成成功",
+    "successCount": "成功",
+    "failedCount": "失敗",
+    "errorDetails": "エラー詳細",
+    "continueEditing": "編集を続行",
+    "viewArchives": "アーカイブを表示",
+    "editArchive": "このアーカイブを編集"
+  },
+  "draft": {
+    "title": "未保存のドラフトを発見",
+    "message": "前回編集した {count}個のアーカイブドラフトを検出しました。復元しますか？",
+    "savedAt": "保存日時",
+    "recover": "ドラフトを復元",
+    "ignore": "無視",
+    "recovered": "ドラフトを復元しました",
+    "justNow": "たった今",
+    "minutesAgo": "{count}分前",
+    "hoursAgo": "{count}時間前"
+  },
+  "largeData": {
+    "title": "大量データの警告",
+    "largeMessage": "{count}個のアーカイブを追加しました（推奨値{threshold}個を超過）。大量のアーカイブはインターフェースの応答速度に影響を与える可能性があります。",
+    "veryLargeMessage": "{count}個の名前を追加しました（推奨値{threshold}個を超過）。より良い体験のため、バッチ処理を推奨します。",
+    "tip1": "バッチ作成を推奨。1バッチあたり100個以下",
+    "tip2": "作成中はページを閉じないでください。進行状況が失われる可能性があります",
+    "understand": "理解しました"
+  },
+  "batchEdit": {
+    "title": "一括編集",
+    "keepOriginal": "元の値を保持",
+    "selectToChange": "変更する項目を選択",
+    "apply": "適用",
+    "selectedCount": "{count}個のアーカイブを選択",
+    "hint": "「元の値を保持」を選択するとフィールドは変更されません。値を選択すると、選択したすべてのアーカイブに適用されます"
+  },
+  "editModal": {
+    "title": "アーカイブを編集",
+    "archiveName": "アーカイブ名",
+    "archiveNamePlaceholder": "アーカイブ名を入力",
+    "level": "ステージ",
+    "difficulty": "アーカイブ難易度",
+    "actualDifficulty": "実際の難易度",
+    "inventory": "インベントリテンプレート",
+    "inheritFromUniform": "統一設定から継承"
+  },
+  "template": {
+    "saveTitle": "テンプレートを保存",
+    "noArchives": "保存できるアーカイブがありません",
+    "saved": "テンプレートを保存しました",
+    "saveFailed": "テンプレートの保存に失敗",
+    "loadTitle": "テンプレートを読み込み",
+    "loaded": "テンプレートを読み込みました",
+    "loadFailed": "テンプレートの読み込みに失敗",
+    "invalidFormat": "無効なテンプレート形式"
+  },
+  "tutorial": {
+    "skip": "スキップ",
+    "prev": "前へ",
+    "next": "次へ",
+    "start": "体験を開始",
+    "watchVideo": "ビデオチュートリアルを見る",
+    "step1": {
+      "title": "スマート入力エリア",
+      "description": "ここにアーカイブ名リストを貼り付けるか、ファイルからインポートします。システムは自動的に名前内の連番とキーワードを認識し、ハイライト表示します。"
+    },
+    "step2": {
+      "title": "統一設定エリア",
+      "description": "統一されたステージ、難易度、インベントリテンプレートを設定します。スマートルールを有効化すると、名前に基づいて自動的に設定を割り当てます。"
+    },
+    "step3": {
+      "title": "アーカイブプレビューエリア",
+      "description": "すべてのアーカイブカードをプレビューし、個別に編集、コピー、削除できます。一括選択と一括編集に対応しています。"
+    },
+    "step4": {
+      "title": "作成操作エリア",
+      "description": "統計サマリーを確認し、問題がなければ作成ボタンをクリックしてバッチ生成します。"
+    }
+  }
+}

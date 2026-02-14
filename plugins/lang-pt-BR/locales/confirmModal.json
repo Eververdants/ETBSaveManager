@@ -1,0 +1,14 @@
+{
+  "deleteArchiveTitle": "Excluir Arquivo",
+  "deleteArchiveMessage": "Tem certeza que deseja excluir o arquivo '{name}'?",
+  "deleteArchiveDescription": "Esta ação excluirá permanentemente o arquivo. Não pode ser desfeita.",
+  "confirm": "Excluir",
+  "cancel": "Cancelar",
+  "archiveDetails": {
+    "gameMode": "Modo de Jogo",
+    "currentLevel": "Nível Atual",
+    "difficulty": "Dificuldade",
+    "modifiedTime": "Data de Modificação",
+    "dateFormat": "{day} de {month} de {year}"
+  }
+}

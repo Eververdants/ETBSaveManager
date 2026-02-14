@@ -1,0 +1,32 @@
+{
+  "selectItem": "아이템 선택",
+  "removeItem": "아이템 제거",
+  "emptySlot": "빈 슬롯",
+  "items": {
+    "AlmondConcentrate": "아몬드 농축액",
+    "BugSpray": "해충제",
+    "Camera": "카메라",
+    "AlmondWater": "아몬드 워터",
+    "Chainsaw": "전기톱",
+    "Crowbar": "쇠지레",
+    "DivingHelmet": "다이빙 헬멧",
+    "EnergyBar": "에너지 바",
+    "Firework": "폭죽",
+    "Flaregun": "신호권총",
+    "Flashlight": "손전등",
+    "GlowstickBlue": "블루 야광봉",
+    "GlowStick": "그린 야광봉",
+    "GlowstickRed": "레드 야광봉",
+    "GlowstickYellow": "옐로우 야광봉",
+    "Knife": "칼",
+    "LiquidPain": "액체 고통",
+    "Juice": "주스",
+    "Rope": "밧줄",
+    "LiDAR": "스캐너",
+    "Thermometer": "온도계",
+    "Ticket": "티켓",
+    "Toy": "테디베어",
+    "WalkieTalkie": "무전기",
+    "MothJelly": "나방 젤리"
+  }
+}

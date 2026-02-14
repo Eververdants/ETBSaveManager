@@ -8,6 +8,8 @@ import { getAppContext } from "../../appContext.js";
 
 // 语言插件必需的字段（用于验证翻译完整性）
 const REQUIRED_FIELDS = ["common", "sidebar", "settings"];
+const isPlainObject = (value) =>
+  !!value && typeof value === "object" && !Array.isArray(value);
 
 class LanguagePluginLoader {
   constructor() {
@@ -41,6 +43,24 @@ class LanguagePluginLoader {
   }
 
   /**
+   * 归一化语言插件数据，兼容模块化和包装格式
+   * @param {Object} data - 插件翻译数据
+   * @returns {Object}
+   */
+  normalizeMessagesData(data) {
+    if (!isPlainObject(data)) {
+      throw new Error("语言插件必须包含翻译数据");
+    }
+
+    if (isPlainObject(data.modules)) return data.modules;
+    if (isPlainObject(data.messages)) return data.messages;
+    if (isPlainObject(data.translations)) return data.translations;
+    if (isPlainObject(data.default)) return data.default;
+
+    return data;
+  }
+
+  /**
    * 验证语言插件数据
    * @param {Object} plugin - 插件元数据
    */
@@ -51,19 +71,19 @@ class LanguagePluginLoader {
       throw new Error("语言插件必须指定 locale");
     }
 
-    if (!data || typeof data !== "object") {
-      throw new Error("语言插件必须包含翻译数据");
-    }
+    const normalizedData = this.normalizeMessagesData(data);
 
     // 检查必需字段
-    const missingFields = REQUIRED_FIELDS.filter((field) => !data[field]);
+    const missingFields = REQUIRED_FIELDS.filter(
+      (field) => !normalizedData[field]
+    );
     if (missingFields.length > 0) {
       console.warn(
         `⚠️ [LanguageLoader] 语言插件缺少字段: ${missingFields.join(", ")}`
       );
     }
 
-    return true;
+    return normalizedData;
   }
 
   /**
@@ -71,12 +91,12 @@ class LanguagePluginLoader {
    * @param {Object} plugin - 插件元数据
    */
   async load(plugin) {
-    const { id, locale, data, name } = plugin;
+    const { id, locale, name } = plugin;
 
     console.log(`🌍 [LanguageLoader] 正在加载语言插件: ${name} (${locale})`);
 
-    // 验证插件
-    this.validate(plugin);
+    // 验证并归一化插件数据
+    const normalizedData = this.validate(plugin);
 
     const i18n = this.getI18n();
     if (!i18n) {
@@ -94,7 +114,10 @@ class LanguagePluginLoader {
     }
 
     // 合并语言数据
-    const mergedMessages = this.mergeMessages(existingMessages || {}, data);
+    const mergedMessages = this.mergeMessages(
+      existingMessages || {},
+      normalizedData
+    );
 
     // 设置语言消息（兼容不同的 i18n 结构）
     if (i18n.global?.setLocaleMessage) {
@@ -111,7 +134,7 @@ class LanguagePluginLoader {
     // 记录已加载
     this.loadedLanguages.set(id, {
       locale,
-      data,
+      data: normalizedData,
       loadedAt: Date.now(),
     });
 

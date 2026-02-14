@@ -1,0 +1,14 @@
+{
+  "title": "Registros do Sistema",
+  "description": "Ver registros de execução do aplicativo",
+  "clear": "Limpar Registros",
+  "export": "Exportar Registros",
+  "filter": "Filtrar Nível",
+  "allLevels": "Todos os Níveis",
+  "error": "Erro",
+  "warn": "Aviso",
+  "info": "Informação",
+  "debug": "Debug",
+  "search": "Pesquisar registros...",
+  "noLogs": "Sem registros"
+}

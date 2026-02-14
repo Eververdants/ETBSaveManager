@@ -1,0 +1,19 @@
+{
+  "archiveList": "Lista de Arquivos",
+  "createArchive": "Criar Arquivo",
+  "coreArchive": "Arquivo Principal",
+  "unlockHub": "Desbloquear Hub",
+  "unlockHubSubtitle": "Ative este interruptor para desbloquear a função de edição do arquivo principal",
+  "hubLockedNotice": "Por favor, desbloqueie o hub primeiro para usar a função de edição do arquivo principal",
+  "hubUnlockedNotice": "Hub desbloqueado. Agora você pode usar a função de edição do arquivo principal",
+  "featureOptions": "Opções de Recursos",
+  "archiveDataEdit": "Edição de Dados do Arquivo",
+  "archiveDataEditDesc": "Editar dados do arquivo principal do jogo",
+  "pluginMarket": "Mercado de Plugins",
+  "testArchive": "Arquivo de Teste",
+  "howToUse": "Como Usar",
+  "about": "Sobre",
+  "settings": "Configurações",
+  "logs": "Registros",
+  "feedback": "Feedback"
+}

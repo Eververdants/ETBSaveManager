@@ -1,0 +1,152 @@
+{
+  "title": "퀵 아카이브 생성",
+  "subtitle": "여러 게임 아카이브를 빠르게 일괄 생성",
+  "switchMode": "모드 전환",
+  "inputArea": {
+    "title": "스마트 입력",
+    "pasteNames": "이름 붙여넣기",
+    "importFile": "파일 가져오기",
+    "manualAdd": "수동 추가",
+    "emptyHint": "아카이브 이름 목록을 붙여넣거나 위 버튼을 클릭하여 추가",
+    "supportedFormats": ".txt/.csv/.json 파일 또는 Ctrl+V 붙여넣기 지원",
+    "sequenceHint": "연번 확장 지원: 아카이브_{'{'} 1-10 {'}'} → 10개 아카이브 생성",
+    "importFailed": "가져오기 실패",
+    "recognized": "{count}개의 이름을 인식했습니다",
+    "clear": "지우기"
+  },
+  "configArea": {
+    "title": "통일 설정",
+    "level": "스테이지 루트",
+    "difficulty": "아카이브 난이도",
+    "actualDifficulty": "실제 난이도",
+    "inventory": "인벤토리 템플릿",
+    "noUnify": "통일 설정 없음",
+    "setAllTo": "모두 설정",
+    "useTemplate": "템플릿 사용",
+    "smartRules": "스마트 규칙",
+    "autoAssignLevel": "이름에 따라 자동으로 스테이지 할당",
+    "autoDetectDifficulty": "이름에 따라 자동으로 난이도 인식",
+    "autoRenameDuplicates": "중복 항목 자동 이름 변경"
+  },
+  "cardFlow": {
+    "title": "아카이브 미리보기",
+    "selectAll": "모두 선택",
+    "invertSelection": "선택 반전",
+    "selected": "{count}/{total}개 선택됨",
+    "emptyHint": "이름을 추가하면 아카이브 카드가 여기에 표시됩니다",
+    "batchEdit": "일괄 편집",
+    "gridView": "그리드 보기",
+    "listView": "목록 보기",
+    "virtualScrollHint": "성능 최적화를 위해 가상 스크롤 활성화"
+  },
+  "card": {
+    "level": "스테이지",
+    "difficulty": "난이도",
+    "actualDifficulty": "실제 난이도",
+    "inventory": "인벤토리",
+    "inherit": "상속",
+    "notSet": "설정되지 않음",
+    "emptyInventory": "비어 있음",
+    "customInventory": "사용자 정의",
+    "missingParams": "필수 매개변수 누락",
+    "modified": "개별적으로 수정됨",
+    "copy": "복사",
+    "remove": "제거"
+  },
+  "preview": {
+    "total": "총계",
+    "uniform": "통일 설정",
+    "individual": "개별 설정",
+    "missing": "매개변수 누락",
+    "create": "선택 항목 생성({count})",
+    "creating": "생성 중...",
+    "estimatedTime": "예상 소요 시간: {time}",
+    "saveTemplate": "템플릿으로 저장",
+    "noArchives": "먼저 아카이브를 추가하세요",
+    "hasMissingParams": "{count}개의 아카이브에 필수 매개변수가 누락되었습니다"
+  },
+  "result": {
+    "success": "{count}개의 아카이브를 성공적으로 생성",
+    "partialSuccess": "{success}개의 아카이브를 성공적으로 생성, {failed}개 실패",
+    "failed": "생성 실패",
+    "error": "생성 중 오류가 발생했습니다",
+    "successTitle": "생성 완료",
+    "partialTitle": "부분 생성 성공",
+    "successCount": "성공",
+    "failedCount": "실패",
+    "errorDetails": "오류 상세",
+    "continueEditing": "편집 계속",
+    "viewArchives": "아카이브 보기",
+    "editArchive": "이 아카이브 편집"
+  },
+  "draft": {
+    "title": "저장되지 않은 드래프트 발견",
+    "message": "이전에 편집한 {count}개의 아카이브 드래프트를 감지했습니다. 복원하시겠습니까?",
+    "savedAt": "저장 시간",
+    "recover": "드래프트 복원",
+    "ignore": "무시",
+    "recovered": "드래프트가 복원되었습니다",
+    "justNow": "방금",
+    "minutesAgo": "{count}분 전",
+    "hoursAgo": "{count}시간 전"
+  },
+  "largeData": {
+    "title": "대량 데이터 알림",
+    "largeMessage": "{count}개의 아카이브를 추가했습니다(권장 {threshold}개 초과). 대량의 아카이브는 인터페이스 응답 속도에 영향을 줄 수 있습니다.",
+    "veryLargeMessage": "{count}개의 이름을 추가했습니다(권장 {threshold}개 초과). 더 나은 경험을 위해 일괄 처리를 권장합니다.",
+    "tip1": "일괄 생성 권장. 배치당 100개 이하",
+    "tip2": "생성 중 페이지를 닫지 마세요. 진행 상황이 손실될 수 있습니다",
+    "understand": "알겠습니다"
+  },
+  "batchEdit": {
+    "title": "일괄 편집",
+    "keepOriginal": "원래 값 유지",
+    "selectToChange": "변경할 항목 선택",
+    "apply": "적용",
+    "selectedCount": "{count}개의 아카이브 선택됨",
+    "hint": "'원래 값 유지'를 선택하면 필드가 변경되지 않으며, 값을 선택하면 선택한 모든 아카이브에 적용됩니다"
+  },
+  "editModal": {
+    "title": "아카이브 편집",
+    "archiveName": "아카이브 이름",
+    "archiveNamePlaceholder": "아카이브 이름을 입력하세요",
+    "level": "스테이지",
+    "difficulty": "아카이브 난이도",
+    "actualDifficulty": "실제 난이도",
+    "inventory": "인벤토리 템플릿",
+    "inheritFromUniform": "통일 설정에서 상속"
+  },
+  "template": {
+    "saveTitle": "템플릿 저장",
+    "noArchives": "저장할 아카이브가 없습니다",
+    "saved": "템플릿이 저장되었습니다",
+    "saveFailed": "템플릿 저장 실패",
+    "loadTitle": "템플릿 불러오기",
+    "loaded": "템플릿을 불러왔습니다",
+    "loadFailed": "템플릿 불러오기 실패",
+    "invalidFormat": "유효하지 않은 템플릿 형식"
+  },
+  "tutorial": {
+    "skip": "건너뛰기",
+    "prev": "이전",
+    "next": "다음",
+    "start": "체험 시작",
+    "watchVideo": "비디오 튜토리얼 보기",
+    "step1": {
+      "title": "스마트 입력 영역",
+      "description": "여기에 아카이브 이름 목록을 붙여넣거나 파일에서 가져옵니다. 시스템은 자동으로 이름의 연번과 키워드를 인식하고 강조 표시합니다."
+    },
+    "step2": {
+      "title": "통일 설정 영역",
+      "description": "통일된 스테이지, 난이도 및 인벤토리 템플릿을 설정합니다. 스마트 규칙을 활성화하면 이름에 따라 자동으로 설정을 할당합니다."
+    },
+    "step3": {
+      "title": "아카이브 미리보기 영역",
+      "description": "모든 아카이브 카드를 미리보고 개별적으로 편집, 복사, 삭제할 수 있습니다. 일괄 선택 및 일괄 편집을 지원합니다."
+    },
+    "step4": {
+      "title": "생성 작업 영역",
+      "description": "통계 요약을 확인하고 문제가 없으면 생성 버튼을 클릭하여 일괄 생성합니다."
+    }
+  }
+}

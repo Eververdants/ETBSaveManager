@@ -1,0 +1,32 @@
+{
+  "selectItem": "Selecionar Item",
+  "removeItem": "Remover Item",
+  "emptySlot": "Slot Vazio",
+  "items": {
+    "AlmondConcentrate": "Concentrado de Amêndoa",
+    "BugSpray": "Inseticida",
+    "Camera": "Câmera",
+    "AlmondWater": "Água de Amêndoa",
+    "Chainsaw": "Motosserra",
+    "Crowbar": "Pé de Cabra",
+    "DivingHelmet": "Capacete de Mergulho",
+    "EnergyBar": "Barra de Energia",
+    "Firework": "Fogos de Artifício",
+    "Flaregun": "Sinalizador",
+    "Flashlight": "Lanterna",
+    "GlowstickBlue": "Bastão de Luz Azul",
+    "GlowStick": "Bastão de Luz Verde",
+    "GlowstickRed": "Bastão de Luz Vermelho",
+    "GlowstickYellow": "Bastão de Luz Amarelo",
+    "Knife": "Faca",
+    "LiquidPain": "Dor Líquida",
+    "Juice": "Suco",
+    "Rope": "Corda",
+    "LiDAR": "Scanner",
+    "Thermometer": "Termômetro",
+    "Ticket": "Bilhete",
+    "Toy": "Urso de Pelúcia",
+    "WalkieTalkie": "Rádio Comunicador",
+    "MothJelly": "Geléia de Mariposa"
+  }
+}

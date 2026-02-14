@@ -1,0 +1,19 @@
+{
+  "title": "Monitor de Performance",
+  "description": "Monitorar performance do aplicativo em tempo real",
+  "fps": "FPS",
+  "cpu": "Uso de CPU",
+  "memory": "Uso de Memória",
+  "network": "Estado da Rede",
+  "disk": "E/S de Disco",
+  "renderTime": "Tempo de Renderização",
+  "frameTime": "Tempo de Quadro",
+  "updateTime": "Tempo de Atualização",
+  "drawTime": "Tempo de Desenho",
+  "gcTime": "Tempo de Coleta de Lixo",
+  "pause": "Pausar",
+  "resume": "Retomar",
+  "reset": "Redefinir",
+  "export": "Exportar Dados",
+  "close": "Fechar"
+}

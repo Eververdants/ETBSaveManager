@@ -1,0 +1,14 @@
+{
+  "deleteArchiveTitle": "アーカイブを削除",
+  "deleteArchiveMessage": "アーカイブ '{name}' を削除してもよろしいですか？",
+  "deleteArchiveDescription": "この操作によりアーカイブファイルが完全に削除され、元に戻せません。",
+  "confirm": "削除",
+  "cancel": "キャンセル",
+  "archiveDetails": {
+    "gameMode": "ゲームモード",
+    "currentLevel": "現在のレベル",
+    "difficulty": "難易度",
+    "modifiedTime": "変更日時",
+    "dateFormat": "{year}年{month}月{day}日"
+  }
+}

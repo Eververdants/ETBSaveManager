@@ -1,0 +1,152 @@
+{
+  "title": "Criação Rápida de Arquivo",
+  "subtitle": "Crie rapidamente múltiplos arquivos de jogo em lote",
+  "switchMode": "Alternar Modo",
+  "inputArea": {
+    "title": "Entrada Inteligente",
+    "pasteNames": "Colar Nomes",
+    "importFile": "Importar Arquivo",
+    "manualAdd": "Adicionar Manualmente",
+    "emptyHint": "Cole a lista de nomes de arquivo ou clique nos botões acima para adicionar",
+    "supportedFormats": "Suporta arquivos .txt/.csv/.json ou Ctrl+V para colar",
+    "sequenceHint": "Suporta expansão de sequência: arquivo_{'{'} 1-10 {'}'} → gera 10 arquivos",
+    "importFailed": "Falha na importação",
+    "recognized": "{count} nomes reconhecidos",
+    "clear": "Limpar"
+  },
+  "configArea": {
+    "title": "Configuração Uniforme",
+    "level": "Rota do Nível",
+    "difficulty": "Dificuldade do Arquivo",
+    "actualDifficulty": "Dificuldade Real",
+    "inventory": "Modelo de Inventário",
+    "noUnify": "Sem Configuração Uniforme",
+    "setAllTo": "Definir Todos Para",
+    "useTemplate": "Usar Modelo",
+    "smartRules": "Regras Inteligentes",
+    "autoAssignLevel": "Atribuir nível automaticamente baseado no nome",
+    "autoDetectDifficulty": "Reconhecer dificuldade automaticamente baseado no nome",
+    "autoRenameDuplicates": "Renomear automaticamente itens duplicados"
+  },
+  "cardFlow": {
+    "title": "Pré-visualização de Arquivo",
+    "selectAll": "Selecionar Todos",
+    "invertSelection": "Inverter Seleção",
+    "selected": "{count}/{total} selecionados",
+    "emptyHint": "Após adicionar nomes, os cartões de arquivo serão exibidos aqui",
+    "batchEdit": "Edição em Lote",
+    "gridView": "Visualização em Grade",
+    "listView": "Visualização em Lista",
+    "virtualScrollHint": "Rolagem virtual ativada para otimização de performance"
+  },
+  "card": {
+    "level": "Nível",
+    "difficulty": "Dificuldade",
+    "actualDifficulty": "Dificuldade Real",
+    "inventory": "Inventário",
+    "inherit": "Herdar",
+    "notSet": "Não Definido",
+    "emptyInventory": "Vazio",
+    "customInventory": "Personalizado",
+    "missingParams": "Parâmetros Necessários Ausentes",
+    "modified": "Modificado Individualmente",
+    "copy": "Copiar",
+    "remove": "Remover"
+  },
+  "preview": {
+    "total": "Total",
+    "uniform": "Configuração Uniforme",
+    "individual": "Configuração Individual",
+    "missing": "Parâmetros Ausentes",
+    "create": "Criar Selecionados ({count})",
+    "creating": "Criando...",
+    "estimatedTime": "Tempo Estimado: {time}",
+    "saveTemplate": "Salvar como Modelo",
+    "noArchives": "Por favor, adicione arquivos primeiro",
+    "hasMissingParams": "{count} arquivos estão com parâmetros necessários ausentes"
+  },
+  "result": {
+    "success": "{count} arquivos criados com sucesso",
+    "partialSuccess": "{success} arquivos criados com sucesso, {failed} falharam",
+    "failed": "Falha na Criação",
+    "error": "Ocorreu um erro durante a criação",
+    "successTitle": "Criação Concluída",
+    "partialTitle": "Criação Parcialmente Bem-sucedida",
+    "successCount": "Sucesso",
+    "failedCount": "Falha",
+    "errorDetails": "Detalhes do Erro",
+    "continueEditing": "Continuar Editando",
+    "viewArchives": "Ver Arquivos",
+    "editArchive": "Editar este Arquivo"
+  },
+  "draft": {
+    "title": "Rascunho Não Salvo Encontrado",
+    "message": "Detectados {count} rascunhos de arquivo da última edição. Restaurar?",
+    "savedAt": "Salvo em",
+    "recover": "Recuperar Rascunho",
+    "ignore": "Ignorar",
+    "recovered": "Rascunho recuperado",
+    "justNow": "Agora mesmo",
+    "minutesAgo": "{count} minutos atrás",
+    "hoursAgo": "{count} horas atrás"
+  },
+  "largeData": {
+    "title": "Aviso de Grande Volume de Dados",
+    "largeMessage": "Você adicionou {count} arquivos, excedendo o recomendado de {threshold}. Grandes volumes podem afetar a velocidade de resposta da interface.",
+    "veryLargeMessage": "Você adicionou {count} nomes, excedendo o recomendado de {threshold}. Recomenda-se processamento em lotes para melhor experiência.",
+    "tip1": "Recomenda-se criar em lotes, não mais que 100 arquivos por lote",
+    "tip2": "Não feche a página durante a criação para evitar perda de progresso",
+    "understand": "Entendi"
+  },
+  "batchEdit": {
+    "title": "Edição em Lote",
+    "keepOriginal": "Manter Original",
+    "selectToChange": "Selecionar itens para alterar",
+    "apply": "Aplicar",
+    "selectedCount": "{count} arquivos selecionados",
+    "hint": "Selecione 'Manter Original' para manter o campo inalterado, ou selecione um valor para aplicar a todos os arquivos selecionados"
+  },
+  "editModal": {
+    "title": "Editar Arquivo",
+    "archiveName": "Nome do Arquivo",
+    "archiveNamePlaceholder": "Digite o nome do arquivo",
+    "level": "Nível",
+    "difficulty": "Dificuldade do Arquivo",
+    "actualDifficulty": "Dificuldade Real",
+    "inventory": "Modelo de Inventário",
+    "inheritFromUniform": "Herdar da Configuração Uniforme"
+  },
+  "template": {
+    "saveTitle": "Salvar Modelo",
+    "noArchives": "Nenhum arquivo para salvar",
+    "saved": "Modelo salvo com sucesso",
+    "saveFailed": "Falha ao salvar modelo",
+    "loadTitle": "Carregar Modelo",
+    "loaded": "Modelo carregado com sucesso",
+    "loadFailed": "Falha ao carregar modelo",
+    "invalidFormat": "Formato de modelo inválido"
+  },
+  "tutorial": {
+    "skip": "Pular",
+    "prev": "Anterior",
+    "next": "Próximo",
+    "start": "Iniciar Experiência",
+    "watchVideo": "Ver Tutorial em Vídeo",
+    "step1": {
+      "title": "Área de Entrada Inteligente",
+      "description": "Cole a lista de nomes de arquivo aqui ou importe de arquivo. O sistema reconhecerá automaticamente números de sequência e palavras-chave nos nomes e destacará."
+    },
+    "step2": {
+      "title": "Área de Configuração Uniforme",
+      "description": "Defina nível, dificuldade e modelo de inventário uniformes. Ative regras inteligentes para atribuir configurações automaticamente baseado nos nomes."
+    },
+    "step3": {
+      "title": "Área de Pré-visualização de Arquivo",
+      "description": "Pré-visualize todos os cartões de arquivo, pode editar, copiar ou excluir individualmente. Suporta seleção em lote e edição em lote."
+    },
+    "step4": {
+      "title": "Área de Operação de Criação",
+      "description": "Verifique o resumo estatístico, confirme e clique no botão criar para gerar arquivos em lote."
+    }
+  }
+}

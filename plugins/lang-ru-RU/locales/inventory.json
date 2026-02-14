@@ -1,0 +1,32 @@
+{
+  "selectItem": "Выбрать предмет",
+  "removeItem": "Удалить предмет",
+  "emptySlot": "Пустой слот",
+  "items": {
+    "AlmondConcentrate": "Миндальный концентрат",
+    "BugSpray": "Инсектицид",
+    "Camera": "Камера",
+    "AlmondWater": "Миндальная вода",
+    "Chainsaw": "Бензопила",
+    "Crowbar": "Лом",
+    "DivingHelmet": "Водолазный шлем",
+    "EnergyBar": "Энергетический батончик",
+    "Firework": "Фейерверк",
+    "Flaregun": "Ракетница",
+    "Flashlight": "Фонарик",
+    "GlowstickBlue": "Синяя светящаяся палочка",
+    "GlowStick": "Зеленая светящаяся палочка",
+    "GlowstickRed": "Красная светящаяся палочка",
+    "GlowstickYellow": "Желтая светящаяся палочка",
+    "Knife": "Нож",
+    "LiquidPain": "Жидкая боль",
+    "Juice": "Сок",
+    "Rope": "Веревка",
+    "LiDAR": "Сканер",
+    "Thermometer": "Термометр",
+    "Ticket": "Билет",
+    "Toy": "Плюшевый мишка",
+    "WalkieTalkie": "Рация",
+    "MothJelly": "Желе мотылька"
+  }
+}

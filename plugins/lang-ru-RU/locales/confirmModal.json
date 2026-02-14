@@ -1,0 +1,14 @@
+{
+  "deleteArchiveTitle": "Удалить архив",
+  "deleteArchiveMessage": "Вы уверены, что хотите удалить архив '{name}'?",
+  "deleteArchiveDescription": "Это действие навсегда удалит файл архива. Его нельзя будет восстановить.",
+  "confirm": "Удалить",
+  "cancel": "Отмена",
+  "archiveDetails": {
+    "gameMode": "Режим игры",
+    "currentLevel": "Текущий уровень",
+    "difficulty": "Сложность",
+    "modifiedTime": "Время изменения",
+    "dateFormat": "{day}.{month}.{year}"
+  }
+}

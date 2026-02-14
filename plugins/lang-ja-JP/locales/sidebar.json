@@ -1,0 +1,19 @@
+{
+  "archiveList": "アーカイブリスト",
+  "createArchive": "アーカイブ作成",
+  "coreArchive": "コアアーカイブ",
+  "unlockHub": "ハブのロック解除",
+  "unlockHubSubtitle": "このスイッチをオンにしてコアアーカイブ編集機能を有効にする",
+  "hubLockedNotice": "コアアーカイブ編集機能を使用するには、まずハブのロックを解除してください",
+  "hubUnlockedNotice": "ハブのロックが解除されました。コアアーカイブ編集機能が使用可能です",
+  "featureOptions": "機能オプション",
+  "archiveDataEdit": "アーカイブデータ編集",
+  "archiveDataEditDesc": "ゲームのコアアーカイブデータを編集",
+  "pluginMarket": "プラグインマーケット",
+  "testArchive": "テストアーカイブ",
+  "howToUse": "使い方",
+  "about": "アプリについて",
+  "settings": "設定",
+  "logs": "ログ",
+  "feedback": "フィードバック"
+}

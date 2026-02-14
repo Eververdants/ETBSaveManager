@@ -1,0 +1,10 @@
+{
+  "title": "Configurações de Performance",
+  "description": "Ajustar configurações relacionadas à performance do aplicativo",
+  "enablePerformanceMonitoring": "Ativar Monitoramento de Performance",
+  "enablePerformanceMonitoringDescription": "Mostrar dados de performance em tempo real e gráficos",
+  "updateInterval": "Intervalo de Atualização",
+  "updateIntervalDescription": "Frequência de atualização dos dados de performance (milissegundos)",
+  "maxDataPoints": "Máximo de Pontos de Dados",
+  "maxDataPointsDescription": "Número máximo de pontos de dados a serem exibidos no gráfico"
+}

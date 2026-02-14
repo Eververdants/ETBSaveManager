@@ -1,0 +1,14 @@
+{
+  "description": "Информация о приложении",
+  "version": "Версия",
+  "tagline": "Специализированный инструмент управления архивами для Escape the Backrooms",
+  "appInfo": "Информация о приложении",
+  "author": "Автор",
+  "license": "Лицензия с открытым исходным кодом",
+  "acknowledgements": "Благодарности",
+  "contact": "Контакты",
+  "authorName": "Eververdants",
+  "licenseName": "Лицензия MIT",
+  "developerModeActivated": "Режим разработчика активирован!",
+  "releaseNotes": "Примечания к выпуску"
+}

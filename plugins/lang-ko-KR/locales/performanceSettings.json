@@ -1,0 +1,10 @@
+{
+  "title": "성능 설정",
+  "description": "애플리케이션 성능 관련 설정 조정",
+  "enablePerformanceMonitoring": "성능 모니터링 활성화",
+  "enablePerformanceMonitoringDescription": "실시간 성능 데이터 및 차트 표시",
+  "updateInterval": "업데이트 간격",
+  "updateIntervalDescription": "성능 데이터 업데이트 빈도(밀리초)",
+  "maxDataPoints": "최대 데이터 포인트",
+  "maxDataPointsDescription": "차트에 표시할 최대 데이터 포인트 수"
+}

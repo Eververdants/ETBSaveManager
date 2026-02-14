@@ -174,6 +174,7 @@ const fetchPlugins = async () => {
       id: p.id, name: p.name, description: p.description, author: p.author, version: p.version,
       license: p.license, downloadUrl: p.downloadUrl || p.download_url, category: p.category || 'utility',
       installed: installedIds.has(p.id), type: p.type || 'feature', locale: p.locale, localeName: p.localeName,
+      main: p.main, moduleRoot: p.moduleRoot, modules: p.modules,
     }));
   } catch (err) {
     console.error('获取插件数据失败:', err);
@@ -190,6 +191,41 @@ const closePluginDetail = () => { selectedPlugin.value = null; };
 
 const MAX_PLUGIN_JSON_BYTES = 512 * 1024;
 const MAX_PLUGIN_STRING_LEN = 20000;
+const DEFAULT_LANGUAGE_MODULE_FILES = [
+  'sidebar',
+  'common',
+  'archive',
+  'plugin',
+  'help',
+  'app',
+  'about',
+  'back',
+  'noReleaseNotes',
+  'featured',
+  'viewAllVersions',
+  'releaseNotes',
+  'versions',
+  'categories',
+  'logs',
+  'settings',
+  'inventory',
+  'steam',
+  'LevelName_Display',
+  'archiveCard',
+  'confirmModal',
+  'createArchive',
+  'editArchive',
+  'archiveSearch',
+  'floatingButton',
+  'jsonEditor',
+  'performanceSettings',
+  'performanceMonitor',
+  'steamCache',
+  'createMode',
+  'quickCreate',
+  'theme',
+  'feedback',
+];
 
 const validateDownloadUrl = (url) => {
   if (!url || typeof url !== 'string') throw new Error('无效的下载地址');
@@ -220,24 +256,184 @@ const validateString = (v, field) => {
   if (v.length > MAX_PLUGIN_STRING_LEN) throw new Error(`${field} 内容过长`);
 };
 
+const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
+
+const normalizeLanguagePackPayload = (payload) => {
+  if (!isPlainObject(payload)) return payload;
+  if (isPlainObject(payload.modules)) return payload.modules;
+  if (isPlainObject(payload.messages)) return payload.messages;
+  if (isPlainObject(payload.translations)) return payload.translations;
+  if (isPlainObject(payload.default)) return payload.default;
+  return payload;
+};
+
 const validateLanguagePack = (data) => {
-  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('翻译文件格式不正确');
+  const normalized = normalizeLanguagePackPayload(data);
+  if (!isPlainObject(normalized)) throw new Error('翻译文件格式不正确');
   const requiredTop = ['common', 'sidebar', 'settings'];
   for (const k of requiredTop) {
-    if (!(k in data)) throw new Error(`翻译文件缺少字段: ${k}`);
-    if (!data[k] || typeof data[k] !== 'object' || Array.isArray(data[k])) throw new Error(`翻译字段 ${k} 格式不正确`);
+    if (!(k in normalized)) throw new Error(`翻译文件缺少字段: ${k}`);
+    if (!isPlainObject(normalized[k])) throw new Error(`翻译字段 ${k} 格式不正确`);
   }
   const walk = (obj, depth = 0) => {
     if (depth > 20) throw new Error('翻译文件嵌套过深');
     for (const [k, v] of Object.entries(obj)) {
       validateString(k, '翻译键');
       if (typeof v === 'string') validateString(v, '翻译值');
-      else if (v && typeof v === 'object' && !Array.isArray(v)) walk(v, depth + 1);
+      else if (isPlainObject(v)) walk(v, depth + 1);
       else throw new Error('翻译文件包含不支持的值类型');
     }
   };
-  walk(data);
-  return true;
+  walk(normalized);
+  return normalized;
+};
+
+const toRelativePath = (...parts) =>
+  parts
+    .filter((part) => typeof part === 'string' && part.trim())
+    .map((part) => part.replace(/\\/g, '/').replace(/^\/+|\/+$/g, ''))
+    .filter(Boolean)
+    .join('/');
+
+const toModuleFileName = (entry) => {
+  if (typeof entry !== 'string') return null;
+  const clean = entry.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+  if (!clean) return null;
+  return clean.endsWith('.json') ? clean : `${clean}.json`;
+};
+
+const toLanguageModuleFileList = (modules) => {
+  const source = Array.isArray(modules) && modules.length > 0 ? modules : DEFAULT_LANGUAGE_MODULE_FILES;
+  return [...new Set(source.map(toModuleFileName).filter(Boolean))];
+};
+
+const resolveLanguageModuleRoots = (...roots) => {
+  const values = roots
+    .filter((root) => typeof root === 'string')
+    .map((root) => root.replace(/\\/g, '/').replace(/^\/+|\/+$/g, ''))
+    .filter(Boolean);
+  return [...new Set([...values, 'locales', ''])];
+};
+
+const resolveMainCandidates = (...entries) => {
+  const values = entries
+    .filter((entry) => typeof entry === 'string')
+    .map((entry) => entry.replace(/\\/g, '/').replace(/^\/+|\/+$/g, ''))
+    .filter((entry) => entry && entry.endsWith('.json'));
+  return [...new Set([...values, 'translations.json', 'index.json', 'messages.json'])];
+};
+
+const tryReadRemoteJson = async (baseUrl, relativePath) => {
+  const path = toRelativePath(relativePath);
+  if (!path) return null;
+  const res = await fetch(`${baseUrl}/${path}`, { cache: 'no-store' });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`下载 ${path} 失败: HTTP ${res.status}`);
+  return readJsonWithLimit(res);
+};
+
+const tryReadLocalJson = async (folderPath, relativePath) => {
+  const path = toRelativePath(relativePath);
+  if (!path) return null;
+  try {
+    return JSON.parse(await readTextFile(`${folderPath}/${path}`));
+  } catch {
+    return null;
+  }
+};
+
+const resolveModuleRootFromMain = (mainField) => {
+  if (typeof mainField !== 'string') return '';
+  const normalized = mainField.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+  if (!normalized || normalized.endsWith('.json')) return '';
+  return normalized;
+};
+
+const tryLoadLanguageModulesFromRemote = async (baseUrl, moduleRoot, modules) => {
+  const moduleFiles = toLanguageModuleFileList(modules);
+  const tasks = moduleFiles.map(async (fileName) => {
+    const relativePath = toRelativePath(moduleRoot, fileName);
+    const data = await tryReadRemoteJson(baseUrl, relativePath);
+    if (!isPlainObject(data)) return null;
+    const moduleKey = fileName.split('/').pop().replace(/\.json$/i, '');
+    return [moduleKey, data];
+  });
+  const entries = (await Promise.all(tasks)).filter(Boolean);
+  if (entries.length === 0) return null;
+  return Object.fromEntries(entries);
+};
+
+const tryLoadLanguageModulesFromLocal = async (folderPath, moduleRoot, modules) => {
+  const moduleFiles = toLanguageModuleFileList(modules);
+  const tasks = moduleFiles.map(async (fileName) => {
+    const relativePath = toRelativePath(moduleRoot, fileName);
+    const data = await tryReadLocalJson(folderPath, relativePath);
+    if (!isPlainObject(data)) return null;
+    const moduleKey = fileName.split('/').pop().replace(/\.json$/i, '');
+    return [moduleKey, data];
+  });
+  const entries = (await Promise.all(tasks)).filter(Boolean);
+  if (entries.length === 0) return null;
+  return Object.fromEntries(entries);
+};
+
+const loadRemoteLanguagePack = async (plugin) => {
+  const baseUrl = validateDownloadUrl(plugin.downloadUrl);
+  const remoteMeta = await tryReadRemoteJson(baseUrl, 'plugin.json');
+  const mainCandidates = resolveMainCandidates(plugin.main, remoteMeta?.main);
+
+  for (const mainFile of mainCandidates) {
+    const data = await tryReadRemoteJson(baseUrl, mainFile);
+    if (data) {
+      return validateLanguagePack(data);
+    }
+  }
+
+  const moduleRoots = resolveLanguageModuleRoots(
+    plugin.moduleRoot,
+    remoteMeta?.moduleRoot,
+    resolveModuleRootFromMain(plugin.main),
+    resolveModuleRootFromMain(remoteMeta?.main)
+  );
+  for (const moduleRoot of moduleRoots) {
+    const data = await tryLoadLanguageModulesFromRemote(
+      baseUrl,
+      moduleRoot,
+      plugin.modules || remoteMeta?.modules
+    );
+    if (data) {
+      return validateLanguagePack(data);
+    }
+  }
+
+  throw new Error('未找到可用的翻译文件（translations.json/index.json 或模块化 *.json）');
+};
+
+const loadLocalLanguagePack = async (folderPath, meta) => {
+  const mainCandidates = resolveMainCandidates(meta.main);
+  for (const mainFile of mainCandidates) {
+    const data = await tryReadLocalJson(folderPath, mainFile);
+    if (data) {
+      return validateLanguagePack(data);
+    }
+  }
+
+  const moduleRoots = resolveLanguageModuleRoots(
+    meta.moduleRoot,
+    resolveModuleRootFromMain(meta.main)
+  );
+  for (const moduleRoot of moduleRoots) {
+    const data = await tryLoadLanguageModulesFromLocal(
+      folderPath,
+      moduleRoot,
+      meta.modules
+    );
+    if (data) {
+      return validateLanguagePack(data);
+    }
+  }
+
+  throw new Error('未找到可用的翻译文件（translations.json/index.json 或模块化 *.json）');
 };
 
 const validateThemePack = (data) => {
@@ -256,11 +452,7 @@ const validateThemePack = (data) => {
 const installPlugin = async (plugin) => {
   try {
     if (plugin.type === 'language' && plugin.downloadUrl) {
-      const baseUrl = validateDownloadUrl(plugin.downloadUrl);
-      const res = await fetch(`${baseUrl}/translations.json`, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`下载翻译文件失败: HTTP ${res.status}`);
-      const data = await readJsonWithLimit(res);
-      validateLanguagePack(data);
+      const data = await loadRemoteLanguagePack(plugin);
       await installLanguagePlugin({ id: plugin.id, name: plugin.name, locale: plugin.locale, localeName: plugin.localeName, data, version: plugin.version, author: plugin.author, description: plugin.description });
       plugin.installed = true;
       refreshInstalledPlugins();
@@ -345,11 +537,13 @@ const processPluginFolder = async (folderPath) => {
 };
 
 const processLanguagePlugin = async (folderPath, meta) => {
-  const mainFile = meta.main || 'translations.json';
   let data;
-  try { data = JSON.parse(await readTextFile(`${folderPath}/${mainFile}`)); }
-  catch { localInstallError.value = `未找到翻译文件 ${mainFile}`; return; }
-  if (!data || typeof data !== 'object') { localInstallError.value = t('plugin.invalidTranslationFile'); return; }
+  try {
+    data = await loadLocalLanguagePack(folderPath, meta);
+  } catch (error) {
+    localInstallError.value = error?.message || t('plugin.invalidTranslationFile');
+    return;
+  }
   await installLanguagePlugin({ id: meta.id, name: meta.name, locale: meta.locale, localeName: meta.localeName || meta.name, data, version: meta.version || '1.0.0', author: meta.author || 'Unknown', description: meta.description || '' });
   localInstallSuccess.value = `成功安装语言插件: ${meta.name}`;
   await fetchPlugins();

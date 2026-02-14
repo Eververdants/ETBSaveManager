@@ -1,0 +1,14 @@
+{
+  "title": "시스템 로그",
+  "description": "앱 실행 로그 보기",
+  "clear": "로그 지우기",
+  "export": "로그 내보내기",
+  "filter": "레벨 필터",
+  "allLevels": "모든 레벨",
+  "error": "오류",
+  "warn": "경고",
+  "info": "정보",
+  "debug": "디버그",
+  "search": "로그 검색...",
+  "noLogs": "로그 기록이 없습니다"
+}

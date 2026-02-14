@@ -1,0 +1,10 @@
+{
+  "listDescription": "Ver e gerenciar todos os arquivos",
+  "createDescription": "Criar novo arquivo de jogo",
+  "coreDescription": "Editar dados do arquivo principal do jogo",
+  "testDescription": "Função de teste e gerenciamento de arquivo temporário",
+  "updated": "Conteúdo Atualizado",
+  "updateDetails": "Ajustado o estilo dos cartões de arquivo, corrigidos alguns bugs",
+  "thanks": "Agradecimentos a todos os amigos que forneceram feedback, sugestões e suporte para este projeto",
+  "disclaimer": "Esta ferramenta é apenas para fins de aprendizado e comunicação"
+}

@@ -28,7 +28,8 @@
   "bundle": {
     "active": true,
     "targets": [
-      "nsis"
+      "nsis",
+      "msi"
     ],
     "windows": {
       "webviewInstallMode": {

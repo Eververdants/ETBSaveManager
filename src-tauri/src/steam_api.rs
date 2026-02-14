@@ -175,8 +175,7 @@ impl SteamCacheManager {
         let entry = self.cache.get_mut(steam_id)?;
 
         if entry.is_expired() {
-            self.cache.remove(steam_id);
-            self.dirty = true;
+            // 过期条目不自动删除，交由手动清理命令统一处理
             return None;
         }
 
@@ -314,9 +313,6 @@ pub async fn get_steam_usernames(
 
     let steam_id_count = steam_ids.len();
     let (mut result, uncached_ids) = cache_state.with_manager(move |cache_manager| {
-        // 自动清理过期的缓存条目
-        cache_manager.cleanup_expired_cache();
-
         // 分离缓存命中和未命中的 ID
         let mut result = HashMap::with_capacity(steam_id_count);
         let mut uncached_ids = Vec::with_capacity(steam_id_count);

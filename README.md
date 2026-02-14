@@ -29,13 +29,15 @@
 - **Batch Operations** — Process multiple saves simultaneously
 - **Smart Filtering** — Filter by level, difficulty, game mode
 - **Quick Search** — Fuzzy matching to locate saves instantly
+- **Virtual Scrolling** — Smooth performance with large save collections
 
 ### 🎨 Modern UI/UX
 
 - **Modern Design** — Clean, intuitive interface with smooth animations
-- **Theme System** — Light, Dark, and seasonal themes
+- **15+ Themes** — Light, Dark, colorful themes, and seasonal specials
 - **Responsive Layout** — Collapsible sidebar, adaptive components
 - **Hardware Accelerated** — GPU-optimized rendering for smooth performance
+- **GSAP Animations** — Professional-grade animations throughout
 
 ### 🌍 Internationalization
 
@@ -58,12 +60,14 @@ Additional languages via plugins:
 
 - **Multiple Creation Modes**
   - Quick Create — Streamlined workflow for fast save generation
-  - Standard Create — Full customization options
-- **Inventory Editor** — Modify player inventory directly
+  - Standard Create — Full customization options with step-by-step wizard
+- **Inventory Editor** — Visual editor for player inventory items
+- **Player Data Editor** — Edit health, position, and other player stats
 - **Steam Cache Management** — Manage local Steam cache data
-- **Feedback System** — Built-in feedback submission to developers
+- **Feedback System** — Built-in feedback submission with offline queue
 - **Plugin Market** — Download language packs and themes from the plugin marketplace
 - **Performance Monitor** — Built-in diagnostics (dev mode)
+- **Auto-Update** — Automatic update checks and installation
 
 ---
 
@@ -120,15 +124,33 @@ pnpm tauri build
 
 ## 🧰 Tech Stack
 
-| Layer          | Technology                   |
-| -------------- | ---------------------------- |
-| Frontend       | Vue 3 + Composition API      |
-| Styling        | CSS Variables + Theme System |
-| Build          | Vite 6                       |
-| Desktop        | Tauri 2.0 + Rust             |
-| i18n           | vue-i18n                     |
-| Animation      | GSAP                         |
-| Virtual Scroll | @tanstack/vue-virtual        |
+### Frontend
+
+| Technology | Purpose |
+|------------|---------|
+| Vue 3 + Composition API | Reactive UI framework |
+| Vite 6 | Build tool and dev server |
+| Tailwind CSS 4 | Utility-first CSS framework |
+| CSS Variables | Dynamic theme system |
+| vue-i18n | Internationalization |
+| Vue Router 4 | SPA routing |
+| GSAP | High-performance animations |
+| @tanstack/vue-virtual | Virtual scrolling for large lists |
+| FontAwesome 7 | Vector icons |
+| Chart.js | Data visualization |
+| @vue-flow/core | Node-based flow editor |
+
+### Backend (Rust)
+
+| Technology | Purpose |
+|------------|---------|
+| Tauri 2.0 | Desktop application framework |
+| uesave 0.6.2 | UE4 Save file parsing |
+| serde + serde_json | Data serialization |
+| aes-gcm + argon2 | Encryption and security |
+| rusqlite | Local SQLite database |
+| reqwest + tokio | Async HTTP client |
+| walkdir + memmap2 | Efficient file operations |
 
 ---
 
@@ -136,18 +158,96 @@ pnpm tauri build
 
 ```
 ETBSaveManager/
-├── src/                    # Vue frontend
-│   ├── components/         # Reusable UI components
-│   ├── views/              # Page components
-│   ├── styles/             # Theme system & CSS
-│   ├── i18n/               # Internationalization
-│   ├── services/           # Business logic
-│   └── utils/              # Utility functions
-├── src-tauri/              # Rust backend
-│   └── src/                # Tauri commands & logic
-└── public/                 # Static assets
-    └── icons/              # Game icons & UI assets
+├── src/                          # Vue Frontend
+│   ├── components/               # UI Components
+│   │   ├── plugin/              # Plugin-related components
+│   │   ├── ArchiveCard.vue      # Save card component
+│   │   ├── ArchiveSearchFilter.vue # Search and filter panel
+│   │   ├── Sidebar.vue          # Navigation sidebar
+│   │   ├── TitleBar.vue         # Window title bar
+│   │   └── ...                  # Other components
+│   ├── composables/             # Vue Composition Functions
+│   │   ├── useArchiveActions.js # Save operations logic
+│   │   ├── useArchiveData.js    # Save data management
+│   │   └── ...                  # Other composables
+│   ├── config/                  # Configuration files
+│   ├── i18n/                    # Internationalization
+│   │   └── locales/             # Language files
+│   │       ├── zh-CN/           # Simplified Chinese
+│   │       ├── zh-TW/           # Traditional Chinese
+│   │       └── en-US/           # English
+│   ├── plugins/                 # Plugin System
+│   │   ├── core/                # Plugin manager
+│   │   └── loaders/             # Plugin loaders (language, theme, page)
+│   ├── router/                  # Vue Router configuration
+│   ├── services/                # Business logic services
+│   ├── styles/                  # Styling system
+│   │   └── themes/              # Theme files (15+ themes)
+│   ├── utils/                   # Utility functions
+│   ├── views/                   # Page views
+│   │   ├── CreateArchive/       # Create save wizard
+│   │   ├── Home.vue             # Save list page
+│   │   ├── EditArchive.vue      # Edit save page
+│   │   └── ...                  # Other pages
+│   ├── App.vue                  # Root component
+│   └── main.js                  # Application entry
+├── src-tauri/                    # Rust Backend
+│   └── src/
+│       ├── lib.rs               # Library entry
+│       ├── main.rs              # Main entry
+│       ├── save_commands.rs     # Save operation commands
+│       ├── save_editor.rs       # Save file editor
+│       ├── player_data.rs       # Player data handling
+│       ├── steam_api.rs         # Steam API integration
+│       ├── feedback_commands.rs # Feedback system
+│       └── ...                  # Other modules
+├── plugins/                      # Plugin Directory
+│   ├── lang-ja-JP/              # Japanese language pack
+│   ├── lang-ko-KR/              # Korean language pack
+│   ├── lang-ru-RU/              # Russian language pack
+│   ├── lang-pt-BR/              # Brazilian Portuguese pack
+│   ├── theme-cyberpunk/         # Cyberpunk theme
+│   ├── theme-dracula/           # Dracula theme
+│   ├── theme-monokai/           # Monokai theme
+│   ├── theme-nord/              # Nord theme
+│   └── theme-solarized/         # Solarized theme
+├── public/                       # Static Assets
+│   ├── icons/                   # Game item icons (20+)
+│   └── images/                  # Game level images (40+)
+└── docs/                         # Documentation and screenshots
 ```
+
+---
+
+## 🎨 Themes
+
+ETB Save Manager includes 15+ built-in themes:
+
+### Basic Themes
+- **Light** — Clean light theme
+- **Dark** — Comfortable dark theme
+- **High Contrast** — Accessibility-focused theme
+
+### Color Themes
+- **Ocean** 🌊 — Deep blue ocean-inspired
+- **Forest** 🌲 — Natural green forest theme
+- **Sunset** 🌅 — Warm orange sunset colors
+- **Lavender** 💜 — Soft purple lavender
+- **Rose** 🌸 — Elegant pink rose
+- **Mint** 🍃 — Fresh mint green
+- **Peach** 🍑 — Soft peach tones
+- **Sky** ☁️ — Bright sky blue
+
+### Seasonal Themes
+- **New Year** 🎊 — New Year celebration theme
+- **Spring Festival** 🧧 — Chinese New Year theme (limited time)
+
+### Plugin Themes
+- **Cyberpunk** — Neon cyberpunk aesthetic
+- **Dracula** — Popular Dracula color scheme
+- **Monokai** — Classic Monokai theme
+- **Nord** — Arctic Nord color palette
+- **Solarized** — Solarized color scheme
 
 ---
 
@@ -155,17 +255,28 @@ ETBSaveManager/
 
 **Current Version:** `v3.0.0`
 
-| Feature              | Status          |
-| -------------------- | --------------- |
-| Core Save Management | ✅ Complete     |
-| Search & Filter      | ✅ Complete     |
-| Theme System         | ✅ Complete     |
-| Multi-language       | ✅ Complete     |
-| Save Data Editor     | ✅ Complete     |
-| Creation Modes       | ✅ Complete     |
-| Feedback System      | ✅ Complete     |
-| Plugin System        | ✅ Complete     |
-| Level Info Editor    | 🔄 Planned      |
+| Feature | Status |
+|---------|--------|
+| Core Save Management | ✅ Complete |
+| Search & Filter | ✅ Complete |
+| Theme System (15+ themes) | ✅ Complete |
+| Multi-language Support | ✅ Complete |
+| Save Data Editor | ✅ Complete |
+| Creation Modes (Quick & Standard) | ✅ Complete |
+| Feedback System | ✅ Complete |
+| Plugin System | ✅ Complete |
+| Theme Editor | ✅ Complete |
+| Inventory Editor | ✅ Complete |
+| Player Data Editor | ✅ Complete |
+| Steam Cache Management | ✅ Complete |
+| Auto-Update | ✅ Complete |
+| Level Info Editor | 🔄 Planned |
+
+---
+
+## 🎬 Video Tutorial
+
+Watch the detailed operation guide: [Bilibili Video](https://www.bilibili.com/video/BV1L3yeYzEfi) (Based on v2.6.0)
 
 ---
 
@@ -176,6 +287,10 @@ Contributions are welcome! This is a personal student project, and any help is a
 - 🐛 [Report bugs](https://github.com/Eververdants/ETBSaveManager/issues)
 - 💡 [Request features](https://github.com/Eververdants/ETBSaveManager/issues)
 - 📧 Contact: **llzgd@outlook.com**
+
+### Plugin Development
+
+Want to create your own language pack or theme? Check out the [Plugin Development Guide](./plugins/PLUGIN_DEV_GUIDE_EN.md).
 
 ---
 

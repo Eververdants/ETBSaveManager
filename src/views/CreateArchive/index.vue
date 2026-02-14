@@ -42,7 +42,7 @@
     </div>
 
     <!-- 主要内容区域 -->
-    <div class="content-wrapper" :class="{ 'no-ending-selector': currentStep !== 1 }">
+    <div ref="contentWrapperRef" class="content-wrapper" :class="{ 'no-ending-selector': currentStep !== 1 }">
       <transition name="step-transition" mode="out-in" @enter="onStepEnter" @leave="onStepLeave">
         <div :key="currentStep" class="step-container">
           <!-- 步骤1: 选择层级 -->
@@ -103,6 +103,27 @@
     <!-- 物品选择器 -->
     <InventoryItemSelector :visible="showItemSelector" :selected-item="selectedItem" @select="handleItemSelect"
       @update:visible="showItemSelector = $event" />
+
+    <!-- 创建成功弹窗 -->
+    <Teleport to="body">
+      <Transition name="success-modal">
+        <div
+          v-if="showSuccessModal"
+          class="success-modal-overlay"
+          @click.self="closeSuccessModal"
+        >
+          <div class="success-modal-card">
+            <div class="success-modal-icon-circle">
+              <svg class="success-modal-check-mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <h2 class="success-modal-title">{{ $t("createArchive.archiveCreated") }}</h2>
+            <p class="success-modal-subtitle">{{ $t("createArchive.archiveCreatedMessage") }}</p>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -157,6 +178,8 @@ export default {
     const newSteamId = ref("");
     const activePlayerIndex = ref(-1);
     const showItemSelector = ref(false);
+    const showSuccessModal = ref(false);
+    const contentWrapperRef = ref(null);
     const editingSlot = ref({ playerIndex: -1, slotIndex: -1 });
     const selectedItem = computed(() => {
       const { playerIndex, slotIndex } = editingSlot.value;
@@ -170,6 +193,7 @@ export default {
     const playerInputMessageType = ref("");
     const availableLevels = reactive([]);
     const players = reactive([]);
+    let successModalTimer = null;
 
     // 结局数据 - 存储 levels 数据
     const endingLevelsData = reactive({
@@ -693,7 +717,7 @@ export default {
         const { invoke } = await import("@tauri-apps/api/core");
         await invoke("handle_new_save", { saveData });
         createParticleExplosion();
-        showSuccessCard();
+        openSuccessModal();
       } catch (error) {
         console.error("创建存档失败:", error);
         alert("创建存档失败: " + (error.message || "未知错误"));
@@ -727,128 +751,56 @@ export default {
       }
     };
 
-    const showSuccessCard = () => {
-      console.log("showSuccessCard 被调用");
-      const container = document.querySelector(".create-archive-container");
-      if (!container) {
-        console.log("container 未找到");
+    const clearSuccessModalTimer = () => {
+      if (successModalTimer) {
+        clearTimeout(successModalTimer);
+        successModalTimer = null;
+      }
+    };
+
+    const finishCreateFlow = () => {
+      clearSuccessModalTimer();
+      showSuccessModal.value = false;
+
+      const stepsWrapper = contentWrapperRef.value;
+      if (!stepsWrapper) {
+        resetForm();
+        isCreating.value = false;
         return;
       }
-      console.log("container 找到，开始创建成功卡片");
-      const successCard = document.createElement("div");
-      successCard.className = "success-card";
-      successCard.innerHTML = `
-        <div class="success-content">
-          <div class="success-icon"><div class="icon-circle">
-            <svg class="check-mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div></div>
-          <h2 class="success-title">${t("createArchive.archiveCreated")}</h2>
-          <p class="success-subtitle">${t(
-        "createArchive.archiveCreatedMessage"
-      )}</p>
-        </div>`;
 
-      // 动态注入样式（因为元素添加到 body，scoped 样式无法生效）
-      const style = document.createElement("style");
-      style.textContent = `
-        .success-card {
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-          border: 1px solid var(--divider-light);
-          border-radius: 24px;
-          padding: 48px;
-          text-align: center;
-          z-index: 1000;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-          backdrop-filter: blur(20px);
-        }
-        .success-content {
-          position: relative;
-        }
-        .icon-circle {
-          width: 80px;
-          height: 80px;
-          background: linear-gradient(135deg, var(--success-color), #00d4aa);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 24px;
-          box-shadow: 0 8px 32px rgba(0, 212, 170, 0.4);
-        }
-        .check-mark {
-          color: white;
-          width: 32px;
-          height: 32px;
-        }
-        .success-title {
-          font-size: 24px;
-          font-weight: 600;
-          color: var(--text-primary);
-          margin-bottom: 8px;
-        }
-        .success-subtitle {
-          font-size: 16px;
-          color: var(--text-secondary);
-          margin-bottom: 16px;
-        }
-      `;
-      document.head.appendChild(style);
-      document.body.appendChild(successCard);
-
-      const tl = gsap.timeline({
+      gsap.killTweensOf(stepsWrapper);
+      gsap.to(stepsWrapper, {
+        x: "150%",
+        opacity: 0,
+        duration: 0.25,
+        ease: "power1.in",
         onComplete: () => {
-          setTimeout(() => {
-            gsap.to(successCard, {
-              opacity: 0,
-              duration: 0.15,
-              ease: "power1.in",
-              onComplete: () => {
-                document.body.removeChild(successCard);
-                document.head.removeChild(style);
-                const stepsWrapper =
-                  container?.querySelector(".content-wrapper");
-                if (!stepsWrapper) {
-                  resetForm();
-                  isCreating.value = false;
-                  return;
-                }
-                gsap.to(stepsWrapper, {
-                  x: "150%",
-                  opacity: 0,
-                  duration: 0.3,
-                  ease: "power1.in",
-                  onComplete: () => {
-                    resetForm();
-                    gsap.set(stepsWrapper, { x: "-150%", opacity: 0 });
-                    gsap.to(stepsWrapper, {
-                      x: "0%",
-                      opacity: 1,
-                      duration: 0.4,
-                      ease: "power1.out",
-                      onComplete: () => {
-                        setTimeout(() => {
-                          isCreating.value = false;
-                        }, 1500);
-                      },
-                    });
-                  },
-                });
-              },
-            });
-          }, 300);
+          resetForm();
+          gsap.set(stepsWrapper, { x: "-150%", opacity: 0 });
+          gsap.to(stepsWrapper, {
+            x: "0%",
+            opacity: 1,
+            duration: 0.35,
+            ease: "power1.out",
+            onComplete: () => {
+              isCreating.value = false;
+            },
+          });
         },
       });
-      tl.fromTo(
-        successCard,
-        { scale: 0.8, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.3, ease: "power1.out" }
-      );
+    };
+
+    const openSuccessModal = () => {
+      clearSuccessModalTimer();
+      showSuccessModal.value = true;
+      successModalTimer = setTimeout(() => {
+        finishCreateFlow();
+      }, 1400);
+    };
+
+    const closeSuccessModal = () => {
+      finishCreateFlow();
     };
 
     const isSidebarExpanded = ref(false);
@@ -882,6 +834,7 @@ export default {
 
     onUnmounted(() => {
       window.removeEventListener("sidebar-expand", handleSidebarExpand);
+      clearSuccessModalTimer();
     });
 
     const onStepEnter = (el, done) => {
@@ -932,6 +885,8 @@ export default {
       isSwitching,
       isCreating,
       showItemSelector,
+      showSuccessModal,
+      contentWrapperRef,
       selectedItem,
       editingSlot,
       canProceed,
@@ -957,6 +912,7 @@ export default {
       selectActualDifficulty,
       fetchSteamUsernames,
       finishAndReturnToQuickMode,
+      closeSuccessModal,
     };
   },
 };
@@ -1229,7 +1185,79 @@ export default {
   will-change: transform, opacity;
 }
 
-/* 成功卡片样式已通过 showSuccessCard() 动态注入 */
+/* 创建成功弹窗 */
+.success-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  backdrop-filter: blur(4px);
+}
+
+.success-modal-card {
+  min-width: 320px;
+  max-width: min(92vw, 520px);
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border: 1px solid var(--divider-light);
+  border-radius: 20px;
+  padding: 32px 28px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+}
+
+.success-modal-icon-circle {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--success-color), #00d4aa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 8px 28px rgba(0, 212, 170, 0.35);
+}
+
+.success-modal-check-mark {
+  width: 30px;
+  height: 30px;
+}
+
+.success-modal-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.success-modal-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.success-modal-enter-active,
+.success-modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.success-modal-enter-active .success-modal-card,
+.success-modal-leave-active .success-modal-card {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.success-modal-enter-from,
+.success-modal-leave-to {
+  opacity: 0;
+}
+
+.success-modal-enter-from .success-modal-card,
+.success-modal-leave-to .success-modal-card {
+  transform: scale(0.94);
+  opacity: 0;
+}
 
 @media (max-width: 768px) {
   .step-indicator {

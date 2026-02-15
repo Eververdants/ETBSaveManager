@@ -32,6 +32,10 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     // Rollup 配置
     rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        download: fileURLToPath(new URL('./download.html', import.meta.url))
+      },
       output: {
         // 手动分包
         manualChunks: {

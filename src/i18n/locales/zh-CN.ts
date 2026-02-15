@@ -174,6 +174,35 @@ export default {
       date: 'v3.0.0 正式版已发布'
     }
   },
+  downloadPage: {
+    meta: {
+      pageTitle: 'ETB Save Manager - 下载',
+      platform: '平台',
+      architecture: '架构',
+      targetFile: '目标文件',
+      platformWindows: 'Windows',
+      platformOther: '其他系统',
+      releasesPage: 'Releases 页面'
+    },
+    backHome: '返回主页',
+    title: '正在为你准备合适的安装包',
+    subtitle: '页面已根据当前环境识别系统架构，你也可以在下方手动选择。',
+    actions: {
+      downloadRecommended: '立即下载（推荐）',
+      allReleases: '查看所有版本'
+    },
+    status: {
+      nonWindows: '检测到非 Windows 系统，请在 Releases 页面手动选择。',
+      autoDisabled: '已关闭自动跳转（auto=0），请点击“立即下载（推荐）”。',
+      autoCountdown: '{seconds}s 后自动开始下载（{arch}）。'
+    },
+    manual: {
+      title: '手动选择安装包（Windows Setup）',
+      arm64Note: 'Windows on ARM 设备',
+      x64Note: '主流 64 位 Windows 设备',
+      x86Note: '旧款 32 位 Windows 设备'
+    }
+  },
   footer: {
     desc: 'ETB Save Manager 是面向《逃离后室》的现代化存档管理桌面应用',
     product: '产品',

@@ -174,6 +174,35 @@ export default {
       date: 'v3.0.0 stable release is now live'
     }
   },
+  downloadPage: {
+    meta: {
+      pageTitle: 'ETB Save Manager - Download',
+      platform: 'Platform',
+      architecture: 'Architecture',
+      targetFile: 'Target File',
+      platformWindows: 'Windows',
+      platformOther: 'Other',
+      releasesPage: 'Releases Page'
+    },
+    backHome: 'Back to Home',
+    title: 'Preparing the right installer for your device',
+    subtitle: 'We detected your platform and architecture. You can still choose manually below.',
+    actions: {
+      downloadRecommended: 'Download Now (Recommended)',
+      allReleases: 'View All Releases'
+    },
+    status: {
+      nonWindows: 'Non-Windows system detected. Please choose manually on the Releases page.',
+      autoDisabled: 'Auto redirect is disabled (auto=0). Click "Download Now (Recommended)".',
+      autoCountdown: 'Auto download starts in {seconds}s ({arch}).'
+    },
+    manual: {
+      title: 'Choose installer manually (Windows Setup)',
+      arm64Note: 'Windows on ARM devices',
+      x64Note: 'Most 64-bit Windows devices',
+      x86Note: 'Older 32-bit Windows devices'
+    }
+  },
   footer: {
     desc: 'ETB Save Manager is a modern desktop save management tool built for Escape The Backrooms',
     product: 'Product',

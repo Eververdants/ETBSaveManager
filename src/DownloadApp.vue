@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RELEASES_URL } from '@/constants/links'
 
 const VERSION = '3.0.0'
@@ -9,6 +10,7 @@ const ARCH_OPTIONS = ['arm64', 'x64', 'x86'] as const
 
 type Arch = (typeof ARCH_OPTIONS)[number]
 
+const { t, locale } = useI18n()
 const isWindows = ref(false)
 const arch = ref<Arch>('x64')
 const disableAuto = ref(false)
@@ -32,34 +34,51 @@ const detectArch = (ua: string): Arch => {
 
 const setupFileName = computed(() => `ETB.Save.Manager_${VERSION}_${arch.value}-setup.exe`)
 const recommendedUrl = computed(() => (isWindows.value ? `${BASE_DOWNLOAD_URL}/${setupFileName.value}` : RELEASES_URL))
-const platformText = computed(() => (isWindows.value ? 'Windows' : 'Other'))
+const platformText = computed(() =>
+  isWindows.value ? t('downloadPage.meta.platformWindows') : t('downloadPage.meta.platformOther')
+)
+const targetFileText = computed(() => (isWindows.value ? setupFileName.value : t('downloadPage.meta.releasesPage')))
 
 const statusText = computed(() => {
-  if (!isWindows.value) return '检测到非 Windows 系统，请在 Releases 页面手动选择。'
-  if (disableAuto.value) return '已关闭自动跳转（auto=0），请点击“立即下载（推荐）”。'
-  return `${countdown.value}s 后自动开始下载（${arch.value}）。`
+  if (!isWindows.value) return t('downloadPage.status.nonWindows')
+  if (disableAuto.value) return t('downloadPage.status.autoDisabled')
+  return t('downloadPage.status.autoCountdown', { seconds: countdown.value, arch: arch.value })
 })
 
 const manualLinks = computed(() => [
   {
     arch: 'arm64',
     label: 'ARM64',
-    note: 'Windows on ARM 设备',
+    note: t('downloadPage.manual.arm64Note'),
     url: `${BASE_DOWNLOAD_URL}/ETB.Save.Manager_${VERSION}_arm64-setup.exe`
   },
   {
     arch: 'x64',
     label: 'x64',
-    note: '主流 64 位 Windows 设备',
+    note: t('downloadPage.manual.x64Note'),
     url: `${BASE_DOWNLOAD_URL}/ETB.Save.Manager_${VERSION}_x64-setup.exe`
   },
   {
     arch: 'x86',
     label: 'x86',
-    note: '旧款 32 位 Windows 设备',
+    note: t('downloadPage.manual.x86Note'),
     url: `${BASE_DOWNLOAD_URL}/ETB.Save.Manager_${VERSION}_x86-setup.exe`
   }
 ])
+
+const toggleLocale = () => {
+  const newLocale = locale.value === 'zh-CN' ? 'en' : 'zh-CN'
+  locale.value = newLocale
+  localStorage.setItem('locale', newLocale)
+}
+
+watch(
+  () => locale.value,
+  () => {
+    document.title = t('downloadPage.meta.pageTitle')
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   const ua = navigator.userAgent || ''
@@ -93,37 +112,44 @@ onUnmounted(() => {
 
     <main class="section">
       <div class="container">
-        <a :href="HOME_URL" class="back-link">返回主页</a>
+        <div class="top-bar">
+          <a :href="HOME_URL" class="back-link">{{ t('downloadPage.backHome') }}</a>
+          <button class="lang-toggle" @click="toggleLocale">
+            {{ locale === 'zh-CN' ? 'EN' : '中文' }}
+          </button>
+        </div>
 
         <div class="download-card glass-card">
           <p class="eyebrow">ETB Save Manager · v{{ VERSION }}</p>
-          <h1>正在为你准备合适的安装包</h1>
-          <p class="subtitle">页面已根据当前环境识别系统架构，你也可以在下方手动选择。</p>
+          <h1>{{ t('downloadPage.title') }}</h1>
+          <p class="subtitle">{{ t('downloadPage.subtitle') }}</p>
 
           <div class="meta-list">
             <div class="meta-item">
-              <span class="meta-key">平台</span>
+              <span class="meta-key">{{ t('downloadPage.meta.platform') }}</span>
               <span class="meta-value">{{ platformText }}</span>
             </div>
             <div class="meta-item">
-              <span class="meta-key">架构</span>
+              <span class="meta-key">{{ t('downloadPage.meta.architecture') }}</span>
               <span class="meta-value">{{ arch }}</span>
             </div>
             <div class="meta-item">
-              <span class="meta-key">目标文件</span>
-              <span class="meta-value">{{ isWindows ? setupFileName : 'Releases Page' }}</span>
+              <span class="meta-key">{{ t('downloadPage.meta.targetFile') }}</span>
+              <span class="meta-value">{{ targetFileText }}</span>
             </div>
           </div>
 
           <div class="actions">
-            <a :href="recommendedUrl" class="btn btn-primary">立即下载（推荐）</a>
-            <a :href="RELEASES_URL" target="_blank" rel="noreferrer" class="btn btn-secondary">查看所有版本</a>
+            <a :href="recommendedUrl" class="btn btn-primary">{{ t('downloadPage.actions.downloadRecommended') }}</a>
+            <a :href="RELEASES_URL" target="_blank" rel="noreferrer" class="btn btn-secondary">{{
+              t('downloadPage.actions.allReleases')
+            }}</a>
           </div>
 
           <p class="status">{{ statusText }}</p>
 
           <div class="manual-panel">
-            <p class="manual-title">手动选择安装包（Windows Setup）</p>
+            <p class="manual-title">{{ t('downloadPage.manual.title') }}</p>
             <div class="manual-grid">
               <a
                 v-for="item in manualLinks"
@@ -179,10 +205,17 @@ onUnmounted(() => {
   padding: 90px 0;
 }
 
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
 .back-link {
   display: inline-flex;
   align-items: center;
-  margin-bottom: 20px;
   color: var(--text-muted);
   font-size: 0.9375rem;
   transition: color 0.2s ease;
@@ -190,6 +223,22 @@ onUnmounted(() => {
 
 .back-link:hover {
   color: var(--text);
+}
+
+.lang-toggle {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.2s ease;
+}
+
+.lang-toggle:hover {
+  color: var(--text);
+  border-color: var(--border-hover);
+  background: var(--bg-card);
 }
 
 .download-card {

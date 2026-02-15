@@ -6,7 +6,7 @@
 
 **A Modern, Cross-Platform Save Manager for Escape The Backrooms**
 
-[中文文档](./README-CN.md) | [Download](https://github.com/Eververdants/ETBSaveManager/releases) | [Website](https://eververdants.github.io/ETBSaveManager/)
+[中文文档](./README-CN.md) | [Download](https://eververdants.github.io/ETBSaveManager/download.html) | [Website](https://eververdants.github.io/ETBSaveManager/)
 
 [![License](https://img.shields.io/github/license/Eververdants/ETBSaveManager)](./LICENSE)
 [![Release](https://img.shields.io/github/v/release/Eververdants/ETBSaveManager)](https://github.com/Eververdants/ETBSaveManager/releases)
@@ -28,7 +28,10 @@
 
 ### Download Pre-built Binary
 
-Download the latest version from [Releases](https://github.com/Eververdants/ETBSaveManager/releases) page.
+Windows users can use the smart download link (auto-detects architecture and redirects to the matching installer):  
+[Download Now](https://eververdants.github.io/ETBSaveManager/download.html)
+
+If you need to choose package formats manually or browse all files, use the [Releases](https://github.com/Eververdants/ETBSaveManager/releases) page.
 
 ### Build from Source
 

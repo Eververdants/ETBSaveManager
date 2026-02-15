@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { REPO_URL, SMART_DOWNLOAD_URL } from '@/constants/links'
 
 const { t, tm } = useI18n()
 const hotPoints = computed(() => tm('download.hot.points') as string[])
@@ -19,7 +20,7 @@ const hotPoints = computed(() => tm('download.hot.points') as string[])
           </div>
         </div>
         <a
-          href="https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0"
+          :href="SMART_DOWNLOAD_URL"
           target="_blank"
           class="btn btn-primary hot-btn"
         >
@@ -53,7 +54,7 @@ const hotPoints = computed(() => tm('download.hot.points') as string[])
 
           <div class="download-body">
             <a 
-              href="https://github.com/Eververdants/ETBSaveManager/releases/tag/v3.0.0" 
+              :href="SMART_DOWNLOAD_URL"
               target="_blank"
               class="btn btn-primary btn-download"
             >
@@ -108,7 +109,7 @@ pnpm tauri build</code></pre>
           </div>
 
           <a 
-            href="https://github.com/Eververdants/ETBSaveManager" 
+            :href="REPO_URL"
             target="_blank"
             class="btn btn-secondary btn-source"
           >

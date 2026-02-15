@@ -74,7 +74,7 @@ export default {
       items: [
         'Supports save reading, editing, backup, and cleanup',
         'Supports 40+ levels and common item data',
-        'Supports player position, health, and inventory editing'
+        'Supports player position, and inventory editing'
       ]
     },
     quality: {

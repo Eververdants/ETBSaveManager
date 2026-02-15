@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { REPO_URL, SMART_DOWNLOAD_URL } from '@/constants/links'
 
 const { t, locale } = useI18n()
 
@@ -55,14 +56,14 @@ onUnmounted(() => {
         <a @click="scrollTo('tech')" class="nav-link">
           <span>{{ t('nav.tech') }}</span>
         </a>
-        <a href="https://github.com/Eververdants/ETBSaveManager" target="_blank" class="nav-link nav-link-icon">
+        <a :href="REPO_URL" target="_blank" class="nav-link nav-link-icon">
           <font-awesome-icon :icon="['fab', 'github']" />
         </a>
         <button class="nav-link lang-toggle" @click="toggleLocale">
           <font-awesome-icon :icon="['fas', 'globe']" />
           <span>{{ locale === 'zh-CN' ? 'EN' : '中文' }}</span>
         </button>
-        <a href="https://github.com/Eververdants/ETBSaveManager/releases" target="_blank" class="btn btn-primary nav-cta">
+        <a :href="SMART_DOWNLOAD_URL" target="_blank" class="btn btn-primary nav-cta">
           <font-awesome-icon :icon="['fas', 'download']" />
           <span>{{ t('nav.download') }}</span>
         </a>

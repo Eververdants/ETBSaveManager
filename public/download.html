@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ETB Save Manager Download</title>
+    <script>
+      ;(() => {
+        const VERSION = '3.0.0'
+        const RELEASES_URL = 'https://github.com/Eververdants/ETBSaveManager/releases'
+        const DOWNLOAD_BASE = `https://github.com/Eververdants/ETBSaveManager/releases/download/v${VERSION}`
+
+        const detectArch = (ua) => {
+          const uaText = (ua || '').toLowerCase()
+          if (uaText.includes('arm64') || uaText.includes('aarch64')) {
+            return 'arm64'
+          }
+          if (
+            uaText.includes('wow64') ||
+            uaText.includes('win64') ||
+            uaText.includes('x64') ||
+            uaText.includes('amd64') ||
+            uaText.includes('x86_64')
+          ) {
+            return 'x64'
+          }
+          return 'x86'
+        }
+
+        const params = new URLSearchParams(window.location.search)
+        const forceArch = params.get('arch')
+        const allowedArch = ['arm64', 'x64', 'x86']
+        const arch = allowedArch.includes(forceArch) ? forceArch : detectArch(navigator.userAgent)
+        const isWindows = /windows/i.test(navigator.userAgent || '')
+
+        const targetUrl = isWindows
+          ? `${DOWNLOAD_BASE}/ETB.Save.Manager_${VERSION}_${arch}-setup.exe`
+          : RELEASES_URL
+
+        window.location.replace(targetUrl)
+      })()
+    </script>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        font-family: Segoe UI, Arial, sans-serif;
+        line-height: 1.6;
+        color: #e5e7eb;
+        background: #111827;
+      }
+
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+      }
+
+      a {
+        color: #60a5fa;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Redirecting to the best installer...</h1>
+      <p>正在跳转到适合你系统架构的安装包。</p>
+      <p>
+        If the download does not start, open
+        <a href="https://github.com/Eververdants/ETBSaveManager/releases">Releases</a>.
+      </p>
+    </main>
+  </body>
+</html>

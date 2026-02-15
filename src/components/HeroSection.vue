@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { REPO_URL, SMART_DOWNLOAD_URL } from '@/constants/links'
 
 const { t, tm } = useI18n()
 const heroRef = ref<HTMLElement | null>(null)
@@ -62,7 +63,7 @@ onUnmounted(() => {
     <div class="container hero-content" :style="parallaxStyles.content">
       <!-- Badge -->
       <a 
-        href="https://github.com/Eververdants/ETBSaveManager/releases" 
+        :href="SMART_DOWNLOAD_URL"
         target="_blank"
         class="hero-badge"
       >
@@ -86,7 +87,7 @@ onUnmounted(() => {
       <!-- CTA Buttons -->
       <div class="hero-actions">
         <a 
-          href="https://github.com/Eververdants/ETBSaveManager/releases" 
+          :href="SMART_DOWNLOAD_URL"
           target="_blank"
           class="btn btn-primary btn-lg btn-download-hero"
         >
@@ -94,7 +95,7 @@ onUnmounted(() => {
           <span>{{ t('hero.downloadBtn') }}</span>
         </a>
         <a 
-          href="https://github.com/Eververdants/ETBSaveManager" 
+          :href="REPO_URL"
           target="_blank"
           class="btn btn-secondary btn-lg"
         >

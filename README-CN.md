@@ -6,7 +6,7 @@
 
 **现代化、跨平台的《逃离后室》存档管理工具**
 
-[English](./README.md) | [下载](https://github.com/Eververdants/ETBSaveManager/releases) | [官网](https://eververdants.github.io/ETBSaveManager/)
+[English](./README.md) | [下载](https://eververdants.github.io/ETBSaveManager/download.html) | [官网](https://eververdants.github.io/ETBSaveManager/)
 
 [![License](https://img.shields.io/github/license/Eververdants/ETBSaveManager)](./LICENSE)
 [![Release](https://img.shields.io/github/v/release/Eververdants/ETBSaveManager)](https://github.com/Eververdants/ETBSaveManager/releases)
@@ -28,7 +28,10 @@
 
 ### 下载预编译版本
 
-从 [Releases](https://github.com/Eververdants/ETBSaveManager/releases) 页面下载最新版本。
+Windows 用户可使用自动识别下载链接（按系统架构跳转到对应安装包）：  
+[立即下载](https://eververdants.github.io/ETBSaveManager/download.html)
+
+如果你需要手动选择包格式或查看全部文件，请前往 [Releases](https://github.com/Eververdants/ETBSaveManager/releases) 页面。
 
 ### 从源码构建
 

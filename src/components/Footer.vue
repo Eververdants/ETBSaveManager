@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
+import { RELEASES_URL, REPO_URL, SMART_DOWNLOAD_URL } from '@/constants/links'
 
 const { t } = useI18n()
 const currentYear = new Date().getFullYear()
 
 const links = computed(() => ({
   product: [
-    { name: t('footer.links.download'), href: 'https://github.com/Eververdants/ETBSaveManager/releases', icon: 'download' },
-    { name: t('footer.links.changelog'), href: 'https://github.com/Eververdants/ETBSaveManager/releases', icon: 'rocket' },
+    { name: t('footer.links.download'), href: SMART_DOWNLOAD_URL, icon: 'download' },
+    { name: t('footer.links.changelog'), href: RELEASES_URL, icon: 'rocket' },
     { name: t('footer.links.feedback'), href: 'https://github.com/Eververdants/ETBSaveManager/issues', icon: 'comment' }
   ],
   resources: [
-    { name: 'GitHub', href: 'https://github.com/Eververdants/ETBSaveManager', icon: 'github', brand: true },
+    { name: 'GitHub', href: REPO_URL, icon: 'github', brand: true },
     { name: 'Bilibili', href: 'https://www.bilibili.com/video/BV1L3yeYzEfi', icon: 'film' }
   ]
 }))

@@ -118,11 +118,30 @@ class AutoFeedbackService {
   isTargetError(log) {
     if (!log || log.type !== "error") return false;
 
-    // 忽略自动反馈自身日志，防止递归触发
     const message = normalizeMessage(log.message);
+
+    // 忽略自动反馈自身日志，防止递归触发
     if (message.includes("[AutoFeedback]")) return false;
 
+    // 忽略用户配置问题（不是应用错误）
+    if (this.isUserConfigError(message)) return false;
+
     return true;
+  }
+
+  /**
+   * 检查是否为"用户配置问题"而非"应用错误"
+   * 这类问题不应该被自动反馈，因为它们是用户环境配置导致的
+   */
+  isUserConfigError(message) {
+    const userConfigErrorPatterns = [
+      // Steam API 未配置
+      /steam.*api.*密钥.*未配置/i,
+      /steam.*api.*key.*not.*configured/i,
+      // 其他用户配置问题可以在这里添加
+    ];
+
+    return userConfigErrorPatterns.some((pattern) => pattern.test(message));
   }
 
   canSubmitFor(log) {

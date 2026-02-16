@@ -105,6 +105,8 @@ pub fn run() {
             steam_api::get_steam_cache_count,
             steam_api::get_all_steam_cache_entries,
             steam_api::cleanup_expired_steam_cache,
+            steam_api::delete_steam_cache_entry,
+            steam_api::batch_refresh_steam_cache_entries,
             steam_api::get_steam_usernames_command,
             system_commands::set_window_title,
             feedback_commands::submit_feedback,

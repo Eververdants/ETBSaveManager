@@ -296,7 +296,10 @@ Want to create your own language pack or theme? Check out the [Plugin Developmen
 
 ## ⚠️ Disclaimer
 
-This project is **NOT** affiliated with, endorsed by, or connected to Fancy Games or "Escape The Backrooms" in any way. Game assets used are extracted from the game for educational and tool development purposes only.
+This project is **not affiliated with, endorsed by, or connected to** Fancy Games or *Escape The Backrooms* in any way.
+
+Game assets (e.g., level icons) are used **strictly for identification purposes** to help users recognize which level a save file belongs to.  
+All rights to *Escape The Backrooms* and its assets belong to their respective owners.
 
 ---
 

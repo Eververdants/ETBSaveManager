@@ -243,6 +243,16 @@ impl SteamCacheManager {
         self.save_cache()
     }
 
+    /// 删除单个缓存条目
+    pub fn delete_cache_entry(&mut self, steam_id: &str) -> AppResult<bool> {
+        let removed = self.cache.remove(steam_id).is_some();
+        if removed {
+            self.dirty = true;
+            self.save_cache()?;
+        }
+        Ok(removed)
+    }
+
     pub fn flush(&mut self) -> AppResult<()> {
         self.save_cache()
     }
@@ -556,4 +566,27 @@ pub async fn save_steam_api_key(api_key: String) -> AppResult<()> {
     .map_err(|e| AppError {
         message: format!("保存Steam配置任务失败: {}", e),
     })?
+}
+
+#[tauri::command]
+pub async fn delete_steam_cache_entry(
+    steam_id: String,
+    cache_state: State<'_, SteamCacheState>,
+) -> AppResult<bool> {
+    cache_state.with_manager(|manager| manager.delete_cache_entry(&steam_id))
+}
+
+#[tauri::command]
+pub async fn batch_refresh_steam_cache_entries(
+    steam_ids: Vec<String>,
+    cache_state: State<'_, SteamCacheState>,
+) -> AppResult<HashMap<String, String>> {
+    let encrypted_api_key = tokio::task::spawn_blocking(read_encrypted_steam_api_key_from_config)
+        .await
+        .map_err(|e| AppError {
+            message: format!("读取Steam配置任务失败: {}", e),
+        })??;
+
+    let api_key = decrypt_steam_api_key(encrypted_api_key).await?;
+    get_steam_usernames(steam_ids, api_key, &cache_state).await
 }

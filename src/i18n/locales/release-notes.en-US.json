@@ -1,17 +1,16 @@
 {
-  "version": "3.0.0",
+  "version": "3.0.1",
   "date": "2026-02-15",
-  "title": "v3.0.0 Stable Release",
+  "title": "Steam ID Cache, Unlock & Archive List Fixes",
   "type": "major",
   "categories": {
     "newFeatures": [],
-    "improvements": [
-      "Added smoother transitions for player detail panels in Edit Archive",
-      "Inventory item selector now binds the current selection in Create/Edit Archive",
-      "Refined Steam Cache layout and header actions for better responsiveness",
-      "Improved button hover/press interactions across the app for a more cohesive feel"
+    "improvements": [],
+    "bugFixes": [
+      "Fixed an issue where Steam ID cache entries could not be deleted",
+      "Fixed an issue where some saves could not unlock all hub doors",
+      "Fixed an issue where the first row of archive cards could sometimes fail to render when returning to Archive List until scrolling"
     ],
-    "bugFixes": [],
     "performance": []
   }
 }

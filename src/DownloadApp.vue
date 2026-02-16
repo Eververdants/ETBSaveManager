@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RELEASES_URL } from '@/constants/links'
 
-const VERSION = '3.0.0'
+const VERSION = '3.0.1'
 const BASE_DOWNLOAD_URL = `${RELEASES_URL}/download/v${VERSION}`
 const HOME_URL = import.meta.env.BASE_URL
 const ARCH_OPTIONS = ['arm64', 'x64', 'x86'] as const

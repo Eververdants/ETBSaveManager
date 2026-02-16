@@ -7,7 +7,7 @@ export default {
     download: 'Download'
   },
   hero: {
-    badge: 'v3.0.0 Stable Release Now Available',
+    badge: 'v3.0.1 Stable Release Now Available',
     title1: 'Escape The Backrooms',
     title2: 'Save Manager',
     subtitle: 'A modern save management desktop tool for "Escape The Backrooms"',
@@ -171,7 +171,7 @@ export default {
     },
     release: {
       label: 'Stable Release',
-      date: 'v3.0.0 stable release is now live'
+      date: 'v3.0.1 stable release is now live'
     }
   },
   downloadPage: {

@@ -48,7 +48,7 @@ const hotPoints = computed(() => tm('download.hot.points') as string[])
             </div>
             <div class="version-info">
               <span class="version-tag">{{ t('download.version') }}</span>
-              <span class="version-number">v3.0.0</span>
+              <span class="version-number">v3.0.1</span>
             </div>
           </div>
 

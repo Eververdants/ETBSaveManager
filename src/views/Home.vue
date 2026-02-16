@@ -315,6 +315,31 @@ const updateContainerSize = () => {
   columnsPerRow.value = calcColumnsPerRow();
 };
 
+// 在路由切换/尺寸变化后强制同步虚拟列表状态，避免首行卡片偶发不渲染
+const syncVirtualList = ({ resetScroll = false } = {}) => {
+  const container = scrollContainerRef.value;
+  if (!container) return;
+
+  if (resetScroll) {
+    container.scrollTop = 0;
+    if (typeof rowVirtualizer.scrollToOffset === "function") {
+      rowVirtualizer.scrollToOffset(0);
+    }
+  }
+
+  if (typeof rowVirtualizer.measure === "function") {
+    rowVirtualizer.measure();
+  }
+};
+
+const scheduleVirtualListSync = (options = {}) => {
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => syncVirtualList(options));
+    });
+  });
+};
+
 // 生命周期
 let isUnmounted = false;
 let resizeObserver = null;
@@ -323,11 +348,10 @@ let resizeObserver = null;
 onActivated(async () => {
   isPageActive.value = true;
   // 回到顶部
-  if (scrollContainerRef.value) {
-    scrollContainerRef.value.scrollTop = 0;
-  }
+  syncVirtualList({ resetScroll: true });
   // 刷新数据
   await refreshArchivesSilent();
+  scheduleVirtualListSync({ resetScroll: true });
 });
 
 // keep-alive 停用时
@@ -343,16 +367,21 @@ onMounted(async () => {
   await initializeArchives(true);
   displayArchives.value = [...archives.value];
 
-  nextTick(() => updateContainerSize());
+  nextTick(() => {
+    updateContainerSize();
+    scheduleVirtualListSync();
+  });
 
   isPageActive.value = true;
   await refreshArchivesSilent();
+  scheduleVirtualListSync();
 
   window.cleanupRouteWatcher = () => { };
 
   const handleResize = () => {
     if (!isUnmounted) {
       updateContainerSize();
+      scheduleVirtualListSync();
       protectFloatingButtonPosition();
     }
   };
@@ -360,7 +389,10 @@ onMounted(async () => {
 
   if (scrollContainerRef.value && "ResizeObserver" in window) {
     resizeObserver = new ResizeObserver(() => {
-      if (!isUnmounted) updateContainerSize();
+      if (!isUnmounted) {
+        updateContainerSize();
+        scheduleVirtualListSync();
+      }
     });
     resizeObserver.observe(scrollContainerRef.value);
   }
@@ -396,15 +428,23 @@ watch(
 watch(
   displayArchives,
   () => {
+    const needResetScroll = shouldResetScroll.value;
     // 只在需要时重置滚动位置（筛选变化时）
-    if (shouldResetScroll.value && scrollContainerRef.value) {
+    if (needResetScroll && scrollContainerRef.value) {
       scrollContainerRef.value.scrollTop = 0;
       shouldResetScroll.value = false;
     }
-    nextTick(() => updateContainerSize());
+    nextTick(() => {
+      updateContainerSize();
+      scheduleVirtualListSync({ resetScroll: needResetScroll });
+    });
   },
   { deep: false }
 );
+
+watch(columnsPerRow, () => {
+  scheduleVirtualListSync();
+});
 </script>
 
 <style scoped>

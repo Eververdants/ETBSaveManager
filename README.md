@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.0.0-blue.svg" alt="Version"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.0.1-blue.svg" alt="Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/Platform-Windows-0078D4.svg?logo=windows" alt="Platform">
   <img src="https://img.shields.io/badge/Framework-Tauri%202.0-orange.svg" alt="Framework">
@@ -253,7 +253,7 @@ ETB Save Manager includes 15+ built-in themes:
 
 ## 🚧 Development Status
 
-**Current Version:** `v3.0.0`
+**Current Version:** `v3.0.1`
 
 | Feature | Status |
 |---------|--------|

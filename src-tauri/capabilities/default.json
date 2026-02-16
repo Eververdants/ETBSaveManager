@@ -24,6 +24,20 @@
     "dialog:allow-save",
     "fs:allow-read-file",
     "fs:allow-write-file",
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [
+        "$LOCALDATA/EscapeTheBackrooms/**",
+        "$LOCALDATA/EscapeTheBackrooms/Saved/SaveGames/**"
+      ]
+    },
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [
+        "$LOCALDATA/EscapeTheBackrooms/**",
+        "$LOCALDATA/EscapeTheBackrooms/Saved/SaveGames/**"
+      ]
+    },
     "fs:allow-read-dir",
     "fs:allow-mkdir",
     "fs:allow-exists",
@@ -36,7 +50,8 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        "$LOCALAPPDATA/EscapeTheBackrooms/**",
+        "$LOCALDATA/EscapeTheBackrooms/**",
+        "$LOCALDATA/EscapeTheBackrooms/Saved/SaveGames/**",
         "$APPDATA/**"
       ]
     }

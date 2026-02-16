@@ -639,6 +639,28 @@ fn create_level_struct(display_name: &str, level_name: &str) -> StructValue {
     StructValue::Struct(level_props)
 }
 
+/// 创建默认的 LevelsCompleted_0 属性（空数组）
+fn create_default_levels_completed_property() -> Property {
+    let levels_completed_id = uuid::Uuid::parse_str("06e675d4-4bbd-2e16-2f43-dbb447d5d692")
+        .unwrap_or_else(|_| uuid::Uuid::nil());
+
+    Property {
+        tag: PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Struct {
+                struct_type: StructType::Struct(Some("S_LevelStats".to_string())),
+                id: uuid::Uuid::nil(),
+            })),
+        },
+        inner: PropertyInner::Array(ValueArray::Struct {
+            id: Some(levels_completed_id),
+            struct_type: StructType::Struct(Some("S_LevelStats".to_string())),
+            type_: PropertyType::StructProperty,
+            value: vec![],
+        }),
+    }
+}
+
 /// 解锁全部枢纽门
 /// 读取存档中的 LevelsCompleted_0，补全到 ALL_LEVELS 的数量，并将所有 Bool 值设为 true
 pub fn unlock_all_hub_doors(file_path: &str) -> Result<String, String> {
@@ -652,13 +674,35 @@ pub fn unlock_all_hub_doors(file_path: &str) -> Result<String, String> {
 
     let levels_completed_key = PropertyKey(0, "LevelsCompleted".to_string());
 
+    // LevelsCompleted_0 不存在时，按默认结构创建
+    if !save.root.properties.0.contains_key(&levels_completed_key) {
+        println!("⚠️ 未找到 LevelsCompleted_0 字段，正在自动创建默认结构...");
+        save.root.properties.0.insert(
+            PropertyKey(0, "LevelsCompleted".to_string()),
+            create_default_levels_completed_property(),
+        );
+    }
+
+    // LevelsCompleted_0 格式异常时，重建为默认结构，避免解锁流程中断
+    let is_valid_levels_completed = matches!(
+        save.root.properties.0.get(&levels_completed_key).map(|prop| &prop.inner),
+        Some(PropertyInner::Array(ValueArray::Struct { .. }))
+    );
+    if !is_valid_levels_completed {
+        println!("⚠️ LevelsCompleted_0 格式不正确，正在重建默认结构...");
+        save.root.properties.0.insert(
+            PropertyKey(0, "LevelsCompleted".to_string()),
+            create_default_levels_completed_property(),
+        );
+    }
+
     // 获取现有的 LevelsCompleted_0
     let levels_completed_prop = save
         .root
         .properties
         .0
         .get_mut(&levels_completed_key)
-        .ok_or("未找到 LevelsCompleted_0 字段")?;
+        .ok_or("创建 LevelsCompleted_0 字段失败")?;
 
     if let PropertyInner::Array(ValueArray::Struct {
         id: _,

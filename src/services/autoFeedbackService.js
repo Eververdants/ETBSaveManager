@@ -138,7 +138,38 @@ class AutoFeedbackService {
       // Steam API 未配置
       /steam.*api.*密钥.*未配置/i,
       /steam.*api.*key.*not.*configured/i,
-      // 其他用户配置问题可以在这里添加
+
+      // 用户取消操作
+      /用户取消|user.*cancel/i,
+      /对话框.*取消|dialog.*cancel/i,
+
+      // 文件/路径不存在（用户环境问题）
+      /存档目录不存在|save.*directory.*not.*exist/i,
+      /文件不存在|file.*not.*exist/i,
+      /主题不存在|theme.*not.*found/i,
+      /配置文件不存在|config.*file.*not.*exist/i,
+      /父目录不存在|parent.*directory.*not.*exist/i,
+      /路径包含无效字符|path.*invalid.*character/i,
+
+      // 无效的用户输入
+      /无效的steam.*id|invalid.*steam.*id/i,
+      /文件名格式不匹配|filename.*format.*not.*match/i,
+      /无效的颜色格式|invalid.*color.*format/i,
+      /无效的路径|invalid.*path/i,
+      /无效的文件名|invalid.*filename/i,
+      /无效的加密密钥格式|invalid.*encryption.*key/i,
+      /无效的密钥长度|invalid.*key.*length/i,
+      /无效的.*id|invalid.*id/i,
+
+      // 网络/API 问题（非应用错误）
+      /请求steam.*api.*失败|steam.*api.*request.*failed/i,
+      /steam.*api.*返回错误|steam.*api.*error/i,
+      /网络超时|network.*timeout/i,
+      /连接失败|connection.*failed/i,
+
+      // 其他用户环境问题
+      /导入文件不存在|import.*file.*not.*found/i,
+      /路径遍历攻击|path.*traversal/i,
     ];
 
     return userConfigErrorPatterns.some((pattern) => pattern.test(message));

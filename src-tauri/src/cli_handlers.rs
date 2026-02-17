@@ -9,9 +9,9 @@ use std::io::{Cursor, Read};
 use std::path::Path;
 use uesave::{Property, PropertyInner, Save};
 
-/// 小文件阈值（32KB），低于此值直接读取
+/// Small file threshold (32KB), read directly below this
 const SMALL_FILE_THRESHOLD: u64 = 32768;
-/// 中等文件阈值（512KB），介于两者之间使用预分配缓冲区
+/// Medium file threshold (512KB), use pre-allocated buffer between thresholds
 const MEDIUM_FILE_THRESHOLD: u64 = 524288;
 
 /// 解析 .sav 文件为 Save 对象（三级文件大小策略）
@@ -67,7 +67,7 @@ fn get_property_by_name<'a>(save: &'a Save, name: &str) -> Option<&'a Property> 
         .map(|(_, prop)| prop)
 }
 
-/// 提取 CurrentLevel_0.Name 字段值，并根据 UnlockedFun_0 判断 Pipes1/Pipes2
+/// Extract CurrentLevel_0.Name field value, and determine Pipes1/Pipes2 based on UnlockedFun_0
 #[inline]
 pub fn extract_current_level(save: &Save) -> String {
     let current_level = get_property_by_name(save, "CurrentLevel")
@@ -94,8 +94,8 @@ pub fn extract_current_level(save: &Save) -> String {
     }
 }
 
-/// 提取 Difficulty_0.Byte.Label 并映射难度等级
-/// 返回 Cow 以避免静态字符串的分配
+/// Extract Difficulty_0.Byte.Label and map difficulty level
+/// Returns Cow to avoid allocation of static strings
 #[inline]
 pub fn extract_difficulty_label(save: &Save) -> Cow<'static, str> {
     let difficulty_label = get_property_by_name(save, "Difficulty").and_then(|prop| match &prop.inner {
@@ -104,9 +104,9 @@ pub fn extract_difficulty_label(save: &Save) -> Cow<'static, str> {
     });
 
     match difficulty_label {
-        Some(s) if s.contains("NewEnumerator0") => Cow::Borrowed("简单难度"),
-        Some(s) if s.contains("NewEnumerator1") => Cow::Borrowed("困难难度"),
-        Some(s) if s.contains("NewEnumerator2") => Cow::Borrowed("噩梦难度"),
-        _ => Cow::Borrowed("普通难度"),
+        Some(s) if s.contains("NewEnumerator0") => Cow::Borrowed("Easy"),
+        Some(s) if s.contains("NewEnumerator1") => Cow::Borrowed("Hard"),
+        Some(s) if s.contains("NewEnumerator2") => Cow::Borrowed("Nightmare"),
+        _ => Cow::Borrowed("Normal"),
     }
 }

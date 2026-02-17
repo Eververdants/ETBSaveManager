@@ -1,5 +1,5 @@
-//! 存档工具模块 - 存档文件信息构建
-//! 优化版本：使用 phf 完美哈希、Cow 减少分配
+//! Save utilities module - Save file info building
+//! Optimized version: Using phf perfect hash, Cow to reduce allocation
 
 use regex::Regex;
 use serde::Serialize;
@@ -18,7 +18,7 @@ fn get_save_file_regex() -> &'static Regex {
     })
 }
 
-/// 缓存 SaveGames 根目录
+/// Cache SaveGames root directory
 static SAVE_GAMES_BASE_DIR: OnceLock<Option<PathBuf>> = OnceLock::new();
 
 #[inline]
@@ -50,19 +50,19 @@ pub struct SaveFileInfo {
     pub is_visible: Option<bool>,
 }
 
-/// 难度映射（使用 match 比查表更快）
+/// Difficulty mapping (using match is faster than lookup)
 #[inline]
 fn map_difficulty(raw: &str) -> (Cow<'static, str>, Cow<'static, str>) {
     if raw.eq_ignore_ascii_case("easy") {
-        (Cow::Borrowed("简单难度"), Cow::Borrowed("Easy"))
+        (Cow::Borrowed("Easy"), Cow::Borrowed("Easy"))
     } else if raw.eq_ignore_ascii_case("normal") {
-        (Cow::Borrowed("普通难度"), Cow::Borrowed("Normal"))
+        (Cow::Borrowed("Normal"), Cow::Borrowed("Normal"))
     } else if raw.eq_ignore_ascii_case("hard") {
-        (Cow::Borrowed("困难难度"), Cow::Borrowed("Hard"))
+        (Cow::Borrowed("Hard"), Cow::Borrowed("Hard"))
     } else if raw.eq_ignore_ascii_case("nightmare") {
-        (Cow::Borrowed("噩梦难度"), Cow::Borrowed("Nightmare"))
+        (Cow::Borrowed("Nightmare"), Cow::Borrowed("Nightmare"))
     } else {
-        (Cow::Borrowed("普通难度"), Cow::Borrowed("Normal"))
+        (Cow::Borrowed("Normal"), Cow::Borrowed("Normal"))
     }
 }
 
@@ -88,15 +88,15 @@ pub fn build_save_info<S: Into<String>>(
     let file_name = path
         .file_name()
         .and_then(|n| n.to_str())
-        .ok_or("无效的文件名")?;
+        .ok_or("Invalid filename")?;
 
     let caps = get_save_file_regex()
         .captures(file_name)
-        .ok_or_else(|| format!("文件名格式不匹配: {}", file_name))?;
+        .ok_or_else(|| format!("Filename format mismatch: {}", file_name))?;
 
-    let mode_raw = caps.get(1).ok_or("无法提取游戏模式")?.as_str();
-    let name = caps.get(2).ok_or("无法提取存档名称")?.as_str();
-    let difficulty_raw = caps.get(3).ok_or("无法提取难度")?.as_str();
+    let mode_raw = caps.get(1).ok_or("Failed to extract game mode")?.as_str();
+    let name = caps.get(2).ok_or("Failed to extract save name")?.as_str();
+    let difficulty_raw = caps.get(3).ok_or("Failed to extract difficulty")?.as_str();
 
     let (difficulty, difficulty_class) = map_difficulty(difficulty_raw);
     let hidden = path.parent() != get_save_games_base_dir().map(|p| p.as_path());

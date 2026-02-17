@@ -25,7 +25,7 @@ const { createApp } = vueRuntime;
 // 立即创建应用实例（不等待任何异步操作）
 const app = createApp(App);
 
-// 关键路径：只加载启动必需的模块
+// Critical path: only load modules required for startup
 import router from "./router";
 import "./styles/animations.css";
 import "@vue-flow/core/dist/style.css";
@@ -45,13 +45,13 @@ const loadCriticalIcons = async () => {
   return FAIcon;
 };
 
-// 延迟加载完整图标集
+// Lazy load full icon set
 const loadAllIcons = async () => {
   const { registerIcons } = await import("./utils/icons-full.js");
   registerIcons();
 };
 
-// 初始化 i18n（轻量级）
+// Initialize i18n (lightweight)
 const initI18n = async () => {
   const { createI18n } = await import("vue-i18n");
   
@@ -188,11 +188,11 @@ async function initPluginSystem() {
     
     await initializePluginSystem();
   } catch (error) {
-    console.warn("[Plugins] 初始化失败:", error);
+    console.warn("[Plugins] Initialization failed:", error);
   }
 }
 
-// 窗口标题设置（延迟）
+// Window title setup (delayed)
 async function initWindowTitle(i18n) {
   try {
     const { getCurrentWindow } = await import("@tauri-apps/api/window");
@@ -235,7 +235,7 @@ requestIdleCallback(() => {
   });
 }, { timeout: 3000 });
 
-// 生产模式下禁用交互（防止快捷键、文字选中等）
+// Disable interactions in production mode (prevent shortcuts, text selection, etc.)
 if (import.meta.env.PROD) {
   import("./utils/disableInteractions.js").then(({ disableInteractions }) => {
     disableInteractions();

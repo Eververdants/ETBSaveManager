@@ -10,8 +10,8 @@ use uesave::{
 };
 use uuid;
 
-/// 主线层级数据：(DisplayName, LevelName)
-/// 按游戏进度顺序排列 - endingLevelsData[0] 的前17个
+/// Main storyline level data: (DisplayName, LevelName)
+/// Arranged by game progress order - first 17 of endingLevelsData[0]
 const MAIN_STORYLINE_LEVELS: &[(&str, &str)] = &[
     ("Level 0", "Level0"),
     ("Habitable Zone", "TopFloor"),
@@ -79,14 +79,14 @@ pub const ALL_LEVELS: &[(&str, &str)] = &[
     ("Level 55.1", "TunnelLevel"),
 ];
 
-/// 背包槽位数量
+/// Inventory slot count
 const INVENTORY_SLOTS: usize = 12;
-/// 背包属性名称
+/// Inventory property name
 const INVENTORY_PROP_NAME: &str = "Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4";
-/// 理智值属性名称
+/// Sanity property name
 const SANITY_PROP_NAME: &str = "Sanity_6_A5AFAB454F51CC63745A669BD7E629F6";
 
-/// LevelsCompleted 结构体字段名称
+/// LevelsCompleted struct field names
 const DISPLAY_NAME_FIELD: &str = "DisplayName_24_E62A59304187EE5783D725B3DCDE520C";
 const HAS_COMPLETED_FIELD: &str = "HasCompleted_4_EA1ED1B4409DB7F46F5846B1CB695EF3";
 const HAS_UNLOCKED_HUB_FIELD: &str = "HasUnlockedHub_21_7FD307464C90A6868642B3AEBCDA508D";
@@ -115,27 +115,27 @@ pub struct PlayerData {
 }
 
 pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
-    println!("📦 接收到新建存档请求：");
-    println!("  存档名: {}", save_data.archive_name);
-    println!("  层级: {}", save_data.level);
-    println!("  游戏模式: {}", save_data.game_mode);
-    println!("  存档难度: {}", save_data.difficulty);
-    println!("  实际难度: {}", save_data.actual_difficulty);
-    println!("  玩家数量: {}", save_data.players.len());
-    println!("  是否主线结局: {}", !save_data.main_ending);
+    println!("📦 Received new save request:");
+    println!("  Archive name: {}", save_data.archive_name);
+    println!("  Level: {}", save_data.level);
+    println!("  Game mode: {}", save_data.game_mode);
+    println!("  Archive difficulty: {}", save_data.difficulty);
+    println!("  Actual difficulty: {}", save_data.actual_difficulty);
+    println!("  Player count: {}", save_data.players.len());
+    println!("  Is main ending: {}", !save_data.main_ending);
 
-    // 处理层级映射
+    // Process level mapping
     let processed_level = match save_data.level.as_str() {
         "Pipes1" | "Pipes2" => "Pipes".to_string(),
         _ => save_data.level.clone(),
     };
 
-    // 构建目标路径
+    // Build target path
     let app_data_dir = get_local_appdata_dir()?;
     let save_dir = app_data_dir.join("EscapeTheBackrooms/Saved/SaveGames");
 
     if !save_dir.exists() {
-        fs::create_dir_all(&save_dir).map_err(|e| format!("创建保存目录失败: {}", e))?;
+        fs::create_dir_all(&save_dir).map_err(|e| format!("Failed to create save directory: {}", e))?;
     }
 
     let file_name = format!(
@@ -144,78 +144,78 @@ pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
     );
     let save_path = save_dir.join(&file_name);
 
-    println!("📂 目标存档路径: {:?}", save_path);
+    println!("📂 Target save path: {:?}", save_path);
 
-    // 从 BasicArchive.json 构造 Save 对象
+    // Construct Save object from BasicArchive.json
     let mut save: Save = serde_json::from_value(save_data.basic_archive.clone()).map_err(|e| {
         format!(
-            "JSON 转换为 Save 失败: {:?}, JSON 内容: {}",
+            "Failed to convert JSON to Save: {:?}, JSON content: {}",
             e,
             save_data.basic_archive.to_string()
         )
     })?;
 
-    // 修改 CurrentLevel 字段
+    // Modify CurrentLevel field
     if processed_level == "Level0" {
         remove_current_level(&mut save);
     } else {
         modify_current_level(&mut save, processed_level.clone());
     }
 
-    // 处理 Pipes 的 UnlockedFun_0 字段
+    // Handle Pipes UnlockedFun_0 field
     handle_pipes_unlocked_fun(&mut save, &save_data.level);
 
-    // 修改难度设置
+    // Update difficulty settings
     update_difficulty(&mut save, &save_data.actual_difficulty);
 
-    // 处理 MainEnding 参数
+    // Handle MainEnding parameter
     update_bool_property(&mut save, "HasCompletedMainEnding", save_data.main_ending)?;
 
-    // 处理 MEG 状态
+    // Handle MEG status
     update_meg_status(&mut save, save_data.meg_unlocked)?;
 
-    // 生成 LevelsCompleted_0 数据
-    // main_ending 为 true 表示选择的是支线（非主线结局）
+    // Generate LevelsCompleted_0 data
+    // main_ending being true means side story (non-main ending) is selected
     generate_levels_completed(&mut save, &save_data.level, save_data.main_ending)?;
 
-    // 更新玩家数据
+    // Update player data
     if !save_data.players.is_empty() {
         update_player_data(&mut save, &save_data.players)?;
     }
 
-    // 写出为 .sav 文件
-    let file = fs::File::create(&save_path).map_err(|e| format!("创建输出文件失败: {}", e))?;
+    // Write as .sav file
+    let file = fs::File::create(&save_path).map_err(|e| format!("Failed to create output file: {}", e))?;
     let mut writer = BufWriter::new(file);
     save.write(&mut writer)
-        .map_err(|e| format!("写入存档失败: {:?}", e))?;
+        .map_err(|e| format!("Failed to write save: {:?}", e))?;
     writer
         .flush()
-        .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
+        .map_err(|e| format!("Failed to flush buffer: {}", e))?;
 
-    println!("💾 存档已成功保存至: {:?}", save_path);
+    println!("💾 Save successfully saved to: {:?}", save_path);
 
-    // 更新 MAINSAVE.sav 文件
+    // Update MAINSAVE.sav file
     let archive_name = extract_archive_name(&file_name);
     add_save_to_mainsave(archive_name)?;
 
     Ok(())
 }
 
-/// 修改 CurrentLevel_0.Name 字段值
+/// Modify CurrentLevel_0.Name field value
 pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
     let key = PropertyKey(0, "CurrentLevel".to_string());
 
     if let Some(current_level_prop) = save.root.properties.0.get_mut(&key) {
         if let PropertyInner::Name(ref mut name) = &mut current_level_prop.inner {
             *name = new_level_name.clone();
-            println!("✅ CurrentLevel_0 已修改为: {}", name);
+            println!("✅ CurrentLevel_0 modified to: {}", name);
             return true;
         }
-        eprintln!("❌ CurrentLevel_0 类型错误");
+        eprintln!("❌ CurrentLevel_0 type error");
         return false;
     }
 
-    eprintln!("❌ 未找到 CurrentLevel_0 字段");
+    eprintln!("❌ CurrentLevel_0 field not found");
     false
 }
 
@@ -232,7 +232,7 @@ pub fn remove_current_level(save: &mut Save) -> bool {
     }
 }
 
-/// 处理 Pipes 的 UnlockedFun_0 字段
+/// Handle Pipes UnlockedFun_0 field
 fn handle_pipes_unlocked_fun(save: &mut Save, level: &str) {
     let unlocked_fun_key = PropertyKey(0, "UnlockedFun".to_string());
 
@@ -245,7 +245,7 @@ fn handle_pipes_unlocked_fun(save: &mut Save, level: &str) {
                 .shift_remove(&unlocked_fun_key)
                 .is_some()
             {
-                println!("🗑️ 已删除 UnlockedFun_0 字段 (Pipes1)");
+                println!("🗑️ Deleted UnlockedFun_0 field (Pipes1)");
             }
         }
         "Pipes2" => {
@@ -257,15 +257,15 @@ fn handle_pipes_unlocked_fun(save: &mut Save, level: &str) {
                 inner: PropertyInner::Bool(true),
             };
             save.root.properties.0.insert(unlocked_fun_key, prop);
-            println!("✅ 已创建 UnlockedFun_0 字段，值为 true (Pipes2)");
+            println!("✅ Created UnlockedFun_0 field with value true (Pipes2)");
         }
         _ => {}
     }
 }
 
-/// 更新难度字段
+/// Update difficulty field
 pub fn update_difficulty(save: &mut Save, difficulty: &str) {
-    // 删除旧的 Difficulty 字段
+    // Remove old Difficulty fields
     let difficulty_keys: Vec<(u32, String)> = save
         .root
         .properties
@@ -279,7 +279,7 @@ pub fn update_difficulty(save: &mut Save, difficulty: &str) {
         save.root.properties.0.shift_remove(&PropertyKey(id, name));
     }
 
-    // 如果不是 Normal 难度，添加新的 Difficulty 字段
+    // If not Normal difficulty, add new Difficulty field
     if difficulty != "Normal" {
         let label = match difficulty {
             "Easy" => "E_Difficulty::NewEnumerator0",

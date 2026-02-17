@@ -53,10 +53,10 @@ class UpdateService {
       }
 
       if (!releases || releases.length === 0) {
-        throw new Error("没有找到任何版本");
+        throw new Error("No versions found");
       }
 
-      // 从所有版本中提取版本信息
+      // Extract version info from all releases
       const allVersions = releases.map((r) => {
         const version = r.tag_name.replace("v", "");
         // 判断是否为预发布版本：优先使用 API 的 prerelease 字段，但也检查版本号格式
@@ -98,7 +98,7 @@ class UpdateService {
       // 优先选择正式版本，如果没有正式版本或正式版本都比当前版本旧，才考虑预发布版本
       let latestVersion = null;
 
-      // 先找最新的正式版本
+      // Find latest stable version first
       if (stableVersions.length > 0) {
         latestVersion = stableVersions.reduce((latest, current) => {
           return this.isNewVersion(current.version, latest.version)
@@ -106,15 +106,15 @@ class UpdateService {
             : latest;
         });
         
-        console.log(`最新正式版本: ${latestVersion.version}`);
+        console.log(`Latest stable version: ${latestVersion.version}`);
         
-        // 如果最新正式版本比当前版本新，就使用它
+        // If latest stable is newer than current, use it
         if (this.isNewVersion(latestVersion.version, CURRENT_VERSION)) {
-          console.log(`✓ 找到更新的正式版本: ${latestVersion.version}`);
+          console.log(`✓ Found newer stable version: ${latestVersion.version}`);
         } else {
-          console.log(`✗ 最新正式版本 ${latestVersion.version} 不比当前版本 ${CURRENT_VERSION} 新`);
+          console.log(`✗ Latest stable ${latestVersion.version} is not newer than current ${CURRENT_VERSION}`);
           
-          // 正式版本不够新，检查预发布版本
+          // Stable not new enough, check pre-release
           if (preReleaseVersions.length > 0) {
             const latestPreRelease = preReleaseVersions.reduce((latest, current) => {
               return this.isNewVersion(current.version, latest.version)
@@ -122,33 +122,33 @@ class UpdateService {
                 : latest;
             });
             
-            console.log(`最新预发布版本: ${latestPreRelease.version}`);
+            console.log(`Latest pre-release version: ${latestPreRelease.version}`);
             
-            // 如果预发布版本比当前版本新，使用它
+            // If pre-release is newer than current, use it
             if (this.isNewVersion(latestPreRelease.version, CURRENT_VERSION)) {
               latestVersion = latestPreRelease;
-              console.log(`✓ 使用预发布版本: ${latestVersion.version}`);
+              console.log(`✓ Using pre-release version: ${latestVersion.version}`);
             } else {
-              console.log(`✗ 没有找到更新的版本`);
+              console.log(`✗ No newer version found`);
             }
           }
         }
       } else if (preReleaseVersions.length > 0) {
-        // 没有正式版本，只能使用预发布版本
+        // No stable versions, use pre-release
         latestVersion = preReleaseVersions.reduce((latest, current) => {
           return this.isNewVersion(current.version, latest.version)
             ? current
             : latest;
         });
-        console.log(`只有预发布版本，使用: ${latestVersion.version}`);
+        console.log(`Only pre-release versions available, using: ${latestVersion.version}`);
       }
 
       if (!latestVersion) {
-        throw new Error("没有找到可用的版本");
+        throw new Error("No available version found");
       }
 
-      console.log(`最终选择版本: ${latestVersion.version}${latestVersion.prerelease ? ' (预发布)' : ' (正式版)'}`);
-      console.log("资产信息:", latestVersion.assets);
+      console.log(`Final selected version: ${latestVersion.version}${latestVersion.prerelease ? ' (Pre-release)' : ' (Stable)'}`);
+      console.log("Assets:", latestVersion.assets);
 
       if (this.isNewVersion(latestVersion.version, CURRENT_VERSION)) {
         this.status = UpdateStatus.AVAILABLE;
@@ -214,20 +214,20 @@ class UpdateService {
         error.message?.includes("rate limit") ||
         error.message?.includes("429")
       ) {
-        errorMessage = "请求过于频繁，请稍后再试";
-        errorType = "速率限制";
+        errorMessage = "Request too frequent, please try again later";
+        errorType = "Rate Limit";
       } else if (
         error.message?.includes("network") ||
         error.message?.includes("timeout")
       ) {
-        errorMessage = "网络连接超时，请检查网络后重试";
-        errorType = "网络连接";
+        errorMessage = "Network connection timeout, please check network and retry";
+        errorType = "Network Connection";
       } else if (error.message?.includes("404")) {
-        errorMessage = "更新信息获取失败，请稍后再试";
-        errorType = "资源未找到";
+        errorMessage = "Failed to get update info, please try again later";
+        errorType = "Resource Not Found";
       } else if (error.message?.includes("403")) {
-        errorMessage = "访问受限，请稍后再试";
-        errorType = "访问受限";
+        errorMessage = "Access restricted, please try again later";
+        errorType = "Access Restricted";
       }
 
       this.error = {
@@ -245,10 +245,10 @@ class UpdateService {
   }
 
   /**
-   * 支持预发布版本的版本比较
-   * @param {string} newVersion - 新版本号
-   * @param {string} currentVersion - 当前版本号
-   * @returns {boolean} 是否为新版本
+   * Version comparison supporting pre-release versions
+   * @param {string} newVersion - New version number
+   * @param {string} currentVersion - Current version number
+   * @returns {boolean} Whether it's a new version
    */
   isNewVersion(newVersion, currentVersion) {
     const parseVersion = (version) => {

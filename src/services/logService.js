@@ -7,7 +7,7 @@ class LogService {
     this.clickCount = 0;
     this.clickTimeout = null;
 
-    // 重写console方法以捕获日志
+    // Override console methods to capture logs
     this.hijackConsole();
   }
 
@@ -86,12 +86,12 @@ class LogService {
       date: new Date(),
     });
 
-    // 限制日志数量
+    // Limit log count
     if (this.logs.length > this.maxLogs) {
-      this.logs = this.logs.slice(-this.maxLogs); // 保留最后的maxLogs条日志
+      this.logs = this.logs.slice(-this.maxLogs); // Keep last maxLogs entries
     }
 
-    // 触发更新事件
+    // Trigger update event
     this.emitUpdate();
   }
 
@@ -156,7 +156,7 @@ class LogService {
     }
   }
 
-  // 导出日志为文件
+  // Export logs to file
   exportLogs() {
     const content = this.logs
       .map(

@@ -47,7 +47,7 @@ pub async fn load_all_saves(
     log_state.add_log(
         "info",
         &format!(
-            "load_all_saves: {}/{} 存档，耗时 {:.2}ms",
+            "load_all_saves: {}/{} saves, took {:.2}ms",
             results.len(),
             path_count,
             elapsed.as_secs_f64() * 1000.0
@@ -92,10 +92,10 @@ pub fn delete_file(file_path: String) -> AppResult<()> {
     let filename = path
         .file_name()
         .and_then(|n| n.to_str())
-        .ok_or("无效的文件路径")?;
+        .ok_or("Invalid file path")?;
 
     if !filename.to_lowercase().ends_with(".sav") {
-        return Err("仅允许删除 .sav 存档文件".to_string().into());
+        return Err("Only .sav save files can be deleted".to_string().into());
     }
 
     validate_save_games_path(path)?;
@@ -116,33 +116,33 @@ pub fn open_save_games_folder() -> AppResult<()> {
     let save_games_path = get_save_games_dir()?;
 
     if !save_games_path.exists() {
-        return Err(format!("存档目录不存在: {}", save_games_path.display()).into());
+        return Err(format!("Save directory does not exist: {}", save_games_path.display()).into());
     }
 
     #[cfg(target_os = "windows")]
     {
-        // Windows需要使用反斜杠路径
+        // Windows needs backslash paths
         let path_str = save_games_path
             .to_str()
-            .ok_or("路径包含无效字符")?
+            .ok_or("Path contains invalid characters")?
             .replace('/', "\\");
         Command::new("explorer")
             .arg(&path_str)
             .spawn()
-            .map_err(|e| format!("无法打开文件夹: {}", e))?;
+            .map_err(|e| format!("Failed to open folder: {}", e))?;
     }
 
     #[cfg(target_os = "macos")]
     Command::new("open")
         .arg(&save_games_path)
         .spawn()
-        .map_err(|e| format!("无法打开文件夹: {}", e))?;
+        .map_err(|e| format!("Failed to open folder: {}", e))?;
 
     #[cfg(target_os = "linux")]
     Command::new("xdg-open")
         .arg(&save_games_path)
         .spawn()
-        .map_err(|e| format!("无法打开文件夹: {}", e))?;
+        .map_err(|e| format!("Failed to open folder: {}", e))?;
 
     Ok(())
 }
@@ -238,11 +238,11 @@ pub fn convert_sav_to_json(file_path: String) -> AppResult<Value> {
     let path = Path::new(&file_path);
     validate_save_games_path(path)?;
     if !path.exists() {
-        return Err(format!("文件不存在: {}", file_path).into());
+        return Err(format!("File does not exist: {}", file_path).into());
     }
 
     let save = cli_handlers::parse_sav_file(path)?;
-    let save_json = serde_json::to_value(&save).map_err(|e| format!("转换为JSON失败: {}", e))?;
+    let save_json = serde_json::to_value(&save).map_err(|e| format!("Failed to convert to JSON: {}", e))?;
     let json_string = serde_json::to_string_pretty(&save_json)
         .map_err(|e| format!("JSON格式化失败: {}", e))?;
 
@@ -259,43 +259,43 @@ pub fn convert_json_to_sav(json_content: String, output_path: String) -> AppResu
     let out_path = Path::new(&output_path);
     validate_save_games_path(out_path)?;
     if !output_path.to_lowercase().ends_with(".sav") {
-        return Err("输出文件必须为 .sav".to_string().into());
+        return Err("Output file must be .sav".to_string().into());
     }
 
-    // 验证输出目录是否存在
+    // Verify output directory exists
     if let Some(parent) = Path::new(&output_path).parent() {
         if !parent.exists() {
-            return Err(format!("输出目录不存在: {}", parent.display()).into());
+            return Err(format!("Output directory does not exist: {}", parent.display()).into());
         }
     }
 
-    // 解析JSON内容
+    // Parse JSON content
     let json_value: Value = serde_json::from_str(&json_content)
-        .map_err(|e| format!("JSON解析失败: {}", e))?;
+        .map_err(|e| format!("Failed to parse JSON: {}", e))?;
 
-    // 验证JSON结构
+    // Validate JSON structure
     if json_value.get("root").is_none() {
-        return Err("JSON数据缺少必要的root字段".to_string().into());
+        return Err("JSON data missing required root field".to_string().into());
     }
 
-    // 从JSON重建Save对象
+    // Rebuild Save object from JSON
     let save: uesave::Save = serde_json::from_value(json_value)
-        .map_err(|e| format!("从JSON重建Save对象失败: {}", e))?;
+        .map_err(|e| format!("Failed to rebuild Save object from JSON: {}", e))?;
 
-    // 创建输出文件（使用缓冲写入）
-    let file = fs::File::create(&output_path).map_err(|e| format!("创建输出文件失败: {}", e))?;
+    // Create output file (using buffered write)
+    let file = fs::File::create(&output_path).map_err(|e| format!("Failed to create output file: {}", e))?;
     let mut writer = BufWriter::with_capacity(16384, file);
 
     save.write(&mut writer)
-        .map_err(|e| format!("写入sav文件失败: {:?}", e))?;
+        .map_err(|e| format!("Failed to write sav file: {:?}", e))?;
 
     writer
         .flush()
-        .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
+        .map_err(|e| format!("Failed to flush buffer: {}", e))?;
 
     Ok(json!({
         "success": true,
-        "message": "JSON数据成功转换并保存到sav文件"
+        "message": "JSON data successfully converted and saved to sav file"
     }))
 }
 

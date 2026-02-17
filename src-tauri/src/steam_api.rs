@@ -10,17 +10,17 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::State;
 use tokio::time::{sleep, Duration};
 
-/// 缓存过期时间（30天，单位：秒）
+/// Cache expiration time (30 days, in seconds)
 const CACHE_EXPIRY_SECONDS: u64 = 30 * 24 * 60 * 60;
-/// 智能清理阈值
+/// Smart cleanup threshold
 const SMART_CLEANUP_THRESHOLD: usize = 50;
-/// 最小调用次数（低于此值的条目会被清理）
+/// Minimum call count (entries below this will be cleaned up)
 const MIN_CALL_COUNT: u32 = 3;
-/// API 请求超时时间
+/// API request timeout (seconds)
 const API_TIMEOUT_SECONDS: u64 = 10;
-/// 批次间延迟（毫秒）
+/// Batch delay (milliseconds)
 const BATCH_DELAY_MS: u64 = 1000;
-/// 每批最大 Steam ID 数量
+/// Maximum Steam IDs per batch
 const MAX_BATCH_SIZE: usize = 100;
 static STEAM_HTTP_CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
 
@@ -79,7 +79,7 @@ impl CacheEntry {
     }
 }
 
-/// 获取当前时间戳（内联优化）
+/// Get current timestamp (inline optimized)
 #[inline(always)]
 fn current_timestamp() -> u64 {
     SystemTime::now()
@@ -111,7 +111,7 @@ impl SteamCacheManager {
         let cache_dir = get_app_config_dir()?.join("steam_cache");
 
         if !cache_dir.exists() {
-            fs::create_dir_all(&cache_dir).map_err(|e| format!("创建缓存目录失败: {}", e))?;
+            fs::create_dir_all(&cache_dir).map_err(|e| format!("Failed to create cache directory: {}", e))?;
         }
 
         let cache_path = cache_dir.join("steam_usernames.json");
@@ -126,17 +126,17 @@ impl SteamCacheManager {
         Ok(manager)
     }
 
-    /// 从文件加载缓存
+    /// Load cache from file
     fn load_cache(&mut self) -> AppResult<()> {
         if !self.cache_path.exists() {
             return Ok(());
         }
 
         let cache_content =
-            fs::read_to_string(&self.cache_path).map_err(|e| format!("读取缓存文件失败: {}", e))?;
+            fs::read_to_string(&self.cache_path).map_err(|e| format!("Failed to read cache file: {}", e))?;
 
         let cache_data: SteamCacheFile =
-            serde_json::from_str(&cache_content).map_err(|e| format!("解析缓存文件失败: {}", e))?;
+            serde_json::from_str(&cache_content).map_err(|e| format!("Failed to parse cache file: {}", e))?;
 
         self.cache = cache_data.entries;
         self.call_count = cache_data.call_count;
@@ -144,7 +144,7 @@ impl SteamCacheManager {
         Ok(())
     }
 
-    /// 保存缓存到文件（仅在 dirty 时保存）
+    /// Save cache to file (only when dirty)
     fn save_cache(&mut self) -> AppResult<()> {
         if !self.dirty {
             return Ok(());
@@ -155,10 +155,10 @@ impl SteamCacheManager {
             call_count: self.call_count,
         };
 
-        let cache_json = serde_json::to_string(&cache_data) // 不使用 pretty，减少文件大小
-            .map_err(|e| format!("序列化缓存失败: {}", e))?;
+        let cache_json = serde_json::to_string(&cache_data) // No pretty print to reduce file size
+            .map_err(|e| format!("Failed to serialize cache: {}", e))?;
 
-        fs::write(&self.cache_path, cache_json).map_err(|e| format!("写入缓存文件失败: {}", e))?;
+        fs::write(&self.cache_path, cache_json).map_err(|e| format!("Failed to write cache file: {}", e))?;
         self.dirty = false;
 
         Ok(())

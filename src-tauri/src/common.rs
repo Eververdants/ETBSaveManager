@@ -1,5 +1,5 @@
-//! 公共工具模块 - 提供跨模块共享的工具函数和类型
-//! 优化版本：使用 Arc 减少克隆，增加缓存预热
+//! Common utilities module - Shared tools and types across modules
+//! Optimized version: Using Arc to reduce clones, with cache warmup
 
 use std::collections::HashSet;
 use std::fs::{self, File};
@@ -11,15 +11,15 @@ use uesave::{
     Save, ValueArray, ValueVec,
 };
 
-/// 缓存本地应用数据目录路径（使用 Arc 避免克隆）
+/// Cache local app data directory path (using Arc to avoid clones)
 static LOCAL_APPDATA_DIR: OnceLock<Arc<Result<PathBuf, String>>> = OnceLock::new();
 static SAVE_GAMES_DIR: OnceLock<Arc<Result<PathBuf, String>>> = OnceLock::new();
 static APP_CONFIG_DIR: OnceLock<Arc<Result<PathBuf, String>>> = OnceLock::new();
 
-/// I/O 缓冲区大小（16KB 对于小文件更高效）
+/// I/O buffer size (16KB is more efficient for small files)
 const IO_BUFFER_SIZE: usize = 16384;
 
-/// 获取本地应用数据目录（带缓存，返回引用避免克隆）
+/// Get local app data directory (with caching, returns reference to avoid clones)
 #[inline]
 pub fn get_local_appdata_dir() -> Result<PathBuf, String> {
     LOCAL_APPDATA_DIR
@@ -41,7 +41,7 @@ pub fn get_local_appdata_dir() -> Result<PathBuf, String> {
         .clone()
 }
 
-/// 获取存档目录路径（带缓存）
+/// Get save games directory path (with caching)
 #[inline]
 pub fn get_save_games_dir() -> Result<PathBuf, String> {
     SAVE_GAMES_DIR
@@ -67,38 +67,38 @@ pub fn get_app_config_dir() -> Result<PathBuf, String> {
         .clone()
 }
 
-/// 读取 MAINSAVE.sav 文件（优化缓冲区大小）
+/// Read MAINSAVE.sav file (optimized buffer size)
 pub fn read_mainsave() -> Result<Save, String> {
     let mainsave_path = get_mainsave_path()?;
 
-    let file = File::open(&mainsave_path).map_err(|e| format!("打开 MAINSAVE.sav 失败: {}", e))?;
+    let file = File::open(&mainsave_path).map_err(|e| format!("Failed to open MAINSAVE.sav: {}", e))?;
     let mut reader = BufReader::with_capacity(IO_BUFFER_SIZE, file);
 
-    Save::read(&mut reader).map_err(|e| format!("解析 MAINSAVE.sav 失败: {:?}", e))
+    Save::read(&mut reader).map_err(|e| format!("Failed to parse MAINSAVE.sav: {:?}", e))
 }
 
-/// 写入 MAINSAVE.sav 文件（使用临时文件确保原子性）
+/// Write MAINSAVE.sav file (using temp file for atomicity)
 pub fn write_mainsave(save: &Save) -> Result<(), String> {
     let save_dir = get_save_games_dir()?;
     let mainsave_path = save_dir.join("MAINSAVE.sav");
     let temp_path = save_dir.join("MAINSAVE_temp.sav");
 
-    // 写入临时文件
+    // Write to temp file
     let file =
-        File::create(&temp_path).map_err(|e| format!("创建临时 MAINSAVE 文件失败: {}", e))?;
+        File::create(&temp_path).map_err(|e| format!("Failed to create temp MAINSAVE file: {}", e))?;
     let mut writer = BufWriter::with_capacity(IO_BUFFER_SIZE, file);
 
     save.write(&mut writer)
-        .map_err(|e| format!("写入 MAINSAVE.sav 失败: {:?}", e))?;
+        .map_err(|e| format!("Failed to write MAINSAVE.sav: {:?}", e))?;
     writer
         .flush()
-        .map_err(|e| format!("刷新缓冲区失败: {}", e))?;
+        .map_err(|e| format!("Failed to flush buffer: {}", e))?;
 
-    // 原子替换
-    fs::rename(&temp_path, &mainsave_path).map_err(|e| format!("替换 MAINSAVE.sav 失败: {}", e))
+    // Atomic replace
+    fs::rename(&temp_path, &mainsave_path).map_err(|e| format!("Failed to replace MAINSAVE.sav: {}", e))
 }
 
-/// 获取 MAINSAVE 中的可见存档列表（预分配容量）
+/// Get visible saves list from MAINSAVE (pre-allocated capacity)
 pub fn get_visible_saves_set() -> Result<HashSet<String>, String> {
     let mainsave = match read_mainsave() {
         Ok(save) => save,
@@ -122,7 +122,7 @@ pub fn get_visible_saves_set() -> Result<HashSet<String>, String> {
 pub fn add_save_to_mainsave(archive_name: &str) -> Result<(), String> {
     let mut mainsave = match read_mainsave() {
         Ok(save) => save,
-        Err(_) => return Ok(()), // 静默跳过
+        Err(_) => return Ok(()), // Silently skip
     };
 
     let key = PropertyKey(0, "SingleplayerSaves".to_string());
@@ -136,7 +136,7 @@ pub fn add_save_to_mainsave(archive_name: &str) -> Result<(), String> {
             }
             saves.push(archive_name.to_string());
         } else {
-            return Err("SingleplayerSaves 字段格式不正确".to_string());
+            return Err("SingleplayerSaves field format incorrect".to_string());
         }
     } else {
         let new_prop = Property {
@@ -156,7 +156,7 @@ pub fn add_save_to_mainsave(archive_name: &str) -> Result<(), String> {
     write_mainsave(&mainsave)
 }
 
-/// 从 MAINSAVE 的存档列表中移除存档名称
+/// Remove save name from MAINSAVE's save list
 pub fn remove_save_from_mainsave(archive_name: &str) -> Result<bool, String> {
     let mut mainsave = match read_mainsave() {
         Ok(save) => save,
@@ -181,7 +181,7 @@ pub fn remove_save_from_mainsave(archive_name: &str) -> Result<bool, String> {
     Ok(false)
 }
 
-/// 从文件名中提取存档名称（去除 .sav 后缀）
+/// Extract archive name from filename (remove .sav suffix)
 #[inline(always)]
 pub fn extract_archive_name(filename: &str) -> &str {
     filename.strip_suffix(".sav").unwrap_or(filename)
@@ -199,22 +199,22 @@ pub fn normalize_path_for_write(path: &Path) -> Result<PathBuf, String> {
 
     let parent = path
         .parent()
-        .ok_or_else(|| "无效路径".to_string())?;
+        .ok_or_else(|| "Invalid path".to_string())?;
     if !parent.exists() {
-        return Err("父目录不存在".to_string());
+        return Err("Parent directory does not exist".to_string());
     }
 
     let parent_canon = normalize_existing_path(parent)?;
     let filename = path
         .file_name()
-        .ok_or_else(|| "无效文件名".to_string())?;
+        .ok_or_else(|| "Invalid filename".to_string())?;
     Ok(parent_canon.join(filename))
 }
 
 pub fn validate_path_under_base(path: &Path, allowed_base: &Path) -> Result<(), String> {
     let path_str = path.to_string_lossy();
     if path_str.contains("..") {
-        return Err("检测到非法路径".to_string());
+        return Err("Invalid path detected".to_string());
     }
 
     let allowed = normalize_existing_path(allowed_base)?;
@@ -225,7 +225,7 @@ pub fn validate_path_under_base(path: &Path, allowed_base: &Path) -> Result<(), 
     };
 
     if !normalized.starts_with(&allowed) {
-        return Err("路径不在允许范围内".to_string());
+        return Err("Path not in allowed range".to_string());
     }
 
     Ok(())

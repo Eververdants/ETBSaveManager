@@ -1,5 +1,5 @@
-//! 文件路径模块 - 存档文件扫描
-//! 优化版本：减少正则匹配开销，使用快速路径检查
+//! File path module - Save file scanning
+//! Optimized version: Reduce regex overhead, use fast path checking
 
 use crate::common::get_save_games_dir;
 use rayon::prelude::*;
@@ -40,7 +40,7 @@ fn is_potential_save_file(name: &str) -> bool {
         && ends_with_ascii_case_insensitive(name, ".sav")
 }
 
-/// 验证存档文件名格式（简化版，不使用正则）
+/// Validate save filename format (simplified version, no regex)
 #[inline]
 fn validate_save_filename(name: &str) -> bool {
     // 检查后缀
@@ -73,13 +73,13 @@ pub fn list_save_paths() -> Result<Vec<PathBuf>, String> {
     let base_dir = get_save_games_dir()?;
 
     if !base_dir.exists() {
-        return Err("未找到存档目录".to_string());
+        return Err("Save directory not found".to_string());
     }
 
-    // 预分配容量（假设平均 50 个存档）
+    // Pre-allocate capacity (assuming average 50 saves)
     let mut entries = Vec::with_capacity(100);
 
-    // 单线程收集（WalkDir 本身不支持并行）
+    // Single-threaded collection (WalkDir itself doesn't support parallel)
     for entry in WalkDir::new(&base_dir)
         .max_depth(2)
         .into_iter()
@@ -96,7 +96,7 @@ pub fn list_save_paths() -> Result<Vec<PathBuf>, String> {
         }
     }
 
-    // 并行验证文件名格式
+    // Parallel validation of filename format
     let saves: Vec<PathBuf> = entries
         .into_par_iter()
         .filter(|path| {

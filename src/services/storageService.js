@@ -1,6 +1,6 @@
 /**
- * 本地存储服务 - 优化版
- * 支持同步读取（从缓存）和异步持久化
+ * Local storage service - Optimized
+ * Supports synchronous reading (from cache) and async persistence
  */
 
 // 内存缓存 - 立即可用
@@ -13,7 +13,7 @@ let initPromise = null;
 const STORAGE_DIR = "data";
 const STORAGE_FILE = "settings.json";
 
-// 需要迁移的键
+// Keys to migrate
 const KEYS_TO_MIGRATE = [
   "theme", "language", "updateSource", "performanceMonitor",
   "developerMode", "logMenuEnabled", "testArchiveEnabled",
@@ -28,7 +28,7 @@ const KEYS_TO_MIGRATE = [
 const KEYS_TO_KEEP_IN_LOCALSTORAGE = ["theme", "language", "locale"];
 
 /**
- * 获取存储项（同步，从缓存读取）
+ * Get storage item (sync, read from cache)
  */
 export function getItem(key, defaultValue = null) {
   // 优先从缓存读取
@@ -70,7 +70,7 @@ export function setItem(key, value) {
 }
 
 /**
- * 移除存储项
+ * Remove storage item
  */
 export function removeItem(key) {
   delete cache[key];
@@ -90,14 +90,14 @@ export function clear() {
 }
 
 /**
- * 获取所有键
+ * Get all keys
  */
 export function keys() {
   return Object.keys(cache).filter(k => !k.startsWith("_"));
 }
 
 /**
- * 检查是否已初始化
+ * Check if initialized
  */
 export function isInitialized() {
   return initialized;
@@ -126,7 +126,7 @@ async function saveToFile() {
 }
 
 /**
- * 强制立即保存
+ * Force immediate save
  */
 export async function flush() {
   if (saveTimeout) {
@@ -137,7 +137,7 @@ export async function flush() {
 }
 
 /**
- * 初始化存储服务
+ * Initialize storage service
  */
 export async function initStorage() {
   if (initialized) return;
@@ -221,7 +221,7 @@ function migrateFromLocalStorage() {
   }
 }
 
-// 导出默认对象
+// Export default object
 export default {
   getItem,
   setItem,

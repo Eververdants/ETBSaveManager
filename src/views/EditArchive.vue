@@ -94,7 +94,7 @@
             :player-input-message="playerInputMessage"
             :player-input-message-type="playerInputMessageType"
             :show-sanity="true"
-            @update:newSteamId="(val) => (newSteamId.value = val)"
+            @update:newSteamId="(val) => (newSteamId = val)"
             @add-steam-id="addPlayer"
             @remove-player="removePlayer"
             @select-player="selectPlayer"

@@ -6,6 +6,44 @@ const AUTO_FEEDBACK_SETTING_KEY = "autoFeedbackEnabled";
 const REPORT_COOLDOWN_MS = 5 * 60 * 1000;
 const MAX_REPORTS_PER_SESSION = 3;
 const BACKEND_POLL_INTERVAL_MS = 12000;
+const BLOCKED_KEYWORDS_URL = "https://etbsavemanager-feedback.llzgd.workers.dev";
+
+let cachedBlockedKeywords = null;
+let lastFetchTime = 0;
+const CACHE_DURATION_MS = 5 * 60 * 1000;
+
+async function getBlockedKeywords() {
+  const now = Date.now();
+  if (cachedBlockedKeywords && now - lastFetchTime < CACHE_DURATION_MS) {
+    return cachedBlockedKeywords;
+  }
+
+  try {
+    const response = await fetch(BLOCKED_KEYWORDS_URL);
+    if (!response.ok) {
+      console.warn("[AutoFeedback] 获取屏蔽词列表失败:", response.status);
+      return cachedBlockedKeywords || [];
+    }
+    const data = await response.json();
+    cachedBlockedKeywords = data.blockedKeywords || [];
+    lastFetchTime = now;
+    return cachedBlockedKeywords;
+  } catch (error) {
+    console.warn("[AutoFeedback] 获取屏蔽词列表出错:", error);
+    return cachedBlockedKeywords || [];
+  }
+}
+
+function containsBlockedKeyword(message, blockedKeywords) {
+  if (!message || !Array.isArray(blockedKeywords) || blockedKeywords.length === 0) {
+    return false;
+  }
+  const normalizedMessage = message.toLowerCase();
+  return blockedKeywords.some(keyword => {
+    if (!keyword) return false;
+    return normalizedMessage.includes(keyword.toLowerCase());
+  });
+}
 
 function normalizeMessage(message) {
   return String(message || "")
@@ -67,8 +105,8 @@ class AutoFeedbackService {
   init() {
     if (this.initialized) return;
 
-    const saved = storage.getItem(AUTO_FEEDBACK_SETTING_KEY, true);
-    this.enabled = saved !== false && saved !== "false";
+    const saved = storage.getItem(AUTO_FEEDBACK_SETTING_KEY, false);
+    this.enabled = saved === true || saved === "true";
 
     window.addEventListener("logs-updated", this.handleLogsUpdated);
     window.addEventListener("auto-feedback-toggle", this.handleToggle);
@@ -199,6 +237,15 @@ class AutoFeedbackService {
     if (!decision.allowed) return;
 
     const { fingerprint } = decision;
+
+    const message = normalizeMessage(log.message).slice(0, 800);
+
+    const blockedKeywords = await getBlockedKeywords();
+    if (containsBlockedKeyword(message, blockedKeywords)) {
+      console.info("[AutoFeedback] 日志包含屏蔽词，跳过自动提交");
+      return;
+    }
+
     this.isSubmitting = true;
     this.reportedFingerprints.add(fingerprint);
     this.lastReportAt = Date.now();
@@ -206,7 +253,6 @@ class AutoFeedbackService {
 
     try {
       const language = storage.getItem("language", "zh-CN") || "zh-CN";
-      const message = normalizeMessage(log.message).slice(0, 800);
       const sourceLabel = source === "backend" ? "Backend" : "Frontend";
 
       await feedbackService.submitFeedback({

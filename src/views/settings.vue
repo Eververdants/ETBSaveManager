@@ -549,8 +549,8 @@ export default {
       developerOptionsEnabled: storage.getItem("developerMode", false) === true, // 开发者选项是否显示
       logMenuEnabled: storage.getItem("logMenuEnabled", false) === true, // 日志功能开关状态
       autoFeedbackEnabled:
-        storage.getItem("autoFeedbackEnabled", true) !== false &&
-        storage.getItem("autoFeedbackEnabled", true) !== "false", // 自动反馈开关状态，默认开启
+        storage.getItem("autoFeedbackEnabled", false) === true ||
+        storage.getItem("autoFeedbackEnabled", false) === "true", // 自动反馈开关状态，默认关闭
       testArchiveEnabled: storage.getItem("testArchiveEnabled", true) !== false, // 测试存档显示开关状态，默认开启
       gpuAccelerationDisabled:
         storage.getItem("gpuAccelerationDisabled", false) === true, // GPU加速开关状态
@@ -1437,7 +1437,8 @@ export default {
           // 如果成功，说明API密钥有效
           apiTestPassed = true;
         } catch (error) {
-          const errorMsg = error.toString();
+          // 处理错误对象，可能是字符串或 {message: string} 对象
+          const errorMsg = typeof error === 'string' ? error : (error.message || error.toString());
           console.log(this.t("settings.steamApi.apiCallFailed"), errorMsg);
 
           // 如果是403错误，说明API密钥无效

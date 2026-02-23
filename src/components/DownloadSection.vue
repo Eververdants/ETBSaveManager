@@ -48,12 +48,12 @@ const hotPoints = computed(() => tm('download.hot.points') as string[])
             </div>
             <div class="version-info">
               <span class="version-tag">{{ t('download.version') }}</span>
-              <span class="version-number">v3.0.1</span>
+              <span class="version-number">v3.0.2</span>
             </div>
           </div>
 
           <div class="download-body">
-            <a 
+            <a
               :href="SMART_DOWNLOAD_URL"
               target="_blank"
               class="btn btn-primary btn-download"
@@ -108,7 +108,7 @@ pnpm install
 pnpm tauri build</code></pre>
           </div>
 
-          <a 
+          <a
             :href="REPO_URL"
             target="_blank"
             class="btn btn-secondary btn-source"

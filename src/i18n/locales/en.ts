@@ -15,7 +15,7 @@ export default {
     downloadBtn: 'Free Download',
     downloadNote: 'No account needed, no popup ads, download and use immediately',
     sourceBtn: 'View Source',
-    proofs: ['100% Free', 'Beginner Friendly', 'v3.0.0 Stable', 'Open Source'],
+    proofs: ['100% Free', 'Beginner Friendly', 'v3.0.2 Stable', 'Open Source'],
     stats: {
       platform: 'Platform',
       framework: 'Framework',
@@ -31,7 +31,7 @@ export default {
       title: 'Basic Information',
       items: [
         { label: 'Project Name', value: 'ETB Save Manager' },
-        { label: 'Version', value: 'v3.0.0' },
+        { label: 'Version', value: 'v3.0.2' },
         { label: 'Author', value: 'Eververdants' },
         { label: 'License', value: 'MIT' },
         { label: 'Primary Platform', value: 'Windows' },
@@ -154,7 +154,7 @@ export default {
       badge: 'Top Pick',
       title: 'Download now and start managing saves in minutes',
       subtitle: 'If you frequently back up, switch saves, or edit inventory, this tool saves real time',
-      cta: 'Download v3.0.0 Now',
+      cta: 'Download v3.0.2 Now',
       points: ['Windows 10/11', 'Easy setup', 'Multi-language UI', 'Actively updated']
     },
     version: 'Latest Version',
@@ -171,7 +171,7 @@ export default {
     },
     release: {
       label: 'Stable Release',
-      date: 'v3.0.1 stable release is now live'
+      date: 'v3.0.2 stable release is now live'
     }
   },
   downloadPage: {

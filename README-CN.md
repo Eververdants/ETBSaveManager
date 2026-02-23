@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.0.1-blue.svg" alt="版本"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.0.2-blue.svg" alt="版本"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/许可证-MIT-green.svg" alt="许可证"></a>
   <img src="https://img.shields.io/badge/平台-Windows-0078D4.svg?logo=windows" alt="平台">
   <img src="https://img.shields.io/badge/框架-Tauri%202.0-orange.svg" alt="框架">
@@ -252,7 +252,7 @@ ETB Save Manager 内置 15+ 主题：
 
 ## 🚧 开发进度
 
-**当前版本：** `v3.0.1`
+**当前版本：** `v3.0.2`
 
 | 功能 | 状态 |
 |------|------|

@@ -1,15 +1,23 @@
 {
   "version": "3.0.2",
-  "date": "2026-02-16",
-  "title": "Steam ID Cache, Unlock & Archive List Fixes",
+  "date": "2026-02-23",
+  "title": "Auto-Feedback Optimization & Archive Management Enhancement",
   "type": "major",
   "categories": {
-    "newFeatures": [],
-    "improvements": [],
+    "newFeatures": [
+    ],
+    "improvements": [
+      "Improved error handling to support different types of error objects",
+      "Enhanced archive data validation and error handling",
+      "Added multi-language text for archive operations",
+      "Optimized virtual list rendering performance with fallback mechanism"
+    ],
     "bugFixes": [
-      "Fixed an issue where Steam ID cache entries could not be deleted",
-      "Fixed an issue where some saves could not unlock all hub doors",
-      "Fixed an issue where the first row of archive cards could sometimes fail to render when returning to Archive List until scrolling"
+      "Fixed auto-feedback default state logic from enabled by default to disabled by default",
+      "Fixed variable reference issues in event bindings",
+      "Exposed router instance globally for auto-feedback service",
+      "Added cache file parsing error handling",
+      "Fixed an issue where the first row of archive cards could sometimes fail to render"
     ],
     "performance": []
   }

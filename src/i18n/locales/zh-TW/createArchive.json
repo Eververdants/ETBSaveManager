@@ -61,12 +61,14 @@
   "playerAddedSuccess": "玩家新增成功",
   "batchCreate": "批次建立",
   "creating": "建立中……",
+  "selectLevelRequired": "請選擇層級",
+  "loadTemplateFailed": "載入存檔模板失敗",
+  "enterArchiveName": "請輸入存檔名稱",
+  "createFailed": "建立存檔失敗: {error}",
   "endings": {
-    "main": "主線",
-    "branch1": "支線#1",
-    "branch2": "支線#2",
-    "branch3": "支線#3",
-    "branch4": "支線#4",
-    "hidden": "隱藏關卡"
+    "main": "誤入歧扉",
+    "branch1": "空無之城",
+    "branch2": "死寂郊野",
+    "branch3": "胭脂之屋"
   }
 }

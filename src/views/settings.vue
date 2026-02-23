@@ -549,8 +549,10 @@ export default {
       developerOptionsEnabled: storage.getItem("developerMode", false) === true, // 开发者选项是否显示
       logMenuEnabled: storage.getItem("logMenuEnabled", false) === true, // 日志功能开关状态
       autoFeedbackEnabled:
-        storage.getItem("autoFeedbackEnabled", false) === true ||
-        storage.getItem("autoFeedbackEnabled", false) === "true", // 自动反馈开关状态，默认关闭
+        storage.getItem("autoFeedbackEnabled", true) === true ||
+        storage.getItem("autoFeedbackEnabled", true) === "true" ||
+        storage.getItem("autoFeedbackEnabled", true) === null ||
+        storage.getItem("autoFeedbackEnabled", true) === undefined, // 自动反馈开关状态，默认开启
       testArchiveEnabled: storage.getItem("testArchiveEnabled", true) !== false, // 测试存档显示开关状态，默认开启
       gpuAccelerationDisabled:
         storage.getItem("gpuAccelerationDisabled", false) === true, // GPU加速开关状态

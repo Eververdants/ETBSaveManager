@@ -107,15 +107,12 @@
     <!-- 创建成功弹窗 -->
     <Teleport to="body">
       <Transition name="success-modal">
-        <div
-          v-if="showSuccessModal"
-          class="success-modal-overlay"
-          @click.self="closeSuccessModal"
-        >
+        <div v-if="showSuccessModal" class="success-modal-overlay" @click.self="closeSuccessModal">
           <div class="success-modal-card">
             <div class="success-modal-icon-circle">
               <svg class="success-modal-check-mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                  stroke-linejoin="round" />
               </svg>
             </div>
             <h2 class="success-modal-title">{{ $t("createArchive.archiveCreated") }}</h2>
@@ -231,18 +228,6 @@ export default {
         icon: "🌟",
         levels: endingLevelsData[3],
       },
-      {
-        id: 4,
-        label: t("createArchive.endings.branch4"),
-        icon: "🎭",
-        levels: endingLevelsData[4],
-      },
-      {
-        id: 5,
-        label: t("createArchive.endings.hidden"),
-        icon: "🔒",
-        levels: endingLevelsData[5],
-      },
     ]);
 
     const gameModes = [{ value: "multiplayer", label: "multiplayer" }];
@@ -352,13 +337,6 @@ export default {
         "OceanMap",
         "LightsOut",
         "Level974",
-      ];
-      endingLevelsData[4] = ["Bunker", "Level3999"];
-      endingLevelsData[5] = [
-        "Bunker",
-        "TheHub",
-        "Level188_Expanded",
-        "LevelCheat",
       ];
       loadLevelsForEnding(0);
     };
@@ -661,13 +639,13 @@ export default {
         isCreating.value = true;
         const selectedLevelData = availableLevels[selectedLevel.value];
         if (!selectedLevelData) {
-          alert("请选择层级");
+          notify.error(t("createArchive.selectLevelRequired"));
           isCreating.value = false;
           return;
         }
         const basicArchive = await loadJsonFile("BasicArchive.json");
         if (!basicArchive) {
-          alert("加载存档模板失败");
+          notify.error(t("createArchive.loadTemplateFailed"));
           isCreating.value = false;
           return;
         }
@@ -705,12 +683,12 @@ export default {
           meg_unlocked: isMEGUnlocked,
         };
         if (!saveData.archive_name) {
-          alert("请输入存档名称");
+          notify.error(t("createArchive.enterArchiveName"));
           isCreating.value = false;
           return;
         }
         if (!saveData.level) {
-          alert("请选择层级");
+          notify.error(t("createArchive.selectLevelRequired"));
           isCreating.value = false;
           return;
         }
@@ -720,7 +698,7 @@ export default {
         openSuccessModal();
       } catch (error) {
         console.error("创建存档失败:", error);
-        alert("创建存档失败: " + (error.message || "未知错误"));
+        notify.error(t("createArchive.createFailed", { error: error.message || "未知错误" }));
         isCreating.value = false;
       }
     };

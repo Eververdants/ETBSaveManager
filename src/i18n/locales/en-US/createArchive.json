@@ -61,12 +61,14 @@
   "playerAddedSuccess": "Player added successfully",
   "creating": "Creating...",
   "batchCreate": "Batch Create",
+  "selectLevelRequired": "Please select a level",
+  "loadTemplateFailed": "Failed to load archive template",
+  "enterArchiveName": "Please enter archive name",
+  "createFailed": "Failed to create archive: {error}",
   "endings": {
-    "main": "Main Story",
-    "branch1": "Branch #1",
-    "branch2": "Branch #2",
-    "branch3": "Branch #3",
-    "branch4": "Branch #4",
-    "hidden": "Hidden Route"
+    "main": "Wrong Door",
+    "branch1": "Empty City",
+    "branch2": "The Suburbs",
+    "branch3": "The Pink House"
   }
 }

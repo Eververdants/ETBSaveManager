@@ -164,7 +164,11 @@ export function useArchiveActions(archiveData, filters) {
       }
 
       // 4. 从数据中移除（触发 Vue 重新渲染）
-      archiveData.archives.value.splice(archiveIndex, 1);
+      if (archiveIndex >= 0 && archiveIndex < archiveData.archives.value.length) {
+        archiveData.archives.value.splice(archiveIndex, 1);
+      } else {
+        console.warn("[useArchiveActions] 删除时存档索引无效:", archiveIndex);
+      }
 
       // 5. 等待 DOM 更新
       await nextTick();
@@ -172,7 +176,7 @@ export function useArchiveActions(archiveData, filters) {
       // 6. 立即执行补位动画（在同一帧内设置位置，避免闪烁）
       animateReposition(oldPositions);
 
-      toast.showSuccess(`${archive.name} 已删除`);
+      toast.showSuccess(`${archive?.name ?? "存档"} 已删除`);
       archiveToDelete.value = null;
       isDeleting.value = false;
       deletingCardId.value = null;

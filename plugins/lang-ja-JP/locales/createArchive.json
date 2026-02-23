@@ -61,12 +61,14 @@
   "playerAddedSuccess": "プレイヤーが追加されました",
   "batchCreate": "一括作成",
   "creating": "作成中...",
+  "selectLevelRequired": "レベルを選択してください",
+  "loadTemplateFailed": "セーブテンプレートの読み込みに失敗しました",
+  "enterArchiveName": "セーブ名を入力してください",
+  "createFailed": "セーブの作成に失敗しました: {error}",
   "endings": {
-    "main": "メイン",
-    "branch1": "分岐#1",
-    "branch2": "分岐#2",
-    "branch3": "分岐#3",
-    "branch4": "分岐#4",
-    "hidden": "隠しレベル"
+    "main": "間違った扉",
+    "branch1": "空の都市",
+    "branch2": "郊外",
+    "branch3": "ピンクの家"
   }
 }

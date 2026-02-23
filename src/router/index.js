@@ -126,4 +126,9 @@ router.afterEach((to, from) => {
   }
 });
 
+// 将路由实例暴露到全局，供自动反馈服务使用
+if (typeof window !== "undefined") {
+  window.__VUE_ROUTER__ = router;
+}
+
 export default router;

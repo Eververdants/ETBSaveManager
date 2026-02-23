@@ -63,18 +63,18 @@ export function useArchiveData() {
           const isVisible = item.is_visible === true;
 
           return {
-            id: item.id,
-            name: item.name,
-            currentLevel: item.current_level,
+            id: item.id ?? 0,
+            name: item.name ?? "未命名存档",
+            currentLevel: item.current_level ?? "Level0",
             gameMode: gameMode,
             archiveDifficulty:
-              difficultyMap[item.difficulty] || item.difficulty.toLowerCase(),
+              difficultyMap[item.difficulty] || item.difficulty?.toLowerCase() || "normal",
             actualDifficulty:
               difficultyMap[item.actual_difficulty] ||
-              item.actual_difficulty.toLowerCase(),
+              item.actual_difficulty?.toLowerCase() || "normal",
             isVisible: isVisible,
-            path: item.path,
-            date: item.date,
+            path: item.path ?? "",
+            date: item.date ?? new Date().toISOString(),
           };
         });
       }

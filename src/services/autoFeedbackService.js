@@ -3,6 +3,49 @@ import { feedbackService } from "./feedbackService";
 import { invoke } from "@tauri-apps/api/core";
 
 const AUTO_FEEDBACK_SETTING_KEY = "autoFeedbackEnabled";
+
+/**
+ * 获取当前页面位置信息
+ * @returns {string} 页面位置描述
+ */
+function getCurrentPageLocation() {
+  try {
+    // 尝试从 Vue Router 获取当前路由
+    if (window.__VUE_ROUTER__?.currentRoute?.value) {
+      const route = window.__VUE_ROUTER__.currentRoute.value;
+      return `${route.name || 'Unknown'} (${route.path})`;
+    }
+
+    // 备用方案：从 window.location 获取
+    const hash = window.location.hash;
+    const path = hash ? hash.replace('#', '') : window.location.pathname;
+
+    // 根据路径匹配路由名称
+    const routeMap = {
+      '/': 'Home',
+      '/about': 'About',
+      '/settings': 'Settings',
+      '/plugins': 'PluginMarket',
+      '/select-create-mode': 'SelectCreateMode',
+      '/create-archive': 'CreateArchive',
+      '/quick-create-archive': 'QuickCreateArchive',
+      '/test-archive': 'TestArchive',
+      '/edit-archive': 'EditArchive',
+      '/logs': 'Log',
+      '/steam-cache': 'SteamCache',
+      '/feedback': 'Feedback',
+      '/theme-editor': 'ThemeEditor',
+    };
+
+    // 匹配基础路径
+    const basePath = path.split('/').slice(0, 2).join('/') || '/';
+    const routeName = routeMap[basePath] || routeMap[path] || 'Unknown';
+
+    return `${routeName} (${path})`;
+  } catch (e) {
+    return 'Unknown (failed to get location)';
+  }
+}
 const REPORT_COOLDOWN_MS = 5 * 60 * 1000;
 const MAX_REPORTS_PER_SESSION = 3;
 const BACKEND_POLL_INTERVAL_MS = 12000;
@@ -105,8 +148,8 @@ class AutoFeedbackService {
   init() {
     if (this.initialized) return;
 
-    const saved = storage.getItem(AUTO_FEEDBACK_SETTING_KEY, false);
-    this.enabled = saved === true || saved === "true";
+    const saved = storage.getItem(AUTO_FEEDBACK_SETTING_KEY, true);
+    this.enabled = saved === true || saved === "true" || saved === null || saved === undefined;
 
     window.addEventListener("logs-updated", this.handleLogsUpdated);
     window.addEventListener("auto-feedback-toggle", this.handleToggle);
@@ -254,6 +297,7 @@ class AutoFeedbackService {
     try {
       const language = storage.getItem("language", "zh-CN") || "zh-CN";
       const sourceLabel = source === "backend" ? "Backend" : "Frontend";
+      const pageLocation = source === "frontend" ? getCurrentPageLocation() : "N/A (Backend Error)";
 
       await feedbackService.submitFeedback({
         type: "bug",
@@ -264,6 +308,7 @@ class AutoFeedbackService {
           `Source: ${sourceLabel}`,
           `Level: ${log.type}`,
           `Time: ${log.timestamp || new Date().toLocaleTimeString()}`,
+          `Page: ${pageLocation}`,
           "",
           "Message:",
           message,

@@ -87,18 +87,11 @@
       <div class="tab-panel" :class="{ 'tab-active': activeTab === 'players' }">
         <div class="players-layout">
           <!-- 玩家列表 -->
-          <PlayerManager
-            :players="archiveData.players"
-            :active-player-index="activePlayerIndex"
-            :new-steam-id="newSteamId"
-            :player-input-message="playerInputMessage"
-            :player-input-message-type="playerInputMessageType"
-            :show-sanity="true"
-            @update:newSteamId="(val) => (newSteamId = val)"
-            @add-steam-id="addPlayer"
-            @remove-player="removePlayer"
-            @select-player="selectPlayer"
-          />
+          <PlayerManager :players="archiveData.players" :active-player-index="activePlayerIndex"
+            :new-steam-id="newSteamId" :player-input-message="playerInputMessage"
+            :player-input-message-type="playerInputMessageType" :show-sanity="true"
+            @update:newSteamId="(val) => (newSteamId = val)" @add-steam-id="addPlayer" @remove-player="removePlayer"
+            @select-player="selectPlayer" />
 
           <!-- 玩家详情 -->
           <div class="player-detail-section" v-if="activePlayerIndex !== -1 && archiveData.players.length > 0">
@@ -319,9 +312,19 @@ const handleSaveArchive = async () => {
       jsonInput: { saveData: { jsonData: saveData, outputDir } },
     });
 
+    notify.success(t("editArchive.saveSuccess"));
     router.push({ name: "Home" });
   } catch (error) {
+    const errorMsg = error?.message || String(error);
     console.error("Save failed:", error);
+
+    if (errorMsg.includes("Отказано в доступе") || errorMsg.includes("Access is denied") || errorMsg.includes("os error 5")) {
+      notify.error(t("editArchive.saveErrorAccessDenied"));
+    } else if (errorMsg.includes("正在使用") || errorMsg.includes("being used")) {
+      notify.error(t("editArchive.saveErrorFileInUse"));
+    } else {
+      notify.error(t("editArchive.saveError", { error: errorMsg }));
+    }
   }
 };
 
@@ -329,7 +332,21 @@ const handleSaveArchive = async () => {
 const initArchiveData = () => {
   try {
     if (props.archiveData) {
-      const data = JSON.parse(props.archiveData);
+      let data;
+      try {
+        data = JSON.parse(props.archiveData);
+      } catch (parseError) {
+        console.error("存档数据解析失败:", parseError);
+        notify.error(t("editArchive.parseFailed") + " " + parseError.message);
+        return;
+      }
+
+      if (!data || typeof data !== "object") {
+        console.error("存档数据格式无效");
+        notify.error(t("editArchive.parseFailed") + " 数据格式无效");
+        return;
+      }
+
       originalArchive.value = data;
       archiveData.name = data.name || "";
       archiveData.currentLevel = data.currentLevel || "Level0";
@@ -339,7 +356,8 @@ const initArchiveData = () => {
       loadPlayerData(data);
     }
   } catch (e) {
-    console.error("Parse failed:", e);
+    console.error("初始化存档数据失败:", e);
+    notify.error(t("editArchive.parseFailed") + " " + (e.message || e));
   }
 };
 
@@ -463,7 +481,10 @@ const addPlayer = async () => {
       if (usernames[validation.processedSteamId]) {
         archiveData.players[archiveData.players.length - 1].username = usernames[validation.processedSteamId];
       }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      console.error("获取 Steam 用户名失败:", errorMessage || e);
+    }
   }
 };
 

@@ -61,12 +61,14 @@
   "playerAddedSuccess": "플레이어가 추가되었습니다",
   "batchCreate": "일괄 생성",
   "creating": "생성 중...",
+  "selectLevelRequired": "레벨을 선택해주세요",
+  "loadTemplateFailed": "저장 템플릿 로드 실패",
+  "enterArchiveName": "저장 이름을 입력해주세요",
+  "createFailed": "저장 생성 실패: {error}",
   "endings": {
-    "main": "메인",
-    "branch1": "분기#1",
-    "branch2": "분기#2",
-    "branch3": "분기#3",
-    "branch4": "분기#4",
-    "hidden": "숨겨진 레벨"
+    "main": "잘못된 문",
+    "branch1": "빈 도시",
+    "branch2": "교외",
+    "branch3": "분홍빛 집"
   }
 }

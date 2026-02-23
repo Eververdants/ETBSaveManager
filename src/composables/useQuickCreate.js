@@ -148,10 +148,33 @@ const draftStorage = {
       const draftJson = storage.getItem(DRAFT_KEY);
       if (!draftJson) return null;
 
-      const draftData = JSON.parse(draftJson);
+      let draftData;
+      try {
+        draftData = JSON.parse(draftJson);
+      } catch (parseError) {
+        console.error("[QuickCreate] 草稿JSON解析失败:", parseError);
+        this.clear();
+        return null;
+      }
 
       // 验证草稿数据的有效性
+      if (!draftData || typeof draftData !== "object") {
+        console.warn("[QuickCreate] 草稿数据格式无效");
+        this.clear();
+        return null;
+      }
+
       if (!draftData.archives || !Array.isArray(draftData.archives)) {
+        console.warn("[QuickCreate] 草稿archives字段无效");
+        this.clear();
+        return null;
+      }
+
+      // 验证保存时间是否过期（7天）
+      const MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+      if (draftData.savedAt && Date.now() - draftData.savedAt > MAX_AGE) {
+        console.log("[QuickCreate] 草稿已过期，清除");
+        this.clear();
         return null;
       }
 

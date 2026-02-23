@@ -159,7 +159,12 @@ export async function initStorage() {
 
       if (fileExists) {
         const content = await readTextFile(filePath, { baseDir: BaseDirectory.AppData });
-        cache = JSON.parse(content);
+        try {
+          cache = JSON.parse(content);
+        } catch (parseError) {
+          console.warn("[Storage] 缓存文件解析失败，使用空缓存:", parseError);
+          cache = {};
+        }
       }
 
       initialized = true;

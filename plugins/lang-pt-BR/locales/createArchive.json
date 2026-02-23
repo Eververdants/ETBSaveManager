@@ -61,12 +61,14 @@
   "playerAddedSuccess": "Jogador adicionado com sucesso",
   "batchCreate": "Criação em Lote",
   "creating": "Criando...",
+  "selectLevelRequired": "Por favor, selecione um nível",
+  "loadTemplateFailed": "Falha ao carregar modelo de arquivo",
+  "enterArchiveName": "Por favor, insira o nome do arquivo",
+  "createFailed": "Falha ao criar arquivo: {error}",
   "endings": {
-    "main": "Principal",
-    "branch1": "Ramificação#1",
-    "branch2": "Ramificação#2",
-    "branch3": "Ramificação#3",
-    "branch4": "Ramificação#4",
-    "hidden": "Nível Oculto"
+    "main": "Porta Errada",
+    "branch1": "Cidade Vazia",
+    "branch2": "Os Subúrbios",
+    "branch3": "A Casa Rosa"
   }
 }

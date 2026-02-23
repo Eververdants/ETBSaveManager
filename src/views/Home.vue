@@ -8,6 +8,7 @@
           width: '100%',
           position: 'relative',
         }">
+          <!-- 虚拟滚动行 -->
           <div v-for="virtualRow in rowVirtualizer.getVirtualItems()" :key="virtualRow.key" class="archive-row" :style="{
             position: 'absolute',
             top: 0,
@@ -18,6 +19,21 @@
           }">
             <div class="archive-grid">
               <ArchiveCard v-for="archive in getRowItems(virtualRow.index)" :key="archive.id" :archive="archive"
+                :index="archive._originalIndex" :data-archive-id="archive.id"
+                :class="{ deleting: deletingCardId === archive.id }" @toggle-visibility="handleToggleVisibility"
+                @edit="handleEdit" @delete="deleteArchive" @select="selectArchive" />
+            </div>
+          </div>
+          <!-- 保险机制：当虚拟列表返回空时，强制渲染第一行 -->
+          <div v-if="rowVirtualizer.getVirtualItems().length === 0" class="archive-row" :style="{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '180px',
+          }">
+            <div class="archive-grid">
+              <ArchiveCard v-for="archive in getRowItems(0)" :key="archive.id" :archive="archive"
                 :index="archive._originalIndex" :data-archive-id="archive.id"
                 :class="{ deleting: deletingCardId === archive.id }" @toggle-visibility="handleToggleVisibility"
                 @edit="handleEdit" @delete="deleteArchive" @select="selectArchive" />
@@ -347,11 +363,37 @@ let resizeObserver = null;
 // keep-alive 激活时
 onActivated(async () => {
   isPageActive.value = true;
-  // 回到顶部
-  syncVirtualList({ resetScroll: true });
+
+  // 强制刷新虚拟列表状态，避免首行不渲染
+  await nextTick();
+
+  // 重置滚动位置
+  if (scrollContainerRef.value) {
+    scrollContainerRef.value.scrollTop = 0;
+  }
+
   // 刷新数据
   await refreshArchivesSilent();
-  scheduleVirtualListSync({ resetScroll: true });
+
+  // 强制重新测量和渲染
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      // 强制虚拟滚动器重新计算
+      if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
+        rowVirtualizer.measure();
+      }
+      // 强制滚动到顶部
+      if (typeof rowVirtualizer?.scrollToOffset === 'function') {
+        rowVirtualizer.scrollToOffset(0, { align: 'start', behavior: 'auto' });
+      }
+      // 再次测量确保渲染正确
+      requestAnimationFrame(() => {
+        if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
+          rowVirtualizer.measure();
+        }
+      });
+    });
+  });
 });
 
 // keep-alive 停用时

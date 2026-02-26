@@ -192,6 +192,26 @@ const handleCardClick = () => emit("select", props.archive);
   isolation: isolate;
 }
 
+/* 删除时禁用所有 transform 相关动画，避免与 GSAP 冲突 */
+.archive-card.deleting,
+.archive-card.deleting *,
+.archive-card.deleting *::before,
+.archive-card.deleting *::after {
+  transition: opacity 0.2s linear !important;
+  animation: none !important;
+}
+
+.archive-card.deleting:hover {
+  transform: none !important;
+}
+
+.archive-card.deleting .card-background :deep(.lazy-image-container),
+.archive-card.deleting .archive-info,
+.archive-card.deleting .action-btn {
+  transform: none !important;
+  transition: none !important;
+}
+
 /* 光泽扫过效果 - 仅悬浮时激活 */
 .archive-card::before {
   content: "";

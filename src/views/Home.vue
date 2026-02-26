@@ -223,6 +223,26 @@ const isPageActive = ref(false);
 const columnsPerRow = ref(4);
 const shouldResetScroll = ref(false); // 是否需要重置滚动
 
+// 监听数据或列数变化，强制刷新虚拟滚动
+watch([displayArchives, columnsPerRow], (newVal, oldVal) => {
+  // 忽略初始化时的触发
+  if (!scrollContainerRef.value) return;
+
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
+        rowVirtualizer.measure();
+      }
+      // 再次刷新确保渲染
+      requestAnimationFrame(() => {
+        if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
+          rowVirtualizer.measure();
+        }
+      });
+    });
+  });
+}, { flush: 'post' });
+
 // 计算列数
 const calcColumnsPerRow = () => {
   if (!scrollContainerRef.value) return 4;
@@ -375,22 +395,30 @@ onActivated(async () => {
   // 刷新数据
   await refreshArchivesSilent();
 
-  // 强制重新测量和渲染
+  // 强制重新测量和渲染 - 使用多次 requestAnimationFrame 确保 DOM 已更新
   nextTick(() => {
     requestAnimationFrame(() => {
-      // 强制虚拟滚动器重新计算
-      if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
-        rowVirtualizer.measure();
-      }
-      // 强制滚动到顶部
-      if (typeof rowVirtualizer?.scrollToOffset === 'function') {
-        rowVirtualizer.scrollToOffset(0, { align: 'start', behavior: 'auto' });
-      }
-      // 再次测量确保渲染正确
       requestAnimationFrame(() => {
+        // 强制虚拟滚动器重新计算
         if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
           rowVirtualizer.measure();
         }
+        // 强制滚动到顶部
+        if (typeof rowVirtualizer?.scrollToOffset === 'function') {
+          rowVirtualizer.scrollToOffset(0, { align: 'start', behavior: 'auto' });
+        }
+        // 再次测量确保渲染正确
+        requestAnimationFrame(() => {
+          if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
+            rowVirtualizer.measure();
+          }
+          // 第三次测量，确保首行渲染
+          setTimeout(() => {
+            if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
+              rowVirtualizer.measure();
+            }
+          }, 50);
+        });
       });
     });
   });
@@ -409,14 +437,40 @@ onMounted(async () => {
   await initializeArchives(true);
   displayArchives.value = [...archives.value];
 
-  nextTick(() => {
-    updateContainerSize();
-    scheduleVirtualListSync();
+  // 等待 DOM 更新后再初始化虚拟滚动
+  await nextTick();
+  updateContainerSize();
+
+  // 多次强制刷新确保首行渲染
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
+        rowVirtualizer.measure();
+      }
+      requestAnimationFrame(() => {
+        if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
+          rowVirtualizer.measure();
+        }
+      });
+    });
   });
 
   isPageActive.value = true;
   await refreshArchivesSilent();
-  scheduleVirtualListSync();
+
+  // 数据刷新后再次强制刷新
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
+        rowVirtualizer.measure();
+      }
+      setTimeout(() => {
+        if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
+          rowVirtualizer.measure();
+        }
+      }, 100);
+    });
+  });
 
   window.cleanupRouteWatcher = () => { };
 
@@ -538,6 +592,8 @@ watch(columnsPerRow, () => {
 
 .archive-grid :deep(.archive-card.deleting) {
   pointer-events: none;
+  transition: opacity 0.2s linear !important;
+  transform: none !important;
 }
 
 .archive-grid :deep(.archive-card:hover) {

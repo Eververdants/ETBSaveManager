@@ -71,55 +71,7 @@ export function useArchiveActions(archiveData, filters) {
     showDeleteConfirm.value = true;
   };
 
-  /**
-   * 记录卡片位置
-   */
-  const recordPositions = (excludeId) => {
-    const positions = new Map();
-    document
-      .querySelectorAll(".archive-card[data-archive-id]")
-      .forEach((card) => {
-        const id = card.getAttribute("data-archive-id");
-        if (id && id !== excludeId) {
-          const rect = card.getBoundingClientRect();
-          positions.set(id, {
-            el: card,
-            left: rect.left,
-            top: rect.top,
-          });
-        }
-      });
-    return positions;
-  };
 
-  /**
-   * 执行补位动画
-   */
-  const animateReposition = (oldPositions) => {
-    // 获取新位置并计算差值
-    oldPositions.forEach(({ el, left: oldLeft, top: oldTop }, id) => {
-      // 确保元素还在 DOM 中
-      if (!document.contains(el)) return;
-
-      const newRect = el.getBoundingClientRect();
-      const deltaX = oldLeft - newRect.left;
-      const deltaY = oldTop - newRect.top;
-
-      if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
-        // 立即设置到旧位置（视觉上没有跳动）
-        gsap.set(el, { x: deltaX, y: deltaY });
-
-        // 动画到新位置
-        gsap.to(el, {
-          x: 0,
-          y: 0,
-          duration: 0.35,
-          ease: "power2.out",
-          clearProps: "x,y",
-        });
-      }
-    });
-  };
 
   const confirmDelete = async (callbacks = {}) => {
     const { onSuccess, onError } = callbacks;
@@ -141,40 +93,29 @@ export function useArchiveActions(archiveData, filters) {
         `[data-archive-id="${archive.id}"]`
       );
 
-      // 1. 记录其他卡片的当前位置
-      const oldPositions = recordPositions(archive.id);
-
-      // 2. 播放删除卡片的退出动画
+      // 播放删除卡片的淡出动画
       if (cardElement) {
         await new Promise((resolve) => {
           gsap.to(cardElement, {
             opacity: 0,
-            scale: 0.85,
-            y: -20,
-            duration: 0.25,
-            ease: "power2.in",
+            duration: 0.15,
+            ease: "none",
             onComplete: resolve,
           });
         });
       }
 
-      // 3. 调用后端删除
+      // 调用后端删除
       if (archive.path) {
         await invoke("delete_file", { filePath: archive.path });
       }
 
-      // 4. 从数据中移除（触发 Vue 重新渲染）
+      // 从数据中移除（虚拟滚动会自动处理位置变化）
       if (archiveIndex >= 0 && archiveIndex < archiveData.archives.value.length) {
         archiveData.archives.value.splice(archiveIndex, 1);
       } else {
         console.warn("[useArchiveActions] 删除时存档索引无效:", archiveIndex);
       }
-
-      // 5. 等待 DOM 更新
-      await nextTick();
-
-      // 6. 立即执行补位动画（在同一帧内设置位置，避免闪烁）
-      animateReposition(oldPositions);
 
       toast.showSuccess(`${archive?.name ?? "存档"} 已删除`);
       archiveToDelete.value = null;

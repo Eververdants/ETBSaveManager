@@ -7,7 +7,7 @@ export default {
     download: '下载'
   },
   hero: {
-    badge: 'v3.0.1 正式版现已发布',
+    badge: 'v3.0.2 正式版现已发布',
     title1: '逃离后室',
     title2: '存档管理器',
     subtitle: '一款现代化的《Escape The Backrooms》存档管理工具',
@@ -171,7 +171,7 @@ export default {
     },
     release: {
       label: '正式版',
-      date: 'v3.0.1 正式版已发布'
+      date: 'v3.0.2 正式版已发布'
     }
   },
   downloadPage: {

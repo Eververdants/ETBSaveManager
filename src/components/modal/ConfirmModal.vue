@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
@@ -117,73 +117,86 @@ const props = defineProps({
 
 const emit = defineEmits(["confirm", "cancel", "update:show"]);
 
-const icon = computed(() => {
-  switch (props.type) {
-    case "danger":
-      return "fa-solid fa-exclamation-triangle";
-    case "warning":
-      return "fa-solid fa-exclamation-circle";
-    case "info":
-      return "fa-solid fa-info-circle";
-    default:
-      return "fa-solid fa-question-circle";
-  }
-});
+const useConfirmModalIcons = () => {
+  const icon = computed(() => {
+    switch (props.type) {
+      case "danger":
+        return "fa-solid fa-exclamation-triangle";
+      case "warning":
+        return "fa-solid fa-exclamation-circle";
+      case "info":
+        return "fa-solid fa-info-circle";
+      default:
+        return "fa-solid fa-question-circle";
+    }
+  });
 
-const getGameModeText = (mode) => {
-  const modeMap = {
-    singleplayer: t("createArchive.gameModes.singleplayer"),
-    multiplayer: t("createArchive.gameModes.multiplayer"),
+  return { icon };
+};
+
+const useArchiveDetailsFormatter = () => {
+  const getGameModeText = (mode) => {
+    const modeMap = {
+      singleplayer: t("createArchive.gameModes.singleplayer"),
+      multiplayer: t("createArchive.gameModes.multiplayer"),
+    };
+    return modeMap[mode] || mode;
   };
-  return modeMap[mode] || mode;
-};
 
-const getDifficultyText = (difficulty) => {
-  const difficultyMap = {
-    easy: t("createArchive.difficultyLevels.easy"),
-    normal: t("createArchive.difficultyLevels.normal"),
-    hard: t("createArchive.difficultyLevels.hard"),
-    nightmare: t("createArchive.difficultyLevels.nightmare"),
+  const getDifficultyText = (difficulty) => {
+    const difficultyMap = {
+      easy: t("createArchive.difficultyLevels.easy"),
+      normal: t("createArchive.difficultyLevels.normal"),
+      hard: t("createArchive.difficultyLevels.hard"),
+      nightmare: t("createArchive.difficultyLevels.nightmare"),
+    };
+    return difficultyMap[difficulty] || difficulty;
   };
-  return difficultyMap[difficulty] || difficulty;
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    try {
+      const [year, month, day] = dateStr.split("-");
+      return t("confirmModal.archiveDetails.dateFormat", { year, month, day });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  return { getGameModeText, getDifficultyText, formatDate };
 };
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return "";
-  try {
-    // 日期格式是 YYYY-MM-DD
-    const [year, month, day] = dateStr.split("-");
-    return t("confirmModal.archiveDetails.dateFormat", { year, month, day });
-  } catch {
-    return dateStr;
-  }
+const useConfirmModalActions = () => {
+  const handleConfirm = () => {
+    emit("confirm");
+    emit("update:show", false);
+  };
+
+  const handleCancel = () => {
+    emit("cancel");
+    emit("update:show", false);
+  };
+
+  const handleOverlayClick = () => {
+    if (props.closeOnOverlay) {
+      handleCancel();
+    }
+  };
+
+  const handleKeydown = (event) => {
+    if (event.key === "Escape") {
+      handleCancel();
+    }
+  };
+
+  return { handleConfirm, handleCancel, handleOverlayClick, handleKeydown };
 };
 
-const handleConfirm = () => {
-  emit("confirm");
-  emit("update:show", false);
-};
-
-const handleCancel = () => {
-  emit("cancel");
-  emit("update:show", false);
-};
-
-const handleOverlayClick = () => {
-  if (props.closeOnOverlay) {
-    handleCancel();
-  }
-};
-
-// 按ESC键关闭
-const handleKeydown = (event) => {
-  if (event.key === "Escape") {
-    handleCancel();
-  }
-};
-
-// 监听键盘事件
-import { onMounted, onUnmounted } from "vue";
+const { icon } = useConfirmModalIcons();
+const { getGameModeText, getDifficultyText, formatDate } =
+  useArchiveDetailsFormatter();
+const { handleConfirm, handleCancel, handleOverlayClick, handleKeydown } =
+  useConfirmModalActions();
 
 onMounted(() => {
   document.addEventListener("keydown", handleKeydown);

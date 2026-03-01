@@ -140,11 +140,11 @@ import {
 } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { protectFloatingButtonPosition } from "../utils/floatingButtonProtection.js";
-import ArchiveCard from "../components/ArchiveCard.vue";
-import ArchiveSearchFilter from "../components/ArchiveSearchFilter.vue";
-import FloatingActionButton from "../components/FloatingActionButton.vue";
-import ConfirmModal from "../components/ConfirmModal.vue";
-import PerformanceSettings from "../components/PerformanceSettings.vue";
+import ArchiveCard from "../components/archive/ArchiveCard.vue";
+import ArchiveSearchFilter from "../components/archive/ArchiveSearchFilter.vue";
+import FloatingActionButton from "../components/feature/FloatingActionButton.vue";
+import ConfirmModal from "../components/modal/ConfirmModal.vue";
+import PerformanceSettings from "../components/system/PerformanceSettings.vue";
 import { useArchiveData } from "../composables/useArchiveData";
 import { useArchiveFilters } from "../composables/useArchiveFilters";
 import { useArchiveActions } from "../composables/useArchiveActions";

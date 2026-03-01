@@ -24,6 +24,7 @@
   "all": "All",
   "loading": "Loading...",
   "retry": "Retry",
+  "fetchError": "Failed to fetch plugin data",
   "noResults": "No plugins found",
   "author": "Author",
   "license": "License",

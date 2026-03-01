@@ -65,7 +65,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
-import storage from "../services/storageService";
+import storage from "../../services/storageService";
 
 const { t } = useI18n({ useScope: "global" });
 

@@ -120,7 +120,7 @@
 <script>
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
-import { detectDevicePerformance } from "../utils/performance";
+import { detectDevicePerformance } from "../../utils/performance";
 
 export default {
   name: "PerformanceSettings",

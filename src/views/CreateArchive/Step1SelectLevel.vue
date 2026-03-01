@@ -38,7 +38,7 @@
 
 <script>
 import { gsap } from "gsap";
-import LazyImage from "@/components/LazyImage.vue";
+import LazyImage from "@/components/ui/LazyImage.vue";
 
 export default {
   name: "Step1SelectLevel",

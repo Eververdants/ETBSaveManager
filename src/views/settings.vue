@@ -1,5 +1,8 @@
 <template>
   <div class="settings-container">
+    <AutoFeedbackConsentModal :show="showAutoFeedbackConsent" :title="$t('settings.autoFeedbackConsent.title')"
+      :message="$t('settings.autoFeedbackConsent.message')" @accept="handleAutoFeedbackAccept"
+      @decline="handleAutoFeedbackDecline" />
     <!-- 外观与语言设置组 -->
     <div class="setting-group">
       <transition name="text-swift" mode="out-in">
@@ -513,10 +516,11 @@
 
 <script>
 import { updateService, UpdateStatus } from "../services/updateService.js";
-import CustomDropdown from "../components/CustomDropdown.vue";
-import ThemeSelector from "../components/ThemeSelector.vue";
-import ThemeList from "../components/ThemeList.vue";
-import ThemeEditor from "../components/ThemeEditor.vue";
+import CustomDropdown from "../components/ui/CustomDropdown.vue";
+import ThemeSelector from "../components/theme/ThemeSelector.vue";
+import ThemeList from "../components/theme/ThemeList.vue";
+import ThemeEditor from "../components/theme/ThemeEditor.vue";
+import AutoFeedbackConsentModal from "../components/modal/AutoFeedbackConsentModal.vue";
 import { useI18n } from "vue-i18n";
 import { invoke } from "@tauri-apps/api/core";
 import themeManager from "../styles/theme-config.js";
@@ -538,6 +542,7 @@ export default {
     ThemeSelector,
     ThemeList,
     ThemeEditor,
+    AutoFeedbackConsentModal,
   },
   data() {
     return {
@@ -580,6 +585,8 @@ export default {
       editingTheme: null,
       isImporting: false,
       isExporting: false,
+      showAutoFeedbackConsent: false,
+      pendingAutoFeedbackState: null,
     };
   },
   computed: {
@@ -647,6 +654,30 @@ export default {
     return { t, locale };
   },
   methods: {
+    checkAndShowAutoFeedbackConsent() {
+      // 不再在打开设置页面时自动弹出
+      // 只在用户尝试开启自动反馈时弹出
+    },
+    handleAutoFeedbackAccept() {
+      storage.setItem("autoFeedbackEnabled", true);
+      storage.setItem("autoFeedbackConsentShown", true);
+      this.autoFeedbackEnabled = true;
+      this.pendingAutoFeedbackState = null;
+      this.showAutoFeedbackConsent = false;
+      window.dispatchEvent(new CustomEvent("auto-feedback-toggle", {
+        detail: { enabled: true }
+      }));
+    },
+    handleAutoFeedbackDecline() {
+      storage.setItem("autoFeedbackEnabled", false);
+      storage.setItem("autoFeedbackConsentShown", true);
+      this.autoFeedbackEnabled = false;
+      this.pendingAutoFeedbackState = null;
+      this.showAutoFeedbackConsent = false;
+      window.dispatchEvent(new CustomEvent("auto-feedback-toggle", {
+        detail: { enabled: false }
+      }));
+    },
     formatUpdateNotes(body) {
       if (!body) return this.t("settings.noUpdateNotes");
 
@@ -998,6 +1029,13 @@ export default {
     },
 
     handleAutoFeedbackToggle() {
+      if (this.autoFeedbackEnabled) {
+        this.pendingAutoFeedbackState = true;
+        this.showAutoFeedbackConsent = true;
+        this.autoFeedbackEnabled = false;
+        return;
+      }
+
       storage.setItem("autoFeedbackEnabled", this.autoFeedbackEnabled);
       window.dispatchEvent(
         new CustomEvent("auto-feedback-toggle", {
@@ -1696,6 +1734,9 @@ export default {
       "developer-mode-changed",
       this.handleDeveloperModeChanged
     );
+
+    // 检查自动反馈授权
+    this.checkAndShowAutoFeedbackConsent();
 
     // 初始化GPU加速状态
     this.initializeGpuAccelerationStatus();

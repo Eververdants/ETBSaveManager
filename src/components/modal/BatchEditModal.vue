@@ -130,11 +130,10 @@
 <script setup>
 import { ref, computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import CustomDropdown from "@/components/CustomDropdown.vue";
+import CustomDropdown from "@/components/ui/CustomDropdown.vue";
 
 const { t } = useI18n({ useScope: "global" });
 
-// 保持原样的特殊值
 const KEEP_ORIGINAL = "__keep_original__";
 
 const props = defineProps({
@@ -154,51 +153,119 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "apply"]);
 
-// 批量编辑值
-const batchValues = ref({
-  level: KEEP_ORIGINAL,
-  difficulty: KEEP_ORIGINAL,
-  actualDifficulty: KEEP_ORIGINAL,
-  inventoryTemplate: KEEP_ORIGINAL,
-});
-
-// 难度选项
-const difficultyOptions = computed(() => [
-  { value: "easy", label: t("createArchive.difficultyLevels.easy") },
-  { value: "normal", label: t("createArchive.difficultyLevels.normal") },
-  { value: "hard", label: t("createArchive.difficultyLevels.hard") },
-  { value: "nightmare", label: t("createArchive.difficultyLevels.nightmare") },
-]);
-
-// 层级下拉选项
-const levelDropdownOptions = computed(() => {
-  const options = [
-    { value: null, label: t("quickCreate.editModal.inheritFromUniform") },
-  ];
-  props.availableLevels.forEach((level) => {
-    options.push({
-      value: level.value,
-      label: level.label,
-    });
+const useBatchEditState = () => {
+  const batchValues = ref({
+    level: KEEP_ORIGINAL,
+    difficulty: KEEP_ORIGINAL,
+    actualDifficulty: KEEP_ORIGINAL,
+    inventoryTemplate: KEEP_ORIGINAL,
   });
-  return options;
-});
 
-// 难度下拉选项
-const difficultyDropdownOptions = computed(() => {
-  return [
+  const resetBatchValues = () => {
+    batchValues.value = {
+      level: KEEP_ORIGINAL,
+      difficulty: KEEP_ORIGINAL,
+      actualDifficulty: KEEP_ORIGINAL,
+      inventoryTemplate: KEEP_ORIGINAL,
+    };
+  };
+
+  return { batchValues, resetBatchValues };
+};
+
+const useBatchEditOptions = (props) => {
+  const difficultyOptions = computed(() => [
+    { value: "easy", label: t("createArchive.difficultyLevels.easy") },
+    { value: "normal", label: t("createArchive.difficultyLevels.normal") },
+    { value: "hard", label: t("createArchive.difficultyLevels.hard") },
+    { value: "nightmare", label: t("createArchive.difficultyLevels.nightmare") },
+  ]);
+
+  const levelDropdownOptions = computed(() => {
+    const options = [
+      { value: null, label: t("quickCreate.editModal.inheritFromUniform") },
+    ];
+    props.availableLevels.forEach((level) => {
+      options.push({
+        value: level.value,
+        label: level.label,
+      });
+    });
+    return options;
+  });
+
+  const difficultyDropdownOptions = computed(() => {
+    return [
+      { value: null, label: t("quickCreate.editModal.inheritFromUniform") },
+      ...difficultyOptions.value,
+    ];
+  });
+
+  const inventoryDropdownOptions = computed(() => [
     { value: null, label: t("quickCreate.editModal.inheritFromUniform") },
-    ...difficultyOptions.value,
-  ];
-});
+    { value: "empty", label: t("quickCreate.card.emptyInventory") },
+  ]);
 
-// 背包模板下拉选项
-const inventoryDropdownOptions = computed(() => [
-  { value: null, label: t("quickCreate.editModal.inheritFromUniform") },
-  { value: "empty", label: t("quickCreate.card.emptyInventory") },
-]);
+  return {
+    difficultyOptions,
+    levelDropdownOptions,
+    difficultyDropdownOptions,
+    inventoryDropdownOptions,
+  };
+};
 
-// 检查是否有更改
+const useBatchEditActions = (batchValues, emit) => {
+  const handleLevelChange = (value) => {
+    batchValues.value.level = value;
+  };
+
+  const handleDifficultyChange = (value) => {
+    batchValues.value.difficulty = value;
+  };
+
+  const handleActualDifficultyChange = (value) => {
+    batchValues.value.actualDifficulty = value;
+  };
+
+  const handleInventoryChange = (value) => {
+    batchValues.value.inventoryTemplate = value;
+  };
+
+  const handleClose = () => {
+    emit("close");
+  };
+
+  const handleApply = () => {
+    emit("apply", { ...batchValues.value });
+    handleClose();
+  };
+
+  return {
+    handleLevelChange,
+    handleDifficultyChange,
+    handleActualDifficultyChange,
+    handleInventoryChange,
+    handleClose,
+    handleApply,
+  };
+};
+
+const { batchValues, resetBatchValues } = useBatchEditState();
+const {
+  difficultyOptions,
+  levelDropdownOptions,
+  difficultyDropdownOptions,
+  inventoryDropdownOptions,
+} = useBatchEditOptions(props);
+const {
+  handleLevelChange,
+  handleDifficultyChange,
+  handleActualDifficultyChange,
+  handleInventoryChange,
+  handleClose,
+  handleApply,
+} = useBatchEditActions(batchValues, emit);
+
 const hasChanges = computed(() => {
   return (
     batchValues.value.level !== KEEP_ORIGINAL ||
@@ -208,34 +275,6 @@ const hasChanges = computed(() => {
   );
 });
 
-// 处理下拉框变化
-const handleLevelChange = (value) => {
-  batchValues.value.level = value;
-};
-
-const handleDifficultyChange = (value) => {
-  batchValues.value.difficulty = value;
-};
-
-const handleActualDifficultyChange = (value) => {
-  batchValues.value.actualDifficulty = value;
-};
-
-const handleInventoryChange = (value) => {
-  batchValues.value.inventoryTemplate = value;
-};
-
-// 重置批量值
-const resetBatchValues = () => {
-  batchValues.value = {
-    level: KEEP_ORIGINAL,
-    difficulty: KEEP_ORIGINAL,
-    actualDifficulty: KEEP_ORIGINAL,
-    inventoryTemplate: KEEP_ORIGINAL,
-  };
-};
-
-// 监听 visible 变化，重置值
 watch(
   () => props.visible,
   (newVisible) => {
@@ -244,17 +283,6 @@ watch(
     }
   }
 );
-
-// 关闭模态框
-const handleClose = () => {
-  emit("close");
-};
-
-// 应用批量编辑
-const handleApply = () => {
-  emit("apply", { ...batchValues.value });
-  handleClose();
-};
 </script>
 
 <style scoped>

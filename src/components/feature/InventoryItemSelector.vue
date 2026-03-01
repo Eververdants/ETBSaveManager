@@ -71,7 +71,7 @@
 </template>
 
 <script>
-import LazyImage from "./LazyImage.vue";
+import LazyImage from "../ui/LazyImage.vue";
 import { useI18n } from "vue-i18n";
 
 export default {

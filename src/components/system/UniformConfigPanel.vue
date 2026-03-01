@@ -158,7 +158,7 @@
 <script>
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
-import CustomDropdown from "@/components/CustomDropdown.vue";
+import CustomDropdown from "@/components/ui/CustomDropdown.vue";
 
 export default {
   name: "UniformConfigPanel",

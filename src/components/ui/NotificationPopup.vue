@@ -59,189 +59,287 @@
 </template>
 
 <script setup>
-import { ref, reactive, onUnmounted, nextTick } from 'vue'
-import { gsap } from 'gsap'
+import { ref, reactive, onUnmounted, nextTick } from "vue";
+import { gsap } from "gsap";
 
-const MAX_NOTIFICATIONS = 5
-const positions = ['top', 'top-right', 'right', 'bottom-right', 'bottom', 'bottom-left', 'left', 'top-left']
-const notifications = ref([])
-let notificationId = 0
-const timers = new Map()
+const MAX_NOTIFICATIONS = 5;
+const positions = [
+  "top",
+  "top-right",
+  "right",
+  "bottom-right",
+  "bottom",
+  "bottom-left",
+  "left",
+  "top-left",
+];
+const notifications = ref([]);
+let notificationId = 0;
+const timers = new Map();
 
 const defaultOptions = {
-  type: 'info',
+  type: "info",
   duration: 4000,
-  position: 'top-right',
+  position: "top-right",
   icon: null,
-  title: '',
+  title: "",
   closable: true,
-  actions: null,  // 按钮数组 [{ text, type, icon, onClick, closeOnClick }]
-  details: null   // 详情对象 { version, description, ... }
-}
+  actions: null,
+  details: null,
+};
 
 const typeIcons = {
-  success: ['fas', 'check-circle'],
-  error: ['fas', 'times-circle'],
-  warning: ['fas', 'exclamation-triangle'],
-  info: ['fas', 'info-circle'],
-  default: ['fas', 'bell']
-}
+  success: ["fas", "check-circle"],
+  error: ["fas", "times-circle"],
+  warning: ["fas", "exclamation-triangle"],
+  info: ["fas", "info-circle"],
+  default: ["fas", "bell"],
+};
 
-const getNotificationsByPosition = (position) => notifications.value.filter(n => n.position === position)
+const useNotificationPosition = () => {
+  const getNotificationsByPosition = (position) =>
+    notifications.value.filter((n) => n.position === position);
 
-const getAnimationDirection = (position) => {
-  if (position.includes('right')) return { x: 120, y: 0 }
-  if (position.includes('left')) return { x: -120, y: 0 }
-  if (position === 'top') return { x: 0, y: -80 }
-  if (position === 'bottom') return { x: 0, y: 80 }
-  return { x: 120, y: 0 }
-}
+  const getAnimationDirection = (position) => {
+    if (position.includes("right")) return { x: 120, y: 0 };
+    if (position.includes("left")) return { x: -120, y: 0 };
+    if (position === "top") return { x: 0, y: -80 };
+    if (position === "bottom") return { x: 0, y: 80 };
+    return { x: 120, y: 0 };
+  };
 
-const onBeforeEnter = (el, position) => {
-  const dir = getAnimationDirection(position)
-  gsap.set(el, { opacity: 0, x: dir.x, y: dir.y, scale: 0.8, filter: 'blur(8px)' })
-}
+  return { getNotificationsByPosition, getAnimationDirection };
+};
 
-const onEnter = (el, done, position) => {
-  gsap.to(el, { opacity: 1, x: 0, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.4, ease: 'power3.out', onComplete: done })
-}
+const useNotificationAnimations = (getAnimationDirection) => {
+  const onBeforeEnter = (el, position) => {
+    const dir = getAnimationDirection(position);
+    gsap.set(el, {
+      opacity: 0,
+      x: dir.x,
+      y: dir.y,
+      scale: 0.8,
+      filter: "blur(8px)",
+    });
+  };
 
-const onBeforeLeave = (el, position) => {
-  const rect = el.getBoundingClientRect()
-  const parent = el.parentElement
-  const parentRect = parent.getBoundingClientRect()
-  
-  // 创建占位元素，保持原有空间
-  const placeholder = document.createElement('div')
-  placeholder.className = 'notification-placeholder'
-  placeholder.style.height = `${rect.height}px`
-  placeholder.style.width = `${rect.width}px`
-  placeholder.style.flexShrink = '0'
-  el._placeholder = placeholder
-  
-  // 在当前元素位置插入占位符
-  parent.insertBefore(placeholder, el)
-  
-  // 将退场元素设为绝对定位
-  el.style.position = 'absolute'
-  el.style.top = `${rect.top - parentRect.top}px`
-  el.style.left = `${rect.left - parentRect.left}px`
-  el.style.width = `${rect.width}px`
-  el.style.margin = '0'
-  el.style.zIndex = '1'
-}
+  const onEnter = (el, done, position) => {
+    gsap.to(el, {
+      opacity: 1,
+      x: 0,
+      y: 0,
+      scale: 1,
+      filter: "blur(0px)",
+      duration: 0.4,
+      ease: "power3.out",
+      onComplete: done,
+    });
+  };
 
-const onLeave = (el, done, position) => {
-  const dir = getAnimationDirection(position)
-  const placeholder = el._placeholder
-  
-  // 同时动画：退场元素淡出 + 占位符收缩
-  if (placeholder) {
-    gsap.to(placeholder, {
-      height: 0,
-      marginBottom: 0,
+  const onBeforeLeave = (el, position) => {
+    const rect = el.getBoundingClientRect();
+    const parent = el.parentElement;
+    const parentRect = parent.getBoundingClientRect();
+
+    const placeholder = document.createElement("div");
+    placeholder.className = "notification-placeholder";
+    placeholder.style.height = `${rect.height}px`;
+    placeholder.style.width = `${rect.width}px`;
+    placeholder.style.flexShrink = "0";
+    el._placeholder = placeholder;
+
+    parent.insertBefore(placeholder, el);
+
+    el.style.position = "absolute";
+    el.style.top = `${rect.top - parentRect.top}px`;
+    el.style.left = `${rect.left - parentRect.left}px`;
+    el.style.width = `${rect.width}px`;
+    el.style.margin = "0";
+    el.style.zIndex = "1";
+  };
+
+  const onLeave = (el, done, position) => {
+    const dir = getAnimationDirection(position);
+    const placeholder = el._placeholder;
+
+    if (placeholder) {
+      gsap.to(placeholder, {
+        height: 0,
+        marginBottom: 0,
+        duration: 0.3,
+        ease: "power2.inOut",
+        onComplete: () => placeholder.remove(),
+      });
+    }
+
+    gsap.to(el, {
+      opacity: 0,
+      x: dir.x * 0.5,
+      y: dir.y * 0.3,
+      scale: 0.85,
+      filter: "blur(4px)",
       duration: 0.3,
-      ease: 'power2.inOut',
-      onComplete: () => placeholder.remove()
-    })
-  }
-  
-  gsap.to(el, {
-    opacity: 0,
-    x: dir.x * 0.5,
-    y: dir.y * 0.3,
-    scale: 0.85,
-    filter: 'blur(4px)',
-    duration: 0.3,
-    ease: 'power2.in',
-    onComplete: done
-  })
-}
+      ease: "power2.in",
+      onComplete: done,
+    });
+  };
 
-const addNotification = (options) => {
-  const id = ++notificationId
-  const config = { ...defaultOptions, ...options }
-  if (!config.icon) config.icon = typeIcons[config.type] || typeIcons.default
+  return { onBeforeEnter, onEnter, onBeforeLeave, onLeave };
+};
 
-  // 有按钮时默认不自动关闭
-  if (config.actions?.length && config.duration === defaultOptions.duration) {
-    config.duration = 0
-  }
+const useNotificationTimer = () => {
+  const getNotification = (id) => notifications.value.find((n) => n.id === id);
 
-  const positionNotifications = getNotificationsByPosition(config.position)
-  if (positionNotifications.length >= MAX_NOTIFICATIONS) {
-    closeNotification(positionNotifications[0].id)
-  }
+  const startTimer = (id) => {
+    const notification = getNotification(id);
+    if (!notification) return;
 
-  const notification = reactive({
-    id, ...config, progress: 100, isHovering: false, remainingTime: config.duration, createdAt: Date.now()
-  })
-  notifications.value.push(notification)
-  if (config.duration > 0) nextTick(() => startTimer(id))
-  return id
-}
+    const startTime = Date.now();
+    const duration = notification.remainingTime;
+    const totalDuration = notification.duration;
 
-const getNotification = (id) => notifications.value.find(n => n.id === id)
+    const tick = () => {
+      const n = getNotification(id);
+      if (!n || n.isHovering) {
+        timers.delete(id);
+        return;
+      }
 
-const startTimer = (id) => {
-  const notification = getNotification(id)
-  if (!notification) return
-  const startTime = Date.now()
-  const duration = notification.remainingTime
-  const totalDuration = notification.duration
+      const elapsed = Date.now() - startTime;
+      const remaining = duration - elapsed;
+      n.progress = Math.max(0, (remaining / totalDuration) * 100);
 
-  const tick = () => {
-    const n = getNotification(id)
-    if (!n || n.isHovering) { timers.delete(id); return }
-    const elapsed = Date.now() - startTime
-    const remaining = duration - elapsed
-    n.progress = Math.max(0, (remaining / totalDuration) * 100)
-    if (remaining <= 0) closeNotification(id)
-    else timers.set(id, requestAnimationFrame(tick))
-  }
-  timers.set(id, requestAnimationFrame(tick))
-}
+      if (remaining <= 0) {
+        closeNotification(id);
+      } else {
+        timers.set(id, requestAnimationFrame(tick));
+      }
+    };
 
-const pauseNotification = (notification) => {
-  notification.isHovering = true
-  if (timers.has(notification.id)) {
-    cancelAnimationFrame(timers.get(notification.id))
-    timers.delete(notification.id)
-    notification.remainingTime = (notification.progress / 100) * notification.duration
-  }
-}
+    timers.set(id, requestAnimationFrame(tick));
+  };
 
-const resumeNotification = (notification) => {
-  notification.isHovering = false
-  if (notification.duration > 0 && notification.remainingTime > 0) startTimer(notification.id)
-}
+  const pauseNotification = (notification) => {
+    notification.isHovering = true;
+    if (timers.has(notification.id)) {
+      cancelAnimationFrame(timers.get(notification.id));
+      timers.delete(notification.id);
+      notification.remainingTime =
+        (notification.progress / 100) * notification.duration;
+    }
+  };
 
-const handleAction = (notification, action) => {
-  if (action.onClick) action.onClick(notification.id)
-  if (action.closeOnClick !== false) closeNotification(notification.id)
-}
+  const resumeNotification = (notification) => {
+    notification.isHovering = false;
+    if (notification.duration > 0 && notification.remainingTime > 0) {
+      startTimer(notification.id);
+    }
+  };
 
-const closeNotification = (id) => {
-  if (timers.has(id)) { cancelAnimationFrame(timers.get(id)); timers.delete(id) }
-  const index = notifications.value.findIndex(n => n.id === id)
-  if (index > -1) notifications.value.splice(index, 1)
-}
+  return { startTimer, pauseNotification, resumeNotification, getNotification };
+};
 
-const closeAll = () => {
-  timers.forEach(t => cancelAnimationFrame(t))
-  timers.clear()
-  notifications.value = []
-}
+const useNotificationActions = (
+  getNotificationsByPosition,
+  startTimer,
+  getNotification
+) => {
+  const addNotification = (options) => {
+    const id = ++notificationId;
+    const config = { ...defaultOptions, ...options };
+    if (!config.icon) {
+      config.icon = typeIcons[config.type] || typeIcons.default;
+    }
 
-onUnmounted(() => { timers.forEach(t => cancelAnimationFrame(t)); timers.clear() })
+    if (config.actions?.length && config.duration === defaultOptions.duration) {
+      config.duration = 0;
+    }
+
+    const positionNotifications = getNotificationsByPosition(config.position);
+    if (positionNotifications.length >= MAX_NOTIFICATIONS) {
+      closeNotification(positionNotifications[0].id);
+    }
+
+    const notification = reactive({
+      id,
+      ...config,
+      progress: 100,
+      isHovering: false,
+      remainingTime: config.duration,
+      createdAt: Date.now(),
+    });
+    notifications.value.push(notification);
+
+    if (config.duration > 0) {
+      nextTick(() => startTimer(id));
+    }
+
+    return id;
+  };
+
+  const handleAction = (notification, action) => {
+    if (action.onClick) action.onClick(notification.id);
+    if (action.closeOnClick !== false) {
+      closeNotification(notification.id);
+    }
+  };
+
+  const closeNotification = (id) => {
+    if (timers.has(id)) {
+      cancelAnimationFrame(timers.get(id));
+      timers.delete(id);
+    }
+    const index = notifications.value.findIndex((n) => n.id === id);
+    if (index > -1) {
+      notifications.value.splice(index, 1);
+    }
+  };
+
+  const closeAll = () => {
+    timers.forEach((t) => cancelAnimationFrame(t));
+    timers.clear();
+    notifications.value = [];
+  };
+
+  return {
+    addNotification,
+    handleAction,
+    closeNotification,
+    closeAll,
+  };
+};
+
+const { getNotificationsByPosition, getAnimationDirection } =
+  useNotificationPosition();
+const { onBeforeEnter, onEnter, onBeforeLeave, onLeave } =
+  useNotificationAnimations(getAnimationDirection);
+const { startTimer, pauseNotification, resumeNotification, getNotification } =
+  useNotificationTimer();
+const { addNotification, handleAction, closeNotification, closeAll } =
+  useNotificationActions(
+    getNotificationsByPosition,
+    startTimer,
+    getNotification
+  );
+
+onUnmounted(() => {
+  timers.forEach((t) => cancelAnimationFrame(t));
+  timers.clear();
+});
 
 defineExpose({
-  add: addNotification, close: closeNotification, closeAll,
-  success: (message, options = {}) => addNotification({ message, type: 'success', ...options }),
-  error: (message, options = {}) => addNotification({ message, type: 'error', ...options }),
-  warning: (message, options = {}) => addNotification({ message, type: 'warning', ...options }),
-  info: (message, options = {}) => addNotification({ message, type: 'info', ...options })
-})
+  add: addNotification,
+  close: closeNotification,
+  closeAll,
+  success: (message, options = {}) =>
+    addNotification({ message, type: "success", ...options }),
+  error: (message, options = {}) =>
+    addNotification({ message, type: "error", ...options }),
+  warning: (message, options = {}) =>
+    addNotification({ message, type: "warning", ...options }),
+  info: (message, options = {}) =>
+    addNotification({ message, type: "info", ...options }),
+});
 </script>
 
 <style scoped>

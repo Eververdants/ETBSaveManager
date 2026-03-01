@@ -298,7 +298,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useI18n } from "vue-i18n";
 import { notify } from "../services/notificationService";
-import CustomDropdown from "../components/CustomDropdown.vue";
+import CustomDropdown from "../components/ui/CustomDropdown.vue";
 
 export default {
   name: "SteamCache",

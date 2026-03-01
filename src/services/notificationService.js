@@ -1,5 +1,5 @@
 import { createApp, h, ref } from 'vue'
-import NotificationPopup from '@/components/NotificationPopup.vue'
+import NotificationPopup from '@/components/ui/NotificationPopup.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 let notificationInstance = null

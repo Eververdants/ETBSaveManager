@@ -1,10 +1,12 @@
 import { ref, computed } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { useToast } from "./useToast";
 
 /**
  * 存档数据管理 composable
  */
 export function useArchiveData() {
+  const toast = useToast();
   // 存档数据
   const archives = ref([]);
   const displayArchives = ref([]);
@@ -81,6 +83,12 @@ export function useArchiveData() {
       return [];
     } catch (error) {
       console.error("加载存档失败:", error);
+      const errorMessage = error?.message || error?.msg || JSON.stringify(error) || "未知错误";
+      if (errorMessage.includes("Save directory not found")) {
+        toast.showError("请先打开游戏，初始化存档目录后再使用此功能");
+      } else {
+        toast.showError("加载存档失败: " + errorMessage);
+      }
       return [];
     }
   };

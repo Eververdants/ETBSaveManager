@@ -205,5 +205,15 @@
       "steamApiError": "Steam API錯誤"
     },
     "otherError": "其他錯誤"
+  },
+  "autoFeedbackConsent": {
+    "title": "啟用錯誤自動回饋",
+    "message": "為了幫助我們更好地改進應用，當應用發生錯誤時，會自動收集並提交錯誤資訊。",
+    "errorDetection": "自動偵測前端和後端錯誤日誌",
+    "systemInfo": "收集系統資訊以協助定位問題",
+    "privacy": "所有資料均匿名處理，不會收集您的個人隱私",
+    "note": "您可以隨時在設定中關閉此功能",
+    "accept": "啟用",
+    "decline": "暫時不啟用"
   }
 }

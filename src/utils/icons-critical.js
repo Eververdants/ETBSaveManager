@@ -24,6 +24,10 @@ import {
   faTimes,
   faTrash,
   faWindowMaximize,
+  faShieldAlt,
+  faLaptopCode,
+  faBug,
+  faLock
 } from "@fortawesome/free-solid-svg-icons";
 
 export function registerCriticalIcons() {
@@ -46,7 +50,11 @@ export function registerCriticalIcons() {
     faEye,
     faEyeSlash,
     faTrash,
-    faDatabase
+    faDatabase,
+    faShieldAlt,
+    faLaptopCode,
+    faBug,
+    faLock
   );
 }
 

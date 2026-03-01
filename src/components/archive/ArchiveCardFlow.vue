@@ -78,10 +78,6 @@ import { resolve } from "@/composables/useConfigResolver";
 
 const { t } = useI18n({ useScope: "global" });
 
-/**
- * 虚拟滚动阈值
- * Requirements: 16.1 - 当存档数量 > 50 时启用虚拟滚动
- */
 const VIRTUAL_SCROLL_THRESHOLD = 50;
 
 const props = defineProps({
@@ -116,89 +112,90 @@ const emit = defineEmits([
   "batch-edit",
 ]);
 
-// 视图模式
-const viewMode = ref("grid");
+const useViewMode = () => {
+  const viewMode = ref("grid");
 
-// 虚拟滚动器引用
-const scrollerRef = ref(null);
-
-// 计算网格列数（用于虚拟滚动）
-const gridColumns = ref(4);
-
-/**
- * 是否启用虚拟滚动
- * Requirements: 16.1 - 当存档数量 > 50 时启用虚拟滚动
- */
-const useVirtualScroll = computed(() => {
-  return props.archives.length > VIRTUAL_SCROLL_THRESHOLD;
-});
-
-/**
- * 计算网格列数
- */
-const calculateGridColumns = () => {
-  const containerWidth =
-    document.querySelector(".flow-content")?.clientWidth || 800;
-  const cardMinWidth = 220; // 卡片最小宽度
-  const gap = 12; // 间距
-  gridColumns.value = Math.max(
-    1,
-    Math.floor((containerWidth + gap) / (cardMinWidth + gap))
-  );
+  return { viewMode };
 };
 
-// 监听窗口大小变化
-let resizeObserver = null;
+const useVirtualScroll = (archives) => {
+  const useVirtualScroll = computed(() => {
+    return archives.value.length > VIRTUAL_SCROLL_THRESHOLD;
+  });
+
+  return { useVirtualScroll };
+};
+
+const useGridColumns = () => {
+  const gridColumns = ref(4);
+  let resizeObserver = null;
+
+  const calculateGridColumns = () => {
+    const containerWidth = document.querySelector(".flow-content")?.clientWidth || 800;
+    const cardMinWidth = 220;
+    const gap = 12;
+    gridColumns.value = Math.max(1, Math.floor((containerWidth + gap) / (cardMinWidth + gap)));
+  };
+
+  const setupResizeObserver = () => {
+    const container = document.querySelector(".flow-content");
+    if (container && window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(() => {
+        calculateGridColumns();
+      });
+      resizeObserver.observe(container);
+    }
+  };
+
+  const cleanupResizeObserver = () => {
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+    }
+  };
+
+  return { gridColumns, calculateGridColumns, setupResizeObserver, cleanupResizeObserver };
+};
+
+const useConfigResolver = (uniformConfig, smartRules) => {
+  const getConfigSource = (archive) => {
+    if (uniformConfig.value && smartRules.value) {
+      const resolved = resolve(archive, uniformConfig.value, smartRules.value);
+      return resolved.source;
+    }
+    return {
+      level: "default",
+      difficulty: "default",
+      actualDifficulty: "default",
+      inventory: "default",
+    };
+  };
+
+  return { getConfigSource };
+};
+
+const useEventHandlers = (emit) => {
+  const handleSelect = (archiveId) => emit("select", archiveId);
+  const handleEdit = (archiveId) => emit("edit", archiveId);
+  const handleCopy = (archiveId) => emit("copy", archiveId);
+  const handleRemove = (archiveId) => emit("remove", archiveId);
+
+  return { handleSelect, handleEdit, handleCopy, handleRemove };
+};
+
+const { viewMode } = useViewMode();
+const { useVirtualScroll } = useVirtualScroll(() => props.archives);
+const { gridColumns, calculateGridColumns, setupResizeObserver, cleanupResizeObserver } = useGridColumns();
+const { getConfigSource } = useConfigResolver(() => props.uniformConfig, () => props.smartRules);
+const { handleSelect, handleEdit, handleCopy, handleRemove } = useEventHandlers(emit);
 
 onMounted(() => {
   calculateGridColumns();
-
-  // 使用 ResizeObserver 监听容器大小变化
-  const container = document.querySelector(".flow-content");
-  if (container && window.ResizeObserver) {
-    resizeObserver = new ResizeObserver(() => {
-      calculateGridColumns();
-    });
-    resizeObserver.observe(container);
-  }
+  setupResizeObserver();
 });
 
 onUnmounted(() => {
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-  }
+  cleanupResizeObserver();
 });
-
-// 获取配置来源
-const getConfigSource = (archive) => {
-  if (props.uniformConfig && props.smartRules) {
-    const resolved = resolve(archive, props.uniformConfig, props.smartRules);
-    return resolved.source;
-  }
-  return {
-    level: "default",
-    difficulty: "default",
-    actualDifficulty: "default",
-    inventory: "default",
-  };
-};
-
-// 事件处理
-const handleSelect = (archiveId) => {
-  emit("select", archiveId);
-};
-
-const handleEdit = (archiveId) => {
-  emit("edit", archiveId);
-};
-
-const handleCopy = (archiveId) => {
-  emit("copy", archiveId);
-};
-
-const handleRemove = (archiveId) => {
-  emit("remove", archiveId);
-};
 </script>
 
 <style scoped>

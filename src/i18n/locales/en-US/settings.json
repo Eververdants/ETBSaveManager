@@ -205,5 +205,15 @@
       "steamApiError": "Steam API error"
     },
     "otherError": "Other error"
+  },
+  "autoFeedbackConsent": {
+    "title": "Enable Auto Error Feedback",
+    "message": "To help us improve the application, error information will be automatically collected and submitted when errors occur.",
+    "errorDetection": "Automatically detect frontend and backend error logs",
+    "systemInfo": "Collect system information to help diagnose issues",
+    "privacy": "All data is processed anonymously, no personal privacy is collected",
+    "note": "You can disable this feature anytime in settings",
+    "accept": "Enable",
+    "decline": "Not now"
   }
 }

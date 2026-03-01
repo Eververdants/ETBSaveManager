@@ -77,7 +77,7 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import LazyImage from "@/components/LazyImage.vue";
+import LazyImage from "@/components/ui/LazyImage.vue";
 
 export default {
   name: "SelectCreateMode",

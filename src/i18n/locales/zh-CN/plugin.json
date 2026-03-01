@@ -18,6 +18,7 @@
   "all": "全部",
   "loading": "加载中...",
   "retry": "重试",
+  "fetchError": "获取插件数据失败",
   "noResults": "没有找到插件",
   "author": "作者",
   "license": "许可证",

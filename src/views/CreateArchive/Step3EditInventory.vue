@@ -130,8 +130,8 @@
 
 <script>
 import { useI18n } from "vue-i18n";
-import PlayerManager from "@/components/PlayerManager.vue";
-import CustomSlider from "@/components/CustomSlider.vue";
+import PlayerManager from "@/components/system/PlayerManager.vue";
+import CustomSlider from "@/components/ui/CustomSlider.vue";
 
 export default {
   name: "Step3EditInventory",

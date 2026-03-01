@@ -2,6 +2,7 @@
   <div class="archive-card" :class="{
     'archive-hidden': !localVisible,
     'visibility-transitioning': isAnimating,
+    'archive-entering': !hasEntered,
   }" @click="handleCardClick">
     <!-- 上半背景区域 -->
     <div class="card-background">
@@ -54,36 +55,34 @@
 <script setup>
 import { computed, ref, watch, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
-import LazyImage from "./LazyImage.vue";
+import LazyImage from "../ui/LazyImage.vue";
 
 const props = defineProps({
   archive: {
     type: Object,
     required: true,
   },
+  index: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const emit = defineEmits(["toggle-visibility", "edit", "delete", "select"]);
+
 const { t, te } = useI18n({ useScope: "global" });
 
-const getLevelName = (levelKey) => {
-  const translationKey = `LevelName_Display.${levelKey}`;
-  return te(translationKey) ? t(translationKey) : levelKey;
-};
+const hasEntered = ref(false);
 
-const getDifficultyText = (difficultyKey) => {
-  const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
-  return te(translationKey) ? t(translationKey) : difficultyKey;
-};
+onMounted(() => {
+  const delay = Math.min(props.index * 30, 300);
+  setTimeout(() => {
+    hasEntered.value = true;
+  }, delay);
+});
 
-// 本地可见性状态，用于动画过渡
-const localVisible = ref(props.archive.isVisible);
-const isAnimating = ref(false);
-
-// 文本宽度缓存 - 模块级共享
 const textWidthCache = new Map();
 
-// 计算文本宽度（使用 canvas 更高效）
 const getTextWidth = (() => {
   let canvas = null;
   let ctx = null;
@@ -100,75 +99,97 @@ const getTextWidth = (() => {
   };
 })();
 
-// 计算标签样式
-const tagStyle = (shortText, prefix) => {
-  const shortWidth = Math.max(30, getTextWidth(shortText) + 16);
-  const fullText = `${prefix}：${shortText}`;
-  const fullWidth = Math.max(shortWidth, getTextWidth(fullText) + 24);
-  return {
-    "--w-short": `${shortWidth}px`,
-    "--w-full": `${fullWidth}px`,
+const useArchiveTranslations = () => {
+  const getLevelName = (levelKey) => {
+    const translationKey = `LevelName_Display.${levelKey}`;
+    return te(translationKey) ? t(translationKey) : levelKey;
   };
+
+  const getDifficultyText = (difficultyKey) => {
+    const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
+    return te(translationKey) ? t(translationKey) : difficultyKey;
+  };
+
+  return { getLevelName, getDifficultyText };
 };
 
-// Computed - 简化计算属性
+const useArchiveCardStyle = () => {
+  const tagStyle = (shortText, prefix) => {
+    const shortWidth = Math.max(30, getTextWidth(shortText) + 16);
+    const fullText = `${prefix}:${shortText}`;
+    const fullWidth = Math.max(shortWidth, getTextWidth(fullText) + 24);
+    return {
+      "--w-short": `${shortWidth}px`,
+      "--w-full": `${fullWidth}px`,
+    };
+  };
+
+  return { tagStyle };
+};
+
+const useArchiveCardVisibility = () => {
+  const localVisible = ref(props.archive.isVisible);
+  const isAnimating = ref(false);
+
+  watch(
+    () => props.archive.isVisible,
+    (newVal) => {
+      if (newVal !== localVisible.value) {
+        isAnimating.value = true;
+        localVisible.value = newVal;
+        setTimeout(() => {
+          isAnimating.value = false;
+        }, 250);
+      }
+    },
+    { immediate: true }
+  );
+
+  onMounted(() => {
+    localVisible.value = props.archive.isVisible;
+  });
+
+  return { localVisible, isAnimating };
+};
+
+const useArchiveCardActions = () => {
+  const toggleVisibility = () => {
+    emit("toggle-visibility", {
+      ...props.archive,
+      isVisible: !props.archive.isVisible,
+    });
+  };
+
+  const editArchive = () => emit("edit", props.archive);
+  const deleteArchive = () => emit("delete", props.archive);
+  const handleCardClick = () => emit("select", props.archive);
+
+  return { toggleVisibility, editArchive, deleteArchive, handleCardClick };
+};
+
+const { getLevelName, getDifficultyText } = useArchiveTranslations();
+const { tagStyle } = useArchiveCardStyle();
+const { localVisible, isAnimating } = useArchiveCardVisibility();
+const { toggleVisibility, editArchive, deleteArchive, handleCardClick } =
+  useArchiveCardActions();
+
 const isVisible = computed(() => props.archive.isVisible);
-
-const currentLevelName = computed(
-  () => getLevelName(props.archive.currentLevel)
-);
-
+const currentLevelName = computed(() => getLevelName(props.archive.currentLevel));
 const backgroundImage = computed(
   () => `/images/ETB/${props.archive.currentLevel}.jpg`
 );
-
-const archiveDifficultyText = computed(
-  () => getDifficultyText(props.archive.archiveDifficulty)
+const archiveDifficultyText = computed(() =>
+  getDifficultyText(props.archive.archiveDifficulty)
 );
-
-const actualDifficultyText = computed(
-  () => getDifficultyText(props.archive.actualDifficulty)
+const actualDifficultyText = computed(() =>
+  getDifficultyText(props.archive.actualDifficulty)
 );
-
 const archiveDifficultyClass = computed(
   () => `difficulty-${props.archive.archiveDifficulty}`
 );
-
 const actualDifficultyClass = computed(
   () => `difficulty-${props.archive.actualDifficulty}`
 );
-
-// 监听 props 变化，触发动画
-watch(
-  () => props.archive.isVisible,
-  (newVal) => {
-    if (newVal !== localVisible.value) {
-      isAnimating.value = true;
-      localVisible.value = newVal;
-      setTimeout(() => {
-        isAnimating.value = false;
-      }, 250);
-    }
-  },
-  { immediate: true }
-);
-
-// 初始化时同步状态
-onMounted(() => {
-  localVisible.value = props.archive.isVisible;
-});
-
-// Methods - 简化事件处理
-const toggleVisibility = () => {
-  emit("toggle-visibility", {
-    ...props.archive,
-    isVisible: !props.archive.isVisible,
-  });
-};
-
-const editArchive = () => emit("edit", props.archive);
-const deleteArchive = () => emit("delete", props.archive);
-const handleCardClick = () => emit("select", props.archive);
 </script>
 
 <style scoped>
@@ -190,6 +211,12 @@ const handleCardClick = () => emit("select", props.archive);
   will-change: transform, opacity, filter;
   contain: layout style;
   isolation: isolate;
+}
+
+.archive-card.archive-entering {
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 /* 删除时禁用所有 transform 相关动画，避免与 GSAP 冲突 */
@@ -260,7 +287,7 @@ const handleCardClick = () => emit("select", props.archive);
   height: 100%;
   filter: blur(1px);
   transform: scale(1.005);
-  transition: filter 0.3s ease, transform 0.3s ease;
+  transition: filter 0.4s ease-in-out, transform 0.4s ease-in-out;
 }
 
 .archive-card:hover .card-background :deep(.lazy-image-container) {

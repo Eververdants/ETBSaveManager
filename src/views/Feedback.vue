@@ -208,7 +208,7 @@
 
 <script>
 import { useI18n } from "vue-i18n";
-import CustomDropdown from "../components/CustomDropdown.vue";
+import CustomDropdown from "../components/ui/CustomDropdown.vue";
 import { feedbackService, ValidationLimits } from "../services/feedbackService.js";
 import storage from "../services/storageService";
 import { APP_VERSION } from "../config/version";

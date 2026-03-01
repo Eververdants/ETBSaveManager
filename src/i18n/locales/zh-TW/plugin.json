@@ -18,6 +18,7 @@
   "all": "全部",
   "loading": "載入中……",
   "retry": "重試",
+  "fetchError": "取得外掛資料失敗",
   "noResults": "沒有找到外掛",
   "author": "作者",
   "license": "授權條款",

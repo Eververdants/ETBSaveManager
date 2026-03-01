@@ -281,12 +281,12 @@ import { useI18n } from "vue-i18n";
 import { useQuickCreate } from "@/composables/useQuickCreate";
 import { useToast } from "@/composables/useToast";
 import storage from "@/services/storageService";
-import SmartInputArea from "@/components/SmartInputArea.vue";
-import UniformConfigPanel from "@/components/UniformConfigPanel.vue";
-import ArchiveCardFlow from "@/components/ArchiveCardFlow.vue";
-import ArchiveEditModal from "@/components/ArchiveEditModal.vue";
-import BatchEditModal from "@/components/BatchEditModal.vue";
-import TutorialOverlay from "@/components/TutorialOverlay.vue";
+import SmartInputArea from "@/components/feature/SmartInputArea.vue";
+import UniformConfigPanel from "@/components/system/UniformConfigPanel.vue";
+import ArchiveCardFlow from "@/components/archive/ArchiveCardFlow.vue";
+import ArchiveEditModal from "@/components/modal/ArchiveEditModal.vue";
+import BatchEditModal from "@/components/modal/BatchEditModal.vue";
+import TutorialOverlay from "@/components/feature/TutorialOverlay.vue";
 
 export default {
   name: "QuickCreateArchive",

@@ -1,5 +1,5 @@
 import { createApp, h } from "vue";
-import PromptPopup from "@/components/PromptPopup.vue";
+import PromptPopup from "@/components/modal/PromptPopup.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 let popupApp = null;

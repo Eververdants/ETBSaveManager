@@ -184,10 +184,10 @@ import { gsap } from "gsap";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { invoke } from "@tauri-apps/api/core";
-import InventoryItemSelector from "../components/InventoryItemSelector.vue";
-import LazyImage from "../components/LazyImage.vue";
-import CustomSlider from "../components/CustomSlider.vue";
-import PlayerManager from "../components/PlayerManager.vue";
+import InventoryItemSelector from "../components/feature/InventoryItemSelector.vue";
+import LazyImage from "../components/ui/LazyImage.vue";
+import CustomSlider from "../components/ui/CustomSlider.vue";
+import PlayerManager from "../components/system/PlayerManager.vue";
 import { notify } from "../services/notificationService";
 
 const props = defineProps({

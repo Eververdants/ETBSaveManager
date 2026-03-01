@@ -92,8 +92,8 @@
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
-import ThemePreview from "@/components/ThemePreview.vue";
-import ColorSection from "@/components/ColorSection.vue";
+import ThemePreview from "@/components/theme/ThemePreview.vue";
+import ColorSection from "@/components/theme/ColorSection.vue";
 import {
   themeValidator,
   DEFAULT_THEME_TEMPLATE,

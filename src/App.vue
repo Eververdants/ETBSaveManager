@@ -2,7 +2,8 @@
 import { ref, onMounted, shallowRef, computed } from "vue";
 import { useRouter } from "vue-router";
 import storage from "./services/storageService";
-import PerformanceMonitor from "./components/PerformanceMonitor.vue";
+import PerformanceMonitor from "./components/system/PerformanceMonitor.vue";
+import AutoFeedbackConsentModal from "./components/modal/AutoFeedbackConsentModal.vue";
 import { isSeasonalThemeAvailable } from "./config/seasonalThemeConfig";
 
 // 延迟导入非关键组件
@@ -10,8 +11,8 @@ const Sidebar = shallowRef(null);
 const TitleBar = shallowRef(null);
 
 // 立即加载关键组件
-import SidebarComponent from "./components/Sidebar.vue";
-import TitleBarComponent from "./components/TitleBar.vue";
+import SidebarComponent from "./components/layout/Sidebar.vue";
+import TitleBarComponent from "./components/layout/TitleBar.vue";
 
 Sidebar.value = SidebarComponent;
 TitleBar.value = TitleBarComponent;
@@ -28,6 +29,35 @@ const developerModeEnabled = ref(
 const shouldShowPerformanceMonitor = computed(
   () => performanceMonitorEnabled.value && developerModeEnabled.value
 );
+
+const showAutoFeedbackConsent = ref(false);
+const autoFeedbackConsentShown = ref(false);
+
+const CONSENT_KEY = "autoFeedbackConsentShown";
+
+function checkAndShowAutoFeedbackConsent() {
+  const alreadyShown = storage.getItem(CONSENT_KEY, false);
+  if (alreadyShown) {
+    return;
+  }
+  showAutoFeedbackConsent.value = true;
+}
+
+function handleAutoFeedbackAccept() {
+  storage.setItem("autoFeedbackEnabled", true);
+  storage.setItem(CONSENT_KEY, true);
+  window.dispatchEvent(new CustomEvent("auto-feedback-toggle", {
+    detail: { enabled: true }
+  }));
+}
+
+function handleAutoFeedbackDecline() {
+  storage.setItem("autoFeedbackEnabled", false);
+  storage.setItem(CONSENT_KEY, true);
+  window.dispatchEvent(new CustomEvent("auto-feedback-toggle", {
+    detail: { enabled: false }
+  }));
+}
 
 // 组件缓存配置
 const cachedComponents = ["Home", "Settings", "CreateArchive", "PluginMarket", "CoreArchive", "Log"];
@@ -70,6 +100,7 @@ onMounted(() => {
   requestIdleCallback(() => {
     initThemeSystem();
     initFloatingButtonProtection();
+    checkAndShowAutoFeedbackConsent();
   }, { timeout: 1000 });
 });
 
@@ -145,6 +176,9 @@ async function initFloatingButtonProtection() {
   <div class="app-container">
     <component :is="TitleBar" v-if="TitleBar" />
     <PerformanceMonitor v-if="shouldShowPerformanceMonitor" class="performance-monitor" />
+    <AutoFeedbackConsentModal :show="showAutoFeedbackConsent" :title="$t('settings.autoFeedbackConsent.title')"
+      :message="$t('settings.autoFeedbackConsent.message')" @accept="handleAutoFeedbackAccept"
+      @decline="handleAutoFeedbackDecline" />
     <div class="content-wrapper">
       <component :is="Sidebar" v-if="Sidebar" @sidebar-expand="handleSidebarExpand" />
       <main class="main-content" :class="{

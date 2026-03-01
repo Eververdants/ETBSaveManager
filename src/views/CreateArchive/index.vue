@@ -138,7 +138,7 @@ import {
 import { gsap } from "gsap";
 import { useI18n } from "vue-i18n";
 import { useRouter, useRoute } from "vue-router";
-import InventoryItemSelector from "@/components/InventoryItemSelector.vue";
+import InventoryItemSelector from "@/components/feature/InventoryItemSelector.vue";
 import { notify } from "@/services/notificationService";
 import Step1SelectLevel from "./Step1SelectLevel.vue";
 import Step2ConfigArchive from "./Step2ConfigArchive.vue";

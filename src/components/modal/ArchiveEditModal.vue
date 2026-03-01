@@ -84,7 +84,7 @@
 <script setup>
 import { ref, watch, computed } from "vue";
 import { useI18n } from "vue-i18n";
-import CustomDropdown from "@/components/CustomDropdown.vue";
+import CustomDropdown from "@/components/ui/CustomDropdown.vue";
 
 const { t } = useI18n({ useScope: "global" });
 
@@ -101,75 +101,99 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-});
+}); ``
 
 const emit = defineEmits(["close", "save"]);
 
-// 本地编辑副本
-const localArchive = ref({
-  name: "",
-  level: null,
-  difficulty: null,
-  actualDifficulty: null,
-  inventoryTemplate: null,
-});
-
-// 难度选项
-const difficultyOptions = computed(() => [
-  { value: "easy", label: t("createArchive.difficultyLevels.easy") },
-  { value: "normal", label: t("createArchive.difficultyLevels.normal") },
-  { value: "hard", label: t("createArchive.difficultyLevels.hard") },
-  { value: "nightmare", label: t("createArchive.difficultyLevels.nightmare") },
-]);
-
-// 层级下拉选项（包含继承选项）
-const levelDropdownOptions = computed(() => {
-  return props.availableLevels.map((level) => ({
-    value: level.value,
-    label: level.label,
-  }));
-});
-
-// 难度下拉选项（包含继承选项）
-const difficultyDropdownOptions = computed(() => {
-  return difficultyOptions.value;
-});
-
-// 背包模板下拉选项
-const inventoryDropdownOptions = computed(() => [
-  { value: "empty", label: t("quickCreate.card.emptyInventory") },
-]);
-
-// 监听 archive 变化，更新本地副本
-watch(
-  () => props.archive,
-  (newArchive) => {
-    if (newArchive) {
-      localArchive.value = {
-        name: newArchive.name || "",
-        level: newArchive.level,
-        difficulty: newArchive.difficulty,
-        actualDifficulty: newArchive.actualDifficulty,
-        inventoryTemplate: newArchive.inventoryTemplate,
-      };
-    }
-  },
-  { immediate: true }
-);
-
-// 关闭模态框
-const handleClose = () => {
-  emit("close");
-};
-
-// 保存更改
-const handleSave = () => {
-  emit("save", {
-    id: props.archive?.id,
-    ...localArchive.value,
+const useEditState = () => {
+  const localArchive = ref({
+    name: "",
+    level: null,
+    difficulty: null,
+    actualDifficulty: null,
+    inventoryTemplate: null,
   });
-  handleClose();
+
+  const resetArchive = () => {
+    localArchive.value = {
+      name: "",
+      level: null,
+      difficulty: null,
+      actualDifficulty: null,
+      inventoryTemplate: null,
+    };
+  };
+
+  return { localArchive, resetArchive };
 };
+
+const useDropdownOptions = (availableLevels, t) => {
+  const difficultyOptions = computed(() => [
+    { value: "easy", label: t("createArchive.difficultyLevels.easy") },
+    { value: "normal", label: t("createArchive.difficultyLevels.normal") },
+    { value: "hard", label: t("createArchive.difficultyLevels.hard") },
+    { value: "nightmare", label: t("createArchive.difficultyLevels.nightmare") },
+  ]);
+
+  const levelDropdownOptions = computed(() => {
+    return availableLevels.value.map((level) => ({
+      value: level.value,
+      label: level.label,
+    }));
+  });
+
+  const difficultyDropdownOptions = computed(() => {
+    return difficultyOptions.value;
+  });
+
+  const inventoryDropdownOptions = computed(() => [
+    { value: "empty", label: t("quickCreate.card.emptyInventory") },
+  ]);
+
+  return { difficultyOptions, levelDropdownOptions, difficultyDropdownOptions, inventoryDropdownOptions };
+};
+
+const useArchiveSync = (archive, localArchive, resetArchive) => {
+  watch(
+    () => archive.value,
+    (newArchive) => {
+      if (newArchive) {
+        localArchive.value = {
+          name: newArchive.name || "",
+          level: newArchive.level,
+          difficulty: newArchive.difficulty,
+          actualDifficulty: newArchive.actualDifficulty,
+          inventoryTemplate: newArchive.inventoryTemplate,
+        };
+      } else {
+        resetArchive();
+      }
+    },
+    { immediate: true }
+  );
+};
+
+const useEditActions = (emit, archive, localArchive, handleClose) => {
+  const handleSave = () => {
+    emit("save", {
+      id: archive.value?.id,
+      ...localArchive.value,
+    });
+    handleClose();
+  };
+
+  return { handleSave };
+};
+
+const { localArchive, resetArchive } = useEditState();
+const { levelDropdownOptions, difficultyDropdownOptions, inventoryDropdownOptions } = useDropdownOptions(
+  () => props.availableLevels,
+  t
+);
+useArchiveSync(() => props.archive, localArchive, resetArchive);
+
+const handleClose = () => emit("close");
+const { handleSave } = useEditActions(emit, () => props.archive, localArchive, handleClose);
 </script>
 
 <style scoped>

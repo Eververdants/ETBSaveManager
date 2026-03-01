@@ -285,6 +285,30 @@ const toggleSearch = () => {
   if (showSearch.value) nextTick(() => protectFloatingButtonPosition());
 };
 
+const openArchiveSearchPanel = () => {
+  if (!showSearch.value) {
+    showSearch.value = true;
+  }
+  nextTick(() => protectFloatingButtonPosition());
+};
+
+const handleOpenArchiveSearchEvent = (event) => {
+  if (!isPageActive.value) return;
+
+  const mode = event?.detail?.mode || "open";
+  if (mode === "toggle") {
+    toggleSearch();
+    return;
+  }
+
+  if (mode === "close") {
+    showSearch.value = false;
+    return;
+  }
+
+  openArchiveSearchPanel();
+};
+
 const updateLastFilters = (filters) => updateFilters(filters);
 
 const handleFilteredArchives = (filteredArchives) => {
@@ -430,6 +454,8 @@ onDeactivated(() => {
 });
 
 onMounted(async () => {
+  window.addEventListener("open-archive-search", handleOpenArchiveSearchEvent);
+
   initPerformanceMonitor();
   setTimeout(initFloatingButtonProtection, 1000);
   startPositionChecker();
@@ -495,6 +521,8 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener("open-archive-search", handleOpenArchiveSearchEvent);
+
   isUnmounted = true;
   if (resizeObserver) {
     resizeObserver.disconnect();

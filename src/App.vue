@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted, shallowRef, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, onUnmounted, shallowRef, computed, nextTick, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import storage from "./services/storageService";
 import PerformanceMonitor from "./components/system/PerformanceMonitor.vue";
 import AutoFeedbackConsentModal from "./components/modal/AutoFeedbackConsentModal.vue";
+import GlobalSearchPanel from "./components/feature/GlobalSearchPanel.vue";
 import { isSeasonalThemeAvailable } from "./config/seasonalThemeConfig";
 
 // 延迟导入非关键组件
@@ -18,7 +19,10 @@ Sidebar.value = SidebarComponent;
 TitleBar.value = TitleBarComponent;
 
 const router = useRouter();
+const route = useRoute();
 const sidebarExpanded = ref(false);
+const showGlobalSearch = ref(false);
+const globalSearchRef = ref(null);
 const normalizeBool = (value) => value === true || value === "true";
 const performanceMonitorEnabled = ref(
   normalizeBool(storage.getItem("performanceMonitor", false))
@@ -67,7 +71,98 @@ const handleSidebarExpand = (expanded) => {
   sidebarExpanded.value = expanded;
 };
 
+const closeGlobalSearch = () => {
+  showGlobalSearch.value = false;
+};
+
+const openHomeSearch = (mode = "open") => {
+  window.dispatchEvent(
+    new CustomEvent("open-archive-search", {
+      detail: { source: "shortcut", mode },
+    })
+  );
+};
+
+const openGlobalSearch = ({ navigate = false, backward = false } = {}) => {
+  showGlobalSearch.value = true;
+  nextTick(() => {
+    const panel = globalSearchRef.value;
+    if (!panel) return;
+
+    if (navigate) {
+      if (backward) {
+        panel.findPrevious();
+      } else {
+        panel.findNext();
+      }
+      return;
+    }
+
+    panel.focusInput();
+  });
+};
+
+const handleFindShortcut = () => {
+  if (route.name === "Home") {
+    closeGlobalSearch();
+    openHomeSearch("toggle");
+    return;
+  }
+
+  if (showGlobalSearch.value) {
+    closeGlobalSearch();
+    return;
+  }
+
+  openGlobalSearch({ navigate: false });
+};
+
+const handleFindNavigateShortcut = (backward = false) => {
+  if (route.name === "Home") {
+    closeGlobalSearch();
+    openHomeSearch("open");
+    return;
+  }
+  openGlobalSearch({ navigate: true, backward });
+};
+
+const handleGlobalKeydown = (event) => {
+  const key = String(event.key || "").toLowerCase();
+  const isFindShortcut = (event.ctrlKey || event.metaKey) && key === "f";
+
+  if (isFindShortcut) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") {
+      event.stopImmediatePropagation();
+    }
+    handleFindShortcut();
+    return;
+  }
+
+  if (event.key === "F3") {
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") {
+      event.stopImmediatePropagation();
+    }
+    handleFindNavigateShortcut(event.shiftKey);
+  }
+};
+
+const handleFindEventFromLock = () => {
+  handleFindShortcut();
+};
+
+const handleFindNextEventFromLock = (event) => {
+  handleFindNavigateShortcut(!!event?.detail?.backward);
+};
+
 onMounted(() => {
+  document.addEventListener("keydown", handleGlobalKeydown, true);
+  window.addEventListener("app-global-find", handleFindEventFromLock);
+  window.addEventListener("app-global-find-next", handleFindNextEventFromLock);
+
   window.addEventListener("performance-monitor-toggle", (event) => {
     performanceMonitorEnabled.value = !!event.detail?.enabled;
   });
@@ -103,6 +198,19 @@ onMounted(() => {
     checkAndShowAutoFeedbackConsent();
   }, { timeout: 1000 });
 });
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleGlobalKeydown, true);
+  window.removeEventListener("app-global-find", handleFindEventFromLock);
+  window.removeEventListener("app-global-find-next", handleFindNextEventFromLock);
+});
+
+watch(
+  () => route.fullPath,
+  () => {
+    closeGlobalSearch();
+  }
+);
 
 // 主题系统初始化（延迟）
 async function initThemeSystem() {
@@ -176,6 +284,7 @@ async function initFloatingButtonProtection() {
   <div class="app-container">
     <component :is="TitleBar" v-if="TitleBar" />
     <PerformanceMonitor v-if="shouldShowPerformanceMonitor" class="performance-monitor" />
+    <GlobalSearchPanel ref="globalSearchRef" :visible="showGlobalSearch" @close="closeGlobalSearch" />
     <AutoFeedbackConsentModal :show="showAutoFeedbackConsent" :title="$t('settings.autoFeedbackConsent.title')"
       :message="$t('settings.autoFeedbackConsent.message')" @accept="handleAutoFeedbackAccept"
       @decline="handleAutoFeedbackDecline" />

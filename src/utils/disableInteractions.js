@@ -8,6 +8,33 @@ export function disableInteractions() {
   document.addEventListener(
     "keydown",
     (e) => {
+      const normalizedKey = String(e.key || "").toLowerCase();
+      const isFindShortcut = (e.ctrlKey || e.metaKey) && normalizedKey === "f";
+
+      // 拦截 WebView2 原生查找，转发到应用内搜索逻辑
+      if (isFindShortcut) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.dispatchEvent(
+          new CustomEvent("app-global-find", {
+            detail: { from: "disableInteractions", shiftKey: !!e.shiftKey },
+          })
+        );
+        return false;
+      }
+
+      // 模拟原生查找下一项/上一项（F3 / Shift+F3）
+      if (e.key === "F3") {
+        e.preventDefault();
+        e.stopPropagation();
+        window.dispatchEvent(
+          new CustomEvent("app-global-find-next", {
+            detail: { from: "disableInteractions", backward: !!e.shiftKey },
+          })
+        );
+        return false;
+      }
+
       // 如果当前焦点在输入框、文本域或内容可编辑元素上，允许正常输入
       const target = e.target;
       const isInputElement =

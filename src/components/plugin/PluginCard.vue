@@ -91,8 +91,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { usePluginCard } from '@/composables/usePluginCard';
 
 const { t } = useI18n();
 
@@ -109,33 +110,8 @@ const props = defineProps({
 
 defineEmits(['click', 'toggle', 'install', 'uninstall']);
 
-const typeClass = computed(() => `type-${props.plugin.type || 'feature'}`);
-
-const iconName = computed(() => {
-  const icons = {
-    language: 'globe',
-    theme: 'palette',
-    feature: 'puzzle-piece'
-  };
-  return icons[props.plugin.type] || 'puzzle-piece';
-});
-
-const typeLabel = computed(() => {
-  const key = `plugin.type.${props.plugin.type}`;
-  const translated = t(key);
-  return translated !== key ? translated : t('plugin.type.plugin');
-});
-
-// 已安装插件有 status 字段，商店插件有 installed 字段
-const isInstalled = computed(() => props.plugin.installed || props.plugin.status !== undefined);
-
-const statusIcon = computed(() => 
-  props.plugin.status === 'active' ? 'check-circle' : 'pause-circle'
-);
-
-const statusText = computed(() => 
-  props.plugin.status === 'active' ? t('plugin.enabled') : t('plugin.disabled')
-);
+const pluginRef = toRef(props, 'plugin');
+const { typeClass, iconName, typeLabel, isInstalled, statusIcon, statusText } = usePluginCard(pluginRef, () => props.showStatus, t);
 </script>
 
 <style scoped>

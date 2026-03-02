@@ -53,9 +53,10 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted } from "vue";
+import { computed, toRef } from "vue";
 import { useI18n } from "vue-i18n";
 import LazyImage from "../ui/LazyImage.vue";
+import { useArchiveCard } from "@/composables/useArchiveCard";
 
 const props = defineProps({
   archive: {
@@ -72,124 +73,41 @@ const emit = defineEmits(["toggle-visibility", "edit", "delete", "select"]);
 
 const { t, te } = useI18n({ useScope: "global" });
 
-const hasEntered = ref(false);
-
-onMounted(() => {
-  const delay = Math.min(props.index * 30, 300);
-  setTimeout(() => {
-    hasEntered.value = true;
-  }, delay);
-});
-
-const textWidthCache = new Map();
-
-const getTextWidth = (() => {
-  let canvas = null;
-  let ctx = null;
-  return (text) => {
-    if (textWidthCache.has(text)) return textWidthCache.get(text);
-    if (!canvas) {
-      canvas = document.createElement("canvas");
-      ctx = canvas.getContext("2d");
-      ctx.font = "500 11px system-ui, -apple-system, sans-serif";
-    }
-    const width = Math.ceil(ctx.measureText(text).width);
-    textWidthCache.set(text, width);
-    return width;
-  };
-})();
-
-const useArchiveTranslations = () => {
-  const getLevelName = (levelKey) => {
-    const translationKey = `LevelName_Display.${levelKey}`;
-    return te(translationKey) ? t(translationKey) : levelKey;
-  };
-
-  const getDifficultyText = (difficultyKey) => {
-    const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
-    return te(translationKey) ? t(translationKey) : difficultyKey;
-  };
-
-  return { getLevelName, getDifficultyText };
+const getLevelName = (levelKey) => {
+  const translationKey = `LevelName_Display.${levelKey}`;
+  return te(translationKey) ? t(translationKey) : levelKey;
 };
 
-const useArchiveCardStyle = () => {
-  const tagStyle = (shortText, prefix) => {
-    const shortWidth = Math.max(30, getTextWidth(shortText) + 16);
-    const fullText = `${prefix}:${shortText}`;
-    const fullWidth = Math.max(shortWidth, getTextWidth(fullText) + 24);
-    return {
-      "--w-short": `${shortWidth}px`,
-      "--w-full": `${fullWidth}px`,
-    };
-  };
-
-  return { tagStyle };
+const getDifficultyText = (difficultyKey) => {
+  const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
+  return te(translationKey) ? t(translationKey) : difficultyKey;
 };
 
-const useArchiveCardVisibility = () => {
-  const localVisible = ref(props.archive.isVisible);
-  const isAnimating = ref(false);
-
-  watch(
-    () => props.archive.isVisible,
-    (newVal) => {
-      if (newVal !== localVisible.value) {
-        isAnimating.value = true;
-        localVisible.value = newVal;
-        setTimeout(() => {
-          isAnimating.value = false;
-        }, 250);
-      }
-    },
-    { immediate: true }
-  );
-
-  onMounted(() => {
-    localVisible.value = props.archive.isVisible;
-  });
-
-  return { localVisible, isAnimating };
+const translations = {
+  getLevelName,
+  getDifficultyText,
 };
 
-const useArchiveCardActions = () => {
-  const toggleVisibility = () => {
-    emit("toggle-visibility", {
-      ...props.archive,
-      isVisible: !props.archive.isVisible,
-    });
-  };
+const archiveRef = toRef(props, "archive");
+const indexRef = computed(() => props.index);
 
-  const editArchive = () => emit("edit", props.archive);
-  const deleteArchive = () => emit("delete", props.archive);
-  const handleCardClick = () => emit("select", props.archive);
-
-  return { toggleVisibility, editArchive, deleteArchive, handleCardClick };
-};
-
-const { getLevelName, getDifficultyText } = useArchiveTranslations();
-const { tagStyle } = useArchiveCardStyle();
-const { localVisible, isAnimating } = useArchiveCardVisibility();
-const { toggleVisibility, editArchive, deleteArchive, handleCardClick } =
-  useArchiveCardActions();
-
-const isVisible = computed(() => props.archive.isVisible);
-const currentLevelName = computed(() => getLevelName(props.archive.currentLevel));
-const backgroundImage = computed(
-  () => `/images/ETB/${props.archive.currentLevel}.jpg`
-);
-const archiveDifficultyText = computed(() =>
-  getDifficultyText(props.archive.archiveDifficulty)
-);
-const actualDifficultyText = computed(() =>
-  getDifficultyText(props.archive.actualDifficulty)
-);
-const archiveDifficultyClass = computed(
-  () => `difficulty-${props.archive.archiveDifficulty}`
-);
-const actualDifficultyClass = computed(
-  () => `difficulty-${props.archive.actualDifficulty}`
-);
+const {
+  hasEntered,
+  localVisible,
+  isAnimating,
+  isVisible,
+  currentLevelName,
+  backgroundImage,
+  archiveDifficultyText,
+  actualDifficultyText,
+  archiveDifficultyClass,
+  actualDifficultyClass,
+  tagStyle,
+  toggleVisibility,
+  editArchive,
+  deleteArchive,
+  handleCardClick,
+} = useArchiveCard(archiveRef, indexRef, emit, translations);
 </script>
 
 <style scoped>

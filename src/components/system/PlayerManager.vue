@@ -68,8 +68,9 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, toRef } from "vue";
 import { useI18n } from "vue-i18n";
+import { usePlayerManager } from "@/composables/usePlayerManager";
 
 const props = defineProps({
   players: {
@@ -126,16 +127,8 @@ defineEmits(["update:newSteamId", "add-steam-id", "remove-player", "select-playe
 
 const { t } = useI18n({ useScope: "global" });
 
-const title = computed(() => t(props.titleKey));
-const emptyHint = computed(() => t(props.emptyHintKey));
-const steamIdPlaceholder = computed(() => t(props.steamIdPlaceholderKey));
-
-const getSanityClass = (val) => {
-  if (val >= 80) return "sanity-high";
-  if (val >= 50) return "sanity-medium";
-  if (val >= 20) return "sanity-low";
-  return "sanity-critical";
-};
+const propsRef = toRef(props);
+const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManager(propsRef, t);
 </script>
 
 <style scoped>

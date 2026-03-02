@@ -106,20 +106,9 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, toRef } from "vue";
 import { useI18n } from "vue-i18n";
-
-const { t, te } = useI18n({ useScope: "global" });
-
-const getLevelName = (levelKey) => {
-  const translationKey = `LevelName_Display.${levelKey}`;
-  return te(translationKey) ? t(translationKey) : levelKey;
-};
-
-const getDifficultyText = (difficultyKey) => {
-  const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
-  return te(translationKey) ? t(translationKey) : difficultyKey;
-};
+import { useQuickCreateArchiveCard } from "@/composables/useQuickCreateArchiveCard";
 
 const props = defineProps({
   archive: {
@@ -143,86 +132,37 @@ const props = defineProps({
 
 defineEmits(["select", "edit", "copy", "remove"]);
 
-// 检查是否有缺失参数
-const hasMissingParams = computed(() => {
-  return (
-    props.archive.validationErrors && props.archive.validationErrors.length > 0
-  );
-});
+const { t, te } = useI18n({ useScope: "global" });
 
-// 边框状态类
-const borderStatusClass = computed(() => {
-  if (hasMissingParams.value) {
-    return "border-error";
-  }
-  if (props.archive.hasIndividualSettings) {
-    return "border-individual";
-  }
-  // 检查是否有任何继承的配置
-  const source = props.configSource;
-  const hasUniform =
-    source.level === "uniform" ||
-    source.difficulty === "uniform" ||
-    source.actualDifficulty === "uniform" ||
-    source.inventory === "uniform";
-  if (hasUniform) {
-    return "border-uniform";
-  }
-  return "border-default";
-});
-
-// 检查字段是否继承
-const isInherited = (field) => {
-  const source = props.configSource[field];
-  return source === "uniform" || source === "smart";
+const getLevelName = (levelKey) => {
+  const translationKey = `LevelName_Display.${levelKey}`;
+  return te(translationKey) ? t(translationKey) : levelKey;
 };
 
-// 获取来源样式类
-const getSourceClass = (field) => {
-  return `source-${props.configSource[field]}`;
+const getDifficultyText = (difficultyKey) => {
+  const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
+  return te(translationKey) ? t(translationKey) : difficultyKey;
 };
 
-// 难度样式类
-const difficultyClass = (difficulty) => {
-  return `difficulty-${difficulty}`;
+const translations = {
+  getLevelName,
+  getDifficultyText,
 };
 
-// 显示层级
-const displayLevel = computed(() => {
-  const level = props.archive.finalLevel;
-  if (!level) {
-    return t("quickCreate.card.notSet");
-  }
-  return getLevelName(level);
-});
+const archiveRef = toRef(props, "archive");
+const configSourceRef = toRef(props, "configSource");
 
-const displayDifficulty = computed(() => {
-  const difficulty = props.archive.finalDifficulty;
-  if (!difficulty) {
-    return t("quickCreate.card.notSet");
-  }
-  return getDifficultyText(difficulty);
-});
-
-const displayActualDifficulty = computed(() => {
-  const difficulty = props.archive.finalActualDifficulty;
-  if (!difficulty) {
-    return t("quickCreate.card.notSet");
-  }
-  return getDifficultyText(difficulty);
-});
-
-// 显示背包状态
-const displayInventory = computed(() => {
-  const template = props.archive.finalInventory;
-  if (!template || (Array.isArray(template) && template.length === 0)) {
-    return t("quickCreate.card.emptyInventory");
-  }
-  if (typeof template === "string") {
-    return template;
-  }
-  return t("quickCreate.card.customInventory");
-});
+const {
+  hasMissingParams,
+  borderStatusClass,
+  isInherited,
+  getSourceClass,
+  difficultyClass,
+  displayLevel,
+  displayDifficulty,
+  displayActualDifficulty,
+  displayInventory,
+} = useQuickCreateArchiveCard(archiveRef, configSourceRef, t, translations);
 </script>
 
 <style scoped>

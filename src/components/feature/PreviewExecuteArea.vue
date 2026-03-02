@@ -70,8 +70,9 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, toRef } from "vue";
 import { useI18n } from "vue-i18n";
+import { usePreviewExecuteArea } from "@/composables/usePreviewExecuteArea";
 
 const { t } = useI18n({ useScope: "global" });
 
@@ -97,86 +98,41 @@ const props = defineProps({
 
 const emit = defineEmits(["cancel", "create", "save-template"]);
 
-// 计算统一配置数量
-const uniformCount = computed(() => {
-  return props.archives.filter((a) => !a.hasIndividualSettings).length;
-});
+const archivesRef = toRef(props, "archives");
+const selectedCountRef = toRef(props, "selectedCount");
+const isCreatingRef = toRef(props, "isCreating");
 
-// 计算个别设置数量
-const individualCount = computed(() => {
-  return props.archives.filter((a) => a.hasIndividualSettings).length;
-});
+const { uniformCount, individualCount, missingCount, canCreate, estimatedTime } = usePreviewExecuteArea(
+  archivesRef,
+  selectedCountRef,
+  isCreatingRef
+);
 
-// 计算缺失参数数量
-const missingCount = computed(() => {
-  return props.archives.filter(
-    (a) => a.validationErrors && a.validationErrors.length > 0
-  ).length;
-});
-
-// 计算是否可以创建
-const canCreate = computed(() => {
-  if (props.archives.length === 0) return false;
-  return missingCount.value === 0;
-});
-
-// 计算预计耗时（每个存档约0.5秒，批量处理每批5个）
-const estimatedTime = computed(() => {
-  const count = props.archives.length;
-  if (count === 0) return "0s";
-
-  // 每批5个，每批约2秒（包含处理和UI更新时间）
-  const batches = Math.ceil(count / 5);
-  const seconds = batches * 2;
-
-  if (seconds < 60) {
-    return `${seconds}s`;
-  } else {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return remainingSeconds > 0
-      ? `${minutes}m ${remainingSeconds}s`
-      : `${minutes}m`;
-  }
-});
-
-// 创建按钮文本
 const createButtonText = computed(() => {
   if (props.isCreating) {
     return t("quickCreate.preview.creating");
   }
-  const count =
-    props.selectedCount > 0 ? props.selectedCount : props.archives.length;
+  const count = props.selectedCount > 0 ? props.selectedCount : props.archives.length;
   return t("quickCreate.preview.create", { count });
 });
 
-// 创建按钮提示
 const createButtonTooltip = computed(() => {
   if (props.archives.length === 0) {
     return t("quickCreate.preview.noArchives");
   }
   if (missingCount.value > 0) {
-    return t("quickCreate.preview.hasMissingParams", {
-      count: missingCount.value,
-    });
+    return t("quickCreate.preview.hasMissingParams", { count: missingCount.value });
   }
   return "";
 });
 
-// 事件处理
-const handleCancel = () => {
-  emit("cancel");
-};
-
+const handleCancel = () => emit("cancel");
 const handleCreate = () => {
   if (canCreate.value && !props.isCreating) {
     emit("create");
   }
 };
-
-const handleSaveTemplate = () => {
-  emit("save-template");
-};
+const handleSaveTemplate = () => emit("save-template");
 </script>
 
 <style scoped>

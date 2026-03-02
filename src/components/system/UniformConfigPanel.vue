@@ -155,250 +155,42 @@
   </section>
 </template>
 
-<script>
-import { computed } from "vue";
+<script setup>
 import { useI18n } from "vue-i18n";
 import CustomDropdown from "@/components/ui/CustomDropdown.vue";
+import { useUniformConfigPanel } from "@/composables/useUniformConfigPanel";
 
-export default {
-  name: "UniformConfigPanel",
-  components: {
-    CustomDropdown,
+const props = defineProps({
+  config: {
+    type: Object,
+    required: true,
   },
-  props: {
-    config: {
-      type: Object,
-      required: true,
-    },
-    smartRules: {
-      type: Object,
-      required: true,
-    },
+  smartRules: {
+    type: Object,
+    required: true,
   },
-  emits: ["update:config", "update:smartRules"],
-  setup(props, { emit }) {
-    const { t, te } = useI18n();
+});
 
-    const getLevelName = (levelKey) => {
-      const translationKey = `LevelName_Display.${levelKey}`;
-      return te(translationKey) ? t(translationKey) : levelKey;
-    };
+const emit = defineEmits(["update:config", "update:smartRules"]);
 
-    const getDifficultyText = (difficultyKey) => {
-      const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
-      return te(translationKey) ? t(translationKey) : difficultyKey;
-    };
+const { t, te } = useI18n();
 
-    // 主线层级列表
-    const mainLevelKeys = [
-      "Level0",
-      "TopFloor",
-      "MiddleFloor",
-      "GarageLevel2",
-      "BottomFloor",
-      "TheHub",
-      "Pipes1",
-      "ElectricalStation",
-      "Office",
-      "Hotel",
-      "Floor3",
-      "BoilerRoom",
-      "Pipes2",
-      "LevelFun",
-      "Poolrooms",
-      "LevelRun",
-      "TheEnd",
-      "Level94",
-      "AnimatedKingdom",
-      "LightsOut",
-      "OceanMap",
-      "CaveLevel",
-      "Level05",
-      "Level9",
-      "AbandonedBase",
-      "Level10",
-      "Level3999",
-      "Level07",
-      "Snackrooms",
-      "LevelDash",
-      "Level188_Expanded",
-      "Poolrooms_Expanded",
-      "WaterPark_Level01_P",
-      "WaterPark_Level02_P",
-      "WaterPark_Level03_P",
-      "LevelFun_Expanded",
-      "Zone1_Modified",
-      "Zone2_Modified",
-      "Zone3_Baked",
-      "Zone4",
-      "Level52",
-      "TunnelLevel",
-    ];
-
-    // 支线层级列表
-    const branch1LevelKeys = ["Bunker", "GraffitiLevel", "Grassrooms_Expanded"];
-
-    // 计算主线层级
-    const mainLevels = computed(() => {
-      return mainLevelKeys.map((key) => ({
-        levelKey: key,
-        name: getLevelName(key),
-      }));
-    });
-
-    const branch1Levels = computed(() => {
-      return branch1LevelKeys.map((key) => ({
-        levelKey: key,
-        name: getLevelName(key),
-      }));
-    });
-
-    // 层级下拉选项（合并主线和支线）
-    const levelOptions = computed(() => {
-      const options = [];
-      // 主线层级
-      mainLevels.value.forEach((level) => {
-        options.push({
-          value: level.levelKey,
-          label: level.name,
-        });
-      });
-      // 支线层级
-      branch1Levels.value.forEach((level) => {
-        options.push({
-          value: level.levelKey,
-          label: level.name,
-        });
-      });
-      return options;
-    });
-
-    // 难度下拉选项
-    const difficultyOptions = computed(() => [
-      { value: "easy", label: getDifficultyText("easy") },
-      { value: "normal", label: getDifficultyText("normal") },
-      { value: "hard", label: getDifficultyText("hard") },
-      {
-        value: "nightmare",
-        label: getDifficultyText("nightmare"),
-      },
-    ]);
-
-    // 背包模板下拉选项
-    const inventoryTemplateOptions = computed(() => [
-      { value: "empty", label: "默认空背包" },
-    ]);
-
-    // 层级配置处理
-    const handleLevelModeChange = (enabled) => {
-      emit("update:config", {
-        ...props.config,
-        level: {
-          enabled,
-          value: enabled ? props.config.level.value : null,
-        },
-      });
-    };
-
-    const handleLevelValueChange = (value) => {
-      emit("update:config", {
-        ...props.config,
-        level: {
-          enabled: true,
-          value: value || null,
-        },
-      });
-    };
-
-    // 存档难度配置处理
-    const handleDifficultyModeChange = (enabled) => {
-      emit("update:config", {
-        ...props.config,
-        difficulty: {
-          enabled,
-          value: enabled ? props.config.difficulty.value : null,
-        },
-      });
-    };
-
-    const handleDifficultyValueChange = (value) => {
-      emit("update:config", {
-        ...props.config,
-        difficulty: {
-          enabled: true,
-          value: value || null,
-        },
-      });
-    };
-
-    // 实际难度配置处理
-    const handleActualDifficultyModeChange = (enabled) => {
-      emit("update:config", {
-        ...props.config,
-        actualDifficulty: {
-          enabled,
-          value: enabled ? props.config.actualDifficulty.value : null,
-        },
-      });
-    };
-
-    const handleActualDifficultyValueChange = (value) => {
-      emit("update:config", {
-        ...props.config,
-        actualDifficulty: {
-          enabled: true,
-          value: value || null,
-        },
-      });
-    };
-
-    // 背包配置处理
-    const handleInventoryModeChange = (enabled) => {
-      emit("update:config", {
-        ...props.config,
-        inventory: {
-          enabled,
-          templateName: enabled ? props.config.inventory.templateName : null,
-        },
-      });
-    };
-
-    const handleInventoryTemplateChange = (templateName) => {
-      emit("update:config", {
-        ...props.config,
-        inventory: {
-          enabled: true,
-          templateName: templateName || null,
-        },
-      });
-    };
-
-    // 智能规则处理
-    const handleSmartRuleChange = (rule, checked) => {
-      emit("update:smartRules", {
-        ...props.smartRules,
-        [rule]: checked,
-      });
-    };
-
-    return {
-      mainLevels,
-      branch1Levels,
-      levelOptions,
-      difficultyOptions,
-      inventoryTemplateOptions,
-      handleLevelModeChange,
-      handleLevelValueChange,
-      handleDifficultyModeChange,
-      handleDifficultyValueChange,
-      handleActualDifficultyModeChange,
-      handleActualDifficultyValueChange,
-      handleInventoryModeChange,
-      handleInventoryTemplateChange,
-      handleSmartRuleChange,
-    };
-  },
-};
+const {
+  mainLevels,
+  branch1Levels,
+  levelOptions,
+  difficultyOptions,
+  inventoryTemplateOptions,
+  handleLevelModeChange,
+  handleLevelValueChange,
+  handleDifficultyModeChange,
+  handleDifficultyValueChange,
+  handleActualDifficultyModeChange,
+  handleActualDifficultyValueChange,
+  handleInventoryModeChange,
+  handleInventoryTemplateChange,
+  handleSmartRuleChange,
+} = useUniformConfigPanel(props, emit, t, te);
 </script>
 
 <style scoped>

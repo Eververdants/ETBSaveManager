@@ -74,6 +74,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useLocalInstallModal } from '@/composables/useLocalInstallModal';
 
 const props = defineProps({
   show: {
@@ -96,37 +97,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'select-folder', 'reset']);
 
-const isDragging = ref(false);
-
-const handleDragOver = (e) => {
-  e.preventDefault();
-  isDragging.value = true;
-};
-
-const handleDragLeave = (e) => {
-  e.preventDefault();
-  isDragging.value = false;
-};
-
-const handleDrop = (e) => {
-  e.preventDefault();
-  isDragging.value = false;
-  // 拖拽暂不支持，提示用户使用按钮
-  emit('reset');
-};
-
-const selectFolder = () => {
-  emit('select-folder');
-};
-
-const resetState = () => {
-  emit('reset');
-};
-
-// 控制 body 滚动
-watch(() => props.show, (val) => {
-  document.body.style.overflow = val ? 'hidden' : '';
-});
+const { isDragging, handleDragOver, handleDragLeave, handleDrop, selectFolder, resetState } = useLocalInstallModal(props, emit);
 </script>
 
 <style scoped>

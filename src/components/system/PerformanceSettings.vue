@@ -117,187 +117,52 @@
   </div>
 </template>
 
-<script>
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+<script setup>
 import { useI18n } from "vue-i18n";
-import { detectDevicePerformance } from "../../utils/performance";
+import { usePerformanceSettings } from "@/composables/usePerformanceSettings";
 
-export default {
-  name: "PerformanceSettings",
-  props: {
-    performanceMode: {
-      type: String,
-      default: "auto",
-    },
-    animationQuality: {
-      type: String,
-      default: "medium",
-    },
-    hardwareAcceleration: {
-      type: Boolean,
-      default: true,
-    },
-    virtualizationEnabled: {
-      type: Boolean,
-      default: true,
-    },
+const props = defineProps({
+  performanceMode: {
+    type: String,
+    default: "auto",
   },
-  emits: [
-    "update:performanceMode",
-    "update:animationQuality",
-    "update:hardwareAcceleration",
-    "update:virtualizationEnabled",
-  ],
-  setup(props, { emit }) {
-    const { t } = useI18n();
-
-    // 本地状态
-    const localPerformanceMode = ref(props.performanceMode);
-    const localAnimationQuality = ref(props.animationQuality);
-    const localHardwareAcceleration = ref(props.hardwareAcceleration);
-    const localVirtualizationEnabled = ref(props.virtualizationEnabled);
-
-    // 设备信息
-    const deviceInfo = ref(detectDevicePerformance());
-
-    // 性能监控
-    const currentFPS = ref(60);
-    const longTaskCount = ref(0);
-    let frameCount = 0;
-    let lastTime = performance.now();
-    let fpsMonitorInterval = null;
-    let longTaskObserver = null;
-
-    // 监听props变化
-    watch(
-      () => props.performanceMode,
-      (newVal) => {
-        localPerformanceMode.value = newVal;
-      }
-    );
-
-    watch(
-      () => props.animationQuality,
-      (newVal) => {
-        localAnimationQuality.value = newVal;
-      }
-    );
-
-    watch(
-      () => props.hardwareAcceleration,
-      (newVal) => {
-        localHardwareAcceleration.value = newVal;
-      }
-    );
-
-    watch(
-      () => props.virtualizationEnabled,
-      (newVal) => {
-        localVirtualizationEnabled.value = newVal;
-      }
-    );
-
-    // 更新函数
-    const updatePerformanceMode = () => {
-      emit("update:performanceMode", localPerformanceMode.value);
-    };
-
-    const updateAnimationQuality = () => {
-      emit("update:animationQuality", localAnimationQuality.value);
-    };
-
-    const updateHardwareAcceleration = () => {
-      emit("update:hardwareAcceleration", localHardwareAcceleration.value);
-    };
-
-    const updateVirtualization = () => {
-      emit("update:virtualizationEnabled", localVirtualizationEnabled.value);
-    };
-
-    // 获取性能等级文本
-    const getPerformanceLevelText = (level) => {
-      switch (level) {
-        case "high":
-          return t("common.high");
-        case "medium":
-          return t("common.medium");
-        case "low":
-          return t("common.low");
-        default:
-          return t("common.unknown");
-      }
-    };
-
-    // 性能监控
-    const startPerformanceMonitoring = () => {
-      // FPS监控
-      const monitorFPS = () => {
-        frameCount++;
-        const now = performance.now();
-
-        if (now - lastTime >= 1000) {
-          currentFPS.value = Math.round((frameCount * 1000) / (now - lastTime));
-          frameCount = 0;
-          lastTime = now;
-        }
-
-        if (fpsMonitorInterval) {
-          fpsMonitorInterval = requestAnimationFrame(monitorFPS);
-        }
-      };
-
-      fpsMonitorInterval = requestAnimationFrame(monitorFPS);
-
-      // 长任务监控
-      if ("PerformanceObserver" in window) {
-        try {
-          longTaskObserver = new PerformanceObserver((list) => {
-            longTaskCount.value = list.getEntries().length;
-          });
-
-          longTaskObserver.observe({ entryTypes: ["longtask"] });
-        } catch (e) {
-          console.warn("长任务监控不支持:", e);
-        }
-      }
-    };
-
-    const stopPerformanceMonitoring = () => {
-      if (fpsMonitorInterval) {
-        cancelAnimationFrame(fpsMonitorInterval);
-        fpsMonitorInterval = null;
-      }
-
-      if (longTaskObserver) {
-        longTaskObserver.disconnect();
-        longTaskObserver = null;
-      }
-    };
-
-    onMounted(() => {
-      startPerformanceMonitoring();
-    });
-
-    onUnmounted(() => {
-      stopPerformanceMonitoring();
-    });
-
-    return {
-      localPerformanceMode,
-      localAnimationQuality,
-      localHardwareAcceleration,
-      localVirtualizationEnabled,
-      deviceInfo,
-      currentFPS,
-      longTaskCount,
-      updatePerformanceMode,
-      updateAnimationQuality,
-      updateHardwareAcceleration,
-      updateVirtualization,
-      getPerformanceLevelText,
-    };
+  animationQuality: {
+    type: String,
+    default: "medium",
   },
-};
+  hardwareAcceleration: {
+    type: Boolean,
+    default: true,
+  },
+  virtualizationEnabled: {
+    type: Boolean,
+    default: true,
+  },
+});
+
+const emit = defineEmits([
+  "update:performanceMode",
+  "update:animationQuality",
+  "update:hardwareAcceleration",
+  "update:virtualizationEnabled",
+]);
+
+const { t } = useI18n();
+
+const {
+  localPerformanceMode,
+  localAnimationQuality,
+  localHardwareAcceleration,
+  localVirtualizationEnabled,
+  deviceInfo,
+  currentFPS,
+  longTaskCount,
+  updatePerformanceMode,
+  updateAnimationQuality,
+  updateHardwareAcceleration,
+  updateVirtualization,
+  getPerformanceLevelText,
+} = usePerformanceSettings(props, emit, t);
 </script>
 
 <style scoped>

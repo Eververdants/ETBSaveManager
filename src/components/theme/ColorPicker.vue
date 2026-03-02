@@ -34,10 +34,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from "vue";
+import { onMounted } from "vue";
 import { useI18n } from "vue-i18n";
-import { themeValidator } from "@/services/themeValidator.js";
-import { accessibilityChecker } from "@/services/accessibilityChecker.js";
+import { useColorPicker } from "@/composables/useColorPicker";
 
 const { t } = useI18n();
 
@@ -87,178 +86,29 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "change", "validationError"]);
 
-// Refs
-const inputRef = ref(null);
-const inputValue = ref(props.modelValue);
-const lastValidColor = ref(props.modelValue);
-const showError = ref(false);
-const isFocused = ref(false);
+const {
+  inputRef,
+  inputValue,
+  lastValidColor,
+  showError,
+  isFocused,
+  errorId,
+  currentColor,
+  isValidColor,
+  contrastRatio,
+  contrastLevel,
+  contrastClass,
+  contrastTooltip,
+  handleInput,
+  handleBlur,
+  handleFocus,
+  focusInput,
+  selectPreset,
+  presetColors,
+} = useColorPicker(props, emit);
 
-// Generate unique error ID for accessibility
-const errorId = computed(
-  () => `color-error-${Math.random().toString(36).substr(2, 9)}`
-);
-
-// Current color (validated)
-const currentColor = computed(() => {
-  const validation = themeValidator.validateColor(inputValue.value);
-  return validation.valid ? inputValue.value : lastValidColor.value;
-});
-
-// Validation state
-const isValidColor = computed(() => {
-  if (!inputValue.value || inputValue.value.trim() === "") return true;
-  return themeValidator.validateColor(inputValue.value).valid;
-});
-
-// Contrast ratio calculation
-const contrastRatio = computed(() => {
-  if (!props.contrastWith) return null;
-  const ratio = accessibilityChecker.calculateContrastRatio(
-    currentColor.value,
-    props.contrastWith
-  );
-  return ratio.toFixed(2);
-});
-
-// WCAG compliance level
-const contrastLevel = computed(() => {
-  if (!contrastRatio.value) return "";
-  return accessibilityChecker.checkWCAGCompliance(
-    parseFloat(contrastRatio.value)
-  );
-});
-
-// Contrast indicator CSS class
-const contrastClass = computed(() => {
-  if (!contrastLevel.value) return "";
-  return {
-    "contrast-aaa": contrastLevel.value === "AAA",
-    "contrast-aa": contrastLevel.value === "AA",
-    "contrast-a": contrastLevel.value === "A",
-    "contrast-fail": contrastLevel.value === "FAIL",
-  };
-});
-
-// Contrast tooltip
-const contrastTooltip = computed(() => {
-  if (!contrastLevel.value) return "";
-  const descriptions = {
-    AAA: t("theme.contrastAAA"),
-    AA: t("theme.contrastAA"),
-    A: t("theme.contrastA"),
-    FAIL: t("theme.contrastFail"),
-  };
-  return descriptions[contrastLevel.value] || "";
-});
-
-// Watch for external value changes
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    if (newValue !== inputValue.value) {
-      inputValue.value = newValue;
-      const validation = themeValidator.validateColor(newValue);
-      if (validation.valid) {
-        lastValidColor.value = newValue;
-      }
-    }
-  }
-);
-
-// Handle input changes
-function handleInput() {
-  const validation = themeValidator.validateColor(inputValue.value);
-
-  if (validation.valid) {
-    lastValidColor.value = inputValue.value;
-    showError.value = false;
-    emit("update:modelValue", inputValue.value);
-    emit("change", inputValue.value);
-  } else if (inputValue.value.trim() !== "") {
-    showError.value = true;
-  }
-}
-
-// Handle blur - revert to last valid if invalid
-function handleBlur() {
-  isFocused.value = false;
-  const validation = themeValidator.validateColor(inputValue.value);
-
-  if (!validation.valid && inputValue.value.trim() !== "") {
-    emit("validationError", {
-      value: inputValue.value,
-      error: validation.error,
-    });
-    // Revert to last valid color
-    inputValue.value = lastValidColor.value;
-    showError.value = false;
-  }
-}
-
-// Handle focus
-function handleFocus() {
-  isFocused.value = true;
-  showError.value = false;
-}
-
-// Focus input programmatically
-function focusInput() {
-  inputRef.value?.focus();
-}
-
-// Select preset color
-function selectPreset(color) {
-  inputValue.value = color;
-  lastValidColor.value = color;
-  showError.value = false;
-  emit("update:modelValue", color);
-  emit("change", color);
-}
-
-// Keyboard navigation for presets
-function handleKeydown(event) {
-  if (!props.showPresets) return;
-
-  const presets = document.querySelectorAll(".preset-color");
-  const currentIndex = Array.from(presets).findIndex(
-    (el) => el === document.activeElement
-  );
-
-  if (currentIndex === -1) return;
-
-  let newIndex = currentIndex;
-
-  switch (event.key) {
-    case "ArrowRight":
-    case "ArrowDown":
-      newIndex = (currentIndex + 1) % presets.length;
-      event.preventDefault();
-      break;
-    case "ArrowLeft":
-    case "ArrowUp":
-      newIndex = (currentIndex - 1 + presets.length) % presets.length;
-      event.preventDefault();
-      break;
-    case "Home":
-      newIndex = 0;
-      event.preventDefault();
-      break;
-    case "End":
-      newIndex = presets.length - 1;
-      event.preventDefault();
-      break;
-  }
-
-  if (newIndex !== currentIndex) {
-    presets[newIndex]?.focus();
-  }
-}
-
-// Initialize
 onMounted(() => {
-  const validation = themeValidator.validateColor(props.modelValue);
-  if (validation.valid) {
+  if (props.modelValue) {
     lastValidColor.value = props.modelValue;
   }
 });

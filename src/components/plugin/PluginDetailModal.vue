@@ -151,6 +151,7 @@
 <script setup>
 import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { usePluginDetailModal } from '@/composables/usePluginDetailModal';
 
 const { t } = useI18n();
 
@@ -171,27 +172,7 @@ const props = defineProps({
 
 defineEmits(['close', 'toggle', 'install', 'uninstall']);
 
-const typeClass = computed(() => `type-${props.plugin?.type || 'feature'}`);
-
-const iconName = computed(() => {
-  const icons = {
-    language: 'globe',
-    theme: 'palette',
-    feature: 'puzzle-piece'
-  };
-  return icons[props.plugin?.type] || 'puzzle-piece';
-});
-
-const typeLabel = computed(() => {
-  const key = `plugin.type.${props.plugin?.type}`;
-  const translated = t(key);
-  return translated !== key ? translated : t('plugin.type.plugin');
-});
-
-// 控制 body 滚动
-watch(() => props.show, (val) => {
-  document.body.style.overflow = val ? 'hidden' : '';
-});
+const { typeClass, iconName, typeLabel } = usePluginDetailModal(props);
 </script>
 
 <style scoped>

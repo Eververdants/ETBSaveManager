@@ -23,5 +23,12 @@
   "startSearching": "开始搜索",
   "useFiltersAbove": "使用上方的搜索和筛选功能",
   "loadingArchives": "正在加载存档...",
-  "scanningFiles": "正在扫描存档文件"
+  "scanningFiles": "正在扫描存档文件",
+  "multiSelect": {
+    "selectAll": "全选",
+    "invertSelection": "反选",
+    "exit": "退出多选",
+    "selected": "已选择 {count} / {total} 个",
+    "batchDelete": "批量删除"
+  }
 }

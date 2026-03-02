@@ -29,7 +29,7 @@ defineOptions({ inheritAttrs: false });
 
 const { t } = useI18n({ useScope: "global" });
 const route = useRoute();
-const emit = defineEmits(["search-click", "folder-click", "refresh-click"]);
+const emit = defineEmits(["search-click", "folder-click", "refresh-click", "multi-select-click"]);
 
 // DOM refs
 const actionButton = ref(null);
@@ -39,7 +39,7 @@ const tooltip = ref(null);
 const floatingActionContainer = ref(null);
 
 // 状态
-const icons = ["search", "folder", "refresh"];
+const icons = ["search", "folder", "refresh", "multi-select-delete"];
 const currentIndex = ref(0);
 const displayIndex = ref(0); // 当前显示的图标索引
 const nextDisplayIndex = ref(1); // 下一个图标索引
@@ -53,16 +53,19 @@ const iconMap = {
   search: "magnifying-glass",
   folder: "folder",
   refresh: "arrow-rotate-right",
+  "multi-select-delete": "trash-alt",
 };
 const tooltipKeys = {
   search: "floatingButton.searchArchive",
   folder: "floatingButton.openFolder",
   refresh: "floatingButton.refreshList",
+  "multi-select-delete": "floatingButton.multiSelectDelete",
 };
 const eventMap = {
   search: "search-click",
   folder: "folder-click",
   refresh: "refresh-click",
+  "multi-select-delete": "multi-select-click",
 };
 
 // 通用GSAP配置

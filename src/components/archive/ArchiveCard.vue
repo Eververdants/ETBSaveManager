@@ -3,7 +3,14 @@
     'archive-hidden': !localVisible,
     'visibility-transitioning': isAnimating,
     'archive-entering': !hasEntered,
+    'multi-select-mode': isMultiSelectMode,
+    'is-selected': isSelected,
   }" @click="handleCardClick">
+    <!-- 多选模式复选框 -->
+    <div v-if="isMultiSelectMode" class="multi-select-checkbox" @click.stop="toggleSelection">
+      <font-awesome-icon :icon="isSelected ? 'fa-solid fa-check-square' : 'fa-regular fa-square'" />
+    </div>
+
     <!-- 上半背景区域 -->
     <div class="card-background">
       <LazyImage :src="backgroundImage" :alt="currentLevelName" image-class="background-image" />
@@ -67,9 +74,17 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  isMultiSelectMode: {
+    type: Boolean,
+    default: false,
+  },
+  isSelected: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(["toggle-visibility", "edit", "delete", "select"]);
+const emit = defineEmits(["toggle-visibility", "edit", "delete", "select", "toggle-select"]);
 
 const { t, te } = useI18n({ useScope: "global" });
 
@@ -106,8 +121,20 @@ const {
   toggleVisibility,
   editArchive,
   deleteArchive,
-  handleCardClick,
+  handleCardClick: baseHandleCardClick,
 } = useArchiveCard(archiveRef, indexRef, emit, translations);
+
+const handleCardClick = () => {
+  if (props.isMultiSelectMode) {
+    toggleSelection();
+  } else {
+    baseHandleCardClick();
+  }
+};
+
+const toggleSelection = () => {
+  emit("toggle-select", props.archive.id);
+};
 </script>
 
 <style scoped>
@@ -584,5 +611,44 @@ const {
   .tag-full {
     opacity: 1;
   }
+}
+
+/* 多选模式样式 */
+.multi-select-checkbox {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 20;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 18px;
+  color: #fff;
+}
+
+.multi-select-checkbox:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.archive-card.multi-select-mode {
+  cursor: pointer;
+}
+
+.archive-card.is-selected {
+  box-shadow: 0 0 0 3px var(--color-primary, #4a90d9), var(--card-shadow);
+}
+
+.archive-card.is-selected .card-background::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(74, 144, 217, 0.15);
+  pointer-events: none;
 }
 </style>

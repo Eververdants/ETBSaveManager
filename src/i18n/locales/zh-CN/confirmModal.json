@@ -2,6 +2,9 @@
   "deleteArchiveTitle": "删除存档",
   "deleteArchiveMessage": "确定要删除存档 '{name}' 吗？",
   "deleteArchiveDescription": "此操作将永久删除存档文件，无法恢复。",
+  "batchDeleteTitle": "批量删除存档",
+  "batchDeleteMessage": "确定要删除选中的 {count} 个存档吗？",
+  "batchDeleteDescription": "此操作将永久删除这些存档文件，无法恢复。",
   "confirm": "删除",
   "cancel": "取消",
   "archiveDetails": {

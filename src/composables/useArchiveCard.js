@@ -2,6 +2,16 @@ import { ref, computed, watch, onMounted, toRefs } from "vue";
 
 const textWidthCache = new Map();
 
+let isInitialLoad = ref(true);
+
+export function markInitialLoadComplete() {
+  isInitialLoad.value = false;
+}
+
+export function resetInitialLoad() {
+  isInitialLoad.value = true;
+}
+
 const getTextWidth = (() => {
   let canvas = null;
   let ctx = null;
@@ -75,11 +85,20 @@ export function useArchiveCardActions(archive, emit) {
 export function useArchiveCardEntryAnimation(index) {
   const hasEntered = ref(false);
 
-  onMounted(() => {
-    const delay = Math.min(index.value * 30, 300);
-    setTimeout(() => {
+  const triggerAnimation = () => {
+    const shouldAnimate = isInitialLoad.value && index.value < 15;
+    if (shouldAnimate) {
+      const delay = Math.min(index.value * 30, 300);
+      setTimeout(() => {
+        hasEntered.value = true;
+      }, delay);
+    } else {
       hasEntered.value = true;
-    }, delay);
+    }
+  };
+
+  onMounted(() => {
+    triggerAnimation();
   });
 
   return { hasEntered };

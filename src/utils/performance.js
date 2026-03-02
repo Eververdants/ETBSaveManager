@@ -104,7 +104,7 @@ export const getAnimationParams = (
         duration: isLowPerfMode
           ? 0.15
           : (devicePerf.isVeryLowEndDevice ? 0.2 : 0.3) * qualityMultiplier,
-        delay: isLowPerfMode ? 0 : devicePerf.performanceScore < 50 ? 10 : 30,
+        delay: 0,
         stagger: isLowPerfMode
           ? 0
           : devicePerf.performanceScore < 50

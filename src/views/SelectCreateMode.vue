@@ -73,105 +73,82 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import LazyImage from "@/components/ui/LazyImage.vue";
 
-export default {
-  name: "SelectCreateMode",
-  components: {
-    LazyImage,
-  },
-  setup() {
-    const router = useRouter();
-    const { t } = useI18n({ useScope: "global" });
-    const selectedMode = ref(null);
-    const isPressing = ref(false);
-    const currentTheme = ref("dark");
+const router = useRouter();
+const { t } = useI18n({ useScope: "global" });
+const selectedMode = ref(null);
+const isPressing = ref(false);
+const currentTheme = ref("dark");
 
-    // 获取当前主题
-    const updateTheme = () => {
-      const theme =
-        document.documentElement.getAttribute("data-theme") || "dark";
-      currentTheme.value = theme;
-    };
+const updateTheme = () => {
+  const theme =
+    document.documentElement.getAttribute("data-theme") || "dark";
+  currentTheme.value = theme;
+};
 
-    // 根据主题计算图片路径
-    const classicModeImage = computed(() => {
-      return currentTheme.value === "light"
-        ? "/images/CAL_JD.jpg"
-        : "/images/CAD_JD.jpg";
-    });
+const classicModeImage = computed(() => {
+  return currentTheme.value === "light"
+    ? "/images/CAL_JD.jpg"
+    : "/images/CAD_JD.jpg";
+});
 
-    const quickModeImage = computed(() => {
-      return currentTheme.value === "light"
-        ? "/images/CAL_KS.jpg"
-        : "/images/CAD_KS.jpg";
-    });
+const quickModeImage = computed(() => {
+  return currentTheme.value === "light"
+    ? "/images/CAL_KS.jpg"
+    : "/images/CAD_KS.jpg";
+});
 
-    // 监听主题变化
-    let themeObserver = null;
+let themeObserver = null;
 
-    onMounted(() => {
-      updateTheme();
-      themeObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.attributeName === "data-theme") {
-            updateTheme();
-          }
-        });
-      });
-      themeObserver.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ["data-theme"],
-      });
-    });
-
-    onUnmounted(() => {
-      if (themeObserver) {
-        themeObserver.disconnect();
+onMounted(() => {
+  updateTheme();
+  themeObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === "data-theme") {
+        updateTheme();
       }
     });
+  });
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+});
 
-    const goBack = () => {
-      router.back();
-    };
+onUnmounted(() => {
+  if (themeObserver) {
+    themeObserver.disconnect();
+  }
+});
 
-    const handleMouseDown = () => {
-      isPressing.value = true;
-    };
+const goBack = () => {
+  router.back();
+};
 
-    const handleMouseUp = () => {
-      isPressing.value = false;
-    };
+const handleMouseDown = () => {
+  isPressing.value = true;
+};
 
-    const goToMode = (mode) => {
-      selectedMode.value = mode;
+const handleMouseUp = () => {
+  isPressing.value = false;
+};
 
-      const modeRoutes = {
-        classic: "/create-archive",
-        quick: "/quick-create-archive",
-      };
+const goToMode = (mode) => {
+  selectedMode.value = mode;
 
-      if (modeRoutes[mode]) {
-        router.push(modeRoutes[mode]);
-      }
-    };
+  const modeRoutes = {
+    classic: "/create-archive",
+    quick: "/quick-create-archive",
+  };
 
-    return {
-      selectedMode,
-      isPressing,
-      currentTheme,
-      classicModeImage,
-      quickModeImage,
-      goBack,
-      goToMode,
-      handleMouseDown,
-      handleMouseUp,
-    };
-  },
+  if (modeRoutes[mode]) {
+    router.push(modeRoutes[mode]);
+  }
 };
 </script>
 

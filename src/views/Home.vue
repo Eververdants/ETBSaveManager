@@ -152,6 +152,7 @@ import { usePerformanceMonitor } from "../composables/usePerformanceMonitor";
 import { useAnimations } from "../composables/useAnimations";
 import { useFloatingButton } from "../composables/useFloatingButton";
 import { useToast } from "../composables/useToast";
+import { markInitialLoadComplete, resetInitialLoad } from "../composables/useArchiveCard";
 
 // Composables
 const archiveData = useArchiveData();
@@ -408,6 +409,8 @@ let resizeObserver = null;
 onActivated(async () => {
   isPageActive.value = true;
 
+  resetInitialLoad();
+
   // 强制刷新虚拟列表状态，避免首行不渲染
   await nextTick();
 
@@ -518,6 +521,8 @@ onMounted(async () => {
     });
     resizeObserver.observe(scrollContainerRef.value);
   }
+
+  markInitialLoadComplete();
 });
 
 onUnmounted(() => {

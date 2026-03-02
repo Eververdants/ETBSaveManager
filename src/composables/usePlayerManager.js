@@ -1,9 +1,25 @@
 import { computed } from "vue";
 
 export function usePlayerManager(props, t) {
-  const title = computed(() => t(props.titleKey));
-  const emptyHint = computed(() => t(props.emptyHintKey));
-  const steamIdPlaceholder = computed(() => t(props.steamIdPlaceholderKey));
+  const getPropValue = (key, defaultValue) => {
+    const val = props.value?.[key] ?? defaultValue;
+    return val;
+  };
+
+  const title = computed(() => {
+    const key = getPropValue('titleKey', "editArchive.playerManagement");
+    return t(key);
+  });
+  
+  const emptyHint = computed(() => {
+    const key = getPropValue('emptyHintKey', "editArchive.noPlayersHint");
+    return t(key);
+  });
+  
+  const steamIdPlaceholder = computed(() => {
+    const key = getPropValue('steamIdPlaceholderKey', "editArchive.steamIdPlaceholder");
+    return t(key);
+  });
 
   const getSanityClass = (val) => {
     if (val >= 80) return "sanity-high";

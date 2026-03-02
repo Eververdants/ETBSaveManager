@@ -23,7 +23,7 @@
                       <path d="M11 11L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                     </svg>
                   </span>
-                  <input ref="searchInput" v-model="searchQuery" type="text" class="search-input"
+                  <input ref="searchInputRef" v-model="searchQuery" type="text" class="search-input"
                     :placeholder="$t('inventory.searchPlaceholder')" />
                   <button v-if="searchQuery" class="clear-search" type="button" @click="clearSearch"
                     :aria-label="$t('inventory.clearSearch')">
@@ -42,7 +42,7 @@
                   }}</span>
                   <span v-if="selectedItemLabel" class="selected-badge">{{
                     $t("inventory.currentSelection", { name: selectedItemLabel })
-                  }}</span>
+                    }}</span>
                   <button class="remove-btn" type="button" @click="selectItem(null)">
                     {{ $t("inventory.removeItem") }}
                   </button>
@@ -70,131 +70,62 @@
   </Teleport>
 </template>
 
-<script>
-import LazyImage from "../ui/LazyImage.vue";
+<script setup>
+import { computed, watch, onMounted, onUnmounted, nextTick, toRef } from "vue";
 import { useI18n } from "vue-i18n";
+import { useInventoryItemSelector } from "@/composables/useInventoryItemSelector";
+import LazyImage from "../ui/LazyImage.vue";
 
-export default {
-  name: "InventoryItemSelector",
-  components: {
-    LazyImage,
-  },
-  setup() {
-    const { t, te } = useI18n();
+const props = defineProps({
+  visible: { type: Boolean, default: false },
+  selectedItem: { type: String, default: null },
+});
 
-    const getItemName = (itemId) => {
-      const translationKey = `inventory.items.${itemId}`;
-      return te(translationKey) ? t(translationKey) : itemId;
-    };
+const emit = defineEmits(["update:visible", "select"]);
 
-    return {
-      getItemName,
-    };
-  },
-  data() {
-    return {
-      searchQuery: "",
-    };
-  },
-  props: {
-    visible: {
-      type: Boolean,
-      default: false,
-    },
-    selectedItem: {
-      type: String,
-      default: null,
-    },
-  },
-  emits: ["update:visible", "select"],
-  computed: {
-    availableItems() {
-      return [
-        { id: "AlmondConcentrate", image: "AlmondConcentrate.png" },
-        { id: "BugSpray", image: "BugSpray.png" },
-        { id: "Camera", image: "Camera.png" },
-        { id: "AlmondWater", image: "AlmondWater.png" },
-        { id: "Chainsaw", image: "Chainsaw.png" },
-        { id: "Crowbar", image: "Crowbar.png" },
-        { id: "DivingHelmet", image: "DivingHelmet.png" },
-        { id: "EnergyBar", image: "EnergyBar.png" },
-        { id: "Firework", image: "Firework.png" },
-        { id: "Flaregun", image: "Flaregun.png" },
-        { id: "Flashlight", image: "Flashlight.png" },
-        { id: "GlowstickBlue", image: "GlowstickBlue.png" },
-        { id: "GlowStick", image: "GlowStick.png" },
-        { id: "GlowstickRed", image: "GlowstickRed.png" },
-        { id: "GlowstickYellow", image: "GlowstickYellow.png" },
-        { id: "Knife", image: "Knife.png" },
-        { id: "LiquidPain", image: "LiquidPain.png" },
-        { id: "Juice", image: "Juice.png" },
-        { id: "Rope", image: "Rope.png" },
-        { id: "LiDAR", image: "LiDAR.png" },
-        { id: "Thermometer", image: "Thermometer.png" },
-        { id: "Ticket", image: "Ticket.png" },
-        { id: "Toy", image: "Teddy_Bear.png" },
-        { id: "WalkieTalkie", image: "WalkieTalkie.png" },
-        { id: "MothJelly", image: "MothJelly.png" },
-      ];
-    },
-    filteredItems() {
-      const keyword = this.searchQuery.trim().toLowerCase();
-      if (!keyword) return this.availableItems;
-      return this.availableItems.filter((item) => {
-        const itemId = String(item.id || "").toLowerCase();
-        const itemName = String(this.getItemName(item.id) || "").toLowerCase();
-        return itemId.includes(keyword) || itemName.includes(keyword);
-      });
-    },
-    selectedItemLabel() {
-      if (!this.selectedItem) return "";
-      return this.getItemName(this.selectedItem);
-    },
-  },
-  watch: {
-    visible(isVisible) {
-      if (isVisible) {
-        this.$nextTick(() => {
-          this.$refs.searchInput?.focus?.();
-        });
-        return;
-      }
-      this.searchQuery = "";
-    },
-  },
-  methods: {
-    close() {
-      this.$emit("update:visible", false);
-    },
-    selectItem(itemId) {
-      this.$emit("select", itemId);
-      this.close();
-    },
-    clearSearch() {
-      this.searchQuery = "";
-      this.$nextTick(() => {
-        this.$refs.searchInput?.focus?.();
-      });
-    },
-    handleKeydown(event) {
-      if (!this.visible) return;
-      if (event.key === "Escape") {
-        if (this.searchQuery) {
-          this.searchQuery = "";
-          event.preventDefault();
-          return;
-        }
-        this.close();
-      }
-    },
-  },
-  mounted() {
-    window.addEventListener("keydown", this.handleKeydown);
-  },
-  beforeUnmount() {
-    window.removeEventListener("keydown", this.handleKeydown);
-  },
+const { t, te } = useI18n({ useScope: "global" });
+
+const getItemName = (itemId) => {
+  const translationKey = `inventory.items.${itemId}`;
+  return te(translationKey) ? t(translationKey) : itemId;
 };
+
+const visibleRef = toRef(props, "visible");
+const { searchQuery, searchInputRef, availableItems, filteredItems, clearSearch, focusSearch, resetSearch } = useInventoryItemSelector(getItemName);
+
+const selectedItemLabel = computed(() => {
+  if (!props.selectedItem) return "";
+  return getItemName(props.selectedItem);
+});
+
+watch(visibleRef, (isVisible) => {
+  if (isVisible) {
+    nextTick(() => focusSearch());
+  } else {
+    resetSearch();
+  }
+});
+
+const close = () => emit("update:visible", false);
+const selectItem = (itemId) => {
+  emit("select", itemId);
+  close();
+};
+
+const handleKeydown = (event) => {
+  if (!props.visible) return;
+  if (event.key === "Escape") {
+    if (searchQuery.value) {
+      searchQuery.value = "";
+      event.preventDefault();
+    } else {
+      close();
+    }
+  }
+};
+
+onMounted(() => window.addEventListener("keydown", handleKeydown));
+onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
 </script>
 
 <style scoped>

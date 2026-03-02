@@ -109,10 +109,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { onMounted } from "vue";
 import { useI18n } from "vue-i18n";
-import themeManager, { PRESET_THEMES } from "@/styles/theme-config.js";
-import { themeStorage } from "@/services/themeStorage.js";
+import themeManager from "@/styles/theme-config.js";
+import { useThemeList } from "@/composables/useThemeList";
 
 const { t, te } = useI18n();
 
@@ -132,104 +132,26 @@ const emit = defineEmits([
   "export",
 ]);
 
-const getThemeName = (themeId) => {
-  const themeIdToKey = {
-    light: "light",
-    dark: "dark",
-    "new-year": "newYear",
-    "high-contrast": "highContrast",
-    "spring-festival-dark": "springFestivalDark",
-    "spring-festival-light": "springFestivalLight",
-  };
-  const translationKey = `common.${themeIdToKey[themeId] || themeId}`;
-  return te(translationKey) ? t(translationKey) : themeId;
-};
-
-// State
-const showDeleteConfirm = ref(false);
-const themeToDelete = ref(null);
-
-// Computed
-const presetThemes = computed(() => {
-  return themeManager
-    .getAllThemes()
-    .filter((theme) => theme.type === "preset")
-    .map((theme) => {
-      const themeName = getThemeName(theme.id);
-      return {
-        ...theme,
-        name: themeName,
-        displayName: theme.icon
-          ? `${theme.icon} ${themeName}`
-          : themeName,
-      };
-    });
-});
-
-const customThemes = computed(() => themeManager.customThemes.value);
-
-const currentThemeId = computed(() => themeManager.currentThemeId.value);
-
-// Methods
-function selectTheme(themeId) {
-  themeManager.setTheme(themeId);
-  emit("select", themeId);
-}
-
-function handleCreate() {
-  if (customThemes.value.length >= 10) {
-    return;
-  }
-  emit("create");
-}
-
-function handleEdit(theme) {
-  emit("edit", theme);
-}
-
-function handleDelete(theme) {
-  themeToDelete.value = theme;
-  showDeleteConfirm.value = true;
-}
-
-function cancelDelete() {
-  showDeleteConfirm.value = false;
-  themeToDelete.value = null;
-}
-
-async function confirmDelete() {
-  if (!themeToDelete.value) return;
-
-  const success = await themeManager.deleteCustomTheme(themeToDelete.value.id);
-
-  if (success) {
-    emit("delete", themeToDelete.value);
-  }
-
-  showDeleteConfirm.value = false;
-  themeToDelete.value = null;
-}
+const {
+  showDeleteConfirm,
+  themeToDelete,
+  presetThemes,
+  customThemes,
+  currentThemeId,
+  selectTheme,
+  handleCreate,
+  handleEdit,
+  handleDelete,
+  cancelDelete,
+  confirmDelete,
+  handleExport,
+  getCustomPreviewStyle,
+} = useThemeList(emit, t, te);
 
 async function handleImport() {
   emit("import");
 }
 
-function handleExport(theme) {
-  emit("export", theme);
-}
-
-function getCustomPreviewStyle(theme) {
-  if (!theme.colors) return {};
-
-  return {
-    "--preview-bg": theme.colors.bg || "#f8f9fa",
-    "--preview-sidebar": theme.colors.sidebarBg || "rgba(240, 240, 245, 0.8)",
-    "--preview-card": theme.colors.cardBg || "#ffffff",
-    "--preview-primary": theme.colors.primary || "#007aff",
-  };
-}
-
-// Initialize
 onMounted(async () => {
   await themeManager.refreshCustomThemes();
 });

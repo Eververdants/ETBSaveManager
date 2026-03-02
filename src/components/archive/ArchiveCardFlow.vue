@@ -26,7 +26,8 @@
           }}
         </span>
         <!-- 虚拟滚动指示器 -->
-        <span v-if="useVirtualScroll" class="virtual-indicator" :title="$t('quickCreate.cardFlow.virtualScrollHint')">
+        <span v-if="isVirtualScrollEnabled" class="virtual-indicator"
+          :title="$t('quickCreate.cardFlow.virtualScrollHint')">
           <font-awesome-icon :icon="['fas', 'bolt']" />
         </span>
         <div class="view-toggle">
@@ -50,7 +51,7 @@
       </div>
 
       <!-- 虚拟滚动模式 (当存档数量 > 50 时启用) -->
-      <RecycleScroller v-else-if="useVirtualScroll" ref="scrollerRef" class="virtual-scroller" :items="archives"
+      <RecycleScroller v-else-if="isVirtualScrollEnabled" ref="scrollerRef" class="virtual-scroller" :items="archives"
         :item-size="viewMode === 'grid' ? 180 : 120" :grid-items="viewMode === 'grid' ? gridColumns : 1" key-field="id"
         v-slot="{ item }">
         <QuickCreateArchiveCard :archive="item" :selected="selectedIds.has(item.id)"
@@ -69,16 +70,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { computed, toRef, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { RecycleScroller } from "vue-virtual-scroller";
 import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
 import QuickCreateArchiveCard from "./QuickCreateArchiveCard.vue";
 import { resolve } from "@/composables/useConfigResolver";
+import { useViewMode, useVirtualScroll, useGridColumns, useArchiveCardFlowEventHandlers } from "@/composables/useArchiveCardFlow";
 
 const { t } = useI18n({ useScope: "global" });
-
-const VIRTUAL_SCROLL_THRESHOLD = 50;
 
 const props = defineProps({
   archives: {
@@ -112,81 +112,27 @@ const emit = defineEmits([
   "batch-edit",
 ]);
 
-const useViewMode = () => {
-  const viewMode = ref("grid");
-
-  return { viewMode };
-};
-
-const useVirtualScroll = (archives) => {
-  const useVirtualScroll = computed(() => {
-    return archives.value.length > VIRTUAL_SCROLL_THRESHOLD;
-  });
-
-  return { useVirtualScroll };
-};
-
-const useGridColumns = () => {
-  const gridColumns = ref(4);
-  let resizeObserver = null;
-
-  const calculateGridColumns = () => {
-    const containerWidth = document.querySelector(".flow-content")?.clientWidth || 800;
-    const cardMinWidth = 220;
-    const gap = 12;
-    gridColumns.value = Math.max(1, Math.floor((containerWidth + gap) / (cardMinWidth + gap)));
-  };
-
-  const setupResizeObserver = () => {
-    const container = document.querySelector(".flow-content");
-    if (container && window.ResizeObserver) {
-      resizeObserver = new ResizeObserver(() => {
-        calculateGridColumns();
-      });
-      resizeObserver.observe(container);
-    }
-  };
-
-  const cleanupResizeObserver = () => {
-    if (resizeObserver) {
-      resizeObserver.disconnect();
-    }
-  };
-
-  return { gridColumns, calculateGridColumns, setupResizeObserver, cleanupResizeObserver };
-};
-
-const useConfigResolver = (uniformConfig, smartRules) => {
-  const getConfigSource = (archive) => {
-    if (uniformConfig.value && smartRules.value) {
-      const resolved = resolve(archive, uniformConfig.value, smartRules.value);
-      return resolved.source;
-    }
-    return {
-      level: "default",
-      difficulty: "default",
-      actualDifficulty: "default",
-      inventory: "default",
-    };
-  };
-
-  return { getConfigSource };
-};
-
-const useEventHandlers = (emit) => {
-  const handleSelect = (archiveId) => emit("select", archiveId);
-  const handleEdit = (archiveId) => emit("edit", archiveId);
-  const handleCopy = (archiveId) => emit("copy", archiveId);
-  const handleRemove = (archiveId) => emit("remove", archiveId);
-
-  return { handleSelect, handleEdit, handleCopy, handleRemove };
-};
+const archivesRef = toRef(props, "archives");
+const uniformConfigRef = toRef(props, "uniformConfig");
+const smartRulesRef = toRef(props, "smartRules");
 
 const { viewMode } = useViewMode();
-const { useVirtualScroll } = useVirtualScroll(() => props.archives);
+const { useVirtualScroll: isVirtualScrollEnabled } = useVirtualScroll(archivesRef);
 const { gridColumns, calculateGridColumns, setupResizeObserver, cleanupResizeObserver } = useGridColumns();
-const { getConfigSource } = useConfigResolver(() => props.uniformConfig, () => props.smartRules);
-const { handleSelect, handleEdit, handleCopy, handleRemove } = useEventHandlers(emit);
+const { handleSelect, handleEdit, handleCopy, handleRemove } = useArchiveCardFlowEventHandlers(emit);
+
+const getConfigSource = (archive) => {
+  if (uniformConfigRef.value && smartRulesRef.value) {
+    const resolved = resolve(archive, uniformConfigRef.value, smartRulesRef.value);
+    return resolved.source;
+  }
+  return {
+    level: "default",
+    difficulty: "default",
+    actualDifficulty: "default",
+    inventory: "default",
+  };
+};
 
 onMounted(() => {
   calculateGridColumns();

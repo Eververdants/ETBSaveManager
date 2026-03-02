@@ -135,8 +135,15 @@ const useDropdownOptions = (availableLevels, t) => {
     { value: "nightmare", label: t("createArchive.difficultyLevels.nightmare") },
   ]);
 
+  const getAvailableLevels = () => {
+    const source = typeof availableLevels === 'function' ? availableLevels() : availableLevels;
+    return source?.value || source || [];
+  };
+
   const levelDropdownOptions = computed(() => {
-    return availableLevels.value.map((level) => ({
+    const levels = getAvailableLevels();
+    if (!levels || !Array.isArray(levels)) return [];
+    return levels.map((level) => ({
       value: level.value,
       label: level.label,
     }));

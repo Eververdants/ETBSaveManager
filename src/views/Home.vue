@@ -1,6 +1,38 @@
 <template>
   <div class="home-container">
-    <div class="archive-list-container" :class="{ 'no-scroll': showSearch }" ref="scrollContainerRef">
+    <!-- 多选模式工具栏 -->
+    <div v-if="isMultiSelectMode" class="multi-select-toolbar">
+      <div class="toolbar-left">
+        <button class="toolbar-btn" @click="exitMultiSelectMode">
+          <font-awesome-icon icon="fa-solid fa-arrow-left" />
+          {{ $t("archiveSearch.multiSelect.exit") }}
+        </button>
+        <button class="toolbar-btn" @click="selectAll">
+          <font-awesome-icon icon="fa-solid fa-check-double" />
+          {{ $t("archiveSearch.multiSelect.selectAll") }}
+        </button>
+        <button class="toolbar-btn" @click="invertSelection">
+          <font-awesome-icon icon="fa-solid fa-exchange-alt" />
+          {{ $t("archiveSearch.multiSelect.invertSelection") }}
+        </button>
+      </div>
+      <div class="toolbar-right">
+        <span class="selection-count">
+          {{ $t("archiveSearch.multiSelect.selected", {
+            count: selectedArchives.size,
+            total: displayArchives.length
+          }) }}
+        </span>
+        <button class="toolbar-btn danger" :disabled="selectedArchives.size === 0"
+          @click="handleShowBatchDeleteConfirm">
+          <font-awesome-icon icon="fa-solid fa-trash-alt" />
+          {{ $t("archiveSearch.multiSelect.batchDelete") }}
+        </button>
+      </div>
+    </div>
+
+    <div class="archive-list-container" :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode }"
+      ref="scrollContainerRef">
       <!-- 有存档时使用虚拟滚动 -->
       <template v-if="displayArchives.length > 0">
         <div class="archive-grid-virtual" :style="{
@@ -20,8 +52,10 @@
             <div class="archive-grid">
               <ArchiveCard v-for="archive in getRowItems(virtualRow.index)" :key="archive.id" :archive="archive"
                 :index="archive._originalIndex" :data-archive-id="archive.id"
-                :class="{ deleting: deletingCardId === archive.id }" @toggle-visibility="handleToggleVisibility"
-                @edit="handleEdit" @delete="deleteArchive" @select="selectArchive" />
+                :class="{ deleting: deletingCardId === archive.id }" :is-multi-select-mode="isMultiSelectMode"
+                :is-selected="selectedArchives.has(archive.id)" @toggle-visibility="handleToggleVisibility"
+                @edit="handleEdit" @delete="deleteArchive" @select="selectArchive"
+                @toggle-select="toggleArchiveSelection" />
             </div>
           </div>
           <!-- 保险机制：当虚拟列表返回空时，强制渲染第一行 -->
@@ -35,8 +69,10 @@
             <div class="archive-grid">
               <ArchiveCard v-for="archive in getRowItems(0)" :key="archive.id" :archive="archive"
                 :index="archive._originalIndex" :data-archive-id="archive.id"
-                :class="{ deleting: deletingCardId === archive.id }" @toggle-visibility="handleToggleVisibility"
-                @edit="handleEdit" @delete="deleteArchive" @select="selectArchive" />
+                :class="{ deleting: deletingCardId === archive.id }" :is-multi-select-mode="isMultiSelectMode"
+                :is-selected="selectedArchives.has(archive.id)" @toggle-visibility="handleToggleVisibility"
+                @edit="handleEdit" @delete="deleteArchive" @select="selectArchive"
+                @toggle-select="toggleArchiveSelection" />
             </div>
           </div>
         </div>
@@ -95,6 +131,16 @@
         :archive-details="archiveToDelete" @confirm="confirmDelete" @cancel="cancelDelete" />
     </Teleport>
 
+    <!-- 批量删除确认 -->
+    <Teleport to="body">
+      <ConfirmModal v-model:show="showBatchDeleteConfirm" :title="$t('confirmModal.batchDeleteTitle')" :message="$t('confirmModal.batchDeleteMessage', {
+        count: selectedArchives.size,
+      })
+        " :description="$t('confirmModal.batchDeleteDescription')" type="danger"
+        :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isBatchDeleting"
+        @confirm="confirmBatchDelete" @cancel="cancelBatchDelete" />
+    </Teleport>
+
     <!-- 性能设置 -->
     <Teleport to="body">
       <transition name="modal">
@@ -123,7 +169,7 @@
     <!-- 浮动按钮 -->
     <FloatingActionButton :class="loading ? 'loading' : ''" :current-index="fabCurrentIndex"
       @update:current-index="fabCurrentIndex = $event" @search-click="toggleSearch" @refresh-click="refreshArchives"
-      @folder-click="openSaveGamesFolder" />
+      @folder-click="openSaveGamesFolder" @multi-select-click="enterMultiSelectMode" />
   </div>
 </template>
 
@@ -222,7 +268,13 @@ const archiveSearchFilter = ref(null);
 const showSearch = ref(false);
 const isPageActive = ref(false);
 const columnsPerRow = ref(4);
-const shouldResetScroll = ref(false); // 是否需要重置滚动
+const shouldResetScroll = ref(false);
+
+// 多选模式状态
+const isMultiSelectMode = ref(false);
+const selectedArchives = ref(new Set());
+const showBatchDeleteConfirm = ref(false);
+const isBatchDeleting = ref(false);
 
 // 监听数据或列数变化，强制刷新虚拟滚动
 watch([displayArchives, columnsPerRow], (newVal, oldVal) => {
@@ -370,6 +422,77 @@ const openSaveGamesFolder = () => {
       setTimeout(enhancedProtectFloatingButton, 300);
     },
   });
+};
+
+// 多选模式方法
+const enterMultiSelectMode = () => {
+  isMultiSelectMode.value = true;
+  selectedArchives.value = new Set();
+};
+
+const exitMultiSelectMode = () => {
+  isMultiSelectMode.value = false;
+  selectedArchives.value = new Set();
+};
+
+const toggleArchiveSelection = (archiveId) => {
+  const newSet = new Set(selectedArchives.value);
+  if (newSet.has(archiveId)) {
+    newSet.delete(archiveId);
+  } else {
+    newSet.add(archiveId);
+  }
+  selectedArchives.value = newSet;
+};
+
+const selectAll = () => {
+  selectedArchives.value = new Set(displayArchives.value.map(a => a.id));
+};
+
+const invertSelection = () => {
+  const allIds = new Set(displayArchives.value.map(a => a.id));
+  const newSet = new Set(selectedArchives.value);
+  allIds.forEach(id => {
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+  });
+  selectedArchives.value = newSet;
+};
+
+const handleShowBatchDeleteConfirm = () => {
+  showBatchDeleteConfirm.value = true;
+};
+
+const cancelBatchDelete = () => {
+  showBatchDeleteConfirm.value = false;
+};
+
+const confirmBatchDelete = async () => {
+  isBatchDeleting.value = true;
+  const idsToDelete = Array.from(selectedArchives.value);
+
+  for (const id of idsToDelete) {
+    const archive = archives.value.find(a => a.id === id);
+    if (archive) {
+      await deleteArchive(archive);
+    }
+  }
+
+  isBatchDeleting.value = false;
+  showBatchDeleteConfirm.value = false;
+  exitMultiSelectMode();
+
+  debouncedApplyFilters(
+    archives.value,
+    lastSearchFilters.value,
+    (filtered) => {
+      displayArchives.value = filtered;
+    }
+  );
+  toast.showSuccess(`已删除 ${idsToDelete.length} 个存档`);
 };
 
 const updateContainerSize = () => {
@@ -823,5 +946,71 @@ watch(columnsPerRow, () => {
 .archive-list-container::-webkit-scrollbar-thumb {
   background: var(--primary-color);
   border-radius: 4px;
+}
+
+.multi-select-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.multi-select-toolbar .toolbar-left,
+.multi-select-toolbar .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.multi-select-toolbar .toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--btn-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.multi-select-toolbar .toolbar-btn:hover:not(:disabled) {
+  background: var(--btn-hover-bg);
+  border-color: var(--primary-color);
+}
+
+.multi-select-toolbar .toolbar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.multi-select-toolbar .toolbar-btn.danger {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: #fff;
+}
+
+.multi-select-toolbar .toolbar-btn.danger:hover:not(:disabled) {
+  background: #c82333;
+  border-color: #c82333;
+}
+
+.multi-select-toolbar .selection-count {
+  font-size: 14px;
+  color: var(--text-color);
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+}
+
+.home-container.multi-select-mode .archive-list-container {
+  padding-top: 0;
 }
 </style>

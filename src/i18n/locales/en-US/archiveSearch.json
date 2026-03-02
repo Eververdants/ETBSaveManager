@@ -23,5 +23,12 @@
   "startSearching": "Start searching",
   "useFiltersAbove": "Use the search and filters above",
   "loadingArchives": "Loading archives...",
-  "scanningFiles": "Scanning archive files"
+  "scanningFiles": "Scanning archive files",
+  "multiSelect": {
+    "selectAll": "Select All",
+    "invertSelection": "Invert Selection",
+    "exit": "Exit Multi-select",
+    "selected": "{count} / {total} selected",
+    "batchDelete": "Batch Delete"
+  }
 }

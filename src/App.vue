@@ -98,7 +98,9 @@ const openGlobalSearch = ({ navigate = false, backward = false } = {}) => {
       return;
     }
 
-    panel.focusInput();
+    if (panel.focusInput) {
+      panel.focusInput();
+    }
   });
 };
 
@@ -146,7 +148,16 @@ const handleGlobalKeydown = (event) => {
     if (typeof event.stopImmediatePropagation === "function") {
       event.stopImmediatePropagation();
     }
-    handleFindNavigateShortcut(event.shiftKey);
+    if (route.name === "Home") {
+      closeGlobalSearch();
+      openHomeSearch("toggle");
+      return;
+    }
+    if (showGlobalSearch.value) {
+      closeGlobalSearch();
+      return;
+    }
+    openGlobalSearch({ navigate: false });
   }
 };
 

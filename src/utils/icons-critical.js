@@ -27,7 +27,9 @@ import {
   faShieldAlt,
   faLaptopCode,
   faBug,
-  faLock
+  faLock,
+  faChevronUp,
+  faChevronDown
 } from "@fortawesome/free-solid-svg-icons";
 
 export function registerCriticalIcons() {
@@ -54,7 +56,9 @@ export function registerCriticalIcons() {
     faShieldAlt,
     faLaptopCode,
     faBug,
-    faLock
+    faLock,
+    faChevronUp,
+    faChevronDown
   );
 }
 

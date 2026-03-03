@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <transition name="global-find-panel">
-      <section v-if="visible" class="global-search-panel" @keydown.stop>
+      <section v-show="visible" class="global-search-panel" @keydown.stop>
         <div class="search-row">
           <font-awesome-icon icon="fa-solid fa-magnifying-glass" class="search-icon" />
           <input ref="inputRef" v-model="query" class="search-input" type="text" :placeholder="uiText.placeholder"
@@ -73,6 +73,7 @@ const handleEnter = (event) => {
 
 const toggleMatchCase = () => { matchCase.value = !matchCase.value; };
 const closePanel = () => emit("close");
+const exposeFocusInput = (selectAll = true) => { focusInput(inputRef, selectAll); };
 
 watch([query, matchCase], () => {
   if (!props.visible) return;
@@ -82,7 +83,9 @@ watch(() => props.visible, async (visible) => {
   if (visible) {
     captureScrollSnapshot();
     await nextTick();
-    focusInput(inputRef);
+    if (inputRef?.value) {
+      focusInput(inputRef);
+    }
     return;
   }
   restoreScrollSnapshot();
@@ -90,7 +93,7 @@ watch(() => props.visible, async (visible) => {
 
 onUnmounted(() => { cleanup(); });
 
-defineExpose({ focusInput, findNext, findPrevious });
+defineExpose({ focusInput: exposeFocusInput, findNext, findPrevious });
 </script>
 
 <style scoped>

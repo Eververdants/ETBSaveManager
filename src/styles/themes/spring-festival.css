@@ -126,6 +126,7 @@
   --dropdown-hover-bg: rgba(196, 30, 58, 0.22);
   --dropdown-selected-bg: var(--cny-vermilion);
   --dropdown-selected-text: var(--cny-ivory);
+  --dropdown-selected-border: rgba(196, 30, 58, 0.4);
 
   /* ==========================================
    * 搜索遮罩
@@ -314,6 +315,7 @@
   --dropdown-hover-bg: rgba(190, 18, 60, 0.06);
   --dropdown-selected-bg: var(--cny-red);
   --dropdown-selected-text: #fefce8;
+  --dropdown-selected-border: rgba(190, 18, 60, 0.4);
 
   /* ==========================================
    * 搜索遮罩

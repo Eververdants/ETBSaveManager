@@ -501,6 +501,38 @@ const toggleSelection = () => {
 
 .archive-hidden .card-background :deep(.lazy-image-container) {
   filter: grayscale(1) brightness(0.6) blur(2px);
+  transition: filter 0.4s ease-in-out, transform 0.4s ease-in-out;
+}
+
+.archive-hidden:hover .card-background :deep(.lazy-image-container) {
+  filter: grayscale(1) brightness(0.6) blur(0);
+  transform: scale(1.02);
+}
+
+/* 隐藏状态卡片悬浮时，提高文字清晰度 */
+.archive-hidden:hover {
+  opacity: 0.7;
+  filter: grayscale(0.7) brightness(0.9);
+}
+
+.archive-hidden:hover .archive-name {
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+.archive-hidden:hover .current-level {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.archive-hidden:hover .difficulty-tag {
+  background: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.95);
+  border-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(6px);
+}
+
+.archive-hidden:hover .background-overlay {
+  opacity: 0.9;
 }
 
 /* 可见性切换过渡动画 */

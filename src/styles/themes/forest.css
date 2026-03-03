@@ -99,6 +99,7 @@
   --dropdown-hover-bg: rgba(74, 222, 128, 0.08);
   --dropdown-selected-bg: #4ade80;
   --dropdown-selected-text: #0f1a14;
+  --dropdown-selected-border: rgba(74, 222, 128, 0.4);
 
   /* ==========================================
    * 搜索遮罩 (Search Overlay)

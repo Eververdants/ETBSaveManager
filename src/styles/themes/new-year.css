@@ -111,6 +111,7 @@
   --dropdown-hover-bg: rgba(229, 57, 53, 0.2);
   --dropdown-selected-bg: var(--new-year-red);
   --dropdown-selected-text: var(--new-year-cream);
+  --dropdown-selected-border: rgba(229, 57, 53, 0.4);
 
   /* ==========================================
    * 搜索遮罩 (Search Overlay)

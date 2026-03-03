@@ -155,9 +155,10 @@ export function useGlobalSearchPanel() {
 
   const focusInput = (inputRef, selectAll = true) => {
     nextTick(() => {
-      if (!inputRef.value) return;
-      inputRef.value.focus();
-      if (selectAll) inputRef.value.select();
+      const input = inputRef?.value;
+      if (!input) return;
+      input.focus();
+      if (selectAll) input.select();
     });
   };
 

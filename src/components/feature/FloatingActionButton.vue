@@ -1,12 +1,19 @@
 <template>
   <teleport to="body">
-    <div v-show="shouldRender" class="floating-action-container" ref="floatingActionContainer" :class="$attrs.class">
+    <div v-show="shouldRender" class="floating-action-container" ref="floatingActionContainer" :class="$attrs.class"
+      @mouseenter="handleContainerMouseEnter" @mouseleave="handleContainerMouseLeave">
       <div class="function-tooltip" ref="tooltip">
         <span class="tooltip-text">{{ getCurrentTooltip }}</span>
       </div>
-      <div class="action-button" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave"
-        @mousedown="handleMouseDown" @mouseup="handleMouseUp" @wheel="handleWheel" @click="handleClick"
-        ref="actionButton">
+      <div class="fab-menu" v-show="isMenuExpanded">
+        <div v-for="item in menuItems" :key="item.index" class="fab-menu-item" :class="{ 'is-active': item.isActive }"
+          @click="handleMenuItemClick(item)">
+          <font-awesome-icon :icon="['fas', item.icon]" class="menu-icon" />
+          <span class="menu-label">{{ item.label }}</span>
+        </div>
+      </div>
+      <div class="action-button" @mousedown="handleMouseDown" @mouseup="handleMouseUp" @wheel="handleWheel"
+        @click="handleClick" ref="actionButton">
         <div class="icon-wrapper current-icon" ref="currentIconEl">
           <font-awesome-icon :icon="['fas', displayIcon]" />
         </div>
@@ -45,7 +52,10 @@ const displayIndex = ref(0); // 当前显示的图标索引
 const nextDisplayIndex = ref(1); // 下一个图标索引
 const isHovered = ref(false);
 const isAnimating = ref(false);
+const isMenuExpanded = ref(false); // 菜单是否展开
 let tooltipTimer = null;
+let menuExpandTimer = null; // 菜单展开定时器
+let menuCollapseTimer = null; // 菜单收起定时器
 let styleObserver = null;
 
 // 映射配置
@@ -67,6 +77,16 @@ const eventMap = {
   refresh: "refresh-click",
   "multi-select-delete": "multi-select-click",
 };
+
+const menuItems = computed(() =>
+  icons.map((icon, index) => ({
+    icon: iconMap[icon],
+    label: t(tooltipKeys[icon]),
+    action: eventMap[icon],
+    index,
+    isActive: index === currentIndex.value,
+  }))
+);
 
 // 通用GSAP配置
 const gsapDefaults = {
@@ -176,12 +196,106 @@ const clearTooltipTimer = () => {
   }
 };
 
-const handleMouseEnter = () => {
+const clearMenuExpandTimer = () => {
+  if (menuExpandTimer) {
+    clearTimeout(menuExpandTimer);
+    menuExpandTimer = null;
+  }
+};
+
+const clearMenuCollapseTimer = () => {
+  if (menuCollapseTimer) {
+    clearTimeout(menuCollapseTimer);
+    menuCollapseTimer = null;
+  }
+};
+
+const handleMenuMouseEnter = () => {
+  isHovered.value = true;
+  clearMenuCollapseTimer();
+};
+
+const handleMenuMouseLeave = () => {
+  isHovered.value = false;
+  clearMenuCollapseTimer();
+  menuCollapseTimer = setTimeout(() => {
+    collapseMenu();
+  }, 150);
+};
+
+const expandMenu = () => {
+  isMenuExpanded.value = true;
+
+  if (tooltip.value) {
+    gsap.killTweensOf(tooltip.value);
+    gsap.to(tooltip.value, {
+      opacity: 0,
+      y: 10,
+      duration: 0.15,
+      ...gsapDefaults,
+      onComplete: () => {
+        if (tooltip.value) tooltip.value.style.visibility = "hidden";
+      },
+    });
+  }
+
+  nextTick(() => {
+    const menuEl = document.querySelector(".fab-menu");
+    if (menuEl) {
+      gsap.fromTo(
+        menuEl.querySelectorAll(".fab-menu-item"),
+        { opacity: 0, y: 10, scale: 0.9 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.25,
+          stagger: 0.05,
+          ease: "back.out(1.2)",
+        }
+      );
+    }
+  });
+};
+
+const collapseMenu = () => {
+  const menuEl = document.querySelector(".fab-menu");
+  if (menuEl) {
+    gsap.to(menuEl.querySelectorAll(".fab-menu-item"), {
+      opacity: 0,
+      y: 10,
+      scale: 0.9,
+      duration: 0.15,
+      ease: "power2.in",
+      onComplete: () => {
+        isMenuExpanded.value = false;
+      },
+    });
+  } else {
+    isMenuExpanded.value = false;
+  }
+};
+
+const handleMenuItemClick = (item) => {
+  currentIndex.value = item.index;
+  displayIndex.value = item.index;
+  nextDisplayIndex.value = (item.index + 1) % icons.length;
+
+  collapseMenu();
+
+  if (item.action) {
+    emit(item.action);
+  }
+};
+
+const handleContainerMouseEnter = () => {
   isHovered.value = true;
   clearTooltipTimer();
+  clearMenuCollapseTimer();
+
   gsap.killTweensOf(tooltip.value);
   tooltipTimer = setTimeout(() => {
-    if (isHovered.value && tooltip.value) {
+    if (isHovered.value && tooltip.value && !isMenuExpanded.value) {
       gsap.to(tooltip.value, {
         opacity: 1,
         y: 0,
@@ -191,28 +305,51 @@ const handleMouseEnter = () => {
       });
     }
   }, 100);
+
+  if (!isMenuExpanded.value) {
+    clearMenuExpandTimer();
+    menuExpandTimer = setTimeout(() => {
+      if (isHovered.value && !isMenuExpanded.value) {
+        expandMenu();
+      }
+    }, 1500);
+  }
 };
 
-const handleMouseLeave = () => {
+const handleContainerMouseLeave = () => {
   isHovered.value = false;
   clearTooltipTimer();
+  clearMenuExpandTimer();
+
+  if (isMenuExpanded.value) {
+    clearMenuCollapseTimer();
+    menuCollapseTimer = setTimeout(() => {
+      collapseMenu();
+    }, 200);
+  }
+
   gsap.killTweensOf(tooltip.value);
-  // 恢复按钮大小（防止按下后移出不松开的情况）
   gsap.to(actionButton.value, { scale: 1, duration: 0.08, ease: "power2.out" });
-  tooltipTimer = setTimeout(() => {
-    if (!isHovered.value && tooltip.value) {
-      gsap.to(tooltip.value, {
-        opacity: 0,
-        y: 10,
-        duration: 0.2,
-        ...gsapDefaults,
-        onComplete: () => {
-          if (tooltip.value) tooltip.value.style.visibility = "hidden";
-        },
-      });
-    }
-  }, 150);
+
+  if (!isMenuExpanded.value) {
+    tooltipTimer = setTimeout(() => {
+      if (!isHovered.value && tooltip.value) {
+        gsap.to(tooltip.value, {
+          opacity: 0,
+          y: 10,
+          duration: 0.2,
+          ...gsapDefaults,
+          onComplete: () => {
+            if (tooltip.value) tooltip.value.style.visibility = "hidden";
+          },
+        });
+      }
+    }, 150);
+  }
 };
+
+const handleMouseEnter = () => { };
+const handleMouseLeave = () => { };
 
 const handleWheel = (event) => {
   event.preventDefault();
@@ -290,6 +427,11 @@ const handleMouseUp = () => {
 };
 
 const handleClick = () => {
+  if (isMenuExpanded.value) {
+    collapseMenu();
+    return;
+  }
+
   applyContainerStyles(floatingActionContainer.value);
   const action = icons[currentIndex.value];
   if (eventMap[action]) emit(eventMap[action]);
@@ -388,6 +530,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearTooltipTimer();
+  clearMenuExpandTimer();
+  clearMenuCollapseTimer();
   if (styleObserver) {
     styleObserver.disconnect();
     styleObserver = null;
@@ -477,10 +621,12 @@ onUnmounted(() => {
 }
 
 .function-tooltip {
-  position: absolute;
-  bottom: calc(var(--fab-size, 60px) + 10px);
-  left: 50%;
-  transform: translateX(-50%);
+  position: absolute !important;
+  top: auto !important;
+  bottom: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-bottom: 10px !important;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-backdrop-filter);
   color: var(--text-primary);
@@ -505,6 +651,73 @@ onUnmounted(() => {
   transform: translateX(-50%);
   border: 4px solid transparent;
   border-top-color: var(--glass-bg);
+}
+
+.fab-menu {
+  position: absolute !important;
+  top: auto !important;
+  bottom: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-bottom: 12px !important;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop-filter);
+  border-radius: var(--radius-lg);
+  padding: 8px;
+  min-width: 160px;
+  box-shadow: var(--card-shadow);
+  border: var(--card-border);
+  z-index: 1002;
+}
+
+.fab-menu::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--glass-bg);
+}
+
+.fab-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.fab-menu-item:hover {
+  background: var(--sidebar-item-hover-bg, var(--bg-tertiary));
+  color: var(--text-primary);
+}
+
+.fab-menu-item.is-active {
+  background: var(--accent-color);
+  color: white;
+}
+
+.fab-menu-item.is-active .menu-icon,
+.fab-menu-item.is-active .menu-label {
+  color: white;
+}
+
+.menu-icon {
+  font-size: 16px;
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-label {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .scroll-hint {

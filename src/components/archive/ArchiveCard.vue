@@ -7,8 +7,9 @@
     'is-selected': isSelected,
   }" @click="handleCardClick">
     <!-- 多选模式复选框 -->
-    <div v-if="isMultiSelectMode" class="multi-select-checkbox" @click.stop="toggleSelection">
-      <font-awesome-icon :icon="isSelected ? 'fa-solid fa-check-square' : 'fa-regular fa-square'" />
+    <div v-if="isMultiSelectMode" class="multi-select-checkbox" :class="{ 'is-checked': isSelected }"
+      @click.stop="toggleSelection">
+      <font-awesome-icon :icon="isSelected ? 'fa-solid fa-check' : 'fa-regular fa-circle'" class="check-icon" />
     </div>
 
     <!-- 上半背景区域 -->
@@ -651,21 +652,41 @@ const toggleSelection = () => {
   top: 12px;
   left: 12px;
   z-index: 20;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.5);
-  border-radius: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  font-size: 18px;
-  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.multi-select-checkbox .check-icon {
+  font-size: 14px;
+  color: transparent;
+  transition: all 0.15s ease;
 }
 
 .multi-select-checkbox:hover {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.65);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.multi-select-checkbox.is-checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.multi-select-checkbox.is-checked .check-icon {
+  color: #fff;
+}
+
+.multi-select-checkbox.is-checked:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 .archive-card.multi-select-mode {
@@ -673,14 +694,14 @@ const toggleSelection = () => {
 }
 
 .archive-card.is-selected {
-  box-shadow: 0 0 0 3px var(--color-primary, #4a90d9), var(--card-shadow);
+  box-shadow: 0 0 0 2px var(--primary), var(--card-shadow);
 }
 
 .archive-card.is-selected .card-background::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(74, 144, 217, 0.15);
+  background: rgba(0, 122, 255, 0.12);
   pointer-events: none;
 }
 </style>

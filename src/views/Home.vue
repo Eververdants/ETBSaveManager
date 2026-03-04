@@ -1,35 +1,37 @@
 <template>
-  <div class="home-container">
+  <div class="home-container" :class="{ 'multi-select-mode': isMultiSelectMode }">
     <!-- 多选模式工具栏 -->
-    <div v-if="isMultiSelectMode" class="multi-select-toolbar">
-      <div class="toolbar-left">
-        <button class="toolbar-btn" @click="exitMultiSelectMode">
-          <font-awesome-icon icon="fa-solid fa-arrow-left" />
-          {{ $t("archiveSearch.multiSelect.exit") }}
-        </button>
-        <button class="toolbar-btn" @click="selectAll">
-          <font-awesome-icon icon="fa-solid fa-check-double" />
-          {{ $t("archiveSearch.multiSelect.selectAll") }}
-        </button>
-        <button class="toolbar-btn" @click="invertSelection">
-          <font-awesome-icon icon="fa-solid fa-exchange-alt" />
-          {{ $t("archiveSearch.multiSelect.invertSelection") }}
-        </button>
+    <transition name="toolbar-slide">
+      <div v-show="isMultiSelectMode" class="multi-select-toolbar">
+        <div class="toolbar-left">
+          <button class="toolbar-btn" @click="exitMultiSelectMode">
+            <font-awesome-icon icon="fa-solid fa-arrow-left" />
+            {{ $t("archiveSearch.multiSelect.exit") }}
+          </button>
+          <button class="toolbar-btn" @click="selectAll">
+            <font-awesome-icon icon="fa-solid fa-check-double" />
+            {{ $t("archiveSearch.multiSelect.selectAll") }}
+          </button>
+          <button class="toolbar-btn" @click="invertSelection">
+            <font-awesome-icon icon="fa-solid fa-exchange-alt" />
+            {{ $t("archiveSearch.multiSelect.invertSelection") }}
+          </button>
+        </div>
+        <div class="toolbar-right">
+          <span class="selection-count">
+            {{ $t("archiveSearch.multiSelect.selected", {
+              count: selectedArchives.size,
+              total: displayArchives.length
+            }) }}
+          </span>
+          <button class="toolbar-btn danger" :disabled="selectedArchives.size === 0"
+            @click="handleShowBatchDeleteConfirm">
+            <font-awesome-icon icon="fa-solid fa-trash-alt" />
+            {{ $t("archiveSearch.multiSelect.batchDelete") }}
+          </button>
+        </div>
       </div>
-      <div class="toolbar-right">
-        <span class="selection-count">
-          {{ $t("archiveSearch.multiSelect.selected", {
-            count: selectedArchives.size,
-            total: displayArchives.length
-          }) }}
-        </span>
-        <button class="toolbar-btn danger" :disabled="selectedArchives.size === 0"
-          @click="handleShowBatchDeleteConfirm">
-          <font-awesome-icon icon="fa-solid fa-trash-alt" />
-          {{ $t("archiveSearch.multiSelect.batchDelete") }}
-        </button>
-      </div>
-    </div>
+    </transition>
 
     <div class="archive-list-container" :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode }"
       ref="scrollContainerRef">
@@ -235,6 +237,7 @@ const {
   cancelDelete,
   createNewArchive,
   openSaveGamesFolder: openSaveGamesFolderBase,
+  batchDeleteArchives,
 } = archiveActions;
 
 const performanceMonitor = usePerformanceMonitor();
@@ -473,26 +476,36 @@ const cancelBatchDelete = () => {
 const confirmBatchDelete = async () => {
   isBatchDeleting.value = true;
   const idsToDelete = Array.from(selectedArchives.value);
+  const archivesToDelete = archives.value.filter(a => idsToDelete.includes(a.id));
 
-  for (const id of idsToDelete) {
-    const archive = archives.value.find(a => a.id === id);
-    if (archive) {
-      await deleteArchive(archive);
+  await batchDeleteArchives(archivesToDelete, {
+    onSuccess: () => {
+      isBatchDeleting.value = false;
+      showBatchDeleteConfirm.value = false;
+      exitMultiSelectMode();
+
+      debouncedApplyFilters(
+        archives.value,
+        lastSearchFilters.value,
+        (filtered) => {
+          displayArchives.value = filtered;
+        }
+      );
+    },
+    onError: () => {
+      isBatchDeleting.value = false;
+      showBatchDeleteConfirm.value = false;
+      exitMultiSelectMode();
+
+      debouncedApplyFilters(
+        archives.value,
+        lastSearchFilters.value,
+        (filtered) => {
+          displayArchives.value = filtered;
+        }
+      );
     }
-  }
-
-  isBatchDeleting.value = false;
-  showBatchDeleteConfirm.value = false;
-  exitMultiSelectMode();
-
-  debouncedApplyFilters(
-    archives.value,
-    lastSearchFilters.value,
-    (filtered) => {
-      displayArchives.value = filtered;
-    }
-  );
-  toast.showSuccess(`已删除 ${idsToDelete.length} 个存档`);
+  });
 };
 
 const updateContainerSize = () => {
@@ -952,38 +965,45 @@ watch(columnsPerRow, () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 20px;
+  padding: var(--space-3) var(--space-5);
   background: var(--bg-color);
   border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  gap: var(--space-4);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .multi-select-toolbar .toolbar-left,
 .multi-select-toolbar .toolbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .multi-select-toolbar .toolbar-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  background: var(--btn-bg);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--btn-secondary-bg);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--radius-button);
   color: var(--text-color);
   cursor: pointer;
   font-size: 14px;
+  font-weight: 500;
   transition: all 0.2s ease;
 }
 
 .multi-select-toolbar .toolbar-btn:hover:not(:disabled) {
-  background: var(--btn-hover-bg);
-  border-color: var(--primary-color);
+  background: var(--btn-secondary-bg-hover);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.multi-select-toolbar .toolbar-btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .multi-select-toolbar .toolbar-btn:disabled {
@@ -992,25 +1012,58 @@ watch(columnsPerRow, () => {
 }
 
 .multi-select-toolbar .toolbar-btn.danger {
-  background: #dc3545;
-  border-color: #dc3545;
-  color: #fff;
+  background: var(--btn-danger-bg);
+  border-color: var(--btn-danger-bg);
+  color: var(--btn-danger-text);
 }
 
 .multi-select-toolbar .toolbar-btn.danger:hover:not(:disabled) {
-  background: #c82333;
-  border-color: #c82333;
+  background: var(--btn-danger-bg-hover);
+  border-color: var(--btn-danger-bg-hover);
+  color: var(--btn-danger-text);
+  box-shadow: var(--shadow-md);
+}
+
+.multi-select-toolbar .toolbar-btn.danger:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .multi-select-toolbar .selection-count {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   font-size: 14px;
+  font-weight: 500;
   color: var(--text-color);
-  padding: 8px 12px;
-  background: var(--bg-secondary);
-  border-radius: 6px;
+  padding: var(--space-2) var(--space-4);
+  background: rgba(0, 122, 255, 0.12);
+  border-radius: var(--radius-pill);
 }
 
-.home-container.multi-select-mode .archive-list-container {
-  padding-top: 0;
+.multi-select-toolbar .selection-count .count-number {
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 15px;
+}
+
+[data-theme="dark"] .multi-select-toolbar .selection-count {
+  background: rgba(10, 132, 255, 0.15);
+}
+
+.toolbar-slide-enter-active,
+.toolbar-slide-leave-active {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toolbar-slide-enter-from,
+.toolbar-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.toolbar-slide-enter-to,
+.toolbar-slide-leave-from {
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>

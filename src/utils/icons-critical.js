@@ -29,8 +29,17 @@ import {
   faBug,
   faLock,
   faChevronUp,
-  faChevronDown
+  faChevronDown,
+  faSquare,
+  faArrowLeft,
+  faCheckDouble,
+  faExchangeAlt,
+  faTrashAlt,
+  faCheck,
+  faArrowRotateRight
 } from "@fortawesome/free-solid-svg-icons";
+
+import { faCircle } from "@fortawesome/free-regular-svg-icons";
 
 export function registerCriticalIcons() {
   library.add(
@@ -58,7 +67,15 @@ export function registerCriticalIcons() {
     faBug,
     faLock,
     faChevronUp,
-    faChevronDown
+    faChevronDown,
+    faSquare,
+    faCircle,
+    faArrowLeft,
+    faCheckDouble,
+    faExchangeAlt,
+    faTrashAlt,
+    faCheck,
+    faArrowRotateRight
   );
 }
 

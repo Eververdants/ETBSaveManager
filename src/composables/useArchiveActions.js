@@ -150,6 +150,45 @@ export function useArchiveActions(archiveData, filters) {
     }
   };
 
+  const batchDeleteArchives = async (archiveList, callbacks = {}) => {
+    const { onSuccess, onError } = callbacks;
+    const deleteResults = { success: [], failed: [] };
+
+    for (const archive of archiveList) {
+      try {
+        const archiveIndex = archiveData.archives.value.findIndex(
+          (a) => a.id === archive.id
+        );
+
+        if (archiveIndex === -1) {
+          console.warn(`[batchDelete] 存档不存在: ${archive.id}`);
+          continue;
+        }
+
+        if (archive.path) {
+          await invoke("delete_file", { filePath: archive.path });
+        }
+
+        archiveData.archives.value.splice(archiveIndex, 1);
+        deleteResults.success.push(archive.id);
+      } catch (error) {
+        console.error(`[batchDelete] 删除失败: ${archive.id}`, error);
+        deleteResults.failed.push({ id: archive.id, error });
+      }
+    }
+
+    if (deleteResults.failed.length > 0) {
+      toast.showError(`批量删除完成，${deleteResults.success.length} 个成功，${deleteResults.failed.length} 个失败`);
+      if (onError) onError(deleteResults);
+    } else {
+      toast.showSuccess(`已删除 ${deleteResults.success.length} 个存档`);
+    }
+
+    if (onSuccess) onSuccess(deleteResults);
+
+    return deleteResults;
+  };
+
   return {
     showDeleteConfirm,
     archiveToDelete,
@@ -164,5 +203,6 @@ export function useArchiveActions(archiveData, filters) {
     closeDeleteModal,
     createNewArchive,
     openSaveGamesFolder,
+    batchDeleteArchives,
   };
 }

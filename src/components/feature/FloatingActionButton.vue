@@ -5,7 +5,7 @@
       <div class="function-tooltip" ref="tooltip">
         <span class="tooltip-text">{{ getCurrentTooltip }}</span>
       </div>
-      <div class="fab-menu" v-show="isMenuExpanded">
+      <div class="fab-menu" v-show="isMenuExpanded" ref="fabMenu">
         <div v-for="item in menuItems" :key="item.index" class="fab-menu-item" :class="{ 'is-active': item.isActive }"
           @click="handleMenuItemClick(item)">
           <font-awesome-icon :icon="['fas', item.icon]" class="menu-icon" />
@@ -43,6 +43,7 @@ const actionButton = ref(null);
 const currentIconEl = ref(null);
 const nextIconEl = ref(null);
 const tooltip = ref(null);
+const fabMenu = ref(null);
 const floatingActionContainer = ref(null);
 
 // 状态
@@ -57,6 +58,38 @@ let tooltipTimer = null;
 let menuExpandTimer = null; // 菜单展开定时器
 let menuCollapseTimer = null; // 菜单收起定时器
 let styleObserver = null;
+
+// 滚动隐藏配置
+const getScrollHideConfig = () => {
+  const width = window.innerWidth;
+  if (width <= 480) {
+    return { triggerThreshold: 150, maxTranslateX: 80 };
+  } else if (width <= 768) {
+    return { triggerThreshold: 180, maxTranslateX: 100 };
+  }
+  return { triggerThreshold: 200, maxTranslateX: 120 };
+};
+
+let scrollListener = null;
+
+const updateFabPosition = () => {
+  const container = floatingActionContainer.value;
+  if (!container) return;
+
+  const config = getScrollHideConfig();
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const windowHeight = window.innerHeight;
+  const documentHeight = document.documentElement.scrollHeight;
+  const scrollBottom = documentHeight - scrollTop - windowHeight;
+
+  if (scrollBottom <= config.triggerThreshold) {
+    const progress = 1 - (scrollBottom / config.triggerThreshold);
+    const translateX = Math.min(progress * config.maxTranslateX, config.maxTranslateX);
+    container.style.transform = `translateX(${translateX}px)`;
+  } else {
+    container.style.transform = "translateX(0)";
+  }
+};
 
 // 映射配置
 const iconMap = {
@@ -240,18 +273,23 @@ const expandMenu = () => {
   }
 
   nextTick(() => {
-    const menuEl = document.querySelector(".fab-menu");
+    const menuEl = fabMenu.value;
     if (menuEl) {
       gsap.fromTo(
+        menuEl,
+        { opacity: 0, y: -8 },
+        { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" }
+      );
+      gsap.fromTo(
         menuEl.querySelectorAll(".fab-menu-item"),
-        { opacity: 0, y: 10, scale: 0.9 },
+        { opacity: 0, y: 8 },
         {
           opacity: 1,
           y: 0,
-          scale: 1,
-          duration: 0.25,
-          stagger: 0.05,
-          ease: "back.out(1.2)",
+          duration: 0.2,
+          stagger: 0.04,
+          ease: "power2.out",
+          delay: 0.05,
         }
       );
     }
@@ -259,16 +297,22 @@ const expandMenu = () => {
 };
 
 const collapseMenu = () => {
-  const menuEl = document.querySelector(".fab-menu");
+  const menuEl = fabMenu.value;
   if (menuEl) {
+    gsap.to(menuEl, {
+      opacity: 0,
+      y: -8,
+      duration: 0.15,
+      ease: "power2.in"
+    });
     gsap.to(menuEl.querySelectorAll(".fab-menu-item"), {
       opacity: 0,
-      y: 10,
-      scale: 0.9,
+      y: 8,
       duration: 0.15,
       ease: "power2.in",
       onComplete: () => {
         isMenuExpanded.value = false;
+        gsap.set(menuEl, { opacity: 1, y: 0 });
       },
     });
   } else {
@@ -514,6 +558,8 @@ onMounted(() => {
   if (nextIconEl.value) gsap.set(nextIconEl.value, { y: 40, opacity: 0 });
   if (tooltip.value)
     gsap.set(tooltip.value, { opacity: 0, y: 10, visibility: "hidden" });
+  if (fabMenu.value)
+    gsap.set(fabMenu.value, { opacity: 0, y: -8 });
   // 延迟显示动画
   if (shouldRender.value && isHomePage.value) {
     nextTick(() => setTimeout(showFloatingButton, 100));
@@ -526,6 +572,12 @@ onMounted(() => {
     setTimeout(showScrollHint, 1000);
     storage.setItem("fabScrollHintShown", "true");
   }
+  // 添加滚动监听
+  scrollListener = () => {
+    requestAnimationFrame(updateFabPosition);
+  };
+  window.addEventListener("scroll", scrollListener, { passive: true });
+  updateFabPosition();
 });
 
 onUnmounted(() => {
@@ -535,6 +587,10 @@ onUnmounted(() => {
   if (styleObserver) {
     styleObserver.disconnect();
     styleObserver = null;
+  }
+  if (scrollListener) {
+    window.removeEventListener("scroll", scrollListener);
+    scrollListener = null;
   }
 });
 </script>
@@ -558,6 +614,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .action-button {
@@ -624,8 +681,8 @@ onUnmounted(() => {
   position: absolute !important;
   top: auto !important;
   bottom: 100% !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+  left: auto !important;
+  right: 0 !important;
   margin-bottom: 10px !important;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-backdrop-filter);
@@ -647,8 +704,9 @@ onUnmounted(() => {
   content: "";
   position: absolute;
   top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 12px;
+  left: auto;
+  transform: translateX(0);
   border: 4px solid transparent;
   border-top-color: var(--glass-bg);
 }
@@ -657,14 +715,15 @@ onUnmounted(() => {
   position: absolute !important;
   top: auto !important;
   bottom: 100% !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+  left: auto !important;
+  right: 0 !important;
   margin-bottom: 12px !important;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-backdrop-filter);
   border-radius: var(--radius-lg);
   padding: 8px;
   min-width: 160px;
+  max-width: calc(100vw - 80px);
   box-shadow: var(--card-shadow);
   border: var(--card-border);
   z-index: 1002;
@@ -674,8 +733,9 @@ onUnmounted(() => {
   content: "";
   position: absolute;
   top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 12px;
+  left: auto;
+  transform: translateX(0);
   border: 6px solid transparent;
   border-top-color: var(--glass-bg);
 }

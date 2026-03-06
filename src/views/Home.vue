@@ -736,7 +736,7 @@ watch(columnsPerRow, () => {
 }
 
 .archive-grid-virtual {
-  padding-bottom: 80px;
+  padding-bottom: 100px;
 }
 
 .archive-row {

@@ -77,18 +77,31 @@ const updateFabPosition = () => {
   if (!container) return;
 
   const config = getScrollHideConfig();
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  const windowHeight = window.innerHeight;
-  const documentHeight = document.documentElement.scrollHeight;
-  const scrollBottom = documentHeight - scrollTop - windowHeight;
 
-  if (scrollBottom <= config.triggerThreshold) {
-    const progress = 1 - (scrollBottom / config.triggerThreshold);
-    const translateX = Math.min(progress * config.maxTranslateX, config.maxTranslateX);
-    container.style.transform = `translateX(${translateX}px)`;
+  // 尝试获取 Home 页面的滚动容器
+  const scrollContainer = document.querySelector(".archive-list-container, .quick-create-main");
+  let scrollBottom = 0;
+
+  if (scrollContainer) {
+    // 容器滚动
+    const scrollTop = scrollContainer.scrollTop;
+    const clientHeight = scrollContainer.clientHeight;
+    const scrollHeight = scrollContainer.scrollHeight;
+    scrollBottom = scrollHeight - scrollTop - clientHeight;
   } else {
-    container.style.transform = "translateX(0)";
+    // window 滚动作为后备
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    scrollBottom = documentHeight - scrollTop - windowHeight;
   }
+
+  // 计算移动进度
+  const progress = Math.max(0, Math.min(1, 1 - scrollBottom / config.triggerThreshold));
+  const translateX = progress * config.maxTranslateX;
+
+  // 使用 CSS 变量来控制移动距离
+  container.style.setProperty("--fab-translate-x", `${translateX}px`);
 };
 
 // 映射配置
@@ -135,7 +148,6 @@ const containerStyles = {
   right: "30px",
   top: "auto",
   left: "auto",
-  transform: "none",
   margin: "0",
   padding: "0",
 };
@@ -525,7 +537,7 @@ const initStyleObserver = (container) => {
     if (isTransitioning) return;
     for (const m of mutations) {
       if (m.type !== "attributes" || m.attributeName !== "style") continue;
-      // 只检查定位相关属性，不检查opacity和visibility
+      // 只检查定位相关属性，不检查transform/opacity/visibility
       const needsRestore = Object.entries(expected).some(([k, v]) => {
         const c = container.style.getPropertyValue(k);
         return c && c !== v;
@@ -539,6 +551,7 @@ const initStyleObserver = (container) => {
   styleObserver.observe(container, {
     attributes: true,
     attributeFilter: ["style"],
+    attributeOldValue: true,
   });
 };
 
@@ -576,8 +589,23 @@ onMounted(() => {
   scrollListener = () => {
     requestAnimationFrame(updateFabPosition);
   };
-  window.addEventListener("scroll", scrollListener, { passive: true });
+
+  // 尝试监听容器滚动，否则监听 window 滚动
+  const scrollContainer = document.querySelector(".archive-list-container, .quick-create-main");
+  if (scrollContainer) {
+    scrollContainer.addEventListener("scroll", scrollListener, { passive: true });
+  } else {
+    window.addEventListener("scroll", scrollListener, { passive: true });
+  }
   updateFabPosition();
+
+  // 短暂延迟后断开 styleObserver，避免干扰 transform 动画
+  setTimeout(() => {
+    if (styleObserver) {
+      styleObserver.disconnect();
+      styleObserver = null;
+    }
+  }, 500);
 });
 
 onUnmounted(() => {
@@ -589,7 +617,12 @@ onUnmounted(() => {
     styleObserver = null;
   }
   if (scrollListener) {
-    window.removeEventListener("scroll", scrollListener);
+    const scrollContainer = document.querySelector(".archive-list-container, .quick-create-main");
+    if (scrollContainer) {
+      scrollContainer.removeEventListener("scroll", scrollListener);
+    } else {
+      window.removeEventListener("scroll", scrollListener);
+    }
     scrollListener = null;
   }
 });
@@ -603,6 +636,7 @@ onUnmounted(() => {
   z-index: 10000 !important;
   top: auto !important;
   left: auto !important;
+  transform: translateX(var(--fab-translate-x, 0)) !important;
   transform-origin: center center;
   isolation: isolate;
   clip: auto !important;

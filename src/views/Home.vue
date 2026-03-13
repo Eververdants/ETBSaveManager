@@ -21,7 +21,7 @@
           <span class="selection-count">
             {{ $t("archiveSearch.multiSelect.selected", {
               count: selectedArchives.size,
-              total: displayArchives.length
+              total: archives.length
             }) }}
           </span>
           <button class="toolbar-btn danger" :disabled="selectedArchives.size === 0"
@@ -431,11 +431,23 @@ const openSaveGamesFolder = () => {
 const enterMultiSelectMode = () => {
   isMultiSelectMode.value = true;
   selectedArchives.value = new Set();
+  // 禁用页面滚动 - 同时禁用 body 和 html
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
+  document.body.style.height = '100%';
+  document.documentElement.style.overflow = 'hidden';
 };
 
 const exitMultiSelectMode = () => {
   isMultiSelectMode.value = false;
   selectedArchives.value = new Set();
+  // 恢复页面滚动
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.width = '';
+  document.body.style.height = '';
+  document.documentElement.style.overflow = '';
 };
 
 const toggleArchiveSelection = (archiveId) => {
@@ -678,6 +690,12 @@ onUnmounted(() => {
     } catch (e) { }
   }
   window.removeEventListener("resize", () => { });
+  // 组件卸载时恢复页面滚动
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.width = '';
+  document.body.style.height = '';
+  document.documentElement.style.overflow = '';
 });
 
 watch(
@@ -721,18 +739,26 @@ watch(columnsPerRow, () => {
 }
 
 .archive-list-container {
-  height: 100%;
+  height: calc(100% - 40px);
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--bg-primary);
-  padding: 20px;
+  padding: 0 20px;
   box-sizing: border-box;
   /* 优化滚动性能 */
   -webkit-overflow-scrolling: touch;
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 20px;
+  border-radius: var(--radius-lg);
 }
 
 .archive-list-container.no-scroll {
   overflow: hidden;
+}
+
+/* 多选模式下调整存档列表容器高度 */
+.archive-list-container.multi-select-mode {
+  height: calc(100% - 100px);
 }
 
 .archive-grid-virtual {

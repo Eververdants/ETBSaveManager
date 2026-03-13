@@ -124,6 +124,11 @@ pub fn create_new_save(save_data: SaveData) -> Result<(), String> {
     println!("  Player count: {}", save_data.players.len());
     println!("  Is main ending: {}", !save_data.main_ending);
 
+    // 检查存档名称是否包含下划线
+    if save_data.archive_name.contains('_') {
+        return Err("存档名称不能包含下划线".to_string());
+    }
+
     // Process level mapping
     let processed_level = match save_data.level.as_str() {
         "Pipes1" | "Pipes2" => "Pipes".to_string(),

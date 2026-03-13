@@ -355,11 +355,25 @@ export function useQuickCreate() {
     const result = {
       added: 0,
       warnings: [],
+      errors: [],
     };
 
-    const newArchives = names
-      .filter((name) => name && name.trim())
-      .map((name) => createArchiveConfig(name.trim()));
+    // 过滤掉包含下划线的名称
+    const validNames = names.filter((name) => {
+      if (!name || !name.trim()) {
+        return false;
+      }
+      if (name.includes("_")) {
+        result.errors.push({
+          name: name,
+          error: "存档名称不能包含下划线",
+        });
+        return false;
+      }
+      return true;
+    });
+
+    const newArchives = validNames.map((name) => createArchiveConfig(name.trim()));
 
     // 检查是否超过大量数据阈值
     // Requirements: 17.1 - 超过 1000 个名称时建议分批
@@ -396,6 +410,7 @@ export function useQuickCreate() {
 
   /**
    * 处理重复名称，自动添加后缀
+   * 使用连字符(-)替代下划线(_)以避免与文件名格式冲突
    * @param {Object[]} newArchives - 新存档列表
    */
   const handleDuplicateNames = (newArchives) => {
@@ -411,8 +426,9 @@ export function useQuickCreate() {
       let suffix = 1;
 
       // 检查是否与现有名称或已处理的新名称重复
+      // 使用连字符(-)替代下划线(_)以避免与文件名格式冲突
       while (existingNames.has(finalName) || nameCount.has(finalName)) {
-        finalName = `${baseName}_${suffix}`;
+        finalName = `${baseName}-${suffix}`;
         suffix++;
       }
 
@@ -428,12 +444,23 @@ export function useQuickCreate() {
   /**
    * 添加单个存档
    * @param {string} name - 存档名称
+   * @returns {Object} { success: boolean, error?: string }
    */
   const addArchive = (name) => {
-    if (name && name.trim()) {
-      state.archives.push(createArchiveConfig(name.trim()));
-      recalculateArchives();
+    if (!name || !name.trim()) {
+      return { success: false, error: "存档名称不能为空" };
     }
+
+    const trimmedName = name.trim();
+
+    // 检查存档名称是否包含下划线
+    if (trimmedName.includes("_")) {
+      return { success: false, error: "存档名称不能包含下划线" };
+    }
+
+    state.archives.push(createArchiveConfig(trimmedName));
+    recalculateArchives();
+    return { success: true };
   };
 
   /**
@@ -555,11 +582,12 @@ export function useQuickCreate() {
   const copyArchive = (archiveId) => {
     const archive = state.archives.find((a) => a.id === archiveId);
     if (archive) {
+      // 使用连字符(-)替代下划线(_)以避免与文件名格式冲突
       const newArchive = {
         ...archive,
         id: generateId(),
-        name: `${archive.name}_copy`,
-        parsedInfo: parseName(`${archive.name}_copy`),
+        name: `${archive.name}-copy`,
+        parsedInfo: parseName(`${archive.name}-copy`),
       };
 
       // 找到原存档位置，在其后插入

@@ -13,7 +13,10 @@ static SAVE_FILE_REGEX: OnceLock<Regex> = OnceLock::new();
 #[inline]
 fn get_save_file_regex() -> &'static Regex {
     SAVE_FILE_REGEX.get_or_init(|| {
-        Regex::new(r"(?i)^(MULTIPLAYER|SINGLEPLAYER)_(.+?)_(Easy|Normal|Hard|Nightmare|\d+)\.sav$")
+        // 使用贪婪匹配 (.+) 来正确处理包含下划线的存档名称
+        // 模式: MULTIPLAYER/SINGLEPLAYER_存档名称_难度.sav
+        // 难度部分必须是 Easy/Normal/Hard/Nightmare 或数字
+        Regex::new(r"(?i)^(MULTIPLAYER|SINGLEPLAYER)_(.+)_(Easy|Normal|Hard|Nightmare|\d+)\.sav$")
             .expect("正则表达式编译失败")
     })
 }

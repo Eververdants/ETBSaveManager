@@ -1,23 +1,23 @@
 {
-  "version": "3.0.2",
-  "date": "2026-02-23",
-  "title": "Auto-Feedback Optimization & Archive Management Enhancement",
+  "version": "3.1.0",
+  "date": "2026-03-14",
+  "title": "Global Search & Batch Management",
   "type": "major",
   "categories": {
     "newFeatures": [
+      "Added global search with keyboard shortcut support",
+      "Added multi-select mode for batch archive deletion",
+      "Added floating button auto-hide on scroll for cleaner UI"
     ],
     "improvements": [
-      "Improved error handling to support different types of error objects",
-      "Enhanced archive data validation and error handling",
-      "Added multi-language text for archive operations",
-      "Optimized virtual list rendering performance with fallback mechanism"
+      "Enhanced dropdown menu and search component interactions",
+      "Improved animation smoothness and responsiveness",
+      "Better initial loading experience"
     ],
     "bugFixes": [
-      "Fixed auto-feedback default state logic from enabled by default to disabled by default",
-      "Fixed variable reference issues in event bindings",
-      "Exposed router instance globally for auto-feedback service",
-      "Added cache file parsing error handling",
-      "Fixed an issue where the first row of archive cards could sometimes fail to render"
+      "Fixed compatibility issues with archive names containing underscores",
+      "Fixed floating button animation conflicts during scrolling",
+      "Fixed virtual scroll list refresh logic"
     ],
     "performance": []
   }

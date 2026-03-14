@@ -7,7 +7,7 @@ export default {
     download: '下载'
   },
   hero: {
-    badge: 'v3.0.2 正式版现已发布',
+    badge: 'v3.1.0 正式版现已发布',
     title1: '逃离后室',
     title2: '存档管理器',
     subtitle: '一款现代化的《Escape The Backrooms》存档管理工具',
@@ -15,7 +15,7 @@ export default {
     downloadBtn: '免费下载',
     downloadNote: '无需登录，无广告弹窗，下载后即可使用',
     sourceBtn: '查看源码',
-    proofs: ['100% 免费', '新手友好', 'v3.0.2 稳定版', '开源透明'],
+    proofs: ['100% 免费', '新手友好', 'v3.1.0 稳定版', '开源透明'],
     stats: {
       platform: '支持平台',
       framework: '构建框架',
@@ -31,7 +31,7 @@ export default {
       title: '基本信息',
       items: [
         { label: '项目名称', value: 'ETB Save Manager' },
-        { label: '版本', value: 'v3.0.2' },
+        { label: '版本', value: 'v3.1.0' },
         { label: '作者', value: 'Eververdants' },
         { label: '许可证', value: 'MIT' },
         { label: '主要平台', value: 'Windows' },
@@ -154,7 +154,7 @@ export default {
       badge: '热门推荐',
       title: '现在下载，3 分钟内就能开始管理存档',
       subtitle: '如果你经常备份、换档或改背包，这个工具会明显省时间',
-      cta: '立即下载 v3.0.2',
+      cta: '立即下载 v3.1.0',
       points: ['Windows 10/11', '安装简单', '支持中文界面', '持续更新']
     },
     version: '最新版本',
@@ -171,7 +171,7 @@ export default {
     },
     release: {
       label: '正式版',
-      date: 'v3.0.2 正式版已发布'
+      date: 'v3.1.0 正式版已发布'
     }
   },
   downloadPage: {

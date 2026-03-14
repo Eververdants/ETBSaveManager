@@ -7,7 +7,7 @@ export default {
     download: 'Download'
   },
   hero: {
-    badge: 'v3.0.2 Stable Release Now Available',
+    badge: 'v3.1.0 Stable Release Now Available',
     title1: 'Escape The Backrooms',
     title2: 'Save Manager',
     subtitle: 'A modern save management desktop tool for "Escape The Backrooms"',
@@ -15,7 +15,7 @@ export default {
     downloadBtn: 'Free Download',
     downloadNote: 'No account needed, no popup ads, download and use immediately',
     sourceBtn: 'View Source',
-    proofs: ['100% Free', 'Beginner Friendly', 'v3.0.2 Stable', 'Open Source'],
+    proofs: ['100% Free', 'Beginner Friendly', 'v3.1.0 Stable', 'Open Source'],
     stats: {
       platform: 'Platform',
       framework: 'Framework',
@@ -31,7 +31,7 @@ export default {
       title: 'Basic Information',
       items: [
         { label: 'Project Name', value: 'ETB Save Manager' },
-        { label: 'Version', value: 'v3.0.2' },
+        { label: 'Version', value: 'v3.1.0' },
         { label: 'Author', value: 'Eververdants' },
         { label: 'License', value: 'MIT' },
         { label: 'Primary Platform', value: 'Windows' },
@@ -171,7 +171,7 @@ export default {
     },
     release: {
       label: 'Stable Release',
-      date: 'v3.0.2 stable release is now live'
+      date: 'v3.1.0 stable release is now live'
     }
   },
   downloadPage: {

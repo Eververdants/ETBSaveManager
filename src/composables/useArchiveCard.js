@@ -1,4 +1,4 @@
-import { ref, computed, watch, onMounted, toRefs } from "vue";
+import { ref, computed, watch, onMounted, onActivated, toRefs } from "vue";
 
 const textWidthCache = new Map();
 
@@ -99,6 +99,12 @@ export function useArchiveCardEntryAnimation(index) {
 
   onMounted(() => {
     triggerAnimation();
+  });
+
+  onActivated(() => {
+    if (!hasEntered.value) {
+      triggerAnimation();
+    }
   });
 
   return { hasEntered };

@@ -567,6 +567,9 @@ onActivated(async () => {
     scrollContainerRef.value.scrollTop = 0;
   }
 
+  // 刷新数据前先更新容器尺寸，确保列数正确
+  updateContainerSize();
+
   // 刷新数据
   await refreshArchivesSilent();
 

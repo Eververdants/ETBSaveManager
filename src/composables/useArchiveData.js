@@ -7,16 +7,13 @@ import { useToast } from "./useToast";
  */
 export function useArchiveData() {
   const toast = useToast();
-  // 存档数据
   const archives = ref([]);
   const displayArchives = ref([]);
   const visibleSaves = ref(new Set());
 
-  // 状态
   const loading = ref(false);
   const dataLoadComplete = ref(false);
 
-  // 难度映射
   const difficultyMap = {
     简单难度: "easy",
     普通难度: "normal",
@@ -24,9 +21,30 @@ export function useArchiveData() {
     噩梦难度: "nightmare",
   };
 
-  /**
-   * 获取MAINSAVE中的可见存档列表
-   */
+  const mapArchive = (item) => {
+    const gameMode =
+      item.mode === "单人模式"
+        ? "singleplayer"
+        : item.mode === "多人模式"
+        ? "multiplayer"
+        : item.mode.toLowerCase();
+
+    return {
+      id: item.id ?? 0,
+      name: item.name ?? "未命名存档",
+      currentLevel: item.current_level ?? "Level0",
+      gameMode,
+      archiveDifficulty:
+        difficultyMap[item.difficulty] || item.difficulty?.toLowerCase() || "normal",
+      actualDifficulty:
+        difficultyMap[item.actual_difficulty] ||
+        item.actual_difficulty?.toLowerCase() || "normal",
+      isVisible: item.is_visible === true,
+      path: item.path ?? "",
+      date: item.date ?? new Date().toISOString(),
+    };
+  };
+
   const loadVisibleSaves = async () => {
     try {
       const response = await invoke("handle_file", {
@@ -46,39 +64,12 @@ export function useArchiveData() {
     }
   };
 
-  /**
-   * 加载真实存档数据
-   */
   const loadRealArchives = async () => {
     try {
       const response = await invoke("load_all_saves");
 
       if (response && Array.isArray(response)) {
-        return response.map((item) => {
-          const gameMode =
-            item.mode === "单人模式"
-              ? "singleplayer"
-              : item.mode === "多人模式"
-              ? "multiplayer"
-              : item.mode.toLowerCase();
-
-          const isVisible = item.is_visible === true;
-
-          return {
-            id: item.id ?? 0,
-            name: item.name ?? "未命名存档",
-            currentLevel: item.current_level ?? "Level0",
-            gameMode: gameMode,
-            archiveDifficulty:
-              difficultyMap[item.difficulty] || item.difficulty?.toLowerCase() || "normal",
-            actualDifficulty:
-              difficultyMap[item.actual_difficulty] ||
-              item.actual_difficulty?.toLowerCase() || "normal",
-            isVisible: isVisible,
-            path: item.path ?? "",
-            date: item.date ?? new Date().toISOString(),
-          };
-        });
+        return response.map(mapArchive);
       }
       return [];
     } catch (error) {
@@ -93,9 +84,6 @@ export function useArchiveData() {
     }
   };
 
-  /**
-   * 初始化存档数据
-   */
   const initializeArchives = async (silent = false) => {
     if (!silent) {
       loading.value = true;
@@ -105,8 +93,11 @@ export function useArchiveData() {
     }
 
     try {
-      await loadVisibleSaves();
-      const realArchives = await loadRealArchives();
+      const [_, realArchives] = await Promise.all([
+        loadVisibleSaves(),
+        loadRealArchives()
+      ]);
+
       archives.value = realArchives;
       displayArchives.value = realArchives;
       dataLoadComplete.value = true;
@@ -130,15 +121,14 @@ export function useArchiveData() {
     }
   };
 
-  /**
-   * 刷新存档列表
-   */
   const refreshArchives = async () => {
     loading.value = true;
 
     try {
-      await loadVisibleSaves();
-      const realArchives = await loadRealArchives();
+      const [_, realArchives] = await Promise.all([
+        loadVisibleSaves(),
+        loadRealArchives()
+      ]);
       archives.value = realArchives;
     } catch (error) {
       console.error("刷新存档失败:", error);
@@ -149,22 +139,18 @@ export function useArchiveData() {
     }
   };
 
-  /**
-   * 静默刷新存档列表
-   */
   const refreshArchivesSilent = async () => {
     try {
-      await loadVisibleSaves();
-      const realArchives = await loadRealArchives();
+      const [_, realArchives] = await Promise.all([
+        loadVisibleSaves(),
+        loadRealArchives()
+      ]);
       archives.value = realArchives;
     } catch (error) {
       console.error("刷新存档失败:", error);
     }
   };
 
-  /**
-   * 删除存档
-   */
   const removeArchive = (archiveId) => {
     const index = archives.value.findIndex((a) => a.id === archiveId);
     if (index > -1) {
@@ -172,9 +158,6 @@ export function useArchiveData() {
     }
   };
 
-  /**
-   * 更新存档可见性
-   */
   const updateArchiveVisibility = (archiveId, isVisible) => {
     const archiveIndex = archives.value.findIndex((a) => a.id === archiveId);
     if (archiveIndex > -1) {
@@ -189,7 +172,6 @@ export function useArchiveData() {
     }
   };
 
-  // 计算属性
   const archiveStats = computed(() => ({
     total: archives.value.length,
     visible: archives.value.filter((a) => a.isVisible).length,
@@ -197,14 +179,12 @@ export function useArchiveData() {
   }));
 
   return {
-    // 状态
     archives,
     displayArchives,
     visibleSaves,
     loading,
     dataLoadComplete,
     archiveStats,
-    // 方法
     loadVisibleSaves,
     loadRealArchives,
     initializeArchives,

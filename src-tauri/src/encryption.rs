@@ -68,10 +68,10 @@ fn derive_key_from_password(password: &str, salt: &SaltString) -> Result<[u8; 32
     Ok(key)
 }
 
-/// 生成主密钥
+/// 生成主密钥（使用密码学安全随机数生成器）
 fn generate_master_key() -> [u8; MASTER_KEY_LEN] {
     let mut key = [0u8; MASTER_KEY_LEN];
-    rand::thread_rng().fill(&mut key);
+    OsRng.fill(&mut key);
     key
 }
 
@@ -199,7 +199,7 @@ pub fn encrypt_data(
     plaintext: &[u8],
 ) -> Result<Vec<u8>, String> {
     let mut nonce_bytes = [0u8; NONCE_LEN];
-    rand::thread_rng().fill(&mut nonce_bytes);
+    OsRng.fill(&mut nonce_bytes);
 
     let cipher = Aes256Gcm::new(master_key.into());
     let nonce = Nonce::from_slice(&nonce_bytes);

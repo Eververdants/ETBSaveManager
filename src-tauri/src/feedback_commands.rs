@@ -553,7 +553,7 @@ pub fn get_system_info(language: String, screen_resolution: String) -> SystemInf
     SystemInfo::collect(language, screen_resolution)
 }
 
-/// Validates feedback input data
+/// Validates feedback input data with enhanced security checks
 fn validate_feedback_input(data: &FeedbackData) -> AppResult<()> {
     // Check required fields
     if data.title.trim().is_empty() {
@@ -594,6 +594,21 @@ fn validate_feedback_input(data: &FeedbackData) -> AppResult<()> {
                     message: "Invalid severity level".to_string(),
                 });
             }
+        }
+    }
+
+    // Validate sender field to prevent injection
+    if let Some(ref sender) = data.sender {
+        if sender.len() > 200 {
+            return Err(AppError {
+                message: "Sender name must be 200 characters or less".to_string(),
+            });
+        }
+        // Reject sender names with suspicious characters that could be used for injection
+        if sender.contains(|c: char| c == '<' || c == '>' || c == '"' || c == '\'' || c == '&') {
+            return Err(AppError {
+                message: "Sender name contains invalid characters".to_string(),
+            });
         }
     }
 

@@ -406,56 +406,31 @@ async fn fetch_steam_usernames_batch(
         .collect())
 }
 
+/// 使用系统凭据管理器存储加密的 Steam API 密钥
+/// 相比明文 JSON 文件更安全，利用操作系统级别的凭据保护
+const KEYRING_SERVICE_STEAM: &str = "etbsavemanager-steam-api";
+const KEYRING_ACCOUNT_STEAM_KEY: &str = "steam-api-key";
+
 fn read_encrypted_steam_api_key_from_config() -> AppResult<String> {
-    let config_path = get_app_config_dir()?.join("config.json");
+    use keyring::Entry;
 
-    if !config_path.exists() {
-        return Err("Steam API密钥未配置".to_string().into());
-    }
+    let entry = Entry::new(KEYRING_SERVICE_STEAM, KEYRING_ACCOUNT_STEAM_KEY)
+        .map_err(|e| AppError { message: format!("创建凭据条目失败: {}", e) })?;
 
-    let config_content =
-        fs::read_to_string(&config_path).map_err(|e| format!("读取配置文件失败: {}", e))?;
-
-    let config: serde_json::Value =
-        serde_json::from_str(&config_content).map_err(|e| format!("解析配置文件失败: {}", e))?;
-
-    config
-        .get("steamApiKey")
-        .and_then(|v| v.as_str())
-        .map(|v| v.to_string())
-        .ok_or_else(|| AppError {
-            message: "Steam API密钥未配置".to_string(),
-        })
+    Ok(entry
+        .get_password()
+        .map_err(|e| AppError { message: format!("读取 Steam API 密钥失败: {}", e) })?)
 }
 
 fn write_encrypted_steam_api_key_to_config(encrypted_api_key: String) -> AppResult<()> {
-    let config_dir = get_app_config_dir()?;
-    let config_path = config_dir.join("config.json");
+    use keyring::Entry;
 
-    if !config_dir.exists() {
-        fs::create_dir_all(&config_dir).map_err(|e| format!("创建配置目录失败: {}", e))?;
-    }
+    let entry = Entry::new(KEYRING_SERVICE_STEAM, KEYRING_ACCOUNT_STEAM_KEY)
+        .map_err(|e| AppError { message: format!("创建凭据条目失败: {}", e) })?;
 
-    let mut config: serde_json::Value = if config_path.exists() {
-        let content =
-            fs::read_to_string(&config_path).map_err(|e| format!("读取配置文件失败: {}", e))?;
-        serde_json::from_str(&content).map_err(|e| format!("解析配置文件失败: {}", e))?
-    } else {
-        serde_json::json!({})
-    };
-
-    if let Some(obj) = config.as_object_mut() {
-        obj.insert(
-            "steamApiKey".to_string(),
-            serde_json::Value::String(encrypted_api_key),
-        );
-    }
-
-    let config_json =
-        serde_json::to_string_pretty(&config).map_err(|e| format!("序列化配置失败: {}", e))?;
-
-    fs::write(&config_path, config_json).map_err(|e| format!("写入配置文件失败: {}", e))?;
-    Ok(())
+    Ok(entry
+        .set_password(&encrypted_api_key)
+        .map_err(|e| AppError { message: format!("保存 Steam API 密钥失败: {}", e) })?)
 }
 
 // ==================== Tauri Commands ====================
@@ -466,7 +441,7 @@ pub async fn encrypt_steam_api_key(api_key: String) -> AppResult<String> {
     use rand::RngCore;
 
     let mut key = [0u8; 32];
-    rand::thread_rng().fill_bytes(&mut key);
+    rand::rngs::OsRng.fill_bytes(&mut key);
 
     let encrypted = encryption::encrypt_data(&key, api_key.as_bytes())?;
     Ok(format!("{}:{}", hex::encode(key), hex::encode(encrypted)))

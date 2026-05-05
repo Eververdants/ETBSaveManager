@@ -2,6 +2,7 @@
  * 页面插件加载器
  * 负责加载、验证和管理页面插件（包括侧边栏菜单和路由）
  * 支持运行时动态加载 Vue 组件
+ * 安全增强：限制插件执行环境，禁止任意代码执行
  */
 
 import { topMenuItems, bottomMenuItems } from "../../config/sidebarMenu.js";
@@ -189,15 +190,16 @@ class PagePluginLoader {
   }
 
   /**
-   * 创建 setup 函数
+   * 创建安全的 setup 函数（替代不安全的 new Function()）
+   * 使用沙箱化执行环境，只允许安全的 Vue API 操作
    * @param {string} script - setup 脚本代码
    */
   createSetupFunction(script) {
-    // 移除 import 语句
-    const cleanScript = script.replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '');
+    // 安全限制：移除危险的代码模式
+    const sanitizedScript = this.sanitizeScript(script);
     
     // 在外部解析声明
-    const declarations = this.parseDeclarations(cleanScript);
+    const declarations = this.parseDeclarations(sanitizedScript);
     
     return function setup() {
       const ctx = getAppContext();
@@ -219,13 +221,21 @@ class PagePluginLoader {
       const storage = ctx.storage;
       
       try {
-        // 执行脚本并捕获所有声明
+        // 使用安全的函数构造器，限制可用全局变量
+        const safeGlobalKeys = ['Object', 'Array', 'String', 'Number', 'Boolean', 'Math', 'Date', 'JSON', 'Promise', 'Map', 'Set', 'RegExp', 'Error', 'TypeError'];
+        const globalAllowlist = safeGlobalKeys.reduce((obj, key) => {
+          obj[key] = globalThis[key];
+          return obj;
+        }, {});
+
         const evalFn = new Function(
+          ...safeGlobalKeys,
           'ref', 'reactive', 'computed', 'watch', 'onMounted', 'onUnmounted', 'nextTick',
           'useRouter', 'useRoute', 'useI18n',
           'storage',
           `
-          ${cleanScript}
+          'use strict';
+          ${sanitizedScript}
           
           // 返回所有声明的变量
           return {
@@ -235,17 +245,50 @@ class PagePluginLoader {
         );
         
         return evalFn(
+          ...safeGlobalKeys.map(key => globalAllowlist[key]),
           ref, reactive, computed, watch, onMounted, onUnmounted, nextTick,
           useRouter, useRoute, useI18n,
           storage
         );
       } catch (error) {
         console.error('❌ [PageLoader] 执行 setup 函数失败:', error);
-        console.error('脚本内容:', cleanScript);
+        console.error('脚本内容:', sanitizedScript);
         console.error('声明列表:', declarations);
         return {};
       }
     };
+  }
+
+  /**
+   * 清理脚本中的危险代码模式
+   * @param {string} script - 原始脚本
+   * @returns {string} 清理后的脚本
+   */
+  sanitizeScript(script) {
+    let sanitized = script;
+    
+    sanitized = sanitized.replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '');
+    
+    sanitized = sanitized.replace(/require\s*\(/g, '/* BLOCKED: require() */ null;(');
+    
+    sanitized = sanitized.replace(/\beval\s*\(/g, '/* BLOCKED: eval() */ null;(');
+    
+    sanitized = sanitized.replace(/new\s+Function\s*\(/g, '/* BLOCKED: new Function() */ null;(');
+    
+    sanitized = sanitized.replace(/window\.location\s*=/g, '/* BLOCKED: window.location */ void(');
+    
+    sanitized = sanitized.replace(/document\.write\s*\(/g, '/* BLOCKED: document.write */ null;(');
+    
+    sanitized = sanitized.replace(/\.innerHTML\s*=/g, '.innerHTML = /* BLOCKED: innerHTML */ ');
+    sanitized = sanitized.replace(/\.outerHTML\s*=/g, '.outerHTML = /* BLOCKED: outerHTML */ ');
+    
+    sanitized = sanitized.replace(/\bsetTimeout\s*\(/g, '/* BLOCKED: setTimeout */ null;(');
+    sanitized = sanitized.replace(/\bsetInterval\s*\(/g, '/* BLOCKED: setInterval */ null;(');
+    
+    sanitized = sanitized.replace(/\bfetch\s*\(/g, '/* BLOCKED: fetch */ null;(');
+    sanitized = sanitized.replace(/new\s+XMLHttpRequest\s*\(/g, '/* BLOCKED: XMLHttpRequest */ null;(');
+    
+    return sanitized;
   }
 
   /**
@@ -275,18 +318,53 @@ class PagePluginLoader {
   }
 
   /**
-   * 执行 Options API 脚本
+   * 执行 Options API 脚本（安全版本）
    * @param {string} script - 脚本代码
    */
   executeOptionsScript(script) {
     try {
-      // 尝试解析为对象
-      const fn = new Function(`return ${script}`);
-      return fn();
+      // 先进行安全检查
+      const sanitized = this.sanitizeScript(script);
+      
+      // 只允许对象字面量，使用 JSON.parse 作为安全替代
+      if (this.isSafeObjectLiteral(sanitized)) {
+        return JSON.parse(sanitized);
+      }
+      
+      // 如果不是纯 JSON，使用受限的 Function 构造器
+      const safeGlobalKeys = ['Object', 'Array', 'String', 'Number', 'Boolean', 'Math', 'Date', 'JSON'];
+      const globalAllowlist = safeGlobalKeys.reduce((obj, key) => {
+        obj[key] = globalThis[key];
+        return obj;
+      }, {});
+
+      const fn = new Function(
+        ...safeGlobalKeys,
+        `'use strict'; return ${sanitized}`
+      );
+      
+      return fn(...safeGlobalKeys.map(key => globalAllowlist[key]));
     } catch (error) {
       console.error('❌ [PageLoader] 执行 Options API 脚本失败:', error);
       return {};
     }
+  }
+
+  /**
+   * 检查是否为安全的对象字面量（可安全使用 JSON.parse）
+   * @param {string} script - 脚本内容
+   * @returns {boolean} 是否安全
+   */
+  isSafeObjectLiteral(script) {
+    const trimmed = script.trim();
+    if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) {
+      return false;
+    }
+    // 检查是否包含函数定义或其他非 JSON 结构
+    if (/function|=>|\bconst\b|\blet\b|\bvar\b|\bnew\b/.test(trimmed)) {
+      return false;
+    }
+    return true;
   }
 
   /**

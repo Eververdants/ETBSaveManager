@@ -1,6 +1,9 @@
 import { ref, watch, onMounted, onUnmounted } from "vue";
 import { detectDevicePerformance } from "@/utils/performance";
 
+let monitorInstance = null;
+let monitorRefCount = 0;
+
 export function usePerformanceSettings(props, emit, t) {
   const localPerformanceMode = ref(props.performanceMode);
   const localAnimationQuality = ref(props.animationQuality);
@@ -11,10 +14,75 @@ export function usePerformanceSettings(props, emit, t) {
 
   const currentFPS = ref(60);
   const longTaskCount = ref(0);
-  let frameCount = 0;
-  let lastTime = performance.now();
-  let fpsMonitorInterval = null;
-  let longTaskObserver = null;
+
+  const sharedMonitor = () => {
+    if (monitorInstance) {
+      monitorRefCount++;
+      return monitorInstance;
+    }
+
+    monitorRefCount = 1;
+    let frameCount = 0;
+    let lastTime = performance.now();
+    let fpsMonitorInterval = null;
+    let longTaskObserver = null;
+
+    monitorInstance = {
+      start: () => {
+        const monitorFPS = () => {
+          frameCount++;
+          const now = performance.now();
+
+          if (now - lastTime >= 1000) {
+            currentFPS.value = Math.round((frameCount * 1000) / (now - lastTime));
+            frameCount = 0;
+            lastTime = now;
+          }
+
+          if (fpsMonitorInterval) {
+            fpsMonitorInterval = requestAnimationFrame(monitorFPS);
+          }
+        };
+
+        fpsMonitorInterval = requestAnimationFrame(monitorFPS);
+
+        if ("PerformanceObserver" in window) {
+          try {
+            longTaskObserver = new PerformanceObserver((list) => {
+              longTaskCount.value = list.getEntries().length;
+            });
+
+            longTaskObserver.observe({ entryTypes: ["longtask"] });
+          } catch (e) {
+            console.warn("长任务监控不支持:", e);
+          }
+        }
+      },
+
+      stop: () => {
+        if (fpsMonitorInterval) {
+          cancelAnimationFrame(fpsMonitorInterval);
+          fpsMonitorInterval = null;
+        }
+
+        if (longTaskObserver) {
+          longTaskObserver.disconnect();
+          longTaskObserver = null;
+        }
+      }
+    };
+
+    return monitorInstance;
+  };
+
+  const releaseMonitor = () => {
+    monitorRefCount--;
+    if (monitorRefCount <= 0 && monitorInstance) {
+      monitorInstance.stop();
+      monitorInstance = null;
+      monitorRefCount = 0;
+    }
+  };
 
   watch(
     () => props.performanceMode,

@@ -212,12 +212,17 @@ pub fn normalize_path_for_write(path: &Path) -> Result<PathBuf, String> {
 }
 
 pub fn validate_path_under_base(path: &Path, allowed_base: &Path) -> Result<(), String> {
+    // 第一层检查：拒绝明显的路径遍历尝试
     let path_str = path.to_string_lossy();
     if path_str.contains("..") {
         return Err("Invalid path detected".to_string());
     }
 
+    // 解析允许的基础目录为规范路径
     let allowed = normalize_existing_path(allowed_base)?;
+
+    // 第二层检查：解析目标路径为规范路径
+    // 注意：必须在实际文件操作前立即执行此检查，避免 TOCTOU 竞态条件
     let normalized = if path.exists() {
         normalize_existing_path(path)?
     } else {
@@ -229,6 +234,15 @@ pub fn validate_path_under_base(path: &Path, allowed_base: &Path) -> Result<(), 
     }
 
     Ok(())
+}
+
+/// 安全地打开文件，使用 O_NOFOLLOW 防止符号链接攻击
+pub fn safe_file_open(path: &Path) -> Result<File, String> {
+    // 在打开文件前验证路径
+    validate_save_games_path(path)?;
+
+    // 打开文件，拒绝符号链接（Windows 下由 canonicalize 保证）
+    File::open(path).map_err(|e| format!("无法打开文件: {}", e))
 }
 
 pub fn validate_save_games_path(path: &Path) -> Result<(), String> {

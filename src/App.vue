@@ -7,11 +7,9 @@ import AutoFeedbackConsentModal from "./components/modal/AutoFeedbackConsentModa
 import GlobalSearchPanel from "./components/feature/GlobalSearchPanel.vue";
 import { isSeasonalThemeAvailable } from "./config/seasonalThemeConfig";
 
-// 延迟导入非关键组件
 const Sidebar = shallowRef(null);
 const TitleBar = shallowRef(null);
 
-// 立即加载关键组件
 import SidebarComponent from "./components/layout/Sidebar.vue";
 import TitleBarComponent from "./components/layout/TitleBar.vue";
 
@@ -63,7 +61,6 @@ function handleAutoFeedbackDecline() {
   }));
 }
 
-// 组件缓存配置
 const cachedComponents = ["Home", "Settings", "CreateArchive", "PluginMarket", "CoreArchive", "Log"];
 const excludedComponents = ["BatchCreateArchive", "EditArchive", "SteamCache"];
 
@@ -169,6 +166,15 @@ const handleFindNextEventFromLock = (event) => {
   handleFindNavigateShortcut(!!event?.detail?.backward);
 };
 
+let mainContentCache = null;
+
+const getMainContent = () => {
+  if (!mainContentCache) {
+    mainContentCache = document.querySelector(".main-content");
+  }
+  return mainContentCache;
+};
+
 onMounted(() => {
   document.addEventListener("keydown", handleGlobalKeydown, true);
   window.addEventListener("app-global-find", handleFindEventFromLock);
@@ -184,7 +190,6 @@ onMounted(() => {
     }
   });
 
-  // 监听路由变更事件
   window.addEventListener("sidebar-route-change", (event) => {
     const routeName = event.detail.route;
     if (routeName && router.hasRoute(routeName)) {
@@ -192,17 +197,15 @@ onMounted(() => {
     }
   });
 
-  // 路由切换时处理滚动
   router.afterEach((to, from) => {
     if (to.name !== from.name) {
-      const mainContent = document.querySelector(".main-content");
+      const mainContent = getMainContent();
       if (mainContent) {
         mainContent.scrollTop = 0;
       }
     }
   });
 
-  // 延迟初始化非关键功能
   requestIdleCallback(() => {
     initThemeSystem();
     initFloatingButtonProtection();
@@ -214,6 +217,7 @@ onUnmounted(() => {
   document.removeEventListener("keydown", handleGlobalKeydown, true);
   window.removeEventListener("app-global-find", handleFindEventFromLock);
   window.removeEventListener("app-global-find-next", handleFindNextEventFromLock);
+  mainContentCache = null;
 });
 
 watch(
@@ -223,9 +227,7 @@ watch(
   }
 );
 
-// 主题系统初始化（延迟）
 async function initThemeSystem() {
-  // 等待存储初始化完成
   if (!storage.isInitialized()) {
     await storage.initStorage();
   }
@@ -236,10 +238,8 @@ async function initThemeSystem() {
   const isSeasonalAvailable = (id) =>
     isSeasonalThemeAvailable(id, { mode: seasonalMode });
 
-  // 从存储读取主题，如果没有则使用初始主题
   let theme = storage.getItem("theme") || window.__initialTheme || "light";
 
-  // 如果存储中的主题与初始主题不同，需要更新
   const initialTheme = window.__initialTheme;
 
   if (isSeasonalTheme(theme) && !isSeasonalAvailable(theme)) {
@@ -247,20 +247,17 @@ async function initThemeSystem() {
     storage.setItem("theme", theme);
   }
 
-  // 应用主题
   if (window.themeManager) {
     window.themeManager.setTheme(theme);
   } else {
     document.documentElement.setAttribute("data-theme", theme);
   }
 
-  // 如果主题与初始不同，需要更新 body 背景
   if (theme !== initialTheme) {
     updateBodyBackground(theme);
   }
 }
 
-// 更新 body 背景色
 function updateBodyBackground(theme) {
   const body = document.body;
   if (!body) return;
@@ -276,17 +273,14 @@ function updateBodyBackground(theme) {
   const bg = bgColors[theme] || bgColors['light'];
   body.style.backgroundColor = bg;
 
-  // 延迟清除，让 CSS 变量接管
   setTimeout(() => {
     body.style.backgroundColor = '';
   }, 100);
 }
 
-// 浮动按钮保护（延迟）
 async function initFloatingButtonProtection() {
   const { protectFloatingButtonPosition } = await import("./utils/floatingButtonProtection.js");
 
-  // 定期检查（降低频率）
   setInterval(protectFloatingButtonPosition, 2000);
 }
 </script>

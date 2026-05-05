@@ -1,6 +1,7 @@
-import { ref, computed } from "vue";
+import { ref, computed, nextTick } from "vue";
 
 const VIRTUAL_SCROLL_THRESHOLD = 50;
+let columnCache = null;
 
 export function useViewMode() {
   const viewMode = ref("grid");
@@ -8,18 +9,19 @@ export function useViewMode() {
 }
 
 export function useVirtualScroll(archives) {
-  const useVirtualScroll = computed(() => {
+  const isVirtualScrollEnabled = computed(() => {
     return archives.value?.length > VIRTUAL_SCROLL_THRESHOLD;
   });
-  return { useVirtualScroll };
+  return { useVirtualScroll: isVirtualScrollEnabled };
 }
 
 export function useGridColumns() {
   const gridColumns = ref(4);
   let resizeObserver = null;
+  let resizeRafId = null;
 
   const calculateGridColumns = () => {
-    const containerWidth = document.querySelector(".flow-content")?.clientWidth || 800;
+    const containerWidth = columnCache || document.querySelector(".flow-content")?.clientWidth || 800;
     const cardMinWidth = 220;
     const gap = 12;
     gridColumns.value = Math.max(1, Math.floor((containerWidth + gap) / (cardMinWidth + gap)));
@@ -27,9 +29,15 @@ export function useGridColumns() {
 
   const setupResizeObserver = () => {
     const container = document.querySelector(".flow-content");
-    if (container && window.ResizeObserver) {
+    if (!container) return;
+
+    if (window.ResizeObserver) {
       resizeObserver = new ResizeObserver(() => {
-        calculateGridColumns();
+        if (resizeRafId) return;
+        resizeRafId = requestAnimationFrame(() => {
+          resizeRafId = null;
+          calculateGridColumns();
+        });
       });
       resizeObserver.observe(container);
     }
@@ -38,10 +46,22 @@ export function useGridColumns() {
   const cleanupResizeObserver = () => {
     if (resizeObserver) {
       resizeObserver.disconnect();
+      resizeObserver = null;
+    }
+    if (resizeRafId) {
+      cancelAnimationFrame(resizeRafId);
+      resizeRafId = null;
     }
   };
 
-  return { gridColumns, calculateGridColumns, setupResizeObserver, cleanupResizeObserver };
+  const updateColumnCache = () => {
+    const container = document.querySelector(".flow-content");
+    if (container) {
+      columnCache = container.clientWidth;
+    }
+  };
+
+  return { gridColumns, calculateGridColumns, setupResizeObserver, cleanupResizeObserver, updateColumnCache };
 }
 
 export function useArchiveCardFlowEventHandlers(emit) {

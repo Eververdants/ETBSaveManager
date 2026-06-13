@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="visible" class="modal-overlay" @click.self="handleClose">
+      <div v-if="visible" ref="modalRef" class="modal-overlay" role="dialog" aria-modal="true" :aria-label="$t('quickCreate.editModal.title')" @click.self="handleClose">
         <div class="modal-container">
           <!-- 模态框头部 -->
           <div class="modal-header">
@@ -9,8 +9,8 @@
               <font-awesome-icon :icon="['fas', 'edit']" />
               {{ $t("quickCreate.editModal.title") }}
             </h3>
-            <button class="close-btn" @click="handleClose">
-              <font-awesome-icon :icon="['fas', 'times']" />
+            <button class="close-btn" aria-label="关闭" @click="handleClose">
+              <font-awesome-icon :icon="['fas', 'times']" aria-hidden="true" />
             </button>
           </div>
 
@@ -91,6 +91,7 @@
 import { ref, watch, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import CustomDropdown from "@/components/ui/CustomDropdown.vue";
+import { useFocusTrap } from "../../composables/useFocusTrap";
 
 const { t } = useI18n({ useScope: "global" });
 
@@ -108,9 +109,28 @@ const props = defineProps({
     default: () => [],
   },
 });
-``;
 
 const emit = defineEmits(["close", "save"]);
+
+// Modal ref for focus trap
+const modalRef = ref(null);
+
+// Focus trap
+const { activate: activateTrap, deactivate: deactivateTrap } = useFocusTrap(modalRef, {
+  onEscape: () => emit("close"),
+  initialFocus: true,
+});
+
+watch(
+  () => props.visible,
+  (newVal) => {
+    if (newVal) {
+      requestAnimationFrame(() => activateTrap());
+    } else {
+      deactivateTrap();
+    }
+  },
+);
 
 const useEditState = () => {
   const localArchive = ref({

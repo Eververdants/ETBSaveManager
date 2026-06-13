@@ -1,6 +1,14 @@
 <template>
   <transition name="modal">
-    <div v-if="show" class="modal-overlay" @click="handleOverlayClick">
+    <div
+      v-if="show"
+      ref="modalOverlayRef"
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="title"
+      @click="handleOverlayClick"
+    >
       <div class="modal-container" @click.stop>
         <div class="modal-header">
           <h3 class="modal-title">{{ title }}</h3>
@@ -10,23 +18,23 @@
         </div>
 
         <div class="modal-body">
-          <div class="modal-icon" :class="type">
+          <div class="modal-icon" :class="type" aria-hidden="true">
             <font-awesome-icon :icon="icon" />
           </div>
-          <p class="modal-message">{{ message }}</p>
+          <p class="modal-message" :title="message">{{ message }}</p>
 
           <!-- 存档详情卡片 -->
           <div v-if="archiveDetails" class="archive-details-card">
             <div class="archive-detail-row">
               <span class="detail-label">
-                <font-awesome-icon icon="fa-solid fa-layer-group" />
+                <font-awesome-icon icon="fa-solid fa-layer-group" aria-hidden="true" />
                 {{ t("confirmModal.archiveDetails.currentLevel") }}
               </span>
               <span class="detail-value">{{ archiveDetails.currentLevel || t("common.unknown") }}</span>
             </div>
             <div class="archive-detail-row">
               <span class="detail-label">
-                <font-awesome-icon icon="fa-solid fa-skull" />
+                <font-awesome-icon icon="fa-solid fa-skull" aria-hidden="true" />
                 {{ t("confirmModal.archiveDetails.difficulty") }}
               </span>
               <span class="detail-value">
@@ -37,7 +45,7 @@
             </div>
             <div v-if="archiveDetails.date" class="archive-detail-row">
               <span class="detail-label">
-                <font-awesome-icon icon="fa-solid fa-clock" />
+                <font-awesome-icon icon="fa-solid fa-clock" aria-hidden="true" />
                 {{ t("confirmModal.archiveDetails.modifiedTime") }}
               </span>
               <span class="detail-value">{{ formatDate(archiveDetails.date) }}</span>
@@ -48,11 +56,22 @@
         </div>
 
         <div class="modal-footer">
-          <button class="btn btn-secondary" :disabled="loading" @click="handleCancel">
+          <button
+            ref="cancelBtnRef"
+            class="btn btn-secondary"
+            :disabled="loading"
+            @click="handleCancel"
+          >
             {{ cancelText }}
           </button>
-          <button class="btn" :class="`btn-${type}`" :disabled="loading" @click="handleConfirm">
-            <span v-if="loading" class="loading-spinner"></span>
+          <button
+            ref="confirmBtnRef"
+            class="btn"
+            :class="`btn-${type}`"
+            :disabled="loading"
+            @click="handleConfirm"
+          >
+            <span v-if="loading" class="loading-spinner" aria-hidden="true"></span>
             {{ confirmText }}
           </button>
         </div>
@@ -62,8 +81,9 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted } from "vue";
+import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
+import { useFocusTrap } from "../../composables/useFocusTrap";
 
 const { t } = useI18n();
 
@@ -112,6 +132,30 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["confirm", "cancel", "update:show"]);
+
+// Refs for focus trap
+const modalOverlayRef = ref(null);
+const cancelBtnRef = ref(null);
+const confirmBtnRef = ref(null);
+
+// Focus trap
+const { activate: activateTrap, deactivate: deactivateTrap } = useFocusTrap(modalOverlayRef, {
+  onEscape: () => handleCancel(),
+  initialFocus: true,
+});
+
+// Watch show state to manage focus trap
+watch(
+  () => props.show,
+  (newVal) => {
+    if (newVal) {
+      // Small delay for DOM to render modal
+      requestAnimationFrame(() => activateTrap());
+    } else {
+      deactivateTrap();
+    }
+  },
+);
 
 const useConfirmModalIcons = () => {
   const icon = computed(() => {
@@ -179,26 +223,12 @@ const useConfirmModalActions = () => {
     }
   };
 
-  const handleKeydown = (event) => {
-    if (event.key === "Escape") {
-      handleCancel();
-    }
-  };
-
-  return { handleConfirm, handleCancel, handleOverlayClick, handleKeydown };
+  return { handleConfirm, handleCancel, handleOverlayClick };
 };
 
 const { icon } = useConfirmModalIcons();
 const { getGameModeText, getDifficultyText, formatDate } = useArchiveDetailsFormatter();
-const { handleConfirm, handleCancel, handleOverlayClick, handleKeydown } = useConfirmModalActions();
-
-onMounted(() => {
-  document.addEventListener("keydown", handleKeydown);
-});
-
-onUnmounted(() => {
-  document.removeEventListener("keydown", handleKeydown);
-});
+const { handleConfirm, handleCancel, handleOverlayClick } = useConfirmModalActions();
 </script>
 
 <style scoped>

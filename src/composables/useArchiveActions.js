@@ -3,15 +3,22 @@ import { useRouter } from "vue-router";
 import { invoke } from "@tauri-apps/api/core";
 import { gsap } from "gsap";
 import { useToast } from "./useToast";
+import { useUndoRedo } from "./useUndoRedo";
+
+// Cache of recently deleted archives for undo (max 20 entries)
+const deletedArchivesCache = new Map();
+const MAX_CACHE_SIZE = 20;
 
 export function useArchiveActions(archiveData, filters) {
   const router = useRouter();
   const toast = useToast();
+  const { pushAction, undo, redo, canUndo, canRedo } = useUndoRedo();
 
   const showDeleteConfirm = ref(false);
   const archiveToDelete = ref(null);
   const isDeleting = ref(false);
   const deletingCardId = ref(null);
+  const showUndoDeleteToast = ref(false);
   const isProcessingClick = new Set();
 
   const selectArchive = (archive) => {
@@ -23,12 +30,14 @@ export function useArchiveActions(archiveData, filters) {
   const handleToggleVisibility = async (updatedArchive, callbacks = {}) => {
     const { onSuccess, onError, onRefresh } = callbacks;
     try {
-      // updatedArchive.isVisible is already the new toggled value (passed from ArchiveCard component)
       const newVisibility = updatedArchive.isVisible;
       const originalVisibility = !newVisibility;
+
+      // Optimistic update
       if (archiveData.updateArchiveVisibility) {
         archiveData.updateArchiveVisibility(updatedArchive.id, newVisibility);
       }
+
       if (updatedArchive.path) {
         const result = await invoke("handle_file", {
           filePath: updatedArchive.path,
@@ -42,11 +51,50 @@ export function useArchiveActions(archiveData, filters) {
           throw new Error("解析后端返回结果失败", { cause: e });
         }
         if (!resultObj || !resultObj.success) {
+          // Rollback optimistic update
           if (archiveData.updateArchiveVisibility) {
             archiveData.updateArchiveVisibility(updatedArchive.id, originalVisibility);
           }
           throw new Error(resultObj?.error || "操作失败");
         }
+
+        // Register undo action
+        const archiveId = updatedArchive.id;
+        const archiveSnapshot = { ...updatedArchive, isVisible: originalVisibility };
+        pushAction({
+          description: `切换「${updatedArchive.name}」可见性`,
+          undo: async () => {
+            // Restore original visibility
+            if (archiveData.updateArchiveVisibility) {
+              archiveData.updateArchiveVisibility(archiveId, originalVisibility);
+            }
+            try {
+              await invoke("handle_file", {
+                filePath: archiveSnapshot.path,
+                action: "toggle_visibility",
+                archiveName: archiveSnapshot.name,
+              });
+            } catch (e) {
+              console.warn("[undo] 切换可见性失败:", e);
+            }
+          },
+          redo: async () => {
+            // Re-apply new visibility (same as original action)
+            if (archiveData.updateArchiveVisibility) {
+              archiveData.updateArchiveVisibility(archiveId, newVisibility);
+            }
+            try {
+              await invoke("handle_file", {
+                filePath: archiveSnapshot.path,
+                action: "toggle_visibility",
+                archiveName: archiveSnapshot.name,
+              });
+            } catch (e) {
+              console.warn("[redo] 切换可见性失败:", e);
+            }
+          },
+        });
+
         if (onRefresh) await onRefresh();
         if (onSuccess) onSuccess();
       }
@@ -82,6 +130,11 @@ export function useArchiveActions(archiveData, filters) {
       const archive = archiveData.archives.value[archiveIndex];
       showDeleteConfirm.value = false;
 
+      // Save snapshot for undo
+      const archiveSnapshot = { ...archive };
+      const archiveId = archive.id;
+      const archiveName = archive.name || "存档";
+
       const cardElement = document.querySelector(`[data-archive-id="${archive.id}"]`);
 
       // Play fade-out animation for delete card
@@ -108,7 +161,61 @@ export function useArchiveActions(archiveData, filters) {
         console.warn("[useArchiveActions] 删除时存档索引无效:", archiveIndex);
       }
 
-      toast.showSuccess(`${archive?.name ?? "存档"} 已删除`);
+      // Cache deleted archive for potential undo
+      deletedArchivesCache.set(archiveId, archiveSnapshot);
+      if (deletedArchivesCache.size > MAX_CACHE_SIZE) {
+        const firstKey = deletedArchivesCache.keys().next().value;
+        deletedArchivesCache.delete(firstKey);
+      }
+
+      // Register undo action with toast
+      pushAction({
+        description: `删除「${archiveName}」`,
+        undo: async () => {
+          // Restore the archive
+          const cached = deletedArchivesCache.get(archiveId);
+          if (!cached) return;
+
+          // Determine insertion index (restore at beginning since it was deleted)
+          archiveData.archives.value.unshift(cached);
+
+          if (callbacks.onRefresh) await callbacks.onRefresh();
+        },
+        redo: async () => {
+          // Re-delete from backend
+          if (archiveSnapshot.path) {
+            try {
+              await invoke("delete_file", { filePath: archiveSnapshot.path });
+            } catch (e) {
+              console.warn("[redo] 删除失败:", e);
+            }
+          }
+          // Remove from data
+          const idx = archiveData.archives.value.findIndex((a) => a.id === archiveId);
+          if (idx !== -1) {
+            archiveData.archives.value.splice(idx, 1);
+          }
+        },
+      });
+
+      // Show undo toast
+      toast.showSuccess(`${archiveName} 已删除`, {
+        duration: 6000,
+        actions: [
+          {
+            text: "撤销",
+            onClick: async () => {
+              try {
+                await undo();
+                toast.showInfo(`已撤销删除「${archiveName}」`, { duration: 3000 });
+              } catch (e) {
+                toast.showError("撤销失败");
+              }
+            },
+          },
+        ],
+      });
+
       archiveToDelete.value = null;
       isDeleting.value = false;
       deletingCardId.value = null;
@@ -144,6 +251,7 @@ export function useArchiveActions(archiveData, filters) {
   const batchDeleteArchives = async (archiveList, callbacks = {}) => {
     const { onSuccess, onError } = callbacks;
     const deleteResults = { success: [], failed: [] };
+    const batchSnapshots = [];
 
     for (const archive of archiveList) {
       try {
@@ -153,6 +261,9 @@ export function useArchiveActions(archiveData, filters) {
           console.warn(`[batchDelete] 存档不存在: ${archive.id}`);
           continue;
         }
+
+        const snapshot = { ...archiveData.archives.value[archiveIndex] };
+        batchSnapshots.push({ index: archiveIndex, snapshot });
 
         if (archive.path) {
           await invoke("delete_file", { filePath: archive.path });
@@ -166,17 +277,102 @@ export function useArchiveActions(archiveData, filters) {
       }
     }
 
+    // Register batch delete as single undo action
+    if (batchSnapshots.length > 0) {
+      pushAction({
+        description: `批量删除 ${batchSnapshots.length} 个存档`,
+        undo: async () => {
+          // Restore all deleted archives in reverse order (to preserve indices)
+          const sorted = [...batchSnapshots].sort((a, b) => a.index - b.index);
+          for (const { snapshot } of sorted) {
+            archiveData.archives.value.push(snapshot);
+          }
+          if (callbacks.onRefresh) await callbacks.onRefresh();
+        },
+        redo: async () => {
+          // Re-delete
+          for (const { snapshot } of batchSnapshots) {
+            if (snapshot.path) {
+              try {
+                await invoke("delete_file", { filePath: snapshot.path });
+              } catch (e) {
+                console.warn("[redo batch] 删除失败:", e);
+              }
+            }
+            const idx = archiveData.archives.value.findIndex((a) => a.id === snapshot.id);
+            if (idx !== -1) {
+              archiveData.archives.value.splice(idx, 1);
+            }
+          }
+        },
+      });
+
+      // Show with undo action
+      toast.showSuccess(`已删除 ${batchSnapshots.length} 个存档`, {
+        duration: 6000,
+        actions: [
+          {
+            text: "撤销",
+            onClick: async () => {
+              try {
+                await undo();
+                toast.showInfo(`已撤销批量删除`, { duration: 3000 });
+              } catch (e) {
+                toast.showError("撤销失败");
+              }
+            },
+          },
+        ],
+      });
+    }
+
     if (deleteResults.failed.length > 0) {
       toast.showError(`批量删除完成，${deleteResults.success.length} 个成功，${deleteResults.failed.length} 个失败`);
       if (onError) onError(deleteResults);
-    } else {
-      toast.showSuccess(`已删除 ${deleteResults.success.length} 个存档`);
     }
 
     if (onSuccess) onSuccess(deleteResults);
 
     return deleteResults;
   };
+
+  // Register global Ctrl+Z / Ctrl+Shift+Z for undo/redo
+  let keydownHandler = null;
+
+  function registerUndoShortcuts() {
+    if (keydownHandler) return; // Already registered
+    keydownHandler = (event) => {
+      const isCtrlOrCmd = event.ctrlKey || event.metaKey;
+      if (!isCtrlOrCmd) return;
+
+      if (event.key === "z" && !event.shiftKey) {
+        event.preventDefault();
+        // Only undo if there's something to undo and not in an input field
+        const tag = document.activeElement?.tagName || "";
+        if (!["INPUT", "TEXTAREA", "SELECT"].includes(tag)) {
+          undo().then((desc) => {
+            if (desc) toast.showInfo(`已撤销: ${desc}`, { duration: 3000 });
+          });
+        }
+      } else if (event.key === "z" && event.shiftKey) {
+        event.preventDefault();
+        const tag = document.activeElement?.tagName || "";
+        if (!["INPUT", "TEXTAREA", "SELECT"].includes(tag)) {
+          redo().then((desc) => {
+            if (desc) toast.showInfo(`已重做: ${desc}`, { duration: 3000 });
+          });
+        }
+      }
+    };
+    document.addEventListener("keydown", keydownHandler);
+  }
+
+  function unregisterUndoShortcuts() {
+    if (keydownHandler) {
+      document.removeEventListener("keydown", keydownHandler);
+      keydownHandler = null;
+    }
+  }
 
   return {
     showDeleteConfirm,
@@ -193,5 +389,9 @@ export function useArchiveActions(archiveData, filters) {
     createNewArchive,
     openSaveGamesFolder,
     batchDeleteArchives,
+    registerUndoShortcuts,
+    unregisterUndoShortcuts,
+    canUndo,
+    canRedo,
   };
 }

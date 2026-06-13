@@ -59,14 +59,19 @@
     <div class="card-info">
       <span class="current-level">{{ currentLevelName }}</span>
       <div class="action-buttons">
-        <button class="action-btn edit" type="button" @click.stop="editArchive">
-          <font-awesome-icon icon="fa-solid fa-edit" />
+        <button class="action-btn edit" type="button" aria-label="编辑存档" @click.stop="editArchive">
+          <font-awesome-icon icon="fa-solid fa-edit" aria-hidden="true" />
         </button>
-        <button class="action-btn copy" type="button" @click.stop="toggleVisibility">
-          <font-awesome-icon :icon="isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" />
+        <button
+          class="action-btn copy"
+          type="button"
+          :aria-label="isVisible ? '隐藏存档' : '显示存档'"
+          @click.stop="toggleVisibility"
+        >
+          <font-awesome-icon :icon="isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" aria-hidden="true" />
         </button>
-        <button class="action-btn delete" type="button" @click.stop="deleteArchive">
-          <font-awesome-icon icon="fa-solid fa-trash" />
+        <button class="action-btn delete" type="button" aria-label="删除存档" @click.stop="deleteArchive">
+          <font-awesome-icon icon="fa-solid fa-trash" aria-hidden="true" />
         </button>
       </div>
     </div>

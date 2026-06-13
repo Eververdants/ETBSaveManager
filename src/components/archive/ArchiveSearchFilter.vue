@@ -336,17 +336,11 @@ onUnmounted(() => {
   flex-direction: column;
   /* 改为垂直布局，适应小屏幕 */
   gap: 16px;
-  background: linear-gradient(
-    135deg,
-    var(--glass-bg, rgba(50, 50, 60, 0.98)) 0%,
-    var(--glass-bg, rgba(40, 40, 50, 0.96)) 100%
-  );
+  background: var(--glass-bg, rgba(255, 255, 255, 0.95));
   border-radius: 16px;
   padding: 20px;
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
-  box-shadow:
-    var(--shadow-lg, 0 8px 32px rgba(0, 0, 0, 0.4)),
-    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+  box-shadow: var(--shadow-lg, 0 8px 32px rgba(0, 0, 0, 0.15));
   z-index: 100;
   width: 100%;
   max-width: 800px;
@@ -374,13 +368,13 @@ onUnmounted(() => {
   padding: 12px 48px 12px 44px;
   border: none;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--bg-secondary, rgba(0, 0, 0, 0.05));
   color: var(--text-primary);
   font-size: 15px;
   outline: none;
   height: 48px;
   box-sizing: border-box;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm, inset 0 1px 3px rgba(0, 0, 0, 0.1));
   transition:
     background 0.3s ease,
     box-shadow 0.3s ease,
@@ -390,14 +384,14 @@ onUnmounted(() => {
 .search-input:focus {
   outline: none;
   box-shadow:
-    0 0 0 3px var(--border-color, rgba(255, 255, 255, 0.25)),
-    inset 0 2px 6px rgba(0, 0, 0, 0.2);
-  background: rgba(255, 255, 255, 0.2);
+    0 0 0 3px var(--accent-alpha, rgba(59, 130, 246, 0.2)),
+    var(--shadow-sm, inset 0 1px 3px rgba(0, 0, 0, 0.1));
+  background: var(--bg-secondary);
   transform: translateY(-1px);
 }
 
 .search-input::placeholder {
-  color: var(--text-secondary, rgba(255, 255, 255, 0.5));
+  color: var(--text-secondary);
   opacity: 1;
 }
 
@@ -406,7 +400,7 @@ onUnmounted(() => {
   left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+  color: var(--text-secondary);
   font-size: 16px;
   z-index: 1;
   display: flex;
@@ -422,16 +416,16 @@ onUnmounted(() => {
 .search-input:focus + .search-icon,
 .search-input-group:focus-within .search-icon {
   opacity: 1;
-  color: var(--primary-color, rgba(255, 255, 255, 0.95));
+  color: var(--accent, #3b82f6);
 }
 
 .clear-btn {
   position: absolute;
   right: 12px;
   top: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.6);
+  background: var(--bg-secondary, rgba(0, 0, 0, 0.06));
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 0;
   border-radius: 6px;
@@ -449,15 +443,15 @@ onUnmounted(() => {
   margin-top: -14px;
   box-sizing: border-box;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
 }
 
 .clear-btn:hover {
-  color: rgba(255, 107, 107, 0.95);
-  background: rgba(255, 107, 107, 0.2);
-  border-color: rgba(255, 107, 107, 0.4);
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
 }
 
 .clear-btn:active {
@@ -485,16 +479,15 @@ onUnmounted(() => {
 
 .filter-label {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--text-secondary);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
   padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-secondary, rgba(0, 0, 0, 0.04));
   border-radius: 4px;
   display: inline-block;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition:
     background 0.3s ease,
     color 0.3s ease;
@@ -669,7 +662,7 @@ onUnmounted(() => {
     padding-right: 0;
     padding-bottom: 16px;
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
   }
 
   .filter-section {

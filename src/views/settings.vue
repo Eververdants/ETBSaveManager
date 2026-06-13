@@ -404,8 +404,10 @@ export default {
     },
   },
   beforeUnmount() {
-    // Clear countdown
-    this.clearRestartCountdown();
+    // Clear any pending restart countdown
+    if (typeof this.clearRestartCountdown === "function") {
+      this.clearRestartCountdown();
+    }
     // Remove event listeners
     document.removeEventListener("click", this.handleClickOutside);
     window.removeEventListener("developer-mode-changed", this.handleDeveloperModeChanged);

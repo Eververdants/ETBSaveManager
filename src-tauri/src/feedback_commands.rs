@@ -124,12 +124,8 @@ impl FeedbackState {
     }
 
     pub fn init(&self, app_data_dir: &std::path::Path) -> AppResult<()> {
-        let queue = FeedbackQueue::new(app_data_dir).map_err(|e| AppError {
-            message: e.to_string(),
-        })?;
-        let mut guard = self.queue.lock().map_err(|e| AppError {
-            message: e.to_string(),
-        })?;
+        let queue = FeedbackQueue::new(app_data_dir).map_err(|e| AppError::General(e.to_string()))?;
+        let mut guard = self.queue.lock().map_err(|e| AppError::General(e.to_string()))?;
         *guard = Some(queue);
         Ok(())
     }
@@ -138,12 +134,8 @@ impl FeedbackState {
     where
         F: FnOnce(&FeedbackQueue) -> AppResult<R>,
     {
-        let guard = self.queue.lock().map_err(|e| AppError {
-            message: format!("Lock error: {}", e),
-        })?;
-        let queue = guard.as_ref().ok_or(AppError {
-            message: "Feedback queue not initialized".to_string(),
-        })?;
+        let guard = self.queue.lock().map_err(|e| AppError::General(format!("Lock error: {}", e)))?;
+        let queue = guard.as_ref().ok_or(AppError::General("Feedback queue not initialized".to_string()))?;
         f(queue)
     }
 }
@@ -155,18 +147,12 @@ where
 {
     let queue = Arc::clone(&state.queue);
     tokio::task::spawn_blocking(move || {
-        let guard = queue.lock().map_err(|e| AppError {
-            message: format!("Lock error: {}", e),
-        })?;
-        let queue = guard.as_ref().ok_or(AppError {
-            message: "Feedback queue not initialized".to_string(),
-        })?;
+        let guard = queue.lock().map_err(|e| AppError::General(format!("Lock error: {}", e)))?;
+        let queue = guard.as_ref().ok_or(AppError::General("Feedback queue not initialized".to_string()))?;
         f(queue)
     })
     .await
-    .map_err(|e| AppError {
-        message: format!("Queue task failed: {}", e),
-    })?
+    .map_err(|e| AppError::General(format!("Queue task failed: {}", e)))?
 }
 
 impl Default for FeedbackState {
@@ -249,19 +235,13 @@ pub async fn send_feedback(
         }))
         .send()
         .await
-        .map_err(|e| AppError {
-            message: format!("Network error: {}", e),
-        })?;
+        .map_err(|e| AppError::General(format!("Network error: {}", e)))?;
 
     let status = res.status();
-    let text = res.text().await.map_err(|e| AppError {
-        message: e.to_string(),
-    })?;
+    let text = res.text().await.map_err(|e| AppError::General(e.to_string()))?;
 
     if status.is_success() {
-        let resp: WorkerResponse = serde_json::from_str(&text).map_err(|e| AppError {
-            message: format!("Parse response error: {}", e),
-        })?;
+        let resp: WorkerResponse = serde_json::from_str(&text).map_err(|e| AppError::General(format!("Parse response error: {}", e)))?;
         Ok(resp)
     } else {
         Err(format!("Server error {}: {}", status, text).into())
@@ -323,9 +303,7 @@ pub async fn submit_feedback(
 
     // Save to local history (blocking SQLite moved off async runtime worker)
     with_queue_blocking(&state, move |queue| {
-        queue.enqueue(&record).map_err(|e| AppError {
-            message: e.to_string(),
-        })
+        queue.enqueue(&record).map_err(|e| AppError::General(e.to_string()))
     })
     .await?;
 
@@ -412,9 +390,7 @@ pub fn get_feedback_history(
     let limit = limit.unwrap_or(200).min(500) as usize;
     let offset = offset.unwrap_or(0) as usize;
     state.with_queue(|queue| {
-        let rows = queue.get_history_rows(limit, offset).map_err(|e| AppError {
-            message: e.to_string(),
-        })?;
+        let rows = queue.get_history_rows(limit, offset).map_err(|e| AppError::General(e.to_string()))?;
         Ok(rows
             .into_iter()
             .map(|r| FeedbackHistoryItem {
@@ -439,22 +415,16 @@ pub async fn retry_feedback(
     // Get the feedback record
     let lookup_id = id.clone();
     let record = with_queue_blocking(&state, move |queue| {
-            queue.get_by_id(&lookup_id).map_err(|e| AppError {
-                message: e.to_string(),
-            })
+            queue.get_by_id(&lookup_id).map_err(|e| AppError::General(e.to_string()))
         })
         .await?
-        .ok_or_else(|| AppError {
-            message: "Feedback not found".to_string(),
-        })?;
+        .ok_or_else(|| AppError::General("Feedback not found".to_string()))?;
 
     // Check if it can be retried
     if record.status != FeedbackStatus::Pending.as_str()
         && record.status != FeedbackStatus::Failed.as_str()
     {
-        return Err(AppError {
-            message: "Feedback cannot be retried".to_string(),
-        });
+        return Err(AppError::General("Feedback cannot be retried".to_string()));
     }
 
     // Format feedback content
@@ -541,9 +511,7 @@ pub async fn retry_feedback(
 #[tauri::command]
 pub fn delete_feedback(id: String, state: State<'_, FeedbackState>) -> AppResult<()> {
     Ok(state.with_queue(|queue| {
-        queue.delete(&id).map_err(|e| AppError {
-            message: e.to_string(),
-        })
+        queue.delete(&id).map_err(|e| AppError::General(e.to_string()))
     })?)
 }
 
@@ -565,23 +533,17 @@ fn validate_feedback_input(data: &FeedbackData) -> AppResult<()> {
 
     // Check length limits
     if data.title.len() > TITLE_MAX_LEN {
-        return Err(AppError {
-            message: "Title must be 100 characters or less".to_string(),
-        });
+        return Err(AppError::Validation("Title must be 100 characters or less".to_string()));
     }
     if data.description.len() > DESCRIPTION_MAX_LEN {
-        return Err(AppError {
-            message: "Description must be 60000 characters or less".to_string(),
-        });
+        return Err(AppError::Validation("Description must be 60000 characters or less".to_string()));
     }
 
     // Validate feedback type
     let feedback_type = data.feedback_type.to_ascii_lowercase();
     let valid_types = ["bug", "idea", "general", "ui"];
     if !valid_types.contains(&feedback_type.as_str()) {
-        return Err(AppError {
-            message: "Invalid feedback type".to_string(),
-        });
+        return Err(AppError::Validation("Invalid feedback type".to_string()));
     }
 
     // Validate severity for bug type
@@ -590,9 +552,7 @@ fn validate_feedback_input(data: &FeedbackData) -> AppResult<()> {
             let severity = severity.to_ascii_lowercase();
             let valid_severities = ["low", "medium", "high", "critical"];
             if !valid_severities.contains(&severity.as_str()) {
-                return Err(AppError {
-                    message: "Invalid severity level".to_string(),
-                });
+                return Err(AppError::Validation("Invalid severity level".to_string()));
             }
         }
     }
@@ -600,15 +560,11 @@ fn validate_feedback_input(data: &FeedbackData) -> AppResult<()> {
     // Validate sender field to prevent injection
     if let Some(ref sender) = data.sender {
         if sender.len() > 200 {
-            return Err(AppError {
-                message: "Sender name must be 200 characters or less".to_string(),
-            });
+            return Err(AppError::Validation("Sender name must be 200 characters or less".to_string()));
         }
         // Reject sender names with suspicious characters that could be used for injection
         if sender.contains(|c: char| c == '<' || c == '>' || c == '"' || c == '\'' || c == '&') {
-            return Err(AppError {
-                message: "Sender name contains invalid characters".to_string(),
-            });
+            return Err(AppError::Validation("Sender name contains invalid characters".to_string()));
         }
     }
 

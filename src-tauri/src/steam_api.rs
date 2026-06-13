@@ -9,6 +9,7 @@ use std::sync::{Mutex, OnceLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::State;
 use tokio::time::{sleep, Duration};
+use zeroize::Zeroizing;
 
 /// Cache expiration time (30 days, in seconds)
 const CACHE_EXPIRY_SECONDS: u64 = 30 * 24 * 60 * 60;
@@ -271,9 +272,7 @@ impl SteamCacheState {
 
     pub fn init(&self) -> AppResult<()> {
         let manager = SteamCacheManager::new()?;
-        let mut guard = self.manager.lock().map_err(|e| AppError {
-            message: format!("Steam cache lock error: {}", e),
-        })?;
+        let mut guard = self.manager.lock().map_err(|e| AppError::General(format!("Steam cache lock error: {}", e)))?;
         *guard = Some(manager);
         Ok(())
     }
@@ -282,12 +281,8 @@ impl SteamCacheState {
     where
         F: FnOnce(&mut SteamCacheManager) -> AppResult<R>,
     {
-        let mut guard = self.manager.lock().map_err(|e| AppError {
-            message: format!("Steam cache lock error: {}", e),
-        })?;
-        let manager = guard.as_mut().ok_or_else(|| AppError {
-            message: "Steam cache not initialized".to_string(),
-        })?;
+        let mut guard = self.manager.lock().map_err(|e| AppError::General(format!("Steam cache lock error: {}", e)))?;
+        let manager = guard.as_mut().ok_or_else(|| AppError::General("Steam cache not initialized".to_string()))?;
         f(manager)
     }
 }
@@ -415,22 +410,22 @@ fn read_encrypted_steam_api_key_from_config() -> AppResult<String> {
     use keyring::Entry;
 
     let entry = Entry::new(KEYRING_SERVICE_STEAM, KEYRING_ACCOUNT_STEAM_KEY)
-        .map_err(|e| AppError { message: format!("Failed to create credential entry: {}", e) })?;
+        .map_err(|e| AppError::General(format!("Failed to create credential entry: {}", e)))?;
 
     Ok(entry
         .get_password()
-        .map_err(|e| AppError { message: format!("Failed to read Steam API key: {}", e) })?)
+        .map_err(|e| AppError::General(format!("Failed to read Steam API key: {}", e)))?)
 }
 
 fn write_encrypted_steam_api_key_to_config(encrypted_api_key: String) -> AppResult<()> {
     use keyring::Entry;
 
     let entry = Entry::new(KEYRING_SERVICE_STEAM, KEYRING_ACCOUNT_STEAM_KEY)
-        .map_err(|e| AppError { message: format!("Failed to create credential entry: {}", e) })?;
+        .map_err(|e| AppError::General(format!("Failed to create credential entry: {}", e)))?;
 
     Ok(entry
         .set_password(&encrypted_api_key)
-        .map_err(|e| AppError { message: format!("Failed to save Steam API key: {}", e) })?)
+        .map_err(|e| AppError::General(format!("Failed to save Steam API key: {}", e)))?)
 }
 
 // ==================== Tauri Commands ====================
@@ -440,11 +435,12 @@ pub async fn encrypt_steam_api_key(api_key: String) -> AppResult<String> {
     use crate::encryption;
     use rand::RngCore;
 
-    let mut key = [0u8; 32];
-    rand::rngs::OsRng.fill_bytes(&mut key);
+    let mut raw_key = [0u8; 32];
+    rand::rngs::OsRng.fill_bytes(&mut raw_key);
 
+    let key = Zeroizing::new(raw_key);
     let encrypted = encryption::encrypt_data(&key, api_key.as_bytes())?;
-    Ok(format!("{}:{}", hex::encode(key), hex::encode(encrypted)))
+    Ok(format!("{}:{}", hex::encode(&*key), hex::encode(encrypted)))
 }
 
 #[tauri::command]
@@ -453,9 +449,7 @@ pub async fn decrypt_steam_api_key(encrypted_key: String) -> AppResult<String> {
 
     let (key_hex, encrypted_data_hex) = encrypted_key
         .split_once(':')
-        .ok_or_else(|| AppError {
-            message: "Invalid encrypted key format".to_string(),
-        })?;
+        .ok_or_else(|| AppError::General("Invalid encrypted key format".to_string()))?;
 
     let key = hex::decode(key_hex).map_err(|e| format!("Failed to decode key: {}", e))?;
     let encrypted_data =
@@ -468,7 +462,8 @@ pub async fn decrypt_steam_api_key(encrypted_key: String) -> AppResult<String> {
     let mut key_array = [0u8; 32];
     key_array.copy_from_slice(&key);
 
-    let decrypted = encryption::decrypt_data(&key_array, &encrypted_data)?;
+    let key = Zeroizing::new(key_array);
+    let decrypted = encryption::decrypt_data(&key, &encrypted_data)?;
     Ok(String::from_utf8(decrypted)
         .map_err(|e| format!("Failed to convert decrypted data to string: {}", e))?)
 }
@@ -523,9 +518,7 @@ pub async fn get_steam_usernames_command(
 ) -> AppResult<HashMap<String, String>> {
     let encrypted_api_key = tokio::task::spawn_blocking(read_encrypted_steam_api_key_from_config)
         .await
-        .map_err(|e| AppError {
-            message: format!("Failed to read Steam config task: {}", e),
-        })??;
+        .map_err(|e| AppError::General(format!("Failed to read Steam config task: {}", e)))??;
 
     let api_key = decrypt_steam_api_key(encrypted_api_key).await?;
     get_steam_usernames(steam_ids, api_key, &cache_state).await
@@ -538,9 +531,7 @@ pub async fn save_steam_api_key(api_key: String) -> AppResult<()> {
         write_encrypted_steam_api_key_to_config(encrypted_api_key)
     })
     .await
-    .map_err(|e| AppError {
-        message: format!("Failed to save Steam config task: {}", e),
-    })?
+    .map_err(|e| AppError::General(format!("Failed to save Steam config task: {}", e)))?
 }
 
 #[tauri::command]
@@ -558,9 +549,7 @@ pub async fn batch_refresh_steam_cache_entries(
 ) -> AppResult<HashMap<String, String>> {
     let encrypted_api_key = tokio::task::spawn_blocking(read_encrypted_steam_api_key_from_config)
         .await
-        .map_err(|e| AppError {
-            message: format!("Failed to read Steam config task: {}", e),
-        })??;
+        .map_err(|e| AppError::General(format!("Failed to read Steam config task: {}", e)))??;
 
     let api_key = decrypt_steam_api_key(encrypted_api_key).await?;
     get_steam_usernames(steam_ids, api_key, &cache_state).await

@@ -5,7 +5,7 @@
       <span v-if="showCount" class="count-badge">{{ players.length }}</span>
     </div>
 
-    <div class="player-list" v-if="players.length > 0">
+    <div v-if="players.length > 0" class="player-list">
       <div
         v-for="(player, index) in players"
         :key="index"
@@ -18,16 +18,9 @@
         </div>
         <div class="player-info">
           <span class="player-name">
-            {{
-              player.username ||
-              (player.isOfflinePlayer ? `${player.steamId}(本地)` : player.steamId)
-            }}
+            {{ player.username || (player.isOfflinePlayer ? `${player.steamId}(本地)` : player.steamId) }}
           </span>
-          <span
-            v-if="showSanity"
-            class="sanity-tag"
-            :class="getSanityClass(player.sanity ?? 100)"
-          >
+          <span v-if="showSanity" class="sanity-tag" :class="getSanityClass(player.sanity ?? 100)">
             {{ player.sanity ?? 100 }}%
           </span>
         </div>
@@ -36,7 +29,7 @@
         </button>
       </div>
     </div>
-    <div class="empty-hint" v-else>
+    <div v-else class="empty-hint">
       <font-awesome-icon :icon="['fas', 'user-plus']" />
       <p>{{ emptyHint }}</p>
     </div>
@@ -56,11 +49,7 @@
     </div>
 
     <transition name="fade">
-      <div
-        v-if="playerInputMessage"
-        class="msg-tip"
-        :class="playerInputMessageType"
-      >
+      <div v-if="playerInputMessage" class="msg-tip" :class="playerInputMessageType">
         {{ playerInputMessage }}
       </div>
     </transition>

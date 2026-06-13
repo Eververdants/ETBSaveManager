@@ -2,7 +2,7 @@
   <div class="steam-cache-container">
     <div class="page-header">
       <div class="header-left">
-        <button class="back-btn" @click="goBack" :title="t('common.back')">
+        <button class="back-btn" :title="t('common.back')" @click="goBack">
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
         </button>
         <div class="title-group">
@@ -13,22 +13,18 @@
         </div>
       </div>
       <div class="header-actions">
-        <button class="header-btn cleanup-expired-btn" @click="cleanupExpiredCache" :disabled="isCleaning">
+        <button class="header-btn cleanup-expired-btn" :disabled="isCleaning" @click="cleanupExpiredCache">
           <font-awesome-icon :icon="['fas', 'trash']" />
           {{ t("settings.steamApi.cleanupExpired") }}
         </button>
         <button class="header-btn toggle-steamid-btn" @click="toggleSteamIdDisplay">
           <font-awesome-icon :icon="showRawSteamId ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
-          {{
-            showRawSteamId
-              ? t("settings.steamApi.hideRawSteamId")
-              : t("settings.steamApi.showRawSteamId")
-          }}
+          {{ showRawSteamId ? t("settings.steamApi.hideRawSteamId") : t("settings.steamApi.showRawSteamId") }}
         </button>
       </div>
     </div>
     <div class="cache-content">
-      <!-- 搜索和过滤区域 -->
+      <!-- Search and filter area -->
       <div class="search-filter-section">
         <div class="form-group">
           <label class="form-label">
@@ -45,24 +41,29 @@
             <font-awesome-icon :icon="['fas', 'sort']" class="label-icon" />
             {{ t("settings.steamApi.sortByLabel") }}
           </label>
-          <CustomDropdown v-model="sortBy" :options="[
-            {
-              value: 'lastUpdated',
-              label: t('settings.steamApi.sortBy.lastUpdated'),
-            },
-            {
-              value: 'username',
-              label: t('settings.steamApi.sortBy.username'),
-            },
-            {
-              value: 'callCount',
-              label: t('settings.steamApi.sortBy.callCount'),
-            },
-            {
-              value: 'steamId',
-              label: t('settings.steamApi.sortBy.steamId'),
-            },
-          ]" :placeholder="t('settings.steamApi.sortBy.lastUpdated')" class="dropdown-control" />
+          <CustomDropdown
+            v-model="sortBy"
+            :options="[
+              {
+                value: 'lastUpdated',
+                label: t('settings.steamApi.sortBy.lastUpdated'),
+              },
+              {
+                value: 'username',
+                label: t('settings.steamApi.sortBy.username'),
+              },
+              {
+                value: 'callCount',
+                label: t('settings.steamApi.sortBy.callCount'),
+              },
+              {
+                value: 'steamId',
+                label: t('settings.steamApi.sortBy.steamId'),
+              },
+            ]"
+            :placeholder="t('settings.steamApi.sortBy.lastUpdated')"
+            class="dropdown-control"
+          />
         </div>
 
         <div class="form-group">
@@ -70,10 +71,15 @@
             <font-awesome-icon :icon="['fas', 'arrows-up-down']" class="label-icon" />
             {{ t("settings.steamApi.sortOrderLabel") }}
           </label>
-          <CustomDropdown v-model="sortOrder" :options="[
-            { value: 'desc', label: t('settings.steamApi.sortOrder.desc') },
-            { value: 'asc', label: t('settings.steamApi.sortOrder.asc') },
-          ]" :placeholder="t('settings.steamApi.sortOrder.desc')" class="dropdown-control" />
+          <CustomDropdown
+            v-model="sortOrder"
+            :options="[
+              { value: 'desc', label: t('settings.steamApi.sortOrder.desc') },
+              { value: 'asc', label: t('settings.steamApi.sortOrder.asc') },
+            ]"
+            :placeholder="t('settings.steamApi.sortOrder.desc')"
+            class="dropdown-control"
+          />
         </div>
 
         <div class="form-group">
@@ -82,15 +88,28 @@
             {{ t("settings.steamApi.minCallCount") }}
           </label>
           <div class="number-input-wrapper">
-            <input v-model.number="minCallCount" type="number" :placeholder="t('settings.steamApi.minCallCount')"
-              class="filter-input" min="0" />
+            <input
+              v-model.number="minCallCount"
+              type="number"
+              :placeholder="t('settings.steamApi.minCallCount')"
+              class="filter-input"
+              min="0"
+            />
             <div class="number-spinner">
-              <button type="button" class="spinner-btn spinner-up"
-                @click="minCallCount = Math.max(0, (minCallCount || 0) + 1)" tabindex="-1">
+              <button
+                type="button"
+                class="spinner-btn spinner-up"
+                tabindex="-1"
+                @click="minCallCount = Math.max(0, (minCallCount || 0) + 1)"
+              >
                 <font-awesome-icon :icon="['fas', 'chevron-up']" />
               </button>
-              <button type="button" class="spinner-btn spinner-down"
-                @click="minCallCount = Math.max(0, (minCallCount || 0) - 1)" tabindex="-1">
+              <button
+                type="button"
+                class="spinner-btn spinner-down"
+                tabindex="-1"
+                @click="minCallCount = Math.max(0, (minCallCount || 0) - 1)"
+              >
                 <font-awesome-icon :icon="['fas', 'chevron-down']" />
               </button>
             </div>
@@ -98,8 +117,8 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" style="opacity: 0; pointer-events: none">占位</label>
-          <button @click="clearFilters" class="clear-filters-btn">
+          <label class="form-label" style="opacity: 0; pointer-events: none">Placeholder</label>
+          <button class="clear-filters-btn" @click="clearFilters">
             <font-awesome-icon :icon="['fas', 'times']" />
             {{ t("settings.steamApi.clearFilters") }}
           </button>
@@ -107,11 +126,11 @@
       </div>
 
       <div class="cache-table-container">
-        <table class="cache-table" v-if="(filteredEntries || []).length > 0">
+        <table v-if="(filteredEntries || []).length > 0" class="cache-table">
           <thead>
             <tr>
               <th>
-                <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="checkbox" />
+                <input type="checkbox" :checked="isAllSelected" class="checkbox" @change="toggleSelectAll" />
               </th>
               <th>{{ t("settings.steamApi.cacheTable.steamId") }}</th>
               <th>{{ t("settings.steamApi.cacheTable.username") }}</th>
@@ -123,8 +142,12 @@
           <tbody>
             <tr v-for="entry in paginatedEntries || []" :key="entry.steamId">
               <td>
-                <input type="checkbox" :checked="selectedEntries.has(entry.steamId)"
-                  @change="toggleEntrySelection(entry.steamId)" class="checkbox" />
+                <input
+                  type="checkbox"
+                  :checked="selectedEntries.has(entry.steamId)"
+                  class="checkbox"
+                  @change="toggleEntrySelection(entry.steamId)"
+                />
               </td>
               <td class="steam-id-cell">{{ maskSteamId(entry.steamId) }}</td>
               <td>{{ entry.username }}</td>
@@ -132,12 +155,19 @@
               <td>{{ entry.callCount }}</td>
               <td class="actions-cell">
                 <div class="action-buttons">
-                  <button @click="showCacheDetail(entry)" class="action-btn detail-btn"
-                    :title="t('settings.steamApi.viewDetail')">
+                  <button
+                    class="action-btn detail-btn"
+                    :title="t('settings.steamApi.viewDetail')"
+                    @click="showCacheDetail(entry)"
+                  >
                     <font-awesome-icon :icon="['fas', 'info-circle']" />
                   </button>
-                  <button @click="deleteEntry(entry)" class="action-btn delete-btn"
-                    :title="t('settings.steamApi.deleteEntry')" :disabled="isDeleting">
+                  <button
+                    class="action-btn delete-btn"
+                    :title="t('settings.steamApi.deleteEntry')"
+                    :disabled="isDeleting"
+                    @click="deleteEntry(entry)"
+                  >
                     <font-awesome-icon :icon="['fas', 'trash']" />
                   </button>
                 </div>
@@ -150,7 +180,7 @@
         </div>
       </div>
 
-      <!-- 批量操作工具栏 -->
+      <!-- Batch operation toolbar -->
       <div v-if="selectedEntries.size > 0" class="batch-actions-toolbar">
         <div class="batch-info">
           {{
@@ -160,18 +190,18 @@
           }}
         </div>
         <div class="batch-buttons">
-          <button @click="batchRefresh" class="batch-btn refresh-batch-btn" :disabled="isRefreshing">
+          <button class="batch-btn refresh-batch-btn" :disabled="isRefreshing" @click="batchRefresh">
             <font-awesome-icon :icon="['fas', 'sync']" :class="{ 'fa-spin': isRefreshing }" />
             {{ t("settings.steamApi.batchRefresh") }}
           </button>
-          <button @click="batchDelete" class="batch-btn delete-batch-btn" :disabled="isBatchDeleting">
+          <button class="batch-btn delete-batch-btn" :disabled="isBatchDeleting" @click="batchDelete">
             <font-awesome-icon :icon="['fas', 'trash']" />
             {{ t("settings.steamApi.batchDelete") }}
           </button>
         </div>
       </div>
 
-      <!-- 分页控件 -->
+      <!-- Pagination controls -->
       <div v-if="totalPages > 1" class="pagination-container">
         <div class="pagination-info">
           {{
@@ -183,24 +213,28 @@
           }}
         </div>
         <div class="pagination-controls">
-          <button @click="changePage(1)" :disabled="currentPage === 1" class="pagination-btn">
+          <button :disabled="currentPage === 1" class="pagination-btn" @click="changePage(1)">
             <font-awesome-icon :icon="['fas', 'angle-double-left']" />
           </button>
-          <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="pagination-btn">
+          <button :disabled="currentPage === 1" class="pagination-btn" @click="changePage(currentPage - 1)">
             <font-awesome-icon :icon="['fas', 'angle-left']" />
           </button>
 
           <span class="pagination-numbers">
-            <button v-for="page in visiblePages" :key="page" @click="changePage(page)"
-              :class="['pagination-btn', { active: page === currentPage }]">
+            <button
+              v-for="page in visiblePages"
+              :key="page"
+              :class="['pagination-btn', { active: page === currentPage }]"
+              @click="changePage(page)"
+            >
               {{ page }}
             </button>
           </span>
 
-          <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="pagination-btn">
+          <button :disabled="currentPage === totalPages" class="pagination-btn" @click="changePage(currentPage + 1)">
             <font-awesome-icon :icon="['fas', 'angle-right']" />
           </button>
-          <button @click="changePage(totalPages)" :disabled="currentPage === totalPages" class="pagination-btn">
+          <button :disabled="currentPage === totalPages" class="pagination-btn" @click="changePage(totalPages)">
             <font-awesome-icon :icon="['fas', 'angle-double-right']" />
           </button>
         </div>
@@ -211,29 +245,34 @@
               <font-awesome-icon :icon="['fas', 'list-ol']" class="label-icon" />
               {{ t("settings.steamApi.pageSize") }}
             </label>
-            <CustomDropdown v-model.number="pageSize" :options="[
-              { value: 10, label: '10' },
-              { value: 20, label: '20' },
-              { value: 50, label: '50' },
-              { value: 100, label: '100' },
-            ]" :placeholder="'10'" class="dropdown-control" />
+            <CustomDropdown
+              v-model.number="pageSize"
+              :options="[
+                { value: 10, label: '10' },
+                { value: 20, label: '20' },
+                { value: 50, label: '50' },
+                { value: 100, label: '100' },
+              ]"
+              :placeholder="'10'"
+              class="dropdown-control"
+            />
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 成功提示消息 -->
+    <!-- Success notification message -->
     <div v-if="showSuccessMessage" class="success-message">
       {{ successMessage }}
     </div>
 
-    <!-- 缓存详情弹窗 -->
+    <!-- Cache detail popup -->
     <Transition name="modal">
       <div v-if="showDetailModal && selectedCacheEntry" class="modal-overlay" @click="showDetailModal = false">
         <div class="modal-content cache-detail-modal" @click.stop>
           <div class="modal-header">
             <h3>{{ t("settings.steamApi.cacheDetail") }}</h3>
-            <button @click="showDetailModal = false" class="close-btn">
+            <button class="close-btn" @click="showDetailModal = false">
               <font-awesome-icon :icon="['fas', 'times']" />
             </button>
           </div>
@@ -241,9 +280,7 @@
           <div class="modal-body">
             <div class="detail-item">
               <label>{{ t("settings.steamApi.cacheTable.steamId") }}:</label>
-              <span class="steam-id-display">{{
-                selectedCacheEntry.steamId
-                }}</span>
+              <span class="steam-id-display">{{ selectedCacheEntry.steamId }}</span>
             </div>
             <div class="detail-item">
               <label>{{ t("settings.steamApi.cacheTable.username") }}:</label>
@@ -260,7 +297,7 @@
           </div>
 
           <div class="modal-footer">
-            <button @click="showDetailModal = false" class="cancel-btn">
+            <button class="cancel-btn" @click="showDetailModal = false">
               {{ t("common.close") }}
             </button>
           </div>
@@ -268,7 +305,7 @@
       </div>
     </Transition>
 
-    <!-- 操作确认对话框 -->
+    <!-- Action confirmation dialog -->
     <Transition name="modal">
       <div v-if="showConfirmDialog" class="modal-overlay" @click="cancelAction">
         <div class="modal-content confirm-dialog" @click.stop>
@@ -281,10 +318,10 @@
           </div>
 
           <div class="modal-footer">
-            <button @click="cancelAction" class="cancel-btn">
+            <button class="cancel-btn" @click="cancelAction">
               {{ confirmDialogConfig.cancelText }}
             </button>
-            <button @click="confirmAction" class="confirm-btn">
+            <button class="confirm-btn" @click="confirmAction">
               {{ confirmDialogConfig.confirmText }}
             </button>
           </div>
@@ -317,34 +354,34 @@ export default {
       showSuccessMessage: false,
       successMessage: "",
 
-      // 搜索和过滤相关数据
+      // Search and filter related data
       searchQuery: "",
       sortBy: "lastUpdated",
       sortOrder: "desc",
       filterDateRange: { start: null, end: null },
       minCallCount: 0,
 
-      // SteamID显示切换
+      // SteamID display toggle
       showRawSteamId: false,
 
-      // 缓存管理
+      // Cache management
       selectedEntries: new Set(),
       isRefreshing: false,
       isDeleting: false,
       isBatchDeleting: false,
 
-      // 缓存详情弹窗
+      // Cache detail popup
       showDetailModal: false,
       selectedCacheEntry: null,
 
-      // 分页相关
+      // Pagination related
       currentPage: 1,
       pageSize: 10,
 
-      // 加载状态
+      // Loading state
       isLoading: false,
 
-      // 操作确认对话框
+      // Action confirmation dialog
       showConfirmDialog: false,
       confirmDialogConfig: {
         title: "",
@@ -356,28 +393,25 @@ export default {
     };
   },
   computed: {
-    // 计算属性：过滤后的条目
+    // Computed: filtered entries
     filteredEntries() {
       let filtered = [...(this.cacheEntries || [])];
 
-      // 搜索过滤
+      // Search filter
       if (this.searchQuery) {
         const query = this.searchQuery.toLowerCase();
         filtered = filtered.filter(
           (entry) =>
-            (entry.steamId || "").toLowerCase().includes(query) ||
-            (entry.username || "").toLowerCase().includes(query)
+            (entry.steamId || "").toLowerCase().includes(query) || (entry.username || "").toLowerCase().includes(query),
         );
       }
 
-      // 最小调用次数过滤
+      // Minimum call count filter
       if (this.minCallCount > 0) {
-        filtered = filtered.filter(
-          (entry) => entry.callCount >= this.minCallCount
-        );
+        filtered = filtered.filter((entry) => entry.callCount >= this.minCallCount);
       }
 
-      // 日期范围过滤
+      // Date range filter
       const dateRange = this.filterDateRange || { start: null, end: null };
       if (dateRange.start || dateRange.end) {
         filtered = filtered.filter((entry) => {
@@ -391,7 +425,7 @@ export default {
         });
       }
 
-      // 排序
+      // Sort
       filtered.sort((a, b) => {
         let aValue, bValue;
 
@@ -425,20 +459,20 @@ export default {
       return filtered;
     },
 
-    // 计算属性：分页后的条目
+    // Computed: paginated entries
     paginatedEntries() {
       const start = (this.currentPage - 1) * this.pageSize;
       const end = start + this.pageSize;
       return (this.filteredEntries || []).slice(start, end);
     },
 
-    // 计算属性：总页数
+    // Computed: total pages
     totalPages() {
       const totalEntries = this.filteredEntries?.length || 0;
       return Math.ceil(totalEntries / this.pageSize);
     },
 
-    // 计算属性：可见的页码
+    // Computed: visible pages
     visiblePages() {
       const pages = [];
       const total = this.totalPages || 0;
@@ -452,11 +486,11 @@ export default {
           pages.push(i);
         }
       } else {
-        // 显示当前页附近的页码
+        // Show pages near current page
         let start = Math.max(1, current - 2);
         let end = Math.min(total, current + 2);
 
-        // 调整范围以确保显示5个页码
+        // Adjust range to ensure 5 pages are shown
         if (current <= 3) {
           end = 5;
         } else if (current >= total - 2) {
@@ -471,105 +505,98 @@ export default {
       return pages;
     },
 
-    // 计算属性：是否全选
+    // Computed: is all selected
     isAllSelected() {
       const entries = this.paginatedEntries || [];
-      return (
-        entries.length > 0 &&
-        entries.every((entry) => this.selectedEntries.has(entry.steamId))
-      );
+      return entries.length > 0 && entries.every((entry) => this.selectedEntries.has(entry.steamId));
     },
   },
   mounted() {
     this.loadCacheEntries();
   },
   methods: {
-    // 返回上一页
+    // Go back
     goBack() {
       this.$router.replace("/settings");
     },
 
-    // 加载缓存条目
+    // Load cache entries
     async loadCacheEntries() {
       try {
         const entries = await invoke("get_all_steam_cache_entries");
-        // 将后端返回的数组格式转换为前端需要的对象格式
-        this.cacheEntries = entries.map(
-          ([steamId, username, lastUpdated, callCount]) => ({
-            steamId,
-            username,
-            lastUpdated,
-            callCount,
-          })
-        );
+        // Convert backend array format to frontend object format
+        this.cacheEntries = entries.map(([steamId, username, lastUpdated, callCount]) => ({
+          steamId,
+          username,
+          lastUpdated,
+          callCount,
+        }));
         this.cacheCount = (this.cacheEntries || []).length;
       } catch (error) {
-        console.error("获取缓存条目失败:", error);
+        console.error("Failed to fetch cache entries:", error);
         notify.error(this.t("settings.steamApi.cacheViewError", { error: error }));
       }
     },
 
-    // 清理过期缓存
+    // Clean up expired cache
     async cleanupExpiredCache() {
       this.isCleaning = true;
       try {
         const count = await invoke("cleanup_expired_steam_cache");
-        notify.success(
-          this.t("settings.steamApi.cleanupCompleted", { count })
-        );
-        // 重新加载缓存条目
+        notify.success(this.t("settings.steamApi.cleanupCompleted", { count }));
+        // Reload cache entries
         await this.loadCacheEntries();
       } catch (error) {
-        console.error("清理过期缓存失败:", error);
+        console.error("Failed to clean up expired cache:", error);
         notify.error(this.t("settings.steamApi.cleanupError", { error: error }));
       } finally {
         this.isCleaning = false;
       }
     },
 
-    // 显示成功消息
+    // Show success message
     showSuccess(message) {
       notify.success(message);
     },
 
-    // 格式化日期
+    // Format date
     formatDate(timestamp) {
       if (!timestamp) return this.t("common.unknown");
       const date = new Date(timestamp * 1000);
       return date.toLocaleString();
     },
 
-    // Steam ID显示处理（脱敏或原始）
+    // Steam ID display handling (masked or raw)
     maskSteamId(steamId) {
       if (!steamId) return "";
 
-      // 如果设置为显示原始SteamID，则返回完整ID
+      // If set to show raw SteamID, return full ID
       if (this.showRawSteamId) {
         return steamId;
       }
 
-      // Steam ID格式通常是7656119XXXXXXXXX (17位数字)
+      // Steam ID format is typically 7656119XXXXXXXXX (17 digits)
       if (steamId.length >= 8) {
         const start = steamId.substring(0, 4);
         const end = steamId.substring(steamId.length - 4);
         const middle = "*".repeat(steamId.length - 8);
         return start + middle + end;
       }
-      // 如果长度不足8位，只显示前两位
+      // If shorter than 8 characters, only show first two
       return steamId.substring(0, 2) + "*".repeat(steamId.length - 2);
     },
 
-    // 切换SteamID显示模式
+    // Toggle SteamID display mode
     toggleSteamIdDisplay() {
       this.showRawSteamId = !this.showRawSteamId;
       this.showSuccess(
         this.showRawSteamId
           ? this.t("settings.steamApi.showingRawSteamId")
-          : this.t("settings.steamApi.hidingRawSteamId")
+          : this.t("settings.steamApi.hidingRawSteamId"),
       );
     },
 
-    // 搜索和过滤方法
+    // Search and filter methods
     clearFilters() {
       this.searchQuery = "";
       this.sortBy = "lastUpdated";
@@ -580,7 +607,7 @@ export default {
       this.showSuccess(this.t("settings.steamApi.filtersCleared"));
     },
 
-    // 缓存管理增强功能
+    // Cache management enhanced features
     toggleEntrySelection(steamId) {
       if (this.selectedEntries.has(steamId)) {
         this.selectedEntries.delete(steamId);
@@ -592,12 +619,12 @@ export default {
     toggleSelectAll() {
       const entries = this.paginatedEntries || [];
       if (this.isAllSelected) {
-        // 取消全选
+        // Deselect all
         entries.forEach((entry) => {
           this.selectedEntries.delete(entry.steamId);
         });
       } else {
-        // 全选当前页
+        // Select all on current page
         entries.forEach((entry) => {
           this.selectedEntries.add(entry.steamId);
         });
@@ -611,7 +638,7 @@ export default {
       }
     },
 
-    // 单个条目操作
+    // Single entry operations
     async refreshEntry(entry) {
       this.isRefreshing = true;
       try {
@@ -619,11 +646,11 @@ export default {
         this.showSuccess(
           this.t("settings.steamApi.entryRefreshed", {
             username: entry.username,
-          })
+          }),
         );
         await this.loadCacheEntries();
       } catch (error) {
-        console.error("刷新缓存条目失败:", error);
+        console.error("Failed to refresh cache entry:", error);
         notify.error(this.t("settings.steamApi.refreshError", { error: error }));
       } finally {
         this.isRefreshing = false;
@@ -653,14 +680,14 @@ export default {
         this.showSuccess(this.t("settings.steamApi.entryDeleted"));
         await this.loadCacheEntries();
       } catch (error) {
-        console.error("删除缓存条目失败:", error);
+        console.error("Failed to delete cache entry:", error);
         notify.error(this.t("settings.steamApi.deleteError", { error: error }));
       } finally {
         this.isDeleting = false;
       }
     },
 
-    // 批量操作
+    // Batch operations
     async batchRefresh() {
       const steamIds = Array.from(this.selectedEntries);
       this.isRefreshing = true;
@@ -669,14 +696,12 @@ export default {
         this.showSuccess(
           this.t("settings.steamApi.batchRefreshCompleted", {
             count: steamIds.length,
-          })
+          }),
         );
         await this.loadCacheEntries();
       } catch (error) {
-        console.error("批量刷新失败:", error);
-        notify.error(
-          this.t("settings.steamApi.batchRefreshError", { error: error })
-        );
+        console.error("Failed to batch refresh:", error);
+        notify.error(this.t("settings.steamApi.batchRefreshError", { error: error }));
       } finally {
         this.isRefreshing = false;
       }
@@ -707,26 +732,24 @@ export default {
         this.showSuccess(
           this.t("settings.steamApi.batchDeleteCompleted", {
             count: steamIds.length,
-          })
+          }),
         );
         await this.loadCacheEntries();
       } catch (error) {
-        console.error("批量删除失败:", error);
-        notify.error(
-          this.t("settings.steamApi.batchDeleteError", { error: error })
-        );
+        console.error("Failed to batch delete:", error);
+        notify.error(this.t("settings.steamApi.batchDeleteError", { error: error }));
       } finally {
         this.isBatchDeleting = false;
       }
     },
 
-    // 缓存详情弹窗
+    // Cache detail popup
     showCacheDetail(entry) {
       this.selectedCacheEntry = entry;
       this.showDetailModal = true;
     },
 
-    // 操作确认对话框
+    // Action confirmation dialog
     confirmAction() {
       if (this.confirmDialogConfig.onConfirm) {
         this.confirmDialogConfig.onConfirm();
@@ -742,7 +765,7 @@ export default {
 </script>
 
 <style scoped>
-/* 磨砂玻璃效果基础样式 - 多主题适配版 */
+/* Frosted glass effect base styles - multi-theme adapted */
 .steam-cache-container {
   display: flex;
   flex-direction: column;
@@ -753,7 +776,7 @@ export default {
   overflow: hidden;
 }
 
-/* 返回按钮 - 多主题适配 */
+/* Back button - multi-theme adapted */
 .page-header {
   display: flex;
   align-items: center;
@@ -817,7 +840,10 @@ export default {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .header-btn:hover:not(:disabled) {
@@ -843,8 +869,11 @@ export default {
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease,
-    color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
   box-shadow: var(--shadow-sm);
 }
 
@@ -864,7 +893,7 @@ export default {
   transform: translateX(-1px);
 }
 
-/* 缓存内容区域 */
+/* Cache content area */
 .cache-content {
   display: flex;
   flex-direction: column;
@@ -875,7 +904,7 @@ export default {
   min-height: 0;
 }
 
-/* 缓存操作区域 - 多主题适配 */
+/* Cache action area - multi-theme adapted */
 .cache-actions {
   display: flex;
   align-items: center;
@@ -899,10 +928,7 @@ export default {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      var(--glass-border-light) 50%,
-      transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--glass-border-light) 50%, transparent 100%);
   transition: left 0.6s ease;
 }
 
@@ -926,7 +952,7 @@ export default {
   flex-wrap: wrap;
 }
 
-/* 清理过期缓存按钮 - 多主题适配 */
+/* Clean expired cache button - multi-theme adapted */
 .cleanup-expired-btn {
   background: var(--btn-danger-bg);
   color: #fff;
@@ -946,7 +972,7 @@ export default {
   opacity: 0.6;
 }
 
-/* SteamID显示切换按钮 - 多主题适配 */
+/* SteamID display toggle button - multi-theme adapted */
 .toggle-steamid-btn {
   background: var(--bg-secondary);
   color: var(--text-primary);
@@ -954,7 +980,7 @@ export default {
   box-shadow: var(--shadow-sm);
 }
 
-/* 缓存计数信息 - 多主题适配 */
+/* Cache count info - multi-theme adapted */
 .cache-count-info {
   font-size: 14px;
   font-weight: 600;
@@ -975,7 +1001,7 @@ export default {
   box-shadow: var(--card-shadow-hover);
 }
 
-/* 搜索和过滤区域 - 多主题适配 */
+/* Search and filter area - multi-theme adapted */
 .search-filter-section {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -986,7 +1012,9 @@ export default {
   gap: 16px;
   flex-wrap: wrap;
   box-shadow: var(--shadow-sm);
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .form-group {
@@ -1029,7 +1057,9 @@ export default {
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 500;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
   height: 40px;
   box-sizing: border-box;
 }
@@ -1058,7 +1088,7 @@ export default {
   font-size: 12px;
 }
 
-/* 过滤选择器和输入框 - 多主题适配 */
+/* Filter selectors and inputs - multi-theme adapted */
 .filter-select,
 .filter-input {
   padding: 10px 12px;
@@ -1068,14 +1098,16 @@ export default {
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 500;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
   min-width: 160px;
   height: 40px;
   box-sizing: border-box;
   cursor: pointer;
 }
 
-/* 数字输入框样式优化 */
+/* Number input style optimization */
 .filter-input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
@@ -1087,7 +1119,7 @@ export default {
   margin: 0;
 }
 
-/* 自定义数字输入框容器 */
+/* Custom number input container */
 .number-input-wrapper {
   position: relative;
   width: 100%;
@@ -1098,7 +1130,7 @@ export default {
   padding-right: 36px;
 }
 
-/* 自定义数字箭头 - 多主题适配 */
+/* Custom number spinner - multi-theme adapted */
 .number-spinner {
   position: absolute;
   right: 4px;
@@ -1120,7 +1152,9 @@ export default {
   border-radius: 6px;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
   font-size: 10px;
   padding: 0;
 }
@@ -1151,7 +1185,7 @@ export default {
   cursor: text;
 }
 
-/* 清空过滤按钮 - 多主题适配 */
+/* Clear filters button - multi-theme adapted */
 .clear-filters-btn {
   display: flex;
   align-items: center;
@@ -1165,8 +1199,11 @@ export default {
   cursor: pointer;
   font-weight: 600;
   font-size: 13px;
-  transition: background-color 0.2s ease, border-color 0.2s ease,
-    color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
   box-shadow: var(--shadow-sm);
   height: 40px;
   box-sizing: border-box;
@@ -1180,7 +1217,7 @@ export default {
   box-shadow: var(--shadow-md);
 }
 
-/* 缓存表格容器 - 多主题适配 */
+/* Cache table container - multi-theme adapted */
 .cache-table-container {
   flex: 1;
   overflow: auto;
@@ -1196,7 +1233,7 @@ export default {
   box-shadow: var(--shadow-sm);
 }
 
-/* 缓存表格 */
+/* Cache table */
 .cache-table {
   width: 100%;
   border-collapse: separate;
@@ -1235,7 +1272,9 @@ export default {
 }
 
 .cache-table tbody tr {
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
   cursor: pointer;
 }
 
@@ -1247,7 +1286,7 @@ export default {
   background: var(--surface-hover, var(--bg-tertiary));
 }
 
-/* SteamID单元格 */
+/* SteamID cell */
 .steam-id-cell {
   font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace;
   font-size: 13px;
@@ -1256,7 +1295,7 @@ export default {
   letter-spacing: 0;
 }
 
-/* 复选框 - 多主题适配 */
+/* Checkbox - multi-theme adapted */
 .checkbox {
   appearance: none;
   -webkit-appearance: none;
@@ -1267,7 +1306,9 @@ export default {
   border-radius: 6px;
   cursor: pointer;
   position: relative;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
   background: var(--bg-secondary);
 }
 
@@ -1309,7 +1350,6 @@ export default {
 }
 
 @keyframes checkboxPulse {
-
   0%,
   100% {
     transform: scale(1);
@@ -1320,18 +1360,18 @@ export default {
   }
 }
 
-/* 操作单元格 */
+/* Actions cell */
 .actions-cell {
   padding: 8px !important;
 }
 
-/* 操作按钮容器 */
+/* Action buttons container */
 .action-buttons {
   display: flex;
   gap: 4px;
 }
 
-/* 操作按钮 - 多主题适配 */
+/* Action buttons - multi-theme adapted */
 .action-btn {
   width: 32px;
   height: 32px;
@@ -1342,7 +1382,9 @@ export default {
   align-items: center;
   justify-content: center;
   font-size: 13px;
-  transition: background-color 0.2s ease, border-color 0.2s ease,
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
     box-shadow 0.2s ease;
   background: var(--bg-secondary);
   color: var(--text-secondary);
@@ -1393,7 +1435,7 @@ export default {
   filter: grayscale(30%);
 }
 
-/* 无缓存条目提示 - 多主题适配 */
+/* No cache entries hint - multi-theme adapted */
 .no-cache-entries {
   padding: 64px 32px;
   text-align: center;
@@ -1404,7 +1446,7 @@ export default {
   border: 1px dashed var(--border-color);
 }
 
-/* 成功消息 - 多主题适配 */
+/* Success message - multi-theme adapted */
 .success-message {
   position: fixed;
   top: 80px;
@@ -1441,7 +1483,7 @@ export default {
   }
 }
 
-/* 模态框样式 - 磨砂玻璃优化 */
+/* Modal styles - frosted glass optimized */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1457,7 +1499,7 @@ export default {
   z-index: 10000;
 }
 
-/* Vue Transition 进场动画 */
+/* Vue Transition enter animation */
 .modal-enter-active {
   animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1466,7 +1508,7 @@ export default {
   animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Vue Transition 退场动画 */
+/* Vue Transition leave animation */
 .modal-leave-active {
   animation: modalFadeOut 0.25s cubic-bezier(0.4, 0, 1, 1);
 }
@@ -1551,10 +1593,7 @@ export default {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      var(--glass-border-light) 50%,
-      transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--glass-border-light) 50%, transparent 100%);
   pointer-events: none;
 }
 
@@ -1630,7 +1669,7 @@ export default {
   border-top: 1px solid var(--divider-color);
 }
 
-/* 缓存详情弹窗样式 */
+/* Cache detail modal styles */
 .detail-item {
   display: flex;
   align-items: center;
@@ -1656,7 +1695,7 @@ export default {
   word-break: break-all;
 }
 
-/* 系统监控面板样式 */
+/* System monitor panel styles */
 .stats-body {
   padding: 0;
 }
@@ -1730,7 +1769,7 @@ export default {
   color: var(--text-secondary);
 }
 
-/* 确认对话框样式 */
+/* Confirmation dialog styles */
 .confirm-dialog .modal-body {
   text-align: center;
 }
@@ -1777,7 +1816,7 @@ export default {
   box-shadow: var(--card-shadow-hover);
 }
 
-/* 自定义下拉框样式增强 */
+/* Custom dropdown style enhancements */
 .dropdown-control {
   min-width: 140px;
   max-width: 160px;
@@ -1869,7 +1908,7 @@ export default {
   border-bottom: 1px solid var(--divider-color);
 }
 
-/* 动画效果 */
+/* Animation effects */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -1906,7 +1945,7 @@ export default {
   }
 }
 
-/* 批量操作工具栏 - 多主题适配 */
+/* Batch operation toolbar - multi-theme adapted */
 .batch-actions-toolbar {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -1943,7 +1982,9 @@ export default {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease,
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
@@ -1974,7 +2015,7 @@ export default {
   cursor: not-allowed;
 }
 
-/* 分页控件 - 多主题适配 */
+/* Pagination controls - multi-theme adapted */
 .pagination-container {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -2019,8 +2060,11 @@ export default {
   justify-content: center;
   font-size: 14px;
   font-weight: 600;
-  transition: background-color 0.2s ease, border-color 0.2s ease,
-    color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
   box-shadow: var(--shadow-sm);
 }
 
@@ -2071,7 +2115,7 @@ export default {
   margin-bottom: 0;
 }
 
-/* 响应式设计优化 */
+/* Responsive design optimization */
 @media (max-width: 768px) {
   .page-header {
     padding: 16px 20px;
@@ -2222,7 +2266,7 @@ export default {
 
   .search-input {
     font-size: 16px;
-    /* 防止iOS缩放 */
+    /* Prevent iOS zoom */
   }
 
   .action-btn {

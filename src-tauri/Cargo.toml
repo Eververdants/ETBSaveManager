@@ -47,5 +47,7 @@ thiserror = "1"
 
 # 仅在发布时启用优化，不影响开发编译速度
 [profile.release]
-lto = "thin"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
 strip = true

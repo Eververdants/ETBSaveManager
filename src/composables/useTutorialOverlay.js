@@ -33,7 +33,7 @@ export function useTutorialOverlay(getStepData, emit) {
     const cardWidth = 360;
     const cardHeight = 280;
     const gap = 20;
-    let style = {};
+    let style;
     switch (position) {
       case "right":
         style = { top: `${Math.max(rect.top, 100)}px`, left: `${rect.right + gap}px` };
@@ -58,7 +58,14 @@ export function useTutorialOverlay(getStepData, emit) {
     const element = document.querySelector(selector);
     if (element) {
       const rect = element.getBoundingClientRect();
-      highlightRect.value = { top: rect.top, left: rect.left, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+      highlightRect.value = {
+        top: rect.top,
+        left: rect.left,
+        right: rect.right,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+      };
     } else {
       highlightRect.value = null;
     }

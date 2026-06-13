@@ -1,6 +1,6 @@
 <template>
   <div class="home-container" :class="{ 'multi-select-mode': isMultiSelectMode }">
-    <!-- 多选模式工具栏 -->
+    <!-- Multi-select mode toolbar -->
     <transition name="toolbar-slide">
       <div v-show="isMultiSelectMode" class="multi-select-toolbar">
         <div class="toolbar-left">
@@ -19,13 +19,18 @@
         </div>
         <div class="toolbar-right">
           <span class="selection-count">
-            {{ $t("archiveSearch.multiSelect.selected", {
-              count: selectedArchives.size,
-              total: archives.length
-            }) }}
+            {{
+              $t("archiveSearch.multiSelect.selected", {
+                count: selectedArchives.size,
+                total: archives.length,
+              })
+            }}
           </span>
-          <button class="toolbar-btn danger" :disabled="selectedArchives.size === 0"
-            @click="handleShowBatchDeleteConfirm">
+          <button
+            class="toolbar-btn danger"
+            :disabled="selectedArchives.size === 0"
+            @click="handleShowBatchDeleteConfirm"
+          >
             <font-awesome-icon icon="fa-solid fa-trash-alt" />
             {{ $t("archiveSearch.multiSelect.batchDelete") }}
           </button>
@@ -33,54 +38,57 @@
       </div>
     </transition>
 
-    <div class="archive-list-container" :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode }"
-      ref="scrollContainerRef">
-      <!-- 有存档时使用虚拟滚动 -->
+    <div
+      ref="scrollContainerRef"
+      class="archive-list-container"
+      :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode }"
+    >
+      <!-- Use virtual scrolling when archives exist -->
       <template v-if="displayArchives.length > 0">
-        <div class="archive-grid-virtual" :style="{
-          height: `${rowVirtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative',
-        }">
-          <!-- 虚拟滚动行 -->
-          <div v-for="virtualRow in rowVirtualizer.getVirtualItems()" :key="virtualRow.key" class="archive-row" :style="{
-            position: 'absolute',
-            top: 0,
-            left: 0,
+        <div
+          class="archive-grid-virtual"
+          :style="{
+            height: `${rowVirtualizer.getTotalSize()}px`,
             width: '100%',
-            height: `${virtualRow.size}px`,
-            transform: `translateY(${virtualRow.start}px)`,
-          }">
+            position: 'relative',
+          }"
+        >
+          <!-- Virtual scrolling row -->
+          <div
+            v-for="virtualRow in rowVirtualizer.getVirtualItems()"
+            :key="virtualRow.key"
+            class="archive-row"
+            :style="{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: `${virtualRow.size}px`,
+              transform: `translateY(${virtualRow.start}px)`,
+            }"
+          >
             <div class="archive-grid">
-              <ArchiveCard v-for="archive in getRowItems(virtualRow.index)" :key="archive.id" :archive="archive"
-                :index="archive._originalIndex" :data-archive-id="archive.id"
-                :class="{ deleting: deletingCardId === archive.id }" :is-multi-select-mode="isMultiSelectMode"
-                :is-selected="selectedArchives.has(archive.id)" @toggle-visibility="handleToggleVisibility"
-                @edit="handleEdit" @delete="deleteArchive" @select="selectArchive"
-                @toggle-select="toggleArchiveSelection" />
-            </div>
-          </div>
-          <!-- 保险机制：当虚拟列表返回空时，强制渲染第一行 -->
-          <div v-if="rowVirtualizer.getVirtualItems().length === 0" class="archive-row" :style="{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '180px',
-          }">
-            <div class="archive-grid">
-              <ArchiveCard v-for="archive in getRowItems(0)" :key="archive.id" :archive="archive"
-                :index="archive._originalIndex" :data-archive-id="archive.id"
-                :class="{ deleting: deletingCardId === archive.id }" :is-multi-select-mode="isMultiSelectMode"
-                :is-selected="selectedArchives.has(archive.id)" @toggle-visibility="handleToggleVisibility"
-                @edit="handleEdit" @delete="deleteArchive" @select="selectArchive"
-                @toggle-select="toggleArchiveSelection" />
+              <ArchiveCard
+                v-for="archive in getRowItems(virtualRow.index)"
+                :key="archive.id"
+                :archive="archive"
+                :index="archive._originalIndex"
+                :data-archive-id="archive.id"
+                :class="{ deleting: deletingCardId === archive.id }"
+                :is-multi-select-mode="isMultiSelectMode"
+                :is-selected="selectedArchives.has(archive.id)"
+                @toggle-visibility="handleToggleVisibility"
+                @edit="handleEdit"
+                @delete="deleteArchive"
+                @select="selectArchive"
+                @toggle-select="toggleArchiveSelection"
+              />
             </div>
           </div>
         </div>
       </template>
 
-      <!-- 空状态 -->
+      <!-- Empty state -->
       <template v-else>
         <div v-if="archives.length > 0 && hasActiveFilters" class="empty-state">
           <div class="empty-content">
@@ -112,81 +120,116 @@
       </template>
     </div>
 
-    <!-- 搜索面板 -->
+    <!-- Search panel -->
     <Teleport to="body">
       <transition name="search-panel" @before-enter="beforeSearchEnter" @enter="searchEnter" @leave="searchLeave">
         <div v-show="showSearch && !loading" class="search-overlay">
-          <ArchiveSearchFilter :archives="archives" :initial-filters="lastSearchFilters" :visible="showSearch"
-            @filtered="handleFilteredArchives" @filters-changed="updateLastFilters" @close="toggleSearch"
-            ref="archiveSearchFilter" />
+          <ArchiveSearchFilter
+            ref="archiveSearchFilter"
+            :archives="archives"
+            :initial-filters="lastSearchFilters"
+            :visible="showSearch"
+            @filtered="handleFilteredArchives"
+            @filters-changed="updateLastFilters"
+            @close="toggleSearch"
+          />
         </div>
       </transition>
     </Teleport>
 
-    <!-- 删除确认 -->
+    <!-- Delete confirmation -->
     <Teleport to="body">
-      <ConfirmModal v-model:show="showDeleteConfirm" :title="$t('confirmModal.deleteArchiveTitle')" :message="$t('confirmModal.deleteArchiveMessage', {
-        name: archiveToDelete?.name || '',
-      })
-        " :description="$t('confirmModal.deleteArchiveDescription')" type="danger"
-        :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isDeleting"
-        :archive-details="archiveToDelete" @confirm="confirmDelete" @cancel="cancelDelete" />
+      <ConfirmModal
+        v-model:show="showDeleteConfirm"
+        :title="$t('confirmModal.deleteArchiveTitle')"
+        :message="
+          $t('confirmModal.deleteArchiveMessage', {
+            name: archiveToDelete?.name || '',
+          })
+        "
+        :description="$t('confirmModal.deleteArchiveDescription')"
+        type="danger"
+        :confirm-text="$t('confirmModal.confirm')"
+        :cancel-text="$t('confirmModal.cancel')"
+        :loading="isDeleting"
+        :archive-details="archiveToDelete"
+        @confirm="confirmDelete"
+        @cancel="cancelDelete"
+      />
     </Teleport>
 
-    <!-- 批量删除确认 -->
+    <!-- Batch delete confirmation -->
     <Teleport to="body">
-      <ConfirmModal v-model:show="showBatchDeleteConfirm" :title="$t('confirmModal.batchDeleteTitle')" :message="$t('confirmModal.batchDeleteMessage', {
-        count: selectedArchives.size,
-      })
-        " :description="$t('confirmModal.batchDeleteDescription')" type="danger"
-        :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isBatchDeleting"
-        @confirm="confirmBatchDelete" @cancel="cancelBatchDelete" />
+      <ConfirmModal
+        v-model:show="showBatchDeleteConfirm"
+        :title="$t('confirmModal.batchDeleteTitle')"
+        :message="
+          $t('confirmModal.batchDeleteMessage', {
+            count: selectedArchives.size,
+          })
+        "
+        :description="$t('confirmModal.batchDeleteDescription')"
+        type="danger"
+        :confirm-text="$t('confirmModal.confirm')"
+        :cancel-text="$t('confirmModal.cancel')"
+        :loading="isBatchDeleting"
+        @confirm="confirmBatchDelete"
+        @cancel="cancelBatchDelete"
+      />
     </Teleport>
 
-    <!-- 性能设置 -->
+    <!-- Performance settings -->
     <Teleport to="body">
       <transition name="modal">
         <div v-if="showPerformanceSettings" class="modal-overlay" @click.self="showPerformanceSettings = false">
           <div class="modal-container">
             <div class="modal-header">
-              <h2 class="modal-title">性能设置</h2>
+              <h2 class="modal-title">{{ $t("performanceSettings.title") }}</h2>
               <button class="modal-close" @click="showPerformanceSettings = false">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </button>
             </div>
             <div class="modal-body">
-              <PerformanceSettings v-model:performanceMode="performanceMode" v-model:animationQuality="animationQuality"
-                v-model:hardwareAcceleration="hardwareAcceleration"
-                v-model:virtualizationEnabled="virtualizationEnabled" />
+              <PerformanceSettings
+                v-model:performance-mode="performanceMode"
+                v-model:animation-quality="animationQuality"
+                v-model:hardware-acceleration="hardwareAcceleration"
+                v-model:virtualization-enabled="virtualizationEnabled"
+              />
             </div>
           </div>
         </div>
       </transition>
     </Teleport>
 
-    <!-- 浮动按钮 -->
-    <FloatingActionButton :class="loading ? 'loading' : ''" :current-index="fabCurrentIndex"
-      @update:current-index="fabCurrentIndex = $event" @search-click="toggleSearch" @refresh-click="refreshArchives"
-      @folder-click="openSaveGamesFolder" @multi-select-click="enterMultiSelectMode" />
+    <!-- Floating action button -->
+    <FloatingActionButton
+      :class="loading ? 'loading' : ''"
+      :current-index="fabCurrentIndex"
+      @update:current-index="fabCurrentIndex = $event"
+      @search-click="toggleSearch"
+      @refresh-click="refreshArchives"
+      @folder-click="openSaveGamesFolder"
+      @multi-select-click="enterMultiSelectMode"
+    />
   </div>
 </template>
 
 <script setup>
-import {
-  ref,
-  onMounted,
-  onUnmounted,
-  onActivated,
-  onDeactivated,
-  nextTick,
-  watch,
-  computed,
-} from "vue";
+import { ref, onMounted, onUnmounted, onActivated, onDeactivated, nextTick, watch, computed } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
+import { useI18n } from "vue-i18n";
 import { protectFloatingButtonPosition } from "../utils/floatingButtonProtection.js";
 import ArchiveCard from "../components/archive/ArchiveCard.vue";
 import ArchiveSearchFilter from "../components/archive/ArchiveSearchFilter.vue";
@@ -215,13 +258,7 @@ const {
 } = archiveData;
 
 const archiveFilters = useArchiveFilters();
-const {
-  lastSearchFilters,
-  hasActiveFilters,
-  debouncedApplyFilters,
-  updateFilters,
-  resetFilters,
-} = archiveFilters;
+const { lastSearchFilters, hasActiveFilters, debouncedApplyFilters, updateFilters, resetFilters } = archiveFilters;
 
 const archiveActions = useArchiveActions(archiveData, archiveFilters);
 const {
@@ -255,17 +292,13 @@ const animations = useAnimations(performanceMode, animationQuality);
 const { beforeSearchEnter, searchEnter, searchLeave } = animations;
 
 const floatingButton = useFloatingButton();
-const {
-  fabCurrentIndex,
-  enhancedProtectFloatingButton,
-  initFloatingButtonProtection,
-  startPositionChecker,
-  cleanup: cleanupFloatingButton,
-} = floatingButton;
+const { fabCurrentIndex, initButtonProtection, cleanup: cleanupFloatingButton } = floatingButton;
 
 const toast = useToast();
 
-// 本地状态
+const { t } = useI18n();
+
+// Local state
 const scrollContainerRef = ref(null);
 const archiveSearchFilter = ref(null);
 const showSearch = ref(false);
@@ -273,47 +306,44 @@ const isPageActive = ref(false);
 const columnsPerRow = ref(4);
 const shouldResetScroll = ref(false);
 
-// 多选模式状态
+// Multi-select mode state
 const isMultiSelectMode = ref(false);
 const selectedArchives = ref(new Set());
 const showBatchDeleteConfirm = ref(false);
 const isBatchDeleting = ref(false);
 
-// 监听数据或列数变化，强制刷新虚拟滚动
-watch([displayArchives, columnsPerRow], (newVal, oldVal) => {
-  // 忽略初始化时的触发
-  if (!scrollContainerRef.value) return;
-
+// Schedule a single virtualizer remeasure after DOM update
+const remeasureVirtualizer = () => {
   nextTick(() => {
-    requestAnimationFrame(() => {
-      if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
-        rowVirtualizer.measure();
-      }
-      // 再次刷新确保渲染
-      requestAnimationFrame(() => {
-        if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
-          rowVirtualizer.measure();
-        }
-      });
-    });
+    rowVirtualizer?.measure?.();
   });
-}, { flush: 'post' });
+};
 
-// 计算列数
+// Watch for data or column count changes, remeasure virtual scrolling
+watch(
+  [displayArchives, columnsPerRow],
+  () => {
+    if (!scrollContainerRef.value) return;
+    remeasureVirtualizer();
+  },
+  { flush: "post" },
+);
+
+// Calculate column count
 const calcColumnsPerRow = () => {
   if (!scrollContainerRef.value) return 4;
   const width = scrollContainerRef.value.clientWidth - 40;
-  // 最小卡片宽度320px + gap 20px
+  // Minimum card width 320px + gap 20px
   return Math.max(1, Math.floor((width + 20) / 340));
 };
 
-// 计算行数
+// Calculate row count
 const rowCount = computed(() => {
   if (displayArchives.value.length === 0) return 0;
   return Math.ceil(displayArchives.value.length / columnsPerRow.value);
 });
 
-// 获取某行的卡片
+// Get cards for a given row
 const getRowItems = (rowIndex) => {
   const cols = columnsPerRow.value;
   const startIdx = rowIndex * cols;
@@ -324,18 +354,18 @@ const getRowItems = (rowIndex) => {
   }));
 };
 
-// 虚拟化器配置
+// Virtualizer configuration
 const virtualizerOptions = computed(() => ({
   count: rowCount.value,
   getScrollElement: () => scrollContainerRef.value,
-  estimateSize: () => 180, // 卡片高度160px + gap 20px
-  overscan: 2, // 减少 overscan，降低渲染数量
+  estimateSize: () => 180, // Card height 160px + gap 20px
+  overscan: 2, // Reduce overscan to lower render count
 }));
 
-// 虚拟化器
+// Virtualizer
 const rowVirtualizer = useVirtualizer(virtualizerOptions);
 
-// 方法
+// Methods
 const toggleSearch = () => {
   showSearch.value = !showSearch.value;
   if (showSearch.value) nextTick(() => protectFloatingButtonPosition());
@@ -369,24 +399,18 @@ const updateLastFilters = (filters) => updateFilters(filters);
 
 const handleFilteredArchives = (filteredArchives) => {
   if (!loading.value) {
-    shouldResetScroll.value = true; // 筛选变化时重置滚动
+    shouldResetScroll.value = true; // Reset scroll when filter changes
     displayArchives.value = filteredArchives;
-    nextTick(() => enhancedProtectFloatingButton());
+    nextTick(() => protectFloatingButtonPosition());
   }
 };
 
 const clearAllFilters = () => {
-  displayArchives.value = [];
-  if (archiveSearchFilter.value?.clearAllFilters)
-    archiveSearchFilter.value.clearAllFilters();
+  if (archiveSearchFilter.value?.clearAllFilters) archiveSearchFilter.value.clearAllFilters();
   resetFilters();
-  shouldResetScroll.value = true; // 清除筛选时重置滚动
-  nextTick(() =>
-    setTimeout(() => {
-      displayArchives.value = [...archives.value];
-      enhancedProtectFloatingButton();
-    }, 400)
-  );
+  shouldResetScroll.value = true;
+  displayArchives.value = [...archives.value];
+  protectFloatingButtonPosition();
 };
 
 const handleToggleVisibility = (archive) => {
@@ -398,13 +422,9 @@ const handleToggleVisibility = (archive) => {
 const confirmDelete = () => {
   confirmDeleteBase({
     onSuccess: () => {
-      debouncedApplyFilters(
-        archives.value,
-        lastSearchFilters.value,
-        (filtered) => {
-          displayArchives.value = filtered;
-        }
-      );
+      debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
+        displayArchives.value = filtered;
+      });
       protectFloatingButtonPosition();
     },
   });
@@ -415,39 +435,39 @@ const refreshArchives = async () => {
   debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
     displayArchives.value = filtered;
   });
-  toast.showSuccess("存档列表已刷新");
+  toast.showSuccess(t("archiveSearch.refreshed"));
 };
 
 const openSaveGamesFolder = () => {
   openSaveGamesFolderBase({
     onSuccess: () => {
-      enhancedProtectFloatingButton();
-      setTimeout(enhancedProtectFloatingButton, 300);
+      protectFloatingButtonPosition();
+      setTimeout(protectFloatingButtonPosition, 300);
     },
   });
 };
 
-// 多选模式方法
+// Multi-select mode methods
 const enterMultiSelectMode = () => {
   isMultiSelectMode.value = true;
   selectedArchives.value = new Set();
-  // 禁用页面滚动 - 同时禁用 body 和 html
-  document.body.style.overflow = 'hidden';
-  document.body.style.position = 'fixed';
-  document.body.style.width = '100%';
-  document.body.style.height = '100%';
-  document.documentElement.style.overflow = 'hidden';
+  // Disable page scrolling - disable both body and html
+  document.body.style.overflow = "hidden";
+  document.body.style.position = "fixed";
+  document.body.style.width = "100%";
+  document.body.style.height = "100%";
+  document.documentElement.style.overflow = "hidden";
 };
 
 const exitMultiSelectMode = () => {
   isMultiSelectMode.value = false;
   selectedArchives.value = new Set();
-  // 恢复页面滚动
-  document.body.style.overflow = '';
-  document.body.style.position = '';
-  document.body.style.width = '';
-  document.body.style.height = '';
-  document.documentElement.style.overflow = '';
+  // Restore page scrolling
+  document.body.style.overflow = "";
+  document.body.style.position = "";
+  document.body.style.width = "";
+  document.body.style.height = "";
+  document.documentElement.style.overflow = "";
 };
 
 const toggleArchiveSelection = (archiveId) => {
@@ -461,13 +481,13 @@ const toggleArchiveSelection = (archiveId) => {
 };
 
 const selectAll = () => {
-  selectedArchives.value = new Set(displayArchives.value.map(a => a.id));
+  selectedArchives.value = new Set(displayArchives.value.map((a) => a.id));
 };
 
 const invertSelection = () => {
-  const allIds = new Set(displayArchives.value.map(a => a.id));
+  const allIds = new Set(displayArchives.value.map((a) => a.id));
   const newSet = new Set(selectedArchives.value);
-  allIds.forEach(id => {
+  allIds.forEach((id) => {
     if (newSet.has(id)) {
       newSet.delete(id);
     } else {
@@ -488,7 +508,7 @@ const cancelBatchDelete = () => {
 const confirmBatchDelete = async () => {
   isBatchDeleting.value = true;
   const idsToDelete = Array.from(selectedArchives.value);
-  const archivesToDelete = archives.value.filter(a => idsToDelete.includes(a.id));
+  const archivesToDelete = archives.value.filter((a) => idsToDelete.includes(a.id));
 
   await batchDeleteArchives(archivesToDelete, {
     onSuccess: () => {
@@ -496,27 +516,19 @@ const confirmBatchDelete = async () => {
       showBatchDeleteConfirm.value = false;
       exitMultiSelectMode();
 
-      debouncedApplyFilters(
-        archives.value,
-        lastSearchFilters.value,
-        (filtered) => {
-          displayArchives.value = filtered;
-        }
-      );
+      debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
+        displayArchives.value = filtered;
+      });
     },
     onError: () => {
       isBatchDeleting.value = false;
       showBatchDeleteConfirm.value = false;
       exitMultiSelectMode();
 
-      debouncedApplyFilters(
-        archives.value,
-        lastSearchFilters.value,
-        (filtered) => {
-          displayArchives.value = filtered;
-        }
-      );
-    }
+      debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
+        displayArchives.value = filtered;
+      });
+    },
   });
 };
 
@@ -524,85 +536,41 @@ const updateContainerSize = () => {
   columnsPerRow.value = calcColumnsPerRow();
 };
 
-// 在路由切换/尺寸变化后强制同步虚拟列表状态，避免首行卡片偶发不渲染
+// Sync virtual list state after changes (resize, route activation)
 const syncVirtualList = ({ resetScroll = false } = {}) => {
   const container = scrollContainerRef.value;
   if (!container) return;
+  if (!rowVirtualizer || typeof rowVirtualizer.measure !== "function") return;
 
   if (resetScroll) {
     container.scrollTop = 0;
-    if (typeof rowVirtualizer.scrollToOffset === "function") {
-      rowVirtualizer.scrollToOffset(0);
-    }
+    rowVirtualizer.scrollToOffset?.(0);
   }
 
-  if (typeof rowVirtualizer.measure === "function") {
-    rowVirtualizer.measure();
-  }
+  rowVirtualizer.measure();
 };
 
-const scheduleVirtualListSync = (options = {}) => {
-  nextTick(() => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => syncVirtualList(options));
-    });
-  });
-};
-
-// 生命周期
+// Lifecycle
 let isUnmounted = false;
 let resizeObserver = null;
 
-// keep-alive 激活时
+// On keep-alive activation
 onActivated(async () => {
   isPageActive.value = true;
-
   resetInitialLoad();
 
-  // 强制刷新虚拟列表状态，避免首行不渲染
-  await nextTick();
-
-  // 重置滚动位置
+  // Reset scroll position and update container size
   if (scrollContainerRef.value) {
     scrollContainerRef.value.scrollTop = 0;
   }
-
-  // 刷新数据前先更新容器尺寸，确保列数正确
   updateContainerSize();
 
-  // 刷新数据
+  // Refresh data, then remeasure once after DOM update
   await refreshArchivesSilent();
-
-  // 强制重新测量和渲染 - 使用多次 requestAnimationFrame 确保 DOM 已更新
-  nextTick(() => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        // 强制虚拟滚动器重新计算
-        if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
-          rowVirtualizer.measure();
-        }
-        // 强制滚动到顶部
-        if (typeof rowVirtualizer?.scrollToOffset === 'function') {
-          rowVirtualizer.scrollToOffset(0, { align: 'start', behavior: 'auto' });
-        }
-        // 再次测量确保渲染正确
-        requestAnimationFrame(() => {
-          if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
-            rowVirtualizer.measure();
-          }
-          // 第三次测量，确保首行渲染
-          setTimeout(() => {
-            if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
-              rowVirtualizer.measure();
-            }
-          }, 50);
-        });
-      });
-    });
-  });
+  nextTick(() => syncVirtualList({ resetScroll: true }));
 });
 
-// keep-alive 停用时
+// On keep-alive deactivation
 onDeactivated(() => {
   isPageActive.value = false;
 });
@@ -611,53 +579,28 @@ onMounted(async () => {
   window.addEventListener("open-archive-search", handleOpenArchiveSearchEvent);
 
   initPerformanceMonitor();
-  setTimeout(initFloatingButtonProtection, 1000);
-  startPositionChecker();
+  setTimeout(initButtonProtection, 1000);
 
   await initializeArchives(true);
   displayArchives.value = [...archives.value];
 
-  // 等待 DOM 更新后再初始化虚拟滚动
+  // Wait for DOM update, then initialize virtual scrolling
   await nextTick();
   updateContainerSize();
-
-  // 多次强制刷新确保首行渲染
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
-        rowVirtualizer.measure();
-      }
-      requestAnimationFrame(() => {
-        if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
-          rowVirtualizer.measure();
-        }
-      });
-    });
-  });
+  remeasureVirtualizer();
 
   isPageActive.value = true;
   await refreshArchivesSilent();
 
-  // 数据刷新后再次强制刷新
-  nextTick(() => {
-    requestAnimationFrame(() => {
-      if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
-        rowVirtualizer.measure();
-      }
-      setTimeout(() => {
-        if (rowVirtualizer && typeof rowVirtualizer.measure === 'function') {
-          rowVirtualizer.measure();
-        }
-      }, 100);
-    });
-  });
+  // Remeasure once after data refresh
+  remeasureVirtualizer();
 
-  window.cleanupRouteWatcher = () => { };
+  window.cleanupRouteWatcher = () => {};
 
   const handleResize = () => {
     if (!isUnmounted) {
       updateContainerSize();
-      scheduleVirtualListSync();
+      syncVirtualList();
       protectFloatingButtonPosition();
     }
   };
@@ -667,7 +610,7 @@ onMounted(async () => {
     resizeObserver = new ResizeObserver(() => {
       if (!isUnmounted) {
         updateContainerSize();
-        scheduleVirtualListSync();
+        syncVirtualList();
       }
     });
     resizeObserver.observe(scrollContainerRef.value);
@@ -690,15 +633,17 @@ onUnmounted(() => {
     try {
       window.cleanupRouteWatcher();
       delete window.cleanupRouteWatcher;
-    } catch (e) { }
+    } catch (e) {
+      console.warn("Failed to clean up route watcher:", e);
+    }
   }
-  window.removeEventListener("resize", () => { });
-  // 组件卸载时恢复页面滚动
-  document.body.style.overflow = '';
-  document.body.style.position = '';
-  document.body.style.width = '';
-  document.body.style.height = '';
-  document.documentElement.style.overflow = '';
+  window.removeEventListener("resize", () => {});
+  // Restore page scrolling on component unmount
+  document.body.style.overflow = "";
+  document.body.style.position = "";
+  document.body.style.width = "";
+  document.body.style.height = "";
+  document.documentElement.style.overflow = "";
 });
 
 watch(
@@ -708,28 +653,28 @@ watch(
       displayArchives.value = filtered;
     });
   },
-  { deep: true }
+  { deep: true },
 );
 
 watch(
   displayArchives,
   () => {
     const needResetScroll = shouldResetScroll.value;
-    // 只在需要时重置滚动位置（筛选变化时）
+    // Only reset scroll position when needed (on filter changes)
     if (needResetScroll && scrollContainerRef.value) {
       scrollContainerRef.value.scrollTop = 0;
       shouldResetScroll.value = false;
     }
     nextTick(() => {
       updateContainerSize();
-      scheduleVirtualListSync({ resetScroll: needResetScroll });
+      syncVirtualList({ resetScroll: needResetScroll });
     });
   },
-  { deep: false }
+  { deep: false },
 );
 
 watch(columnsPerRow, () => {
-  scheduleVirtualListSync();
+  syncVirtualList();
 });
 </script>
 
@@ -748,7 +693,7 @@ watch(columnsPerRow, () => {
   background: var(--bg-primary);
   padding: 0 20px;
   box-sizing: border-box;
-  /* 优化滚动性能 */
+  /* Optimize scroll performance */
   -webkit-overflow-scrolling: touch;
   transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin: 20px;
@@ -759,7 +704,7 @@ watch(columnsPerRow, () => {
   overflow: hidden;
 }
 
-/* 多选模式下调整存档列表容器高度 */
+/* Adjust archive list container height in multi-select mode */
 .archive-list-container.multi-select-mode {
   height: calc(100% - 100px);
 }
@@ -784,7 +729,9 @@ watch(columnsPerRow, () => {
   width: 100%;
   min-width: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease, transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform-origin: center center;
 }
 
@@ -848,9 +795,7 @@ watch(columnsPerRow, () => {
 }
 
 .empty-action {
-  background: linear-gradient(135deg,
-      var(--primary-color),
-      var(--primary-light));
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   color: white;
   border: none;
   padding: 12px 24px;
@@ -998,7 +943,9 @@ watch(columnsPerRow, () => {
   background: var(--bg-color);
   border-bottom: 1px solid var(--border-color);
   gap: var(--space-4);
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 1;
   transform: translateY(0);
 }
@@ -1081,7 +1028,9 @@ watch(columnsPerRow, () => {
 
 .toolbar-slide-enter-active,
 .toolbar-slide-leave-active {
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .toolbar-slide-enter-from,

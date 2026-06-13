@@ -26,17 +26,28 @@
           }}
         </span>
         <!-- 虚拟滚动指示器 -->
-        <span v-if="isVirtualScrollEnabled" class="virtual-indicator"
-          :title="$t('quickCreate.cardFlow.virtualScrollHint')">
+        <span
+          v-if="isVirtualScrollEnabled"
+          class="virtual-indicator"
+          :title="$t('quickCreate.cardFlow.virtualScrollHint')"
+        >
           <font-awesome-icon :icon="['fas', 'bolt']" />
         </span>
         <div class="view-toggle">
-          <button class="view-btn" :class="{ active: viewMode === 'grid' }" @click="viewMode = 'grid'"
-            :title="$t('quickCreate.cardFlow.gridView')">
+          <button
+            class="view-btn"
+            :class="{ active: viewMode === 'grid' }"
+            :title="$t('quickCreate.cardFlow.gridView')"
+            @click="viewMode = 'grid'"
+          >
             <font-awesome-icon :icon="['fas', 'th-large']" />
           </button>
-          <button class="view-btn" :class="{ active: viewMode === 'list' }" @click="viewMode = 'list'"
-            :title="$t('quickCreate.cardFlow.listView')">
+          <button
+            class="view-btn"
+            :class="{ active: viewMode === 'list' }"
+            :title="$t('quickCreate.cardFlow.listView')"
+            @click="viewMode = 'list'"
+          >
             <font-awesome-icon :icon="['fas', 'list']" />
           </button>
         </div>
@@ -44,39 +55,105 @@
     </div>
 
     <!-- 卡片容器 -->
-    <div class="flow-content" :class="[`view-${viewMode}`]">
+    <div
+      ref="scrollContainerRef"
+      class="flow-content"
+      :class="[`view-${viewMode}`, { 'virtual-scroll-active': isVirtualScrollEnabled }]"
+    >
       <div v-if="archives.length === 0" class="empty-state">
         <font-awesome-icon :icon="['fas', 'layer-group']" class="empty-icon" />
         <p>{{ $t("quickCreate.cardFlow.emptyHint") }}</p>
       </div>
 
       <!-- 虚拟滚动模式 (当存档数量 > 50 时启用) -->
-      <RecycleScroller v-else-if="isVirtualScrollEnabled" ref="scrollerRef" class="virtual-scroller" :items="archives"
-        :item-size="viewMode === 'grid' ? 180 : 120" :grid-items="viewMode === 'grid' ? gridColumns : 1" key-field="id"
-        v-slot="{ item }">
-        <QuickCreateArchiveCard :archive="item" :selected="selectedIds.has(item.id)"
-          :config-source="getConfigSource(item)" @select="handleSelect" @edit="handleEdit" @copy="handleCopy"
-          @remove="handleRemove" />
-      </RecycleScroller>
+      <template v-else-if="isVirtualScrollEnabled">
+        <div
+          class="virtual-scroller"
+          :style="{
+            height: `${virtualizer.getTotalSize()}px`,
+            width: '100%',
+            position: 'relative',
+          }"
+        >
+          <div
+            v-for="virtualRow in virtualizer.getVirtualItems()"
+            :key="virtualRow.key"
+            class="virtual-row-wrapper"
+            :style="{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              transform: `translateY(${virtualRow.start}px)`,
+            }"
+          >
+            <!-- 网格视图：每行多列 -->
+            <div
+              v-if="viewMode === 'grid'"
+              class="virtual-row-grid"
+              :style="{
+                display: 'grid',
+                gap: 'var(--space-3)',
+                gridTemplateColumns: `repeat(${gridColumns}, minmax(220px, 1fr))`,
+              }"
+            >
+              <QuickCreateArchiveCard
+                v-for="archive in getGridRowItems(virtualRow.index)"
+                :key="archive.id"
+                :archive="archive"
+                :selected="selectedIds.has(archive.id)"
+                :config-source="getConfigSource(archive)"
+                @select="handleSelect"
+                @edit="handleEdit"
+                @copy="handleCopy"
+                @remove="handleRemove"
+              />
+            </div>
+            <!-- 列表视图：每行一项 -->
+            <QuickCreateArchiveCard
+              v-else
+              :archive="archives[virtualRow.index]"
+              :selected="selectedIds.has(archives[virtualRow.index].id)"
+              :config-source="getConfigSource(archives[virtualRow.index])"
+              @select="handleSelect"
+              @edit="handleEdit"
+              @copy="handleCopy"
+              @remove="handleRemove"
+            />
+          </div>
+        </div>
+      </template>
 
       <!-- 普通模式 (存档数量 <= 50) -->
       <TransitionGroup v-else name="card-list" tag="div" class="card-container" :class="[`view-${viewMode}`]">
-        <QuickCreateArchiveCard v-for="archive in archives" :key="archive.id" :archive="archive"
-          :selected="selectedIds.has(archive.id)" :config-source="getConfigSource(archive)" @select="handleSelect"
-          @edit="handleEdit" @copy="handleCopy" @remove="handleRemove" />
+        <QuickCreateArchiveCard
+          v-for="archive in archives"
+          :key="archive.id"
+          :archive="archive"
+          :selected="selectedIds.has(archive.id)"
+          :config-source="getConfigSource(archive)"
+          @select="handleSelect"
+          @edit="handleEdit"
+          @copy="handleCopy"
+          @remove="handleRemove"
+        />
       </TransitionGroup>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, toRef, onMounted, onUnmounted } from "vue";
+import { computed, toRef, onMounted, onUnmounted, ref } from "vue";
+import { useVirtualizer } from "@tanstack/vue-virtual";
 import { useI18n } from "vue-i18n";
-import { RecycleScroller } from "vue-virtual-scroller";
-import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
 import QuickCreateArchiveCard from "./QuickCreateArchiveCard.vue";
 import { resolve } from "@/composables/useConfigResolver";
-import { useViewMode, useVirtualScroll, useGridColumns, useArchiveCardFlowEventHandlers } from "@/composables/useArchiveCardFlow";
+import {
+  useViewMode,
+  useVirtualScroll,
+  useGridColumns,
+  useArchiveCardFlowEventHandlers,
+} from "@/composables/useArchiveCardFlow";
 
 const { t } = useI18n({ useScope: "global" });
 
@@ -120,6 +197,39 @@ const { viewMode } = useViewMode();
 const { useVirtualScroll: isVirtualScrollEnabled } = useVirtualScroll(archivesRef);
 const { gridColumns, calculateGridColumns, setupResizeObserver, cleanupResizeObserver } = useGridColumns();
 const { handleSelect, handleEdit, handleCopy, handleRemove } = useArchiveCardFlowEventHandlers(emit);
+
+// Scroll container ref for virtualizer
+const scrollContainerRef = ref(null);
+
+// Virtualizer: grid mode virtualizes by row, list mode virtualizes by item
+const virtualCount = computed(() => {
+  return viewMode.value === "grid"
+    ? Math.ceil(props.archives.length / gridColumns.value)
+    : props.archives.length;
+});
+
+const estimateItemSize = computed(() => {
+  return viewMode.value === "grid" ? 180 : 120;
+});
+
+const virtualizer = useVirtualizer({
+  count: virtualCount,
+  getScrollElement: () => scrollContainerRef.value,
+  estimateSize: () => estimateItemSize.value,
+  overscan: 2,
+});
+
+// Get items for a grid row
+function getGridRowItems(rowIndex) {
+  const cols = gridColumns.value;
+  const start = rowIndex * cols;
+  const end = Math.min(start + cols, props.archives.length);
+  const items = [];
+  for (let i = start; i < end; i++) {
+    items.push(props.archives[i]);
+  }
+  return items;
+}
 
 const getConfigSource = (archive) => {
   if (uniformConfigRef.value && smartRulesRef.value) {
@@ -252,23 +362,33 @@ onUnmounted(() => {
   padding: var(--space-3);
 }
 
-/* 虚拟滚动器样式 */
-.virtual-scroller {
-  height: 100%;
-  overflow-y: auto;
+/* 虚拟滚动 - 移除容器内边距，由虚拟行自己控制 */
+.flow-content.virtual-scroll-active {
+  padding: 0;
 }
 
-.virtual-scroller :deep(.vue-recycle-scroller__item-wrapper) {
+.virtual-scroller {
+  position: relative;
+  width: 100%;
+}
+
+.virtual-row-wrapper {
+  padding: 0 var(--space-3);
+  box-sizing: border-box;
+  will-change: transform;
+}
+
+.virtual-row-wrapper:first-child {
+  padding-top: var(--space-3);
+}
+
+.virtual-row-wrapper:last-child {
+  padding-bottom: var(--space-3);
+}
+
+.virtual-row-grid {
   display: grid;
   gap: var(--space-3);
-}
-
-.virtual-scroller.view-grid :deep(.vue-recycle-scroller__item-wrapper) {
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-}
-
-.virtual-scroller.view-list :deep(.vue-recycle-scroller__item-wrapper) {
-  grid-template-columns: 1fr;
 }
 
 /* 虚拟滚动指示器 */

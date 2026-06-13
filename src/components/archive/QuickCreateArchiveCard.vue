@@ -1,6 +1,9 @@
 <template>
-  <div class="quick-archive-card" :class="[borderStatusClass, { selected: selected }]"
-    @click="$emit('select', archive.id)">
+  <div
+    class="quick-archive-card"
+    :class="[borderStatusClass, { selected: selected }]"
+    @click="$emit('select', archive.id)"
+  >
     <!-- 卡片头部：名称和状态图标 -->
     <div class="card-header">
       <div class="card-name-wrapper">
@@ -9,8 +12,11 @@
           <span v-if="hasMissingParams" class="status-icon warning" :title="$t('quickCreate.card.missingParams')">
             ⚠️
           </span>
-          <span v-if="archive.hasIndividualSettings" class="status-icon modified"
-            :title="$t('quickCreate.card.modified')">
+          <span
+            v-if="archive.hasIndividualSettings"
+            class="status-icon modified"
+            :title="$t('quickCreate.card.modified')"
+          >
             🔧
           </span>
         </div>
@@ -29,9 +35,7 @@
         <span class="config-label">{{ $t("quickCreate.card.level") }}</span>
         <span class="config-value" :class="getSourceClass('level')">
           <template v-if="isInherited('level')">
-            <span class="inherit-indicator">{{
-              $t("quickCreate.card.inherit")
-            }}</span>
+            <span class="inherit-indicator">{{ $t("quickCreate.card.inherit") }}</span>
             <span class="inherit-arrow">→</span>
           </template>
           <span class="value-text">{{ displayLevel }}</span>
@@ -40,14 +44,10 @@
 
       <!-- 存档难度 -->
       <div class="config-row">
-        <span class="config-label">{{
-          $t("quickCreate.card.difficulty")
-        }}</span>
+        <span class="config-label">{{ $t("quickCreate.card.difficulty") }}</span>
         <span class="config-value" :class="getSourceClass('difficulty')">
           <template v-if="isInherited('difficulty')">
-            <span class="inherit-indicator">{{
-              $t("quickCreate.card.inherit")
-            }}</span>
+            <span class="inherit-indicator">{{ $t("quickCreate.card.inherit") }}</span>
             <span class="inherit-arrow">→</span>
           </template>
           <span class="value-text" :class="difficultyClass(archive.finalDifficulty)">
@@ -58,14 +58,10 @@
 
       <!-- 实际难度 -->
       <div class="config-row">
-        <span class="config-label">{{
-          $t("quickCreate.card.actualDifficulty")
-        }}</span>
+        <span class="config-label">{{ $t("quickCreate.card.actualDifficulty") }}</span>
         <span class="config-value" :class="getSourceClass('actualDifficulty')">
           <template v-if="isInherited('actualDifficulty')">
-            <span class="inherit-indicator">{{
-              $t("quickCreate.card.inherit")
-            }}</span>
+            <span class="inherit-indicator">{{ $t("quickCreate.card.inherit") }}</span>
             <span class="inherit-arrow">→</span>
           </template>
           <span class="value-text" :class="difficultyClass(archive.finalActualDifficulty)">
@@ -79,9 +75,7 @@
         <span class="config-label">{{ $t("quickCreate.card.inventory") }}</span>
         <span class="config-value" :class="getSourceClass('inventory')">
           <template v-if="isInherited('inventory')">
-            <span class="inherit-indicator">{{
-              $t("quickCreate.card.inherit")
-            }}</span>
+            <span class="inherit-indicator">{{ $t("quickCreate.card.inherit") }}</span>
             <span class="inherit-arrow">→</span>
           </template>
           <span class="value-text">{{ displayInventory }}</span>
@@ -91,14 +85,17 @@
 
     <!-- 卡片操作按钮 -->
     <div class="card-actions">
-      <button class="action-btn edit" @click.stop="$emit('edit', archive.id)" :title="$t('common.edit')">
+      <button class="action-btn edit" :title="$t('common.edit')" @click.stop="$emit('edit', archive.id)">
         <font-awesome-icon :icon="['fas', 'edit']" />
       </button>
-      <button class="action-btn copy" @click.stop="$emit('copy', archive.id)" :title="$t('quickCreate.card.copy')">
+      <button class="action-btn copy" :title="$t('quickCreate.card.copy')" @click.stop="$emit('copy', archive.id)">
         <font-awesome-icon :icon="['fas', 'copy']" />
       </button>
-      <button class="action-btn remove" @click.stop="$emit('remove', archive.id)"
-        :title="$t('quickCreate.card.remove')">
+      <button
+        class="action-btn remove"
+        :title="$t('quickCreate.card.remove')"
+        @click.stop="$emit('remove', archive.id)"
+      >
         <font-awesome-icon :icon="['fas', 'times']" />
       </button>
     </div>

@@ -22,15 +22,9 @@ const sidebarExpanded = ref(false);
 const showGlobalSearch = ref(false);
 const globalSearchRef = ref(null);
 const normalizeBool = (value) => value === true || value === "true";
-const performanceMonitorEnabled = ref(
-  normalizeBool(storage.getItem("performanceMonitor", false))
-);
-const developerModeEnabled = ref(
-  normalizeBool(storage.getItem("developerMode", false))
-);
-const shouldShowPerformanceMonitor = computed(
-  () => performanceMonitorEnabled.value && developerModeEnabled.value
-);
+const performanceMonitorEnabled = ref(normalizeBool(storage.getItem("performanceMonitor", false)));
+const developerModeEnabled = ref(normalizeBool(storage.getItem("developerMode", false)));
+const shouldShowPerformanceMonitor = computed(() => performanceMonitorEnabled.value && developerModeEnabled.value);
 
 const showAutoFeedbackConsent = ref(false);
 const autoFeedbackConsentShown = ref(false);
@@ -48,17 +42,21 @@ function checkAndShowAutoFeedbackConsent() {
 function handleAutoFeedbackAccept() {
   storage.setItem("autoFeedbackEnabled", true);
   storage.setItem(CONSENT_KEY, true);
-  window.dispatchEvent(new CustomEvent("auto-feedback-toggle", {
-    detail: { enabled: true }
-  }));
+  window.dispatchEvent(
+    new CustomEvent("auto-feedback-toggle", {
+      detail: { enabled: true },
+    }),
+  );
 }
 
 function handleAutoFeedbackDecline() {
   storage.setItem("autoFeedbackEnabled", false);
   storage.setItem(CONSENT_KEY, true);
-  window.dispatchEvent(new CustomEvent("auto-feedback-toggle", {
-    detail: { enabled: false }
-  }));
+  window.dispatchEvent(
+    new CustomEvent("auto-feedback-toggle", {
+      detail: { enabled: false },
+    }),
+  );
 }
 
 const cachedComponents = ["Home", "Settings", "CreateArchive", "PluginMarket", "CoreArchive", "Log"];
@@ -76,7 +74,7 @@ const openHomeSearch = (mode = "open") => {
   window.dispatchEvent(
     new CustomEvent("open-archive-search", {
       detail: { source: "shortcut", mode },
-    })
+    }),
   );
 };
 
@@ -206,11 +204,13 @@ onMounted(() => {
     }
   });
 
-  requestIdleCallback(() => {
-    initThemeSystem();
-    initFloatingButtonProtection();
-    checkAndShowAutoFeedbackConsent();
-  }, { timeout: 1000 });
+  requestIdleCallback(
+    () => {
+      initThemeSystem();
+      checkAndShowAutoFeedbackConsent();
+    },
+    { timeout: 1000 },
+  );
 });
 
 onUnmounted(() => {
@@ -224,7 +224,7 @@ watch(
   () => route.fullPath,
   () => {
     closeGlobalSearch();
-  }
+  },
 );
 
 async function initThemeSystem() {
@@ -235,8 +235,7 @@ async function initThemeSystem() {
   const isSeasonalTheme = (id) => ["new-year", "spring-festival-dark", "spring-festival-light"].includes(id);
 
   const seasonalMode = storage.getItem("seasonalThemeMode") || "auto";
-  const isSeasonalAvailable = (id) =>
-    isSeasonalThemeAvailable(id, { mode: seasonalMode });
+  const isSeasonalAvailable = (id) => isSeasonalThemeAvailable(id, { mode: seasonalMode });
 
   let theme = storage.getItem("theme") || window.__initialTheme || "light";
 
@@ -263,25 +262,19 @@ function updateBodyBackground(theme) {
   if (!body) return;
 
   const bgColors = {
-    'dark': '#1c1c1e',
-    'light': '#f8f9fa',
-    'new-year': '#1a0a0a',
-    'spring-festival-dark': '#1c0a14',
-    'spring-festival-light': '#fefce8',
+    dark: "#1c1c1e",
+    light: "#f8f9fa",
+    "new-year": "#1a0a0a",
+    "spring-festival-dark": "#1c0a14",
+    "spring-festival-light": "#fefce8",
   };
 
-  const bg = bgColors[theme] || bgColors['light'];
+  const bg = bgColors[theme] || bgColors["light"];
   body.style.backgroundColor = bg;
 
   setTimeout(() => {
-    body.style.backgroundColor = '';
+    body.style.backgroundColor = "";
   }, 100);
-}
-
-async function initFloatingButtonProtection() {
-  const { protectFloatingButtonPosition } = await import("./utils/floatingButtonProtection.js");
-
-  setInterval(protectFloatingButtonPosition, 2000);
 }
 </script>
 
@@ -290,15 +283,22 @@ async function initFloatingButtonProtection() {
     <component :is="TitleBar" v-if="TitleBar" />
     <PerformanceMonitor v-if="shouldShowPerformanceMonitor" class="performance-monitor" />
     <GlobalSearchPanel ref="globalSearchRef" :visible="showGlobalSearch" @close="closeGlobalSearch" />
-    <AutoFeedbackConsentModal :show="showAutoFeedbackConsent" :title="$t('settings.autoFeedbackConsent.title')"
-      :message="$t('settings.autoFeedbackConsent.message')" @accept="handleAutoFeedbackAccept"
-      @decline="handleAutoFeedbackDecline" />
+    <AutoFeedbackConsentModal
+      :show="showAutoFeedbackConsent"
+      :title="$t('settings.autoFeedbackConsent.title')"
+      :message="$t('settings.autoFeedbackConsent.message')"
+      @accept="handleAutoFeedbackAccept"
+      @decline="handleAutoFeedbackDecline"
+    />
     <div class="content-wrapper">
       <component :is="Sidebar" v-if="Sidebar" @sidebar-expand="handleSidebarExpand" />
-      <main class="main-content" :class="{
-        'sidebar-collapsed': !sidebarExpanded,
-        'sidebar-expanded': sidebarExpanded,
-      }">
+      <main
+        class="main-content"
+        :class="{
+          'sidebar-collapsed': !sidebarExpanded,
+          'sidebar-expanded': sidebarExpanded,
+        }"
+      >
         <router-view v-slot="{ Component, route }">
           <transition name="page-fade" mode="out-in">
             <keep-alive :include="cachedComponents" :exclude="excludedComponents">
@@ -312,16 +312,17 @@ async function initFloatingButtonProtection() {
 </template>
 
 <style scoped>
-/* 模态窗口动画 - 优化性能 */
+/* Modal window animation - optimized performance */
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: opacity, transform;
   transform: translateZ(0);
-  /* 强制硬件加速 */
+  /* Force hardware acceleration */
   backface-visibility: hidden;
-  /* 防止图层闪烁 */
+  /* Prevent layer flickering */
 }
 
 .modal-enter-from {
@@ -345,7 +346,9 @@ async function initFloatingButtonProtection() {
   border-radius: var(--radius-lg);
   backdrop-filter: blur(6px);
   pointer-events: auto;
-  transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    backdrop-filter 0.3s ease;
 }
 
 .performance-monitor:hover {
@@ -358,7 +361,7 @@ async function initFloatingButtonProtection() {
 }
 </style>
 <style>
-/* 页面切换过渡动画 - 统一的淡入淡出效果 */
+/* Page transition animation - unified fade effect */
 .page-fade-enter-active,
 .page-fade-leave-active {
   transition: opacity 0.2s ease !important;
@@ -369,23 +372,24 @@ async function initFloatingButtonProtection() {
   opacity: 0 !important;
 }
 
-/* 全局基础样式重置 */
+/* Global base style reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* 全局圆角应用 */
+/* Global border radius */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "San Francisco",
-    "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
   background: var(--app-bg, var(--bg));
   color: var(--text);
-  transition: background 0.3s ease, color 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
   overflow: hidden;
   cursor: default;
-  /* 移除transform以防止影响固定定位元素 */
+  /* Remove transform to prevent affecting fixed-position elements */
   /* transform: translateZ(0); */
   /* will-change: transform; */
 }
@@ -395,21 +399,21 @@ body {
   overflow: hidden;
 }
 
-/* 全局按钮圆角 */
+/* Global button border radius */
 button,
 .btn,
 [role="button"] {
   border-radius: var(--radius-button);
 }
 
-/* 全局输入框圆角 */
+/* Global input border radius */
 input,
 textarea,
 select {
   border-radius: var(--radius-input);
 }
 
-/* 全局卡片圆角 */
+/* Global card border radius */
 .card,
 .archive-card,
 .level-card,
@@ -418,41 +422,41 @@ select {
   border-radius: var(--radius-card);
 }
 
-/* 全局标签圆角 */
+/* Global tag border radius */
 .tag,
 .badge,
 .label {
   border-radius: var(--radius-tag);
 }
 
-/* 全局模态框圆角 */
+/* Global modal border radius */
 .modal,
 .dialog,
 .popup {
   border-radius: var(--radius-modal);
 }
 
-/* 全局下拉菜单圆角 */
+/* Global dropdown border radius */
 .dropdown,
 .menu,
 .context-menu {
   border-radius: var(--radius-dropdown);
 }
 
-/* 全局提示框圆角 */
+/* Global tooltip border radius */
 .tooltip,
 .popover {
   border-radius: var(--radius-tooltip);
 }
 
-/* 全局图片容器圆角 */
+/* Global image container border radius */
 .image-container,
 .avatar,
 .icon-container {
   border-radius: var(--radius-image);
 }
 
-/* 隐藏所有滚动条但保留滚动功能 */
+/* Hide all scrollbars while keeping scroll functionality */
 ::-webkit-scrollbar {
   width: 0px;
   height: 0px;
@@ -470,35 +474,35 @@ select {
 * {
   scrollbar-width: none;
   -ms-overflow-style: none;
-  /* IE 和 Edge */
+  /* IE and Edge */
 }
 
-/* 全局浮动按钮样式 - 确保固定定位 */
+/* Global floating button style - ensure fixed positioning */
 .floating-action-container {
   position: fixed !important;
   bottom: 30px !important;
   right: 30px !important;
   z-index: 10000 !important;
 
-  /* 确保相对于视口定位 */
+  /* Ensure viewport-relative positioning */
   top: auto !important;
   left: auto !important;
 
-  /* 防止任何变换影响 */
+  /* Prevent any transform interference */
   transform: none !important;
   transform-origin: initial !important;
   backface-visibility: visible !important;
   perspective: none !important;
 
-  /* 防止动画影响 - 但保留transform过渡 */
+  /* Prevent animation interference - keep transform transition */
   animation: none !important;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   will-change: auto !important;
 
-  /* 应用圆角 */
+  /* Apply border radius */
   border-radius: var(--radius-pill);
 
-  /* 确保初始状态可见 */
+  /* Ensure initial visibility */
   visibility: visible !important;
   opacity: 1 !important;
 }

@@ -113,12 +113,7 @@ import {
   faUsers,
   faWindowMaximize,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  faBilibili,
-  faGithub,
-  faTiktok,
-  faXTwitter,
-} from "@fortawesome/free-brands-svg-icons";
+import { faBilibili, faGithub, faTiktok, faXTwitter } from "@fortawesome/free-brands-svg-icons";
 
 export function registerIcons() {
   library.add(
@@ -232,7 +227,7 @@ export function registerIcons() {
     faTiktok,
     faXTwitter,
     faStar,
-    faColumns
+    faColumns,
   );
 }
 

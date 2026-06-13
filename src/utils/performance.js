@@ -9,10 +9,7 @@ export const detectDevicePerformance = () => {
   const deviceMemory = navigator.deviceMemory || 4;
 
   // 检测是否为移动设备
-  const isMobile =
-    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
+  const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   // 检测是否为低端设备
   const isLowEndDevice = cpuCores <= 4 || deviceMemory <= 2 || isMobile;
@@ -21,9 +18,7 @@ export const detectDevicePerformance = () => {
   const isVeryLowEndDevice = cpuCores <= 2 || deviceMemory <= 1;
 
   // 检测用户是否偏好减少动画
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // 计算性能分数 (0-100)
   let performanceScore = 50; // 基础分数
@@ -54,8 +49,7 @@ export const detectDevicePerformance = () => {
     isVeryLowEndDevice,
     prefersReducedMotion,
     performanceScore,
-    performanceLevel:
-      performanceScore > 70 ? "high" : performanceScore > 40 ? "medium" : "low",
+    performanceLevel: performanceScore > 70 ? "high" : performanceScore > 40 ? "medium" : "low",
   };
 };
 
@@ -63,20 +57,14 @@ export const detectDevicePerformance = () => {
 export const getAnimationParams = (
   animationType = "default",
   performanceMode = "auto",
-  animationQuality = "medium"
+  animationQuality = "medium",
 ) => {
   const devicePerf = detectDevicePerformance();
   const isLowPerfMode = performanceMode === "low";
 
   // 根据动画质量调整基础参数
   const qualityMultiplier =
-    animationQuality === "high"
-      ? 1.2
-      : animationQuality === "low"
-      ? 0.7
-      : animationQuality === "disabled"
-      ? 0
-      : 1;
+    animationQuality === "high" ? 1.2 : animationQuality === "low" ? 0.7 : animationQuality === "disabled" ? 0 : 1;
 
   // 基础动画参数
   const baseParams = {
@@ -101,32 +89,22 @@ export const getAnimationParams = (
     case "cardEnter":
       return {
         ...baseParams,
-        duration: isLowPerfMode
-          ? 0.15
-          : (devicePerf.isVeryLowEndDevice ? 0.2 : 0.3) * qualityMultiplier,
+        duration: isLowPerfMode ? 0.15 : (devicePerf.isVeryLowEndDevice ? 0.2 : 0.3) * qualityMultiplier,
         delay: 0,
-        stagger: isLowPerfMode
-          ? 0
-          : devicePerf.performanceScore < 50
-          ? 0.01
-          : 0.03,
+        stagger: isLowPerfMode ? 0 : devicePerf.performanceScore < 50 ? 0.01 : 0.03,
       };
 
     case "cardLeave":
       return {
         ...baseParams,
-        duration: isLowPerfMode
-          ? 0.1
-          : (devicePerf.isVeryLowEndDevice ? 0.15 : 0.25) * qualityMultiplier,
+        duration: isLowPerfMode ? 0.1 : (devicePerf.isVeryLowEndDevice ? 0.15 : 0.25) * qualityMultiplier,
         ease: "ease-in",
       };
 
     case "search":
       return {
         ...baseParams,
-        duration: isLowPerfMode
-          ? 0.15
-          : (devicePerf.isVeryLowEndDevice ? 0.2 : 0.3) * qualityMultiplier,
+        duration: isLowPerfMode ? 0.15 : (devicePerf.isVeryLowEndDevice ? 0.2 : 0.3) * qualityMultiplier,
       };
 
     case "sidebar":
@@ -189,10 +167,7 @@ export class PerformanceMonitor {
   }
 
   startLongTaskMonitoring() {
-    if (
-      !("PerformanceObserver" in window) ||
-      !("PerformanceLongTaskTiming" in window)
-    ) {
+    if (!("PerformanceObserver" in window) || !("PerformanceLongTaskTiming" in window)) {
       console.warn("Performance Observer or Long Task Timing not supported");
       return;
     }
@@ -234,9 +209,7 @@ export class PerformanceMonitor {
       const now = performance.now();
 
       if (now - this.lastTime >= 1000) {
-        this.currentFPS = Math.round(
-          (this.frameCount * 1000) / (now - this.lastTime)
-        );
+        this.currentFPS = Math.round((this.frameCount * 1000) / (now - this.lastTime));
         this.callbacks.onFPSUpdate(this.currentFPS);
 
         if (this.currentFPS < this.fpsThreshold) {
@@ -250,11 +223,7 @@ export class PerformanceMonitor {
             this.lowFpsCount = Math.max(0, this.lowFpsCount - 1);
           }
 
-          if (
-            this.currentFPS > 45 &&
-            this.isLowPerfMode &&
-            this.lowFpsCount === 0
-          ) {
+          if (this.currentFPS > 45 && this.isLowPerfMode && this.lowFpsCount === 0) {
             this.isLowPerfMode = false;
             this.callbacks.onPerformanceRecovery();
           }

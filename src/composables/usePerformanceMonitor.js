@@ -1,15 +1,12 @@
 import { ref, onUnmounted, watch } from "vue";
-import {
-  detectDevicePerformance,
-  createPerformanceMonitor,
-} from "../utils/performance.js";
+import { detectDevicePerformance, createPerformanceMonitor } from "../utils/performance.js";
 
 let monitorInitialized = false;
 let globalPerformanceMonitor = null;
 let globalCleanup = null;
 
 /**
- * 性能监控 composable
+ * Performance monitor composable
  */
 export function usePerformanceMonitor() {
   const showPerformanceSettings = ref(false);
@@ -29,16 +26,12 @@ export function usePerformanceMonitor() {
 
   const startDisplayWatcher = () => {
     if (cleanupDisplayWatcher) return;
-    const stop = watch(
-      [performanceMode, animationQuality],
-      () => applyDisplayEffects(),
-      { immediate: true }
-    );
+    const stop = watch([performanceMode, animationQuality], () => applyDisplayEffects(), { immediate: true });
     cleanupDisplayWatcher = stop;
   };
 
   /**
-   * 初始化性能监控（单例模式）
+   * Initialize performance monitor (singleton pattern)
    */
   const initPerformanceMonitor = () => {
     if (monitorInitialized) {
@@ -104,14 +97,14 @@ export function usePerformanceMonitor() {
   };
 
   /**
-   * 重置性能模式
+   * Reset performance mode
    */
   const resetPerformanceMode = () => {
     performanceMode.value = "normal";
   };
 
   /**
-   * 清理资源
+   * Clean up resources
    */
   const cleanup = () => {
     if (globalPerformanceMonitor) {

@@ -1,9 +1,14 @@
 <template>
-  <div class="custom-slider" ref="sliderRef" :class="{ dragging: isDragging }" :style="sliderStyle">
+  <div ref="sliderRef" class="custom-slider" :class="{ dragging: isDragging }" :style="sliderStyle">
     <div class="slider-track" @click="handleTrackClick">
       <div class="slider-fill" :style="{ width: `${percentage}%` }"></div>
-      <div class="slider-thumb" :style="{ left: `calc(${percentage}% - 12px)` }" @mousedown="startDrag"
-        @touchstart="startDragTouch" ref="thumbRef">
+      <div
+        ref="thumbRef"
+        class="slider-thumb"
+        :style="{ left: `calc(${percentage}% - 12px)` }"
+        @mousedown="startDrag"
+        @touchstart="startDragTouch"
+      >
         <div class="thumb-indicator">
           <span class="thumb-value">{{ displayValue }}%</span>
         </div>
@@ -90,7 +95,7 @@ watch(
   () => props.modelValue,
   (newValue) => {
     currentValue.value = newValue;
-  }
+  },
 );
 
 // 计算百分比位置
@@ -121,13 +126,8 @@ function handleTrackClick(event) {
   const rect = sliderRef.value.getBoundingClientRect();
   const clickX = event.clientX - rect.left;
   const sliderWidth = rect.width;
-  const newPercentage = Math.max(
-    0,
-    Math.min(100, (clickX / sliderWidth) * 100)
-  );
-  let newValue = Math.round(
-    (newPercentage / 100) * (props.max - props.min) + props.min
-  );
+  const newPercentage = Math.max(0, Math.min(100, (clickX / sliderWidth) * 100));
+  let newValue = Math.round((newPercentage / 100) * (props.max - props.min) + props.min);
 
   // 确保点击计算的数值也在正确范围内
   newValue = Math.max(props.min, Math.min(props.max, newValue));
@@ -162,13 +162,8 @@ function updateValueDuringDrag(pixelX) {
   const sliderWidth = rect.width;
   const sliderLeft = rect.left;
 
-  const newPercentage = Math.max(
-    0,
-    Math.min(100, ((pixelX - sliderLeft) / sliderWidth) * 100)
-  );
-  let newValue = Math.round(
-    (newPercentage / 100) * (props.max - props.min) + props.min
-  );
+  const newPercentage = Math.max(0, Math.min(100, ((pixelX - sliderLeft) / sliderWidth) * 100));
+  let newValue = Math.round((newPercentage / 100) * (props.max - props.min) + props.min);
 
   // 确保拖拽过程中的数值也在正确范围内
   newValue = Math.max(props.min, Math.min(props.max, newValue));

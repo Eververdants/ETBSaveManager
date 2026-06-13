@@ -1,12 +1,8 @@
 <template>
-  <div 
-    class="plugin-card" 
-    :class="{ 'is-installed': isInstalled }"
-    @click="$emit('click', plugin)"
-  >
+  <div class="plugin-card" :class="{ 'is-installed': isInstalled }" @click="$emit('click', plugin)">
     <!-- 顶部装饰条 -->
     <div class="card-accent" :class="typeClass"></div>
-    
+
     <!-- 卡片头部 -->
     <div class="card-header">
       <div class="plugin-icon" :class="typeClass">
@@ -29,7 +25,7 @@
     <!-- 卡片内容 -->
     <div class="card-body">
       <p class="plugin-desc">
-        {{ plugin.description || plugin.localeName || $t('plugin.noDescription') }}
+        {{ plugin.description || plugin.localeName || $t("plugin.noDescription") }}
       </p>
     </div>
 
@@ -47,42 +43,42 @@
           </span>
         </template>
       </div>
-      
+
       <div class="card-actions" @click.stop>
         <template v-if="showStatus">
-          <button 
+          <button
             class="action-btn toggle-btn"
             :class="{ enabled: plugin.status === 'active' }"
-            @click="$emit('toggle', plugin)"
             :title="plugin.status === 'active' ? $t('plugin.disablePlugin') : $t('plugin.enablePlugin')"
+            @click="$emit('toggle', plugin)"
           >
             <font-awesome-icon :icon="['fas', plugin.status === 'active' ? 'toggle-on' : 'toggle-off']" />
           </button>
-          <button 
+          <button
             class="action-btn uninstall-btn"
-            @click="$emit('uninstall', plugin)"
             :title="$t('plugin.uninstallPlugin')"
+            @click="$emit('uninstall', plugin)"
           >
             <font-awesome-icon :icon="['fas', 'trash']" />
           </button>
         </template>
         <template v-else>
-          <button 
+          <button
             v-if="isInstalled"
             class="action-btn uninstall-btn"
-            @click="$emit('uninstall', plugin)"
             :title="$t('plugin.uninstallPlugin')"
+            @click="$emit('uninstall', plugin)"
           >
             <font-awesome-icon :icon="['fas', 'trash']" />
           </button>
-          <button 
+          <button
             v-else
             class="action-btn install-btn"
-            @click="$emit('install', plugin)"
             :title="$t('plugin.installPlugin')"
+            @click="$emit('install', plugin)"
           >
             <font-awesome-icon :icon="['fas', 'download']" />
-            {{ $t('plugin.install') }}
+            {{ $t("plugin.install") }}
           </button>
         </template>
       </div>
@@ -91,27 +87,31 @@
 </template>
 
 <script setup>
-import { computed, toRef } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { usePluginCard } from '@/composables/usePluginCard';
+import { computed, toRef } from "vue";
+import { useI18n } from "vue-i18n";
+import { usePluginCard } from "@/composables/usePluginCard";
 
 const { t } = useI18n();
 
 const props = defineProps({
   plugin: {
     type: Object,
-    required: true
+    required: true,
   },
   showStatus: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-defineEmits(['click', 'toggle', 'install', 'uninstall']);
+defineEmits(["click", "toggle", "install", "uninstall"]);
 
-const pluginRef = toRef(props, 'plugin');
-const { typeClass, iconName, typeLabel, isInstalled, statusIcon, statusText } = usePluginCard(pluginRef, () => props.showStatus, t);
+const pluginRef = toRef(props, "plugin");
+const { typeClass, iconName, typeLabel, isInstalled, statusIcon, statusText } = usePluginCard(
+  pluginRef,
+  () => props.showStatus,
+  t,
+);
 </script>
 
 <style scoped>

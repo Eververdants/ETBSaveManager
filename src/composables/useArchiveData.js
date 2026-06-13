@@ -1,11 +1,13 @@
 import { ref, computed } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { useI18n } from "vue-i18n";
 import { useToast } from "./useToast";
 
 /**
- * 存档数据管理 composable
+ * Archive data management composable
  */
 export function useArchiveData() {
+  const { t } = useI18n({ useScope: "global" });
   const toast = useToast();
   const archives = ref([]);
   const displayArchives = ref([]);
@@ -14,6 +16,7 @@ export function useArchiveData() {
   const loading = ref(false);
   const dataLoadComplete = ref(false);
 
+  // Map Chinese difficulty names from game save files to normalized keys
   const difficultyMap = {
     简单难度: "easy",
     普通难度: "normal",
@@ -21,24 +24,22 @@ export function useArchiveData() {
     噩梦难度: "nightmare",
   };
 
+  // Map Chinese mode names from game save files to normalized keys
+  const modeMap = {
+    单人模式: "singleplayer",
+    多人模式: "multiplayer",
+  };
+
   const mapArchive = (item) => {
-    const gameMode =
-      item.mode === "单人模式"
-        ? "singleplayer"
-        : item.mode === "多人模式"
-        ? "multiplayer"
-        : item.mode.toLowerCase();
+    const gameMode = modeMap[item.mode] || item.mode?.toLowerCase() || "singleplayer";
 
     return {
       id: item.id ?? 0,
-      name: item.name ?? "未命名存档",
+      name: item.name ?? t("archiveCard.untitled", "Untitled Archive"),
       currentLevel: item.current_level ?? "Level0",
       gameMode,
-      archiveDifficulty:
-        difficultyMap[item.difficulty] || item.difficulty?.toLowerCase() || "normal",
-      actualDifficulty:
-        difficultyMap[item.actual_difficulty] ||
-        item.actual_difficulty?.toLowerCase() || "normal",
+      archiveDifficulty: difficultyMap[item.difficulty] || item.difficulty?.toLowerCase() || "normal",
+      actualDifficulty: difficultyMap[item.actual_difficulty] || item.actual_difficulty?.toLowerCase() || "normal",
       isVisible: item.is_visible === true,
       path: item.path ?? "",
       date: item.date ?? new Date().toISOString(),
@@ -59,7 +60,7 @@ export function useArchiveData() {
         visibleSaves.value = new Set();
       }
     } catch (error) {
-      console.error("获取可见存档列表失败:", error);
+      console.error("Failed to load visible saves:", error);
       visibleSaves.value = new Set();
     }
   };
@@ -73,12 +74,14 @@ export function useArchiveData() {
       }
       return [];
     } catch (error) {
-      console.error("加载存档失败:", error);
-      const errorMessage = error?.message || error?.msg || JSON.stringify(error) || "未知错误";
+      console.error("Failed to load archives:", error);
+      const errorMessage = error?.message || error?.msg || JSON.stringify(error) || t("common.unknown");
       if (errorMessage.includes("Save directory not found")) {
-        toast.showError("请先打开游戏，初始化存档目录后再使用此功能");
+        toast.showError(
+          t("archiveCard.saveDirNotFound", "Please open the game first to initialize the save directory"),
+        );
       } else {
-        toast.showError("加载存档失败: " + errorMessage);
+        toast.showError(t("archiveCard.loadFailed", "Failed to load archives") + ": " + errorMessage);
       }
       return [];
     }
@@ -93,20 +96,21 @@ export function useArchiveData() {
     }
 
     try {
-      const [_, realArchives] = await Promise.all([
+      await Promise.all([
         loadVisibleSaves(),
-        loadRealArchives()
+        loadRealArchives().then((realArchives) => {
+          archives.value = realArchives;
+          displayArchives.value = realArchives;
+        }),
       ]);
 
-      archives.value = realArchives;
-      displayArchives.value = realArchives;
       dataLoadComplete.value = true;
 
-      if (realArchives.length === 0) {
-        console.warn("未找到可加载的存档");
+      if (archives.value.length === 0) {
+        console.warn("No archives found");
       }
     } catch (error) {
-      console.error("初始化存档失败:", error);
+      console.error("Failed to initialize archives:", error);
       if (!silent) {
         archives.value = [];
         displayArchives.value = [];
@@ -125,13 +129,14 @@ export function useArchiveData() {
     loading.value = true;
 
     try {
-      const [_, realArchives] = await Promise.all([
+      await Promise.all([
         loadVisibleSaves(),
-        loadRealArchives()
+        loadRealArchives().then((realArchives) => {
+          archives.value = realArchives;
+        }),
       ]);
-      archives.value = realArchives;
     } catch (error) {
-      console.error("刷新存档失败:", error);
+      console.error("Failed to refresh archives:", error);
     } finally {
       setTimeout(() => {
         loading.value = false;
@@ -141,13 +146,14 @@ export function useArchiveData() {
 
   const refreshArchivesSilent = async () => {
     try {
-      const [_, realArchives] = await Promise.all([
+      await Promise.all([
         loadVisibleSaves(),
-        loadRealArchives()
+        loadRealArchives().then((realArchives) => {
+          archives.value = realArchives;
+        }),
       ]);
-      archives.value = realArchives;
     } catch (error) {
-      console.error("刷新存档失败:", error);
+      console.error("Failed to refresh archives:", error);
     }
   };
 
@@ -164,9 +170,7 @@ export function useArchiveData() {
       archives.value[archiveIndex].isVisible = isVisible;
     }
 
-    const displayIndex = displayArchives.value.findIndex(
-      (a) => a.id === archiveId
-    );
+    const displayIndex = displayArchives.value.findIndex((a) => a.id === archiveId);
     if (displayIndex > -1) {
       displayArchives.value[displayIndex].isVisible = isVisible;
     }

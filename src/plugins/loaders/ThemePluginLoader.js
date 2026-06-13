@@ -6,12 +6,7 @@
 import storage from "../../services/storageService";
 
 // 主题插件必需的 CSS 变量
-const REQUIRED_VARIABLES = [
-  "--bg-primary",
-  "--bg-secondary",
-  "--text-primary",
-  "--accent-color",
-];
+const REQUIRED_VARIABLES = ["--bg-primary", "--bg-secondary", "--text-primary", "--accent-color"];
 
 class ThemePluginLoader {
   constructor() {
@@ -35,13 +30,9 @@ class ThemePluginLoader {
     }
 
     // 检查必需的 CSS 变量
-    const missingVars = REQUIRED_VARIABLES.filter(
-      (v) => !data.variables || !data.variables[v]
-    );
+    const missingVars = REQUIRED_VARIABLES.filter((v) => !data.variables || !data.variables[v]);
     if (missingVars.length > 0) {
-      console.warn(
-        `⚠️ [ThemeLoader] 主题插件缺少变量: ${missingVars.join(", ")}`
-      );
+      console.warn(`⚠️ [ThemeLoader] 主题插件缺少变量: ${missingVars.join(", ")}`);
     }
 
     return true;
@@ -180,9 +171,7 @@ ${customCSS}
    * @param {string} themeId - 主题ID
    */
   isThemeLoaded(themeId) {
-    return Array.from(this.loadedThemes.values()).some(
-      (t) => t.themeId === themeId
-    );
+    return Array.from(this.loadedThemes.values()).some((t) => t.themeId === themeId);
   }
 
   /**

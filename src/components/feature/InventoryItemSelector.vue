@@ -8,8 +8,12 @@
               <h3>{{ $t("inventory.selectItem") }}</h3>
               <button class="close-btn" @click="close">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5"
-                    stroke-linecap="round" />
+                  <path
+                    d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
                 </svg>
               </button>
             </div>
@@ -23,13 +27,27 @@
                       <path d="M11 11L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                     </svg>
                   </span>
-                  <input ref="searchInputRef" v-model="searchQuery" type="text" class="search-input"
-                    :placeholder="$t('inventory.searchPlaceholder')" />
-                  <button v-if="searchQuery" class="clear-search" type="button" @click="clearSearch"
-                    :aria-label="$t('inventory.clearSearch')">
+                  <input
+                    ref="searchInputRef"
+                    v-model="searchQuery"
+                    type="text"
+                    class="search-input"
+                    :placeholder="$t('inventory.searchPlaceholder')"
+                  />
+                  <button
+                    v-if="searchQuery"
+                    class="clear-search"
+                    type="button"
+                    :aria-label="$t('inventory.clearSearch')"
+                    @click="clearSearch"
+                  >
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                      <path d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5"
-                        stroke-linecap="round" />
+                      <path
+                        d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -42,7 +60,7 @@
                   }}</span>
                   <span v-if="selectedItemLabel" class="selected-badge">{{
                     $t("inventory.currentSelection", { name: selectedItemLabel })
-                    }}</span>
+                  }}</span>
                   <button class="remove-btn" type="button" @click="selectItem(null)">
                     {{ $t("inventory.removeItem") }}
                   </button>
@@ -50,11 +68,19 @@
               </div>
 
               <TransitionGroup v-if="filteredItems.length" name="item-appear" appear tag="div" class="items-grid">
-                <div v-for="item in filteredItems" :key="item.id" class="item-card"
-                  :class="{ selected: selectedItem === item.id }" @click="selectItem(item.id)">
+                <div
+                  v-for="item in filteredItems"
+                  :key="item.id"
+                  class="item-card"
+                  :class="{ selected: selectedItem === item.id }"
+                  @click="selectItem(item.id)"
+                >
                   <div class="item-image-wrapper">
-                    <LazyImage :src="`/icons/ETB_UI/${item.image}`" :alt="getItemName(item.id)"
-                      image-class="item-image" />
+                    <LazyImage
+                      :src="`/icons/ETB_UI/${item.image}`"
+                      :alt="getItemName(item.id)"
+                      image-class="item-image"
+                    />
                   </div>
                   <span class="item-name">{{ getItemName(item.id) }}</span>
                 </div>
@@ -91,7 +117,8 @@ const getItemName = (itemId) => {
 };
 
 const visibleRef = toRef(props, "visible");
-const { searchQuery, searchInputRef, availableItems, filteredItems, clearSearch, focusSearch, resetSearch } = useInventoryItemSelector(getItemName);
+const { searchQuery, searchInputRef, availableItems, filteredItems, clearSearch, focusSearch, resetSearch } =
+  useInventoryItemSelector(getItemName);
 
 const selectedItemLabel = computed(() => {
   if (!props.selectedItem) return "";
@@ -278,7 +305,9 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
   background: var(--glass-bg);
   color: var(--text-primary);
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .search-input::placeholder {
@@ -336,7 +365,9 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
   padding: 6px 12px;
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
   font-size: 12px;
 }
 

@@ -103,10 +103,8 @@ export const CSS_VARIABLE_MAP = {
 
 // Regular expressions for color validation
 const HEX_COLOR_REGEX = /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/;
-const RGB_COLOR_REGEX =
-  /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/;
-const RGBA_COLOR_REGEX =
-  /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0|1|0?\.\d+)\s*\)$/;
+const RGB_COLOR_REGEX = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/;
+const RGBA_COLOR_REGEX = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0|1|0?\.\d+)\s*\)$/;
 
 /**
  * ThemeValidator class providing validation methods for theme colors and structures
@@ -152,11 +150,7 @@ export class ThemeValidator {
       const match = trimmedColor.match(RGB_COLOR_REGEX);
       if (match) {
         const [, r, g, b] = match;
-        if (
-          this._isValidRGBValue(r) &&
-          this._isValidRGBValue(g) &&
-          this._isValidRGBValue(b)
-        ) {
+        if (this._isValidRGBValue(r) && this._isValidRGBValue(g) && this._isValidRGBValue(b)) {
           return { valid: true, error: null, value: trimmedColor };
         }
         return {
@@ -175,11 +169,7 @@ export class ThemeValidator {
       const match = trimmedColor.match(RGBA_COLOR_REGEX);
       if (match) {
         const [, r, g, b, a] = match;
-        if (
-          this._isValidRGBValue(r) &&
-          this._isValidRGBValue(g) &&
-          this._isValidRGBValue(b)
-        ) {
+        if (this._isValidRGBValue(r) && this._isValidRGBValue(g) && this._isValidRGBValue(b)) {
           const alpha = parseFloat(a);
           if (alpha >= 0 && alpha <= 1) {
             return { valid: true, error: null, value: trimmedColor };
@@ -239,8 +229,7 @@ export class ThemeValidator {
     if (!/^[a-zA-Z0-9_-]{1,64}$/.test(theme.id)) {
       return {
         valid: false,
-        error:
-          "Theme ID must be 1-64 characters, containing only letters, numbers, hyphens, and underscores",
+        error: "Theme ID must be 1-64 characters, containing only letters, numbers, hyphens, and underscores",
       };
     }
 
@@ -297,19 +286,13 @@ export class ThemeValidator {
 
       for (const [key, value] of Object.entries(obj)) {
         // Check for prototype pollution attempts
-        if (
-          key === "__proto__" ||
-          key === "constructor" ||
-          key === "prototype"
-        ) {
+        if (key === "__proto__" || key === "constructor" || key === "prototype") {
           violations.push(`Dangerous key '${key}' found at ${path || "root"}`);
         }
 
         // Check for function values (potential code injection)
         if (typeof value === "function") {
-          violations.push(
-            `Function value found at ${path ? `${path}.${key}` : key}`
-          );
+          violations.push(`Function value found at ${path ? `${path}.${key}` : key}`);
         }
 
         // Recursively check nested objects
@@ -386,9 +369,7 @@ export class ThemeValidator {
     if (invalidColors.length > 0) {
       return {
         valid: false,
-        error: `Invalid colors found: ${invalidColors
-          .map((c) => `${c.key}`)
-          .join(", ")}`,
+        error: `Invalid colors found: ${invalidColors.map((c) => `${c.key}`).join(", ")}`,
         invalidColors,
       };
     }

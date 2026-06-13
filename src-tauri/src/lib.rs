@@ -12,6 +12,7 @@ mod system_commands;
 mod new_save;
 mod player_data;
 mod save_editor;
+mod save_shared;
 mod save_utils;
 mod steam_api;
 mod system_info;
@@ -21,17 +22,17 @@ use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // 获取GPU加速设置
+    // Get GPU acceleration settings
     let browser_args = gpu_settings::get_browser_args();
     let args_string = browser_args.join(" ");
-    println!("应用GPU加速设置: {}", args_string);
+    println!("Applying GPU acceleration settings: {}", args_string);
 
-    // 初始化反馈系统状态
+    // Initialize feedback system state
     let feedback_state = feedback_commands::FeedbackState::new();
     let backend_log_state = feedback_commands::BackendLogState::new();
     let steam_cache_state = steam_api::SteamCacheState::new();
 
-    // 构建Tauri应用
+    // Build Tauri application
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -42,14 +43,14 @@ pub fn run() {
         .manage(backend_log_state)
         .manage(steam_cache_state)
         .setup(|app| {
-            // 初始化反馈队列数据库
+            // Initialize feedback queue database
             let app_data_dir = app.path().app_data_dir();
             println!("App data dir result: {:?}", app_data_dir);
 
             match app_data_dir {
                 Ok(dir) => {
                     println!("Initializing feedback queue in: {:?}", dir);
-                    // 确保目录存在
+                    // Ensure directory exists
                     if !dir.exists() {
                         if let Err(e) = std::fs::create_dir_all(&dir) {
                             println!("Warning: Failed to create app data dir: {}", e);

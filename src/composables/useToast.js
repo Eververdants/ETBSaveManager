@@ -1,46 +1,46 @@
 import { notify } from "../services/notificationService";
 
 /**
- * Toast 通知 composable
- * 现在使用统一的八向通知服务
+ * Toast notification composable
+ * Now using unified eight-direction notification service
  */
 export function useToast() {
   /**
-   * 显示成功提示
+   * Show success notification
    */
   const showSuccess = (message, icon = "✓") => {
-    notify.success(message, { position: 'top-right' });
+    notify.success(message, { position: "top-right" });
   };
 
   /**
-   * 显示错误提示
+   * Show error notification
    */
   const showError = (message, icon = "✗") => {
-    notify.error(message, { position: 'top-right' });
+    notify.error(message, { position: "top-right" });
   };
 
   /**
-   * 显示文件夹提示
+   * Show folder notification
    */
   const showFolder = (message, icon = "📁") => {
-    notify.info(message, { 
-      position: 'top-right',
-      icon: ['fas', 'folder']
+    notify.info(message, {
+      position: "top-right",
+      icon: ["fas", "folder"],
     });
   };
 
   /**
-   * 显示信息提示
+   * Show info notification
    */
   const showInfo = (message, icon = "ℹ️") => {
-    notify.info(message, { position: 'top-right' });
+    notify.info(message, { position: "top-right" });
   };
 
   /**
-   * 显示警告提示
+   * Show warning notification
    */
   const showWarning = (message, icon = "⚠️") => {
-    notify.warning(message, { position: 'top-right' });
+    notify.warning(message, { position: "top-right" });
   };
 
   return {

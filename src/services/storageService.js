@@ -3,39 +3,55 @@
  * Supports synchronous reading (from cache) and async persistence
  */
 
-// 内存缓存 - 立即可用
+// In-memory cache - immediately available
 let cache = {};
 let initialized = false;
 let saveTimeout = null;
 let initPromise = null;
 
-// 存储配置
+// Storage configuration
 const STORAGE_DIR = "data";
 const STORAGE_FILE = "settings.json";
 
 // Keys to migrate
 const KEYS_TO_MIGRATE = [
-  "theme", "language", "updateSource", "performanceMonitor",
-  "developerMode", "logMenuEnabled", "testArchiveEnabled",
-  "gpuAccelerationDisabled", "newYearThemeMode", "themeBeforeNewYear",
-  "quick_create_tutorial_completed", "steamApiKey", "locale",
-  "fabScrollHintShown", "hubUnlocked", "lastUpdateCheck",
-  "user-custom-theme", "pluginSystemBetaUser", "pluginSystemBetaNotified",
-  "seasonalThemeMode"
+  "theme",
+  "language",
+  "updateSource",
+  "performanceMonitor",
+  "developerMode",
+  "logMenuEnabled",
+  "testArchiveEnabled",
+  "gpuAccelerationDisabled",
+  "newYearThemeMode",
+  "themeBeforeNewYear",
+  "quick_create_tutorial_completed",
+  "steamApiKey",
+  "locale",
+  "fabScrollHintShown",
+  "hubUnlocked",
+  "lastUpdateCheck",
+  "user-custom-theme",
+  "pluginSystemBetaUser",
+  "pluginSystemBetaNotified",
+  "seasonalThemeMode",
 ];
 
-// 需要保留在 localStorage 的键（用于快速启动）
+// Keys to keep in localStorage (for fast startup)
 const KEYS_TO_KEEP_IN_LOCALSTORAGE = ["theme", "language", "locale"];
+
+// Critical keys that need immediate file persistence
+const CRITICAL_KEYS = ["theme", "language", "locale"];
 
 /**
  * Get storage item (sync, read from cache)
  */
 export function getItem(key, defaultValue = null) {
-  // 优先从缓存读取
+  // Prefer reading from cache
   if (cache[key] !== undefined) {
     return cache[key];
   }
-  // 未初始化时尝试从 localStorage 读取（兼容）
+  // Before initialization, try reading from localStorage (for compatibility)
   if (!initialized) {
     try {
       const value = localStorage.getItem(key);
@@ -46,26 +62,35 @@ export function getItem(key, defaultValue = null) {
           return value;
         }
       }
-    } catch {}
+    } catch (e) {
+      console.warn("Failed to get storage item:", key, e);
+    }
   }
   return defaultValue;
 }
 
 /**
- * 设置存储项
+ * Set storage item
  */
 export function setItem(key, value) {
   cache[key] = value;
-  
-  // 关键配置同步写入 localStorage（用于快速启动）
+
+  // Write critical config to localStorage synchronously (for fast startup)
   if (KEYS_TO_KEEP_IN_LOCALSTORAGE.includes(key)) {
     try {
-      localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
-    } catch {}
+      localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
+    } catch (e) {
+      console.warn("Failed to set localStorage item:", key, e);
+    }
   }
-  
+
   if (initialized) {
-    debouncedSave();
+    // Critical keys: write to file immediately to prevent data loss on crash
+    if (CRITICAL_KEYS.includes(key)) {
+      Promise.resolve().then(() => saveToFile());
+    } else {
+      debouncedSave();
+    }
   }
 }
 
@@ -80,7 +105,7 @@ export function removeItem(key) {
 }
 
 /**
- * 清空所有存储
+ * Clear all storage
  */
 export function clear() {
   cache = { _migrated: true };
@@ -93,7 +118,7 @@ export function clear() {
  * Get all keys
  */
 export function keys() {
-  return Object.keys(cache).filter(k => !k.startsWith("_"));
+  return Object.keys(cache).filter((k) => !k.startsWith("_"));
 }
 
 /**
@@ -104,7 +129,7 @@ export function isInitialized() {
 }
 
 /**
- * 防抖保存
+ * Debounced save
  */
 function debouncedSave() {
   if (saveTimeout) clearTimeout(saveTimeout);
@@ -112,7 +137,7 @@ function debouncedSave() {
 }
 
 /**
- * 保存到文件
+ * Save to file
  */
 async function saveToFile() {
   try {
@@ -137,6 +162,37 @@ export async function flush() {
 }
 
 /**
+ * Set up page lifecycle flush hooks (visibilitychange + beforeunload)
+ * Called internally after init, or can be called manually.
+ */
+function setupLifecycleFlush() {
+  // Flush when tab becomes hidden (mobile/smartphone tab switch, desktop minimize)
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      // Flush without blocking the visibilitychange event
+      flush();
+    }
+  });
+
+  // Flush on page unload/refresh/close
+  window.addEventListener("beforeunload", () => {
+    // Synchronous flush since beforeunload needs to complete before page unloads
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+      saveTimeout = null;
+    }
+    // Use sendBeacon for reliability in beforeunload context
+    // but since we're writing to local file system, just do sync localStorage
+    const pendingJson = JSON.stringify(cache);
+    try {
+      localStorage.setItem("__storage_flush_backup", pendingJson);
+    } catch (e) {
+      console.warn("[Storage] beforeunload flush failed:", e);
+    }
+  });
+}
+
+/**
  * Initialize storage service
  */
 export async function initStorage() {
@@ -146,14 +202,14 @@ export async function initStorage() {
   initPromise = (async () => {
     try {
       const { BaseDirectory, exists, mkdir, readTextFile } = await import("@tauri-apps/plugin-fs");
-      
-      // 确保目录存在
+
+      // Ensure directory exists
       const dirExists = await exists(STORAGE_DIR, { baseDir: BaseDirectory.AppData });
       if (!dirExists) {
         await mkdir(STORAGE_DIR, { baseDir: BaseDirectory.AppData, recursive: true });
       }
 
-      // 读取现有数据
+      // Read existing data
       const filePath = `${STORAGE_DIR}/${STORAGE_FILE}`;
       const fileExists = await exists(filePath, { baseDir: BaseDirectory.AppData });
 
@@ -169,13 +225,18 @@ export async function initStorage() {
 
       initialized = true;
 
-      // 迁移 localStorage（后台执行）
+      // Set up lifecycle flush hooks after init
+      setupLifecycleFlush();
+
+      // Migrate from localStorage (runs in background)
       if (!cache._migrated) {
         migrateFromLocalStorage();
       }
     } catch (error) {
       console.warn("[Storage] 初始化失败，使用内存缓存:", error);
       initialized = true;
+      // Still try to set up lifecycle hooks even when init fails
+      setupLifecycleFlush();
     }
   })();
 
@@ -183,7 +244,7 @@ export async function initStorage() {
 }
 
 /**
- * 从 localStorage 迁移数据
+ * Migrate data from localStorage
  */
 function migrateFromLocalStorage() {
   let migrated = false;
@@ -203,8 +264,8 @@ function migrateFromLocalStorage() {
   if (migrated) {
     cache._migrated = true;
     debouncedSave();
-    
-    // 清除旧数据，但保留快速启动需要的键
+
+    // Clear old data, but keep keys needed for fast startup
     for (const key of KEYS_TO_MIGRATE) {
       if (!KEYS_TO_KEEP_IN_LOCALSTORAGE.includes(key)) {
         localStorage.removeItem(key);
@@ -214,14 +275,16 @@ function migrateFromLocalStorage() {
     cache._migrated = true;
     debouncedSave();
   }
-  
-  // 确保快速启动键同步到 localStorage
+
+  // Ensure fast startup keys are synced to localStorage
   for (const key of KEYS_TO_KEEP_IN_LOCALSTORAGE) {
     if (cache[key] !== undefined) {
       try {
         const value = cache[key];
-        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
-      } catch {}
+        localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
+      } catch (e) {
+        console.warn("Failed to sync localStorage item during flush:", key, e);
+      }
     }
   }
 }

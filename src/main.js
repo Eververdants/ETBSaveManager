@@ -1,16 +1,16 @@
 /**
- * 应用入口 - 极致启动优化版
- * 优化策略：
- * 1. 延迟非关键模块加载
- * 2. 并行初始化
- * 3. 按需加载图标
- * 4. 减少同步阻塞
+ * Application entry point - optimized startup
+ * Optimization strategies:
+ * 1. Lazy-load non-critical modules
+ * 2. Parallel initialization
+ * 3. On-demand icon loading
+ * 4. Minimize synchronous blocking
  */
 
-// Polyfills - 必须最先加载
+// Polyfills - must be loaded first
 import "./utils/polyfills.js";
 
-// FontAwesome 样式（避免生产环境样式注入失败导致图标尺寸异常）
+// FontAwesome styles (prevent icon size issues if style injection fails in production)
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config as faConfig } from "@fortawesome/fontawesome-svg-core";
 faConfig.autoAddCss = false;
@@ -22,7 +22,7 @@ import { setAppContext } from "./appContext.js";
 import storage, { initStorage } from "./services/storageService";
 const { createApp } = vueRuntime;
 
-// 立即创建应用实例（不等待任何异步操作）
+// Create app instance immediately (no async wait)
 const app = createApp(App);
 
 // Critical path: only load modules required for startup
@@ -32,16 +32,16 @@ import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
 import "@vue-flow/controls/dist/style.css";
 
-// 延迟加载的模块引用
+// Lazy-loaded module references
 let i18nInstance = null;
 
-// 加载关键图标（启动必需）
+// Load critical icons (required for startup)
 const loadCriticalIcons = async () => {
   const { FontAwesomeIcon: FAIcon } = await import("@fortawesome/vue-fontawesome");
   const { registerCriticalIcons } = await import("./utils/icons-critical.js");
-  
+
   registerCriticalIcons();
-  
+
   return FAIcon;
 };
 
@@ -54,8 +54,8 @@ const loadAllIcons = async () => {
 // Initialize i18n (lightweight)
 const initI18n = async () => {
   const { createI18n } = await import("vue-i18n");
-  
-  // 内联语言检测，避免额外导入
+
+  // Inline language detection to avoid extra imports
   const getSavedLocale = () => {
     const saved = storage.getItem("language");
     if (saved && ["zh-CN", "en-US", "zh-TW"].includes(saved)) return saved;
@@ -66,11 +66,11 @@ const initI18n = async () => {
     return "zh-CN";
   };
 
-  // 动态导入语言文件
+  // Dynamically import language files
   const locale = getSavedLocale();
   const messages = {};
-  
-  // 只加载当前语言
+
+  // Only load current language
   if (locale === "zh-CN") {
     messages["zh-CN"] = (await import("./i18n/locales/zh-CN/index.js")).default;
   } else if (locale === "en-US") {
@@ -92,13 +92,13 @@ const initI18n = async () => {
   return i18nInstance;
 };
 
-// 延迟加载其他语言
+// Lazy-load other languages
 const loadOtherLocales = async () => {
   if (!i18nInstance) return;
-  
+
   const currentLocale = i18nInstance.global.locale.value;
-  const locales = ["zh-CN", "en-US", "zh-TW"].filter(l => l !== currentLocale);
-  
+  const locales = ["zh-CN", "en-US", "zh-TW"].filter((l) => l !== currentLocale);
+
   for (const locale of locales) {
     if (!i18nInstance.global.messages.value[locale]) {
       const messages = (await import(`./i18n/locales/${locale}/index.js`)).default;
@@ -107,38 +107,34 @@ const loadOtherLocales = async () => {
   }
 };
 
-// 主初始化流程
+// Main initialization flow
 async function initApp() {
   const startTime = performance.now();
-  
-  // 阶段1：并行初始化关键模块
-  console.log("[Startup] 开始初始化关键模块...");
-  const [, FAIcon, i18n] = await Promise.all([
-    initStorage(),
-    loadCriticalIcons(),
-    initI18n(),
-  ]);
 
-  console.log(`[Startup] 关键模块加载: ${(performance.now() - startTime).toFixed(0)}ms`);
+  // Phase 1: Initialize critical modules in parallel
+  console.log("[Startup] Initializing critical modules...");
+  const [, FAIcon, i18n] = await Promise.all([initStorage(), loadCriticalIcons(), initI18n()]);
 
-  // 阶段2：配置 Vue 应用
-  console.log("[Startup] 配置 Vue 应用...");
+  console.log(`[Startup] Critical modules loaded: ${(performance.now() - startTime).toFixed(0)}ms`);
+
+  // Phase 2: Configure Vue app
+  console.log("[Startup] Configuring Vue app...");
   app.use(router);
   app.use(i18n);
-  app.component("font-awesome-icon", FAIcon);
+  app.component("FontAwesomeIcon", FAIcon);
 
   setAppContext({ i18n: i18n.global, router, vue: vueRuntime, storage });
 
-  // 阶段3：挂载应用（用户可见）
-  console.log("[Startup] 挂载应用...");
+  // Phase 3: Mount app (user-visible)
+  console.log("[Startup] Mounting app...");
   app.mount("#app");
-  console.log(`[Startup] 应用挂载: ${(performance.now() - startTime).toFixed(0)}ms`);
+  console.log(`[Startup] App mounted: ${(performance.now() - startTime).toFixed(0)}ms`);
 
-  // 阶段4：等待渲染完成后显示窗口
-  // 禁用过渡动画，避免启动时主题切换闪烁
+  // Phase 4: Show window after render completes
+  // Disable transition animations to prevent theme flash on startup
   document.documentElement.classList.add("no-transition");
-  
-  await new Promise(resolve => {
+
+  await new Promise((resolve) => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         setTimeout(resolve, 50);
@@ -146,46 +142,49 @@ async function initApp() {
     });
   });
 
-  console.log("[Startup] 准备显示窗口...");
+  console.log("[Startup] Preparing to show window...");
   try {
     const { getCurrentWindow } = await import("@tauri-apps/api/window");
     const appWindow = getCurrentWindow();
     await appWindow.show();
-    console.log(`[Startup] 窗口显示: ${(performance.now() - startTime).toFixed(0)}ms`);
+    console.log(`[Startup] Window shown: ${(performance.now() - startTime).toFixed(0)}ms`);
   } catch (error) {
-    console.warn("[Startup] 显示窗口失败:", error instanceof Error ? error.message : error);
+    console.warn("[Startup] Failed to show window:", error instanceof Error ? error.message : error);
   }
 
-  // 窗口显示后恢复过渡动画
+  // Restore transition animations after window is shown
   requestAnimationFrame(() => {
     document.documentElement.classList.remove("no-transition");
   });
 
-  // 阶段5：后台加载非关键模块（不阻塞渲染）
-  requestIdleCallback(() => {
-    Promise.all([
-      loadAllIcons(),
-      loadOtherLocales(),
-      initPluginSystem(),
-      initWindowTitle(i18n),
-      initAutoFeedbackMonitoring(),
-    ]).then(() => {
-      console.log(`[Startup] 完整初始化: ${(performance.now() - startTime).toFixed(0)}ms`);
-    });
-  }, { timeout: 2000 });
+  // Phase 5: Background-load non-critical modules (non-blocking)
+  requestIdleCallback(
+    () => {
+      Promise.all([
+        loadAllIcons(),
+        loadOtherLocales(),
+        initPluginSystem(),
+        initWindowTitle(i18n),
+        initAutoFeedbackMonitoring(),
+      ]).then(() => {
+        console.log(`[Startup] Full initialization: ${(performance.now() - startTime).toFixed(0)}ms`);
+      });
+    },
+    { timeout: 2000 },
+  );
 
   return app;
 }
 
-// 插件系统初始化（延迟）
+// Plugin system initialization (delayed)
 async function initPluginSystem() {
   try {
     const { initializePluginSystem, languagePluginLoader, pagePluginLoader } = await import("./plugins");
     languagePluginLoader.setI18nInstance(i18nInstance);
     pagePluginLoader.setRouterInstance(router);
-    
-    // router 已经在上面暴露到全局了
-    
+
+    // router is already exposed globally above
+
     await initializePluginSystem();
   } catch (error) {
     console.warn("[Plugins] Initialization failed:", error);
@@ -199,41 +198,42 @@ async function initWindowTitle(i18n) {
     const appWindow = getCurrentWindow();
     const title = i18n.global.t("app.name");
     await appWindow.setTitle(title);
-    
-    // 监听语言变化
+
+    // Listen for language changes
     window.addEventListener("language-changed", async () => {
       const newTitle = i18n.global.t("app.name");
       await appWindow.setTitle(newTitle);
     });
   } catch (error) {
-    console.warn("[Window] 设置标题失败:", error);
+    console.warn("[Window] Failed to set title:", error);
   }
 }
 
-// 自动反馈初始化（延迟）
+// Auto-feedback initialization (delayed)
 async function initAutoFeedbackMonitoring() {
   try {
     const { autoFeedbackService } = await import("./services/autoFeedbackService");
     autoFeedbackService.init();
   } catch (error) {
-    console.warn("[AutoFeedback] 初始化失败:", error);
+    console.warn("[AutoFeedback] Initialization failed:", error);
   }
 }
 
-// 启动应用
+// Start the app
 initApp().catch((error) => {
-  const errorMsg = error instanceof Error 
-    ? `${error.message}\n${error.stack}` 
-    : String(error);
-  console.error("[Startup] 应用启动失败:", errorMsg);
+  const errorMsg = error instanceof Error ? `${error.message}\n${error.stack}` : String(error);
+  console.error("[Startup] App failed to start:", errorMsg);
 });
 
-// 浮动按钮保护（延迟初始化）
-requestIdleCallback(() => {
-  import("./utils/floatingButtonProtection.js").then(({ initGlobalFloatingButtonProtection }) => {
-    initGlobalFloatingButtonProtection();
-  });
-}, { timeout: 3000 });
+// Floating button protection (delayed initialization)
+requestIdleCallback(
+  () => {
+    import("./utils/floatingButtonProtection.js").then(({ initGlobalFloatingButtonProtection }) => {
+      initGlobalFloatingButtonProtection();
+    });
+  },
+  { timeout: 3000 },
+);
 
 // Disable interactions in production mode (prevent shortcuts, text selection, etc.)
 if (import.meta.env.PROD) {

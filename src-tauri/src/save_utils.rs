@@ -1,23 +1,24 @@
 //! Save utilities module - Save file info building
 //! Optimized version: Using phf perfect hash, Cow to reduce allocation
 
+use crate::error::AppResult;
 use regex::Regex;
 use serde::Serialize;
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
-/// 缓存存档文件名正则表达式
+/// Cached save file name regex
 static SAVE_FILE_REGEX: OnceLock<Regex> = OnceLock::new();
 
 #[inline]
 fn get_save_file_regex() -> &'static Regex {
     SAVE_FILE_REGEX.get_or_init(|| {
-        // 使用贪婪匹配 (.+) 来正确处理包含下划线的存档名称
-        // 模式: MULTIPLAYER/SINGLEPLAYER_存档名称_难度.sav
-        // 难度部分必须是 Easy/Normal/Hard/Nightmare 或数字
+        // Use greedy match (.+) to correctly handle archive names containing underscores
+        // Pattern: MULTIPLAYER/SINGLEPLAYER_archiveName_difficulty.sav
+        // Difficulty part must be Easy/Normal/Hard/Nightmare or a number
         Regex::new(r"(?i)^(MULTIPLAYER|SINGLEPLAYER)_(.+)_(Easy|Normal|Hard|Nightmare|\d+)\.sav$")
-            .expect("正则表达式编译失败")
+            .expect("Regex compilation failed")
     })
 }
 
@@ -69,15 +70,15 @@ fn map_difficulty(raw: &str) -> (Cow<'static, str>, Cow<'static, str>) {
     }
 }
 
-/// 游戏模式映射
+/// Game mode mapping
 #[inline]
 fn map_mode(raw: &str) -> &'static str {
     if raw.eq_ignore_ascii_case("MULTIPLAYER") {
-        "多人模式"
+        "Multiplayer"
     } else if raw.eq_ignore_ascii_case("SINGLEPLAYER") {
-        "单人模式"
+        "Singleplayer"
     } else {
-        "未知模式"
+        "Unknown"
     }
 }
 
@@ -87,7 +88,7 @@ pub fn build_save_info<S: Into<String>>(
     current_level: S,
     actual_difficulty: S,
     date: S,
-) -> Result<SaveFileInfo, String> {
+) -> AppResult<SaveFileInfo> {
     let file_name = path
         .file_name()
         .and_then(|n| n.to_str())

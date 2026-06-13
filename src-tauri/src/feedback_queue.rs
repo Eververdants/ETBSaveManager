@@ -100,7 +100,7 @@ impl FeedbackQueue {
         let db_path = app_data_dir.join("feedback_queue.db");
         let conn = Connection::open(&db_path)?;
 
-        // 启用 WAL 模式提升并发性能
+        // Enable WAL mode for better concurrency performance
         conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;")?;
 
         let queue = FeedbackQueue { conn };

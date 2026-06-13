@@ -1,4 +1,16 @@
 {
   "archiveDifficulty": "存档难度",
-  "actualDifficulty": "实际难度"
+  "actualDifficulty": "实际难度",
+  "currentLevel": "当前层级",
+  "gameMode": "游戏模式",
+  "singleplayer": "单人模式",
+  "multiplayer": "多人模式",
+  "easy": "简单难度",
+  "normal": "普通难度",
+  "hard": "困难难度",
+  "nightmare": "噩梦难度",
+  "visible": "可见",
+  "hidden": "隐藏",
+  "lastModified": "最后修改",
+  "id": "存档ID"
 }

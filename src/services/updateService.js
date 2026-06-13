@@ -1,10 +1,10 @@
 import { getCurrentUpdateSource } from "../config/updateConfig.js";
 import storage from "./storageService";
 
-// 版本信息
+// Version information
 const CURRENT_VERSION = "3.1.0";
 
-// 简化版更新状态
+// Simplified update status
 export const UpdateStatus = {
   IDLE: "idle",
   CHECKING: "checking",
@@ -21,8 +21,8 @@ class UpdateService {
   }
 
   /**
-   * 检查更新 - 支持GitHub和Gitee
-   * @returns {Promise<Object>} 更新信息
+   * Check for updates - supports GitHub and Gitee
+   * @returns {Promise<Object>} Update information
    */
   async checkForUpdates() {
     try {
@@ -42,13 +42,13 @@ class UpdateService {
 
       const data = await response.json();
 
-      // 处理 Gitee 和 GitHub 的 API 差异
+      // Handle API differences between Gitee and GitHub
       let releases;
       if (sourceConfig.name.includes("Gitee")) {
-        // Gitee API 返回的是数组
+        // Gitee API returns an array
         releases = Array.isArray(data) ? data : [data];
       } else {
-        // GitHub API 返回的是数组
+        // GitHub API returns an array
         releases = Array.isArray(data) ? data : [data];
       }
 
@@ -59,71 +59,72 @@ class UpdateService {
       // Extract version info from all releases
       const allVersions = releases.map((r) => {
         const version = r.tag_name.replace("v", "");
-        // 判断是否为预发布版本：优先使用 API 的 prerelease 字段，但也检查版本号格式
-        const isPreReleaseByApi = sourceConfig.name.includes("Gitee")
-          ? r.prerelease || false
-          : r.prerelease;
-        const isPreReleaseByVersion = version.includes('-'); // 版本号包含 - 说明是预发布版本
-        
-        // 如果版本号格式表明是预发布版本，则强制标记为预发布
+        // Determine if this is a pre-release: prefer API's prerelease field, but also check version format
+        const isPreReleaseByApi = sourceConfig.name.includes("Gitee") ? r.prerelease || false : r.prerelease;
+        const isPreReleaseByVersion = version.includes("-"); // Version containing '-' indicates a pre-release
+
+        // If version format indicates pre-release, force mark as pre-release
         const isPreRelease = isPreReleaseByVersion || isPreReleaseByApi;
-        
+
         return {
           version,
-          published_at: sourceConfig.name.includes("Gitee")
-            ? r.created_at
-            : r.published_at,
+          published_at: sourceConfig.name.includes("Gitee") ? r.created_at : r.published_at,
           body: sourceConfig.name.includes("Gitee")
             ? r.body || r.description || "暂无更新说明"
-            : r.body || "暂无更新说明",
+            : r.body || "No update notes available",
           prerelease: isPreRelease,
           html_url: r.html_url || r.url,
           assets: r.assets || [],
         };
       });
 
-      // 判断当前版本是否为预发布版本
-      const currentIsPreRelease = CURRENT_VERSION.includes('-');
-      
-      console.log(`当前版本: ${CURRENT_VERSION} (${currentIsPreRelease ? '预发布' : '正式版'})`);
-      console.log(`找到 ${allVersions.length} 个版本:`, allVersions.map(v => `${v.version}${v.prerelease ? ' (预发布)' : ''}`));
-      
-      // 分离正式版本和预发布版本
-      const stableVersions = allVersions.filter(v => !v.prerelease);
-      const preReleaseVersions = allVersions.filter(v => v.prerelease);
+      // Determine if the current version is a pre-release
+      const currentIsPreRelease = CURRENT_VERSION.includes("-");
 
-      console.log(`正式版本: ${stableVersions.length} 个`, stableVersions.map(v => v.version));
-      console.log(`预发布版本: ${preReleaseVersions.length} 个`, preReleaseVersions.map(v => v.version));
+      console.log(`当前版本: ${CURRENT_VERSION} (${currentIsPreRelease ? "预发布" : "正式版"})`);
+      console.log(
+        `找到 ${allVersions.length} 个版本:`,
+        allVersions.map((v) => `${v.version}${v.prerelease ? " (预发布)" : ""}`),
+      );
 
-      // 优先选择正式版本，如果没有正式版本或正式版本都比当前版本旧，才考虑预发布版本
+      // Separate stable versions and pre-release versions
+      const stableVersions = allVersions.filter((v) => !v.prerelease);
+      const preReleaseVersions = allVersions.filter((v) => v.prerelease);
+
+      console.log(
+        `正式版本: ${stableVersions.length} 个`,
+        stableVersions.map((v) => v.version),
+      );
+      console.log(
+        `预发布版本: ${preReleaseVersions.length} 个`,
+        preReleaseVersions.map((v) => v.version),
+      );
+
+      // Prefer stable versions; only consider pre-release if no stable version exists or all stable versions are older
       let latestVersion = null;
 
       // Find latest stable version first
       if (stableVersions.length > 0) {
         latestVersion = stableVersions.reduce((latest, current) => {
-          return this.isNewVersion(current.version, latest.version)
-            ? current
-            : latest;
+          return this.isNewVersion(current.version, latest.version) ? current : latest;
         });
-        
+
         console.log(`Latest stable version: ${latestVersion.version}`);
-        
+
         // If latest stable is newer than current, use it
         if (this.isNewVersion(latestVersion.version, CURRENT_VERSION)) {
           console.log(`✓ Found newer stable version: ${latestVersion.version}`);
         } else {
           console.log(`✗ Latest stable ${latestVersion.version} is not newer than current ${CURRENT_VERSION}`);
-          
+
           // Stable not new enough, check pre-release
           if (preReleaseVersions.length > 0) {
             const latestPreRelease = preReleaseVersions.reduce((latest, current) => {
-              return this.isNewVersion(current.version, latest.version)
-                ? current
-                : latest;
+              return this.isNewVersion(current.version, latest.version) ? current : latest;
             });
-            
+
             console.log(`Latest pre-release version: ${latestPreRelease.version}`);
-            
+
             // If pre-release is newer than current, use it
             if (this.isNewVersion(latestPreRelease.version, CURRENT_VERSION)) {
               latestVersion = latestPreRelease;
@@ -136,9 +137,7 @@ class UpdateService {
       } else if (preReleaseVersions.length > 0) {
         // No stable versions, use pre-release
         latestVersion = preReleaseVersions.reduce((latest, current) => {
-          return this.isNewVersion(current.version, latest.version)
-            ? current
-            : latest;
+          return this.isNewVersion(current.version, latest.version) ? current : latest;
         });
         console.log(`Only pre-release versions available, using: ${latestVersion.version}`);
       }
@@ -147,42 +146,32 @@ class UpdateService {
         throw new Error("No available version found");
       }
 
-      console.log(`Final selected version: ${latestVersion.version}${latestVersion.prerelease ? ' (Pre-release)' : ' (Stable)'}`);
+      console.log(
+        `Final selected version: ${latestVersion.version}${latestVersion.prerelease ? " (Pre-release)" : " (Stable)"}`,
+      );
       console.log("Assets:", latestVersion.assets);
 
       if (this.isNewVersion(latestVersion.version, CURRENT_VERSION)) {
         this.status = UpdateStatus.AVAILABLE;
-        // 获取下载链接
+        // Get download link
         let downloadUrl = latestVersion.html_url || releasesUrl;
         let directDownloadUrl = null;
 
-        // 尝试获取直接下载链接
+        // Try to get direct download link
         if (latestVersion.assets && latestVersion.assets.length > 0) {
-          // 优先选择zip文件，如果没有则选择第一个可用文件
+          // Prefer zip files, fall back to the first available asset
           const zipAsset = latestVersion.assets.find((asset) => {
-            const downloadUrl =
-              asset.browser_download_url || asset.download_url || asset.url;
+            const downloadUrl = asset.browser_download_url || asset.download_url || asset.url;
             const fileName = asset.name || asset.filename || "";
-            return (
-              downloadUrl &&
-              (fileName.endsWith(".zip") ||
-                fileName.endsWith(".exe") ||
-                fileName.endsWith(".dmg"))
-            );
+            return downloadUrl && (fileName.endsWith(".zip") || fileName.endsWith(".exe") || fileName.endsWith(".dmg"));
           });
 
           if (zipAsset) {
-            directDownloadUrl =
-              zipAsset.browser_download_url ||
-              zipAsset.download_url ||
-              zipAsset.url;
+            directDownloadUrl = zipAsset.browser_download_url || zipAsset.download_url || zipAsset.url;
           } else {
-            // 使用第一个可用资产
+            // Use the first available asset
             const firstAsset = latestVersion.assets[0];
-            directDownloadUrl =
-              firstAsset.browser_download_url ||
-              firstAsset.download_url ||
-              firstAsset.url;
+            directDownloadUrl = firstAsset.browser_download_url || firstAsset.download_url || firstAsset.url;
           }
         }
 
@@ -191,8 +180,7 @@ class UpdateService {
           date: latestVersion.published_at,
           body: latestVersion.body,
           downloadUrl: latestVersion.html_url || releasesUrl,
-          directDownloadUrl:
-            directDownloadUrl || latestVersion.html_url || releasesUrl,
+          directDownloadUrl: directDownloadUrl || latestVersion.html_url || releasesUrl,
           prerelease: latestVersion.prerelease,
           shouldUpdate: true,
           source: sourceConfig.name,
@@ -200,26 +188,20 @@ class UpdateService {
         return this.updateInfo;
       } else {
         this.status = UpdateStatus.NOT_AVAILABLE;
-        return { shouldUpdate: false, message: "当前已是最新版本" };
+        return { shouldUpdate: false, message: "Already up to date" };
       }
     } catch (error) {
       console.error("检查更新失败:", error);
       this.status = UpdateStatus.ERROR;
 
-      // 检查是否为速率限制错误
+      // Check if this is a rate limit error
       let errorMessage = error.message;
-      let errorType = "网络错误";
+      let errorType = "Network error";
 
-      if (
-        error.message?.includes("rate limit") ||
-        error.message?.includes("429")
-      ) {
+      if (error.message?.includes("rate limit") || error.message?.includes("429")) {
         errorMessage = "Request too frequent, please try again later";
         errorType = "Rate Limit";
-      } else if (
-        error.message?.includes("network") ||
-        error.message?.includes("timeout")
-      ) {
+      } else if (error.message?.includes("network") || error.message?.includes("timeout")) {
         errorMessage = "Network connection timeout, please check network and retry";
         errorType = "Network Connection";
       } else if (error.message?.includes("404")) {
@@ -252,22 +234,20 @@ class UpdateService {
    */
   isNewVersion(newVersion, currentVersion) {
     const parseVersion = (version) => {
-      // 分割主版本号和预发布标识
+      // Split main version and pre-release identifier
       const [mainVersion, ...preReleaseParts] = version.split("-");
       const [major, minor, patch] = mainVersion.split(".").map(Number);
 
-      // 解析预发布版本
+      // Parse pre-release version
       let preRelease = null;
       if (preReleaseParts.length > 0) {
         const preReleaseStr = preReleaseParts.join("-");
-        const match = preReleaseStr.match(
-          /^(Alpha|Beta|RC|alpha|beta|rc)(?:[-.](\d+(?:\.\d+)*))?$/i
-        );
+        const match = preReleaseStr.match(/^(Alpha|Beta|RC|alpha|beta|rc)(?:[-.](\d+(?:\.\d+)*))?$/i);
         if (match) {
           const [, type, numStr] = match;
           const numParts = numStr ? numStr.split(".").map(Number) : [0];
 
-          // 预发布类型优先级：Alpha < Beta < RC < 正式版
+          // Pre-release type priority: Alpha < Beta < RC < Stable
           const typePriority = {
             alpha: 0,
             beta: 1,
@@ -281,7 +261,7 @@ class UpdateService {
             numbers: numParts,
           };
         } else {
-          // 无法识别的预发布标识，视为低优先级
+          // Unrecognized pre-release identifier, treat as low priority
           preRelease = { type: "unknown", typePriority: -1, numbers: [0] };
         }
       }
@@ -298,7 +278,7 @@ class UpdateService {
     const newVer = parseVersion(newVersion);
     const currentVer = parseVersion(currentVersion);
 
-    // 比较主版本号
+    // Compare major version
     if (newVer.major !== currentVer.major) {
       return newVer.major > currentVer.major;
     }
@@ -309,18 +289,14 @@ class UpdateService {
       return newVer.patch > currentVer.patch;
     }
 
-    // 主版本号相同，比较预发布版本
+    // Same major version, compare pre-release versions
     if (newVer.isPreRelease && currentVer.isPreRelease) {
-      // 都是预发布版本
-      if (
-        newVer.preRelease.typePriority !== currentVer.preRelease.typePriority
-      ) {
-        return (
-          newVer.preRelease.typePriority > currentVer.preRelease.typePriority
-        );
+      // Both are pre-release versions
+      if (newVer.preRelease.typePriority !== currentVer.preRelease.typePriority) {
+        return newVer.preRelease.typePriority > currentVer.preRelease.typePriority;
       }
 
-      // 预发布类型相同，比较版本号
+      // Same pre-release type, compare version numbers
       const newNums = newVer.preRelease.numbers;
       const currentNums = currentVer.preRelease.numbers;
       const maxLen = Math.max(newNums.length, currentNums.length);
@@ -334,20 +310,20 @@ class UpdateService {
         }
       }
 
-      return false; // 完全相同
+      return false; // Exactly the same
     } else if (!newVer.isPreRelease && currentVer.isPreRelease) {
-      // 新版本是正式版，当前版本是预发布版
+      // New version is stable, current version is pre-release
       return true;
     } else if (newVer.isPreRelease && !currentVer.isPreRelease) {
-      // 新版本是预发布版，当前版本是正式版
+      // New version is pre-release, current version is stable
       return false;
     }
 
-    return false; // 完全相同
+    return false; // Exactly the same
   }
 
   /**
-   * 直接下载更新文件
+   * Download update file directly
    * @returns {Promise<void>}
    */
   async downloadAndInstall() {
@@ -356,13 +332,13 @@ class UpdateService {
     }
 
     try {
-      // 使用直接下载链接
+      // Use direct download link
       const url = this.updateInfo.directDownloadUrl;
 
-      // 创建临时链接元素进行直接下载
+      // Create temporary link element for direct download
       const link = document.createElement("a");
       link.href = url;
-      link.download = ""; // 触发下载而不是导航
+      link.download = ""; // Trigger download instead of navigation
       link.target = "_blank";
       link.rel = "noopener noreferrer";
       link.style.display = "none";
@@ -381,23 +357,23 @@ class UpdateService {
   }
 
   /**
-   * 获取当前状态
-   * @returns {string} 状态
+   * Get current status
+   * @returns {string} Status
    */
   getStatus() {
     return this.status;
   }
 
   /**
-   * 获取更新信息
-   * @returns {Object} 更新信息
+   * Get update information
+   * @returns {Object} Update information
    */
   getUpdateInfo() {
     return this.updateInfo;
   }
 
   /**
-   * 重置状态
+   * Reset state
    */
   reset() {
     this.status = UpdateStatus.IDLE;
@@ -406,8 +382,8 @@ class UpdateService {
   }
 
   /**
-   * 简化版频率控制 - 每12小时检查一次
-   * @returns {boolean} 是否可以检查更新
+   * Simplified rate limiting - check once every 12 hours
+   * @returns {boolean} Whether update check is allowed
    */
   canCheckUpdate() {
     const lastCheck = storage.getItem("lastUpdateCheck");
@@ -421,33 +397,33 @@ class UpdateService {
   }
 
   /**
-   * 记录最后检查时间
+   * Record last check time
    */
   recordLastCheck() {
     storage.setItem("lastUpdateCheck", Date.now().toString());
   }
 
   /**
-   * 获取当前版本号
-   * @returns {string} 当前版本号
+   * Get current version number
+   * @returns {string} Current version number
    */
   getCurrentVersion() {
     return CURRENT_VERSION;
   }
 
   /**
-   * 获取当前更新源信息
-   * @returns {Object} 当前更新源配置
+   * Get current update source information
+   * @returns {Object} Current update source configuration
    */
   getCurrentUpdateSource() {
     return getCurrentUpdateSource();
   }
 }
 
-// 创建单例实例
+// Create singleton instance
 export const updateService = new UpdateService();
 
-// 启动时检查更新（简化版）
+// Check for updates on startup (simplified)
 export const checkUpdateOnStartup = async () => {
   if (updateService.canCheckUpdate()) {
     try {

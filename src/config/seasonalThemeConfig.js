@@ -22,8 +22,7 @@ export const SPRING_FESTIVAL_DAY_OFFSETS = {
   start: -4,
   end: 7,
 };
-export const SPRING_FESTIVAL_AVAILABILITY_TEXT =
-  "Auto (Lunar New Year -4d ~ +7d)";
+export const SPRING_FESTIVAL_AVAILABILITY_TEXT = "Auto (Lunar New Year -4d ~ +7d)";
 
 function normalizeToNoon(date) {
   const d = new Date(date);
@@ -66,19 +65,11 @@ function findLunarNewYearDate(gregorianYear) {
   const start = new Date(gregorianYear, 0, 20, 12, 0, 0, 0);
   const end = new Date(gregorianYear, 2, 1, 12, 0, 0, 0);
 
-  for (
-    let cursor = new Date(start);
-    cursor <= end;
-    cursor.setDate(cursor.getDate() + 1)
-  ) {
+  for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
     const lunar = getChineseCalendarParts(cursor);
     if (!lunar) continue;
 
-    if (
-      lunar.relatedYear === gregorianYear &&
-      lunar.month === 1 &&
-      lunar.day === 1
-    ) {
+    if (lunar.relatedYear === gregorianYear && lunar.month === 1 && lunar.day === 1) {
       const result = normalizeToNoon(cursor);
       LUNAR_NEW_YEAR_CACHE.set(gregorianYear, result);
       return result;
@@ -119,15 +110,10 @@ export function isSpringFestivalPeriod(date = new Date()) {
 }
 
 export function isSeasonalTheme(themeId) {
-  return ["new-year", "spring-festival-dark", "spring-festival-light"].includes(
-    themeId
-  );
+  return ["new-year", "spring-festival-dark", "spring-festival-light"].includes(themeId);
 }
 
-export function isSeasonalThemeAvailable(
-  themeId,
-  { mode = "auto", date = new Date() } = {}
-) {
+export function isSeasonalThemeAvailable(themeId, { mode = "auto", date = new Date() } = {}) {
   if (!isSeasonalTheme(themeId)) return true;
   if (mode === "force") return true;
   if (mode === "hide") return false;

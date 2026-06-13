@@ -1,6 +1,6 @@
 /**
- * 插件系统入口
- * 导出插件管理器和相关工具
+ * Plugin system entry point
+ * Exports the plugin manager and related utilities
  */
 
 import { invoke } from "@tauri-apps/api/core";
@@ -9,20 +9,20 @@ import { languagePluginLoader } from "./loaders/LanguagePluginLoader";
 import { themePluginLoader } from "./loaders/ThemePluginLoader";
 import { pagePluginLoader } from "./loaders/PagePluginLoader";
 
-// 注册内置加载器
+// Register built-in loaders
 pluginManager.registerLoader(PluginType.LANGUAGE, languagePluginLoader);
 pluginManager.registerLoader(PluginType.THEME, themePluginLoader);
 pluginManager.registerLoader(PluginType.PAGE, pagePluginLoader);
 
 /**
- * 初始化插件系统
+ * Initialize the plugin system
  */
 export async function initializePluginSystem() {
   console.log("🔌 [Plugins] 正在初始化插件系统...");
 
   await pluginManager.initialize();
 
-  // 自动加载已安装的插件（从 localStorage 恢复）
+  // Auto-load installed plugins (restored from localStorage)
   const plugins = pluginManager.getAllPlugins();
   for (const plugin of plugins) {
     if (plugin.autoLoad !== false && plugin.status !== PluginStatus.ACTIVE) {
@@ -38,20 +38,11 @@ export async function initializePluginSystem() {
 }
 
 /**
- * 安装语言插件
- * @param {Object} options - 插件选项
+ * Install a language plugin
+ * @param {Object} options - Plugin options
  */
 export async function installLanguagePlugin(options) {
-  const {
-    id,
-    name,
-    locale,
-    localeName,
-    data,
-    version = "1.0.0",
-    author = "Unknown",
-    description = "",
-  } = options;
+  const { id, name, locale, localeName, data, version = "1.0.0", author = "Unknown", description = "" } = options;
 
   const pluginMeta = {
     id,
@@ -73,22 +64,22 @@ export async function installLanguagePlugin(options) {
 }
 
 /**
- * 卸载语言插件
- * @param {string} pluginId - 插件ID
+ * Uninstall a language plugin
+ * @param {string} pluginId - Plugin ID
  */
 export async function uninstallLanguagePlugin(pluginId) {
   return pluginManager.removePlugin(pluginId);
 }
 
 /**
- * 获取已安装的语言插件
+ * Get installed language plugins
  */
 export function getInstalledLanguagePlugins() {
   return pluginManager.getPluginsByType(PluginType.LANGUAGE);
 }
 
 /**
- * 获取所有可用语言（内置 + 插件）
+ * Get all available languages (built-in + plugins)
  */
 export function getAllAvailableLanguages() {
   const builtIn = [
@@ -110,19 +101,11 @@ export function getAllAvailableLanguages() {
 }
 
 /**
- * 安装主题插件
- * @param {Object} options - 插件选项
+ * Install a theme plugin
+ * @param {Object} options - Plugin options
  */
 export async function installThemePlugin(options) {
-  const {
-    id,
-    name,
-    themeId,
-    data,
-    version = "1.0.0",
-    author = "Unknown",
-    description = "",
-  } = options;
+  const { id, name, themeId, data, version = "1.0.0", author = "Unknown", description = "" } = options;
 
   const pluginMeta = {
     id,
@@ -143,40 +126,33 @@ export async function installThemePlugin(options) {
 }
 
 /**
- * 卸载主题插件
- * @param {string} pluginId - 插件ID
+ * Uninstall a theme plugin
+ * @param {string} pluginId - Plugin ID
  */
 export async function uninstallThemePlugin(pluginId) {
   return pluginManager.removePlugin(pluginId);
 }
 
 /**
- * 获取已安装的主题插件
+ * Get installed theme plugins
  */
 export function getInstalledThemePlugins() {
   return pluginManager.getPluginsByType(PluginType.THEME);
 }
 
 /**
- * 获取所有可用主题（内置 + 插件）
+ * Get all available themes (built-in + plugins)
  */
 export function getAllAvailableThemes() {
   return themePluginLoader.getAvailableThemes();
 }
 
 /**
- * 安装页面插件
- * @param {Object} options - 插件选项
+ * Install a page plugin
+ * @param {Object} options - Plugin options
  */
 export async function installPagePlugin(options) {
-  const {
-    id,
-    name,
-    data,
-    version = "1.0.0",
-    author = "Unknown",
-    description = "",
-  } = options;
+  const { id, name, data, version = "1.0.0", author = "Unknown", description = "" } = options;
 
   const pluginMeta = {
     id,
@@ -196,29 +172,22 @@ export async function installPagePlugin(options) {
 }
 
 /**
- * 卸载页面插件
- * @param {string} pluginId - 插件ID
+ * Uninstall a page plugin
+ * @param {string} pluginId - Plugin ID
  */
 export async function uninstallPagePlugin(pluginId) {
   return pluginManager.removePlugin(pluginId);
 }
 
 /**
- * 获取已安装的页面插件
+ * Get installed page plugins
  */
 export function getInstalledPagePlugins() {
   return pluginManager.getPluginsByType(PluginType.PAGE);
 }
 
-// 导出
-export {
-  pluginManager,
-  languagePluginLoader,
-  themePluginLoader,
-  pagePluginLoader,
-  PluginType,
-  PluginStatus,
-};
+// Exports
+export { pluginManager, languagePluginLoader, themePluginLoader, pagePluginLoader, PluginType, PluginStatus };
 
 export default {
   pluginManager,

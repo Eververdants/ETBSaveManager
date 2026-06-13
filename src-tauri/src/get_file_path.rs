@@ -2,6 +2,7 @@
 //! Optimized version: Reduce regex overhead, use fast path checking
 
 use crate::common::get_save_games_dir;
+use crate::error::AppResult;
 use rayon::prelude::*;
 use std::ffi::OsStr;
 use std::path::PathBuf;
@@ -32,7 +33,7 @@ fn strip_suffix_ascii_case_insensitive<'a>(s: &'a str, suffix: &str) -> Option<&
     s.get(..end)
 }
 
-/// 快速检查文件名是否可能是存档文件（避免正则开销）
+/// Quick check if filename could be a save file (avoids regex overhead)
 #[inline]
 fn is_potential_save_file(name: &str) -> bool {
     (starts_with_ascii_case_insensitive(name, "MULTIPLAYER_")
@@ -43,13 +44,13 @@ fn is_potential_save_file(name: &str) -> bool {
 /// Validate save filename format (simplified version, no regex)
 #[inline]
 fn validate_save_filename(name: &str) -> bool {
-    // 检查后缀
+    // Check extension
     let without_ext = match strip_suffix_ascii_case_insensitive(name, ".sav") {
         Some(s) => s,
         None => return false,
     };
 
-    // 检查难度后缀
+    // Check difficulty suffix
     let valid_difficulties = ["_easy", "_normal", "_hard", "_nightmare"];
     let has_valid_difficulty = valid_difficulties
         .iter()
@@ -63,17 +64,17 @@ fn validate_save_filename(name: &str) -> bool {
         return false;
     }
 
-    // 检查前缀
+    // Check prefix
     starts_with_ascii_case_insensitive(without_ext, "multiplayer_")
         || starts_with_ascii_case_insensitive(without_ext, "singleplayer_")
 }
 
-/// 列出所有存档文件路径（优化版）
-pub fn list_save_paths() -> Result<Vec<PathBuf>, String> {
+/// List all save file paths (optimized version)
+pub fn list_save_paths() -> AppResult<Vec<PathBuf>> {
     let base_dir = get_save_games_dir()?;
 
     if !base_dir.exists() {
-        return Err("Save directory not found".to_string());
+        return Err("Save directory not found".to_string().into());
     }
 
     // Pre-allocate capacity (assuming average 50 saves)
@@ -88,7 +89,7 @@ pub fn list_save_paths() -> Result<Vec<PathBuf>, String> {
         let path = entry.into_path();
         if path.is_file() {
             if let Some(name) = path.file_name().and_then(OsStr::to_str) {
-                // 快速路径检查
+                // Fast path check
                 if is_potential_save_file(name) {
                     entries.push(path);
                 }

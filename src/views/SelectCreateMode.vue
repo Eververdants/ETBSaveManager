@@ -1,26 +1,29 @@
 <template>
   <div class="select-mode-container">
-    <!-- 页面内容 -->
+    <!-- Page content -->
     <div class="mode-page-content">
-      <!-- 标题 -->
+      <!-- Header -->
       <div class="mode-header">
         <h1 class="mode-title">{{ $t("createMode.title") }}</h1>
         <p class="mode-subtitle">{{ $t("createMode.subtitle") }}</p>
       </div>
 
-      <!-- 模式分类 -->
+      <!-- Mode categories -->
       <div class="mode-categories">
-        <!-- 单存档创建 -->
+        <!-- Single archive creation -->
         <div class="mode-category">
           <h3 class="category-title">{{ $t("createMode.singleArchive") }}</h3>
           <div class="mode-cards single">
-            <!-- 经典模式 -->
+            <!-- Classic mode -->
             <div class="mode-card" :class="{ selected: selectedMode === 'classic' }" @click="goToMode('classic')">
               <div class="mode-card-image">
                 <LazyImage :src="classicModeImage" alt="Classic Mode" :image-class="'mode-card-img'" />
                 <div class="mode-card-overlay">
-                  <font-awesome-icon v-if="selectedMode === 'classic'" :icon="['fas', 'check-circle']"
-                    class="check-icon" />
+                  <font-awesome-icon
+                    v-if="selectedMode === 'classic'"
+                    :icon="['fas', 'check-circle']"
+                    class="check-icon"
+                  />
                 </div>
               </div>
               <div class="mode-card-info">
@@ -35,17 +38,20 @@
           </div>
         </div>
 
-        <!-- 多存档创建 -->
+        <!-- Multi archive creation -->
         <div class="mode-category">
           <h3 class="category-title">{{ $t("createMode.multiArchive") }}</h3>
           <div class="mode-cards multi">
-            <!-- 快速模式 -->
+            <!-- Quick mode -->
             <div class="mode-card" :class="{ selected: selectedMode === 'quick' }" @click="goToMode('quick')">
               <div class="mode-card-image">
                 <LazyImage :src="quickModeImage" alt="Quick Mode" :image-class="'mode-card-img'" />
                 <div class="mode-card-overlay">
-                  <font-awesome-icon v-if="selectedMode === 'quick'" :icon="['fas', 'check-circle']"
-                    class="check-icon" />
+                  <font-awesome-icon
+                    v-if="selectedMode === 'quick'"
+                    :icon="['fas', 'check-circle']"
+                    class="check-icon"
+                  />
                 </div>
               </div>
               <div class="mode-card-info">
@@ -55,14 +61,19 @@
                 <p class="mode-card-desc">{{ $t("createMode.quick.desc") }}</p>
               </div>
             </div>
-
           </div>
         </div>
       </div>
 
-      <!-- 底部返回按钮 -->
-      <button class="bottom-back-button" @click="goBack" @mousedown="handleMouseDown" @mouseup="handleMouseUp"
-        @mouseleave="handleMouseUp" :class="{ 'is-pressing': isPressing }">
+      <!-- Bottom back button -->
+      <button
+        class="bottom-back-button"
+        :class="{ 'is-pressing': isPressing }"
+        @click="goBack"
+        @mousedown="handleMouseDown"
+        @mouseup="handleMouseUp"
+        @mouseleave="handleMouseUp"
+      >
         <div class="button-content">
           <span class="close-icon">✕</span>
           <span class="button-text">{{ $t("common.back") }}</span>
@@ -86,21 +97,16 @@ const isPressing = ref(false);
 const currentTheme = ref("dark");
 
 const updateTheme = () => {
-  const theme =
-    document.documentElement.getAttribute("data-theme") || "dark";
+  const theme = document.documentElement.getAttribute("data-theme") || "dark";
   currentTheme.value = theme;
 };
 
 const classicModeImage = computed(() => {
-  return currentTheme.value === "light"
-    ? "/images/CAL_JD.jpg"
-    : "/images/CAD_JD.jpg";
+  return currentTheme.value === "light" ? "/images/CAL_JD.jpg" : "/images/CAD_JD.jpg";
 });
 
 const quickModeImage = computed(() => {
-  return currentTheme.value === "light"
-    ? "/images/CAL_KS.jpg"
-    : "/images/CAD_KS.jpg";
+  return currentTheme.value === "light" ? "/images/CAL_KS.jpg" : "/images/CAD_KS.jpg";
 });
 
 let themeObserver = null;
@@ -320,7 +326,7 @@ const goToMode = (mode) => {
   line-height: 1.4;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 900px) {
   .mode-categories {
     flex-direction: column;
@@ -366,7 +372,7 @@ const goToMode = (mode) => {
   }
 }
 
-/* 底部返回按钮 - 磨砂玻璃设计 */
+/* Bottom back button - frosted glass design */
 .bottom-back-button {
   position: relative;
   margin-top: var(--space-8);
@@ -383,14 +389,16 @@ const goToMode = (mode) => {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 10;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3),
+  box-shadow:
+    0 8px 32px rgba(239, 68, 68, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .bottom-back-button:hover {
   background: rgba(220, 38, 38, 0.95);
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 12px 40px rgba(239, 68, 68, 0.4),
+  box-shadow:
+    0 12px 40px rgba(239, 68, 68, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   border-color: rgba(239, 68, 68, 0.5);
 }
@@ -429,7 +437,7 @@ const goToMode = (mode) => {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* 微交互效果 */
+/* Micro-interaction effects */
 .bottom-back-button:hover .close-icon {
   transform: rotate(90deg) scale(1.1);
 }
@@ -438,16 +446,14 @@ const goToMode = (mode) => {
   transform: rotate(90deg) scale(0.9);
 }
 
-/* 波纹效果 */
+/* Ripple effect */
 .button-ripple {
   position: absolute;
   top: 50%;
   left: 50%;
   width: 0;
   height: 0;
-  background: radial-gradient(circle,
-      rgba(255, 255, 255, 0.3) 0%,
-      transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
   border-radius: 50%;
   transform: translate(-50%, -50%);
   transition: all 0.6s ease;
@@ -459,21 +465,26 @@ const goToMode = (mode) => {
   height: 300px;
 }
 
-/* 脉冲动画 */
+/* Pulse animation */
 @keyframes pulse {
   0% {
-    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3),
+    box-shadow:
+      0 8px 32px rgba(239, 68, 68, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 
   50% {
-    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.5),
-      0 0 0 0 rgba(239, 68, 68, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    box-shadow:
+      0 8px 32px rgba(239, 68, 68, 0.5),
+      0 0 0 0 rgba(239, 68, 68, 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
   100% {
-    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3),
-      0 0 0 20px rgba(239, 68, 68, 0), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow:
+      0 8px 32px rgba(239, 68, 68, 0.3),
+      0 0 0 20px rgba(239, 68, 68, 0),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 }
 
@@ -481,7 +492,7 @@ const goToMode = (mode) => {
   animation: pulse 2s infinite;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   .bottom-back-button {
     bottom: var(--space-4);

@@ -1,145 +1,150 @@
 <template>
   <div class="feedback-page">
-    <!-- 主内容区域 - 自适应双栏布局 -->
+    <!-- Main content area - adaptive two-column layout -->
     <div class="feedback-layout">
-      <!-- 左侧：反馈表单 -->
+      <!-- Left side: feedback form -->
       <div class="feedback-form-panel">
         <div class="panel-card">
           <transition name="text-swift" mode="out-in">
-            <div class="panel-header" :key="currentLanguage">
+            <div :key="currentLanguage" class="panel-header">
               <font-awesome-icon :icon="['fas', 'comment-dots']" class="header-icon" />
               {{ t("feedback.title") }}
             </div>
           </transition>
 
           <div class="panel-content">
-            <!-- 反馈类型选择 -->
+            <!-- Feedback type selection -->
             <div class="form-group">
               <transition name="text-swift" mode="out-in">
-                <label class="form-label" :key="currentLanguage">
+                <label :key="currentLanguage" class="form-label">
                   {{ t("feedback.type") }}
                 </label>
               </transition>
-              <CustomDropdown v-model="formData.type" :options="feedbackTypeOptions"
-                :placeholder="t('feedback.selectType')" />
+              <CustomDropdown
+                v-model="formData.type"
+                :options="feedbackTypeOptions"
+                :placeholder="t('feedback.selectType')"
+              />
             </div>
 
-            <!-- Bug 严重程度 -->
-            <div class="form-group" v-if="formData.type === 'bug'">
+            <!-- Bug severity -->
+            <div v-if="formData.type === 'bug'" class="form-group">
               <transition name="text-swift" mode="out-in">
-                <label class="form-label" :key="currentLanguage">
+                <label :key="currentLanguage" class="form-label">
                   {{ t("feedback.severity") }}
                 </label>
               </transition>
-              <CustomDropdown v-model="formData.severity" :options="severityOptions"
-                :placeholder="t('feedback.selectSeverity')" />
+              <CustomDropdown
+                v-model="formData.severity"
+                :options="severityOptions"
+                :placeholder="t('feedback.selectSeverity')"
+              />
             </div>
 
-            <!-- 发送人（可选） -->
+            <!-- Sender (optional) -->
             <div class="form-group">
               <transition name="text-swift" mode="out-in">
-                <label class="form-label" :key="currentLanguage">
+                <label :key="currentLanguage" class="form-label">
                   {{ t("feedback.sender") }}
-                  <span class="optional-hint">{{
-                    t("feedback.optional")
-                  }}</span>
+                  <span class="optional-hint">{{ t("feedback.optional") }}</span>
                 </label>
               </transition>
-              <input type="text" v-model="formData.sender" :placeholder="t('feedback.senderPlaceholder')"
-                class="form-input" maxlength="50" />
+              <input
+                v-model="formData.sender"
+                type="text"
+                :placeholder="t('feedback.senderPlaceholder')"
+                class="form-input"
+                maxlength="50"
+              />
             </div>
 
-            <!-- 标题输入 -->
+            <!-- Title input -->
             <div class="form-group">
               <transition name="text-swift" mode="out-in">
-                <label class="form-label" :key="currentLanguage">
+                <label :key="currentLanguage" class="form-label">
                   {{ t("feedback.titleLabel") }}
                   <span class="char-count">{{ formData.title.length }}/{{ titleMaxLength }}</span>
                 </label>
               </transition>
-              <input type="text" v-model="formData.title" :placeholder="t('feedback.titlePlaceholder')"
-                class="form-input" :class="{ 'input-error': titleError }" :maxlength="titleMaxLength" />
+              <input
+                v-model="formData.title"
+                type="text"
+                :placeholder="t('feedback.titlePlaceholder')"
+                class="form-input"
+                :class="{ 'input-error': titleError }"
+                :maxlength="titleMaxLength"
+              />
               <span v-if="titleError" class="error-text">{{ titleError }}</span>
             </div>
 
-            <!-- 描述输入 -->
+            <!-- Description input -->
             <div class="form-group description-group">
               <transition name="text-swift" mode="out-in">
-                <label class="form-label" :key="currentLanguage">
+                <label :key="currentLanguage" class="form-label">
                   {{ t("feedback.description") }}
                   <span class="char-count">{{ formData.description.length }}/{{ descriptionMaxLength }}</span>
                 </label>
               </transition>
-              <textarea v-model="formData.description" :placeholder="t('feedback.descriptionPlaceholder')"
-                class="form-textarea" :class="{ 'input-error': descriptionError }"
-                :maxlength="descriptionMaxLength"></textarea>
-              <span v-if="descriptionError" class="error-text">{{
-                descriptionError
-              }}</span>
+              <textarea
+                v-model="formData.description"
+                :placeholder="t('feedback.descriptionPlaceholder')"
+                class="form-textarea"
+                :class="{ 'input-error': descriptionError }"
+                :maxlength="descriptionMaxLength"
+              ></textarea>
+              <span v-if="descriptionError" class="error-text">{{ descriptionError }}</span>
             </div>
 
-            <!-- 系统信息预览 -->
+            <!-- System info preview -->
             <div class="form-group">
               <details class="system-info-details" @toggle="handleSystemInfoToggle">
                 <summary>
                   <font-awesome-icon :icon="['fas', 'info-circle']" />
                   {{ t("feedback.systemInfo") }}
                 </summary>
-                <div class="system-info-content" v-if="isSystemInfoLoading">
+                <div v-if="isSystemInfoLoading" class="system-info-content">
                   <span class="system-info-loading">{{ t("common.loading") }}</span>
                 </div>
-                <div class="system-info-content" v-else-if="systemInfo">
+                <div v-else-if="systemInfo" class="system-info-content">
                   <div class="info-grid">
                     <div class="info-item">
                       <span class="info-label">{{ t("feedback.os") }}</span>
                       <span class="info-value">{{ systemInfo.os }} {{ systemInfo.osVersion }}</span>
                     </div>
                     <div class="info-item">
-                      <span class="info-label">{{
-                        t("feedback.appVersion")
-                      }}</span>
-                      <span class="info-value">{{
-                        systemInfo.appVersion
-                      }}</span>
+                      <span class="info-label">{{ t("feedback.appVersion") }}</span>
+                      <span class="info-value">{{ systemInfo.appVersion }}</span>
                     </div>
                     <div class="info-item">
-                      <span class="info-label">{{
-                        t("feedback.language")
-                      }}</span>
+                      <span class="info-label">{{ t("feedback.language") }}</span>
                       <span class="info-value">{{ systemInfo.language }}</span>
                     </div>
                     <div class="info-item">
-                      <span class="info-label">{{
-                        t("feedback.resolution")
-                      }}</span>
-                      <span class="info-value">{{
-                        systemInfo.screenResolution
-                      }}</span>
+                      <span class="info-label">{{ t("feedback.resolution") }}</span>
+                      <span class="info-value">{{ systemInfo.screenResolution }}</span>
                     </div>
                   </div>
                 </div>
               </details>
             </div>
 
-            <!-- 提交按钮 -->
+            <!-- Submit button -->
             <div class="form-actions">
               <button class="submit-btn" :disabled="!isFormValid || isSubmitting" @click="submitFeedback">
                 <font-awesome-icon v-if="isSubmitting" :icon="['fas', 'spinner']" spin />
                 <font-awesome-icon v-else :icon="['fas', 'paper-plane']" />
-                <span>{{
-                  isSubmitting ? t("feedback.submitting") : t("feedback.submit")
-                }}</span>
+                <span>{{ isSubmitting ? t("feedback.submitting") : t("feedback.submit") }}</span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 右侧：反馈历史记录 -->
+      <!-- Right side: feedback history -->
       <div class="feedback-history-panel">
         <div class="panel-card">
           <transition name="text-swift" mode="out-in">
-            <div class="panel-header" :key="currentLanguage">
+            <div :key="currentLanguage" class="panel-header">
               <font-awesome-icon :icon="['fas', 'history']" class="header-icon" />
               {{ t("feedback.history") }}
               <span v-if="feedbackHistory.length > 0" class="history-count">
@@ -177,8 +182,12 @@
                   {{ formatDate(item.created_at) }}
                 </div>
                 <div class="history-actions">
-                  <a v-if="item.status === 'submitted' && item.discussion_url" :href="item.discussion_url"
-                    target="_blank" class="action-link">
+                  <a
+                    v-if="item.status === 'submitted' && item.discussion_url"
+                    :href="item.discussion_url"
+                    target="_blank"
+                    class="action-link"
+                  >
                     <font-awesome-icon :icon="['fas', 'external-link-alt']" class="action-icon" />
                     <span>{{ t("feedback.viewDiscussion") }}</span>
                   </a>
@@ -192,8 +201,12 @@
                   </button>
                 </div>
               </div>
-              <button v-if="hasMoreHistory" class="history-load-more" :disabled="isHistoryLoading"
-                @click="loadMoreHistory">
+              <button
+                v-if="hasMoreHistory"
+                class="history-load-more"
+                :disabled="isHistoryLoading"
+                @click="loadMoreHistory"
+              >
                 <font-awesome-icon v-if="isHistoryLoading" :icon="['fas', 'spinner']" spin />
                 <font-awesome-icon v-else :icon="['fas', 'chevron-down']" />
                 <span>{{ isHistoryLoading ? t("common.loading") : t("feedback.loadMore") }}</span>
@@ -217,6 +230,10 @@ export default {
   name: "Feedback",
   components: {
     CustomDropdown,
+  },
+  setup() {
+    const { t, locale } = useI18n({ useScope: "global" });
+    return { t, locale };
   },
   data() {
     return {
@@ -273,10 +290,6 @@ export default {
       );
     },
   },
-  setup() {
-    const { t, locale } = useI18n({ useScope: "global" });
-    return { t, locale };
-  },
 
   async mounted() {
     const loadHistoryTask = () => this.loadHistory();
@@ -292,8 +305,7 @@ export default {
   },
   methods: {
     handleLanguageChange(event) {
-      this.currentLanguage =
-        event.detail?.language || storage.getItem("language");
+      this.currentLanguage = event.detail?.language || storage.getItem("language");
     },
 
     async loadSystemInfo() {
@@ -358,8 +370,7 @@ export default {
       try {
         const result = await feedbackService.submitFeedback({
           type: this.formData.type,
-          severity:
-            this.formData.type === "bug" ? this.formData.severity : null,
+          severity: this.formData.type === "bug" ? this.formData.severity : null,
           sender: this.formData.sender.trim() || null,
           title: this.formData.title,
           description: this.formData.description,
@@ -478,7 +489,7 @@ export default {
   max-height: calc(100vh - 100px);
 }
 
-/* 面板卡片通用样式 */
+/* Panel card common styles */
 .panel-card {
   background: var(--bg-secondary);
   border-radius: 12px;
@@ -516,7 +527,7 @@ export default {
   margin-left: auto;
 }
 
-/* 表单面板 */
+/* Form panel */
 .feedback-form-panel {
   height: 100%;
   overflow: hidden;
@@ -575,7 +586,9 @@ export default {
   background: var(--bg-primary);
   color: var(--text-primary);
   font-size: 0.95rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   box-sizing: border-box;
 }
 
@@ -607,7 +620,7 @@ export default {
   margin-top: 4px;
 }
 
-/* 附件上传区域 */
+/* Attachment upload area */
 .attachment-drop-zone {
   display: flex;
   flex-direction: column;
@@ -685,7 +698,7 @@ export default {
   color: var(--danger);
 }
 
-/* 系统信息 */
+/* System info */
 .system-info-details {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
@@ -735,7 +748,7 @@ export default {
   color: var(--text-primary);
 }
 
-/* 提交按钮 */
+/* Submit button */
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -768,7 +781,7 @@ export default {
   cursor: not-allowed;
 }
 
-/* 历史记录面板 */
+/* History panel */
 .feedback-history-panel {
   height: 100%;
   overflow: hidden;
@@ -985,7 +998,10 @@ export default {
   background: var(--bg-primary);
   color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background 0.2s;
 }
 
 .history-load-more:hover:not(:disabled) {
@@ -998,7 +1014,7 @@ export default {
   cursor: not-allowed;
 }
 
-/* 响应式布局 */
+/* Responsive layout */
 @media (max-width: 1200px) {
   .feedback-layout {
     grid-template-columns: 1fr;
@@ -1057,7 +1073,7 @@ export default {
   }
 }
 
-/* 过渡动画 */
+/* Transition animations */
 .text-swift-enter-active,
 .text-swift-leave-active {
   transition: opacity 0.15s ease;
@@ -1068,7 +1084,7 @@ export default {
   opacity: 0;
 }
 
-/* 滚动条样式 */
+/* Scrollbar styles */
 .panel-content::-webkit-scrollbar {
   width: 6px;
 }

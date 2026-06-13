@@ -1,45 +1,26 @@
 /**
- * 浮动按钮位置保护工具 - 优化版
- * 减少 DOM 操作和性能开销
+ * Floating button position protection utility
+ * Uses MutationObserver to detect and restore position when CSS is overridden
  */
 
-let positionCheckInterval = null;
 let mutationObserver = null;
-let cachedButtonElement = null;
-let lastCacheTime = 0;
 let isInitialized = false;
 
-const CACHE_DURATION = 1000;
-const CHECK_INTERVAL = 3000;
-
 /**
- * 获取浮动按钮元素（带缓存）
- */
-function getFloatingButton() {
-  const now = Date.now();
-  if (cachedButtonElement && now - lastCacheTime < CACHE_DURATION) {
-    return cachedButtonElement;
-  }
-  cachedButtonElement = document.querySelector(".floating-action-container");
-  lastCacheTime = now;
-  return cachedButtonElement;
-}
-
-/**
- * 计算期望位置
+ * Expected position values by viewport width
  */
 function getExpectedPosition() {
   const width = window.innerWidth;
-  if (width <= 480) return { bottom: 15, right: 15 };
-  if (width <= 768) return { bottom: 20, right: 20 };
-  return { bottom: 30, right: 30 };
+  if (width <= 480) return { bottom: "15px", right: "15px" };
+  if (width <= 768) return { bottom: "20px", right: "20px" };
+  return { bottom: "30px", right: "30px" };
 }
 
 /**
- * 保护浮动按钮位置
+ * Restore fixed positioning on the floating action button
  */
 export function protectFloatingButtonPosition() {
-  const container = getFloatingButton();
+  const container = document.querySelector(".floating-action-container");
   if (!container) return;
 
   const { bottom, right } = getExpectedPosition();
@@ -47,42 +28,102 @@ export function protectFloatingButtonPosition() {
   const actualBottom = window.innerHeight - rect.bottom;
   const actualRight = window.innerWidth - rect.right;
 
-  // 只在偏差超过阈值时修正
-  if (Math.abs(actualBottom - bottom) > 5 || Math.abs(actualRight - right) > 5) {
+  // Only correct when drift exceeds threshold (5px)
+  if (Math.abs(actualBottom - parseFloat(bottom)) > 5 || Math.abs(actualRight - parseFloat(right)) > 5) {
     const style = container.style;
     style.setProperty("position", "fixed", "important");
-    style.setProperty("bottom", `${bottom}px`, "important");
-    style.setProperty("right", `${right}px`, "important");
+    style.setProperty("bottom", bottom, "important");
+    style.setProperty("right", right, "important");
     style.setProperty("top", "auto", "important");
     style.setProperty("left", "auto", "important");
     style.setProperty("transform", "none", "important");
-    style.setProperty("z-index", "1000", "important");
+    style.setProperty("z-index", "10000", "important");
   }
 }
 
 /**
- * 增强的保护函数
+ * Initialize MutationObserver as a safety net
+ * Watches for style attribute changes that would break fixed positioning
  */
-export function enhancedProtectFloatingButton() {
-  requestAnimationFrame(protectFloatingButtonPosition);
+export function initFloatingButtonProtection() {
+  if (isInitialized) return;
+  cleanupFloatingButtonProtection();
+
+  const container = document.querySelector(".floating-action-container");
+  if (!container) return;
+
+  const expectedPosition = getExpectedPosition();
+
+  mutationObserver = new MutationObserver(() => {
+    if (!container.isConnected) return;
+
+    const criticalProps = ["position", "bottom", "right", "top", "left"];
+    let needsRestore = false;
+
+    for (const prop of criticalProps) {
+      const current = container.style.getPropertyValue(prop);
+      const expected =
+        prop === "position" ? "fixed" : prop === "top" || prop === "left" ? "auto" : expectedPosition[prop];
+
+      if (current && current !== expected) {
+        needsRestore = true;
+        break;
+      }
+    }
+
+    if (needsRestore) {
+      protectFloatingButtonPosition();
+    }
+  });
+
+  mutationObserver.observe(container, {
+    attributes: true,
+    attributeFilter: ["style"],
+  });
+
+  isInitialized = true;
 }
 
 /**
- * 安全修改 body 样式
+ * Cleanup observer
+ */
+export function cleanupFloatingButtonProtection() {
+  if (mutationObserver) {
+    mutationObserver.disconnect();
+    mutationObserver = null;
+  }
+  isInitialized = false;
+}
+
+/**
+ * Safely modify body styles by temporarily disabling CSS transitions
+ * Prevents flickering when toggling body overflow/position for modal overlays
+ * @param {Object|Function} styles - Style object to apply, or a callback to execute
+ * @returns {Function|void} Cleanup function when called with object
  */
 export function safeModifyBodyStyles(styles) {
+  if (typeof styles === "function") {
+    requestAnimationFrame(() => {
+      const body = document.body;
+      const originalTransition = body.style.transition;
+      body.style.transition = "none";
+      styles();
+      body.style.transition = originalTransition;
+    });
+    return;
+  }
+
   const original = {};
-  
   requestAnimationFrame(() => {
     const body = document.body;
     const originalTransition = body.style.transition;
     body.style.transition = "none";
-    
+
     for (const prop in styles) {
       original[prop] = body.style[prop];
       body.style[prop] = styles[prop];
     }
-    
+
     body.style.transition = originalTransition;
   });
 
@@ -91,66 +132,20 @@ export function safeModifyBodyStyles(styles) {
       const body = document.body;
       const originalTransition = body.style.transition;
       body.style.transition = "none";
-      
+
       for (const prop in original) {
         body.style[prop] = original[prop];
       }
-      
+
       body.style.transition = originalTransition;
     });
   };
 }
 
 /**
- * 初始化浮动按钮保护
- */
-export function initFloatingButtonProtection() {
-  if (isInitialized) return;
-  
-  cleanupFloatingButtonProtection();
-
-  setTimeout(() => {
-    const container = getFloatingButton();
-    if (!container) return;
-
-    protectFloatingButtonPosition();
-
-    // 简化的 MutationObserver
-    mutationObserver = new MutationObserver(() => {
-      protectFloatingButtonPosition();
-    });
-
-    mutationObserver.observe(container, {
-      attributes: true,
-      attributeFilter: ["style"],
-    });
-
-    positionCheckInterval = setInterval(protectFloatingButtonPosition, CHECK_INTERVAL);
-    isInitialized = true;
-  }, 1000);
-}
-
-/**
- * 清理保护
- */
-export function cleanupFloatingButtonProtection() {
-  if (mutationObserver) {
-    mutationObserver.disconnect();
-    mutationObserver = null;
-  }
-  if (positionCheckInterval) {
-    clearInterval(positionCheckInterval);
-    positionCheckInterval = null;
-  }
-  cachedButtonElement = null;
-  isInitialized = false;
-}
-
-/**
- * 全局初始化
+ * Global initialization via requestIdleCallback
  */
 export function initGlobalFloatingButtonProtection() {
-  // 延迟初始化，不阻塞启动
   if (typeof requestIdleCallback !== "undefined") {
     requestIdleCallback(() => initFloatingButtonProtection(), { timeout: 3000 });
   } else {
@@ -158,7 +153,6 @@ export function initGlobalFloatingButtonProtection() {
   }
 }
 
-// 页面卸载时清理
 if (typeof window !== "undefined") {
   window.addEventListener("beforeunload", cleanupFloatingButtonProtection);
 }

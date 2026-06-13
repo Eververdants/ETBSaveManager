@@ -3,11 +3,11 @@
     <div class="header">
       <h1>{{ t("logs.title") }}</h1>
       <div class="header-actions">
-        <button @click="clearLogs" class="btn btn-secondary">
+        <button class="btn btn-secondary" @click="clearLogs">
           <font-awesome-icon :icon="['fas', 'trash']" />
           {{ t("logs.clear") }}
         </button>
-        <button @click="exportLogs" class="btn btn-primary">
+        <button class="btn btn-primary" @click="exportLogs">
           <font-awesome-icon :icon="['fas', 'download']" />
           {{ t("logs.export") }}
         </button>
@@ -27,32 +27,41 @@
       </div>
 
       <div class="search-group">
-        <input v-model="searchText" :placeholder="t('logs.search')" @input="applyFilter" class="search-input" />
+        <input v-model="searchText" :placeholder="t('logs.search')" class="search-input" @input="applyFilter" />
       </div>
     </div>
 
-    <!-- 控制台命令区域 -->
+    <!-- Console command section -->
     <div class="console-section">
       <div class="console-input-line">
         <span class="console-prompt">$ </span>
-        <input ref="consoleInput" v-model="consoleCommand" type="text" placeholder="输入 help 查看可用命令"
-          class="console-input" @keyup.enter="executeConsoleCommand" @keyup.up="navigateHistory(-1)"
-          @keyup.down="navigateHistory(1)" />
+        <input
+          ref="consoleInput"
+          v-model="consoleCommand"
+          type="text"
+          placeholder="Type help for available commands"
+          class="console-input"
+          @keyup.enter="executeConsoleCommand"
+          @keyup.up="navigateHistory(-1)"
+          @keyup.down="navigateHistory(1)"
+        />
       </div>
     </div>
 
-    <div class="log-container" ref="logContainer">
+    <div ref="logContainer" class="log-container">
       <div v-for="(log, index) in filteredLogs" :key="index" :class="['log-entry', log.type]">
         <div class="log-time">{{ formatTime(log.date) }}</div>
-        <div class="log-level" :class="log.type">
-          [{{ log.type.toUpperCase() }}]
-        </div>
+        <div class="log-level" :class="log.type">[{{ log.type.toUpperCase() }}]</div>
         <div class="log-message">
           <div v-if="Array.isArray(log.message)" class="log-multiline">
-            <div v-for="(line, lineIndex) in log.message" :key="lineIndex" :class="{
-              'log-command': lineIndex === 0,
-              'log-result': lineIndex === 1 && log.message.length > 1,
-            }">
+            <div
+              v-for="(line, lineIndex) in log.message"
+              :key="lineIndex"
+              :class="{
+                'log-command': lineIndex === 0,
+                'log-result': lineIndex === 1 && log.message.length > 1,
+              }"
+            >
               {{ line }}
             </div>
           </div>
@@ -70,6 +79,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
+import { i18n } from "../i18n/index.js";
 import { logService } from "../services/logService.js";
 
 const { t } = useI18n({ useScope: "global" });
@@ -83,7 +93,7 @@ const consoleCommand = ref("");
 const commandHistory = ref([]);
 const historyIndex = ref(-1);
 
-// 安全参数解析函数
+// Safe argument parsing function
 const parseSafeArguments = (argsStr) => {
   const args = [];
   let current = "";
@@ -149,17 +159,16 @@ const parseSafeArguments = (argsStr) => {
   return args;
 };
 
-// 安全表达式处理函数
+// Safe expression processing function
 const processSafeExpression = (expression) => {
   try {
-    // 允许的字符：数字、运算符、括号、引号、空白字符、字母（用于翻译函数t()）
-    const allowedPattern =
-      /^[\d\s\+\-\*\/\(\)\.\,\?\:\!\=\'\"\`\[\]\{\}a-zA-Z_]+$/;
+    // Allowed characters: digits, operators, parentheses, quotes, whitespace, letters (for translation function t())
+    const allowedPattern = /^[\d\s+\-*/().,?!:='"`[\]{}a-zA-Z_]+$/;
     if (!allowedPattern.test(expression)) {
-      throw new Error("表达式包含不允许的字符");
+      throw new Error("Expression contains disallowed characters");
     }
 
-    // 移除危险关键词
+    // Remove dangerous keywords
     const dangerousKeywords = [
       "eval",
       "Function",
@@ -175,17 +184,17 @@ const processSafeExpression = (expression) => {
     const lowerExpression = expression.toLowerCase();
     for (const keyword of dangerousKeywords) {
       if (lowerExpression.includes(keyword)) {
-        throw new Error(`不允许使用关键词: ${keyword}`);
+        throw new Error(`Keyword not allowed: ${keyword}`);
       }
     }
 
-    // 只允许简单的数学计算和基本操作
-    if (/^[\d\s\+\-\*\/\(\)\.]+$/.test(expression)) {
-      // 纯数学表达式
+    // Only allow simple math calculations and basic operations
+    if (/^[\d\s+\-*/().]+$/.test(expression)) {
+      // Pure math expression
       return Function(`"use strict"; return (${expression})`)();
     }
 
-    // 翻译函数调用
+    // Translation function call
     if (expression.includes("t(")) {
       const match = expression.match(/t\(['"`]([^'"`]+)['"`]\)/);
       if (match) {
@@ -194,7 +203,7 @@ const processSafeExpression = (expression) => {
       }
     }
 
-    // 字符串字面量
+    // String literal
     if (
       (expression.startsWith('"') && expression.endsWith('"')) ||
       (expression.startsWith("'") && expression.endsWith("'")) ||
@@ -203,12 +212,12 @@ const processSafeExpression = (expression) => {
       return parseValue(expression);
     }
 
-    // 简单变量或常量
+    // Simple variable or constant
     if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(expression)) {
       return expression;
     }
 
-    // JSON对象或数组
+    // JSON object or array
     if (
       (expression.startsWith("{") && expression.endsWith("}")) ||
       (expression.startsWith("[") && expression.endsWith("]"))
@@ -216,20 +225,20 @@ const processSafeExpression = (expression) => {
       return JSON.parse(expression);
     }
 
-    // 数字
+    // Number
     if (!isNaN(expression)) {
       return Number(expression);
     }
 
-    throw new Error("不支持的表达式类型");
+    throw new Error("Unsupported expression type");
   } catch (error) {
-    throw new Error(`表达式处理错误: ${error.message}`);
+    throw new Error(`Expression processing error: ${error.message}`, { cause: error });
   }
 };
 
-// 解析单个值
+// Parse a single value
 const parseValue = (value) => {
-  // 移除字符串两端的引号
+  // Remove surrounding quotes from string
   if (
     (value.startsWith('"') && value.endsWith('"')) ||
     (value.startsWith("'") && value.endsWith("'")) ||
@@ -238,12 +247,12 @@ const parseValue = (value) => {
     return value.slice(1, -1);
   }
 
-  // 数字
+  // Number
   if (!isNaN(value)) {
     return Number(value);
   }
 
-  // 布尔值
+  // Boolean
   if (value === "true") return true;
   if (value === "false") return false;
 
@@ -253,12 +262,12 @@ const parseValue = (value) => {
   // null
   if (value === "null") return null;
 
-  // 尝试解析JSON
+  // Try to parse JSON
   if (value.startsWith("{") && value.endsWith("}")) {
     try {
       return JSON.parse(value);
     } catch {
-      // 忽略解析错误
+      // Ignore parse errors
     }
   }
 
@@ -266,15 +275,15 @@ const parseValue = (value) => {
     try {
       return JSON.parse(value);
     } catch {
-      // 忽略解析错误
+      // Ignore parse errors
     }
   }
 
-  // 默认为字符串
+  // Default to string
   return value;
 };
 
-// 获取过滤后的日志
+// Get filtered logs
 const filteredLogs = computed(() => {
   let result = logs.value;
 
@@ -284,51 +293,49 @@ const filteredLogs = computed(() => {
 
   if (searchText.value) {
     const searchLower = searchText.value.toLowerCase();
-    result = result.filter((log) =>
-      log.message.toLowerCase().includes(searchLower)
-    );
+    result = result.filter((log) => log.message.toLowerCase().includes(searchLower));
   }
 
   return result;
 });
 
-// 格式化时间
+// Format time
 const formatTime = (timestamp) => {
   return new Date(timestamp).toLocaleString();
 };
 
-// 应用过滤器
+// Apply filter
 const applyFilter = () => {
   nextTick(() => {
     scrollToBottom();
   });
 };
 
-// 清空日志
+// Clear logs
 const clearLogs = () => {
   logService.clearLogs();
   logs.value = [];
 };
 
-// 导出日志
+// Export logs
 const exportLogs = () => {
   logService.exportLogs();
 };
 
-// 滚动到底部
+// Scroll to bottom
 const scrollToBottom = () => {
   if (logContainer.value) {
     logContainer.value.scrollTop = logContainer.value.scrollHeight;
   }
 };
 
-// 控制台命令执行
+// Console command execution
 const executeConsoleCommand = () => {
   try {
     const cmd = consoleCommand.value.trim();
     if (!cmd) return;
 
-    // 添加到历史记录
+    // Add to history
     commandHistory.value.unshift(cmd);
     if (commandHistory.value.length > 50) {
       commandHistory.value = commandHistory.value.slice(0, 50);
@@ -337,27 +344,27 @@ const executeConsoleCommand = () => {
 
     let result;
 
-    // 控制台命令解析
+    // Console command parsing
     switch (cmd.toLowerCase()) {
       case "help":
-        result = `可用命令:
-  help        - 显示此帮助信息
-  locale      - 显示当前语言
-  messages    - 显示所有翻译消息
-  t(key)      - 测试翻译键值，如: t('app.name')
-  app.name    - 显示应用名称
-  clear       - 清空控制台
-  ls          - 列出可用语言
-  
-JavaScript 支持:
-  console.log("文本") - 输出日志
-  1 + 1 - 数学计算
-  "hello" - 字符串
-  [1,2,3] - 数组
-  {a:1} - 对象`;
+        result = `Available commands:
+  help        - Show this help
+  locale      - Show current language
+  messages    - Show all translation messages
+  t(key)      - Test translation key, e.g.: t('app.name')
+  app.name    - Show app name
+  clear       - Clear console
+  ls          - List available languages
+
+JavaScript support:
+  console.log("text") - Output log
+  1 + 1 - Math calculation
+  "hello" - String
+  [1,2,3] - Array
+  {a:1} - Object`;
         break;
       case "locale":
-        result = `当前语言: ${i18n.locale || "未知"}`;
+        result = `Current language: ${i18n.locale || "Unknown"}`;
         break;
       case "messages":
         result = JSON.stringify(i18n.messages || {}, null, 2);
@@ -367,94 +374,82 @@ JavaScript 支持:
         consoleCommand.value = "";
         return;
       case "ls":
-        result = `可用语言: ${Object.keys(i18n.messages || {}).join(", ")}`;
+        result = `Available languages: ${Object.keys(i18n.messages || {}).join(", ")}`;
         break;
       default:
-        // 处理翻译测试
+        // Handle translation test
         if (cmd.startsWith("t(")) {
           const match = cmd.match(/t\(['"]([^'"]+)['"]\)/);
           if (match) {
             const key = match[1];
             result = t(key);
           } else {
-            result = '用法: t("key")';
+            result = 'Usage: t("key")';
           }
         } else if (cmd.includes("console.log")) {
-          // 安全处理 console.log
+          // Safe handling of console.log
           try {
             const match = cmd.match(/console\.log\((.*)\)$/);
             if (match) {
               const argsStr = match[1].trim();
-              // 使用安全的参数解析
+              // Use safe argument parsing
               const args = parseSafeArguments(argsStr);
               result = args
-                .map((arg) =>
-                  typeof arg === "object"
-                    ? JSON.stringify(arg, null, 2)
-                    : String(arg)
-                )
+                .map((arg) => (typeof arg === "object" ? JSON.stringify(arg, null, 2) : String(arg)))
                 .join(" ");
             } else {
-              result =
-                'console.log 用法: console.log("文本") 或 console.log(变量)';
+              result = 'console.log usage: console.log("text") or console.log(variable)';
             }
           } catch (e) {
-            result = `错误: ${e.message}`;
+            result = `Error: ${e.message}`;
           }
-        } else if (
-          cmd.includes(".") &&
-          !cmd.includes("(") &&
-          !cmd.includes(" ")
-        ) {
-          // 直接翻译键值
+        } else if (cmd.includes(".") && !cmd.includes("(") && !cmd.includes(" ")) {
+          // Direct translation key
           result = t(cmd);
         } else {
-          // 执行 JavaScript 表达式
+          // Execute JavaScript expression
           try {
-            // 直接处理翻译键值
+            // Handle translation keys directly
             if (cmd.startsWith("t(") && cmd.endsWith(")")) {
-              // 处理 t('key') 格式
+              // Handle t('key') format
               const match = cmd.match(/t\(['"`](.*?)['"`]\)/);
               if (match) {
                 const key = match[1];
                 result = this.$t(key);
               } else {
-                result = this.$t("app.name"); // 默认测试
+                result = this.$t("app.name"); // Default test
               }
             } else {
-              // 处理其他类型的表达式
+              // Handle other expression types
               result = processSafeExpression(cmd);
             }
           } catch (e) {
-            result = `错误: ${e.message}`;
+            result = `Error: ${e.message}`;
           }
         }
     }
 
-    // 将命令和结果添加到日志
+    // Add command and result to logs
     logService.addLog("info", [`$ ${cmd}`, `→ ${result}`]);
   } catch (error) {
-    logService.addLog("error", [
-      `$ ${consoleCommand.value}`,
-      `✗ 错误: ${error.message}`,
-    ]);
+    logService.addLog("error", [`$ ${consoleCommand.value}`, `✗ Error: ${error.message}`]);
   }
 
   consoleCommand.value = "";
 };
 
-// 命令历史导航
+// Command history navigation
 const navigateHistory = (direction) => {
   if (commandHistory.value.length === 0) return;
 
   if (direction === -1) {
-    // 上箭头
+    // Up arrow
     if (historyIndex.value < commandHistory.value.length - 1) {
       historyIndex.value++;
       consoleCommand.value = commandHistory.value[historyIndex.value];
     }
   } else {
-    // 下箭头
+    // Down arrow
     if (historyIndex.value > 0) {
       historyIndex.value--;
       consoleCommand.value = commandHistory.value[historyIndex.value];
@@ -465,14 +460,14 @@ const navigateHistory = (direction) => {
   }
 };
 
-// 更新日志
+// Update logs
 const updateLogs = () => {
   const newLogs = logService.getLogs();
   const newLogCount = newLogs.length;
 
   logs.value = newLogs;
 
-  // 只在有新日志且用户未手动滚动时滚动到底部
+  // Only scroll to bottom if there are new logs and user hasn't manually scrolled
   if (newLogCount > lastLogCount && !isUserScrolling) {
     nextTick(() => {
       scrollToBottom();
@@ -481,18 +476,17 @@ const updateLogs = () => {
   lastLogCount = newLogCount;
 };
 
-// 自动滚动开关
+// Auto scroll toggle
 let autoScrollInterval;
 let lastLogCount = 0;
 let isUserScrolling = false;
 
-// 检测用户是否在手动滚动
+// Detect if user is manually scrolling
 const checkUserScrolling = () => {
   if (!logContainer.value) return;
 
   const container = logContainer.value;
-  const isAtBottom =
-    container.scrollHeight - container.scrollTop - container.clientHeight < 10;
+  const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 10;
 
   if (!isAtBottom) {
     isUserScrolling = true;
@@ -505,20 +499,20 @@ onMounted(() => {
   updateLogs();
   lastLogCount = logs.value.length;
 
-  // 监听日志更新
+  // Listen for log updates
   window.addEventListener("logs-updated", updateLogs);
 
-  // 监听用户滚动事件
+  // Listen for user scroll events
   if (logContainer.value) {
     logContainer.value.addEventListener("scroll", checkUserScrolling);
   }
 
-  // 智能滚动：只有在新日志产生且用户没有手动滚动时才滚动到底部
+  // Smart scroll: only scroll to bottom on new logs if user hasn't manually scrolled
   autoScrollInterval = setInterval(() => {
     const newLogs = logService.getLogs();
     const newLogCount = newLogs.length;
 
-    // 检查是否有新日志
+    // Check if there are new logs
     if (newLogCount > lastLogCount && !isUserScrolling) {
       logs.value = newLogs;
       lastLogCount = newLogCount;
@@ -526,7 +520,7 @@ onMounted(() => {
         scrollToBottom();
       });
     } else if (newLogCount !== logs.value.length) {
-      // 更新日志但不自动滚动
+      // Update logs but don't auto scroll
       logs.value = newLogs;
       lastLogCount = newLogCount;
     }
@@ -544,7 +538,7 @@ onUnmounted(() => {
       logContainer.value.removeEventListener("scroll", checkUserScrolling);
     }
   } catch (error) {
-    console.error("清理日志监听器时出错:", error);
+    console.error("Error cleaning up log listeners:", error);
   }
 });
 </script>
@@ -557,8 +551,9 @@ onUnmounted(() => {
   margin: 0;
   background: var(--log-bg);
   color: var(--log-text);
-  font-family: "Consolas", "Monaco", "Lucida Console", "Liberation Mono",
-    "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace;
+  font-family:
+    "Consolas", "Monaco", "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono",
+    "Courier New", monospace;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -785,7 +780,7 @@ select,
   font-size: 12px;
 }
 
-/* 滚动条样式 */
+/* Scrollbar styles */
 .log-container::-webkit-scrollbar {
   width: 10px;
 }
@@ -802,7 +797,7 @@ select,
   background: var(--log-scrollbar-thumb-hover);
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   .log-view {
     font-size: 12px;

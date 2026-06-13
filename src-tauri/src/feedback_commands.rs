@@ -15,10 +15,10 @@ use std::sync::{Arc, Mutex, OnceLock};
 use tauri::State;
 
 // ============================================
-// 后端日志收集器（优化版）
+// Backend log collector (optimized)
 // ============================================
 
-/// 后端日志条目
+/// Backend log entry
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BackendLogEntry {
     pub timestamp: String,
@@ -26,7 +26,7 @@ pub struct BackendLogEntry {
     pub message: String,
 }
 
-/// 后端日志收集器状态
+/// Backend log collector state
 pub struct BackendLogState {
     logs: Mutex<VecDeque<BackendLogEntry>>,
     max_logs: usize,
@@ -183,7 +183,7 @@ const DESCRIPTION_MAX_LEN: usize = 60000;
 static FEEDBACK_HTTP_CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
 static SANITIZE_PATTERNS: OnceLock<Vec<(Regex, &'static str)>> = OnceLock::new();
 
-/// Cloudflare Worker 反馈响应
+/// Cloudflare Worker feedback response
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkerResponse {
     pub success: bool,
@@ -637,13 +637,13 @@ fn sanitize_text(input: &str) -> String {
 /// Adds a log entry to backend logs (for internal use)
 #[tauri::command]
 pub fn add_backend_log(level: String, message: String, log_state: State<'_, BackendLogState>) {
-    // 打印到后端控制台
+    // Print to backend console
     match level.to_lowercase().as_str() {
         "error" => eprintln!("[Frontend ERROR] {}", message),
         "warn" => println!("[Frontend WARN] {}", message),
         "debug" => println!("[Frontend DEBUG] {}", message),
         _ => println!("[Frontend] {}", message),
     }
-    // 同时保存到日志状态
+    // Also save to log state
     log_state.add_log(&level, &message);
 }

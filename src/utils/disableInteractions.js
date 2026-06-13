@@ -18,7 +18,7 @@ export function disableInteractions() {
         window.dispatchEvent(
           new CustomEvent("app-global-find", {
             detail: { from: "disableInteractions", shiftKey: !!e.shiftKey },
-          })
+          }),
         );
         return false;
       }
@@ -30,7 +30,7 @@ export function disableInteractions() {
         window.dispatchEvent(
           new CustomEvent("app-global-find-next", {
             detail: { from: "disableInteractions", backward: !!e.shiftKey },
-          })
+          }),
         );
         return false;
       }
@@ -38,22 +38,13 @@ export function disableInteractions() {
       // 如果当前焦点在输入框、文本域或内容可编辑元素上，允许正常输入
       const target = e.target;
       const isInputElement =
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.contentEditable === "true";
+        target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.contentEditable === "true";
 
       if (isInputElement) {
         // 在输入框中，只允许基本的编辑操作，仍然阻止快捷键组合
         if (e.ctrlKey || e.altKey || e.metaKey) {
           // 允许复制粘贴等基本操作
-          const allowedShortcuts = [
-            "KeyC",
-            "KeyV",
-            "KeyX",
-            "KeyA",
-            "KeyZ",
-            "KeyY",
-          ];
+          const allowedShortcuts = ["KeyC", "KeyV", "KeyX", "KeyA", "KeyZ", "KeyY"];
           if (!allowedShortcuts.includes(e.code)) {
             e.preventDefault();
             e.stopPropagation();
@@ -101,7 +92,7 @@ export function disableInteractions() {
         return false;
       }
     },
-    true
+    true,
   );
 
   // 禁用文字选中（但允许在输入框中选择）
@@ -110,9 +101,7 @@ export function disableInteractions() {
     (e) => {
       const target = e.target;
       const isInputElement =
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.contentEditable === "true";
+        target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.contentEditable === "true";
 
       if (!isInputElement) {
         e.preventDefault();
@@ -120,7 +109,7 @@ export function disableInteractions() {
         return false;
       }
     },
-    true
+    true,
   );
 
   // 禁用拖拽
@@ -131,7 +120,7 @@ export function disableInteractions() {
       e.stopPropagation();
       return false;
     },
-    true
+    true,
   );
 
   // 禁用图片拖拽
@@ -144,7 +133,7 @@ export function disableInteractions() {
         return false;
       }
     },
-    true
+    true,
   );
 
   // 禁用右键菜单
@@ -155,7 +144,7 @@ export function disableInteractions() {
       e.stopPropagation();
       return false;
     },
-    true
+    true,
   );
 
   // 禁用双击选中文本（但允许在输入框中双击）
@@ -164,9 +153,7 @@ export function disableInteractions() {
     (e) => {
       const target = e.target;
       const isInputElement =
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.contentEditable === "true";
+        target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.contentEditable === "true";
 
       if (!isInputElement) {
         e.preventDefault();
@@ -174,7 +161,7 @@ export function disableInteractions() {
         return false;
       }
     },
-    true
+    true,
   );
 
   // 禁用鼠标中键和右键
@@ -188,7 +175,7 @@ export function disableInteractions() {
         return false;
       }
     },
-    true
+    true,
   );
 
   // 禁用复制、剪切、粘贴（但允许在输入框中使用）
@@ -197,9 +184,7 @@ export function disableInteractions() {
     (e) => {
       const target = e.target;
       const isInputElement =
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.contentEditable === "true";
+        target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.contentEditable === "true";
 
       if (!isInputElement) {
         e.preventDefault();
@@ -207,7 +192,7 @@ export function disableInteractions() {
         return false;
       }
     },
-    true
+    true,
   );
 
   document.addEventListener(
@@ -215,9 +200,7 @@ export function disableInteractions() {
     (e) => {
       const target = e.target;
       const isInputElement =
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.contentEditable === "true";
+        target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.contentEditable === "true";
 
       if (!isInputElement) {
         e.preventDefault();
@@ -225,7 +208,7 @@ export function disableInteractions() {
         return false;
       }
     },
-    true
+    true,
   );
 
   document.addEventListener(
@@ -233,9 +216,7 @@ export function disableInteractions() {
     (e) => {
       const target = e.target;
       const isInputElement =
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.contentEditable === "true";
+        target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.contentEditable === "true";
 
       if (!isInputElement) {
         e.preventDefault();
@@ -243,7 +224,7 @@ export function disableInteractions() {
         return false;
       }
     },
-    true
+    true,
   );
 
   // 禁用选择文本的CSS样式

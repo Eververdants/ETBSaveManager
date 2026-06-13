@@ -1,10 +1,10 @@
 import { ref, computed } from "vue";
 
 /**
- * 存档筛选 composable
+ * Archive filter composable
  */
 export function useArchiveFilters() {
-  // 筛选状态
+  // Filter state
   const lastSearchFilters = ref({
     searchQuery: "",
     selectedGameMode: "",
@@ -13,11 +13,11 @@ export function useArchiveFilters() {
     selectedVisibility: "",
   });
 
-  // 防抖相关
+  // Debounce related
   let lastUpdateTime = 0;
 
   /**
-   * 检查是否有激活的筛选条件
+   * Check if there are active filter conditions
    */
   const hasActiveFilters = computed(() => {
     return (
@@ -29,38 +29,30 @@ export function useArchiveFilters() {
   });
 
   /**
-   * 立即应用筛选逻辑
+   * Apply filters immediately
    */
   const applyFiltersImmediate = (archives, filters) => {
     if (!archives || archives.length === 0) return [];
 
     let filtered = archives;
 
-    // 按名称搜索
+    // Filter by name
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
-      filtered = filtered.filter((archive) =>
-        archive.name.toLowerCase().includes(query)
-      );
+      filtered = filtered.filter((archive) => archive.name.toLowerCase().includes(query));
     }
 
-    // 按存档难度筛选
+    // Filter by archive difficulty
     if (filters.selectedArchiveDifficulty) {
-      filtered = filtered.filter(
-        (archive) =>
-          archive.archiveDifficulty === filters.selectedArchiveDifficulty
-      );
+      filtered = filtered.filter((archive) => archive.archiveDifficulty === filters.selectedArchiveDifficulty);
     }
 
-    // 按实际难度筛选
+    // Filter by actual difficulty
     if (filters.selectedActualDifficulty) {
-      filtered = filtered.filter(
-        (archive) =>
-          archive.actualDifficulty === filters.selectedActualDifficulty
-      );
+      filtered = filtered.filter((archive) => archive.actualDifficulty === filters.selectedActualDifficulty);
     }
 
-    // 按可见性筛选
+    // Filter by visibility
     if (filters.selectedVisibility) {
       const isVisible = filters.selectedVisibility === "visible";
       filtered = filtered.filter((archive) => archive.isVisible === isVisible);
@@ -70,7 +62,7 @@ export function useArchiveFilters() {
   };
 
   /**
-   * 防抖应用筛选
+   * Debounced apply filters
    */
   const debouncedApplyFilters = (archives, filters, callback) => {
     const now = Date.now();
@@ -90,14 +82,14 @@ export function useArchiveFilters() {
   };
 
   /**
-   * 更新筛选条件
+   * Update filter conditions
    */
   const updateFilters = (filters) => {
     lastSearchFilters.value = { ...filters };
   };
 
   /**
-   * 重置筛选条件
+   * Reset filter conditions
    */
   const resetFilters = () => {
     lastSearchFilters.value = {

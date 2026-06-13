@@ -1,15 +1,15 @@
-//! 玩家数据模块 - 从存档中提取玩家信息
-//! 优化版本：预分配容量，减少字符串分配
+//! Player data module - Extract player information from saves
+//! Optimized version: Pre-allocate capacity, reduce string allocations
 
 use serde_json::Value;
 
-/// JSON 路径常量（避免重复字符串分配）
+/// JSON path constants (avoid repeated string allocations)
 const PLAYER_DATA_PATH: &str = "/root/properties/PlayerData_0/Map";
 const SANITY_PATH: &str = "/value/Struct/Struct/Sanity_6_A5AFAB454F51CC63745A669BD7E629F6_0/Float";
 const INVENTORY_PATH: &str =
     "/value/Struct/Struct/Inventory_12_EFA3897B4BF0E95A13FE30BACF8B1DB4_0/Array/Base/Name";
 
-/// 从存档 JSON 中提取玩家数据（优化版）
+/// Extract player data from save JSON (optimized version)
 pub fn extract_player_data(save_json: &Value) -> (Vec<String>, Vec<f64>, Vec<Vec<String>>) {
     let map = match save_json
         .pointer(PLAYER_DATA_PATH)
@@ -19,31 +19,31 @@ pub fn extract_player_data(save_json: &Value) -> (Vec<String>, Vec<f64>, Vec<Vec
         _ => return (Vec::new(), Vec::new(), Vec::new()),
     };
 
-    // 预分配容量
+    // Pre-allocate capacity
     let capacity = map.len();
     let mut ids = Vec::with_capacity(capacity);
     let mut sanities = Vec::with_capacity(capacity);
     let mut inventories = Vec::with_capacity(capacity);
 
     for item in map {
-        // 提取玩家 ID
+        // Extract player ID
         let id = match item.pointer("/key/Str").and_then(Value::as_str) {
             Some(s) => s.to_string(),
             None => continue,
         };
 
-        // 屏蔽无效玩家 ID
+        // Filter out invalid player IDs
         if id == "ERROR, BAD UNIQUE NET ID" {
             continue;
         }
 
-        // 提取理智值
+        // Extract sanity value
         let sanity = item
             .pointer(SANITY_PATH)
             .and_then(Value::as_f64)
             .unwrap_or(0.0);
 
-        // 提取背包（预分配 12 个槽位）
+        // Extract inventory (pre-allocate 12 slots)
         let inventory = item
             .pointer(INVENTORY_PATH)
             .and_then(Value::as_array)

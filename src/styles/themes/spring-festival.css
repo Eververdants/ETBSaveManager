@@ -148,16 +148,11 @@
    * 卡片样式
    * ========================================== */
   --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), 0 0 20px rgba(202, 138, 4, 0.1);
-  --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.45),
-    0 0 30px rgba(202, 138, 4, 0.15);
+  --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 30px rgba(202, 138, 4, 0.15);
   --card-border: 1px solid rgba(202, 138, 4, 0.28);
   --card-radius: 16px;
   --card-padding: 16px;
-  --card-highlight: linear-gradient(
-    135deg,
-    rgba(202, 138, 4, 0.12),
-    rgba(196, 30, 58, 0.08)
-  );
+  --card-highlight: linear-gradient(135deg, rgba(202, 138, 4, 0.12), rgba(196, 30, 58, 0.08));
   --card-active-indicator: var(--cny-amber);
   --card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --card-hover-transform: translateY(-2px);
@@ -336,18 +331,12 @@
   /* ==========================================
    * 卡片样式
    * ========================================== */
-  --card-shadow: 0 4px 16px rgba(190, 18, 60, 0.08),
-    0 0 20px rgba(180, 83, 9, 0.06);
-  --card-shadow-hover: 0 8px 24px rgba(190, 18, 60, 0.12),
-    0 0 30px rgba(180, 83, 9, 0.1);
+  --card-shadow: 0 4px 16px rgba(190, 18, 60, 0.08), 0 0 20px rgba(180, 83, 9, 0.06);
+  --card-shadow-hover: 0 8px 24px rgba(190, 18, 60, 0.12), 0 0 30px rgba(180, 83, 9, 0.1);
   --card-border: 1px solid rgba(190, 18, 60, 0.15);
   --card-radius: 16px;
   --card-padding: 16px;
-  --card-highlight: linear-gradient(
-    135deg,
-    rgba(180, 83, 9, 0.08),
-    rgba(190, 18, 60, 0.04)
-  );
+  --card-highlight: linear-gradient(135deg, rgba(180, 83, 9, 0.08), rgba(190, 18, 60, 0.04));
   --card-active-indicator: var(--cny-red);
   --card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --card-hover-transform: translateY(-2px);
@@ -407,21 +396,10 @@
   bottom: 0;
   pointer-events: none;
   z-index: 9999;
-  background-image: radial-gradient(
-      circle at 15% 15%,
-      rgba(202, 138, 4, 0.06) 0%,
-      transparent 25%
-    ),
-    radial-gradient(
-      circle at 85% 85%,
-      rgba(196, 30, 58, 0.05) 0%,
-      transparent 25%
-    ),
-    radial-gradient(
-      circle at 50% 50%,
-      rgba(253, 164, 175, 0.02) 0%,
-      transparent 40%
-    );
+  background-image:
+    radial-gradient(circle at 15% 15%, rgba(202, 138, 4, 0.06) 0%, transparent 25%),
+    radial-gradient(circle at 85% 85%, rgba(196, 30, 58, 0.05) 0%, transparent 25%),
+    radial-gradient(circle at 50% 50%, rgba(253, 164, 175, 0.02) 0%, transparent 40%);
   animation: lanternGlow 12s ease-in-out infinite;
 }
 
@@ -435,21 +413,10 @@
   bottom: 0;
   pointer-events: none;
   z-index: 9999;
-  background-image: radial-gradient(
-      circle at 20% 30%,
-      rgba(190, 18, 60, 0.04) 0%,
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 80% 70%,
-      rgba(180, 83, 9, 0.04) 0%,
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 50% 50%,
-      rgba(254, 205, 211, 0.06) 0%,
-      transparent 40%
-    );
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(190, 18, 60, 0.04) 0%, transparent 30%),
+    radial-gradient(circle at 80% 70%, rgba(180, 83, 9, 0.04) 0%, transparent 30%),
+    radial-gradient(circle at 50% 50%, rgba(254, 205, 211, 0.06) 0%, transparent 40%);
   animation: peachBlossom 15s ease-in-out infinite;
 }
 
@@ -504,9 +471,13 @@
 
 /* 侧边栏活跃项光晕 */
 [data-theme="spring-festival-dark"] .sidebar-item.active {
-  box-shadow: inset 3px 0 0 var(--cny-amber), 0 0 20px rgba(202, 138, 4, 0.1);
+  box-shadow:
+    inset 3px 0 0 var(--cny-amber),
+    0 0 20px rgba(202, 138, 4, 0.1);
 }
 
 [data-theme="spring-festival-light"] .sidebar-item.active {
-  box-shadow: inset 3px 0 0 var(--cny-red), 0 0 20px rgba(190, 18, 60, 0.08);
+  box-shadow:
+    inset 3px 0 0 var(--cny-red),
+    0 0 20px rgba(190, 18, 60, 0.08);
 }

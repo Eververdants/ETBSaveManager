@@ -70,11 +70,11 @@ export default defineConfig(async ({ mode }) => {
             return "draggable";
           }
           // Markdown - 按需加载
-          if (id.includes("markdown-it") || id.includes("marked")) {
+          if (id.includes("markdown-it")) {
             return "markdown";
           }
           // 虚拟滚动 - 首页需要
-          if (id.includes("@tanstack/vue-virtual") || id.includes("vue-virtual-scroller")) {
+          if (id.includes("@tanstack/vue-virtual")) {
             return "virtual-scroll";
           }
         },

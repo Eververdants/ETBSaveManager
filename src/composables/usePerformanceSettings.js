@@ -15,6 +15,11 @@ export function usePerformanceSettings(props, emit, t) {
   const currentFPS = ref(60);
   const longTaskCount = ref(0);
 
+  let frameCount = 0;
+  let lastTime = performance.now();
+  let fpsMonitorInterval = null;
+  let longTaskObserver = null;
+
   const sharedMonitor = () => {
     if (monitorInstance) {
       monitorRefCount++;
@@ -69,7 +74,7 @@ export function usePerformanceSettings(props, emit, t) {
           longTaskObserver.disconnect();
           longTaskObserver = null;
         }
-      }
+      },
     };
 
     return monitorInstance;
@@ -88,28 +93,28 @@ export function usePerformanceSettings(props, emit, t) {
     () => props.performanceMode,
     (newVal) => {
       localPerformanceMode.value = newVal;
-    }
+    },
   );
 
   watch(
     () => props.animationQuality,
     (newVal) => {
       localAnimationQuality.value = newVal;
-    }
+    },
   );
 
   watch(
     () => props.hardwareAcceleration,
     (newVal) => {
       localHardwareAcceleration.value = newVal;
-    }
+    },
   );
 
   watch(
     () => props.virtualizationEnabled,
     (newVal) => {
       localVirtualizationEnabled.value = newVal;
-    }
+    },
   );
 
   const updatePerformanceMode = () => {

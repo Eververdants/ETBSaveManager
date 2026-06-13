@@ -1,6 +1,11 @@
 <template>
-  <div id="titlebar" data-tauri-drag-region class="titlebar" style="padding-left: 12px"
-    :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+  <div
+    id="titlebar"
+    data-tauri-drag-region
+    class="titlebar"
+    style="padding-left: 12px"
+    :class="{ 'sidebar-collapsed': sidebarCollapsed }"
+  >
     <div class="titlebar-content" data-tauri-drag-region>
       <div class="title-section" data-tauri-drag-region>
         <transition name="text-swift" mode="out-in">
@@ -12,13 +17,13 @@
     </div>
 
     <div class="titlebar-controls">
-      <div class="titlebar-button" id="titlebar-minimize" @click.stop="handleMinimize">
+      <div id="titlebar-minimize" class="titlebar-button" @click.stop="handleMinimize">
         <font-awesome-icon :icon="['fas', 'minus']" aria-hidden="true" />
       </div>
-      <div class="titlebar-button" id="titlebar-maximize" @click.stop="handleMaximize">
+      <div id="titlebar-maximize" class="titlebar-button" @click.stop="handleMaximize">
         <font-awesome-icon :icon="['fas', 'window-maximize']" aria-hidden="true" />
       </div>
-      <div class="titlebar-button close" id="titlebar-close" @click.stop="handleClose">
+      <div id="titlebar-close" class="titlebar-button close" @click.stop="handleClose">
         <font-awesome-icon :icon="['fas', 'times']" aria-hidden="true" />
       </div>
     </div>
@@ -138,7 +143,9 @@ onMounted(() => {
   -webkit-app-region: drag;
   user-select: none;
   border-bottom: 1px solid var(--titlebar-border);
-  transition: background 0.25s ease, border-bottom 0.25s ease,
+  transition:
+    background 0.25s ease,
+    border-bottom 0.25s ease,
     backdrop-filter 0.25s ease;
 }
 
@@ -166,7 +173,10 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease;
+  transition:
+    all 0.2s ease,
+    background-color 0.25s ease,
+    color 0.25s ease;
   cursor: pointer;
   background: transparent;
   border: none;
@@ -223,7 +233,10 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-xs);
-  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease,
+  transition:
+    all 0.2s ease,
+    background-color 0.25s ease,
+    color 0.25s ease,
     transform 0.25s ease;
   -webkit-app-region: no-drag;
   font-size: 14px;

@@ -5,27 +5,27 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 let popupApp = null;
 let mountPoint = null;
 
-// 发行版开关 - 设置为false禁用弹窗功能
+// Release toggle - set to false to disable popup functionality
 const ENABLE_POPUP = true;
 
 export const showPopup = (options) => {
-  // 如果弹窗功能被禁用，直接返回
+  // If popup functionality is disabled, return immediately
   if (!ENABLE_POPUP) {
     console.log("弹窗功能已禁用");
     return;
   }
 
-  // 如果已有弹窗，先卸载
+  // If a popup already exists, unmount it first
   if (popupApp && mountPoint) {
     popupApp.unmount();
     document.body.removeChild(mountPoint);
   }
 
-  // 创建新的挂载点
+  // Create a new mount point
   mountPoint = document.createElement("div");
   document.body.appendChild(mountPoint);
 
-  // 创建应用实例
+  // Create app instance
   popupApp = createApp({
     render: () =>
       h(PromptPopup, {
@@ -41,14 +41,14 @@ export const showPopup = (options) => {
       }),
   });
 
-  // 注册Font Awesome组件
-  popupApp.component("font-awesome-icon", FontAwesomeIcon);
+  // Register Font Awesome component
+  popupApp.component("FontAwesomeIcon", FontAwesomeIcon);
 
-  // 挂载应用
+  // Mount the app
   popupApp.mount(mountPoint);
 };
 
-// 快捷方法
+// Convenience methods
 export const showSuccess = (message, options = {}) => {
   return showPopup({
     message,

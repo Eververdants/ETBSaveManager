@@ -7,31 +7,28 @@
 
     <div class="controls">
       <div class="button-group">
-        <button @click="generateRandomArchives" :disabled="isCreating" class="primary-btn">
+        <button :disabled="isCreating" class="primary-btn" @click="generateRandomArchives">
           {{ isCreating ? "创建中..." : "生成100个随机临时存档" }}
         </button>
-        <button @click="clearAllArchives" class="danger-btn">
-          清空所有存档
-        </button>
+        <button class="danger-btn" @click="clearAllArchives">清空所有存档</button>
       </div>
 
       <div class="filter-group">
         <label>
-          <input type="checkbox" v-model="showSavedOnly" />
+          <input v-model="showSavedOnly" type="checkbox" />
           仅显示已保存的存档
         </label>
         <label>
-          <input type="checkbox" v-model="autoSave" />
+          <input v-model="autoSave" type="checkbox" />
           自动保存新增存档
         </label>
       </div>
 
-      <!-- 创建进度条 -->
+      <!-- Progress bar -->
       <div v-if="isCreating" class="progress-container">
         <div class="progress-header">
           <span class="progress-text">创建进度：{{ progress }}%</span>
-          <span class="progress-status">
-            {{ progress < 100 ? "正在创建存档..." : "创建完成！" }} </span>
+          <span class="progress-status"> {{ progress < 100 ? "正在创建存档..." : "创建完成！" }} </span>
         </div>
         <div class="progress-bar">
           <div class="progress-fill" :style="{ width: progress + '%' }"></div>
@@ -54,27 +51,31 @@
       </div>
       <div class="stat-item">
         <span class="stat-label">临时：</span>
-        <span class="stat-value temp">{{
-          tempArchives.length - savedArchives.length
-          }}</span>
+        <span class="stat-value temp">{{ tempArchives.length - savedArchives.length }}</span>
       </div>
     </div>
 
     <div class="archives-grid">
-      <div v-for="archive in filteredArchives" :key="archive.id" class="archive-card" :class="{
-        saved: archive.isSaved,
-        selected: selectedArchives.includes(archive.id),
-      }">
+      <div
+        v-for="archive in filteredArchives"
+        :key="archive.id"
+        class="archive-card"
+        :class="{
+          saved: archive.isSaved,
+          selected: selectedArchives.includes(archive.id),
+        }"
+      >
         <div class="archive-header">
           <h3>{{ archive.archive_name }}</h3>
           <div class="archive-actions">
-            <button @click="toggleArchiveSelection(archive.id)" class="select-btn"
-              :class="{ selected: selectedArchives.includes(archive.id) }">
+            <button
+              class="select-btn"
+              :class="{ selected: selectedArchives.includes(archive.id) }"
+              @click="toggleArchiveSelection(archive.id)"
+            >
               {{ selectedArchives.includes(archive.id) ? "✓" : "○" }}
             </button>
-            <button @click="deleteArchive(archive.id)" class="delete-btn">
-              🗑️
-            </button>
+            <button class="delete-btn" @click="deleteArchive(archive.id)">🗑️</button>
           </div>
         </div>
 
@@ -104,12 +105,10 @@
         </div>
 
         <div class="archive-controls">
-          <button @click="toggleSaveStatus(archive)" class="save-btn" :class="{ saved: archive.isSaved }">
+          <button class="save-btn" :class="{ saved: archive.isSaved }" @click="toggleSaveStatus(archive)">
             {{ archive.isSaved ? "取消保存" : "标记保存" }}
           </button>
-          <button @click="viewArchiveDetails(archive)" class="details-btn">
-            详情
-          </button>
+          <button class="details-btn" @click="viewArchiveDetails(archive)">详情</button>
         </div>
       </div>
     </div>
@@ -117,22 +116,18 @@
     <div v-if="selectedArchives.length > 0" class="bulk-actions">
       <div class="bulk-info">已选择 {{ selectedArchives.length }} 个存档</div>
       <div class="bulk-buttons">
-        <button @click="saveSelectedArchives" class="primary-btn">
-          批量保存
-        </button>
-        <button @click="deleteSelectedArchives" class="danger-btn">
-          批量删除
-        </button>
-        <button @click="clearSelection" class="secondary-btn">取消选择</button>
+        <button class="primary-btn" @click="saveSelectedArchives">批量保存</button>
+        <button class="danger-btn" @click="deleteSelectedArchives">批量删除</button>
+        <button class="secondary-btn" @click="clearSelection">取消选择</button>
       </div>
     </div>
 
-    <!-- 存档详情模态框 -->
+    <!-- Archive details modal -->
     <div v-if="showDetailsModal" class="modal-overlay" @click="closeDetailsModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h2>存档详情</h2>
-          <button @click="closeDetailsModal" class="close-btn">✕</button>
+          <button class="close-btn" @click="closeDetailsModal">✕</button>
         </div>
         <div class="modal-body">
           <div v-if="selectedArchive" class="archive-details">
@@ -141,9 +136,7 @@
               <div class="detail-grid">
                 <div class="detail-item">
                   <span class="detail-label">存档名称：</span>
-                  <span class="detail-value">{{
-                    selectedArchive.archive_name
-                    }}</span>
+                  <span class="detail-value">{{ selectedArchive.archive_name }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">层级：</span>
@@ -151,40 +144,28 @@
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">游戏模式：</span>
-                  <span class="detail-value">{{
-                    selectedArchive.game_mode
-                    }}</span>
+                  <span class="detail-value">{{ selectedArchive.game_mode }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">难度：</span>
-                  <span class="detail-value">{{
-                    selectedArchive.difficulty
-                    }}</span>
+                  <span class="detail-value">{{ selectedArchive.difficulty }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">实际难度：</span>
-                  <span class="detail-value">{{
-                    selectedArchive.actual_difficulty
-                    }}</span>
+                  <span class="detail-value">{{ selectedArchive.actual_difficulty }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">创建时间：</span>
-                  <span class="detail-value">{{
-                    formatTime(selectedArchive.createdAt)
-                    }}</span>
+                  <span class="detail-value">{{ formatTime(selectedArchive.createdAt) }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">状态：</span>
-                  <span class="detail-value">{{
-                    selectedArchive.isSaved ? "已保存" : "临时"
-                    }}</span>
+                  <span class="detail-value">{{ selectedArchive.isSaved ? "已保存" : "临时" }}</span>
                 </div>
               </div>
             </div>
 
-            <div v-if="
-              selectedArchive.players && selectedArchive.players.length > 0
-            " class="detail-section">
+            <div v-if="selectedArchive.players && selectedArchive.players.length > 0" class="detail-section">
               <h3>玩家信息</h3>
               <div v-for="(player, index) in selectedArchive.players" :key="index" class="player-detail">
                 <div class="player-header">
@@ -197,9 +178,7 @@
                     <span v-for="(item, itemIndex) in player.inventory" :key="itemIndex" class="inventory-item">
                       {{ getItemNameById(item) }}
                     </span>
-                    <span v-if="!player.inventory || player.inventory.length === 0" class="empty-inventory">
-                      空
-                    </span>
+                    <span v-if="!player.inventory || player.inventory.length === 0" class="empty-inventory"> 空 </span>
                   </div>
                 </div>
               </div>
@@ -214,7 +193,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 
-// 响应式数据
+// Reactive data
 const tempArchives = ref([]);
 const selectedArchives = ref([]);
 const isCreating = ref(false);
@@ -224,7 +203,7 @@ const autoSave = ref(false);
 const showDetailsModal = ref(false);
 const selectedArchive = ref(null);
 
-// 层级数据
+// Level data
 const availableLevels = ref([
   { levelKey: "Level0", levelName: "Level 0 - 主入口" },
   { levelKey: "TopFloor", levelName: "Top Floor - 顶层" },
@@ -238,13 +217,11 @@ const availableLevels = ref([
   { levelKey: "Cafeteria", levelName: "Cafeteria - 食堂" },
 ]);
 
-// 难度选项
+// Difficulty options
 const difficultyLevels = ["easy", "normal", "hard", "extreme"];
 
-// 计算属性
-const savedArchives = computed(() =>
-  tempArchives.value.filter((archive) => archive.isSaved)
-);
+// Computed properties
+const savedArchives = computed(() => tempArchives.value.filter((archive) => archive.isSaved));
 
 const filteredArchives = computed(() => {
   if (showSavedOnly.value) {
@@ -253,7 +230,7 @@ const filteredArchives = computed(() => {
   return tempArchives.value;
 });
 
-// 生成随机存档
+// Generate random archives
 const generateRandomArchives = async () => {
   if (isCreating.value) return;
 
@@ -269,20 +246,20 @@ const generateRandomArchives = async () => {
     for (let i = 0; i < 100; i++) {
       progress.value = Math.round((i / 100) * 100);
 
-      // 生成随机存档数据
+      // Generate random archive data
       const archiveData = await generateRandomArchiveData(i);
 
       try {
-        // 调用后端Rust API创建存档
+        // Call backend Rust API to create archive
         await invoke("handle_new_save", { saveData: archiveData });
 
-        // 创建成功后添加到本地列表
+        // Add to local list after successful creation
         const archive = {
           ...archiveData,
           id: Date.now() + i,
           createdAt: new Date().toISOString(),
-          isSaved: true, // 真实创建后标记为已保存
-          realCreated: true, // 标记为真实创建
+          isSaved: true, // Mark as saved after real creation
+          realCreated: true, // Mark as really created
         };
         archives.push(archive);
         successCount++;
@@ -292,7 +269,7 @@ const generateRandomArchives = async () => {
         errorCount++;
         console.error(`创建存档 ${archiveData.archive_name} 失败:`, apiError);
 
-        // 即使API调用失败，也添加到列表中作为失败记录
+        // Even if API call fails, add to list as failed record
         const failedArchive = {
           ...archiveData,
           id: Date.now() + i,
@@ -304,13 +281,13 @@ const generateRandomArchives = async () => {
         archives.push(failedArchive);
       }
 
-      // 添加小延迟让用户看到进度，并避免API调用过频
+      // Add small delay for user to see progress and avoid API call rate limiting
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
 
     tempArchives.value = [...tempArchives.value, ...archives];
 
-    // 显示创建结果统计
+    // Show creation result summary
     let resultMessage = `创建完成！`;
     if (successCount > 0) {
       resultMessage += ` 成功创建 ${successCount} 个存档`;
@@ -330,21 +307,17 @@ const generateRandomArchives = async () => {
   }
 };
 
-// 生成随机存档数据
+// Generate random archive data
 const generateRandomArchiveData = async (index) => {
-  const randomLevel =
-    availableLevels.value[
-    Math.floor(Math.random() * availableLevels.value.length)
-    ];
-  const randomDifficulty =
-    difficultyLevels[Math.floor(Math.random() * difficultyLevels.length)];
+  const randomLevel = availableLevels.value[Math.floor(Math.random() * availableLevels.value.length)];
+  const randomDifficulty = difficultyLevels[Math.floor(Math.random() * difficultyLevels.length)];
 
-  // 随机生成1-4个玩家
+  // Randomly generate 1-4 players
   const playerCount = Math.floor(Math.random() * 4) + 1;
   const players = [];
 
   for (let i = 0; i < playerCount; i++) {
-    // 生成随机背包物品（0-6个物品）
+    // Generate random inventory items (0-6 items)
     const inventorySize = Math.floor(Math.random() * 7);
     const inventory = [];
 
@@ -359,21 +332,14 @@ const generateRandomArchiveData = async (index) => {
     });
   }
 
-  // 判断是否为主线结局 (0-9为支线，10+为主线)
+  // Determine if it's a main ending (0-9 are side endings, 10+ are main endings)
   const isMainEnding = index >= 10;
 
-  // 判断是否需要锁定MEG
-  const megLevels = [
-    "Level0",
-    "TopFloor",
-    "MiddleFloor",
-    "GarageLevel2",
-    "BottomFloor",
-    "TheHub",
-  ];
+  // Determine if MEG needs to be locked
+  const megLevels = ["Level0", "TopFloor", "MiddleFloor", "GarageLevel2", "BottomFloor", "TheHub"];
   const isMEGUnlocked = !megLevels.includes(randomLevel.levelKey);
 
-  // 加载BasicArchive模板
+  // Load BasicArchive template
   let basicArchive = {};
   try {
     const response = await fetch("/BasicArchive.json");
@@ -386,24 +352,22 @@ const generateRandomArchiveData = async (index) => {
     archive_name: `测试存档_${index + 1}_${randomLevel.levelKey}`,
     level: randomLevel.levelKey,
     game_mode: "multiplayer",
-    difficulty:
-      randomDifficulty.charAt(0).toUpperCase() + randomDifficulty.slice(1),
-    actual_difficulty:
-      randomDifficulty.charAt(0).toUpperCase() + randomDifficulty.slice(1),
+    difficulty: randomDifficulty.charAt(0).toUpperCase() + randomDifficulty.slice(1),
+    actual_difficulty: randomDifficulty.charAt(0).toUpperCase() + randomDifficulty.slice(1),
     players: players,
     basic_archive: basicArchive,
-    main_ending: !isMainEnding, // 主线为false，支线为true
-    meg_unlocked: isMEGUnlocked, // MEG解锁状态
+    main_ending: !isMainEnding, // Main is false, side is true
+    meg_unlocked: isMEGUnlocked, // MEG unlock status
   };
 };
 
-// 生成随机Steam ID
+// Generate random Steam ID
 const generateRandomSteamId = () => {
   const numbers = Math.floor(Math.random() * 900000000) + 100000000;
   return numbers.toString();
 };
 
-// 根据物品ID获取物品名称
+// Get item name by item ID
 const getItemNameById = (itemId) => {
   const itemMap = {
     1: "杏仁浓缩液",
@@ -435,21 +399,19 @@ const getItemNameById = (itemId) => {
   return itemMap[itemId] || `未知物品(${itemId})`;
 };
 
-// 格式化时间
+// Format time
 const formatTime = (timeString) => {
   const date = new Date(timeString);
   return date.toLocaleString("zh-CN");
 };
 
-// 删除存档
+// Delete archive
 const deleteArchive = (archiveId) => {
   if (confirm("确定要删除这个存档吗？")) {
-    const index = tempArchives.value.findIndex(
-      (archive) => archive.id === archiveId
-    );
+    const index = tempArchives.value.findIndex((archive) => archive.id === archiveId);
     if (index !== -1) {
       tempArchives.value.splice(index, 1);
-      // 从选中列表中移除
+      // Remove from selected list
       const selectedIndex = selectedArchives.value.indexOf(archiveId);
       if (selectedIndex !== -1) {
         selectedArchives.value.splice(selectedIndex, 1);
@@ -458,7 +420,7 @@ const deleteArchive = (archiveId) => {
   }
 };
 
-// 清空所有存档
+// Clear all archives
 const clearAllArchives = () => {
   if (confirm("确定要清空所有存档吗？此操作不可恢复！")) {
     tempArchives.value = [];
@@ -466,7 +428,7 @@ const clearAllArchives = () => {
   }
 };
 
-// 切换存档选择状态
+// Toggle archive selection
 const toggleArchiveSelection = (archiveId) => {
   const index = selectedArchives.value.indexOf(archiveId);
   if (index === -1) {
@@ -476,17 +438,17 @@ const toggleArchiveSelection = (archiveId) => {
   }
 };
 
-// 清除选择
+// Clear selection
 const clearSelection = () => {
   selectedArchives.value = [];
 };
 
-// 切换保存状态
+// Toggle save status
 const toggleSaveStatus = (archive) => {
   archive.isSaved = !archive.isSaved;
 };
 
-// 批量保存选中的存档
+// Batch save selected archives
 const saveSelectedArchives = () => {
   selectedArchives.value.forEach((archiveId) => {
     const archive = tempArchives.value.find((a) => a.id === archiveId);
@@ -497,29 +459,27 @@ const saveSelectedArchives = () => {
   selectedArchives.value = [];
 };
 
-// 批量删除选中的存档
+// Batch delete selected archives
 const deleteSelectedArchives = () => {
   if (confirm(`确定要删除选中的 ${selectedArchives.value.length} 个存档吗？`)) {
-    tempArchives.value = tempArchives.value.filter(
-      (archive) => !selectedArchives.value.includes(archive.id)
-    );
+    tempArchives.value = tempArchives.value.filter((archive) => !selectedArchives.value.includes(archive.id));
     selectedArchives.value = [];
   }
 };
 
-// 查看存档详情
+// View archive details
 const viewArchiveDetails = (archive) => {
   selectedArchive.value = archive;
   showDetailsModal.value = true;
 };
 
-// 关闭详情模态框
+// Close details modal
 const closeDetailsModal = () => {
   showDetailsModal.value = false;
   selectedArchive.value = null;
 };
 
-// 初始化
+// Initialize
 onMounted(() => {
   console.log("临时存档测试页面已初始化");
 });
@@ -578,7 +538,7 @@ onMounted(() => {
   cursor: pointer;
 }
 
-/* 进度条样式 */
+/* Progress bar styles */
 .progress-container {
   margin-top: 16px;
   padding: 16px;
@@ -632,10 +592,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.3),
-      transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   animation: progress-shine 2s infinite;
 }
 
@@ -714,9 +671,7 @@ onMounted(() => {
 
 .archive-card.saved {
   border-color: var(--success-color);
-  background: linear-gradient(135deg,
-      var(--bg-secondary) 0%,
-      rgba(0, 212, 170, 0.05) 100%);
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(0, 212, 170, 0.05) 100%);
 }
 
 .archive-card.selected {
@@ -1013,7 +968,7 @@ onMounted(() => {
   font-style: italic;
 }
 
-/* 按钮样式 */
+/* Button styles */
 .primary-btn,
 .secondary-btn,
 .danger-btn {
@@ -1059,7 +1014,7 @@ onMounted(() => {
   opacity: 0.8;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   .archives-grid {
     grid-template-columns: 1fr;

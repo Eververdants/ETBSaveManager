@@ -9,9 +9,10 @@
         </div>
       </div>
       <div class="stat-item">
-        <span>🧠 {{ t("performanceMonitor.memory") }}:
-          {{ formatMemory(memory.usedJSHeapSize) }} /
-          {{ formatMemory(memory.totalJSHeapSize) }}</span>
+        <span
+          >🧠 {{ t("performanceMonitor.memory") }}: {{ formatMemory(memory.usedJSHeapSize) }} /
+          {{ formatMemory(memory.totalJSHeapSize) }}</span
+        >
         <div class="rating" :class="memoryRating.class">
           {{ memoryRating.icon }}
         </div>
@@ -22,10 +23,7 @@
           {{ cpuRating.icon }}
         </div>
       </div>
-      <div>
-        ⏱️ {{ t("performanceMonitor.renderTime") }}:
-        {{ loadTime.toFixed(2) }} ms
-      </div>
+      <div>⏱️ {{ t("performanceMonitor.renderTime") }}: {{ loadTime.toFixed(2) }} ms</div>
     </div>
 
     <div class="charts">
@@ -37,26 +35,11 @@
 </template>
 
 <script>
-import {
-  Chart,
-  LineController,
-  LineElement,
-  PointElement,
-  LinearScale,
-  Title,
-  CategoryScale,
-} from "chart.js";
+import { Chart, LineController, LineElement, PointElement, LinearScale, Title, CategoryScale } from "chart.js";
 import { markRaw } from "vue";
 import { useI18n } from "vue-i18n";
 
-Chart.register(
-  LineController,
-  LineElement,
-  PointElement,
-  LinearScale,
-  Title,
-  CategoryScale
-);
+Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale);
 
 export default {
   name: "PerformanceMonitor",
@@ -70,14 +53,14 @@ export default {
       memory: { usedJSHeapSize: 0, totalJSHeapSize: 0 },
       cpuLoad: 0,
       loadTime: 0,
-      _frame: null,
-      _lastFrameTime: performance.now(),
-      _lastFpsTime: performance.now(),
-      _lastSampleTime: performance.now(),
-      _lastCpuCheck: performance.now(),
-      _cpuIdle: 0,
-      _visibilityHandler: null,
-      _paused: false,
+      frame: null,
+      lastFrameTime: performance.now(),
+      lastFpsTime: performance.now(),
+      lastSampleTime: performance.now(),
+      lastCpuCheck: performance.now(),
+      cpuIdle: 0,
+      visibilityHandler: null,
+      paused: false,
       sampleInterval: 500,
       frameCount: 0,
       fpsData: [],
@@ -208,37 +191,36 @@ export default {
       this.loadTime = navigationEntry.loadEventEnd - navigationEntry.fetchStart;
     } else if (performance.timing) {
       // 降级到旧API（兼容旧浏览器）
-      this.loadTime =
-        performance.timing.loadEventEnd - performance.timing.fetchStart;
+      this.loadTime = performance.timing.loadEventEnd - performance.timing.fetchStart;
     } else {
       // 如果都不支持，设置为0
       this.loadTime = 0;
     }
 
     this.initCharts();
-    this._visibilityHandler = () => {
+    this.visibilityHandler = () => {
       if (document.hidden) {
-        this._paused = true;
-        if (this._frame) {
-          cancelAnimationFrame(this._frame);
-          this._frame = null;
+        this.paused = true;
+        if (this.frame) {
+          cancelAnimationFrame(this.frame);
+          this.frame = null;
         }
         return;
       }
-      this._paused = false;
-      this._lastFrameTime = performance.now();
-      this._lastFpsTime = performance.now();
-      this._lastSampleTime = performance.now();
+      this.paused = false;
+      this.lastFrameTime = performance.now();
+      this.lastFpsTime = performance.now();
+      this.lastSampleTime = performance.now();
       this.startMonitoring();
     };
-    document.addEventListener("visibilitychange", this._visibilityHandler);
+    document.addEventListener("visibilitychange", this.visibilityHandler);
     this.startMonitoring();
   },
   beforeUnmount() {
-    cancelAnimationFrame(this._frame);
-    if (this._visibilityHandler) {
-      document.removeEventListener("visibilitychange", this._visibilityHandler);
-      this._visibilityHandler = null;
+    cancelAnimationFrame(this.frame);
+    if (this.visibilityHandler) {
+      document.removeEventListener("visibilitychange", this.visibilityHandler);
+      this.visibilityHandler = null;
     }
     this.fpsChart && this.fpsChart.destroy();
     this.memChart && this.memChart.destroy();
@@ -246,28 +228,26 @@ export default {
   },
   methods: {
     startMonitoring() {
-      if (this._frame || this._paused) return;
+      if (this.frame || this.paused) return;
       const loop = (now) => {
-        if (this._paused) return;
+        if (this.paused) return;
 
         // FPS (每秒统计一次，更稳定)
         this.frameCount++;
-        if (now - this._lastFpsTime >= 1000) {
-          this.fps = Math.round(
-            (this.frameCount * 1000) / (now - this._lastFpsTime)
-          );
+        if (now - this.lastFpsTime >= 1000) {
+          this.fps = Math.round((this.frameCount * 1000) / (now - this.lastFpsTime));
           this.frameCount = 0;
-          this._lastFpsTime = now;
+          this.lastFpsTime = now;
         }
 
         // CPU (事件循环延迟估算)
-        const elapsed = now - this._lastCpuCheck;
-        this._cpuIdle = 0.95 * this._cpuIdle + 0.05 * Math.min(elapsed, 50);
-        this.cpuLoad = Math.min(100, (1 - this._cpuIdle / 50) * 100);
-        this._lastCpuCheck = now;
+        const elapsed = now - this.lastCpuCheck;
+        this.cpuIdle = 0.95 * this.cpuIdle + 0.05 * Math.min(elapsed, 50);
+        this.cpuLoad = Math.min(100, (1 - this.cpuIdle / 50) * 100);
+        this.lastCpuCheck = now;
 
         // 低频率采样，降低监控开销
-        if (now - this._lastSampleTime >= this.sampleInterval) {
+        if (now - this.lastSampleTime >= this.sampleInterval) {
           if (performance.memory) {
             this.memory = {
               usedJSHeapSize: performance.memory.usedJSHeapSize,
@@ -276,13 +256,13 @@ export default {
           }
           // 更新数据数组（最多保存 60 点）
           this.updateData();
-          this._lastSampleTime = now;
+          this.lastSampleTime = now;
         }
 
         // 下一帧
-        this._frame = requestAnimationFrame(loop);
+        this.frame = requestAnimationFrame(loop);
       };
-      this._frame = requestAnimationFrame(loop);
+      this.frame = requestAnimationFrame(loop);
     },
     updateData() {
       const maxPoints = 60;
@@ -319,7 +299,7 @@ export default {
             datasets: [{ label: "FPS", borderColor: "lime", data: [] }],
           },
           options: commonOptions,
-        })
+        }),
       );
 
       this.memChart = markRaw(
@@ -330,7 +310,7 @@ export default {
             datasets: [{ label: "Memory (MB)", borderColor: "cyan", data: [] }],
           },
           options: commonOptions,
-        })
+        }),
       );
 
       this.cpuChart = markRaw(
@@ -341,7 +321,7 @@ export default {
             datasets: [{ label: "CPU (%)", borderColor: "orange", data: [] }],
           },
           options: commonOptions,
-        })
+        }),
       );
     },
     updateCharts() {

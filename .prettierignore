@@ -1,0 +1,11 @@
+dist/
+node_modules/
+src-tauri/
+*.json
+*.yml
+*.yaml
+*.md
+*.svg
+*.png
+*.jpg
+LICENSE

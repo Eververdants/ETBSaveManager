@@ -1,14 +1,22 @@
 <template>
-  <div class="archive-card" :class="{
-    'archive-hidden': !localVisible,
-    'visibility-transitioning': isAnimating,
-    'archive-entering': !hasEntered,
-    'multi-select-mode': isMultiSelectMode,
-    'is-selected': isSelected,
-  }" @click="handleCardClick">
+  <div
+    class="archive-card"
+    :class="{
+      'archive-hidden': !localVisible,
+      'visibility-transitioning': isAnimating,
+      'archive-entering': !hasEntered,
+      'multi-select-mode': isMultiSelectMode,
+      'is-selected': isSelected,
+    }"
+    @click="handleCardClick"
+  >
     <!-- 多选模式复选框 -->
-    <div v-if="isMultiSelectMode" class="multi-select-checkbox" :class="{ 'is-checked': isSelected }"
-      @click.stop="toggleSelection">
+    <div
+      v-if="isMultiSelectMode"
+      class="multi-select-checkbox"
+      :class="{ 'is-checked': isSelected }"
+      @click.stop="toggleSelection"
+    >
       <font-awesome-icon :icon="isSelected ? 'fa-solid fa-check' : 'fa-regular fa-circle'" class="check-icon" />
     </div>
 
@@ -17,26 +25,31 @@
       <LazyImage :src="backgroundImage" :alt="currentLevelName" image-class="background-image" />
       <div class="background-overlay"></div>
 
+      <!-- 隐藏状态标签 -->
+      <div v-if="!localVisible" class="hidden-badge">
+        <font-awesome-icon icon="fa-solid fa-eye-slash" />
+        <span>{{ t("archiveCard.hidden") }}</span>
+      </div>
+
       <!-- 存档信息 -->
       <div class="archive-info">
         <h3 class="archive-name">{{ archive.name }}</h3>
         <div class="game-mode-info">
-          <span class="difficulty-tag" :class="archiveDifficultyClass" :style="tagStyle(
-            archiveDifficultyText,
-            t('archiveCard.archiveDifficulty')
-          )
-            ">
+          <span
+            class="difficulty-tag"
+            :class="archiveDifficultyClass"
+            :style="tagStyle(archiveDifficultyText, t('archiveCard.archiveDifficulty'))"
+          >
             <span class="tag-short">{{ archiveDifficultyText }}</span>
-            <span class="tag-full">{{ t("archiveCard.archiveDifficulty") }}：{{
-              archiveDifficultyText
-            }}</span>
+            <span class="tag-full">{{ t("archiveCard.archiveDifficulty") }}：{{ archiveDifficultyText }}</span>
           </span>
-          <span class="difficulty-tag" :class="actualDifficultyClass" :style="tagStyle(actualDifficultyText, t('archiveCard.actualDifficulty'))
-            ">
+          <span
+            class="difficulty-tag"
+            :class="actualDifficultyClass"
+            :style="tagStyle(actualDifficultyText, t('archiveCard.actualDifficulty'))"
+          >
             <span class="tag-short">{{ actualDifficultyText }}</span>
-            <span class="tag-full">{{ t("archiveCard.actualDifficulty") }}：{{
-              actualDifficultyText
-            }}</span>
+            <span class="tag-full">{{ t("archiveCard.actualDifficulty") }}：{{ actualDifficultyText }}</span>
           </span>
         </div>
       </div>
@@ -46,13 +59,13 @@
     <div class="card-info">
       <span class="current-level">{{ currentLevelName }}</span>
       <div class="action-buttons">
-        <button class="action-btn edit" @click.stop="editArchive" type="button">
+        <button class="action-btn edit" type="button" @click.stop="editArchive">
           <font-awesome-icon icon="fa-solid fa-edit" />
         </button>
-        <button class="action-btn copy" @click.stop="toggleVisibility" type="button">
+        <button class="action-btn copy" type="button" @click.stop="toggleVisibility">
           <font-awesome-icon :icon="isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" />
         </button>
-        <button class="action-btn delete" @click.stop="deleteArchive" type="button">
+        <button class="action-btn delete" type="button" @click.stop="deleteArchive">
           <font-awesome-icon icon="fa-solid fa-trash" />
         </button>
       </div>
@@ -151,10 +164,12 @@ const toggleSelection = () => {
   background: var(--card-bg);
   border: var(--card-border);
   box-shadow: var(--card-shadow);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.5s ease,
-    filter 0.5s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    opacity 0.5s ease;
   transform: translateZ(0);
-  will-change: transform, opacity, filter;
+  will-change: transform, opacity;
   contain: layout style;
   isolation: isolate;
 }
@@ -162,7 +177,9 @@ const toggleSelection = () => {
 .archive-card.archive-entering {
   opacity: 0;
   transform: scale(0.95) translateY(10px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 /* 删除时禁用所有 transform 相关动画，避免与 GSAP 冲突 */
@@ -192,10 +209,7 @@ const toggleSelection = () => {
   inset: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg,
-      transparent 30%,
-      rgba(255, 255, 255, 0.03) 50%,
-      transparent 70%);
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.03) 50%, transparent 70%);
   transform: rotate(45deg) translate(-100%, -100%);
   pointer-events: none;
   z-index: 10;
@@ -215,7 +229,8 @@ const toggleSelection = () => {
 
 .archive-card:hover {
   transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.4),
+  box-shadow:
+    0 12px 24px -10px rgba(0, 0, 0, 0.4),
     0 4px 8px -4px rgba(0, 0, 0, 0.3);
   z-index: 2;
 }
@@ -233,7 +248,9 @@ const toggleSelection = () => {
   height: 100%;
   filter: blur(1px);
   transform: scale(1.005);
-  transition: filter 0.4s ease-in-out, transform 0.4s ease-in-out;
+  transition:
+    filter 0.4s ease-in-out,
+    transform 0.4s ease-in-out;
 }
 
 .archive-card:hover .card-background :deep(.lazy-image-container) {
@@ -245,11 +262,13 @@ const toggleSelection = () => {
 .background-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.1) 30%,
-      rgba(0, 0, 0, 0.4) 60%,
-      rgba(0, 0, 0, 0.7) 100%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 30%,
+    rgba(0, 0, 0, 0.4) 60%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
   transition: opacity 0.3s ease;
 }
 
@@ -308,8 +327,12 @@ const toggleSelection = () => {
   overflow: hidden;
   position: relative;
   width: var(--w-short, auto);
-  transition: width 0.25s ease, background 0.25s ease, color 0.25s ease,
-    border-color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    width 0.25s ease,
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .tag-short,
@@ -420,8 +443,12 @@ const toggleSelection = () => {
   background: rgba(128, 128, 128, 0.1);
   color: rgba(128, 128, 128, 0.7);
   border: 1px solid rgba(128, 128, 128, 0.2);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease,
-    color 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
   position: relative;
   overflow: hidden;
   touch-action: manipulation;
@@ -436,10 +463,7 @@ const toggleSelection = () => {
   left: -100%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.4s ease;
 }
 
@@ -490,55 +514,170 @@ const toggleSelection = () => {
   transform: scale(0.95);
 }
 
-/* 隐藏状态 */
+/* ========== 隐藏模式：状态标签 ========== */
+.hidden-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 200, 50, 0.25);
+  border-radius: var(--radius-sm);
+  color: rgba(255, 200, 50, 0.8);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  opacity: 0;
+  transform: translateY(-4px);
+  animation: hidden-badge-in 0.35s ease 0.15s forwards;
+  pointer-events: none;
+  user-select: none;
+}
+
+@keyframes hidden-badge-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.archive-hidden:hover .hidden-badge {
+  color: rgba(255, 200, 50, 0.95);
+  border-color: rgba(255, 200, 50, 0.4);
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* ========== 隐藏模式样式 ========== */
+/* 核心原则：不降低内容的可读性，用附加的视觉标记指示隐藏状态 */
+
+/* 隐藏状态：左侧金色标记条 - 主要状态指示 */
+.archive-hidden::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: rgba(255, 200, 50, 0.5);
+  pointer-events: none;
+  z-index: 12;
+  transition:
+    background 0.35s ease,
+    width 0.3s ease;
+}
+
+.archive-hidden:hover::after {
+  background: rgba(255, 200, 50, 0.75);
+  width: 5px;
+}
+
+/* 隐藏状态：边框加入金色点缀 */
 .archive-hidden {
-  opacity: 0.5;
-  filter: grayscale(0.9) brightness(0.8);
+  border-color: rgba(255, 200, 50, 0.15);
+  transition:
+    border-color 0.35s ease,
+    opacity 0.35s ease;
 }
 
-.archive-hidden .archive-name {
-  color: rgba(255, 255, 255, 0.5);
+.archive-hidden:hover {
+  border-color: rgba(255, 200, 50, 0.25);
+  transform: translateY(-3px);
+  box-shadow:
+    0 10px 20px -10px rgba(0, 0, 0, 0.5),
+    0 4px 8px -4px rgba(0, 0, 0, 0.3);
 }
 
+/* 隐藏状态：背景图片仅轻微减饱和，保留清晰度 */
 .archive-hidden .card-background :deep(.lazy-image-container) {
-  filter: grayscale(1) brightness(0.6) blur(2px);
-  transition: filter 0.4s ease-in-out, transform 0.4s ease-in-out;
+  filter: grayscale(0.35) brightness(0.9);
+  transition:
+    filter 0.4s ease-in-out,
+    transform 0.4s ease-in-out;
 }
 
 .archive-hidden:hover .card-background :deep(.lazy-image-container) {
-  filter: grayscale(1) brightness(0.6) blur(0);
+  filter: grayscale(0.15) brightness(0.95);
   transform: scale(1.02);
 }
 
-/* 隐藏状态卡片悬浮时，提高文字清晰度 */
-.archive-hidden:hover {
-  opacity: 0.7;
-  filter: grayscale(0.7) brightness(0.9);
+/* 隐藏状态：背景遮罩保持不变，让图片内容仍然可见 */
+.archive-hidden .background-overlay {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 30%,
+    rgba(0, 0, 0, 0.4) 60%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+}
+
+/* 隐藏状态：存档名称略微柔和 */
+.archive-hidden .archive-name {
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .archive-hidden:hover .archive-name {
-  color: rgba(255, 255, 255, 0.8);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
-.archive-hidden:hover .current-level {
-  color: rgba(255, 255, 255, 0.8);
+/* 隐藏状态：难度标签正常显示 */
+.archive-hidden .difficulty-tag {
+  opacity: 0.85;
 }
 
 .archive-hidden:hover .difficulty-tag {
-  background: rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 0.95);
-  border-color: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(6px);
+  opacity: 1;
 }
 
-.archive-hidden:hover .background-overlay {
+/* 隐藏状态：底部信息保持完整可读 */
+.archive-hidden .card-info {
+  opacity: 0.85;
+  transition: opacity 0.35s ease;
+}
+
+.archive-hidden:hover .card-info {
+  opacity: 1;
+}
+
+.archive-hidden .current-level {
+  color: var(--text-secondary);
+}
+
+.archive-hidden:hover .current-level {
+  color: var(--text-primary);
+}
+
+/* 隐藏状态：操作按钮保持可用 */
+.archive-hidden .action-btn {
+  opacity: 0.6;
+}
+
+.archive-hidden:hover .action-btn {
   opacity: 0.9;
+}
+
+.archive-hidden .action-btn:hover {
+  opacity: 1;
+}
+
+/* 隐藏状态：眼睛图标柔和提示 */
+.archive-hidden .copy .fa-eye-slash {
+  color: rgba(255, 200, 50, 0.5);
+}
+
+.archive-hidden:hover .copy .fa-eye-slash {
+  color: rgba(255, 200, 50, 0.85);
 }
 
 /* 可见性切换过渡动画 */
 .visibility-transitioning {
-  transition: opacity 0.25s ease, filter 0.25s ease !important;
+  transition: opacity 0.25s ease !important;
 }
 
 .visibility-transitioning .card-background :deep(.lazy-image-container) {
@@ -547,6 +686,16 @@ const toggleSelection = () => {
 
 .visibility-transitioning .archive-name {
   transition: color 0.25s ease !important;
+}
+
+.visibility-transitioning .card-info {
+  transition:
+    opacity 0.25s ease,
+    background-color 0.25s ease !important;
+}
+
+.visibility-transitioning .action-btn {
+  transition: opacity 0.25s ease !important;
 }
 
 /* 响应式 */
@@ -694,11 +843,13 @@ const toggleSelection = () => {
 }
 
 .archive-card.is-selected {
-  box-shadow: 0 0 0 2px var(--primary), var(--card-shadow);
+  box-shadow:
+    0 0 0 2px var(--primary),
+    var(--card-shadow);
 }
 
 .archive-card.is-selected .card-background::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: rgba(0, 122, 255, 0.12);

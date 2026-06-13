@@ -53,7 +53,6 @@ export function useFloatingActionButton(emit, t) {
   const isTransitioning = ref(false);
 
   let tooltipTimer = null;
-  let styleObserver = null;
 
   const isHomePage = computed(() => route.name === "Home");
   const shouldRender = ref(isHomePage.value);
@@ -66,7 +65,7 @@ export function useFloatingActionButton(emit, t) {
   const applyContainerStyles = (container, extra = {}) => {
     if (!container) return;
     Object.entries({ ...CONTAINER_STYLES, ...extra }).forEach(([k, v]) =>
-      container.style.setProperty(k, v, "important")
+      container.style.setProperty(k, v, "important"),
     );
   };
 
@@ -77,10 +76,20 @@ export function useFloatingActionButton(emit, t) {
       return;
     }
     isTransitioning.value = true;
-    gsap.fromTo(container, { opacity: 0, scale: 0.8, y: 20 }, {
-      opacity: 1, scale: 1, y: 0, duration: 0.35, ease: "back.out(1.2)",
-      onComplete: () => { isTransitioning.value = false; }
-    });
+    gsap.fromTo(
+      container,
+      { opacity: 0, scale: 0.8, y: 20 },
+      {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        duration: 0.35,
+        ease: "back.out(1.2)",
+        onComplete: () => {
+          isTransitioning.value = false;
+        },
+      },
+    );
   };
 
   const hideFloatingButton = () => {
@@ -91,13 +100,23 @@ export function useFloatingActionButton(emit, t) {
     }
     isTransitioning.value = true;
     gsap.to(container, {
-      opacity: 0, scale: 0.8, y: 20, duration: 0.25, ease: "power2.in",
-      onComplete: () => { shouldRender.value = false; isTransitioning.value = false; }
+      opacity: 0,
+      scale: 0.8,
+      y: 20,
+      duration: 0.25,
+      ease: "power2.in",
+      onComplete: () => {
+        shouldRender.value = false;
+        isTransitioning.value = false;
+      },
     });
   };
 
   const clearTooltipTimer = () => {
-    if (tooltipTimer) { clearTimeout(tooltipTimer); tooltipTimer = null; }
+    if (tooltipTimer) {
+      clearTimeout(tooltipTimer);
+      tooltipTimer = null;
+    }
   };
 
   const handleMouseEnter = () => {
@@ -119,8 +138,13 @@ export function useFloatingActionButton(emit, t) {
     tooltipTimer = setTimeout(() => {
       if (!isHovered.value && tooltip.value) {
         gsap.to(tooltip.value, {
-          opacity: 0, y: 10, duration: 0.2, ...GSAP_DEFAULTS,
-          onComplete: () => { if (tooltip.value) tooltip.value.style.visibility = "hidden"; }
+          opacity: 0,
+          y: 10,
+          duration: 0.2,
+          ...GSAP_DEFAULTS,
+          onComplete: () => {
+            if (tooltip.value) tooltip.value.style.visibility = "hidden";
+          },
         });
       }
     }, 150);
@@ -137,23 +161,28 @@ export function useFloatingActionButton(emit, t) {
     gsap.killTweensOf(nextIconEl.value);
     gsap.killTweensOf(tooltip.value);
     gsap.to(tooltip.value, {
-      opacity: 0, duration: 0.1, ...GSAP_DEFAULTS,
+      opacity: 0,
+      duration: 0.1,
+      ...GSAP_DEFAULTS,
       onComplete: () => {
         currentIndex.value = newIndex;
         gsap.to(tooltip.value, { opacity: 1, y: 0, visibility: "visible", duration: 0.15, ...GSAP_DEFAULTS });
-      }
+      },
     });
     gsap.set(nextIconEl.value, { y: direction * 40, opacity: 1 });
     const duration = 0.25;
     gsap.to(currentIconEl.value, { y: -direction * 40, opacity: 0, duration, ease: "power2.inOut" });
     gsap.to(nextIconEl.value, {
-      y: 0, opacity: 1, duration, ease: "power2.inOut",
+      y: 0,
+      opacity: 1,
+      duration,
+      ease: "power2.inOut",
       onComplete: () => {
         displayIndex.value = newIndex;
         gsap.set(currentIconEl.value, { y: 0, opacity: 1 });
         gsap.set(nextIconEl.value, { y: 40, opacity: 0 });
         isAnimating.value = false;
-      }
+      },
     });
   };
 
@@ -176,29 +205,28 @@ export function useFloatingActionButton(emit, t) {
     hint.className = "scroll-hint";
     hint.innerHTML = `<div class="scroll-hint-content"><div class="scroll-hint-icon">🖱️</div><div class="scroll-hint-text">${t("floatingButton.scrollHint")}</div></div>`;
     document.body.appendChild(hint);
-    gsap.fromTo(hint, { opacity: 0, y: 20 }, {
-      opacity: 1, y: 0, duration: 0.5, delay: 0.5, ...GSAP_DEFAULTS,
-      onComplete: () => gsap.to(hint, {
-        opacity: 0, y: 20, duration: 0.5, delay: 3, ease: "power2.in", force3D: false, immediateRender: false,
-        onComplete: () => hint.remove()
-      })
-    });
-  };
-
-  const initStyleObserver = (container) => {
-    const expected = { position: "fixed", bottom: "30px", right: "30px", top: "auto", left: "auto" };
-    styleObserver = new MutationObserver((mutations) => {
-      if (isTransitioning.value) return;
-      for (const m of mutations) {
-        if (m.type !== "attributes" || m.attributeName !== "style") continue;
-        const needsRestore = Object.entries(expected).some(([k, v]) => {
-          const c = container.style.getPropertyValue(k);
-          return c && c !== v;
-        });
-        if (needsRestore) Object.entries(expected).forEach(([k, v]) => container.style.setProperty(k, v, "important"));
-      }
-    });
-    styleObserver.observe(container, { attributes: true, attributeFilter: ["style"] });
+    gsap.fromTo(
+      hint,
+      { opacity: 0, y: 20 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        delay: 0.5,
+        ...GSAP_DEFAULTS,
+        onComplete: () =>
+          gsap.to(hint, {
+            opacity: 0,
+            y: 20,
+            duration: 0.5,
+            delay: 3,
+            ease: "power2.in",
+            force3D: false,
+            immediateRender: false,
+            onComplete: () => hint.remove(),
+          }),
+      },
+    );
   };
 
   const onMountedHandler = () => {
@@ -206,7 +234,6 @@ export function useFloatingActionButton(emit, t) {
     if (container) {
       gsap.set(container, { opacity: 0, scale: 0.8, y: 20 });
       applyContainerStyles(container, { "z-index": "10000", isolation: "isolate" });
-      initStyleObserver(container);
     }
     if (currentIconEl.value) gsap.set(currentIconEl.value, { y: 0, opacity: 1 });
     if (nextIconEl.value) gsap.set(nextIconEl.value, { y: 40, opacity: 0 });
@@ -220,7 +247,6 @@ export function useFloatingActionButton(emit, t) {
 
   const onUnmountedHandler = () => {
     clearTooltipTimer();
-    if (styleObserver) { styleObserver.disconnect(); styleObserver = null; }
   };
 
   watch(isHomePage, (newVal, oldVal) => {
@@ -236,10 +262,29 @@ export function useFloatingActionButton(emit, t) {
   });
 
   return {
-    actionButton, currentIconEl, nextIconEl, tooltip, floatingActionContainer,
-    currentIndex, displayIndex, nextDisplayIndex, isHovered, isAnimating,
-    isHomePage, shouldRender, isVisible, displayIcon, nextIcon, getCurrentTooltip,
-    handleMouseEnter, handleMouseLeave, handleWheel, handleMouseDown, handleMouseUp, handleClick,
-    onMountedHandler, onUnmountedHandler
+    actionButton,
+    currentIconEl,
+    nextIconEl,
+    tooltip,
+    floatingActionContainer,
+    currentIndex,
+    displayIndex,
+    nextDisplayIndex,
+    isHovered,
+    isAnimating,
+    isHomePage,
+    shouldRender,
+    isVisible,
+    displayIcon,
+    nextIcon,
+    getCurrentTooltip,
+    handleMouseEnter,
+    handleMouseLeave,
+    handleWheel,
+    handleMouseDown,
+    handleMouseUp,
+    handleClick,
+    onMountedHandler,
+    onUnmountedHandler,
   };
 }

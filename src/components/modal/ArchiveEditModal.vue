@@ -18,51 +18,57 @@
           <div class="modal-content">
             <!-- 存档名称 -->
             <div class="form-group">
-              <label class="form-label">{{
-                $t("quickCreate.editModal.archiveName")
-              }}</label>
-              <input type="text" class="form-input" v-model="localArchive.name" :placeholder="$t('quickCreate.editModal.archiveNamePlaceholder')
-                " />
+              <label class="form-label">{{ $t("quickCreate.editModal.archiveName") }}</label>
+              <input
+                v-model="localArchive.name"
+                type="text"
+                class="form-input"
+                :placeholder="$t('quickCreate.editModal.archiveNamePlaceholder')"
+              />
             </div>
 
             <!-- 层级选择 -->
             <div class="form-group">
-              <label class="form-label">{{
-                $t("quickCreate.editModal.level")
-              }}</label>
-              <CustomDropdown :model-value="localArchive.level" :options="levelDropdownOptions"
+              <label class="form-label">{{ $t("quickCreate.editModal.level") }}</label>
+              <CustomDropdown
+                :model-value="localArchive.level"
+                :options="levelDropdownOptions"
                 :placeholder="$t('quickCreate.editModal.inheritFromUniform')"
-                @update:model-value="localArchive.level = $event" />
+                @update:model-value="localArchive.level = $event"
+              />
             </div>
 
             <!-- 存档难度 -->
             <div class="form-group">
-              <label class="form-label">{{
-                $t("quickCreate.editModal.difficulty")
-              }}</label>
-              <CustomDropdown :model-value="localArchive.difficulty" :options="difficultyDropdownOptions"
+              <label class="form-label">{{ $t("quickCreate.editModal.difficulty") }}</label>
+              <CustomDropdown
+                :model-value="localArchive.difficulty"
+                :options="difficultyDropdownOptions"
                 :placeholder="$t('quickCreate.editModal.inheritFromUniform')"
-                @update:model-value="localArchive.difficulty = $event" />
+                @update:model-value="localArchive.difficulty = $event"
+              />
             </div>
 
             <!-- 实际难度 -->
             <div class="form-group">
-              <label class="form-label">{{
-                $t("quickCreate.editModal.actualDifficulty")
-              }}</label>
-              <CustomDropdown :model-value="localArchive.actualDifficulty" :options="difficultyDropdownOptions"
+              <label class="form-label">{{ $t("quickCreate.editModal.actualDifficulty") }}</label>
+              <CustomDropdown
+                :model-value="localArchive.actualDifficulty"
+                :options="difficultyDropdownOptions"
                 :placeholder="$t('quickCreate.editModal.inheritFromUniform')"
-                @update:model-value="localArchive.actualDifficulty = $event" />
+                @update:model-value="localArchive.actualDifficulty = $event"
+              />
             </div>
 
             <!-- 背包模板 -->
             <div class="form-group">
-              <label class="form-label">{{
-                $t("quickCreate.editModal.inventory")
-              }}</label>
-              <CustomDropdown :model-value="localArchive.inventoryTemplate" :options="inventoryDropdownOptions"
+              <label class="form-label">{{ $t("quickCreate.editModal.inventory") }}</label>
+              <CustomDropdown
+                :model-value="localArchive.inventoryTemplate"
+                :options="inventoryDropdownOptions"
                 :placeholder="$t('quickCreate.editModal.inheritFromUniform')"
-                @update:model-value="localArchive.inventoryTemplate = $event" />
+                @update:model-value="localArchive.inventoryTemplate = $event"
+              />
             </div>
           </div>
 
@@ -101,7 +107,8 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-}); ``
+});
+``;
 
 const emit = defineEmits(["close", "save"]);
 
@@ -136,7 +143,7 @@ const useDropdownOptions = (availableLevels, t) => {
   ]);
 
   const getAvailableLevels = () => {
-    const source = typeof availableLevels === 'function' ? availableLevels() : availableLevels;
+    const source = typeof availableLevels === "function" ? availableLevels() : availableLevels;
     return source?.value || source || [];
   };
 
@@ -153,9 +160,7 @@ const useDropdownOptions = (availableLevels, t) => {
     return difficultyOptions.value;
   });
 
-  const inventoryDropdownOptions = computed(() => [
-    { value: "empty", label: t("quickCreate.card.emptyInventory") },
-  ]);
+  const inventoryDropdownOptions = computed(() => [{ value: "empty", label: t("quickCreate.card.emptyInventory") }]);
 
   return { difficultyOptions, levelDropdownOptions, difficultyDropdownOptions, inventoryDropdownOptions };
 };
@@ -176,7 +181,7 @@ const useArchiveSync = (archive, localArchive, resetArchive) => {
         resetArchive();
       }
     },
-    { immediate: true }
+    { immediate: true },
   );
 };
 
@@ -195,7 +200,7 @@ const useEditActions = (emit, archive, localArchive, handleClose) => {
 const { localArchive, resetArchive } = useEditState();
 const { levelDropdownOptions, difficultyDropdownOptions, inventoryDropdownOptions } = useDropdownOptions(
   () => props.availableLevels,
-  t
+  t,
 );
 useArchiveSync(() => props.archive, localArchive, resetArchive);
 

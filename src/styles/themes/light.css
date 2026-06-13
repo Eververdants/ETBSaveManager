@@ -16,7 +16,8 @@
   --bg-secondary: #ffffff;
   --bg-tertiary: #f0f0f2;
   --bg-elevated: #ffffff;
-  --app-bg: radial-gradient(1100px 650px at 15% -10%, rgba(59, 130, 246, 0.10) 0%, transparent 55%),
+  --app-bg:
+    radial-gradient(1100px 650px at 15% -10%, rgba(59, 130, 246, 0.1) 0%, transparent 55%),
     radial-gradient(900px 560px at 105% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 45%),
     linear-gradient(180deg, #f8f8fa 0%, #f3f4f6 100%);
 
@@ -76,7 +77,7 @@
   --sidebar-border-color: rgba(0, 0, 0, 0.06);
   --sidebar-hover-bg: rgba(0, 0, 0, 0.04);
   --sidebar-item-hover-bg: rgba(0, 0, 0, 0.04);
-  --sidebar-active-bg: rgba(59, 130, 246, 0.10);
+  --sidebar-active-bg: rgba(59, 130, 246, 0.1);
   --sidebar-active-color: #1a1a1c;
   --sidebar-active-border: rgba(59, 130, 246, 0.35);
   --sidebar-active-hover-bg: rgba(59, 130, 246, 0.14);
@@ -136,11 +137,7 @@
   --card-border: 1px solid rgba(0, 0, 0, 0.06);
   --card-radius: 16px;
   --card-padding: 16px;
-  --card-highlight: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.8) 0%,
-    transparent 50%
-  );
+  --card-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, transparent 50%);
   --card-active-indicator: #3b82f6;
   --card-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --card-hover-transform: translateY(-2px);

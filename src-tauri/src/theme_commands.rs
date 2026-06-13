@@ -129,23 +129,23 @@ pub struct ThemeExportData {
 // Security Validation Functions
 // ============================================================================
 
-fn validate_theme_id(theme_id: &str) -> Result<(), String> {
+fn validate_theme_id(theme_id: &str) -> AppResult<()> {
     if theme_id.is_empty() || theme_id.len() > 64 {
-        return Err("Theme ID must be 1-64 characters".to_string());
+        return Err("Theme ID must be 1-64 characters".to_string().into());
     }
     if !theme_id
         .chars()
         .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
     {
-        return Err("Theme ID contains invalid characters".to_string());
+        return Err("Theme ID contains invalid characters".to_string().into());
     }
     Ok(())
 }
 
-fn validate_path_security(path: &PathBuf, allowed_base: &PathBuf) -> Result<(), String> {
+fn validate_path_security(path: &PathBuf, allowed_base: &PathBuf) -> AppResult<()> {
     let path_str = path.to_string_lossy();
     if path_str.contains("..") {
-        return Err("Path traversal attack detected".to_string());
+        return Err("Path traversal attack detected".to_string().into());
     }
     if path.exists() {
         let canonical_path = path
@@ -155,13 +155,13 @@ fn validate_path_security(path: &PathBuf, allowed_base: &PathBuf) -> Result<(), 
             .canonicalize()
             .map_err(|e| format!("Invalid base path: {}", e))?;
         if !canonical_path.starts_with(&canonical_base) {
-            return Err("Path traversal attack detected".to_string());
+            return Err("Path traversal attack detected".to_string().into());
         }
     }
     Ok(())
 }
 
-fn validate_color(color: &str) -> Result<(), String> {
+fn validate_color(color: &str) -> AppResult<()> {
     let color = color.trim();
 
     // Hex format
@@ -172,7 +172,7 @@ fn validate_color(color: &str) -> Result<(), String> {
         {
             return Ok(());
         }
-        return Err(format!("Invalid hex color format: {}", color));
+        return Err(format!("Invalid hex color format: {}", color).into());
     }
 
     // RGB format
@@ -182,7 +182,7 @@ fn validate_color(color: &str) -> Result<(), String> {
         if parts.len() == 3 && parts.iter().all(|p| p.trim().parse::<u8>().is_ok()) {
             return Ok(());
         }
-        return Err(format!("Invalid RGB format: {}", color));
+        return Err(format!("Invalid RGB format: {}", color).into());
     }
 
     // RGBA format
@@ -200,13 +200,13 @@ fn validate_color(color: &str) -> Result<(), String> {
                 return Ok(());
             }
         }
-        return Err(format!("Invalid RGBA format: {}", color));
+        return Err(format!("Invalid RGBA format: {}", color).into());
     }
 
-    Err(format!("Unsupported color format: {}", color))
+    Err(format!("Unsupported color format: {}", color).into())
 }
 
-fn validate_theme_colors(colors: &ThemeColors) -> Result<(), String> {
+fn validate_theme_colors(colors: &ThemeColors) -> AppResult<()> {
     let fields = [
         ("bg", &colors.bg),
         ("bgPrimary", &colors.bg_primary),
@@ -241,15 +241,15 @@ fn validate_theme_colors(colors: &ThemeColors) -> Result<(), String> {
     Ok(())
 }
 
-fn validate_import_security(data: &serde_json::Value) -> Result<(), String> {
-    fn check_object(obj: &serde_json::Value, path: &str) -> Result<(), String> {
+fn validate_import_security(data: &serde_json::Value) -> AppResult<()> {
+    fn check_object(obj: &serde_json::Value, path: &str) -> AppResult<()> {
         if let Some(map) = obj.as_object() {
             for (key, value) in map {
                 if key == "__proto__" || key == "constructor" || key == "prototype" {
                     return Err(format!(
                         "Security violation: dangerous key '{}' at {}",
                         key, path
-                    ));
+                    ).into());
                 }
                 let new_path = if path.is_empty() {
                     key.clone()
@@ -268,7 +268,7 @@ fn validate_import_security(data: &serde_json::Value) -> Result<(), String> {
 // Helper Functions
 // ============================================================================
 
-fn get_themes_dir(app: &AppHandle) -> Result<PathBuf, String> {
+fn get_themes_dir(app: &AppHandle) -> AppResult<PathBuf> {
     let app_data_dir = app
         .path()
         .app_data_dir()
@@ -281,7 +281,7 @@ fn get_themes_dir(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(themes_dir)
 }
 
-fn get_config_path(app: &AppHandle) -> Result<PathBuf, String> {
+fn get_config_path(app: &AppHandle) -> AppResult<PathBuf> {
     let app_data_dir = app
         .path()
         .app_data_dir()
@@ -301,7 +301,7 @@ fn get_timestamp() -> u64 {
         .as_millis() as u64
 }
 
-fn count_custom_theme_files(themes_dir: &PathBuf) -> Result<usize, String> {
+fn count_custom_theme_files(themes_dir: &PathBuf) -> AppResult<usize> {
     let entries =
         fs::read_dir(themes_dir).map_err(|e| format!("Failed to read themes dir: {}", e))?;
     let mut count = 0usize;

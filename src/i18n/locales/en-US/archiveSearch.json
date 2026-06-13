@@ -22,6 +22,7 @@
   "tryDifferentFilters": "Try different filters",
   "startSearching": "Start searching",
   "useFiltersAbove": "Use the search and filters above",
+  "refreshed": "Archive list refreshed",
   "loadingArchives": "Loading archives...",
   "scanningFiles": "Scanning archive files",
   "multiSelect": {

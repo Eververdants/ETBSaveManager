@@ -13,16 +13,16 @@
 defineProps({
   icon: {
     type: String,
-    default: 'puzzle-piece'
+    default: "puzzle-piece",
   },
   title: {
     type: String,
-    required: true
+    required: true,
   },
   hint: {
     type: String,
-    default: ''
-  }
+    default: "",
+  },
 });
 </script>
 

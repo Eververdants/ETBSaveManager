@@ -100,12 +100,9 @@ export class AccessibilityChecker {
     const bsRGB = b / 255;
 
     // Apply gamma correction
-    const rLinear =
-      rsRGB <= 0.03928 ? rsRGB / 12.92 : Math.pow((rsRGB + 0.055) / 1.055, 2.4);
-    const gLinear =
-      gsRGB <= 0.03928 ? gsRGB / 12.92 : Math.pow((gsRGB + 0.055) / 1.055, 2.4);
-    const bLinear =
-      bsRGB <= 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4);
+    const rLinear = rsRGB <= 0.03928 ? rsRGB / 12.92 : Math.pow((rsRGB + 0.055) / 1.055, 2.4);
+    const gLinear = gsRGB <= 0.03928 ? gsRGB / 12.92 : Math.pow((gsRGB + 0.055) / 1.055, 2.4);
+    const bLinear = bsRGB <= 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4);
 
     // Calculate luminance using WCAG coefficients
     return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
@@ -127,16 +124,8 @@ export class AccessibilityChecker {
       return 1; // Return minimum ratio if colors can't be parsed
     }
 
-    const fgLuminance = this.calculateLuminance(
-      fgColor.r,
-      fgColor.g,
-      fgColor.b
-    );
-    const bgLuminance = this.calculateLuminance(
-      bgColor.r,
-      bgColor.g,
-      bgColor.b
-    );
+    const fgLuminance = this.calculateLuminance(fgColor.r, fgColor.g, fgColor.b);
+    const bgLuminance = this.calculateLuminance(bgColor.r, bgColor.g, bgColor.b);
 
     // Ensure L1 is the lighter luminance
     const L1 = Math.max(fgLuminance, bgLuminance);
@@ -213,11 +202,11 @@ export class AccessibilityChecker {
         // Add suggestion
         if (level === "FAIL") {
           suggestions.push(
-            `Increase contrast for "${pair.name}": current ratio is ${ratio}:1, minimum required is ${WCAG_THRESHOLDS.A_MINIMUM}:1`
+            `Increase contrast for "${pair.name}": current ratio is ${ratio}:1, minimum required is ${WCAG_THRESHOLDS.A_MINIMUM}:1`,
           );
         } else if (level === "A") {
           suggestions.push(
-            `Consider improving contrast for "${pair.name}": current ratio is ${ratio}:1, AA standard requires ${WCAG_THRESHOLDS.AA_NORMAL}:1`
+            `Consider improving contrast for "${pair.name}": current ratio is ${ratio}:1, AA standard requires ${WCAG_THRESHOLDS.AA_NORMAL}:1`,
           );
         }
       }
@@ -263,11 +252,7 @@ export class AccessibilityChecker {
    * @param {number} [targetRatio=4.5] - Target contrast ratio
    * @returns {{suggestedColor: string, achievedRatio: number}|null}
    */
-  suggestColorAdjustment(
-    textColor,
-    bgColor,
-    targetRatio = WCAG_THRESHOLDS.AA_NORMAL
-  ) {
+  suggestColorAdjustment(textColor, bgColor, targetRatio = WCAG_THRESHOLDS.AA_NORMAL) {
     const textRgb = this.validator.parseColor(textColor);
     const bgRgb = this.validator.parseColor(bgColor);
 

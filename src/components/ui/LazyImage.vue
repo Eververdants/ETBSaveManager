@@ -6,8 +6,14 @@
     </div>
 
     <!-- 实际图片 -->
-    <img :src="src" :alt="alt" :class="imageClass" :style="imageStyle" @load="handleImageLoad"
-      @error="handleImageError" />
+    <img
+      :src="src"
+      :alt="alt"
+      :class="imageClass"
+      :style="imageStyle"
+      @load="handleImageLoad"
+      @error="handleImageError"
+    />
   </div>
 </template>
 
@@ -91,15 +97,13 @@ const useImageLoader = (src) => {
     () => src,
     (newSrc) => {
       checkImageAndLoad(newSrc);
-    }
+    },
   );
 
   return { imageLoaded, handleImageLoad, handleImageError };
 };
 
-const { imageLoaded, handleImageLoad, handleImageError } = useImageLoader(
-  () => props.src
-);
+const { imageLoaded, handleImageLoad, handleImageError } = useImageLoader(() => props.src);
 </script>
 
 <style scoped>

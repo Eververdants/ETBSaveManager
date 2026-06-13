@@ -1,27 +1,22 @@
 <template>
   <div class="plugin-market">
-    <!-- 搜索栏 -->
+    <!-- Search bar -->
     <div class="search-section">
       <div class="search-bar">
         <font-awesome-icon :icon="['fas', 'search']" class="search-icon" />
-        <input 
-          v-model="searchQuery" 
-          type="text" 
-          :placeholder="t('plugin.searchPlaceholder')" 
-          class="search-input" 
-        />
+        <input v-model="searchQuery" type="text" :placeholder="t('plugin.searchPlaceholder')" class="search-input" />
       </div>
       <button class="local-install-btn" @click="openLocalInstall">
         <font-awesome-icon :icon="['fas', 'plus']" />
-        {{ t('plugin.installLocal') }}
+        {{ t("plugin.installLocal") }}
       </button>
     </div>
 
-    <!-- 分类标签 -->
+    <!-- Category tabs -->
     <div class="category-tabs">
-      <button 
-        v-for="category in categories" 
-        :key="category.id" 
+      <button
+        v-for="category in categories"
+        :key="category.id"
         class="category-tab"
         :class="{ active: selectedCategory === category.id }"
         @click="selectCategory(category.id)"
@@ -33,18 +28,18 @@
       </button>
     </div>
 
-    <!-- 插件网格 -->
-    <div class="plugins-grid" ref="pluginsGrid">
+    <!-- Plugin grid -->
+    <div ref="pluginsGrid" class="plugins-grid">
       <template v-if="selectedCategory === 'installed'">
-        <PluginEmptyState 
+        <PluginEmptyState
           v-if="installedPluginsList.length === 0"
           icon="puzzle-piece"
           :title="$t('plugin.noInstalledPlugins')"
           :hint="$t('plugin.installFromStore')"
         />
-        <PluginCard 
+        <PluginCard
+          v-for="plugin in installedPluginsList"
           v-else
-          v-for="plugin in installedPluginsList" 
           :key="plugin.id"
           :plugin="plugin"
           :show-status="true"
@@ -57,26 +52,18 @@
       <template v-else>
         <div v-if="loading" class="loading-state">
           <div class="loading-spinner"></div>
-          <p>{{ $t('plugin.loading') }}</p>
+          <p>{{ $t("plugin.loading") }}</p>
         </div>
-        <PluginEmptyState 
-          v-else-if="error"
-          icon="exclamation-triangle"
-          :title="error"
-        >
+        <PluginEmptyState v-else-if="error" icon="exclamation-triangle" :title="error">
           <button class="retry-btn" @click="fetchPlugins">
             <font-awesome-icon :icon="['fas', 'redo']" />
-            {{ $t('plugin.retry') }}
+            {{ $t("plugin.retry") }}
           </button>
         </PluginEmptyState>
-        <PluginEmptyState 
-          v-else-if="filteredPlugins.length === 0"
-          icon="search"
-          :title="$t('plugin.noResults')"
-        />
-        <PluginCard 
+        <PluginEmptyState v-else-if="filteredPlugins.length === 0" icon="search" :title="$t('plugin.noResults')" />
+        <PluginCard
+          v-for="plugin in filteredPlugins"
           v-else
-          v-for="plugin in filteredPlugins" 
           :key="plugin.id"
           :plugin="plugin"
           @click="openPluginDetail"
@@ -86,7 +73,7 @@
       </template>
     </div>
 
-    <PluginDetailModal 
+    <PluginDetailModal
       :show="!!selectedPlugin"
       :plugin="selectedPlugin || {}"
       :show-status="isInstalledPlugin"
@@ -96,7 +83,7 @@
       @uninstall="handleUninstallPluginInModal"
     />
 
-    <LocalInstallModal 
+    <LocalInstallModal
       :show="showLocalInstall"
       :loading="localInstallLoading"
       :success-message="localInstallSuccess"
@@ -109,24 +96,29 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { open } from '@tauri-apps/plugin-dialog';
-import { readTextFile } from '@tauri-apps/plugin-fs';
-import PluginCard from '@/components/plugin/PluginCard.vue';
-import PluginDetailModal from '@/components/plugin/PluginDetailModal.vue';
-import LocalInstallModal from '@/components/plugin/LocalInstallModal.vue';
-import PluginEmptyState from '@/components/plugin/PluginEmptyState.vue';
+import { ref, computed, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
+import { open } from "@tauri-apps/plugin-dialog";
+import { readTextFile } from "@tauri-apps/plugin-fs";
+import PluginCard from "@/components/plugin/PluginCard.vue";
+import PluginDetailModal from "@/components/plugin/PluginDetailModal.vue";
+import LocalInstallModal from "@/components/plugin/LocalInstallModal.vue";
+import PluginEmptyState from "@/components/plugin/PluginEmptyState.vue";
 import {
-  installLanguagePlugin, uninstallLanguagePlugin, getInstalledLanguagePlugins,
-  installThemePlugin, uninstallThemePlugin, installPagePlugin, pluginManager,
-} from '../plugins';
+  installLanguagePlugin,
+  uninstallLanguagePlugin,
+  getInstalledLanguagePlugins,
+  installThemePlugin,
+  uninstallThemePlugin,
+  installPagePlugin,
+  pluginManager,
+} from "../plugins";
 
-const { t } = useI18n({ useScope: 'global' });
+const { t } = useI18n({ useScope: "global" });
 
 const plugins = ref([]);
-const searchQuery = ref('');
-const selectedCategory = ref('all');
+const searchQuery = ref("");
+const selectedCategory = ref("all");
 const selectedPlugin = ref(null);
 const showLocalInstall = ref(false);
 const loading = ref(false);
@@ -138,28 +130,32 @@ const localInstallSuccess = ref(null);
 const installedPluginsList = ref([]);
 
 const categories = ref([
-  { id: 'all', name: t('plugin.all') },
-  { id: 'installed', name: t('plugin.installed') },
+  { id: "all", name: t("plugin.all") },
+  { id: "installed", name: t("plugin.installed") },
 ]);
 
-const PLUGIN_INDEX_URL = 'https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/plugins.json';
+const PLUGIN_INDEX_URL = "https://raw.githubusercontent.com/Eververdants/ETBSaveManager/master/plugins/plugins.json";
 
 const filteredPlugins = computed(() => {
   let filtered = plugins.value;
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(p => p.name.toLowerCase().includes(query) || p.description?.toLowerCase().includes(query));
+    filtered = filtered.filter(
+      (p) => p.name.toLowerCase().includes(query) || p.description?.toLowerCase().includes(query),
+    );
   }
-  if (selectedCategory.value !== 'all' && selectedCategory.value !== 'installed') {
-    filtered = filtered.filter(p => p.category === selectedCategory.value);
+  if (selectedCategory.value !== "all" && selectedCategory.value !== "installed") {
+    filtered = filtered.filter((p) => p.category === selectedCategory.value);
   }
-  return filtered.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  return filtered.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
 });
 
 const isInstalledPlugin = computed(() => selectedPlugin.value?.status !== undefined);
 
 const refreshInstalledPlugins = () => {
-  installedPluginsList.value = [...pluginManager.getAllPlugins()].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  installedPluginsList.value = [...pluginManager.getAllPlugins()].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+  );
 };
 
 const fetchPlugins = async () => {
@@ -169,94 +165,119 @@ const fetchPlugins = async () => {
     const response = await fetch(PLUGIN_INDEX_URL);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
-    const installedIds = new Set(getInstalledLanguagePlugins().map(p => p.id));
-    plugins.value = data.plugins.map(p => ({
-      id: p.id, name: p.name, description: p.description, author: p.author, version: p.version,
-      license: p.license, downloadUrl: p.downloadUrl || p.download_url, category: p.category || 'utility',
-      installed: installedIds.has(p.id), type: p.type || 'feature', locale: p.locale, localeName: p.localeName,
-      main: p.main, moduleRoot: p.moduleRoot, modules: p.modules,
+    const installedIds = new Set(getInstalledLanguagePlugins().map((p) => p.id));
+    plugins.value = data.plugins.map((p) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      author: p.author,
+      version: p.version,
+      license: p.license,
+      downloadUrl: p.downloadUrl || p.download_url,
+      category: p.category || "utility",
+      installed: installedIds.has(p.id),
+      type: p.type || "feature",
+      locale: p.locale,
+      localeName: p.localeName,
+      main: p.main,
+      moduleRoot: p.moduleRoot,
+      modules: p.modules,
     }));
   } catch (err) {
-    console.error('获取插件数据失败:', err);
-    error.value = t('plugin.fetchError');
+    console.error("获取插件数据失败:", err);
+    error.value = t("plugin.fetchError");
     plugins.value = [];
   } finally {
     loading.value = false;
   }
 };
 
-const selectCategory = (id) => { selectedCategory.value = id; };
-const openPluginDetail = (plugin) => { selectedPlugin.value = plugin; };
-const closePluginDetail = () => { selectedPlugin.value = null; };
+const selectCategory = (id) => {
+  selectedCategory.value = id;
+};
+const openPluginDetail = (plugin) => {
+  selectedPlugin.value = plugin;
+};
+const closePluginDetail = () => {
+  selectedPlugin.value = null;
+};
 
 const MAX_PLUGIN_JSON_BYTES = 512 * 1024;
 const MAX_PLUGIN_STRING_LEN = 20000;
 const DEFAULT_LANGUAGE_MODULE_FILES = [
-  'sidebar',
-  'common',
-  'archive',
-  'plugin',
-  'help',
-  'app',
-  'about',
-  'back',
-  'noReleaseNotes',
-  'featured',
-  'viewAllVersions',
-  'releaseNotes',
-  'versions',
-  'categories',
-  'logs',
-  'settings',
-  'inventory',
-  'steam',
-  'LevelName_Display',
-  'archiveCard',
-  'confirmModal',
-  'createArchive',
-  'editArchive',
-  'archiveSearch',
-  'floatingButton',
-  'jsonEditor',
-  'performanceSettings',
-  'performanceMonitor',
-  'steamCache',
-  'createMode',
-  'quickCreate',
-  'theme',
-  'feedback',
+  "sidebar",
+  "common",
+  "archive",
+  "plugin",
+  "help",
+  "app",
+  "about",
+  "back",
+  "noReleaseNotes",
+  "featured",
+  "viewAllVersions",
+  "releaseNotes",
+  "versions",
+  "categories",
+  "logs",
+  "settings",
+  "inventory",
+  "steam",
+  "LevelName_Display",
+  "archiveCard",
+  "confirmModal",
+  "createArchive",
+  "editArchive",
+  "archiveSearch",
+  "floatingButton",
+  "jsonEditor",
+  "performanceSettings",
+  "performanceMonitor",
+  "steamCache",
+  "createMode",
+  "quickCreate",
+  "theme",
+  "feedback",
 ];
 
 const validateDownloadUrl = (url) => {
-  if (!url || typeof url !== 'string') throw new Error('无效的下载地址');
+  if (!url || typeof url !== "string") throw new Error("无效的下载地址");
   let u;
-  try { u = new URL(url); } catch { throw new Error('无效的下载地址'); }
-  if (!['https:', 'http:'].includes(u.protocol)) throw new Error('不支持的下载协议');
-  return u.toString().replace(/\/$/, '');
+  try {
+    u = new URL(url);
+  } catch {
+    throw new Error("无效的下载地址");
+  }
+  if (!["https:", "http:"].includes(u.protocol)) throw new Error("不支持的下载协议");
+  return u.toString().replace(/\/$/, "");
 };
 
 const readJsonWithLimit = async (res) => {
-  const lenHeader = res.headers.get('content-length');
+  const lenHeader = res.headers.get("content-length");
   if (lenHeader) {
     const n = Number(lenHeader);
     if (Number.isFinite(n) && n > MAX_PLUGIN_JSON_BYTES) {
-      throw new Error('下载内容过大');
+      throw new Error("下载内容过大");
     }
   }
   const text = await res.text();
-  if (text.length > MAX_PLUGIN_JSON_BYTES) throw new Error('下载内容过大');
+  if (text.length > MAX_PLUGIN_JSON_BYTES) throw new Error("下载内容过大");
   let data;
-  try { data = JSON.parse(text); } catch { throw new Error('插件文件不是合法 JSON'); }
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error("插件文件不是合法 JSON");
+  }
   return data;
 };
 
 const validateString = (v, field) => {
   if (v == null) return;
-  if (typeof v !== 'string') throw new Error(`${field} 必须是字符串`);
+  if (typeof v !== "string") throw new Error(`${field} 必须是字符串`);
   if (v.length > MAX_PLUGIN_STRING_LEN) throw new Error(`${field} 内容过长`);
 };
 
-const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
+const isPlainObject = (value) => !!value && typeof value === "object" && !Array.isArray(value);
 
 const normalizeLanguagePackPayload = (payload) => {
   if (!isPlainObject(payload)) return payload;
@@ -269,19 +290,19 @@ const normalizeLanguagePackPayload = (payload) => {
 
 const validateLanguagePack = (data) => {
   const normalized = normalizeLanguagePackPayload(data);
-  if (!isPlainObject(normalized)) throw new Error('翻译文件格式不正确');
-  const requiredTop = ['common', 'sidebar', 'settings'];
+  if (!isPlainObject(normalized)) throw new Error("翻译文件格式不正确");
+  const requiredTop = ["common", "sidebar", "settings"];
   for (const k of requiredTop) {
     if (!(k in normalized)) throw new Error(`翻译文件缺少字段: ${k}`);
     if (!isPlainObject(normalized[k])) throw new Error(`翻译字段 ${k} 格式不正确`);
   }
   const walk = (obj, depth = 0) => {
-    if (depth > 20) throw new Error('翻译文件嵌套过深');
+    if (depth > 20) throw new Error("翻译文件嵌套过深");
     for (const [k, v] of Object.entries(obj)) {
-      validateString(k, '翻译键');
-      if (typeof v === 'string') validateString(v, '翻译值');
+      validateString(k, "翻译键");
+      if (typeof v === "string") validateString(v, "翻译值");
       else if (isPlainObject(v)) walk(v, depth + 1);
-      else throw new Error('翻译文件包含不支持的值类型');
+      else throw new Error("翻译文件包含不支持的值类型");
     }
   };
   walk(normalized);
@@ -290,16 +311,16 @@ const validateLanguagePack = (data) => {
 
 const toRelativePath = (...parts) =>
   parts
-    .filter((part) => typeof part === 'string' && part.trim())
-    .map((part) => part.replace(/\\/g, '/').replace(/^\/+|\/+$/g, ''))
+    .filter((part) => typeof part === "string" && part.trim())
+    .map((part) => part.replace(/\\/g, "/").replace(/^\/+|\/+$/g, ""))
     .filter(Boolean)
-    .join('/');
+    .join("/");
 
 const toModuleFileName = (entry) => {
-  if (typeof entry !== 'string') return null;
-  const clean = entry.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+  if (typeof entry !== "string") return null;
+  const clean = entry.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
   if (!clean) return null;
-  return clean.endsWith('.json') ? clean : `${clean}.json`;
+  return clean.endsWith(".json") ? clean : `${clean}.json`;
 };
 
 const toLanguageModuleFileList = (modules) => {
@@ -309,24 +330,24 @@ const toLanguageModuleFileList = (modules) => {
 
 const resolveLanguageModuleRoots = (...roots) => {
   const values = roots
-    .filter((root) => typeof root === 'string')
-    .map((root) => root.replace(/\\/g, '/').replace(/^\/+|\/+$/g, ''))
+    .filter((root) => typeof root === "string")
+    .map((root) => root.replace(/\\/g, "/").replace(/^\/+|\/+$/g, ""))
     .filter(Boolean);
-  return [...new Set([...values, 'locales', ''])];
+  return [...new Set([...values, "locales", ""])];
 };
 
 const resolveMainCandidates = (...entries) => {
   const values = entries
-    .filter((entry) => typeof entry === 'string')
-    .map((entry) => entry.replace(/\\/g, '/').replace(/^\/+|\/+$/g, ''))
-    .filter((entry) => entry && entry.endsWith('.json'));
-  return [...new Set([...values, 'translations.json', 'index.json', 'messages.json'])];
+    .filter((entry) => typeof entry === "string")
+    .map((entry) => entry.replace(/\\/g, "/").replace(/^\/+|\/+$/g, ""))
+    .filter((entry) => entry && entry.endsWith(".json"));
+  return [...new Set([...values, "translations.json", "index.json", "messages.json"])];
 };
 
 const tryReadRemoteJson = async (baseUrl, relativePath) => {
   const path = toRelativePath(relativePath);
   if (!path) return null;
-  const res = await fetch(`${baseUrl}/${path}`, { cache: 'no-store' });
+  const res = await fetch(`${baseUrl}/${path}`, { cache: "no-store" });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`下载 ${path} 失败: HTTP ${res.status}`);
   return readJsonWithLimit(res);
@@ -343,9 +364,9 @@ const tryReadLocalJson = async (folderPath, relativePath) => {
 };
 
 const resolveModuleRootFromMain = (mainField) => {
-  if (typeof mainField !== 'string') return '';
-  const normalized = mainField.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
-  if (!normalized || normalized.endsWith('.json')) return '';
+  if (typeof mainField !== "string") return "";
+  const normalized = mainField.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+  if (!normalized || normalized.endsWith(".json")) return "";
   return normalized;
 };
 
@@ -355,7 +376,10 @@ const tryLoadLanguageModulesFromRemote = async (baseUrl, moduleRoot, modules) =>
     const relativePath = toRelativePath(moduleRoot, fileName);
     const data = await tryReadRemoteJson(baseUrl, relativePath);
     if (!isPlainObject(data)) return null;
-    const moduleKey = fileName.split('/').pop().replace(/\.json$/i, '');
+    const moduleKey = fileName
+      .split("/")
+      .pop()
+      .replace(/\.json$/i, "");
     return [moduleKey, data];
   });
   const entries = (await Promise.all(tasks)).filter(Boolean);
@@ -369,7 +393,10 @@ const tryLoadLanguageModulesFromLocal = async (folderPath, moduleRoot, modules) 
     const relativePath = toRelativePath(moduleRoot, fileName);
     const data = await tryReadLocalJson(folderPath, relativePath);
     if (!isPlainObject(data)) return null;
-    const moduleKey = fileName.split('/').pop().replace(/\.json$/i, '');
+    const moduleKey = fileName
+      .split("/")
+      .pop()
+      .replace(/\.json$/i, "");
     return [moduleKey, data];
   });
   const entries = (await Promise.all(tasks)).filter(Boolean);
@@ -379,7 +406,7 @@ const tryLoadLanguageModulesFromLocal = async (folderPath, moduleRoot, modules) 
 
 const loadRemoteLanguagePack = async (plugin) => {
   const baseUrl = validateDownloadUrl(plugin.downloadUrl);
-  const remoteMeta = await tryReadRemoteJson(baseUrl, 'plugin.json');
+  const remoteMeta = await tryReadRemoteJson(baseUrl, "plugin.json");
   const mainCandidates = resolveMainCandidates(plugin.main, remoteMeta?.main);
 
   for (const mainFile of mainCandidates) {
@@ -393,20 +420,16 @@ const loadRemoteLanguagePack = async (plugin) => {
     plugin.moduleRoot,
     remoteMeta?.moduleRoot,
     resolveModuleRootFromMain(plugin.main),
-    resolveModuleRootFromMain(remoteMeta?.main)
+    resolveModuleRootFromMain(remoteMeta?.main),
   );
   for (const moduleRoot of moduleRoots) {
-    const data = await tryLoadLanguageModulesFromRemote(
-      baseUrl,
-      moduleRoot,
-      plugin.modules || remoteMeta?.modules
-    );
+    const data = await tryLoadLanguageModulesFromRemote(baseUrl, moduleRoot, plugin.modules || remoteMeta?.modules);
     if (data) {
       return validateLanguagePack(data);
     }
   }
 
-  throw new Error('未找到可用的翻译文件（translations.json/index.json 或模块化 *.json）');
+  throw new Error("未找到可用的翻译文件（translations.json/index.json 或模块化 *.json）");
 };
 
 const loadLocalLanguagePack = async (folderPath, meta) => {
@@ -418,80 +441,100 @@ const loadLocalLanguagePack = async (folderPath, meta) => {
     }
   }
 
-  const moduleRoots = resolveLanguageModuleRoots(
-    meta.moduleRoot,
-    resolveModuleRootFromMain(meta.main)
-  );
+  const moduleRoots = resolveLanguageModuleRoots(meta.moduleRoot, resolveModuleRootFromMain(meta.main));
   for (const moduleRoot of moduleRoots) {
-    const data = await tryLoadLanguageModulesFromLocal(
-      folderPath,
-      moduleRoot,
-      meta.modules
-    );
+    const data = await tryLoadLanguageModulesFromLocal(folderPath, moduleRoot, meta.modules);
     if (data) {
       return validateLanguagePack(data);
     }
   }
 
-  throw new Error('未找到可用的翻译文件（translations.json/index.json 或模块化 *.json）');
+  throw new Error("未找到可用的翻译文件（translations.json/index.json 或模块化 *.json）");
 };
 
 const validateThemePack = (data) => {
-  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('主题文件格式不正确');
-  if (!data.variables || typeof data.variables !== 'object' || Array.isArray(data.variables)) {
-    throw new Error('主题文件缺少 variables');
+  if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("主题文件格式不正确");
+  if (!data.variables || typeof data.variables !== "object" || Array.isArray(data.variables)) {
+    throw new Error("主题文件缺少 variables");
   }
   for (const [k, v] of Object.entries(data.variables)) {
-    validateString(k, 'CSS 变量名');
-    validateString(String(v), 'CSS 变量值');
+    validateString(k, "CSS 变量名");
+    validateString(String(v), "CSS 变量值");
   }
-  if (data.customCSS != null) validateString(String(data.customCSS), 'customCSS');
+  if (data.customCSS != null) validateString(String(data.customCSS), "customCSS");
   return true;
 };
 
 const installPlugin = async (plugin) => {
   try {
-    if (plugin.type === 'language' && plugin.downloadUrl) {
+    if (plugin.type === "language" && plugin.downloadUrl) {
       const data = await loadRemoteLanguagePack(plugin);
-      await installLanguagePlugin({ id: plugin.id, name: plugin.name, locale: plugin.locale, localeName: plugin.localeName, data, version: plugin.version, author: plugin.author, description: plugin.description });
+      await installLanguagePlugin({
+        id: plugin.id,
+        name: plugin.name,
+        locale: plugin.locale,
+        localeName: plugin.localeName,
+        data,
+        version: plugin.version,
+        author: plugin.author,
+        description: plugin.description,
+      });
       plugin.installed = true;
       refreshInstalledPlugins();
-    } else if (plugin.type === 'theme' && plugin.downloadUrl) {
+    } else if (plugin.type === "theme" && plugin.downloadUrl) {
       const baseUrl = validateDownloadUrl(plugin.downloadUrl);
-      const res = await fetch(`${baseUrl}/theme.json`, { cache: 'no-store' });
+      const res = await fetch(`${baseUrl}/theme.json`, { cache: "no-store" });
       if (!res.ok) throw new Error(`下载主题文件失败: HTTP ${res.status}`);
       const data = await readJsonWithLimit(res);
       validateThemePack(data);
-      await installThemePlugin({ id: plugin.id, name: plugin.name, themeId: plugin.themeId || plugin.id, data, version: plugin.version, author: plugin.author, description: plugin.description });
+      await installThemePlugin({
+        id: plugin.id,
+        name: plugin.name,
+        themeId: plugin.themeId || plugin.id,
+        data,
+        version: plugin.version,
+        author: plugin.author,
+        description: plugin.description,
+      });
       plugin.installed = true;
-      window.dispatchEvent(new CustomEvent('theme-plugin-changed'));
+      window.dispatchEvent(new CustomEvent("theme-plugin-changed"));
       refreshInstalledPlugins();
     }
   } catch (err) {
-    console.error('安装插件失败:', err);
+    console.error("安装插件失败:", err);
     alert(`安装插件失败: ${err.message}`);
   }
 };
 
-const togglePlugin = async (plugin) => { plugin.installed ? await handleUninstallPlugin(plugin) : await installPlugin(plugin); };
+const togglePlugin = async (plugin) => {
+  plugin.installed ? await handleUninstallPlugin(plugin) : await installPlugin(plugin);
+};
 
 const handleTogglePlugin = async (plugin) => {
   try {
-    plugin.status === 'active' ? await pluginManager.unloadPlugin(plugin.id) : await pluginManager.loadPlugin(plugin.id);
-    if (plugin.type === 'theme') window.dispatchEvent(new CustomEvent('theme-plugin-changed'));
+    plugin.status === "active"
+      ? await pluginManager.unloadPlugin(plugin.id)
+      : await pluginManager.loadPlugin(plugin.id);
+    if (plugin.type === "theme") window.dispatchEvent(new CustomEvent("theme-plugin-changed"));
     refreshInstalledPlugins();
-  } catch (err) { console.error('切换插件状态失败:', err); }
+  } catch (err) {
+    console.error("切换插件状态失败:", err);
+  }
 };
 
 const handleUninstallPlugin = async (plugin) => {
   try {
-    if (plugin.type === 'language') await uninstallLanguagePlugin(plugin.id);
-    else if (plugin.type === 'theme') { await uninstallThemePlugin(plugin.id); window.dispatchEvent(new CustomEvent('theme-plugin-changed')); }
-    else await pluginManager.removePlugin(plugin.id);
+    if (plugin.type === "language") await uninstallLanguagePlugin(plugin.id);
+    else if (plugin.type === "theme") {
+      await uninstallThemePlugin(plugin.id);
+      window.dispatchEvent(new CustomEvent("theme-plugin-changed"));
+    } else await pluginManager.removePlugin(plugin.id);
     refreshInstalledPlugins();
-    const sp = plugins.value.find(p => p.id === plugin.id);
+    const sp = plugins.value.find((p) => p.id === plugin.id);
     if (sp) sp.installed = false;
-  } catch (err) { console.error('卸载插件失败:', err); }
+  } catch (err) {
+    console.error("卸载插件失败:", err);
+  }
 };
 
 const handleTogglePluginInModal = async () => {
@@ -507,15 +550,29 @@ const handleUninstallPluginInModal = async () => {
   closePluginDetail();
 };
 
-const openLocalInstall = () => { showLocalInstall.value = true; localInstallError.value = null; localInstallSuccess.value = null; };
-const closeLocalInstall = () => { showLocalInstall.value = false; localInstallError.value = null; localInstallSuccess.value = null; };
-const resetLocalInstallState = () => { localInstallError.value = null; localInstallSuccess.value = null; };
+const openLocalInstall = () => {
+  showLocalInstall.value = true;
+  localInstallError.value = null;
+  localInstallSuccess.value = null;
+};
+const closeLocalInstall = () => {
+  showLocalInstall.value = false;
+  localInstallError.value = null;
+  localInstallSuccess.value = null;
+};
+const resetLocalInstallState = () => {
+  localInstallError.value = null;
+  localInstallSuccess.value = null;
+};
 
 const selectPluginFolder = async () => {
   try {
-    const selected = await open({ directory: true, multiple: false, title: t('plugin.selectPluginFolder') });
+    const selected = await open({ directory: true, multiple: false, title: t("plugin.selectPluginFolder") });
     if (selected) await processPluginFolder(selected);
-  } catch (err) { console.error('选择文件夹失败:', err); localInstallError.value = `${t('plugin.selectFolderFailed')}: ${err.message}`; }
+  } catch (err) {
+    console.error("选择文件夹失败:", err);
+    localInstallError.value = `${t("plugin.selectFolderFailed")}: ${err.message}`;
+  }
 };
 
 const processPluginFolder = async (folderPath) => {
@@ -524,16 +581,30 @@ const processPluginFolder = async (folderPath) => {
   localInstallSuccess.value = null;
   try {
     let pluginMeta;
-    try { pluginMeta = JSON.parse(await readTextFile(`${folderPath}/plugin.json`)); }
-    catch { localInstallError.value = '未找到 plugin.json 文件'; return; }
-    if (!pluginMeta.id || !pluginMeta.type || !pluginMeta.name) { localInstallError.value = 'plugin.json 格式无效'; return; }
-    if (pluginManager.getPlugin(pluginMeta.id)) { localInstallError.value = `插件「${pluginMeta.name}」已安装`; return; }
-    if (pluginMeta.type === 'language') await processLanguagePlugin(folderPath, pluginMeta);
-    else if (pluginMeta.type === 'theme') await processThemePlugin(folderPath, pluginMeta);
-    else if (pluginMeta.type === 'page') await processPagePlugin(folderPath, pluginMeta);
+    try {
+      pluginMeta = JSON.parse(await readTextFile(`${folderPath}/plugin.json`));
+    } catch {
+      localInstallError.value = "未找到 plugin.json 文件";
+      return;
+    }
+    if (!pluginMeta.id || !pluginMeta.type || !pluginMeta.name) {
+      localInstallError.value = "plugin.json 格式无效";
+      return;
+    }
+    if (pluginManager.getPlugin(pluginMeta.id)) {
+      localInstallError.value = `插件「${pluginMeta.name}」已安装`;
+      return;
+    }
+    if (pluginMeta.type === "language") await processLanguagePlugin(folderPath, pluginMeta);
+    else if (pluginMeta.type === "theme") await processThemePlugin(folderPath, pluginMeta);
+    else if (pluginMeta.type === "page") await processPagePlugin(folderPath, pluginMeta);
     else localInstallError.value = `暂不支持的插件类型: ${pluginMeta.type}`;
-  } catch (err) { console.error('处理插件文件夹失败:', err); localInstallError.value = `安装失败: ${err.message}`; }
-  finally { localInstallLoading.value = false; }
+  } catch (err) {
+    console.error("处理插件文件夹失败:", err);
+    localInstallError.value = `安装失败: ${err.message}`;
+  } finally {
+    localInstallLoading.value = false;
+  }
 };
 
 const processLanguagePlugin = async (folderPath, meta) => {
@@ -541,31 +612,55 @@ const processLanguagePlugin = async (folderPath, meta) => {
   try {
     data = await loadLocalLanguagePack(folderPath, meta);
   } catch (error) {
-    localInstallError.value = error?.message || t('plugin.invalidTranslationFile');
+    localInstallError.value = error?.message || t("plugin.invalidTranslationFile");
     return;
   }
-  await installLanguagePlugin({ id: meta.id, name: meta.name, locale: meta.locale, localeName: meta.localeName || meta.name, data, version: meta.version || '1.0.0', author: meta.author || 'Unknown', description: meta.description || '' });
+  await installLanguagePlugin({
+    id: meta.id,
+    name: meta.name,
+    locale: meta.locale,
+    localeName: meta.localeName || meta.name,
+    data,
+    version: meta.version || "1.0.0",
+    author: meta.author || "Unknown",
+    description: meta.description || "",
+  });
   localInstallSuccess.value = `成功安装语言插件: ${meta.name}`;
   await fetchPlugins();
   refreshInstalledPlugins();
 };
 
 const processThemePlugin = async (folderPath, meta) => {
-  const mainFile = meta.main || 'theme.json';
+  const mainFile = meta.main || "theme.json";
   let data;
-  try { data = JSON.parse(await readTextFile(`${folderPath}/${mainFile}`)); }
-  catch { localInstallError.value = `未找到主题文件 ${mainFile}`; return; }
-  if (!data || typeof data !== 'object') { localInstallError.value = t('plugin.invalidThemeFile'); return; }
-  await installThemePlugin({ id: meta.id, name: meta.name, themeId: meta.themeId || meta.id, data, version: meta.version || '1.0.0', author: meta.author || 'Unknown', description: meta.description || '' });
+  try {
+    data = JSON.parse(await readTextFile(`${folderPath}/${mainFile}`));
+  } catch {
+    localInstallError.value = `未找到主题文件 ${mainFile}`;
+    return;
+  }
+  if (!data || typeof data !== "object") {
+    localInstallError.value = t("plugin.invalidThemeFile");
+    return;
+  }
+  await installThemePlugin({
+    id: meta.id,
+    name: meta.name,
+    themeId: meta.themeId || meta.id,
+    data,
+    version: meta.version || "1.0.0",
+    author: meta.author || "Unknown",
+    description: meta.description || "",
+  });
   localInstallSuccess.value = `成功安装主题插件: ${meta.name}`;
-  window.dispatchEvent(new CustomEvent('theme-plugin-changed'));
+  window.dispatchEvent(new CustomEvent("theme-plugin-changed"));
   await fetchPlugins();
   refreshInstalledPlugins();
 };
 
 const processPagePlugin = async (folderPath, meta) => {
-  // 读取配置文件
-  const configFile = meta.main || 'config.json';
+  // Read config file
+  const configFile = meta.main || "config.json";
   let config;
   try {
     config = JSON.parse(await readTextFile(`${folderPath}/${configFile}`));
@@ -573,9 +668,9 @@ const processPagePlugin = async (folderPath, meta) => {
     localInstallError.value = `无法读取配置文件 ${configFile}: ${error.message}`;
     return;
   }
-  
-  // 读取组件文件
-  const componentFile = meta.componentFile || 'component.vue';
+
+  // Read component file
+  const componentFile = meta.componentFile || "component.vue";
   let componentCode;
   try {
     componentCode = await readTextFile(`${folderPath}/${componentFile}`);
@@ -583,31 +678,33 @@ const processPagePlugin = async (folderPath, meta) => {
     localInstallError.value = `无法读取组件文件 ${componentFile}: ${error.message}`;
     return;
   }
-  
-  // 安装插件
+
+  // Install plugin
   await installPagePlugin({
     id: meta.id,
     name: meta.name,
-    version: meta.version || '1.0.0',
-    author: meta.author || 'Unknown',
-    description: meta.description || '',
+    version: meta.version || "1.0.0",
+    author: meta.author || "Unknown",
+    description: meta.description || "",
     data: {
       route: {
         ...config.route,
-        componentCode: componentCode
+        componentCode: componentCode,
       },
-      menu: config.menu
-    }
+      menu: config.menu,
+    },
   });
-  
+
   localInstallSuccess.value = `成功安装页面插件: ${meta.name}`;
   await fetchPlugins();
   refreshInstalledPlugins();
 };
 
-onMounted(async () => { refreshInstalledPlugins(); await fetchPlugins(); });
+onMounted(async () => {
+  refreshInstalledPlugins();
+  await fetchPlugins();
+});
 </script>
-
 
 <style scoped>
 .plugin-market {
@@ -782,7 +879,9 @@ onMounted(async () => { refreshInstalledPlugins(); await fetchPlugins(); });
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-state p {

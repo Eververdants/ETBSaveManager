@@ -1,23 +1,35 @@
 <template>
   <div class="about-container">
     <main class="about-content">
-      <!-- 毛玻璃卡片 -->
+      <!-- Frosted glass card -->
       <section class="glass-card app-info">
-        <img class="app-icon" :class="{ loaded: iconLoaded }" src="/app-icon.png" alt="App Icon" @load="handleImageLoad"
-          @error="handleImageLoad" @click="handleAppIconClick" />
+        <img
+          class="app-icon"
+          :class="{ loaded: iconLoaded }"
+          src="/app-icon.png"
+          alt="App Icon"
+          @load="handleImageLoad"
+          @error="handleImageLoad"
+          @click="handleAppIconClick"
+        />
         <div>
           <h2 class="app-title">{{ $t("app.name") }}</h2>
           <p class="app-version">{{ $t("about.version") }} {{ version }}</p>
           <p class="app-desc">{{ $t("about.tagline") }}</p>
         </div>
         <div v-if="showEasterEgg" class="easter-egg">
-          <img src="/Written_by_Máo.png" alt="Easter Egg" class="easter-egg-image"
-            :class="{ loaded: easterEggImageLoaded }" @load="easterEggImageLoaded = true"
-            @error="easterEggImageLoaded = true" />
+          <img
+            src="/Written_by_Máo.png"
+            alt="Easter Egg"
+            class="easter-egg-image"
+            :class="{ loaded: easterEggImageLoaded }"
+            @load="easterEggImageLoaded = true"
+            @error="easterEggImageLoaded = true"
+          />
         </div>
       </section>
 
-      <!-- 分组：应用信息 -->
+      <!-- Section: App info -->
       <section class="list-section">
         <h3 class="section-title">{{ $t("about.appInfo") }}</h3>
         <div class="list-item clickable" @click="handleEasterEgg">
@@ -30,17 +42,17 @@
         </div>
       </section>
 
-      <!-- 分组：更新公告 -->
+      <!-- Section: Release notes -->
       <section class="list-section">
         <h3 class="section-title">{{ $t("about.releaseNotes") }}</h3>
-        <div class="release-summary" v-if="latestRelease">
+        <div v-if="latestRelease" class="release-summary">
           <div class="release-header">
             <span class="version-tag">{{ latestRelease.version }}</span>
             <span class="release-date">{{ formatDate(latestRelease.date) }}</span>
           </div>
           <div class="release-title">{{ latestRelease.title }}</div>
 
-          <!-- 更新内容列表 -->
+          <!-- Release content list -->
           <div class="release-content">
             <template v-if="latestRelease.categories.newFeatures?.length">
               <div v-for="(item, idx) in latestRelease.categories.newFeatures" :key="'new-' + idx" class="release-item">
@@ -49,8 +61,11 @@
               </div>
             </template>
             <template v-if="latestRelease.categories.improvements?.length">
-              <div v-for="(item, idx) in latestRelease.categories.improvements" :key="'imp-' + idx"
-                class="release-item">
+              <div
+                v-for="(item, idx) in latestRelease.categories.improvements"
+                :key="'imp-' + idx"
+                class="release-item"
+              >
                 <span class="item-dot improve"></span>
                 <span>{{ item }}</span>
               </div>
@@ -62,8 +77,11 @@
               </div>
             </template>
             <template v-if="latestRelease.categories.performance?.length">
-              <div v-for="(item, idx) in latestRelease.categories.performance" :key="'perf-' + idx"
-                class="release-item">
+              <div
+                v-for="(item, idx) in latestRelease.categories.performance"
+                :key="'perf-' + idx"
+                class="release-item"
+              >
                 <span class="item-dot perf"></span>
                 <span>{{ item }}</span>
               </div>
@@ -75,7 +93,7 @@
         </div>
       </section>
 
-      <!-- 分组：致谢 -->
+      <!-- Section: Acknowledgements -->
       <section class="list-section">
         <h3 class="section-title">{{ $t("about.acknowledgements") }}</h3>
         <div class="list-item single">
@@ -83,7 +101,7 @@
         </div>
       </section>
 
-      <!-- 分组：联系方式（图标点击） -->
+      <!-- Section: Contact (icon clicks) -->
       <section class="list-section">
         <h3 class="section-title">{{ $t("about.contact") }}</h3>
         <div class="icon-row">
@@ -103,16 +121,18 @@
             <font-awesome-icon :icon="['fab', 'bilibili']" />
             <span class="social-label">Bilibili</span>
           </a>
-          <a class="social-btn tiktok"
+          <a
+            class="social-btn tiktok"
             href="https://www.douyin.com/user/MS4wLjABAAAA8MEFE6VVh4_nWkTLPbueZYywgSyN19xhUFkmDF-nkhlnWytZWiBZ9YWM5s3RsprJ"
-            target="_blank">
+            target="_blank"
+          >
             <font-awesome-icon :icon="['fab', 'tiktok']" />
             <span class="social-label">抖音</span>
           </a>
         </div>
       </section>
 
-      <!-- 底部版权 -->
+      <!-- Footer copyright -->
       <footer class="about-footer">
         <p>© 2026 {{ $t("app.name") }}</p>
         <small>{{ $t("about.licenseName") }} | {{ $t("archive.disclaimer") }}</small>
@@ -132,15 +152,14 @@ import { APP_VERSION } from "../config/version";
 const { t, locale } = useI18n({ useScope: "global" });
 const version = APP_VERSION;
 
-// 使用公告数据 composable
-const { latestRelease, formatShortDate } =
-  useReleaseNotes();
+// Use release notes data composable
+const { latestRelease, formatShortDate } = useReleaseNotes();
 
 const showEasterEgg = ref(false);
 const iconLoaded = ref(false);
 const easterEggImageLoaded = ref(false);
 
-// 翻译文本的computed
+// Computed for translated text
 const $t = (key, values) => {
   const text = t(key);
   if (values && typeof values === "object") {
@@ -158,7 +177,7 @@ const handleImageLoad = () => {
   iconLoaded.value = true;
 };
 
-// 使用 composable 提供的日期格式化
+// Use date formatting provided by composable
 const formatDate = (dateString) => formatShortDate(dateString);
 
 onMounted(() => {
@@ -176,15 +195,15 @@ const handleEasterEgg = () => {
   clickCount++;
 
   if (clickCount >= 5) {
-    // 直接重置动画状态，无需隐藏再显示
+    // Reset animation state directly, no need to hide then show
     easterEggImageLoaded.value = false;
 
-    // 强制触发重新加载图片和动画
+    // Force reload image and animation
     setTimeout(() => {
       easterEggImageLoaded.value = true;
     }, 50);
 
-    // 确保彩蛋可见
+    // Ensure easter egg is visible
     if (!showEasterEgg.value) {
       showEasterEgg.value = true;
     }
@@ -198,7 +217,7 @@ const handleEasterEgg = () => {
   }
 };
 
-// 处理app-icon的5次点击事件
+// Handle 5-click event on app icon
 let appIconClickCount = 0;
 let appIconClickTimer = null;
 
@@ -210,17 +229,17 @@ const handleAppIconClick = () => {
   appIconClickCount++;
 
   if (appIconClickCount >= 5) {
-    // 激活开发者模式
+    // Activate developer mode
     storage.setItem("developerMode", "true");
 
-    // 触发自定义事件通知其他组件
+    // Dispatch custom event to notify other components
     window.dispatchEvent(
       new CustomEvent("developer-mode-changed", {
         detail: { enabled: true },
-      })
+      }),
     );
 
-    // 显示提示
+    // Show notification
     const toast = document.createElement("div");
     toast.style.cssText = `
       position: fixed;
@@ -248,7 +267,7 @@ const handleAppIconClick = () => {
   } else {
     appIconClickTimer = setTimeout(() => {
       appIconClickCount = 0;
-    }, 1000); // 1秒内点击5次
+    }, 1000); // Click 5 times within 1 second
   }
 };
 </script>
@@ -266,7 +285,7 @@ const handleAppIconClick = () => {
   overflow-y: auto;
 }
 
-/* 毛玻璃卡片 */
+/* Frosted glass card */
 .glass-card {
   background: var(--about-glass-bg);
   backdrop-filter: blur(14px);
@@ -383,7 +402,7 @@ const handleAppIconClick = () => {
   margin: 0;
 }
 
-/* 分组列表 */
+/* Grouped list */
 .list-section {
   margin-bottom: 1.2rem;
   background: var(--about-list-bg);
@@ -424,7 +443,7 @@ const handleAppIconClick = () => {
   color: var(--text-secondary);
 }
 
-/* 联系方式图标 */
+/* Contact icons */
 .icon-row {
   display: flex;
   justify-content: center;
@@ -496,7 +515,7 @@ const handleAppIconClick = () => {
   border-color: #000;
 }
 
-/* 底部版权 */
+/* Footer copyright */
 .about-footer {
   text-align: center;
   margin-top: 2rem;
@@ -523,7 +542,7 @@ const handleAppIconClick = () => {
   cursor: pointer;
 }
 
-/* 更新公告样式 - 简洁版 */
+/* Release notes styles - compact */
 .release-summary {
   padding: 1rem;
 }
@@ -608,10 +627,8 @@ const handleAppIconClick = () => {
   margin: 0;
 }
 
-/* 深色模式适配 */
+/* Dark mode adaptation */
 [data-theme="dark"] .about-container {
-  background: linear-gradient(to bottom,
-      var(--about-bg-gradient-start),
-      var(--about-bg-gradient-end));
+  background: linear-gradient(to bottom, var(--about-bg-gradient-start), var(--about-bg-gradient-end));
 }
 </style>

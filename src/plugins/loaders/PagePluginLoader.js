@@ -159,14 +159,14 @@ class PagePluginLoader {
       // 创建组件定义
       const componentDef = {
         name: `Plugin_${plugin.id}`,
-        template: template || '<div>Empty Component</div>',
+        template: template || "<div>Empty Component</div>",
       };
 
       // 如果有 script 部分，处理它
       if (script) {
         // 检查是否是 script setup
         const isSetup = code.match(/<script[^>]*setup[^>]*>/);
-        
+
         if (isSetup) {
           // 处理 script setup
           componentDef.setup = this.createSetupFunction(script);
@@ -185,7 +185,7 @@ class PagePluginLoader {
       return componentDef;
     } catch (error) {
       console.error(`❌ [PageLoader] 编译组件失败:`, error);
-      throw new Error(`组件编译失败: ${error.message}`);
+      throw new Error(`组件编译失败: ${error.message}`, { cause: error });
     }
   }
 
@@ -197,10 +197,10 @@ class PagePluginLoader {
   createSetupFunction(script) {
     // 安全限制：移除危险的代码模式
     const sanitizedScript = this.sanitizeScript(script);
-    
+
     // 在外部解析声明
     const declarations = this.parseDeclarations(sanitizedScript);
-    
+
     return function setup() {
       const ctx = getAppContext();
 
@@ -219,10 +219,25 @@ class PagePluginLoader {
 
       // 提供服务
       const storage = ctx.storage;
-      
+
       try {
         // 使用安全的函数构造器，限制可用全局变量
-        const safeGlobalKeys = ['Object', 'Array', 'String', 'Number', 'Boolean', 'Math', 'Date', 'JSON', 'Promise', 'Map', 'Set', 'RegExp', 'Error', 'TypeError'];
+        const safeGlobalKeys = [
+          "Object",
+          "Array",
+          "String",
+          "Number",
+          "Boolean",
+          "Math",
+          "Date",
+          "JSON",
+          "Promise",
+          "Map",
+          "Set",
+          "RegExp",
+          "Error",
+          "TypeError",
+        ];
         const globalAllowlist = safeGlobalKeys.reduce((obj, key) => {
           obj[key] = globalThis[key];
           return obj;
@@ -230,30 +245,46 @@ class PagePluginLoader {
 
         const evalFn = new Function(
           ...safeGlobalKeys,
-          'ref', 'reactive', 'computed', 'watch', 'onMounted', 'onUnmounted', 'nextTick',
-          'useRouter', 'useRoute', 'useI18n',
-          'storage',
+          "ref",
+          "reactive",
+          "computed",
+          "watch",
+          "onMounted",
+          "onUnmounted",
+          "nextTick",
+          "useRouter",
+          "useRoute",
+          "useI18n",
+          "storage",
           `
           'use strict';
           ${sanitizedScript}
           
           // 返回所有声明的变量
           return {
-            ${declarations.join(',\n            ')}
+            ${declarations.join(",\n            ")}
           };
-          `
+          `,
         );
-        
+
         return evalFn(
-          ...safeGlobalKeys.map(key => globalAllowlist[key]),
-          ref, reactive, computed, watch, onMounted, onUnmounted, nextTick,
-          useRouter, useRoute, useI18n,
-          storage
+          ...safeGlobalKeys.map((key) => globalAllowlist[key]),
+          ref,
+          reactive,
+          computed,
+          watch,
+          onMounted,
+          onUnmounted,
+          nextTick,
+          useRouter,
+          useRoute,
+          useI18n,
+          storage,
         );
       } catch (error) {
-        console.error('❌ [PageLoader] 执行 setup 函数失败:', error);
-        console.error('脚本内容:', sanitizedScript);
-        console.error('声明列表:', declarations);
+        console.error("❌ [PageLoader] 执行 setup 函数失败:", error);
+        console.error("脚本内容:", sanitizedScript);
+        console.error("声明列表:", declarations);
         return {};
       }
     };
@@ -266,28 +297,28 @@ class PagePluginLoader {
    */
   sanitizeScript(script) {
     let sanitized = script;
-    
-    sanitized = sanitized.replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '');
-    
-    sanitized = sanitized.replace(/require\s*\(/g, '/* BLOCKED: require() */ null;(');
-    
-    sanitized = sanitized.replace(/\beval\s*\(/g, '/* BLOCKED: eval() */ null;(');
-    
-    sanitized = sanitized.replace(/new\s+Function\s*\(/g, '/* BLOCKED: new Function() */ null;(');
-    
-    sanitized = sanitized.replace(/window\.location\s*=/g, '/* BLOCKED: window.location */ void(');
-    
-    sanitized = sanitized.replace(/document\.write\s*\(/g, '/* BLOCKED: document.write */ null;(');
-    
-    sanitized = sanitized.replace(/\.innerHTML\s*=/g, '.innerHTML = /* BLOCKED: innerHTML */ ');
-    sanitized = sanitized.replace(/\.outerHTML\s*=/g, '.outerHTML = /* BLOCKED: outerHTML */ ');
-    
-    sanitized = sanitized.replace(/\bsetTimeout\s*\(/g, '/* BLOCKED: setTimeout */ null;(');
-    sanitized = sanitized.replace(/\bsetInterval\s*\(/g, '/* BLOCKED: setInterval */ null;(');
-    
-    sanitized = sanitized.replace(/\bfetch\s*\(/g, '/* BLOCKED: fetch */ null;(');
-    sanitized = sanitized.replace(/new\s+XMLHttpRequest\s*\(/g, '/* BLOCKED: XMLHttpRequest */ null;(');
-    
+
+    sanitized = sanitized.replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, "");
+
+    sanitized = sanitized.replace(/require\s*\(/g, "/* BLOCKED: require() */ null;(");
+
+    sanitized = sanitized.replace(/\beval\s*\(/g, "/* BLOCKED: eval() */ null;(");
+
+    sanitized = sanitized.replace(/new\s+Function\s*\(/g, "/* BLOCKED: new Function() */ null;(");
+
+    sanitized = sanitized.replace(/window\.location\s*=/g, "/* BLOCKED: window.location */ void(");
+
+    sanitized = sanitized.replace(/document\.write\s*\(/g, "/* BLOCKED: document.write */ null;(");
+
+    sanitized = sanitized.replace(/\.innerHTML\s*=/g, ".innerHTML = /* BLOCKED: innerHTML */ ");
+    sanitized = sanitized.replace(/\.outerHTML\s*=/g, ".outerHTML = /* BLOCKED: outerHTML */ ");
+
+    sanitized = sanitized.replace(/\bsetTimeout\s*\(/g, "/* BLOCKED: setTimeout */ null;(");
+    sanitized = sanitized.replace(/\bsetInterval\s*\(/g, "/* BLOCKED: setInterval */ null;(");
+
+    sanitized = sanitized.replace(/\bfetch\s*\(/g, "/* BLOCKED: fetch */ null;(");
+    sanitized = sanitized.replace(/new\s+XMLHttpRequest\s*\(/g, "/* BLOCKED: XMLHttpRequest */ null;(");
+
     return sanitized;
   }
 
@@ -297,23 +328,23 @@ class PagePluginLoader {
    */
   parseDeclarations(script) {
     const declarations = new Set();
-    
+
     // 移除所有函数体内的内容，只保留顶层声明
     let topLevelScript = script;
-    
+
     // 移除箭头函数体
-    topLevelScript = topLevelScript.replace(/=>\s*{[^}]*}/g, '=> {}');
-    
+    topLevelScript = topLevelScript.replace(/=>\s*{[^}]*}/g, "=> {}");
+
     // 移除普通函数体
-    topLevelScript = topLevelScript.replace(/function\s+\w+\s*\([^)]*\)\s*{[^}]*}/g, 'function() {}');
-    
+    topLevelScript = topLevelScript.replace(/function\s+\w+\s*\([^)]*\)\s*{[^}]*}/g, "function() {}");
+
     // 匹配顶层的 const/let 声明
     const constRegex = /^(?:const|let)\s+(\w+)\s*=/gm;
     let match;
     while ((match = constRegex.exec(topLevelScript)) !== null) {
       declarations.add(match[1]);
     }
-    
+
     return Array.from(declarations);
   }
 
@@ -325,27 +356,24 @@ class PagePluginLoader {
     try {
       // 先进行安全检查
       const sanitized = this.sanitizeScript(script);
-      
+
       // 只允许对象字面量，使用 JSON.parse 作为安全替代
       if (this.isSafeObjectLiteral(sanitized)) {
         return JSON.parse(sanitized);
       }
-      
+
       // 如果不是纯 JSON，使用受限的 Function 构造器
-      const safeGlobalKeys = ['Object', 'Array', 'String', 'Number', 'Boolean', 'Math', 'Date', 'JSON'];
+      const safeGlobalKeys = ["Object", "Array", "String", "Number", "Boolean", "Math", "Date", "JSON"];
       const globalAllowlist = safeGlobalKeys.reduce((obj, key) => {
         obj[key] = globalThis[key];
         return obj;
       }, {});
 
-      const fn = new Function(
-        ...safeGlobalKeys,
-        `'use strict'; return ${sanitized}`
-      );
-      
-      return fn(...safeGlobalKeys.map(key => globalAllowlist[key]));
+      const fn = new Function(...safeGlobalKeys, `'use strict'; return ${sanitized}`);
+
+      return fn(...safeGlobalKeys.map((key) => globalAllowlist[key]));
     } catch (error) {
-      console.error('❌ [PageLoader] 执行 Options API 脚本失败:', error);
+      console.error("❌ [PageLoader] 执行 Options API 脚本失败:", error);
       return {};
     }
   }
@@ -357,7 +385,7 @@ class PagePluginLoader {
    */
   isSafeObjectLiteral(script) {
     const trimmed = script.trim();
-    if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) {
+    if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) {
       return false;
     }
     // 检查是否包含函数定义或其他非 JSON 结构
@@ -390,11 +418,11 @@ class PagePluginLoader {
    */
   injectStyle(style, pluginId) {
     const styleId = `plugin-style-${pluginId}`;
-    
+
     // 检查是否已存在
     let styleEl = document.getElementById(styleId);
     if (!styleEl) {
-      styleEl = document.createElement('style');
+      styleEl = document.createElement("style");
       styleEl.id = styleId;
       document.head.appendChild(styleEl);
     }
@@ -409,13 +437,7 @@ class PagePluginLoader {
    * @param {string} routeName - 路由名称
    */
   registerMenuItem(pluginId, menuConfig, routeName) {
-    const {
-      textKey,
-      icon,
-      position = "top",
-      descriptionKey,
-      action,
-    } = menuConfig;
+    const { textKey, icon, position = "top", descriptionKey, action } = menuConfig;
 
     // 生成唯一ID
     const allItems = [...topMenuItems.value, ...bottomMenuItems.value];
@@ -448,13 +470,15 @@ class PagePluginLoader {
     console.log(`📋 [PageLoader] 菜单项详情:`, menuItem);
 
     // 触发侧边栏更新事件
-    window.dispatchEvent(new CustomEvent("plugin-menu-added", {
-      detail: { menuItem, pluginId },
-    }));
-    
+    window.dispatchEvent(
+      new CustomEvent("plugin-menu-added", {
+        detail: { menuItem, pluginId },
+      }),
+    );
+
     // 强制触发 Vue 更新
     setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
+      window.dispatchEvent(new Event("resize"));
     }, 100);
   }
 
@@ -486,7 +510,7 @@ class PagePluginLoader {
       const { menuId, position } = menuInfo;
       const menuArray = position === "bottom" ? bottomMenuItems.value : topMenuItems.value;
       const index = menuArray.findIndex((item) => item.id === menuId);
-      
+
       if (index !== -1) {
         menuArray.splice(index, 1);
         console.log(`📋 [PageLoader] 已移除菜单项: ${menuId}`);
@@ -495,9 +519,11 @@ class PagePluginLoader {
       this.registeredMenuItems.delete(id);
 
       // 触发侧边栏更新事件
-      window.dispatchEvent(new CustomEvent("plugin-menu-removed", {
-        detail: { menuId, pluginId: id },
-      }));
+      window.dispatchEvent(
+        new CustomEvent("plugin-menu-removed", {
+          detail: { menuId, pluginId: id },
+        }),
+      );
     }
 
     // 移除样式

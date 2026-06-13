@@ -10,9 +10,7 @@ export function usePreviewExecuteArea(archives, selectedCount, isCreating) {
   });
 
   const missingCount = computed(() => {
-    return archives.value?.filter(
-      (a) => a.validationErrors && a.validationErrors.length > 0
-    ).length || 0;
+    return archives.value?.filter((a) => a.validationErrors && a.validationErrors.length > 0).length || 0;
   });
 
   const canCreate = computed(() => {
@@ -32,9 +30,7 @@ export function usePreviewExecuteArea(archives, selectedCount, isCreating) {
     } else {
       const minutes = Math.floor(seconds / 60);
       const remainingSeconds = seconds % 60;
-      return remainingSeconds > 0
-        ? `${minutes}m ${remainingSeconds}s`
-        : `${minutes}m`;
+      return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
     }
   });
 

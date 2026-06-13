@@ -159,11 +159,7 @@
   --popup-error-bg: #161618;
   --popup-warning-bg: #161618;
   --popup-info-bg: #161618;
-  --popup-info-icon-bg: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(255, 255, 255, 0.1) 100%
-  );
+  --popup-info-icon-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
   --popup-info-shadow: rgba(255, 255, 255, 0.1);
 }
 

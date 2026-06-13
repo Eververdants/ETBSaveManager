@@ -2,22 +2,22 @@
   <div class="theme-editor-page">
     <!-- Page Header -->
     <div class="page-header">
-      <button class="back-btn" @click="goBack" :aria-label="$t('common.back')">
+      <button class="back-btn" :aria-label="$t('common.back')" @click="goBack">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
         <span>{{ $t("common.back") }}</span>
       </button>
       <h1 class="page-title">
-        {{
-          isEditMode
-            ? $t("theme.editThemeTitle")
-            : $t("theme.createCustomTheme")
-        }}
+        {{ isEditMode ? $t("theme.editThemeTitle") : $t("theme.createCustomTheme") }}
       </h1>
-      <div class="accessibility-badge" :class="accessibilityClass" :title="accessibilityTooltip" role="status"
-        :aria-label="$t('theme.accessibilityLevel', { level: accessibilityLevel })
-          ">
+      <div
+        class="accessibility-badge"
+        :class="accessibilityClass"
+        :title="accessibilityTooltip"
+        role="status"
+        :aria-label="$t('theme.accessibilityLevel', { level: accessibilityLevel })"
+      >
         <span class="badge-icon">{{ accessibilityIcon }}</span>
         <span class="badge-text">{{ accessibilityLevel }}</span>
       </div>
@@ -29,38 +29,61 @@
       <div class="color-editor-panel">
         <!-- Theme Name Input -->
         <div class="theme-name-section">
-          <label class="section-label" for="theme-name">{{
-            $t("theme.themeName")
-          }}</label>
-          <input id="theme-name" v-model="themeName" type="text" class="theme-name-input"
-            :placeholder="$t('theme.themeNamePlaceholder')" :aria-label="$t('theme.themeName')"
-            :aria-invalid="!!nameError" @input="validateName" />
-          <span v-if="nameError" class="name-error" role="alert">{{
-            nameError
-          }}</span>
+          <label class="section-label" for="theme-name">{{ $t("theme.themeName") }}</label>
+          <input
+            id="theme-name"
+            v-model="themeName"
+            type="text"
+            class="theme-name-input"
+            :placeholder="$t('theme.themeNamePlaceholder')"
+            :aria-label="$t('theme.themeName')"
+            :aria-invalid="!!nameError"
+            @input="validateName"
+          />
+          <span v-if="nameError" class="name-error" role="alert">{{ nameError }}</span>
         </div>
 
         <!-- Color Sections -->
         <div class="color-sections">
           <!-- Background Colors -->
-          <ColorSection :title="$t('theme.backgroundColors')" :items="backgroundColorItems" :colors="colors"
-            @update:color="handleColorUpdate" />
+          <ColorSection
+            :title="$t('theme.backgroundColors')"
+            :items="backgroundColorItems"
+            :colors="colors"
+            @update:color="handleColorUpdate"
+          />
 
           <!-- Text Colors -->
-          <ColorSection :title="$t('theme.textColors')" :items="textColorItems" :colors="colors"
-            @update:color="handleColorUpdate" />
+          <ColorSection
+            :title="$t('theme.textColors')"
+            :items="textColorItems"
+            :colors="colors"
+            @update:color="handleColorUpdate"
+          />
 
           <!-- Accent Colors -->
-          <ColorSection :title="$t('theme.accentColors')" :items="accentColorItems" :colors="colors"
-            @update:color="handleColorUpdate" />
+          <ColorSection
+            :title="$t('theme.accentColors')"
+            :items="accentColorItems"
+            :colors="colors"
+            @update:color="handleColorUpdate"
+          />
 
           <!-- Sidebar Colors -->
-          <ColorSection :title="$t('theme.sidebarColors')" :items="sidebarColorItems" :colors="colors"
-            @update:color="handleColorUpdate" />
+          <ColorSection
+            :title="$t('theme.sidebarColors')"
+            :items="sidebarColorItems"
+            :colors="colors"
+            @update:color="handleColorUpdate"
+          />
 
           <!-- Card Colors -->
-          <ColorSection :title="$t('theme.cardColors')" :items="cardColorItems" :colors="colors"
-            @update:color="handleColorUpdate" />
+          <ColorSection
+            :title="$t('theme.cardColors')"
+            :items="cardColorItems"
+            :colors="colors"
+            @update:color="handleColorUpdate"
+          />
         </div>
       </div>
 
@@ -80,7 +103,7 @@
         <button class="btn-cancel" @click="handleCancel">
           {{ $t("common.cancel") }}
         </button>
-        <button class="btn-save" @click="handleSave" :disabled="!canSave">
+        <button class="btn-save" :disabled="!canSave" @click="handleSave">
           {{ $t("common.save") }}
         </button>
       </div>
@@ -94,10 +117,7 @@ import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import ThemePreview from "@/components/theme/ThemePreview.vue";
 import ColorSection from "@/components/theme/ColorSection.vue";
-import {
-  themeValidator,
-  DEFAULT_THEME_TEMPLATE,
-} from "@/services/themeValidator.js";
+import { themeValidator, DEFAULT_THEME_TEMPLATE } from "@/services/themeValidator.js";
 import { accessibilityChecker } from "@/services/accessibilityChecker.js";
 import themeManager from "@/styles/theme-config.js";
 import { themeStorage } from "@/services/themeStorage.js";
@@ -293,9 +313,7 @@ async function handleSave() {
 
   isLoading.value = true;
   try {
-    const id = isEditMode.value
-      ? themeId.value
-      : await generateThemeId(themeName.value);
+    const id = isEditMode.value ? themeId.value : await generateThemeId(themeName.value);
 
     const themeData = {
       id,

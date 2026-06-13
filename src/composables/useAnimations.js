@@ -1,15 +1,12 @@
 import { gsap } from "gsap";
-import {
-  getAnimationParams,
-  detectDevicePerformance,
-} from "../utils/performance.js";
+import { getAnimationParams, detectDevicePerformance } from "../utils/performance.js";
 
 /**
- * 动画 composable
+ * Animation composable
  */
 export function useAnimations(performanceMode, animationQuality) {
   /**
-   * 卡片进入前
+   * Before card enters
    */
   const beforeCardEnter = (el) => {
     el.style.opacity = "0";
@@ -17,14 +14,10 @@ export function useAnimations(performanceMode, animationQuality) {
   };
 
   /**
-   * 卡片进入动画
+   * Card enter animation
    */
   const cardEnter = (el, done, cardCount) => {
-    if (
-      animationQuality.value === "disabled" ||
-      cardCount > 30 ||
-      performanceMode.value === "low"
-    ) {
+    if (animationQuality.value === "disabled" || cardCount > 30 || performanceMode.value === "low") {
       el.style.opacity = "1";
       el.style.transform = "translateY(0)";
       done();
@@ -42,7 +35,7 @@ export function useAnimations(performanceMode, animationQuality) {
   };
 
   /**
-   * 卡片离开动画
+   * Card leave animation
    */
   const cardLeave = (el, done) => {
     if (animationQuality.value === "disabled") {
@@ -62,14 +55,10 @@ export function useAnimations(performanceMode, animationQuality) {
   };
 
   /**
-   * 搜索面板进入前
+   * Before search panel enters
    */
   const beforeSearchEnter = (el) => {
-    const params = getAnimationParams(
-      "search",
-      performanceMode.value,
-      animationQuality.value
-    );
+    const params = getAnimationParams("search", performanceMode.value, animationQuality.value);
 
     gsap.set(el, {
       opacity: 0,
@@ -80,14 +69,10 @@ export function useAnimations(performanceMode, animationQuality) {
   };
 
   /**
-   * 搜索面板进入动画
+   * Search panel enter animation
    */
   const searchEnter = (el, done) => {
-    const params = getAnimationParams(
-      "search",
-      performanceMode.value,
-      animationQuality.value
-    );
+    const params = getAnimationParams("search", performanceMode.value, animationQuality.value);
 
     requestAnimationFrame(() => {
       gsap.to(el, {
@@ -102,14 +87,10 @@ export function useAnimations(performanceMode, animationQuality) {
   };
 
   /**
-   * 搜索面板离开动画
+   * Search panel leave animation
    */
   const searchLeave = (el, done) => {
-    const params = getAnimationParams(
-      "search",
-      performanceMode.value,
-      animationQuality.value
-    );
+    const params = getAnimationParams("search", performanceMode.value, animationQuality.value);
 
     gsap.to(el, {
       opacity: 0,

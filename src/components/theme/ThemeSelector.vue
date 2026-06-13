@@ -1,13 +1,22 @@
 <template>
   <div class="theme-selector">
     <div class="theme-scroll-container">
-      <button v-show="needsScroll && canScrollLeft" class="scroll-btn scroll-left" @click="scrollLeft"
-        aria-label="向左滚动">
+      <button
+        v-show="needsScroll && canScrollLeft"
+        class="scroll-btn scroll-left"
+        aria-label="向左滚动"
+        @click="scrollLeft"
+      >
         <font-awesome-icon :icon="['fas', 'chevron-left']" />
       </button>
-      <div class="theme-scroll" ref="scrollContainer" @scroll="updateScrollState">
-        <div v-for="theme in themes" :key="theme.id" class="theme-card" :class="{ active: currentTheme === theme.id }"
-          @click="selectTheme(theme.id)">
+      <div ref="scrollContainer" class="theme-scroll" @scroll="updateScrollState">
+        <div
+          v-for="theme in themes"
+          :key="theme.id"
+          class="theme-card"
+          :class="{ active: currentTheme === theme.id }"
+          @click="selectTheme(theme.id)"
+        >
           <div class="theme-preview" :style="getPreviewStyle(theme)">
             <div class="preview-sidebar" :style="{ background: theme.colors.sidebar }"></div>
             <div class="preview-content">
@@ -17,14 +26,18 @@
             <div class="preview-accent" :style="{ background: theme.colors.accent }"></div>
           </div>
           <transition name="text-swift" mode="out-in">
-            <div class="theme-name" :key="locale + '-' + theme.id">
+            <div :key="locale + '-' + theme.id" class="theme-name">
               {{ getThemeName(theme.id) }}
             </div>
           </transition>
         </div>
       </div>
-      <button v-show="needsScroll && canScrollRight" class="scroll-btn scroll-right" @click="scrollRight"
-        aria-label="向右滚动">
+      <button
+        v-show="needsScroll && canScrollRight"
+        class="scroll-btn scroll-right"
+        aria-label="向右滚动"
+        @click="scrollRight"
+      >
         <font-awesome-icon :icon="['fas', 'chevron-right']" />
       </button>
     </div>
@@ -362,7 +375,7 @@ watch(
       });
     });
   },
-  { deep: true }
+  { deep: true },
 );
 
 // 监听 showSeasonalThemes 变化
@@ -374,7 +387,7 @@ watch(
         updateScrollState();
       });
     });
-  }
+  },
 );
 
 const getPreviewStyle = (theme) => ({
@@ -465,7 +478,10 @@ const selectTheme = (themeId) => {
   border-radius: 10px;
   overflow: hidden;
   border: 2px solid transparent;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
   background: var(--card-bg);
 }
 

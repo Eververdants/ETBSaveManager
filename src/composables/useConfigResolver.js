@@ -1,8 +1,8 @@
 import { ref, computed } from "vue";
 
 /**
- * 配置继承解析器 composable
- * 实现三层继承逻辑：个别设置 > 智能规则 > 统一配置 > 默认值
+ * Config inheritance resolver composable
+ * Implements three-tier inheritance logic: individual settings > smart rules > uniform config > defaults
  *
  * Requirements: 15.1, 15.2, 15.3, 15.4, 15.5
  */
@@ -47,14 +47,14 @@ import { ref, computed } from "vue";
  * @property {DifficultyLevel} difficulty
  * @property {DifficultyLevel} actualDifficulty
  * @property {string | null} inventoryTemplate
- * @property {Object} source - 配置来源追踪
+ * @property {Object} source - Config source tracking
  * @property {ConfigSource} source.level
  * @property {ConfigSource} source.difficulty
  * @property {ConfigSource} source.actualDifficulty
  * @property {ConfigSource} source.inventory
  */
 
-// 默认配置值
+// Default config values
 const DEFAULT_CONFIG = {
   level: null,
   difficulty: "normal",
@@ -63,7 +63,7 @@ const DEFAULT_CONFIG = {
 };
 
 /**
- * 创建默认的统一配置
+ * Create default uniform config
  * @returns {UniformConfig}
  */
 export function createDefaultUniformConfig() {
@@ -88,7 +88,7 @@ export function createDefaultUniformConfig() {
 }
 
 /**
- * 创建默认的智能规则
+ * Create default smart rules
  * @returns {SmartRules}
  */
 export function createDefaultSmartRules() {
@@ -100,13 +100,13 @@ export function createDefaultSmartRules() {
 }
 
 /**
- * 解析单个存档的最终配置
- * 继承优先级：个别设置 > 智能规则 > 统一配置 > 默认值
+ * Resolve the final configuration for a single archive
+ * Inheritance priority: individual settings > smart rules > uniform config > defaults
  *
- * @param {ArchiveConfig} archive - 存档配置
- * @param {UniformConfig} uniformConfig - 统一配置
- * @param {SmartRules} smartRules - 智能规则
- * @returns {ResolvedConfig} 解析后的最终配置
+ * @param {ArchiveConfig} archive - Archive configuration
+ * @param {UniformConfig} uniformConfig - Uniform configuration
+ * @param {SmartRules} smartRules - Smart rules
+ * @returns {ResolvedConfig} Resolved final configuration
  */
 export function resolve(archive, uniformConfig, smartRules) {
   const result = {
@@ -122,78 +122,55 @@ export function resolve(archive, uniformConfig, smartRules) {
     },
   };
 
-  // 解析层级
-  result.level = resolveLevel(
-    archive,
-    uniformConfig,
-    smartRules,
-    result.source
-  );
+  // Resolve level
+  result.level = resolveLevel(archive, uniformConfig, smartRules, result.source);
 
-  // 解析难度
-  result.difficulty = resolveDifficulty(
-    archive,
-    uniformConfig,
-    smartRules,
-    result.source
-  );
+  // Resolve difficulty
+  result.difficulty = resolveDifficulty(archive, uniformConfig, smartRules, result.source);
 
-  // 解析实际难度
-  result.actualDifficulty = resolveActualDifficulty(
-    archive,
-    uniformConfig,
-    smartRules,
-    result.source
-  );
+  // Resolve actual difficulty
+  result.actualDifficulty = resolveActualDifficulty(archive, uniformConfig, smartRules, result.source);
 
-  // 解析背包模板
-  result.inventoryTemplate = resolveInventory(
-    archive,
-    uniformConfig,
-    result.source
-  );
+  // Resolve inventory template
+  result.inventoryTemplate = resolveInventory(archive, uniformConfig, result.source);
 
   return result;
 }
 
 /**
- * 解析层级配置
+ * Resolve level configuration
  * @param {ArchiveConfig} archive
  * @param {UniformConfig} uniformConfig
  * @param {SmartRules} smartRules
- * @param {Object} source - 来源追踪对象（会被修改）
+ * @param {Object} source - Source tracking object (will be modified)
  * @returns {string | null}
  */
 function resolveLevel(archive, uniformConfig, smartRules, source) {
-  // 1. 个别设置优先
-  if (
-    archive.level !== null &&
-    archive.level !== undefined &&
-    archive.level !== ""
-  ) {
+  // 1. Individual settings take priority
+  if (archive.level !== null && archive.level !== undefined && archive.level !== "") {
     source.level = "individual";
     return archive.level;
   }
 
-  // 2. 智能规则
+  // 2. Smart rules
   if (smartRules.autoAssignLevel && archive.parsedInfo?.levelValue) {
     source.level = "smart";
     return archive.parsedInfo.levelValue;
   }
 
-  // 3. 统一配置
+  // 3. Uniform config
   if (uniformConfig.level.enabled && uniformConfig.level.value !== null) {
     source.level = "uniform";
     return uniformConfig.level.value;
   }
 
-  // 4. 默认值
+  // 4. Default value
   source.level = "default";
   return DEFAULT_CONFIG.level;
 }
 
 /**
- * 解析难度配置
+ * Resolve difficulty configuration
  * @param {ArchiveConfig} archive
  * @param {UniformConfig} uniformConfig
  * @param {SmartRules} smartRules
@@ -201,34 +178,31 @@ function resolveLevel(archive, uniformConfig, smartRules, source) {
  * @returns {DifficultyLevel}
  */
 function resolveDifficulty(archive, uniformConfig, smartRules, source) {
-  // 1. 个别设置优先
+  // 1. Individual settings take priority
   if (archive.difficulty !== null && archive.difficulty !== undefined) {
     source.difficulty = "individual";
     return archive.difficulty;
   }
 
-  // 2. 智能规则
+  // 2. Smart rules
   if (smartRules.autoDetectDifficulty && archive.parsedInfo?.difficultyValue) {
     source.difficulty = "smart";
     return archive.parsedInfo.difficultyValue;
   }
 
-  // 3. 统一配置
-  if (
-    uniformConfig.difficulty.enabled &&
-    uniformConfig.difficulty.value !== null
-  ) {
+  // 3. Uniform config
+  if (uniformConfig.difficulty.enabled && uniformConfig.difficulty.value !== null) {
     source.difficulty = "uniform";
     return uniformConfig.difficulty.value;
   }
 
-  // 4. 默认值
+  // 4. Default value
   source.difficulty = "default";
   return DEFAULT_CONFIG.difficulty;
 }
 
 /**
- * 解析实际难度配置
+ * Resolve actual difficulty configuration
  * @param {ArchiveConfig} archive
  * @param {UniformConfig} uniformConfig
  * @param {SmartRules} smartRules
@@ -236,72 +210,60 @@ function resolveDifficulty(archive, uniformConfig, smartRules, source) {
  * @returns {DifficultyLevel}
  */
 function resolveActualDifficulty(archive, uniformConfig, smartRules, source) {
-  // 1. 个别设置优先
-  if (
-    archive.actualDifficulty !== null &&
-    archive.actualDifficulty !== undefined
-  ) {
+  // 1. Individual settings take priority
+  if (archive.actualDifficulty !== null && archive.actualDifficulty !== undefined) {
     source.actualDifficulty = "individual";
     return archive.actualDifficulty;
   }
 
-  // 2. 智能规则（实际难度也使用难度关键词）
+  // 2. Smart rules (actual difficulty also uses difficulty keywords)
   if (smartRules.autoDetectDifficulty && archive.parsedInfo?.difficultyValue) {
     source.actualDifficulty = "smart";
     return archive.parsedInfo.difficultyValue;
   }
 
-  // 3. 统一配置
-  if (
-    uniformConfig.actualDifficulty.enabled &&
-    uniformConfig.actualDifficulty.value !== null
-  ) {
+  // 3. Uniform config
+  if (uniformConfig.actualDifficulty.enabled && uniformConfig.actualDifficulty.value !== null) {
     source.actualDifficulty = "uniform";
     return uniformConfig.actualDifficulty.value;
   }
 
-  // 4. 默认值
+  // 4. Default value
   source.actualDifficulty = "default";
   return DEFAULT_CONFIG.actualDifficulty;
 }
 
 /**
- * 解析背包模板配置
+ * Resolve inventory template configuration
  * @param {ArchiveConfig} archive
  * @param {UniformConfig} uniformConfig
  * @param {Object} source
  * @returns {string | null}
  */
 function resolveInventory(archive, uniformConfig, source) {
-  // 1. 个别设置优先
-  if (
-    archive.inventoryTemplate !== null &&
-    archive.inventoryTemplate !== undefined
-  ) {
+  // 1. Individual settings take priority
+  if (archive.inventoryTemplate !== null && archive.inventoryTemplate !== undefined) {
     source.inventory = "individual";
     return archive.inventoryTemplate;
   }
 
-  // 2. 统一配置（背包没有智能规则）
-  if (
-    uniformConfig.inventory.enabled &&
-    uniformConfig.inventory.templateName !== null
-  ) {
+  // 2. Uniform config (no smart rules for inventory)
+  if (uniformConfig.inventory.enabled && uniformConfig.inventory.templateName !== null) {
     source.inventory = "uniform";
     return uniformConfig.inventory.templateName;
   }
 
-  // 3. 默认值
+  // 3. Default value
   source.inventory = "default";
   return DEFAULT_CONFIG.inventoryTemplate;
 }
 
 /**
- * 批量解析多个存档的配置
+ * Batch resolve configurations for multiple archives
  * @param {ArchiveConfig[]} archives
  * @param {UniformConfig} uniformConfig
  * @param {SmartRules} smartRules
- * @returns {Map<string, ResolvedConfig>} 以存档ID为键的配置映射
+ * @returns {Map<string, ResolvedConfig>} Configuration map keyed by archive ID
  */
 export function resolveAll(archives, uniformConfig, smartRules) {
   const results = new Map();
@@ -314,7 +276,7 @@ export function resolveAll(archives, uniformConfig, smartRules) {
 }
 
 /**
- * 检查存档是否有个别设置
+ * Check if an archive has individual settings
  * @param {ArchiveConfig} archive
  * @returns {boolean}
  */
@@ -328,18 +290,18 @@ export function hasIndividualSettings(archive) {
 }
 
 /**
- * 配置继承解析器 composable
+ * Config inheritance resolver composable
  * @returns {Object}
  */
 export function useConfigResolver() {
-  // 统一配置
+  // Uniform config
   const uniformConfig = ref(createDefaultUniformConfig());
 
-  // 智能规则
+  // Smart rules
   const smartRules = ref(createDefaultSmartRules());
 
   /**
-   * 解析单个存档配置
+   * Resolve a single archive configuration
    * @param {ArchiveConfig} archive
    * @returns {ResolvedConfig}
    */
@@ -348,7 +310,7 @@ export function useConfigResolver() {
   };
 
   /**
-   * 批量解析存档配置
+   * Batch resolve archive configurations
    * @param {ArchiveConfig[]} archives
    * @returns {Map<string, ResolvedConfig>}
    */
@@ -357,7 +319,7 @@ export function useConfigResolver() {
   };
 
   /**
-   * 更新统一配置
+   * Update uniform configuration
    * @param {Partial<UniformConfig>} updates
    */
   const updateUniformConfig = (updates) => {
@@ -365,7 +327,7 @@ export function useConfigResolver() {
   };
 
   /**
-   * 更新智能规则
+   * Update smart rules
    * @param {Partial<SmartRules>} updates
    */
   const updateSmartRules = (updates) => {
@@ -373,7 +335,7 @@ export function useConfigResolver() {
   };
 
   /**
-   * 重置为默认配置
+   * Reset to default configuration
    */
   const resetConfig = () => {
     uniformConfig.value = createDefaultUniformConfig();
@@ -381,18 +343,18 @@ export function useConfigResolver() {
   };
 
   return {
-    // 状态
+    // State
     uniformConfig,
     smartRules,
 
-    // 方法
+    // Methods
     resolveArchive,
     resolveArchives,
     updateUniformConfig,
     updateSmartRules,
     resetConfig,
 
-    // 导出纯函数
+    // Export pure functions
     resolve,
     resolveAll,
     hasIndividualSettings,
@@ -401,5 +363,5 @@ export function useConfigResolver() {
   };
 }
 
-// 导出常量
+// Export constants
 export { DEFAULT_CONFIG };

@@ -1,10 +1,17 @@
 <!-- src/components/PromptPopup.vue -->
 <template>
   <transition :css="false" @enter="enterAnimation" @leave="leaveAnimation">
-    <div v-if="isVisible" class="prompt-popup" :class="popupClass" :style="popupStyle" ref="popupRef"
-      @mouseenter="pauseAutoClose" @mouseleave="resumeAutoClose">
+    <div
+      v-if="isVisible"
+      ref="popupRef"
+      class="prompt-popup"
+      :class="popupClass"
+      :style="popupStyle"
+      @mouseenter="pauseAutoClose"
+      @mouseleave="resumeAutoClose"
+    >
       <div class="popup-content">
-        <div class="popup-icon-container" v-if="computedIcon">
+        <div v-if="computedIcon" class="popup-icon-container">
           <div class="popup-icon-wrapper" :class="iconClass">
             <font-awesome-icon :icon="computedIcon" class="popup-icon" />
           </div>
@@ -17,7 +24,7 @@
         </button>
       </div>
       <div v-if="props.duration > 0" class="progress-bar-container">
-        <div class="progress-bar" ref="progressRef"></div>
+        <div ref="progressRef" class="progress-bar"></div>
       </div>
     </div>
   </transition>
@@ -33,24 +40,14 @@ const props = defineProps({
     type: String,
     default: "top",
     validator: (value) =>
-      [
-        "top",
-        "bottom",
-        "left",
-        "right",
-        "top-left",
-        "top-right",
-        "bottom-left",
-        "bottom-right",
-      ].includes(value),
+      ["top", "bottom", "left", "right", "top-left", "top-right", "bottom-left", "bottom-right"].includes(value),
   },
   icon: { type: Array, default: null }, // e.g., ['fas', 'heart']
   duration: { type: Number, default: 3000 }, // auto-close after ms, 0 for no auto-close
   type: {
     type: String,
     default: "default",
-    validator: (value) =>
-      ["default", "success", "error", "warning", "info"].includes(value),
+    validator: (value) => ["default", "success", "error", "warning", "info"].includes(value),
   },
 });
 
@@ -65,10 +62,7 @@ const remainingTime = ref(props.duration);
 const isPaused = ref(false);
 const hoverClose = ref(false);
 
-const popupClass = computed(() => [
-  `popup-${props.direction}`,
-  `popup-${props.type}`,
-]);
+const popupClass = computed(() => [`popup-${props.direction}`, `popup-${props.type}`]);
 
 // 根据类型自动设置图标
 const computedIcon = computed(() => {
@@ -132,7 +126,7 @@ const enterAnimation = (el, done) => {
       duration: 0.4,
       ease: "power3.out",
       onComplete: done,
-    }
+    },
   );
 };
 
@@ -167,7 +161,7 @@ const startProgress = () => {
         duration: remainingTime.value / 1000,
         ease: "linear",
         onComplete: closePopup,
-      }
+      },
     );
   }
   // No separate timeout; timeline handles completion
@@ -192,7 +186,7 @@ const resumeAutoClose = () => {
         duration: remainingTime.value / 1000,
         ease: "linear",
         onComplete: closePopup,
-      }
+      },
     );
   }
 };
@@ -204,13 +198,13 @@ const resumeAutoClose = () => {
   z-index: 10001;
   padding: 20px 24px;
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15),
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(255, 255, 255, 0.1) inset,
     0 0 0 1px rgba(0, 0, 0, 0.05) inset;
   background: var(--card-bg, #ffffff);
   color: var(--text, #1c1c1e);
-  font-family: -apple-system, BlinkMacSystemFont, "San Francisco",
-    "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
   max-width: 400px;
   min-width: 320px;
   text-align: left;
@@ -228,10 +222,7 @@ const resumeAutoClose = () => {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.4) 50%,
-      transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
   z-index: 1;
 }
 
@@ -257,17 +248,17 @@ const resumeAutoClose = () => {
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  background: linear-gradient(135deg,
-      var(--primary, #007aff) 0%,
-      rgba(0, 122, 255, 0.95) 100%);
-  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.3),
+  background: linear-gradient(135deg, var(--primary, #007aff) 0%, rgba(0, 122, 255, 0.95) 100%);
+  box-shadow:
+    0 6px 16px rgba(0, 122, 255, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.15) inset;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .popup-icon-wrapper:hover {
   transform: scale(1.08) rotate(2deg);
-  box-shadow: 0 8px 20px rgba(0, 122, 255, 0.4),
+  box-shadow:
+    0 8px 20px rgba(0, 122, 255, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.2) inset;
 }
 
@@ -396,9 +387,7 @@ const resumeAutoClose = () => {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg,
-      var(--primary, #007aff) 0%,
-      rgba(0, 122, 255, 0.8) 100%);
+  background: linear-gradient(90deg, var(--primary, #007aff) 0%, rgba(0, 122, 255, 0.8) 100%);
   border-radius: 0 0 20px 20px;
   transition: width 0.1s ease;
   box-shadow: 0 0 12px rgba(0, 122, 255, 0.5);
@@ -409,15 +398,13 @@ const resumeAutoClose = () => {
   .prompt-popup {
     background: var(--card-bg, #1c1c1e);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6),
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.6),
       0 0 0 1px rgba(255, 255, 255, 0.08) inset;
   }
 
   .prompt-popup::before {
-    background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.2) 50%,
-        transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
   }
 
   .popup-message {
@@ -505,61 +492,68 @@ const resumeAutoClose = () => {
 .popup-success {
   background: var(--popup-success-bg);
   border: 1px solid var(--color-success-border);
-  box-shadow: 0 20px 60px rgba(52, 199, 89, 0.12),
+  box-shadow:
+    0 20px 60px rgba(52, 199, 89, 0.12),
     0 0 0 1px rgba(52, 199, 89, 0.1) inset;
   animation: subtlePulse 2s ease-in-out infinite;
 }
 
 .popup-success .popup-icon-wrapper {
   background: var(--popup-success-icon-bg);
-  box-shadow: 0 6px 16px var(--popup-success-shadow),
+  box-shadow:
+    0 6px 16px var(--popup-success-shadow),
     0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
 
 .popup-error {
   background: var(--popup-error-bg);
   border: 1px solid var(--color-error-border);
-  box-shadow: 0 20px 60px rgba(255, 59, 48, 0.12),
+  box-shadow:
+    0 20px 60px rgba(255, 59, 48, 0.12),
     0 0 0 1px rgba(255, 59, 48, 0.1) inset;
   animation: subtleShake 0.5s ease-in-out infinite;
 }
 
 .popup-error .popup-icon-wrapper {
   background: var(--popup-error-icon-bg);
-  box-shadow: 0 6px 16px var(--popup-error-shadow),
+  box-shadow:
+    0 6px 16px var(--popup-error-shadow),
     0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
 
 .popup-warning {
   background: var(--popup-warning-bg);
   border: 1px solid var(--color-warning-border);
-  box-shadow: 0 20px 60px rgba(255, 149, 0, 0.12),
+  box-shadow:
+    0 20px 60px rgba(255, 149, 0, 0.12),
     0 0 0 1px rgba(255, 149, 0, 0.1) inset;
   animation: subtleGlow 1.5s ease-in-out infinite alternate;
 }
 
 .popup-warning .popup-icon-wrapper {
   background: var(--popup-warning-icon-bg);
-  box-shadow: 0 6px 16px var(--popup-warning-shadow),
+  box-shadow:
+    0 6px 16px var(--popup-warning-shadow),
     0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
 
 .popup-info {
   background: var(--popup-info-bg);
   border: 1px solid var(--color-info-border);
-  box-shadow: 0 20px 60px rgba(0, 122, 255, 0.12),
+  box-shadow:
+    0 20px 60px rgba(0, 122, 255, 0.12),
     0 0 0 1px rgba(0, 122, 255, 0.1) inset;
 }
 
 .popup-info .popup-icon-wrapper {
   background: var(--popup-info-icon-bg);
-  box-shadow: 0 6px 16px var(--popup-info-shadow),
+  box-shadow:
+    0 6px 16px var(--popup-info-shadow),
     0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
 
 /* Subtle animations */
 @keyframes subtlePulse {
-
   0%,
   100% {
     transform: scale(1);
@@ -571,7 +565,6 @@ const resumeAutoClose = () => {
 }
 
 @keyframes subtleShake {
-
   0%,
   100% {
     transform: translateX(0);
@@ -588,12 +581,14 @@ const resumeAutoClose = () => {
 
 @keyframes subtleGlow {
   0% {
-    box-shadow: 0 20px 60px rgba(255, 149, 0, 0.12),
+    box-shadow:
+      0 20px 60px rgba(255, 149, 0, 0.12),
       0 0 0 1px rgba(255, 149, 0, 0.1) inset;
   }
 
   100% {
-    box-shadow: 0 20px 60px rgba(255, 149, 0, 0.18),
+    box-shadow:
+      0 20px 60px rgba(255, 149, 0, 0.18),
       0 0 0 1px rgba(255, 149, 0, 0.15) inset;
   }
 }

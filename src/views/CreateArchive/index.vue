@@ -18,23 +18,17 @@
 
       <div class="step" :class="{ active: currentStep >= 1, completed: currentStep > 1 }">
         <span class="step-number">{{ $t("common.step", { number: 1 }) }}</span>
-        <span class="step-label">{{
-          $t("createArchive.steps.selectLevel")
-        }}</span>
+        <span class="step-label">{{ $t("createArchive.steps.selectLevel") }}</span>
       </div>
       <div class="step-connector"></div>
       <div class="step" :class="{ active: currentStep >= 2, completed: currentStep > 2 }">
         <span class="step-number">{{ $t("common.step", { number: 2 }) }}</span>
-        <span class="step-label">{{
-          $t("createArchive.steps.configureArchive")
-        }}</span>
+        <span class="step-label">{{ $t("createArchive.steps.configureArchive") }}</span>
       </div>
       <div class="step-connector"></div>
       <div class="step" :class="{ active: currentStep >= 3, completed: currentStep > 3 }">
         <span class="step-number">{{ $t("common.step", { number: 3 }) }}</span>
-        <span class="step-label">{{
-          $t("createArchive.steps.editInventory")
-        }}</span>
+        <span class="step-label">{{ $t("createArchive.steps.editInventory") }}</span>
       </div>
 
       <!-- 右侧占位，保持居中 -->
@@ -46,28 +40,49 @@
       <transition name="step-transition" mode="out-in" @enter="onStepEnter" @leave="onStepLeave">
         <div :key="currentStep" class="step-container">
           <!-- 步骤1: 选择层级 -->
-          <Step1SelectLevel v-if="currentStep === 1" :selected-level="selectedLevel" :selected-ending="selectedEnding"
-            :available-levels="availableLevels" :endings="endings" @select-level="selectLevel"
-            @select-ending="selectEnding" />
+          <Step1SelectLevel
+            v-if="currentStep === 1"
+            :selected-level="selectedLevel"
+            :selected-ending="selectedEnding"
+            :available-levels="availableLevels"
+            :endings="endings"
+            @select-level="selectLevel"
+            @select-ending="selectEnding"
+          />
 
           <!-- 步骤2: 配置存档 -->
-          <Step2ConfigArchive v-else-if="currentStep === 2" v-model:archive-name="archiveName"
-            :selected-game-mode="selectedGameMode" :selected-difficulty="selectedDifficulty"
-            :selected-actual-difficulty="selectedActualDifficulty" :difficulty-levels="difficultyLevels"
-            @select-difficulty="selectDifficulty" @select-actual-difficulty="selectActualDifficulty" />
+          <Step2ConfigArchive
+            v-else-if="currentStep === 2"
+            v-model:archive-name="archiveName"
+            :selected-game-mode="selectedGameMode"
+            :selected-difficulty="selectedDifficulty"
+            :selected-actual-difficulty="selectedActualDifficulty"
+            :difficulty-levels="difficultyLevels"
+            @select-difficulty="selectDifficulty"
+            @select-actual-difficulty="selectActualDifficulty"
+          />
 
           <!-- 步骤3: 编辑背包 -->
-          <Step3EditInventory v-else-if="currentStep === 3" v-model:new-steam-id="newSteamId" :players="players"
-            :active-player-index="activePlayerIndex" :player-input-message="playerInputMessage"
-            :player-input-message-type="playerInputMessageType" @add-steam-id="addSteamId" @remove-player="removePlayer"
-            @select-player="selectPlayer" @edit-slot="editSlot" @update-player-sanity="updatePlayerSanity" />
+          <Step3EditInventory
+            v-else-if="currentStep === 3"
+            v-model:new-steam-id="newSteamId"
+            :players="players"
+            :active-player-index="activePlayerIndex"
+            :player-input-message="playerInputMessage"
+            :player-input-message-type="playerInputMessageType"
+            @add-steam-id="addSteamId"
+            @remove-player="removePlayer"
+            @select-player="selectPlayer"
+            @edit-slot="editSlot"
+            @update-player-sanity="updatePlayerSanity"
+          />
         </div>
       </transition>
     </div>
 
     <!-- 底部操作按钮 -->
     <div class="bottom-actions">
-      <button @click="previousStep" class="action-button secondary" :disabled="currentStep === 1">
+      <button class="action-button secondary" :disabled="currentStep === 1" @click="previousStep">
         <font-awesome-icon :icon="['fas', 'arrow-left']" />
         {{ $t("createArchive.previous") }}
       </button>
@@ -80,7 +95,7 @@
         / 3
       </div>
 
-      <button @click="nextStep" class="action-button primary" :disabled="!canProceed">
+      <button class="action-button primary" :disabled="!canProceed" @click="nextStep">
         <template v-if="currentStep === 3 && isCreating">
           {{ $t("createArchive.creating") }}
           <font-awesome-icon :icon="['fas', 'spinner']" spin />
@@ -90,19 +105,19 @@
           <font-awesome-icon :icon="['fas', 'check']" />
         </template>
         <template v-else>
-          {{
-            currentStep === 3
-              ? $t("createArchive.createArchive")
-              : $t("createArchive.next")
-          }}
+          {{ currentStep === 3 ? $t("createArchive.createArchive") : $t("createArchive.next") }}
           <font-awesome-icon :icon="['fas', currentStep === 3 ? 'check' : 'arrow-right']" />
         </template>
       </button>
     </div>
 
     <!-- 物品选择器 -->
-    <InventoryItemSelector :visible="showItemSelector" :selected-item="selectedItem" @select="handleItemSelect"
-      @update:visible="showItemSelector = $event" />
+    <InventoryItemSelector
+      :visible="showItemSelector"
+      :selected-item="selectedItem"
+      @select="handleItemSelect"
+      @update:visible="showItemSelector = $event"
+    />
 
     <!-- 创建成功弹窗 -->
     <Teleport to="body">
@@ -111,8 +126,13 @@
           <div class="success-modal-card">
             <div class="success-modal-icon-circle">
               <svg class="success-modal-check-mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                  stroke-linejoin="round" />
+                <path
+                  d="M20 6L9 17L4 12"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </div>
             <h2 class="success-modal-title">{{ $t("createArchive.archiveCreated") }}</h2>
@@ -125,16 +145,7 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  reactive,
-  computed,
-  onMounted,
-  onUnmounted,
-  onActivated,
-  nextTick,
-  watch,
-} from "vue";
+import { ref, reactive, computed, onMounted, onUnmounted, onActivated, nextTick, watch } from "vue";
 import { gsap } from "gsap";
 import { useI18n } from "vue-i18n";
 import { useRouter, useRoute } from "vue-router";
@@ -236,9 +247,7 @@ const canProceed = computed(() => {
     case 1:
       return selectedLevel.value !== -1;
     case 2:
-      return (
-        archiveName.value.trim() !== "" && !archiveName.value.includes("_")
-      );
+      return archiveName.value.trim() !== "" && !archiveName.value.includes("_");
     case 3:
       return true;
     default:
@@ -246,7 +255,7 @@ const canProceed = computed(() => {
   }
 });
 
-watch(selectedEnding, () => { });
+watch(selectedEnding, () => {});
 
 const selectDifficulty = (difficulty) => {
   selectedDifficulty.value = difficulty;
@@ -322,13 +331,7 @@ const loadLevels = async () => {
   ];
   endingLevelsData[1] = ["Bunker", "GraffitiLevel", "Grassrooms_Expanded"];
   endingLevelsData[2] = ["Bunker", "TheHub", "BottomFloor", "Level922"];
-  endingLevelsData[3] = [
-    "Bunker",
-    "TheHub",
-    "OceanMap",
-    "LightsOut",
-    "Level974",
-  ];
+  endingLevelsData[3] = ["Bunker", "TheHub", "OceanMap", "LightsOut", "Level974"];
   loadLevelsForEnding(0);
 };
 
@@ -353,11 +356,7 @@ const validateSteamId = (steamId) => {
   }
   if (steamId.includes("-")) {
     const parts = steamId.split("-");
-    if (
-      parts.length === 2 &&
-      parts[0].length === 5 &&
-      parts[1].length === 15
-    ) {
+    if (parts.length === 2 && parts[0].length === 5 && parts[1].length === 15) {
       return {
         valid: true,
         isOfflinePlayer: true,
@@ -397,24 +396,20 @@ const addSteamId = async () => {
     showPlayerMessage(validation.message, "error");
     return;
   }
-  const isDuplicate = players.some(
-    (player) => player.steamId === validation.processedSteamId
-  );
+  const isDuplicate = players.some((player) => player.steamId === validation.processedSteamId);
   if (isDuplicate) {
     showPlayerMessage(
       t("createArchive.steamIdDuplicate", {
         steamId: validation.processedSteamId,
       }),
-      "error"
+      "error",
     );
     return;
   }
   const newPlayer = {
     steamId: validation.processedSteamId,
     inventory: Array(12).fill(null),
-    username: validation.isOfflinePlayer
-      ? `${validation.processedSteamId}(本地)`
-      : null,
+    username: validation.isOfflinePlayer ? `${validation.processedSteamId}(本地)` : null,
     isOfflinePlayer: validation.isOfflinePlayer,
     sanity: 100,
   };
@@ -427,8 +422,7 @@ const addSteamId = async () => {
 
 const removePlayer = (index) => {
   players.splice(index, 1);
-  if (activePlayerIndex.value >= players.length)
-    activePlayerIndex.value = players.length - 1;
+  if (activePlayerIndex.value >= players.length) activePlayerIndex.value = players.length - 1;
 };
 
 const selectPlayer = (index) => {
@@ -438,9 +432,7 @@ const selectPlayer = (index) => {
 const updatePlayerSanity = ({ playerIndex, sanity }) => {
   if (playerIndex < 0 || playerIndex >= players.length) return;
   const val = Number(sanity);
-  players[playerIndex].sanity = Number.isFinite(val)
-    ? Math.max(0, Math.min(100, val))
-    : 100;
+  players[playerIndex].sanity = Number.isFinite(val) ? Math.max(0, Math.min(100, val)) : 100;
 };
 
 const getItemIdByName = (itemName) => {
@@ -482,10 +474,7 @@ const editSlot = (playerIndex, slotIndex) => {
 };
 
 const handleItemSelect = (itemId) => {
-  if (
-    editingSlot.value.playerIndex >= 0 &&
-    editingSlot.value.slotIndex >= 0
-  ) {
+  if (editingSlot.value.playerIndex >= 0 && editingSlot.value.slotIndex >= 0) {
     const { playerIndex, slotIndex } = editingSlot.value;
     if (players[playerIndex] && players[playerIndex].inventory) {
       players[playerIndex].inventory[slotIndex] = itemId;
@@ -551,10 +540,7 @@ const finishAndReturnToQuickMode = () => {
   };
 
   // 将配置数据存储到 sessionStorage，供快速模式页面读取
-  sessionStorage.setItem(
-    "quickModeArchiveConfig",
-    JSON.stringify(archiveConfig)
-  );
+  sessionStorage.setItem("quickModeArchiveConfig", JSON.stringify(archiveConfig));
 
   // 跳转回快速模式页面
   router.push("/quick-create-archive");
@@ -572,12 +558,7 @@ const fetchSteamUsernames = async () => {
   try {
     const { invoke } = await import("@tauri-apps/api/core");
     const steamIds = players
-      .filter(
-        (p) =>
-          !p.isOfflinePlayer &&
-          p.steamId?.length === 17 &&
-          /^\d+$/.test(p.steamId)
-      )
+      .filter((p) => !p.isOfflinePlayer && p.steamId?.length === 17 && /^\d+$/.test(p.steamId))
       .map((p) => p.steamId);
     if (steamIds.length === 0) return;
     const usernames = await invoke("get_steam_usernames_command", {
@@ -591,16 +572,10 @@ const fetchSteamUsernames = async () => {
   } catch (error) {
     console.error("获取Steam用户名失败:", error);
     let errorMessage = error.toString();
-    let userFriendlyMessage = "";
-    if (
-      errorMessage.includes("403") ||
-      errorMessage.includes("Forbidden")
-    ) {
+    let userFriendlyMessage;
+    if (errorMessage.includes("403") || errorMessage.includes("Forbidden")) {
       userFriendlyMessage = t("createArchive.steamApiKeyInvalid");
-    } else if (
-      errorMessage.includes("429") ||
-      errorMessage.includes("Too Many Requests")
-    ) {
+    } else if (errorMessage.includes("429") || errorMessage.includes("Too Many Requests")) {
       userFriendlyMessage = t("createArchive.steamApiRateLimit");
     } else if (errorMessage.includes("Steam API密钥未配置")) {
       userFriendlyMessage = t("createArchive.steamApiKeyNotConfigured");
@@ -641,31 +616,19 @@ const createArchive = async () => {
       return;
     }
     const isMainEnding = selectedEnding.value === 0;
-    const megLevels = [
-      "Level0",
-      "TopFloor",
-      "MiddleFloor",
-      "GarageLevel2",
-      "BottomFloor",
-      "TheHub",
-    ];
+    const megLevels = ["Level0", "TopFloor", "MiddleFloor", "GarageLevel2", "BottomFloor", "TheHub"];
     const isMEGUnlocked = !megLevels.includes(selectedLevelData.levelKey);
     const saveData = {
       archive_name: archiveName.value.trim() || "未命名存档",
       level: selectedLevelData.levelKey || "Level0",
       game_mode: "multiplayer",
-      difficulty:
-        selectedDifficulty.value.charAt(0).toUpperCase() +
-        selectedDifficulty.value.slice(1) || "Normal",
+      difficulty: selectedDifficulty.value.charAt(0).toUpperCase() + selectedDifficulty.value.slice(1) || "Normal",
       actual_difficulty:
-        selectedActualDifficulty.value.charAt(0).toUpperCase() +
-        selectedActualDifficulty.value.slice(1) || "Normal",
+        selectedActualDifficulty.value.charAt(0).toUpperCase() + selectedActualDifficulty.value.slice(1) || "Normal",
       players: players.map((p) => ({
         steam_id: p.steamId || "",
         inventory: Array.isArray(p.inventory)
-          ? p.inventory
-            .filter((item) => item !== null && item !== undefined)
-            .map((item) => getItemIdByName(item))
+          ? p.inventory.filter((item) => item !== null && item !== undefined).map((item) => getItemIdByName(item))
           : [],
         sanity: typeof p.sanity === "number" ? p.sanity : 100,
       })),
@@ -818,7 +781,7 @@ const onStepEnter = (el, done) => {
       duration: 0.2,
       ease: "power1.out",
       onComplete: done,
-    }
+    },
   );
 };
 
@@ -839,8 +802,7 @@ const onStepLeave = (el, done) => {
   overflow: hidden;
   padding: 10px 24px 0 24px;
   background: var(--bg);
-  font-family: -apple-system, BlinkMacSystemFont, "San Francisco",
-    "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -1160,7 +1122,9 @@ const onStepLeave = (el, done) => {
 
 .success-modal-enter-active .success-modal-card,
 .success-modal-leave-active .success-modal-card {
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .success-modal-enter-from,

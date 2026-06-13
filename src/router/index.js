@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-// 路由配置 - 全部使用懒加载
+// Route configuration - all using lazy loading
 const routes = [
   {
     path: "/",
     name: "Home",
-    // 首页使用魔法注释优化
+    // Home page uses magic comments for optimization
     component: () => import(/* webpackChunkName: "home" */ "../views/Home.vue"),
     meta: { keepAlive: true, priority: 1 },
   },
@@ -94,39 +94,42 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior() {
-    return false; // 让 App.vue 处理滚动
+    return false; // Let App.vue handle scrolling
   },
 });
 
-// 智能预加载 - 基于用户行为预测
+// Smart preloading - based on user behavior prediction
 const preloadedRoutes = new Set();
 
-// 预加载高优先级路由（空闲时执行）
+// Preload high-priority routes (executed during idle time)
 const preloadPriorityRoutes = () => {
   if (preloadedRoutes.has("priority")) return;
   preloadedRoutes.add("priority");
-  
-  const priorityRoutes = routes.filter(r => r.meta?.priority && r.meta.priority <= 2);
-  
-  requestIdleCallback(() => {
-    priorityRoutes.forEach(route => {
-      if (typeof route.component === "function" && !preloadedRoutes.has(route.name)) {
-        route.component();
-        preloadedRoutes.add(route.name);
-      }
-    });
-  }, { timeout: 3000 });
+
+  const priorityRoutes = routes.filter((r) => r.meta?.priority && r.meta.priority <= 2);
+
+  requestIdleCallback(
+    () => {
+      priorityRoutes.forEach((route) => {
+        if (typeof route.component === "function" && !preloadedRoutes.has(route.name)) {
+          route.component();
+          preloadedRoutes.add(route.name);
+        }
+      });
+    },
+    { timeout: 3000 },
+  );
 };
 
-// 首次导航后触发预加载
+// Trigger preloading after first navigation
 router.afterEach((to, from) => {
-  // 首次导航完成后，预加载高优先级路由
+  // After first navigation completes, preload high-priority routes
   if (!from.name) {
     preloadPriorityRoutes();
   }
 });
 
-// 将路由实例暴露到全局，供自动反馈服务使用
+// Expose router instance globally for the auto-feedback service
 if (typeof window !== "undefined") {
   window.__VUE_ROUTER__ = router;
 }

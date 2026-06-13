@@ -10,7 +10,13 @@ export function useSearchState(initialFilters) {
   return { searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility };
 }
 
-export function useArchiveFilter(archives, searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility) {
+export function useArchiveFilter(
+  archives,
+  searchQuery,
+  selectedArchiveDifficulty,
+  selectedActualDifficulty,
+  selectedVisibility,
+) {
   const filteredArchives = computed(() => {
     const archivesArray = archives?.value || archives;
     if (!archivesArray || archivesArray.length === 0) return [];
@@ -43,10 +49,7 @@ export function useArchiveFilter(archives, searchQuery, selectedArchiveDifficult
 export function useFilterState(searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility) {
   const hasActiveFilters = computed(() => {
     return (
-      searchQuery.value ||
-      selectedArchiveDifficulty.value ||
-      selectedActualDifficulty.value ||
-      selectedVisibility.value
+      searchQuery.value || selectedArchiveDifficulty.value || selectedActualDifficulty.value || selectedVisibility.value
     );
   });
 

@@ -24,7 +24,7 @@ const BATCH_DELAY_MS: u64 = 1000;
 const MAX_BATCH_SIZE: usize = 100;
 static STEAM_HTTP_CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
 
-// Steam API响应结构
+// Steam API response structure
 #[derive(Debug, Deserialize)]
 struct SteamApiResponse {
     response: SteamPlayerResponse,
@@ -41,7 +41,7 @@ struct SteamPlayer {
     personaname: String,
 }
 
-// 缓存条目结构
+// Cache entry structure
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CacheEntry {
     pub username: String,
@@ -98,12 +98,12 @@ fn steam_http_client() -> &'static reqwest::Client {
     })
 }
 
-// 缓存管理器
+// Cache manager
 pub struct SteamCacheManager {
     cache_path: PathBuf,
     cache: HashMap<String, CacheEntry>,
     call_count: u32,
-    dirty: bool, // 追踪是否需要保存
+    dirty: bool, // Track whether save is needed
 }
 
 impl SteamCacheManager {
@@ -164,25 +164,25 @@ impl SteamCacheManager {
         Ok(())
     }
 
-    /// 获取缓存条目数量
+    /// Get cache entry count
     #[inline]
     pub fn get_cache_size(&self) -> usize {
         self.cache.len()
     }
 
-    /// 获取缓存中的用户名（检查是否过期）
+    /// Get cached username (check if expired)
     pub fn get_cached_username(&mut self, steam_id: &str) -> Option<String> {
         let entry = self.cache.get_mut(steam_id)?;
 
         if entry.is_expired() {
-            // 过期条目不自动删除，交由手动清理命令统一处理
+            // Expired entries are not auto-deleted, handled by manual cleanup command
             return None;
         }
 
         entry.call_count += 1;
         let username = entry.username.clone();
 
-        // 每20次调用保存一次
+        // Save every 20 calls
         if entry.call_count % 20 == 0 {
             self.dirty = true;
         }
@@ -190,7 +190,7 @@ impl SteamCacheManager {
         Some(username)
     }
 
-    /// 获取所有缓存条目
+    /// Get all cache entries
     pub fn get_all_cache_entries(&self) -> Vec<(String, CacheEntry)> {
         self.cache
             .iter()
@@ -198,7 +198,7 @@ impl SteamCacheManager {
             .collect()
     }
 
-    /// 清理过期的缓存条目
+    /// Clean up expired cache entries
     pub fn cleanup_expired_cache(&mut self) -> usize {
         let initial_count = self.cache.len();
         self.cache.retain(|_, entry| !entry.is_expired());
@@ -211,20 +211,20 @@ impl SteamCacheManager {
         removed_count
     }
 
-    /// 更新缓存中的用户名
+    /// Update username in cache
     pub fn update_cache(&mut self, steam_id: &str, username: String) {
         self.cache
             .insert(steam_id.to_string(), CacheEntry::new(username));
         self.call_count += 1;
         self.dirty = true;
 
-        // 检查是否需要执行智能清理
+        // Check if smart cleanup is needed
         if self.cache.len() > SMART_CLEANUP_THRESHOLD {
             self.smart_cleanup();
         }
     }
 
-    /// 智能清理缓存
+    /// Smart cache cleanup
     fn smart_cleanup(&mut self) {
         let initial_count = self.cache.len();
         self.cache
@@ -235,7 +235,7 @@ impl SteamCacheManager {
         }
     }
 
-    /// 清空所有缓存
+    /// Clear all cache
     pub fn clear_cache(&mut self) -> AppResult<()> {
         self.cache.clear();
         self.call_count = 0;
@@ -243,7 +243,7 @@ impl SteamCacheManager {
         self.save_cache()
     }
 
-    /// 删除单个缓存条目
+    /// Delete a single cache entry
     pub fn delete_cache_entry(&mut self, steam_id: &str) -> AppResult<bool> {
         let removed = self.cache.remove(steam_id).is_some();
         if removed {
@@ -298,13 +298,13 @@ impl Default for SteamCacheState {
     }
 }
 
-/// 验证 Steam ID 格式（优化版）
+/// Validate Steam ID format (optimized version)
 #[inline]
 fn validate_steam_id(steam_id: &str) -> bool {
     steam_id.len() == 17 && steam_id.bytes().all(|b| b.is_ascii_digit())
 }
 
-/// 获取Steam用户名（优化版）
+/// Get Steam usernames (optimized version)
 pub async fn get_steam_usernames(
     steam_ids: Vec<String>,
     api_key: String,
@@ -314,16 +314,16 @@ pub async fn get_steam_usernames(
         return Ok(HashMap::new());
     }
 
-    // 验证Steam ID格式
+    // Validate Steam ID format
     for steam_id in &steam_ids {
         if !validate_steam_id(steam_id) {
-            return Err(format!("无效的Steam ID格式: {}", steam_id).into());
+            return Err(format!("Invalid Steam ID format: {}", steam_id).into());
         }
     }
 
     let steam_id_count = steam_ids.len();
     let (mut result, uncached_ids) = cache_state.with_manager(move |cache_manager| {
-        // 分离缓存命中和未命中的 ID
+        // Separate cached and uncached IDs
         let mut result = HashMap::with_capacity(steam_id_count);
         let mut uncached_ids = Vec::with_capacity(steam_id_count);
 
@@ -335,18 +335,18 @@ pub async fn get_steam_usernames(
             }
         }
 
-        // 将命中计数与清理结果批量刷盘
+        // Batch flush hit counts and cleanup results
         cache_manager.flush()?;
 
         Ok((result, uncached_ids))
     })?;
 
-    // 如果所有ID都在缓存中，直接返回
+    // If all IDs are in cache, return directly
     if uncached_ids.is_empty() {
         return Ok(result);
     }
 
-    // 分批处理未缓存的ID
+    // Process uncached IDs in batches
     let mut fetched_pairs = Vec::with_capacity(uncached_ids.len());
     let chunk_count = uncached_ids.len().div_ceil(MAX_BATCH_SIZE);
     for (i, chunk) in uncached_ids.chunks(MAX_BATCH_SIZE).enumerate() {
@@ -357,7 +357,7 @@ pub async fn get_steam_usernames(
             fetched_pairs.push((steam_id, username));
         }
 
-        // 批次间延迟（最后一批不需要）
+        // Delay between batches (last batch doesn't need it)
         if i + 1 < chunk_count {
             sleep(Duration::from_millis(BATCH_DELAY_MS)).await;
         }
@@ -373,7 +373,7 @@ pub async fn get_steam_usernames(
     Ok(result)
 }
 
-/// 批量获取Steam用户名
+/// Batch fetch Steam usernames
 async fn fetch_steam_usernames_batch(
     steam_ids: &[String],
     api_key: &str,
@@ -387,16 +387,16 @@ async fn fetch_steam_usernames_batch(
         .query(&params)
         .send()
         .await
-        .map_err(|e| format!("请求Steam API失败: {}", e))?;
+        .map_err(|e| format!("Steam API request failed: {}", e))?;
 
     if !response.status().is_success() {
-        return Err(format!("Steam API返回错误状态码: {}", response.status()).into());
+        return Err(format!("Steam API returned error status code: {}", response.status()).into());
     }
 
     let api_response: SteamApiResponse = response
         .json()
         .await
-        .map_err(|e| format!("解析Steam API响应失败: {}", e))?;
+        .map_err(|e| format!("Failed to parse Steam API response: {}", e))?;
 
     Ok(api_response
         .response
@@ -406,8 +406,8 @@ async fn fetch_steam_usernames_batch(
         .collect())
 }
 
-/// 使用系统凭据管理器存储加密的 Steam API 密钥
-/// 相比明文 JSON 文件更安全，利用操作系统级别的凭据保护
+/// Store encrypted Steam API key using system credential manager
+/// More secure than plaintext JSON files, utilizes OS-level credential protection
 const KEYRING_SERVICE_STEAM: &str = "etbsavemanager-steam-api";
 const KEYRING_ACCOUNT_STEAM_KEY: &str = "steam-api-key";
 
@@ -415,22 +415,22 @@ fn read_encrypted_steam_api_key_from_config() -> AppResult<String> {
     use keyring::Entry;
 
     let entry = Entry::new(KEYRING_SERVICE_STEAM, KEYRING_ACCOUNT_STEAM_KEY)
-        .map_err(|e| AppError { message: format!("创建凭据条目失败: {}", e) })?;
+        .map_err(|e| AppError { message: format!("Failed to create credential entry: {}", e) })?;
 
     Ok(entry
         .get_password()
-        .map_err(|e| AppError { message: format!("读取 Steam API 密钥失败: {}", e) })?)
+        .map_err(|e| AppError { message: format!("Failed to read Steam API key: {}", e) })?)
 }
 
 fn write_encrypted_steam_api_key_to_config(encrypted_api_key: String) -> AppResult<()> {
     use keyring::Entry;
 
     let entry = Entry::new(KEYRING_SERVICE_STEAM, KEYRING_ACCOUNT_STEAM_KEY)
-        .map_err(|e| AppError { message: format!("创建凭据条目失败: {}", e) })?;
+        .map_err(|e| AppError { message: format!("Failed to create credential entry: {}", e) })?;
 
     Ok(entry
         .set_password(&encrypted_api_key)
-        .map_err(|e| AppError { message: format!("保存 Steam API 密钥失败: {}", e) })?)
+        .map_err(|e| AppError { message: format!("Failed to save Steam API key: {}", e) })?)
 }
 
 // ==================== Tauri Commands ====================
@@ -454,15 +454,15 @@ pub async fn decrypt_steam_api_key(encrypted_key: String) -> AppResult<String> {
     let (key_hex, encrypted_data_hex) = encrypted_key
         .split_once(':')
         .ok_or_else(|| AppError {
-            message: "无效的加密密钥格式".to_string(),
+            message: "Invalid encrypted key format".to_string(),
         })?;
 
-    let key = hex::decode(key_hex).map_err(|e| format!("解码密钥失败: {}", e))?;
+    let key = hex::decode(key_hex).map_err(|e| format!("Failed to decode key: {}", e))?;
     let encrypted_data =
-        hex::decode(encrypted_data_hex).map_err(|e| format!("解码加密数据失败: {}", e))?;
+        hex::decode(encrypted_data_hex).map_err(|e| format!("Failed to decode encrypted data: {}", e))?;
 
     if key.len() != 32 {
-        return Err("无效的密钥长度".to_string().into());
+        return Err("Invalid key length".to_string().into());
     }
 
     let mut key_array = [0u8; 32];
@@ -470,7 +470,7 @@ pub async fn decrypt_steam_api_key(encrypted_key: String) -> AppResult<String> {
 
     let decrypted = encryption::decrypt_data(&key_array, &encrypted_data)?;
     Ok(String::from_utf8(decrypted)
-        .map_err(|e| format!("转换解密数据为字符串失败: {}", e))?)
+        .map_err(|e| format!("Failed to convert decrypted data to string: {}", e))?)
 }
 
 #[tauri::command]
@@ -524,7 +524,7 @@ pub async fn get_steam_usernames_command(
     let encrypted_api_key = tokio::task::spawn_blocking(read_encrypted_steam_api_key_from_config)
         .await
         .map_err(|e| AppError {
-            message: format!("读取Steam配置任务失败: {}", e),
+            message: format!("Failed to read Steam config task: {}", e),
         })??;
 
     let api_key = decrypt_steam_api_key(encrypted_api_key).await?;
@@ -539,7 +539,7 @@ pub async fn save_steam_api_key(api_key: String) -> AppResult<()> {
     })
     .await
     .map_err(|e| AppError {
-        message: format!("保存Steam配置任务失败: {}", e),
+        message: format!("Failed to save Steam config task: {}", e),
     })?
 }
 
@@ -559,7 +559,7 @@ pub async fn batch_refresh_steam_cache_entries(
     let encrypted_api_key = tokio::task::spawn_blocking(read_encrypted_steam_api_key_from_config)
         .await
         .map_err(|e| AppError {
-            message: format!("读取Steam配置任务失败: {}", e),
+            message: format!("Failed to read Steam config task: {}", e),
         })??;
 
     let api_key = decrypt_steam_api_key(encrypted_api_key).await?;

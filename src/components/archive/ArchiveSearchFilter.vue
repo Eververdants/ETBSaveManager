@@ -2,17 +2,27 @@
   <div class="archive-search-filter">
     <div class="search-filter-wrapper">
       <!-- 一体化搜索筛选区域 -->
-      <transition name="search-filter" appear :duration="{ enter: 400, leave: 300 }" @before-enter="beforeEnter"
-        @enter="enter" @leave="leave">
-        <div class="unified-search-filter" v-show="showComponent">
+      <transition
+        name="search-filter"
+        appear
+        :duration="{ enter: 400, leave: 300 }"
+        @before-enter="beforeEnter"
+        @enter="enter"
+        @leave="leave"
+      >
+        <div v-show="showComponent" class="unified-search-filter">
           <!-- 搜索区域 -->
           <div class="search-section">
             <div class="search-input-group">
               <font-awesome-icon icon="fa-solid fa-search" class="search-icon" />
-              <input v-model="searchQuery" type="text" :placeholder="$t('archiveSearch.searchPlaceholder')"
-                class="search-input" />
+              <input
+                v-model="searchQuery"
+                type="text"
+                :placeholder="$t('archiveSearch.searchPlaceholder')"
+                class="search-input"
+              />
               <transition name="clear-btn" mode="out-in">
-                <button v-if="searchQuery" @click="clearSearch" class="clear-btn" key="clear-btn">
+                <button v-if="searchQuery" key="clear-btn" class="clear-btn" @click="clearSearch">
                   <font-awesome-icon icon="fa-solid fa-times" />
                 </button>
               </transition>
@@ -23,27 +33,33 @@
           <div class="filter-section">
             <div class="filter-grid">
               <div class="filter-item">
-                <label class="filter-label">{{
-                  $t("archiveSearch.archiveDifficulty")
-                  }}</label>
-                <CustomDropdown v-model="selectedArchiveDifficulty" :options="difficultyOptions"
-                  :placeholder="$t('archiveSearch.archiveDifficulty')" @change="handleFilterChange" />
+                <label class="filter-label">{{ $t("archiveSearch.archiveDifficulty") }}</label>
+                <CustomDropdown
+                  v-model="selectedArchiveDifficulty"
+                  :options="difficultyOptions"
+                  :placeholder="$t('archiveSearch.archiveDifficulty')"
+                  @change="handleFilterChange"
+                />
               </div>
 
               <div class="filter-item">
-                <label class="filter-label">{{
-                  $t("archiveSearch.actualDifficulty")
-                  }}</label>
-                <CustomDropdown v-model="selectedActualDifficulty" :options="difficultyOptions"
-                  :placeholder="$t('archiveSearch.actualDifficulty')" @change="handleFilterChange" />
+                <label class="filter-label">{{ $t("archiveSearch.actualDifficulty") }}</label>
+                <CustomDropdown
+                  v-model="selectedActualDifficulty"
+                  :options="difficultyOptions"
+                  :placeholder="$t('archiveSearch.actualDifficulty')"
+                  @change="handleFilterChange"
+                />
               </div>
 
               <div class="filter-item">
-                <label class="filter-label">{{
-                  $t("archiveSearch.visibility")
-                  }}</label>
-                <CustomDropdown v-model="selectedVisibility" :options="visibilityOptions"
-                  :placeholder="$t('archiveSearch.visibility')" @change="handleFilterChange" />
+                <label class="filter-label">{{ $t("archiveSearch.visibility") }}</label>
+                <CustomDropdown
+                  v-model="selectedVisibility"
+                  :options="visibilityOptions"
+                  :placeholder="$t('archiveSearch.visibility')"
+                  @change="handleFilterChange"
+                />
               </div>
             </div>
           </div>
@@ -98,9 +114,21 @@ const archivesRef = toRef(props, "archives");
 const initialFiltersRef = toRef(props, "initialFilters");
 const visibleRef = toRef(props, "visible");
 
-const { searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility } = useSearchState(initialFiltersRef);
-const { filteredArchives } = useArchiveFilter(archivesRef, searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility);
-const { hasActiveFilters } = useFilterState(searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility);
+const { searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility } =
+  useSearchState(initialFiltersRef);
+const { filteredArchives } = useArchiveFilter(
+  archivesRef,
+  searchQuery,
+  selectedArchiveDifficulty,
+  selectedActualDifficulty,
+  selectedVisibility,
+);
+const { hasActiveFilters } = useFilterState(
+  searchQuery,
+  selectedArchiveDifficulty,
+  selectedActualDifficulty,
+  selectedVisibility,
+);
 
 const difficultyOptions = computed(() => [
   { value: "", label: t("archiveSearch.allDifficulties") },
@@ -163,7 +191,13 @@ watch(
       }
 
       const currentScrollY = window.scrollY;
-      safeModifyBodyStyles({ overflow: "hidden", position: "fixed", top: `-${currentScrollY}px`, width: "100%", height: "100vh" });
+      safeModifyBodyStyles({
+        overflow: "hidden",
+        position: "fixed",
+        top: `-${currentScrollY}px`,
+        width: "100%",
+        height: "100vh",
+      });
     } else {
       if (mainContent) {
         mainContent.style.overflow = "";
@@ -187,7 +221,7 @@ watch(
       }
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const beforeEnter = (el) => {
@@ -199,7 +233,8 @@ const beforeEnter = (el) => {
 const enter = (el, done) => {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      el.style.transition = "opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)";
+      el.style.transition =
+        "opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)";
       el.style.opacity = "1";
       el.style.transform = "translateY(0)";
       setTimeout(() => {
@@ -213,7 +248,8 @@ const enter = (el, done) => {
 
 const leave = (el, done) => {
   el.style.willChange = "opacity, transform";
-  el.style.transition = "opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)";
+  el.style.transition =
+    "opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)";
   el.style.opacity = "0";
   el.style.transform = "translateY(-8px)";
   setTimeout(() => {
@@ -234,7 +270,7 @@ watch(
     selectedActualDifficulty.value = newFilters.selectedActualDifficulty || "";
     selectedVisibility.value = newFilters.selectedVisibility || "";
   },
-  { deep: true }
+  { deep: true },
 );
 
 watch(
@@ -244,7 +280,7 @@ watch(
       emit("filtered", filteredArchives.value);
     }
   },
-  { deep: true }
+  { deep: true },
 );
 
 onMounted(() => {
@@ -300,11 +336,17 @@ onUnmounted(() => {
   flex-direction: column;
   /* 改为垂直布局，适应小屏幕 */
   gap: 16px;
-  background: linear-gradient(135deg, var(--glass-bg, rgba(50, 50, 60, 0.98)) 0%, var(--glass-bg, rgba(40, 40, 50, 0.96)) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--glass-bg, rgba(50, 50, 60, 0.98)) 0%,
+    var(--glass-bg, rgba(40, 40, 50, 0.96)) 100%
+  );
   border-radius: 16px;
   padding: 20px;
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
-  box-shadow: var(--shadow-lg, 0 8px 32px rgba(0, 0, 0, 0.4)), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  box-shadow:
+    var(--shadow-lg, 0 8px 32px rgba(0, 0, 0, 0.4)),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
   z-index: 100;
   width: 100%;
   max-width: 800px;
@@ -339,12 +381,17 @@ onUnmounted(() => {
   height: 48px;
   box-sizing: border-box;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
-  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .search-input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px var(--border-color, rgba(255, 255, 255, 0.25)), inset 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 0 0 3px var(--border-color, rgba(255, 255, 255, 0.25)),
+    inset 0 2px 6px rgba(0, 0, 0, 0.2);
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
 }
@@ -372,7 +419,7 @@ onUnmounted(() => {
   transition: opacity 0.2s ease;
 }
 
-.search-input:focus+.search-icon,
+.search-input:focus + .search-icon,
 .search-input-group:focus-within .search-icon {
   opacity: 1;
   color: var(--primary-color, rgba(255, 255, 255, 0.95));
@@ -388,7 +435,11 @@ onUnmounted(() => {
   cursor: pointer;
   padding: 0;
   border-radius: 6px;
-  transition: background 0.3s ease, color 0.3s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s ease;
   z-index: 1;
   display: flex;
   align-items: center;
@@ -444,19 +495,23 @@ onUnmounted(() => {
   border-radius: 4px;
   display: inline-block;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: background 0.3s ease, color 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
 }
 
 /* 搜索筛选区域过渡动画 - 首次加载优化 */
 .search-filter-enter-active {
   will-change: opacity, transform;
-  transition: opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+  transition:
+    opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
     transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .search-filter-leave-active {
   will-change: opacity, transform;
-  transition: opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+  transition:
+    opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
     transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -472,22 +527,30 @@ onUnmounted(() => {
 
 /* 搜索图标动画 - 微妙效果 */
 .search-icon {
-  transition: opacity 0.2s ease-out 0.1s, transform 0.2s ease-out 0.1s;
+  transition:
+    opacity 0.2s ease-out 0.1s,
+    transform 0.2s ease-out 0.1s;
 }
 
 /* 搜索输入框动画 - 微妙效果 */
 .search-input {
-  transition: opacity 0.2s ease-out 0.15s, transform 0.2s ease-out 0.15s;
+  transition:
+    opacity 0.2s ease-out 0.15s,
+    transform 0.2s ease-out 0.15s;
 }
 
 /* 筛选区域动画 - 微妙效果 */
 .filter-section {
-  transition: opacity 0.2s ease-out 0.2s, transform 0.2s ease-out 0.2s;
+  transition:
+    opacity 0.2s ease-out 0.2s,
+    transform 0.2s ease-out 0.2s;
 }
 
 /* 筛选项目动画 - 微妙效果 */
 .filter-item {
-  transition: opacity 0.15s ease-out 0.25s, transform 0.15s ease-out 0.25s;
+  transition:
+    opacity 0.15s ease-out 0.25s,
+    transform 0.15s ease-out 0.25s;
 }
 
 .filter-item:nth-child(3) {
@@ -576,7 +639,9 @@ onUnmounted(() => {
 
 /* 筛选项目动画 */
 .filter-item {
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s ease;
   border-radius: 8px;
   padding: 4px;
 }

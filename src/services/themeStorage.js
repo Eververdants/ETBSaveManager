@@ -77,10 +77,7 @@ export class ThemeStorage {
       console.error("Failed to save custom theme:", error);
       return {
         success: false,
-        error:
-          typeof error === "string"
-            ? error
-            : error.message || "Failed to save theme",
+        error: typeof error === "string" ? error : error.message || "Failed to save theme",
       };
     }
   }
@@ -225,10 +222,7 @@ export class ThemeStorage {
       return {
         success: false,
         theme: null,
-        error:
-          typeof error === "string"
-            ? error
-            : error.message || "Failed to import theme",
+        error: typeof error === "string" ? error : error.message || "Failed to import theme",
       };
     }
   }

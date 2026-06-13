@@ -8,11 +8,7 @@
  */
 
 import { ref, readonly, computed } from "vue";
-import {
-  themeValidator,
-  CSS_VARIABLE_MAP,
-  DEFAULT_THEME_TEMPLATE,
-} from "../services/themeValidator.js";
+import { themeValidator, CSS_VARIABLE_MAP, DEFAULT_THEME_TEMPLATE } from "../services/themeValidator.js";
 import { themeStorage } from "../services/themeStorage.js";
 import storage from "../services/storageService";
 import {
@@ -157,10 +153,7 @@ const cssVariableMap = CSS_VARIABLE_MAP;
  * @returns {boolean}
  */
 function prefersReducedMotion() {
-  return (
-    window.matchMedia &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
+  return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 /**
@@ -368,9 +361,7 @@ class ThemeManager {
     // 检查限时主题是否在可用时间范围内
     if (isPreset && !isSeasonalThemeAvailable(themeId)) {
       const availability = getSeasonalThemeAvailability(themeId);
-      console.warn(
-        `Seasonal theme "${themeId}" is not available. Available: ${availability}`
-      );
+      console.warn(`Seasonal theme "${themeId}" is not available. Available: ${availability}`);
       return false;
     }
 
@@ -498,8 +489,7 @@ class ThemeManager {
     }
 
     // 计算亮度
-    const luminance =
-      (0.299 * bgColor.r + 0.587 * bgColor.g + 0.114 * bgColor.b) / 255;
+    const luminance = (0.299 * bgColor.r + 0.587 * bgColor.g + 0.114 * bgColor.b) / 255;
 
     return luminance > 0.5 ? "light" : "dark";
   }
@@ -571,9 +561,7 @@ class ThemeManager {
     });
 
     // 过滤不可用的限时主题
-    const filteredPresets = includeUnavailable
-      ? presets
-      : presets.filter((theme) => theme.isAvailable);
+    const filteredPresets = includeUnavailable ? presets : presets.filter((theme) => theme.isAvailable);
 
     const customs = this._customThemes.value;
     return [...filteredPresets, ...customs];
@@ -644,10 +632,7 @@ class ThemeManager {
    * @returns {string} 'light' 或 'dark'
    */
   getSystemTheme() {
-    return window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   }
 
   /**

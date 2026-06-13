@@ -1,6 +1,7 @@
-//! CLI 处理模块 - 存档文件解析和元数据提取
-//! 优化版本：使用 Cow 减少字符串分配，优化文件读取策略
+//! CLI handlers module - Save file parsing and metadata extraction
+//! Optimized version: Using Cow to reduce string allocations, optimized file read strategy
 
+use crate::error::AppResult;
 use chrono::{DateTime, Local};
 use memmap2::Mmap;
 use std::borrow::Cow;
@@ -14,40 +15,40 @@ const SMALL_FILE_THRESHOLD: u64 = 32768;
 /// Medium file threshold (512KB), use pre-allocated buffer between thresholds
 const MEDIUM_FILE_THRESHOLD: u64 = 524288;
 
-/// 解析 .sav 文件为 Save 对象（三级文件大小策略）
-pub fn parse_sav_file(path: &Path) -> Result<Save, String> {
+/// Parse .sav file into a Save object (three-tier file size strategy)
+pub fn parse_sav_file(path: &Path) -> AppResult<Save> {
     let file = File::open(path).map_err(|e| format!("打开文件失败: {}", e))?;
     let file_size = file
         .metadata()
         .map_err(|e| format!("获取文件元信息失败: {}", e))?
         .len();
 
-    // 小文件：直接读取到栈上缓冲区
+    // Small files: read directly into stack buffer
     if file_size < SMALL_FILE_THRESHOLD {
         let mut file = file;
         let mut buffer = Vec::with_capacity(file_size as usize);
         file.read_to_end(&mut buffer)
             .map_err(|e| format!("读取文件内容失败: {}", e))?;
-        return Save::read(&mut Cursor::new(&buffer)).map_err(|e| format!("解析存档失败: {:?}", e));
+        return Ok(Save::read(&mut Cursor::new(&buffer)).map_err(|e| format!("解析存档失败: {:?}", e))?);
     }
 
-    // 中等文件：预分配精确大小的缓冲区
+    // Medium files: pre-allocate buffer of exact size
     if file_size < MEDIUM_FILE_THRESHOLD {
         let mut file = file;
         let mut buffer = vec![0u8; file_size as usize];
         file.read_exact(&mut buffer)
             .map_err(|e| format!("读取文件内容失败: {}", e))?;
-        return Save::read(&mut Cursor::new(&buffer)).map_err(|e| format!("解析存档失败: {:?}", e));
+        return Ok(Save::read(&mut Cursor::new(&buffer)).map_err(|e| format!("解析存档失败: {:?}", e))?);
     }
 
-    // 大文件：使用内存映射
+    // Large files: use memory mapping
     let mmap = unsafe { Mmap::map(&file) }.map_err(|e| format!("内存映射失败: {}", e))?;
-    Save::read(&mut Cursor::new(&mmap[..])).map_err(|e| format!("解析存档失败: {:?}", e))
+    Ok(Save::read(&mut Cursor::new(&mmap[..])).map_err(|e| format!("解析存档失败: {:?}", e))?)
 }
 
-/// 获取文件最后修改时间，格式为 "YYYY-MM-DD"
+/// Get file last modified date in "YYYY-MM-DD" format
 #[inline]
-pub fn get_modified_date(path: &Path) -> Result<String, String> {
+pub fn get_modified_date(path: &Path) -> AppResult<String> {
     let modified = path
         .metadata()
         .and_then(|m| m.modified())
@@ -56,7 +57,7 @@ pub fn get_modified_date(path: &Path) -> Result<String, String> {
     Ok(datetime.format("%Y-%m-%d").to_string())
 }
 
-/// 辅助函数：按名称查找属性（忽略类型 ID）
+/// Helper function: find property by name (ignoring type ID)
 #[inline]
 fn get_property_by_name<'a>(save: &'a Save, name: &str) -> Option<&'a Property> {
     save.root

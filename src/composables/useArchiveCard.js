@@ -57,7 +57,7 @@ export function useArchiveCardVisibility(archive) {
         }, 250);
       }
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   onMounted(() => {

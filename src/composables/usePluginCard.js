@@ -17,17 +17,11 @@ export function usePluginCard(plugin, showStatus, t) {
     return translated !== key ? translated : t("plugin.type.plugin");
   });
 
-  const isInstalled = computed(
-    () => plugin.value?.installed || plugin.value?.status !== undefined
-  );
+  const isInstalled = computed(() => plugin.value?.installed || plugin.value?.status !== undefined);
 
-  const statusIcon = computed(() =>
-    plugin.value?.status === "active" ? "check-circle" : "pause-circle"
-  );
+  const statusIcon = computed(() => (plugin.value?.status === "active" ? "check-circle" : "pause-circle"));
 
-  const statusText = computed(() =>
-    plugin.value?.status === "active" ? t("plugin.enabled") : t("plugin.disabled")
-  );
+  const statusText = computed(() => (plugin.value?.status === "active" ? t("plugin.enabled") : t("plugin.disabled")));
 
   return {
     typeClass,

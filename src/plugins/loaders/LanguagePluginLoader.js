@@ -8,8 +8,7 @@ import { getAppContext } from "../../appContext.js";
 
 // 语言插件必需的字段（用于验证翻译完整性）
 const REQUIRED_FIELDS = ["common", "sidebar", "settings"];
-const isPlainObject = (value) =>
-  !!value && typeof value === "object" && !Array.isArray(value);
+const isPlainObject = (value) => !!value && typeof value === "object" && !Array.isArray(value);
 
 class LanguagePluginLoader {
   constructor() {
@@ -74,13 +73,9 @@ class LanguagePluginLoader {
     const normalizedData = this.normalizeMessagesData(data);
 
     // 检查必需字段
-    const missingFields = REQUIRED_FIELDS.filter(
-      (field) => !normalizedData[field]
-    );
+    const missingFields = REQUIRED_FIELDS.filter((field) => !normalizedData[field]);
     if (missingFields.length > 0) {
-      console.warn(
-        `⚠️ [LanguageLoader] 语言插件缺少字段: ${missingFields.join(", ")}`
-      );
+      console.warn(`⚠️ [LanguageLoader] 语言插件缺少字段: ${missingFields.join(", ")}`);
     }
 
     return normalizedData;
@@ -104,8 +99,7 @@ class LanguagePluginLoader {
     }
 
     // 获取 messages 对象（兼容不同的 i18n 结构）
-    const messages =
-      i18n.global?.messages?.value || i18n.global?.messages || {};
+    const messages = i18n.global?.messages?.value || i18n.global?.messages || {};
 
     // 备份原有语言数据（如果存在）
     const existingMessages = messages[locale];
@@ -114,10 +108,7 @@ class LanguagePluginLoader {
     }
 
     // 合并语言数据
-    const mergedMessages = this.mergeMessages(
-      existingMessages || {},
-      normalizedData
-    );
+    const mergedMessages = this.mergeMessages(existingMessages || {}, normalizedData);
 
     // 设置语言消息（兼容不同的 i18n 结构）
     if (i18n.global?.setLocaleMessage) {
@@ -139,10 +130,7 @@ class LanguagePluginLoader {
     });
 
     console.log(`✅ [LanguageLoader] 语言插件加载成功: ${name}`);
-    console.log(
-      `📊 [LanguageLoader] 当前支持的语言:`,
-      this.getSupportedLocales()
-    );
+    console.log(`📊 [LanguageLoader] 当前支持的语言:`, this.getSupportedLocales());
 
     return true;
   }
@@ -175,10 +163,7 @@ class LanguagePluginLoader {
       if (currentLocale === locale) {
         // 切换到默认语言
         if (i18n.global?.locale) {
-          if (
-            typeof i18n.global.locale === "object" &&
-            "value" in i18n.global.locale
-          ) {
+          if (typeof i18n.global.locale === "object" && "value" in i18n.global.locale) {
             i18n.global.locale.value = "zh-CN";
           } else {
             i18n.global.locale = "zh-CN";
@@ -209,11 +194,7 @@ class LanguagePluginLoader {
     const result = { ...target };
 
     for (const key of Object.keys(source)) {
-      if (
-        source[key] &&
-        typeof source[key] === "object" &&
-        !Array.isArray(source[key])
-      ) {
+      if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
         result[key] = this.mergeMessages(result[key] || {}, source[key]);
       } else {
         result[key] = source[key];
@@ -239,8 +220,7 @@ class LanguagePluginLoader {
   getSupportedLocales() {
     const i18n = this.getI18n();
     if (!i18n) return ["zh-CN", "zh-TW", "en-US"];
-    const messages =
-      i18n.global?.messages?.value || i18n.global?.messages || {};
+    const messages = i18n.global?.messages?.value || i18n.global?.messages || {};
     return Object.keys(messages);
   }
 
@@ -251,8 +231,7 @@ class LanguagePluginLoader {
   isLocaleLoaded(locale) {
     const i18n = this.getI18n();
     if (!i18n) return false;
-    const messages =
-      i18n.global?.messages?.value || i18n.global?.messages || {};
+    const messages = i18n.global?.messages?.value || i18n.global?.messages || {};
     return !!messages[locale];
   }
 
@@ -271,10 +250,7 @@ class LanguagePluginLoader {
     }
 
     if (i18n.global?.locale) {
-      if (
-        typeof i18n.global.locale === "object" &&
-        "value" in i18n.global.locale
-      ) {
+      if (typeof i18n.global.locale === "object" && "value" in i18n.global.locale) {
         i18n.global.locale.value = locale;
       } else {
         i18n.global.locale = locale;

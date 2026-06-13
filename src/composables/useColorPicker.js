@@ -28,9 +28,7 @@ export function useColorPicker(props, emit) {
   const showError = ref(false);
   const isFocused = ref(false);
 
-  const errorId = computed(
-    () => `color-error-${Math.random().toString(36).substr(2, 9)}`
-  );
+  const errorId = computed(() => `color-error-${Math.random().toString(36).substr(2, 9)}`);
 
   const currentColor = computed(() => {
     const validation = themeValidator.validateColor(inputValue.value);
@@ -44,18 +42,13 @@ export function useColorPicker(props, emit) {
 
   const contrastRatio = computed(() => {
     if (!props.contrastWith) return null;
-    const ratio = accessibilityChecker.calculateContrastRatio(
-      currentColor.value,
-      props.contrastWith
-    );
+    const ratio = accessibilityChecker.calculateContrastRatio(currentColor.value, props.contrastWith);
     return ratio.toFixed(2);
   });
 
   const contrastLevel = computed(() => {
     if (!contrastRatio.value) return "";
-    return accessibilityChecker.checkWCAGCompliance(
-      parseFloat(contrastRatio.value)
-    );
+    return accessibilityChecker.checkWCAGCompliance(parseFloat(contrastRatio.value));
   });
 
   const contrastClass = computed(() => {
@@ -89,7 +82,7 @@ export function useColorPicker(props, emit) {
           lastValidColor.value = newValue;
         }
       }
-    }
+    },
   );
 
   function handleInput() {

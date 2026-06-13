@@ -1,8 +1,8 @@
 import { ref, computed } from "vue";
 
 /**
- * 验证器 composable
- * 用于验证存档配置的完整性和正确性
+ * Validator composable
+ * Used to validate archive configuration completeness and correctness
  *
  * Requirements: 13.1, 13.2, 13.3
  */
@@ -13,34 +13,34 @@ import { ref, computed } from "vue";
 
 /**
  * @typedef {Object} ValidationError
- * @property {string} archiveId - 存档ID
- * @property {string} field - 错误字段
- * @property {string} message - 错误消息
- * @property {ValidationErrorType} type - 错误类型
+ * @property {string} archiveId - Archive ID
+ * @property {string} field - Error field
+ * @property {string} message - Error message
+ * @property {ValidationErrorType} type - Error type
  */
 
 /**
  * @typedef {Object} ValidationWarning
- * @property {string} archiveId - 存档ID
- * @property {string} message - 警告消息
+ * @property {string} archiveId - Archive ID
+ * @property {string} message - Warning message
  */
 
 /**
  * @typedef {Object} ValidationResult
- * @property {boolean} isValid - 是否通过验证
- * @property {ValidationError[]} errors - 错误列表
- * @property {ValidationWarning[]} warnings - 警告列表
+ * @property {boolean} isValid - Whether validation passed
+ * @property {ValidationError[]} errors - Error list
+ * @property {ValidationWarning[]} warnings - Warning list
  */
 
 /**
  * @typedef {Object} ArchiveConfig
  * @property {string} id
  * @property {string} name
- * @property {string | null} finalLevel - 最终解析的层级
+ * @property {string | null} finalLevel - Final resolved level
  */
 
 /**
- * 检查名称是否为空
+ * Check if name is empty
  * @param {string} name
  * @returns {boolean}
  */
@@ -49,9 +49,9 @@ export function isEmptyName(name) {
 }
 
 /**
- * 查找重复名称
+ * Find duplicate names
  * @param {ArchiveConfig[]} archives
- * @returns {Map<string, string[]>} 名称到重复存档ID列表的映射
+ * @returns {Map<string, string[]>} Map of name to duplicate archive ID list
  */
 export function findDuplicateNames(archives) {
   const nameMap = new Map();
@@ -77,16 +77,16 @@ export function findDuplicateNames(archives) {
 }
 
 /**
- * 验证单个存档
+ * Validate a single archive
  * @param {ArchiveConfig} archive
- * @param {Set<string>} duplicateIds - 重复名称的存档ID集合
+ * @param {Set<string>} duplicateIds - Set of archive IDs with duplicate names
  * @returns {{ errors: ValidationError[], warnings: ValidationWarning[] }}
  */
 export function validateArchive(archive, duplicateIds = new Set()) {
   const errors = [];
   const warnings = [];
 
-  // 1. 检查空名称
+  // 1. Check for empty name
   if (isEmptyName(archive.name)) {
     errors.push({
       archiveId: archive.id,
@@ -96,7 +96,7 @@ export function validateArchive(archive, duplicateIds = new Set()) {
     });
   }
 
-  // 2. 检查必填字段 - 层级
+  // 2. Check required fields - level
   if (archive.finalLevel === null || archive.finalLevel === undefined) {
     errors.push({
       archiveId: archive.id,
@@ -106,7 +106,7 @@ export function validateArchive(archive, duplicateIds = new Set()) {
     });
   }
 
-  // 3. 检查重复名称（作为警告）
+  // 3. Check for duplicate names (as warning)
   if (duplicateIds.has(archive.id)) {
     warnings.push({
       archiveId: archive.id,
@@ -118,7 +118,7 @@ export function validateArchive(archive, duplicateIds = new Set()) {
 }
 
 /**
- * 验证所有存档
+ * Validate all archives
  * @param {ArchiveConfig[]} archives
  * @returns {ValidationResult}
  */
@@ -133,7 +133,7 @@ export function validate(archives) {
     return result;
   }
 
-  // 查找重复名称
+  // Find duplicate names
   const duplicates = findDuplicateNames(archives);
   const duplicateIds = new Set();
   for (const ids of duplicates.values()) {
@@ -142,21 +142,21 @@ export function validate(archives) {
     }
   }
 
-  // 验证每个存档
+  // Validate each archive
   for (const archive of archives) {
     const { errors, warnings } = validateArchive(archive, duplicateIds);
     result.errors.push(...errors);
     result.warnings.push(...warnings);
   }
 
-  // 如果有错误，则验证不通过
+  // If there are errors, validation fails
   result.isValid = result.errors.length === 0;
 
   return result;
 }
 
 /**
- * 获取存档的验证错误
+ * Get validation errors for an archive
  * @param {ValidationResult} validationResult
  * @param {string} archiveId
  * @returns {ValidationError[]}
@@ -166,7 +166,7 @@ export function getArchiveErrors(validationResult, archiveId) {
 }
 
 /**
- * 获取存档的验证警告
+ * Get validation warnings for an archive
  * @param {ValidationResult} validationResult
  * @param {string} archiveId
  * @returns {ValidationWarning[]}
@@ -176,7 +176,7 @@ export function getArchiveWarnings(validationResult, archiveId) {
 }
 
 /**
- * 检查存档是否有错误
+ * Check if an archive has errors
  * @param {ValidationResult} validationResult
  * @param {string} archiveId
  * @returns {boolean}
@@ -186,7 +186,7 @@ export function hasArchiveErrors(validationResult, archiveId) {
 }
 
 /**
- * 统计验证结果
+ * Get validation statistics
  * @param {ValidationResult} validationResult
  * @returns {{ errorCount: number, warningCount: number, affectedArchives: number }}
  */
@@ -204,11 +204,11 @@ export function getValidationStats(validationResult) {
 }
 
 /**
- * 验证器 composable
+ * Validator composable
  * @returns {Object}
  */
 export function useValidator() {
-  // 验证结果
+  // Validation result
   const validationResult = ref({
     isValid: true,
     errors: [],
@@ -216,7 +216,7 @@ export function useValidator() {
   });
 
   /**
-   * 验证存档列表
+   * Validate archive list
    * @param {ArchiveConfig[]} archives
    * @returns {ValidationResult}
    */
@@ -226,7 +226,7 @@ export function useValidator() {
   };
 
   /**
-   * 清空验证结果
+   * Clear validation result
    */
   const clearValidation = () => {
     validationResult.value = {
@@ -236,7 +236,7 @@ export function useValidator() {
     };
   };
 
-  // 计算属性
+  // Computed properties
   const isValid = computed(() => validationResult.value.isValid);
   const errorCount = computed(() => validationResult.value.errors.length);
   const warningCount = computed(() => validationResult.value.warnings.length);
@@ -244,7 +244,7 @@ export function useValidator() {
   const stats = computed(() => getValidationStats(validationResult.value));
 
   /**
-   * 获取指定存档的错误
+   * Get errors for a specific archive
    * @param {string} archiveId
    * @returns {ValidationError[]}
    */
@@ -253,7 +253,7 @@ export function useValidator() {
   };
 
   /**
-   * 获取指定存档的警告
+   * Get warnings for a specific archive
    * @param {string} archiveId
    * @returns {ValidationWarning[]}
    */
@@ -262,7 +262,7 @@ export function useValidator() {
   };
 
   /**
-   * 检查指定存档是否有错误
+   * Check if a specific archive has errors
    * @param {string} archiveId
    * @returns {boolean}
    */
@@ -271,21 +271,21 @@ export function useValidator() {
   };
 
   return {
-    // 状态
+    // State
     validationResult,
     isValid,
     errorCount,
     warningCount,
     stats,
 
-    // 方法
+    // Methods
     validateArchives,
     clearValidation,
     getErrorsForArchive,
     getWarningsForArchive,
     archiveHasErrors,
 
-    // 导出纯函数
+    // Export pure functions
     validate,
     validateArchive,
     isEmptyName,

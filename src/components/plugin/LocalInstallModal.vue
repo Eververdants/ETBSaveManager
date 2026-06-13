@@ -9,7 +9,7 @@
           </button>
 
           <!-- 上传区域 -->
-          <div 
+          <div
             class="upload-zone"
             :class="{ dragging: isDragging, loading: loading }"
             @dragover="handleDragOver"
@@ -19,7 +19,7 @@
             <!-- 加载状态 -->
             <div v-if="loading" class="state-container">
               <div class="spinner"></div>
-              <p class="state-text">{{ $t('plugin.installing') }}</p>
+              <p class="state-text">{{ $t("plugin.installing") }}</p>
             </div>
 
             <!-- 成功状态 -->
@@ -30,7 +30,7 @@
               <p class="state-text">{{ successMessage }}</p>
               <button class="state-btn" @click="resetState">
                 <font-awesome-icon :icon="['fas', 'plus']" />
-                {{ $t('plugin.continueInstall') }}
+                {{ $t("plugin.continueInstall") }}
               </button>
             </div>
 
@@ -42,7 +42,7 @@
               <p class="state-text">{{ errorMessage }}</p>
               <button class="state-btn" @click="resetState">
                 <font-awesome-icon :icon="['fas', 'redo']" />
-                {{ $t('plugin.retry') }}
+                {{ $t("plugin.retry") }}
               </button>
             </div>
 
@@ -54,15 +54,15 @@
                   <font-awesome-icon :icon="['fas', 'folder-open']" />
                 </div>
               </div>
-              <h3 class="upload-title">{{ $t('plugin.selectPluginFolder') }}</h3>
-              <p class="upload-desc">{{ $t('plugin.selectFolderWithPluginJson') }}</p>
+              <h3 class="upload-title">{{ $t("plugin.selectPluginFolder") }}</h3>
+              <p class="upload-desc">{{ $t("plugin.selectFolderWithPluginJson") }}</p>
               <button class="upload-btn primary" @click="selectFolder">
                 <font-awesome-icon :icon="['fas', 'folder-open']" />
-                <span>{{ $t('plugin.browseFolder') }}</span>
+                <span>{{ $t("plugin.browseFolder") }}</span>
               </button>
               <div class="upload-hint">
                 <font-awesome-icon :icon="['fas', 'info-circle']" />
-                <span>{{ $t('plugin.pluginFolderMustContainJson') }}</span>
+                <span>{{ $t("plugin.pluginFolderMustContainJson") }}</span>
               </div>
             </template>
           </div>
@@ -73,31 +73,34 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import { useLocalInstallModal } from '@/composables/useLocalInstallModal';
+import { ref, watch } from "vue";
+import { useLocalInstallModal } from "@/composables/useLocalInstallModal";
 
 const props = defineProps({
   show: {
     type: Boolean,
-    default: false
+    default: false,
   },
   loading: {
     type: Boolean,
-    default: false
+    default: false,
   },
   successMessage: {
     type: String,
-    default: null
+    default: null,
   },
   errorMessage: {
     type: String,
-    default: null
-  }
+    default: null,
+  },
 });
 
-const emit = defineEmits(['close', 'select-folder', 'reset']);
+const emit = defineEmits(["close", "select-folder", "reset"]);
 
-const { isDragging, handleDragOver, handleDragLeave, handleDrop, selectFolder, resetState } = useLocalInstallModal(props, emit);
+const { isDragging, handleDragOver, handleDragLeave, handleDrop, selectFolder, resetState } = useLocalInstallModal(
+  props,
+  emit,
+);
 </script>
 
 <style scoped>
@@ -114,7 +117,9 @@ const { isDragging, handleDragOver, handleDragLeave, handleDrop, selectFolder, r
 
 .modal-fade-enter-active .modal-container,
 .modal-fade-leave-active .modal-container {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.3s ease;
 }
 
 .modal-fade-enter-from .modal-container,
@@ -299,7 +304,9 @@ const { isDragging, handleDragOver, handleDragLeave, handleDrop, selectFolder, r
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .state-icon {

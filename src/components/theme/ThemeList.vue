@@ -4,8 +4,12 @@
     <div class="list-header">
       <h3 class="list-title">{{ $t("theme.themeList") }}</h3>
       <div class="header-actions">
-        <button class="btn-icon" @click="handleImport" :title="$t('theme.importTheme')"
-          :aria-label="$t('theme.importTheme')">
+        <button
+          class="btn-icon"
+          :title="$t('theme.importTheme')"
+          :aria-label="$t('theme.importTheme')"
+          @click="handleImport"
+        >
           <span class="icon">📥</span>
         </button>
       </div>
@@ -15,10 +19,19 @@
     <div class="theme-section">
       <h4 class="section-title">{{ $t("theme.presetThemes") }}</h4>
       <div class="theme-grid">
-        <div v-for="theme in presetThemes" :key="theme.id" class="theme-card"
-          :class="{ active: currentThemeId === theme.id }" @click="selectTheme(theme.id)" role="button"
-          :aria-pressed="currentThemeId === theme.id" :aria-label="theme.name" tabindex="0"
-          @keydown.enter="selectTheme(theme.id)" @keydown.space.prevent="selectTheme(theme.id)">
+        <div
+          v-for="theme in presetThemes"
+          :key="theme.id"
+          class="theme-card"
+          :class="{ active: currentThemeId === theme.id }"
+          role="button"
+          :aria-pressed="currentThemeId === theme.id"
+          :aria-label="theme.name"
+          tabindex="0"
+          @click="selectTheme(theme.id)"
+          @keydown.enter="selectTheme(theme.id)"
+          @keydown.space.prevent="selectTheme(theme.id)"
+        >
           <div class="theme-preview-mini" :class="`preview-${theme.id}`">
             <div class="mini-sidebar"></div>
             <div class="mini-content">
@@ -36,7 +49,7 @@
     </div>
 
     <!-- Custom Themes Section -->
-    <div class="theme-section" v-if="customThemes.length > 0 || showEmptyState">
+    <div v-if="customThemes.length > 0 || showEmptyState" class="theme-section">
       <h4 class="section-title">
         {{ $t("theme.customThemes") }}
         <span class="theme-count">({{ customThemes.length }}/10)</span>
@@ -48,10 +61,19 @@
       </div>
 
       <div v-else class="theme-grid">
-        <div v-for="theme in customThemes" :key="theme.id" class="theme-card custom"
-          :class="{ active: currentThemeId === theme.id }" @click="selectTheme(theme.id)" role="button"
-          :aria-pressed="currentThemeId === theme.id" :aria-label="theme.name" tabindex="0"
-          @keydown.enter="selectTheme(theme.id)" @keydown.space.prevent="selectTheme(theme.id)">
+        <div
+          v-for="theme in customThemes"
+          :key="theme.id"
+          class="theme-card custom"
+          :class="{ active: currentThemeId === theme.id }"
+          role="button"
+          :aria-pressed="currentThemeId === theme.id"
+          :aria-label="theme.name"
+          tabindex="0"
+          @click="selectTheme(theme.id)"
+          @keydown.enter="selectTheme(theme.id)"
+          @keydown.space.prevent="selectTheme(theme.id)"
+        >
           <div class="theme-preview-mini custom-preview" :style="getCustomPreviewStyle(theme)">
             <div class="mini-sidebar"></div>
             <div class="mini-content">
@@ -65,16 +87,28 @@
             </span>
           </div>
           <div class="theme-actions" @click.stop>
-            <button class="btn-action" @click="handleEdit(theme)" :title="$t('common.edit')"
-              :aria-label="$t('theme.editTheme', { name: theme.name })">
+            <button
+              class="btn-action"
+              :title="$t('common.edit')"
+              :aria-label="$t('theme.editTheme', { name: theme.name })"
+              @click="handleEdit(theme)"
+            >
               ✏️
             </button>
-            <button class="btn-action" @click="handleExport(theme)" :title="$t('theme.exportTheme')"
-              :aria-label="$t('theme.exportThemeNamed', { name: theme.name })">
+            <button
+              class="btn-action"
+              :title="$t('theme.exportTheme')"
+              :aria-label="$t('theme.exportThemeNamed', { name: theme.name })"
+              @click="handleExport(theme)"
+            >
               📤
             </button>
-            <button class="btn-action delete" @click="handleDelete(theme)" :title="$t('common.delete')"
-              :aria-label="$t('theme.deleteTheme', { name: theme.name })">
+            <button
+              class="btn-action delete"
+              :title="$t('common.delete')"
+              :aria-label="$t('theme.deleteTheme', { name: theme.name })"
+              @click="handleDelete(theme)"
+            >
               🗑️
             </button>
           </div>
@@ -83,7 +117,7 @@
     </div>
 
     <!-- Create Button -->
-    <button class="btn-create" @click="handleCreate" :disabled="customThemes.length >= 10">
+    <button class="btn-create" :disabled="customThemes.length >= 10" @click="handleCreate">
       <span class="create-icon">+</span>
       {{ $t("theme.createCustomTheme") }}
     </button>
@@ -123,14 +157,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits([
-  "create",
-  "edit",
-  "delete",
-  "select",
-  "import",
-  "export",
-]);
+const emit = defineEmits(["create", "edit", "delete", "select", "import", "export"]);
 
 const {
   showDeleteConfirm,

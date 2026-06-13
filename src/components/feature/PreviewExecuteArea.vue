@@ -10,37 +10,29 @@
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-value">{{ uniformCount }}</span>
-          <span class="stat-label">{{
-            $t("quickCreate.preview.uniform")
-          }}</span>
+          <span class="stat-label">{{ $t("quickCreate.preview.uniform") }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-value">{{ individualCount }}</span>
-          <span class="stat-label">{{
-            $t("quickCreate.preview.individual")
-          }}</span>
+          <span class="stat-label">{{ $t("quickCreate.preview.individual") }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item" :class="{ 'has-error': missingCount > 0 }">
           <span class="stat-value">{{ missingCount }}</span>
-          <span class="stat-label">{{
-            $t("quickCreate.preview.missing")
-          }}</span>
+          <span class="stat-label">{{ $t("quickCreate.preview.missing") }}</span>
         </div>
       </div>
 
       <!-- 预计耗时 -->
-      <div class="estimated-time" v-if="archives.length > 0">
+      <div v-if="archives.length > 0" class="estimated-time">
         <font-awesome-icon :icon="['fas', 'clock']" class="time-icon" />
-        <span class="time-text">{{
-          $t("quickCreate.preview.estimatedTime", { time: estimatedTime })
-        }}</span>
+        <span class="time-text">{{ $t("quickCreate.preview.estimatedTime", { time: estimatedTime }) }}</span>
       </div>
     </div>
 
     <!-- 进度条 (创建中显示) -->
-    <div class="progress-section" v-if="isCreating">
+    <div v-if="isCreating" class="progress-section">
       <div class="progress-bar">
         <div class="progress-fill" :style="{ width: `${progress}%` }"></div>
       </div>
@@ -49,19 +41,26 @@
 
     <!-- 操作按钮 -->
     <div class="action-buttons">
-      <button class="action-btn cancel-btn" @click="handleCancel" :disabled="isCreating">
+      <button class="action-btn cancel-btn" :disabled="isCreating" @click="handleCancel">
         <font-awesome-icon :icon="['fas', 'times']" />
         {{ $t("common.cancel") }}
       </button>
 
-      <button class="action-btn template-btn" @click="handleSaveTemplate"
-        :disabled="isCreating || archives.length === 0">
+      <button
+        class="action-btn template-btn"
+        :disabled="isCreating || archives.length === 0"
+        @click="handleSaveTemplate"
+      >
         <font-awesome-icon :icon="['fas', 'save']" />
         {{ $t("quickCreate.preview.saveTemplate") }}
       </button>
 
-      <button class="action-btn create-btn" @click="handleCreate" :disabled="!canCreate || isCreating"
-        :title="createButtonTooltip">
+      <button
+        class="action-btn create-btn"
+        :disabled="!canCreate || isCreating"
+        :title="createButtonTooltip"
+        @click="handleCreate"
+      >
         <font-awesome-icon :icon="isCreating ? ['fas', 'spinner'] : ['fas', 'plus']" :spin="isCreating" />
         {{ createButtonText }}
       </button>
@@ -105,7 +104,7 @@ const isCreatingRef = toRef(props, "isCreating");
 const { uniformCount, individualCount, missingCount, canCreate, estimatedTime } = usePreviewExecuteArea(
   archivesRef,
   selectedCountRef,
-  isCreatingRef
+  isCreatingRef,
 );
 
 const createButtonText = computed(() => {

@@ -23,25 +23,25 @@
   --color-bg-secondary: var(--bg-secondary);
   --color-bg-tertiary: var(--bg-tertiary);
   --color-bg-elevated: var(--bg-elevated);
-  
+
   --color-text: var(--text);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-tertiary: var(--text-tertiary);
-  
+
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-accent: var(--accent-color);
   --color-accent-hover: var(--accent-hover);
-  
+
   --color-border: var(--border-color);
   --color-divider: var(--divider-color);
-  
+
   --color-success: var(--success-color);
   --color-error: var(--error-color);
   --color-warning: var(--warning-color);
   --color-info: var(--info-color);
-  
+
   /* 侧边栏颜色 */
   --color-sidebar-bg: var(--sidebar-bg);
   --color-sidebar-text: var(--sidebar-text-color);
@@ -52,13 +52,13 @@
   /* 卡片颜色 */
   --color-card-bg: var(--card-bg);
   --color-card-border: var(--card-border);
-  
+
   /* 下拉菜单颜色 */
   --color-dropdown-bg: var(--dropdown-bg);
   --color-dropdown-border: var(--dropdown-border);
   --color-dropdown-text: var(--dropdown-text);
   --color-dropdown-hover: var(--dropdown-hover-bg);
-  
+
   /* 间距 - 映射到现有变量 */
   --spacing-1: var(--space-1);
   --spacing-2: var(--space-2);
@@ -70,7 +70,7 @@
   --spacing-10: var(--space-10);
   --spacing-12: var(--space-12);
   --spacing-16: var(--space-16);
-  
+
   /* 圆角 */
   --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);
@@ -80,7 +80,7 @@
   --radius-2xl: var(--radius-2xl);
   --radius-pill: var(--radius-pill);
   --radius-circle: var(--radius-circle);
-  
+
   /* 阴影 */
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
@@ -90,7 +90,7 @@
   --shadow-2xl: var(--shadow-2xl);
   --shadow-card: var(--card-shadow);
   --shadow-card-hover: var(--card-shadow-hover);
-  
+
   /* 过渡 */
   --transition-fast: var(--transition-fast);
   --transition-normal: var(--transition-normal);

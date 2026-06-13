@@ -1,8 +1,8 @@
 <template>
   <div class="quick-create-container">
-    <!-- 顶部操作栏（圆角矩形，包含导航+统计+操作） -->
+    <!-- Top action bar (rounded rectangle with navigation + stats + actions) -->
     <header class="quick-create-header">
-      <!-- 左侧：返回按钮 + 标题 -->
+      <!-- Left side: back button + title -->
       <div class="header-left">
         <button class="back-button" @click="goBack">
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
@@ -10,7 +10,7 @@
         <h1 class="page-title">{{ $t("quickCreate.title") }}</h1>
       </div>
 
-      <!-- 中间：统计数据 -->
+      <!-- Center: statistics -->
       <div class="header-stats">
         <div class="stat-item">
           <span class="stat-value">{{ state.archives.length }}</span>
@@ -19,99 +19,126 @@
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-value">{{ summaryStats.uniformCount }}</span>
-          <span class="stat-label">{{
-            $t("quickCreate.preview.uniform")
-            }}</span>
+          <span class="stat-label">{{ $t("quickCreate.preview.uniform") }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-value">{{ summaryStats.individualCount }}</span>
-          <span class="stat-label">{{
-            $t("quickCreate.preview.individual")
-            }}</span>
+          <span class="stat-label">{{ $t("quickCreate.preview.individual") }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item" :class="{ 'has-error': summaryStats.missingCount > 0 }">
           <span class="stat-value">{{ summaryStats.missingCount }}</span>
-          <span class="stat-label">{{
-            $t("quickCreate.preview.missing")
-            }}</span>
+          <span class="stat-label">{{ $t("quickCreate.preview.missing") }}</span>
         </div>
-        <div class="stat-divider" v-if="state.archives.length > 0"></div>
-        <div class="stat-item estimated-time" v-if="state.archives.length > 0">
+        <div v-if="state.archives.length > 0" class="stat-divider"></div>
+        <div v-if="state.archives.length > 0" class="stat-item estimated-time">
           <font-awesome-icon :icon="['fas', 'clock']" class="time-icon" />
-          <span class="time-text">{{
-            $t("quickCreate.preview.estimatedTime", { time: estimatedTime })
-            }}</span>
+          <span class="time-text">{{ $t("quickCreate.preview.estimatedTime", { time: estimatedTime }) }}</span>
         </div>
       </div>
 
-      <!-- 右侧：操作按钮 -->
+      <!-- Right side: action buttons -->
       <div class="header-actions">
-        <!-- 进度条 (创建中显示) -->
-        <div class="progress-section" v-if="state.isCreating">
+        <!-- Progress bar (shown during creation) -->
+        <div v-if="state.isCreating" class="progress-section">
           <div class="progress-bar">
             <div class="progress-fill" :style="{ width: `${state.creationProgress}%` }"></div>
           </div>
           <span class="progress-text">{{ Math.round(state.creationProgress) }}%</span>
         </div>
 
-        <button class="action-btn template-btn" @click="handleSaveTemplate"
-          :disabled="state.isCreating || state.archives.length === 0">
+        <button
+          class="action-btn template-btn"
+          :disabled="state.isCreating || state.archives.length === 0"
+          @click="handleSaveTemplate"
+        >
           <font-awesome-icon :icon="['fas', 'save']" />
           {{ $t("quickCreate.preview.saveTemplate") }}
         </button>
 
-        <button class="create-btn" :disabled="!canCreate || state.isCreating" @click="handleCreate"
-          :title="createButtonTooltip">
+        <button
+          class="create-btn"
+          :disabled="!canCreate || state.isCreating"
+          :title="createButtonTooltip"
+          @click="handleCreate"
+        >
           <font-awesome-icon :icon="state.isCreating ? ['fas', 'spinner'] : ['fas', 'plus']" :spin="state.isCreating" />
           {{ createButtonText }}
         </button>
       </div>
     </header>
 
-    <!-- 主内容区域 -->
+    <!-- Main content area -->
     <main class="quick-create-main">
-      <!-- 左侧边栏：智能输入 + 统一配置 -->
+      <!-- Left sidebar: smart input + uniform config -->
       <aside class="left-sidebar">
-        <!-- 智能输入区 -->
-        <SmartInputArea v-model="inputNames" :archive-count="state.archives.length"
-          :level-detected-count="detectedStats.levelCount" :difficulty-detected-count="detectedStats.difficultyCount"
-          @parse-complete="onParseComplete" @manual-add="handleManualAdd" @load-template="handleLoadTemplate" />
+        <!-- Smart input area -->
+        <SmartInputArea
+          v-model="inputNames"
+          :archive-count="state.archives.length"
+          :level-detected-count="detectedStats.levelCount"
+          :difficulty-detected-count="detectedStats.difficultyCount"
+          @parse-complete="onParseComplete"
+          @manual-add="handleManualAdd"
+          @load-template="handleLoadTemplate"
+        />
 
-        <!-- 统一配置区 -->
-        <UniformConfigPanel :config="state.uniformConfig" :smart-rules="state.smartRules"
-          @update:config="handleConfigUpdate" @update:smart-rules="handleSmartRulesUpdate" />
+        <!-- Uniform config area -->
+        <UniformConfigPanel
+          :config="state.uniformConfig"
+          :smart-rules="state.smartRules"
+          @update:config="handleConfigUpdate"
+          @update:smart-rules="handleSmartRulesUpdate"
+        />
       </aside>
 
-      <!-- 右侧主体：存档预览卡片流 -->
+      <!-- Right main area: archive preview card flow -->
       <section class="card-flow-area">
-        <ArchiveCardFlow :archives="state.archives" :selected-ids="state.selectedArchiveIds"
-          :uniform-config="state.uniformConfig" :smart-rules="state.smartRules" @select="toggleArchiveSelection"
-          @select-all="selectAll" @invert-selection="invertSelection" @edit="openEditModal" @copy="copyArchive"
-          @remove="removeArchive" @batch-edit="openBatchEditModal" />
+        <ArchiveCardFlow
+          :archives="state.archives"
+          :selected-ids="state.selectedArchiveIds"
+          :uniform-config="state.uniformConfig"
+          :smart-rules="state.smartRules"
+          @select="toggleArchiveSelection"
+          @select-all="selectAll"
+          @invert-selection="invertSelection"
+          @edit="openEditModal"
+          @copy="copyArchive"
+          @remove="removeArchive"
+          @batch-edit="openBatchEditModal"
+        />
       </section>
     </main>
 
-    <!-- 单个存档编辑模态框 -->
-    <ArchiveEditModal :visible="state.showIndividualEditModal" :archive="editingArchive"
-      :available-levels="availableLevels" @close="closeEditModal" @save="handleEditSave" />
+    <!-- Individual archive edit modal -->
+    <ArchiveEditModal
+      :visible="state.showIndividualEditModal"
+      :archive="editingArchive"
+      :available-levels="availableLevels"
+      @close="closeEditModal"
+      @save="handleEditSave"
+    />
 
-    <!-- 批量编辑模态框 -->
-    <BatchEditModal :visible="state.showBatchEditModal" :selected-count="state.selectedArchiveIds.size"
-      :available-levels="availableLevels" @close="closeBatchEditModal" @apply="handleBatchEditApply" />
+    <!-- Batch edit modal -->
+    <BatchEditModal
+      :visible="state.showBatchEditModal"
+      :selected-count="state.selectedArchiveIds.size"
+      :available-levels="availableLevels"
+      @close="closeBatchEditModal"
+      @apply="handleBatchEditApply"
+    />
 
-    <!-- 创建结果模态框 -->
+    <!-- Creation result modal -->
     <Teleport to="body">
       <div v-if="showResultModal" class="result-modal-overlay" @click.self="closeResultModal">
         <div class="result-modal">
           <div class="result-modal-header">
             <h3 class="result-modal-title">
-              <font-awesome-icon :icon="creationResult?.failed > 0
-                ? ['fas', 'exclamation-triangle']
-                : ['fas', 'check-circle']
-                " :class="creationResult?.failed > 0 ? 'warning-icon' : 'success-icon'
-                  " />
+              <font-awesome-icon
+                :icon="creationResult?.failed > 0 ? ['fas', 'exclamation-triangle'] : ['fas', 'check-circle']"
+                :class="creationResult?.failed > 0 ? 'warning-icon' : 'success-icon'"
+              />
               {{
                 creationResult?.failed > 0
                   ? $t("quickCreate.result.partialTitle")
@@ -126,24 +153,16 @@
           <div class="result-modal-body">
             <div class="result-summary">
               <div class="result-stat success">
-                <span class="result-value">{{
-                  creationResult?.success || 0
-                  }}</span>
-                <span class="result-label">{{
-                  $t("quickCreate.result.successCount")
-                  }}</span>
+                <span class="result-value">{{ creationResult?.success || 0 }}</span>
+                <span class="result-label">{{ $t("quickCreate.result.successCount") }}</span>
               </div>
-              <div class="result-stat error" v-if="creationResult?.failed > 0">
-                <span class="result-value">{{
-                  creationResult?.failed || 0
-                  }}</span>
-                <span class="result-label">{{
-                  $t("quickCreate.result.failedCount")
-                  }}</span>
+              <div v-if="creationResult?.failed > 0" class="result-stat error">
+                <span class="result-value">{{ creationResult?.failed || 0 }}</span>
+                <span class="result-label">{{ $t("quickCreate.result.failedCount") }}</span>
               </div>
             </div>
 
-            <!-- 错误详情 -->
+            <!-- Error details -->
             <div v-if="creationResult?.errors?.length > 0" class="error-details">
               <h4 class="error-details-title">
                 {{ $t("quickCreate.result.errorDetails") }}
@@ -161,10 +180,12 @@
             <button class="action-btn secondary-btn" @click="closeResultModal">
               {{ $t("quickCreate.result.continueEditing") }}
             </button>
-            <!-- Requirements 19.3, 19.4: 根据创建数量显示不同的导航按钮 -->
-            <button v-if="
-              creationResult?.success === 1 && creationResult?.failed === 0
-            " class="action-btn primary-btn" @click="editSingleArchive">
+            <!-- Requirements 19.3, 19.4: Show different navigation buttons based on creation count -->
+            <button
+              v-if="creationResult?.success === 1 && creationResult?.failed === 0"
+              class="action-btn primary-btn"
+              @click="editSingleArchive"
+            >
               <font-awesome-icon :icon="['fas', 'edit']" />
               {{ $t("quickCreate.result.editArchive") }}
             </button>
@@ -176,7 +197,7 @@
         </div>
       </div>
 
-      <!-- 草稿恢复提示模态框 -->
+      <!-- Draft recovery prompt modal -->
       <div v-if="showDraftRecoveryPrompt" class="result-modal-overlay" @click.self="ignoreDraft">
         <div class="result-modal draft-recovery-modal">
           <div class="result-modal-header">
@@ -197,7 +218,7 @@
                 })
               }}
             </p>
-            <p class="draft-time" v-if="draftInfo?.savedAt">
+            <p v-if="draftInfo?.savedAt" class="draft-time">
               {{ $t("quickCreate.draft.savedAt") }}:
               {{ formatDraftTime(draftInfo.savedAt) }}
             </p>
@@ -215,7 +236,7 @@
         </div>
       </div>
 
-      <!-- 大量数据警告模态框 -->
+      <!-- Large data warning modal -->
       <div v-if="showLargeDataWarning" class="result-modal-overlay" @click.self="dismissLargeDataWarning">
         <div class="result-modal large-data-warning-modal">
           <div class="result-modal-header">
@@ -269,7 +290,7 @@
       </div>
     </Teleport>
 
-    <!-- 新手引导 -->
+    <!-- Tutorial overlay -->
     <TutorialOverlay :visible="showTutorial" @close="closeTutorial" @skip="closeTutorial" @complete="closeTutorial" />
   </div>
 </template>
@@ -308,19 +329,19 @@ export default {
       return te(translationKey) ? t(translationKey) : levelKey;
     };
 
-    // 创建结果状态
+    // Creation result state
     const creationResult = ref(null);
     const showResultModal = ref(false);
 
-    // 草稿恢复提示状态
+    // Draft recovery prompt state
     const showDraftRecoveryPrompt = ref(false);
     const draftInfo = ref(null);
 
-    // 大量数据警告状态
+    // Large data warning state
     const showLargeDataWarning = ref(false);
     const largeDataWarningInfo = ref(null);
 
-    // 新手引导状态
+    // Tutorial state
     const showTutorial = ref(false);
 
     const {
@@ -340,7 +361,7 @@ export default {
       updateArchive,
       batchUpdateSelected,
       batchCreateArchives,
-      // 草稿管理
+      // Draft management
       saveDraft,
       loadDraft,
       clearDraft,
@@ -348,22 +369,22 @@ export default {
       getDraftInfo,
       startAutoSave,
       stopAutoSave,
-      // 中断处理
+      // Interruption handling
       registerBeforeUnloadWarning,
       unregisterBeforeUnloadWarning,
-      // 大量数据警告
+      // Large data warnings
       hasLargeData,
       hasVeryLargeData,
       largeDataWarnings,
       LARGE_ARCHIVE_THRESHOLD,
       VERY_LARGE_NAME_THRESHOLD,
-      // 重新计算
+      // Recalculate
       recalculateArchives,
     } = useQuickCreate();
 
     const inputNames = ref([]);
 
-    // 检测统计（从 archives 计算）
+    // Detection statistics (computed from archives)
     const detectedStats = computed(() => {
       let levelCount = 0;
       let difficultyCount = 0;
@@ -374,15 +395,15 @@ export default {
       return { levelCount, difficultyCount };
     });
 
-    // 计算预计耗时（Rust后端很快，每个存档约0.3秒）
+    // Calculate estimated time (Rust backend is fast, ~0.3s per archive)
     const estimatedTime = computed(() => {
       const count = state.archives.length;
       if (count === 0) return "0s";
 
-      // 每个存档约0.3秒，加上批处理间隔
+      // ~0.3s per archive, plus batch processing delay
       const batches = Math.ceil(count / 5);
-      const archiveTime = count * 0.3; // 每个存档0.3秒
-      const batchDelay = (batches - 1) * 0.1; // 批次间延迟
+      const archiveTime = count * 0.3; // 0.3 seconds per archive
+      const batchDelay = (batches - 1) * 0.1; // Delay between batches
       const totalSeconds = Math.ceil(archiveTime + batchDelay);
 
       if (totalSeconds < 1) {
@@ -392,25 +413,20 @@ export default {
       } else {
         const minutes = Math.floor(totalSeconds / 60);
         const remainingSeconds = totalSeconds % 60;
-        return remainingSeconds > 0
-          ? `${minutes}m ${remainingSeconds}s`
-          : `${minutes}m`;
+        return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
       }
     });
 
-    // 创建按钮文本
+    // Create button text
     const createButtonText = computed(() => {
       if (state.isCreating) {
         return t("quickCreate.preview.creating");
       }
-      const count =
-        state.selectedArchiveIds.size > 0
-          ? state.selectedArchiveIds.size
-          : state.archives.length;
+      const count = state.selectedArchiveIds.size > 0 ? state.selectedArchiveIds.size : state.archives.length;
       return t("quickCreate.preview.create", { count });
     });
 
-    // 创建按钮提示
+    // Create button tooltip
     const createButtonTooltip = computed(() => {
       if (state.archives.length === 0) {
         return t("quickCreate.preview.noArchives");
@@ -423,7 +439,7 @@ export default {
       return "";
     });
 
-    // 可用层级列表
+    // Available levels list
     const availableLevels = computed(() => {
       const levels = [
         "Level0",
@@ -481,30 +497,28 @@ export default {
       }));
     });
 
-    // 当前编辑的存档
+    // Currently editing archive
     const editingArchive = computed(() => {
       if (state.editingArchiveId) {
-        return (
-          state.archives.find((a) => a.id === state.editingArchiveId) || null
-        );
+        return state.archives.find((a) => a.id === state.editingArchiveId) || null;
       }
       return null;
     });
 
-    // 标志：是否正在恢复状态（用于禁用 inputNames 的 watch）
+    // Flag: whether state is being restored (used to disable inputNames watcher)
     const isRestoringState = ref(false);
 
     watch(
       inputNames,
       (newNames) => {
-        // 如果正在恢复状态，则不处理
+        // If restoring state, skip processing
         if (isRestoringState.value) {
           return;
         }
 
         clearArchives();
         if (newNames.length > 0) {
-          // 检查是否超过非常大量数据阈值
+          // Check if exceeding very large data threshold
           if (newNames.length > VERY_LARGE_NAME_THRESHOLD) {
             largeDataWarningInfo.value = {
               type: "very_large_input",
@@ -516,11 +530,9 @@ export default {
 
           const result = addArchives(newNames);
 
-          // 检查添加后是否有大量数据警告
+          // Check for large data warnings after adding
           if (result.warnings && result.warnings.length > 0) {
-            const largeCountWarning = result.warnings.find(
-              (w) => w.type === "large_archive_count"
-            );
+            const largeCountWarning = result.warnings.find((w) => w.type === "large_archive_count");
             if (largeCountWarning && !showLargeDataWarning.value) {
               largeDataWarningInfo.value = largeCountWarning;
               showLargeDataWarning.value = true;
@@ -528,7 +540,7 @@ export default {
           }
         }
       },
-      { deep: true }
+      { deep: true },
     );
 
     const goBack = () => {
@@ -536,35 +548,26 @@ export default {
     };
 
     /**
-     * 切换到经典模式
-     * Requirements: 19.1 - 提供模式切换按钮
-     * Requirements: 19.2 - 从经典模式带入配置
+     * Switch to classic mode
+     * Requirements: 19.1 - Provide mode switch button
+     * Requirements: 19.2 - Bring config from classic mode
      */
     const switchToClassicMode = () => {
-      // 如果有统一配置，可以通过 query 参数传递给经典模式
+      // If there's a uniform config, pass it to classic mode via query params
       const query = {};
 
-      // 传递统一配置中的层级设置
-      if (
-        state.uniformConfig.level.enabled &&
-        state.uniformConfig.level.value
-      ) {
+      // Pass level settings from uniform config
+      if (state.uniformConfig.level.enabled && state.uniformConfig.level.value) {
         query.level = state.uniformConfig.level.value;
       }
 
-      // 传递统一配置中的难度设置
-      if (
-        state.uniformConfig.difficulty.enabled &&
-        state.uniformConfig.difficulty.value
-      ) {
+      // Pass difficulty settings from uniform config
+      if (state.uniformConfig.difficulty.enabled && state.uniformConfig.difficulty.value) {
         query.difficulty = state.uniformConfig.difficulty.value;
       }
 
-      // 传递统一配置中的实际难度设置
-      if (
-        state.uniformConfig.actualDifficulty.enabled &&
-        state.uniformConfig.actualDifficulty.value
-      ) {
+      // Pass actual difficulty settings from uniform config
+      if (state.uniformConfig.actualDifficulty.enabled && state.uniformConfig.actualDifficulty.value) {
         query.actualDifficulty = state.uniformConfig.actualDifficulty.value;
       }
 
@@ -576,11 +579,11 @@ export default {
     };
 
     /**
-     * 处理手动添加 - 跳转到经典模式配置存档
-     * 经典模式完成后会将配置数据传回
+     * Handle manual add - navigate to classic mode to configure archive
+     * Classic mode will send configuration data back when done
      */
     const handleManualAdd = () => {
-      // 保存当前状态到 sessionStorage，以便返回时恢复
+      // Save current state to sessionStorage for restoration when returning
       if (state.archives.length > 0) {
         const currentState = {
           archives: state.archives.map((a) => ({
@@ -595,13 +598,10 @@ export default {
           uniformConfig: state.uniformConfig,
           smartRules: state.smartRules,
         };
-        sessionStorage.setItem(
-          "quickModeCurrentState",
-          JSON.stringify(currentState)
-        );
+        sessionStorage.setItem("quickModeCurrentState", JSON.stringify(currentState));
       }
 
-      // 跳转到经典模式，带上 quickMode 参数表示是从快速模式来的
+      // Navigate to classic mode with quickMode parameter indicating it came from quick mode
       router.push({ path: "/create-archive", query: { quickMode: "true" } });
     };
 
@@ -611,55 +611,52 @@ export default {
       try {
         const results = await batchCreateArchives();
 
-        // 保存结果用于显示
+        // Save results for display
         creationResult.value = results;
 
         if (results.success > 0) {
-          // 显示成功 toast
+          // Show success toast
           const successMessage =
             results.failed > 0
               ? t("quickCreate.result.partialSuccess", {
-                success: results.success,
-                failed: results.failed,
-              })
+                  success: results.success,
+                  failed: results.failed,
+                })
               : t("quickCreate.result.success", { count: results.success });
 
           showSuccess(successMessage, "✓");
 
-          // 如果全部成功，清空列表
+          // If all succeeded, clear the list
           if (results.failed === 0) {
             resetState();
             inputNames.value = [];
 
-            // 延迟导航，让用户看到成功提示
+            // Delay navigation so user can see success notification
             setTimeout(() => {
               router.push("/");
             }, 1500);
           } else {
-            // 部分失败，显示结果模态框
+            // Partial failure, show result modal
             showResultModal.value = true;
           }
         } else if (results.failed > 0) {
-          // 全部失败，显示错误
+          // All failed, show error
           showError(t("quickCreate.result.failed"), "✗");
           showResultModal.value = true;
         }
       } catch (error) {
-        console.error("批量创建失败:", error);
-        showError(
-          t("quickCreate.result.error") + ": " + (error.message || "未知错误"),
-          "✗"
-        );
+        console.error("Batch creation failed:", error);
+        showError(t("quickCreate.result.error") + ": " + (error.message || "Unknown error"), "✗");
       }
     };
 
-    // 关闭结果模态框
+    // Close result modal
     const closeResultModal = () => {
       showResultModal.value = false;
       creationResult.value = null;
     };
 
-    // 导航到存档管理页面
+    // Navigate to archive management page
     const navigateToArchives = () => {
       closeResultModal();
       resetState();
@@ -668,22 +665,22 @@ export default {
     };
 
     /**
-     * 编辑单个存档 - 导航到经典模式编辑
-     * Requirements: 19.3 - 单个存档时显示"编辑此存档"
+     * Edit single archive - navigate to classic mode for editing
+     * Requirements: 19.3 - Show "Edit this archive" when only one archive exists
      */
     const editSingleArchive = () => {
       closeResultModal();
-      // 获取最后创建的存档名称，用于在存档列表中定位
+      // Get the last created archive name for locating in archive list
       const lastCreatedName = creationResult.value?.lastCreatedName;
       resetState();
       inputNames.value = [];
-      // 导航到首页（存档列表），可以在那里编辑存档
+      // Navigate to home (archive list), where archives can be edited
       router.push({ path: "/", query: { highlight: lastCreatedName } });
     };
 
     /**
-     * 保存为模板
-     * 让用户选择保存路径，将当前配置保存为 JSON 模板文件
+     * Save as template
+     * Let user choose save path and save current configuration as a JSON template file
      */
     const handleSaveTemplate = async () => {
       if (state.archives.length === 0) {
@@ -692,11 +689,11 @@ export default {
       }
 
       try {
-        // 动态导入 Tauri API
+        // Dynamically import Tauri API
         const { save } = await import("@tauri-apps/plugin-dialog");
         const { writeTextFile } = await import("@tauri-apps/plugin-fs");
 
-        // 打开保存对话框
+        // Open save dialog
         const filePath = await save({
           title: t("quickCreate.template.saveTitle"),
           defaultPath: "quick-create-template.json",
@@ -709,11 +706,11 @@ export default {
         });
 
         if (!filePath) {
-          // 用户取消了保存
+          // User cancelled the save
           return;
         }
 
-        // 构建模板数据
+        // Build template data
         const templateData = {
           version: "1.0",
           createdAt: new Date().toISOString(),
@@ -728,112 +725,85 @@ export default {
           smartRules: JSON.parse(JSON.stringify(state.smartRules)),
         };
 
-        // 写入文件
+        // Write to file
         await writeTextFile(filePath, JSON.stringify(templateData, null, 2));
 
         showSuccess(t("quickCreate.template.saved"), "✓");
       } catch (error) {
-        console.error("保存模板失败:", error);
-        showError(
-          t("quickCreate.template.saveFailed") +
-          ": " +
-          (error.message || "未知错误"),
-          "✗"
-        );
+        console.error("Failed to save template:", error);
+        showError(t("quickCreate.template.saveFailed") + ": " + (error.message || "Unknown error"), "✗");
       }
     };
 
     /**
-     * 加载模板
-     * 从 JSON 模板文件恢复存档配置
-     * @param {Object} templateData - 模板数据
+     * Load template
+     * Restore archive configuration from a JSON template file
+     * @param {Object} templateData - Template data
      */
     const handleLoadTemplate = async (templateData) => {
       try {
-        // 验证模板格式
-        if (
-          !templateData.version ||
-          !templateData.archives ||
-          !Array.isArray(templateData.archives)
-        ) {
+        // Validate template format
+        if (!templateData.version || !templateData.archives || !Array.isArray(templateData.archives)) {
           showError(t("quickCreate.template.invalidFormat"), "⚠️");
           return;
         }
 
-        // 设置恢复状态标志，防止 watch(inputNames) 触发 clearArchives
+        // Set restoring state flag to prevent watch(inputNames) from triggering clearArchives
         isRestoringState.value = true;
 
-        // 清空当前存档
+        // Clear current archives
         clearArchives();
 
-        // 恢复统一配置
+        // Restore uniform config
         if (templateData.uniformConfig) {
           for (const key of Object.keys(templateData.uniformConfig)) {
-            if (
-              state.uniformConfig[key] &&
-              typeof templateData.uniformConfig[key] === "object"
-            ) {
-              Object.assign(
-                state.uniformConfig[key],
-                templateData.uniformConfig[key]
-              );
+            if (state.uniformConfig[key] && typeof templateData.uniformConfig[key] === "object") {
+              Object.assign(state.uniformConfig[key], templateData.uniformConfig[key]);
             } else {
               state.uniformConfig[key] = templateData.uniformConfig[key];
             }
           }
         }
 
-        // 恢复智能规则
+        // Restore smart rules
         if (templateData.smartRules) {
           Object.assign(state.smartRules, templateData.smartRules);
         }
 
-        // 添加存档
+        // Add archives
         const names = templateData.archives.map((a) => a.name);
         addArchives(names);
 
-        // 恢复每个存档的个别配置
-        for (
-          let i = 0;
-          i < templateData.archives.length && i < state.archives.length;
-          i++
-        ) {
+        // Restore individual config for each archive
+        for (let i = 0; i < templateData.archives.length && i < state.archives.length; i++) {
           const archiveData = templateData.archives[i];
           const archive = state.archives[i];
           if (archiveData.level) archive.level = archiveData.level;
-          if (archiveData.difficulty)
-            archive.difficulty = archiveData.difficulty;
-          if (archiveData.actualDifficulty)
-            archive.actualDifficulty = archiveData.actualDifficulty;
-          if (archiveData.inventoryTemplate)
-            archive.inventoryTemplate = archiveData.inventoryTemplate;
+          if (archiveData.difficulty) archive.difficulty = archiveData.difficulty;
+          if (archiveData.actualDifficulty) archive.actualDifficulty = archiveData.actualDifficulty;
+          if (archiveData.inventoryTemplate) archive.inventoryTemplate = archiveData.inventoryTemplate;
         }
 
-        // 重新计算所有存档
+        // Recalculate all archives
         recalculateArchives();
 
-        // 更新输入框显示
+        // Update input display
         inputNames.value = state.archives.map((a) => a.name);
 
-        // 等待 Vue 完成响应式更新
+        // Wait for Vue to complete reactive updates
         await nextTick();
 
         showSuccess(t("quickCreate.template.loaded"), "✓");
       } catch (error) {
-        console.error("加载模板失败:", error);
-        showError(
-          t("quickCreate.template.loadFailed") +
-          ": " +
-          (error.message || "未知错误"),
-          "✗"
-        );
+        console.error("Failed to load template:", error);
+        showError(t("quickCreate.template.loadFailed") + ": " + (error.message || "Unknown error"), "✗");
       } finally {
-        // 重置恢复状态标志
+        // Reset restoring state flag
         isRestoringState.value = false;
       }
     };
 
-    // 处理统一配置更新
+    // Handle uniform config update
     const handleConfigUpdate = (newConfig) => {
       for (const [field, value] of Object.entries(newConfig)) {
         if (state.uniformConfig[field]) {
@@ -842,24 +812,24 @@ export default {
       }
     };
 
-    // 处理智能规则更新
+    // Handle smart rules update
     const handleSmartRulesUpdate = (newRules) => {
       updateSmartRules(newRules);
     };
 
-    // 打开单个存档编辑模态框
+    // Open individual archive edit modal
     const openEditModal = (archiveId) => {
       state.editingArchiveId = archiveId;
       state.showIndividualEditModal = true;
     };
 
-    // 关闭单个存档编辑模态框
+    // Close individual archive edit modal
     const closeEditModal = () => {
       state.showIndividualEditModal = false;
       state.editingArchiveId = null;
     };
 
-    // 处理单个存档编辑保存
+    // Handle individual archive edit save
     const handleEditSave = (updates) => {
       if (updates.id) {
         updateArchive(updates.id, {
@@ -872,38 +842,38 @@ export default {
       }
     };
 
-    // 打开批量编辑模态框
+    // Open batch edit modal
     const openBatchEditModal = () => {
       if (state.selectedArchiveIds.size > 0) {
         state.showBatchEditModal = true;
       }
     };
 
-    // 关闭批量编辑模态框
+    // Close batch edit modal
     const closeBatchEditModal = () => {
       state.showBatchEditModal = false;
     };
 
-    // 处理批量编辑应用
+    // Handle batch edit apply
     const handleBatchEditApply = (updates) => {
       batchUpdateSelected(updates);
     };
 
-    // ==================== 草稿管理 ====================
+    // ==================== Draft management ====================
 
     /**
-     * 恢复草稿
-     * Requirements: 16.4 - 页面加载时检测并提示恢复
+     * Recover draft
+     * Requirements: 16.4 - Detect and prompt recovery on page load
      */
     const recoverDraft = async () => {
-      // 设置恢复状态标志，防止 watch(inputNames) 触发 clearArchives
+      // Set restoring state flag to prevent watch(inputNames) from triggering clearArchives
       isRestoringState.value = true;
 
       if (loadDraft()) {
-        // 从恢复的存档中提取名称用于输入区显示
+        // Extract names from restored archives for input area display
         inputNames.value = state.archives.map((a) => a.name);
 
-        // 等待 Vue 完成响应式更新，确保 watch 不会被触发
+        // Wait for Vue to complete reactive updates, ensuring watch won't be triggered
         await nextTick();
 
         showInfo(t("quickCreate.draft.recovered"), "📋");
@@ -911,12 +881,12 @@ export default {
       showDraftRecoveryPrompt.value = false;
       draftInfo.value = null;
 
-      // 重置恢复状态标志
+      // Reset restoring state flag
       isRestoringState.value = false;
     };
 
     /**
-     * 忽略草稿
+     * Ignore draft
      */
     const ignoreDraft = () => {
       clearDraft();
@@ -925,7 +895,7 @@ export default {
     };
 
     /**
-     * 关闭大量数据警告
+     * Dismiss large data warning
      * Requirements: 16.5, 17.1
      */
     const dismissLargeDataWarning = () => {
@@ -934,124 +904,111 @@ export default {
     };
 
     /**
-     * 格式化草稿保存时间
-     * @param {Date} date - 保存时间
-     * @returns {string} 格式化后的时间字符串
+     * Format draft save time
+     * @param {Date} date - Save time
+     * @returns {string} Formatted time string
      */
     const formatDraftTime = (date) => {
       if (!date) return "";
       const now = new Date();
       const diff = now - date;
 
-      // 小于1分钟
+      // Less than 1 minute
       if (diff < 60000) {
         return t("quickCreate.draft.justNow");
       }
-      // 小于1小时
+      // Less than 1 hour
       if (diff < 3600000) {
         const minutes = Math.floor(diff / 60000);
         return t("quickCreate.draft.minutesAgo", { count: minutes });
       }
-      // 小于24小时
+      // Less than 24 hours
       if (diff < 86400000) {
         const hours = Math.floor(diff / 3600000);
         return t("quickCreate.draft.hoursAgo", { count: hours });
       }
-      // 超过24小时，显示日期
+      // More than 24 hours, show date
       return date.toLocaleDateString();
     };
 
-    // 检查是否需要显示新手引导
-    // Requirements: 18.1 - 首次访问时显示教程
+    // Check if tutorial should be shown
+    // Requirements: 18.1 - Show tutorial on first visit
     const checkTutorial = () => {
-      const tutorialCompleted = storage.getItem(
-        "quick_create_tutorial_completed"
-      );
+      const tutorialCompleted = storage.getItem("quick_create_tutorial_completed");
       if (!tutorialCompleted) {
         showTutorial.value = true;
       }
     };
 
-    // 关闭新手引导
+    // Close tutorial
     const closeTutorial = () => {
       showTutorial.value = false;
     };
 
-    // 组件挂载时检查草稿并启动自动保存
+    // Check draft and start auto-save on mount
     onMounted(async () => {
-      // 检查是否有从经典模式返回的配置数据
-      // Requirements: 19.2 - 从经典模式带入配置
-      const quickModeConfigJson = sessionStorage.getItem(
-        "quickModeArchiveConfig"
-      );
+      // Check if there's config data returned from classic mode
+      // Requirements: 19.2 - Bring config from classic mode
+      const quickModeConfigJson = sessionStorage.getItem("quickModeArchiveConfig");
       const previousStateJson = sessionStorage.getItem("quickModeCurrentState");
 
       if (quickModeConfigJson) {
-        // 设置恢复状态标志，防止 watch(inputNames) 触发 clearArchives
+        // Set restoring state flag to prevent watch(inputNames) from triggering clearArchives
         isRestoringState.value = true;
 
         try {
           const archiveConfig = JSON.parse(quickModeConfigJson);
-          // 清除 sessionStorage 中的数据
+          // Clear sessionStorage data
           sessionStorage.removeItem("quickModeArchiveConfig");
           sessionStorage.removeItem("quickModeCurrentState");
 
-          // 先恢复之前的状态（如果有）
+          // Restore previous state first (if any)
           if (previousStateJson) {
             try {
               const previousState = JSON.parse(previousStateJson);
 
-              // 恢复存档列表 - 直接添加名称，不设置配置
-              const namesToRestore =
-                previousState.archives?.map((a) => a.name) || [];
+              // Restore archive list - add names only, don't set config
+              const namesToRestore = previousState.archives?.map((a) => a.name) || [];
               if (namesToRestore.length > 0) {
                 addArchives(namesToRestore);
 
-                // 恢复每个存档的配置
-                for (
-                  let i = 0;
-                  i < previousState.archives.length &&
-                  i < state.archives.length;
-                  i++
-                ) {
+                // Restore each archive's config
+                for (let i = 0; i < previousState.archives.length && i < state.archives.length; i++) {
                   const archiveData = previousState.archives[i];
                   const archive = state.archives[i];
                   if (archiveData.level) archive.level = archiveData.level;
-                  if (archiveData.difficulty)
-                    archive.difficulty = archiveData.difficulty;
-                  if (archiveData.actualDifficulty)
-                    archive.actualDifficulty = archiveData.actualDifficulty;
-                  if (archiveData.inventoryTemplate)
-                    archive.inventoryTemplate = archiveData.inventoryTemplate;
+                  if (archiveData.difficulty) archive.difficulty = archiveData.difficulty;
+                  if (archiveData.actualDifficulty) archive.actualDifficulty = archiveData.actualDifficulty;
+                  if (archiveData.inventoryTemplate) archive.inventoryTemplate = archiveData.inventoryTemplate;
                 }
               }
 
-              // 恢复统一配置
+              // Restore uniform config
               if (previousState.uniformConfig) {
                 Object.assign(state.uniformConfig, previousState.uniformConfig);
               }
 
-              // 恢复智能规则
+              // Restore smart rules
               if (previousState.smartRules) {
                 Object.assign(state.smartRules, previousState.smartRules);
               }
 
-              // 恢复完所有配置后，重新计算
+              // After restoring all config, recalculate
               recalculateArchives();
             } catch (e) {
-              console.error("恢复之前状态失败:", e);
+              console.error("Failed to restore previous state:", e);
             }
           }
 
-          // 添加从经典模式返回的新存档
-          const archiveName = archiveConfig.name || "未命名存档";
+          // Add new archive returned from classic mode
+          const archiveName = archiveConfig.name || "Unnamed archive";
           const result = addArchives([archiveName]);
 
-          // 如果添加成功，更新存档的配置
+          // If added successfully, update archive config
           if (result.added > 0 && state.archives.length > 0) {
             const newArchive = state.archives[state.archives.length - 1];
 
-            // 设置个别配置
+            // Set individual config
             if (archiveConfig.level) {
               newArchive.level = archiveConfig.level;
             }
@@ -1062,57 +1019,57 @@ export default {
               newArchive.actualDifficulty = archiveConfig.actualDifficulty;
             }
 
-            // 重新计算最终配置值
+            // Recalculate final config values
             recalculateArchives();
 
-            // 等待 DOM 更新
+            // Wait for DOM update
             await nextTick();
 
-            // 更新输入框显示
+            // Update input display
             inputNames.value = state.archives.map((a) => a.name);
 
-            // 显示成功提示
+            // Show success notification
             showSuccess(t("quickCreate.result.success", { count: 1 }), "✓");
           }
         } catch (error) {
-          console.error("解析经典模式配置数据失败:", error);
+          console.error("Failed to parse classic mode config data:", error);
         }
 
-        // 从经典模式返回时，清除草稿（因为我们已经恢复了状态）
+        // When returning from classic mode, clear draft (since we've restored state)
         clearDraft();
       } else {
-        // 清理可能残留的状态
+        // Clean up any residual state
         sessionStorage.removeItem("quickModeCurrentState");
 
-        // 只有在不是从经典模式返回时，才检查是否有未保存的草稿
+        // Only check for unsaved draft if not returning from classic mode
         if (hasUnsavedDraft()) {
           draftInfo.value = getDraftInfo();
           if (draftInfo.value && draftInfo.value.archiveCount > 0) {
             showDraftRecoveryPrompt.value = true;
           }
         } else {
-          // 如果没有草稿恢复提示，检查是否需要显示新手引导
-          // Requirements: 18.1 - 首次访问时显示教程
+          // If no draft recovery prompt, check if tutorial should be shown
+          // Requirements: 18.1 - Show tutorial on first visit
           checkTutorial();
         }
       }
 
-      // 启动自动保存
+      // Start auto-save
       startAutoSave();
 
-      // 注册 beforeunload 警告
-      // Requirements: 17.2 - 浏览器关闭时警告用户
+      // Register beforeunload warning
+      // Requirements: 17.2 - Warn user when closing browser
       registerBeforeUnloadWarning();
     });
 
-    // 组件卸载时停止自动保存并保存当前草稿
+    // Stop auto-save and save current draft on unmount
     onUnmounted(() => {
       stopAutoSave();
 
-      // 取消注册 beforeunload 警告
+      // Unregister beforeunload warning
       unregisterBeforeUnloadWarning();
 
-      // 如果有未保存的存档，保存草稿
+      // If there are unsaved archives, save draft
       if (state.archives.length > 0 && !state.isCreating) {
         saveDraft();
       }
@@ -1133,7 +1090,7 @@ export default {
       showResultModal,
       showDraftRecoveryPrompt,
       draftInfo,
-      // 大量数据警告
+      // Large data warnings
       showLargeDataWarning,
       largeDataWarningInfo,
       hasLargeData,
@@ -1165,13 +1122,13 @@ export default {
       closeResultModal,
       navigateToArchives,
       editSingleArchive,
-      // 草稿管理
+      // Draft management
       recoverDraft,
       ignoreDraft,
       formatDraftTime,
-      // 大量数据警告
+      // Large data warnings
       dismissLargeDataWarning,
-      // 新手引导
+      // Tutorial
       showTutorial,
       closeTutorial,
     };
@@ -1190,7 +1147,7 @@ export default {
   gap: var(--space-4);
 }
 
-/* 顶部操作栏 - 圆角矩形 */
+/* Top action bar - rounded rectangle */
 .quick-create-header {
   display: flex;
   align-items: center;
@@ -1238,7 +1195,7 @@ export default {
   margin: 0;
 }
 
-/* 模式切换按钮 - Requirements: 19.1 */
+/* Mode switch button - Requirements: 19.1 */
 .mode-switch-btn {
   display: flex;
   align-items: center;
@@ -1264,7 +1221,7 @@ export default {
   white-space: nowrap;
 }
 
-/* 中间统计数据 */
+/* Center statistics */
 .header-stats {
   display: flex;
   align-items: center;
@@ -1299,14 +1256,14 @@ export default {
   background: var(--divider-light);
 }
 
-/* 右侧操作按钮 */
+/* Right action buttons */
 .header-actions {
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
 
-/* 进度条区域 */
+/* Progress bar area */
 .progress-section {
   display: flex;
   align-items: center;
@@ -1339,7 +1296,7 @@ export default {
   text-align: right;
 }
 
-/* 操作按钮通用样式 */
+/* Common action button styles */
 .action-btn {
   display: flex;
   align-items: center;
@@ -1358,7 +1315,7 @@ export default {
   cursor: not-allowed;
 }
 
-/* 取消按钮 */
+/* Cancel button */
 .cancel-btn {
   background: var(--bg-tertiary);
   border-color: var(--divider-light);
@@ -1371,7 +1328,7 @@ export default {
   border-color: var(--divider-medium);
 }
 
-/* 保存模板按钮 */
+/* Save template button */
 .template-btn {
   background: var(--bg-tertiary);
   border-color: var(--divider-light);
@@ -1384,7 +1341,7 @@ export default {
   border-color: rgba(var(--accent-color-rgb), 0.3);
 }
 
-/* 预计耗时 */
+/* Estimated time */
 .estimated-time {
   display: flex;
   align-items: center;
@@ -1431,7 +1388,7 @@ export default {
   cursor: not-allowed;
 }
 
-/* 主内容区域 */
+/* Main content area */
 .quick-create-main {
   flex: 1;
   display: flex;
@@ -1440,7 +1397,7 @@ export default {
   min-height: 0;
 }
 
-/* 左侧边栏 */
+/* Left sidebar */
 .left-sidebar {
   width: 280px;
   flex-shrink: 0;
@@ -1450,7 +1407,7 @@ export default {
   overflow: hidden;
 }
 
-/* 区域通用样式 */
+/* Common section styles */
 .section-header {
   display: flex;
   align-items: center;
@@ -1471,7 +1428,7 @@ export default {
   margin: 0;
 }
 
-/* 存档卡片流 */
+/* Archive card flow */
 .card-flow-area {
   flex: 1;
   background: var(--bg-secondary);
@@ -1483,7 +1440,7 @@ export default {
   min-width: 0;
 }
 
-/* 响应式布局 */
+/* Responsive layout */
 @media (max-width: 1100px) {
   .header-stats {
     display: none;
@@ -1510,7 +1467,7 @@ export default {
     flex-shrink: 0;
   }
 
-  .left-sidebar>* {
+  .left-sidebar > * {
     flex: 1;
     min-width: 0;
   }
@@ -1554,7 +1511,7 @@ export default {
     flex-direction: column;
   }
 
-  .left-sidebar>* {
+  .left-sidebar > * {
     flex: none;
   }
 
@@ -1563,7 +1520,7 @@ export default {
   }
 }
 
-/* 创建结果模态框 */
+/* Creation result modal */
 .result-modal-overlay {
   position: fixed;
   top: 0;
@@ -1758,7 +1715,7 @@ export default {
   background: var(--accent-hover);
 }
 
-/* 草稿恢复模态框样式 */
+/* Draft recovery modal styles */
 .draft-recovery-modal .draft-icon {
   color: var(--accent-color);
 }
@@ -1776,7 +1733,7 @@ export default {
   margin: 0;
 }
 
-/* 大量数据警告模态框样式 */
+/* Large data warning modal styles */
 .large-data-warning-modal .warning-icon {
   color: var(--warning-color);
 }
@@ -1804,7 +1761,7 @@ export default {
   line-height: 1.4;
 }
 
-.tip-item+.tip-item {
+.tip-item + .tip-item {
   margin-top: var(--space-2);
 }
 

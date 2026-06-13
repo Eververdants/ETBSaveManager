@@ -5,45 +5,45 @@ import { invoke } from "@tauri-apps/api/core";
 const AUTO_FEEDBACK_SETTING_KEY = "autoFeedbackEnabled";
 
 /**
- * 获取当前页面位置信息
- * @returns {string} 页面位置描述
+ * Get current page location information
+ * @returns {string} Page location description
  */
 function getCurrentPageLocation() {
   try {
-    // 尝试从 Vue Router 获取当前路由
+    // Try to get current route from Vue Router
     if (window.__VUE_ROUTER__?.currentRoute?.value) {
       const route = window.__VUE_ROUTER__.currentRoute.value;
-      return `${route.name || 'Unknown'} (${route.path})`;
+      return `${route.name || "Unknown"} (${route.path})`;
     }
 
-    // 备用方案：从 window.location 获取
+    // Fallback: get from window.location
     const hash = window.location.hash;
-    const path = hash ? hash.replace('#', '') : window.location.pathname;
+    const path = hash ? hash.replace("#", "") : window.location.pathname;
 
-    // 根据路径匹配路由名称
+    // Match route name based on path
     const routeMap = {
-      '/': 'Home',
-      '/about': 'About',
-      '/settings': 'Settings',
-      '/plugins': 'PluginMarket',
-      '/select-create-mode': 'SelectCreateMode',
-      '/create-archive': 'CreateArchive',
-      '/quick-create-archive': 'QuickCreateArchive',
-      '/test-archive': 'TestArchive',
-      '/edit-archive': 'EditArchive',
-      '/logs': 'Log',
-      '/steam-cache': 'SteamCache',
-      '/feedback': 'Feedback',
-      '/theme-editor': 'ThemeEditor',
+      "/": "Home",
+      "/about": "About",
+      "/settings": "Settings",
+      "/plugins": "PluginMarket",
+      "/select-create-mode": "SelectCreateMode",
+      "/create-archive": "CreateArchive",
+      "/quick-create-archive": "QuickCreateArchive",
+      "/test-archive": "TestArchive",
+      "/edit-archive": "EditArchive",
+      "/logs": "Log",
+      "/steam-cache": "SteamCache",
+      "/feedback": "Feedback",
+      "/theme-editor": "ThemeEditor",
     };
 
-    // 匹配基础路径
-    const basePath = path.split('/').slice(0, 2).join('/') || '/';
-    const routeName = routeMap[basePath] || routeMap[path] || 'Unknown';
+    // Match base path
+    const basePath = path.split("/").slice(0, 2).join("/") || "/";
+    const routeName = routeMap[basePath] || routeMap[path] || "Unknown";
 
     return `${routeName} (${path})`;
   } catch (e) {
-    return 'Unknown (failed to get location)';
+    return "Unknown (failed to get location)";
   }
 }
 const REPORT_COOLDOWN_MS = 5 * 60 * 1000;
@@ -82,7 +82,7 @@ function containsBlockedKeyword(message, blockedKeywords) {
     return false;
   }
   const normalizedMessage = message.toLowerCase();
-  return blockedKeywords.some(keyword => {
+  return blockedKeywords.some((keyword) => {
     if (!keyword) return false;
     return normalizedMessage.includes(keyword.toLowerCase());
   });
@@ -201,30 +201,30 @@ class AutoFeedbackService {
 
     const message = normalizeMessage(log.message);
 
-    // 忽略自动反馈自身日志，防止递归触发
+    // Ignore auto-feedback's own logs to prevent recursive triggers
     if (message.includes("[AutoFeedback]")) return false;
 
-    // 忽略用户配置问题（不是应用错误）
+    // Ignore user configuration issues (not application errors)
     if (this.isUserConfigError(message)) return false;
 
     return true;
   }
 
   /**
-   * 检查是否为"用户配置问题"而非"应用错误"
-   * 这类问题不应该被自动反馈，因为它们是用户环境配置导致的
+   * Check if this is a "user configuration issue" rather than an "application error"
+   * These issues should not be auto-reported as they are caused by user environment configuration
    */
   isUserConfigError(message) {
     const userConfigErrorPatterns = [
-      // Steam API 未配置
+      // Steam API not configured
       /steam.*api.*密钥.*未配置/i,
       /steam.*api.*key.*not.*configured/i,
 
-      // 用户取消操作
+      // User cancelled operation
       /用户取消|user.*cancel/i,
       /对话框.*取消|dialog.*cancel/i,
 
-      // 文件/路径不存在（用户环境问题）
+      // File/path does not exist (user environment issue)
       /存档目录不存在|save.*directory.*not.*exist/i,
       /文件不存在|file.*not.*exist/i,
       /主题不存在|theme.*not.*found/i,
@@ -232,7 +232,7 @@ class AutoFeedbackService {
       /父目录不存在|parent.*directory.*not.*exist/i,
       /路径包含无效字符|path.*invalid.*character/i,
 
-      // 无效的用户输入
+      // Invalid user input
       /无效的steam.*id|invalid.*steam.*id/i,
       /文件名格式不匹配|filename.*format.*not.*match/i,
       /无效的颜色格式|invalid.*color.*format/i,
@@ -242,13 +242,13 @@ class AutoFeedbackService {
       /无效的密钥长度|invalid.*key.*length/i,
       /无效的.*id|invalid.*id/i,
 
-      // 网络/API 问题（非应用错误）
+      // Network/API issues (not application errors)
       /请求steam.*api.*失败|steam.*api.*request.*failed/i,
       /steam.*api.*返回错误|steam.*api.*error/i,
       /网络超时|network.*timeout/i,
       /连接失败|connection.*failed/i,
 
-      // 其他用户环境问题
+      // Other user environment issues
       /导入文件不存在|import.*file.*not.*found/i,
       /路径遍历攻击|path.*traversal/i,
     ];
@@ -370,9 +370,7 @@ class AutoFeedbackService {
         if (errorEntries.length > 0) return;
       }
 
-      const newEntries = errorEntries.filter(
-        (entry) => !this.backendErrorSeenKeys.has(entry.key)
-      );
+      const newEntries = errorEntries.filter((entry) => !this.backendErrorSeenKeys.has(entry.key));
 
       for (const entry of newEntries) {
         this.backendErrorSeenKeys.add(entry.key);
@@ -388,7 +386,7 @@ class AutoFeedbackService {
           message: `[Backend] ${latest.message}`,
           timestamp: latest.timestamp,
         },
-        "backend"
+        "backend",
       );
     } catch (error) {
       console.warn("[AutoFeedback] 读取后端日志失败:", error);

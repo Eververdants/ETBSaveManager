@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref } from "vue";
 
 // 侧边栏菜单配置（支持i18n国际化）
 // 使用国际化键值，实际文本在i18n语言包中定义
@@ -105,7 +105,7 @@ export const addTopMenuItem = (item) => {
     console.error("菜单项必须包含id、text和icon属性");
     return false;
   }
-  topMenuItems.push({
+  topMenuItems.value.push({
     id: item.id,
     text: item.text,
     icon: item.icon,
@@ -124,7 +124,7 @@ export const addBottomMenuItem = (item) => {
     console.error("菜单项必须包含id、text和icon属性");
     return false;
   }
-  bottomMenuItems.push({
+  bottomMenuItems.value.push({
     id: item.id,
     text: item.text,
     icon: item.icon,
@@ -153,15 +153,15 @@ export const updateMenuItem = (id, updates) => {
  * @param {number} id - 菜单项ID
  */
 export const removeMenuItem = (id) => {
-  const topIndex = topMenuItems.findIndex((item) => item.id === id);
+  const topIndex = topMenuItems.value.findIndex((item) => item.id === id);
   if (topIndex !== -1) {
-    topMenuItems.splice(topIndex, 1);
+    topMenuItems.value.splice(topIndex, 1);
     return true;
   }
 
-  const bottomIndex = bottomMenuItems.findIndex((item) => item.id === id);
+  const bottomIndex = bottomMenuItems.value.findIndex((item) => item.id === id);
   if (bottomIndex !== -1) {
-    bottomMenuItems.splice(bottomIndex, 1);
+    bottomMenuItems.value.splice(bottomIndex, 1);
     return true;
   }
 

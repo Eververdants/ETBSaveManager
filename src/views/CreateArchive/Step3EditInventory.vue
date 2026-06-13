@@ -11,13 +11,13 @@
         empty-hint-key="createArchive.noPlayersHint"
         steam-id-placeholder-key="createArchive.steamIdPlaceholder"
         :show-sanity="true"
-        @update:newSteamId="$emit('update:newSteamId', $event)"
+        @update:new-steam-id="$emit('update:newSteamId', $event)"
         @add-steam-id="$emit('add-steam-id')"
         @remove-player="$emit('remove-player', $event)"
         @select-player="$emit('select-player', $event)"
       />
 
-      <div class="player-detail-section" v-if="activePlayerIndex !== -1 && players[activePlayerIndex]">
+      <div v-if="activePlayerIndex !== -1 && players[activePlayerIndex]" class="player-detail-section">
         <div class="detail-header">
           <Transition name="player-name-switch" mode="out-in">
             <span :key="activePlayerIndex">
@@ -32,7 +32,7 @@
         </div>
 
         <Transition name="player-detail-grid-switch" mode="out-in">
-          <div class="detail-grid" :key="activePlayerIndex">
+          <div :key="activePlayerIndex" class="detail-grid">
             <div class="detail-block">
               <div class="block-title">
                 <font-awesome-icon :icon="['fas', 'brain']" />
@@ -114,14 +114,10 @@
         </Transition>
       </div>
 
-      <div class="player-detail-section empty-detail" v-else>
+      <div v-else class="player-detail-section empty-detail">
         <font-awesome-icon :icon="['fas', 'hand-pointer']" />
         <p>
-          {{
-            players.length > 0
-              ? $t("editArchive.selectPlayerHint")
-              : $t("editArchive.addPlayerFirst")
-          }}
+          {{ players.length > 0 ? $t("editArchive.selectPlayerHint") : $t("editArchive.addPlayerFirst") }}
         </p>
       </div>
     </div>
@@ -138,25 +134,6 @@ export default {
   components: {
     PlayerManager,
     CustomSlider,
-  },
-  setup() {
-    const { t, te } = useI18n();
-
-    const getSlotLabelText = (slotIndex) => {
-      const labels = ["mainHand", "offHand1", "offHand2"];
-      const label = labels[slotIndex] || "";
-      const translationKey = `createArchive.${label}`;
-      return te(translationKey) ? t(translationKey) : label;
-    };
-
-    return {
-      getSlotLabelText,
-    };
-  },
-  data() {
-    return {
-      currentPlayerSanity: 100,
-    };
   },
   props: {
     newSteamId: {
@@ -180,14 +157,26 @@ export default {
       default: "",
     },
   },
-  emits: [
-    "update:newSteamId",
-    "add-steam-id",
-    "remove-player",
-    "select-player",
-    "edit-slot",
-    "update-player-sanity",
-  ],
+  emits: ["update:newSteamId", "add-steam-id", "remove-player", "select-player", "edit-slot", "update-player-sanity"],
+  setup() {
+    const { t, te } = useI18n();
+
+    const getSlotLabelText = (slotIndex) => {
+      const labels = ["mainHand", "offHand1", "offHand2"];
+      const label = labels[slotIndex] || "";
+      const translationKey = `createArchive.${label}`;
+      return te(translationKey) ? t(translationKey) : label;
+    };
+
+    return {
+      getSlotLabelText,
+    };
+  },
+  data() {
+    return {
+      currentPlayerSanity: 100,
+    };
+  },
   watch: {
     activePlayerIndex: {
       immediate: true,
@@ -260,12 +249,12 @@ export default {
 }
 
 .player-detail-section {
-  background: linear-gradient(145deg,
-      var(--bg-secondary) 0%,
-      var(--bg-tertiary) 100%);
+  background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05),
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -277,7 +266,9 @@ export default {
 
 .player-name-switch-enter-active,
 .player-name-switch-leave-active {
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
 
 .player-name-switch-enter-from {
@@ -292,7 +283,9 @@ export default {
 
 .player-detail-grid-switch-enter-active,
 .player-detail-grid-switch-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .player-detail-grid-switch-enter-from {
@@ -312,15 +305,14 @@ export default {
   left: 20px;
   right: 20px;
   height: 1px;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.1),
-      transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   pointer-events: none;
 }
 
 .player-detail-section:hover {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06),
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -361,9 +353,7 @@ export default {
   content: "";
   width: 4px;
   height: 16px;
-  background: linear-gradient(180deg,
-      var(--accent-color),
-      rgba(var(--accent-color-rgb), 0.5));
+  background: linear-gradient(180deg, var(--accent-color), rgba(var(--accent-color-rgb), 0.5));
   border-radius: 2px;
 }
 
@@ -383,9 +373,7 @@ export default {
 }
 
 .detail-block {
-  background: linear-gradient(145deg,
-      var(--bg-tertiary) 0%,
-      var(--bg-secondary) 100%);
+  background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   border-radius: 14px;
   padding: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -526,9 +514,7 @@ export default {
   min-height: 56px;
   border-radius: 14px;
   border: 2px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(145deg,
-      var(--bg-tertiary) 0%,
-      var(--bg-secondary) 100%);
+  background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   display: flex;
   align-items: center;
   justify-content: center;

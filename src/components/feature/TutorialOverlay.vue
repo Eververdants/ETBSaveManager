@@ -12,10 +12,15 @@
         <div class="tutorial-card" :style="cardStyle">
           <!-- 步骤指示器 -->
           <div class="step-indicator">
-            <div v-for="step in steps" :key="step.id" class="step-dot" :class="{
-              active: step.id === currentStep,
-              completed: step.id < currentStep,
-            }">
+            <div
+              v-for="step in steps"
+              :key="step.id"
+              class="step-dot"
+              :class="{
+                active: step.id === currentStep,
+                completed: step.id < currentStep,
+              }"
+            >
               <font-awesome-icon v-if="step.id < currentStep" :icon="['fas', 'check']" class="check-icon" />
               <span v-else class="step-number">{{ step.id }}</span>
             </div>
@@ -158,7 +163,7 @@ const cardStyle = computed(() => {
   const cardHeight = 280;
   const gap = 20;
 
-  let style = {};
+  let style;
 
   switch (position) {
     case "right":
@@ -267,7 +272,7 @@ watch(
       // 延迟更新高亮区域，等待 DOM 渲染
       setTimeout(updateHighlightRect, 100);
     }
-  }
+  },
 );
 
 // 监听窗口大小变化
@@ -310,7 +315,9 @@ onUnmounted(() => {
 .tutorial-highlight {
   position: absolute;
   border-radius: var(--radius-lg);
-  box-shadow: 0 0 0 4px var(--accent-color), 0 0 0 9999px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    0 0 0 4px var(--accent-color),
+    0 0 0 9999px rgba(0, 0, 0, 0.7);
   pointer-events: none;
   transition: all 0.4s var(--ease-default);
   z-index: 1;

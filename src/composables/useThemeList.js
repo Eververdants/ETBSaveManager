@@ -28,9 +28,7 @@ export function useThemeList(emit, t, te) {
         return {
           ...theme,
           name: themeName,
-          displayName: theme.icon
-            ? `${theme.icon} ${themeName}`
-            : themeName,
+          displayName: theme.icon ? `${theme.icon} ${themeName}` : themeName,
         };
       });
   });

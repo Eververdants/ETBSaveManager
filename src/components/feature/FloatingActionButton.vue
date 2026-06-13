@@ -1,23 +1,40 @@
 <template>
   <teleport to="body">
-    <div v-show="shouldRender" class="floating-action-container" ref="floatingActionContainer" :class="$attrs.class"
-      @mouseenter="handleContainerMouseEnter" @mouseleave="handleContainerMouseLeave">
-      <div class="function-tooltip" ref="tooltip">
+    <div
+      v-show="shouldRender"
+      ref="floatingActionContainer"
+      class="floating-action-container"
+      :class="$attrs.class"
+      @mouseenter="handleContainerMouseEnter"
+      @mouseleave="handleContainerMouseLeave"
+    >
+      <div ref="tooltip" class="function-tooltip">
         <span class="tooltip-text">{{ getCurrentTooltip }}</span>
       </div>
-      <div class="fab-menu" v-show="isMenuExpanded" ref="fabMenu">
-        <div v-for="item in menuItems" :key="item.index" class="fab-menu-item" :class="{ 'is-active': item.isActive }"
-          @click="handleMenuItemClick(item)">
+      <div v-show="isMenuExpanded" ref="fabMenu" class="fab-menu">
+        <div
+          v-for="item in menuItems"
+          :key="item.index"
+          class="fab-menu-item"
+          :class="{ 'is-active': item.isActive }"
+          @click="handleMenuItemClick(item)"
+        >
           <font-awesome-icon :icon="['fas', item.icon]" class="menu-icon" />
           <span class="menu-label">{{ item.label }}</span>
         </div>
       </div>
-      <div class="action-button" @mousedown="handleMouseDown" @mouseup="handleMouseUp" @wheel="handleWheel"
-        @click="handleClick" ref="actionButton">
-        <div class="icon-wrapper current-icon" ref="currentIconEl">
+      <div
+        ref="actionButton"
+        class="action-button"
+        @mousedown="handleMouseDown"
+        @mouseup="handleMouseUp"
+        @wheel="handleWheel"
+        @click="handleClick"
+      >
+        <div ref="currentIconEl" class="icon-wrapper current-icon">
           <font-awesome-icon :icon="['fas', displayIcon]" />
         </div>
-        <div class="icon-wrapper next-icon" ref="nextIconEl">
+        <div ref="nextIconEl" class="icon-wrapper next-icon">
           <font-awesome-icon :icon="['fas', nextIcon]" />
         </div>
       </div>
@@ -46,20 +63,20 @@ const tooltip = ref(null);
 const fabMenu = ref(null);
 const floatingActionContainer = ref(null);
 
-// 状态
+// State
 const icons = ["search", "folder", "refresh", "multi-select-delete"];
 const currentIndex = ref(0);
-const displayIndex = ref(0); // 当前显示的图标索引
-const nextDisplayIndex = ref(1); // 下一个图标索引
+const displayIndex = ref(0); // Currently displayed icon index
+const nextDisplayIndex = ref(1); // Next icon index
 const isHovered = ref(false);
 const isAnimating = ref(false);
-const isMenuExpanded = ref(false); // 菜单是否展开
+const isMenuExpanded = ref(false); // Whether menu is expanded
 let tooltipTimer = null;
-let menuExpandTimer = null; // 菜单展开定时器
-let menuCollapseTimer = null; // 菜单收起定时器
+let menuExpandTimer = null; // Menu expand timer
+let menuCollapseTimer = null; // Menu collapse timer
 let styleObserver = null;
 
-// 滚动隐藏配置
+// Scroll-hide configuration
 const getScrollHideConfig = () => {
   const width = window.innerWidth;
   if (width <= 480) {
@@ -78,33 +95,33 @@ const updateFabPosition = () => {
 
   const config = getScrollHideConfig();
 
-  // 尝试获取 Home 页面的滚动容器
+  // Try to get the Home page scroll container
   const scrollContainer = document.querySelector(".archive-list-container, .quick-create-main");
-  let scrollBottom = 0;
+  let scrollBottom;
 
   if (scrollContainer) {
-    // 容器滚动
+    // Container scroll
     const scrollTop = scrollContainer.scrollTop;
     const clientHeight = scrollContainer.clientHeight;
     const scrollHeight = scrollContainer.scrollHeight;
     scrollBottom = scrollHeight - scrollTop - clientHeight;
   } else {
-    // window 滚动作为后备
+    // Fallback to window scroll
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
     scrollBottom = documentHeight - scrollTop - windowHeight;
   }
 
-  // 计算移动进度
+  // Calculate movement progress
   const progress = Math.max(0, Math.min(1, 1 - scrollBottom / config.triggerThreshold));
   const translateX = progress * config.maxTranslateX;
 
-  // 使用 CSS 变量来控制移动距离
+  // Use CSS variable to control movement distance
   container.style.setProperty("--fab-translate-x", `${translateX}px`);
 };
 
-// 映射配置
+// Mapping configuration
 const iconMap = {
   search: "magnifying-glass",
   folder: "folder",
@@ -131,17 +148,17 @@ const menuItems = computed(() =>
     action: eventMap[icon],
     index,
     isActive: index === currentIndex.value,
-  }))
+  })),
 );
 
-// 通用GSAP配置
+// Common GSAP config
 const gsapDefaults = {
   ease: "power2.out",
   force3D: false,
   immediateRender: false,
 };
 
-// 容器固定样式
+// Container fixed styles
 const containerStyles = {
   position: "fixed",
   bottom: "30px",
@@ -153,26 +170,18 @@ const containerStyles = {
 };
 
 const isHomePage = computed(() => route.name === "Home");
-const shouldRender = ref(isHomePage.value); // 控制DOM是否渲染
-const isVisible = ref(isHomePage.value); // 控制动画状态
-const displayIcon = computed(
-  () => iconMap[icons[displayIndex.value]] || "magnifying-glass"
-);
-const nextIcon = computed(
-  () => iconMap[icons[nextDisplayIndex.value]] || "magnifying-glass"
-);
-const getCurrentTooltip = computed(() =>
-  t(tooltipKeys[icons[currentIndex.value]] || tooltipKeys.search)
-);
+const shouldRender = ref(isHomePage.value); // Controls whether DOM is rendered
+const isVisible = ref(isHomePage.value); // Controls animation state
+const displayIcon = computed(() => iconMap[icons[displayIndex.value]] || "magnifying-glass");
+const nextIcon = computed(() => iconMap[icons[nextDisplayIndex.value]] || "magnifying-glass");
+const getCurrentTooltip = computed(() => t(tooltipKeys[icons[currentIndex.value]] || tooltipKeys.search));
 
 const applyContainerStyles = (container, extra = {}) => {
   if (!container) return;
-  Object.entries({ ...containerStyles, ...extra }).forEach(([k, v]) =>
-    container.style.setProperty(k, v, "important")
-  );
+  Object.entries({ ...containerStyles, ...extra }).forEach(([k, v]) => container.style.setProperty(k, v, "important"));
 };
 
-// 动画状态标记，防止styleObserver干扰动画
+// Animation state flag, prevents styleObserver from interfering with animations
 let isTransitioning = false;
 
 const showFloatingButton = () => {
@@ -195,7 +204,7 @@ const showFloatingButton = () => {
       onComplete: () => {
         isTransitioning = false;
       },
-    }
+    },
   );
 };
 
@@ -214,7 +223,7 @@ const hideFloatingButton = () => {
     duration: 0.25,
     ease: "power2.in",
     onComplete: () => {
-      shouldRender.value = false; // 动画完成后才移除DOM
+      shouldRender.value = false; // Only remove DOM after animation completes
       isTransitioning = false;
     },
   });
@@ -223,12 +232,12 @@ const hideFloatingButton = () => {
 watch(isHomePage, (newVal, oldVal) => {
   if (newVal === oldVal) return;
   if (newVal) {
-    // 进入Home页面：先渲染DOM，再播放显示动画
+    // Entering Home page: render DOM first, then play show animation
     shouldRender.value = true;
     isVisible.value = true;
     nextTick(() => setTimeout(showFloatingButton, 100));
   } else {
-    // 离开Home页面：先播放隐藏动画，动画完成后再移除DOM
+    // Leaving Home page: play hide animation first, then remove DOM
     isVisible.value = false;
     hideFloatingButton();
   }
@@ -287,11 +296,7 @@ const expandMenu = () => {
   nextTick(() => {
     const menuEl = fabMenu.value;
     if (menuEl) {
-      gsap.fromTo(
-        menuEl,
-        { opacity: 0, y: -8 },
-        { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" }
-      );
+      gsap.fromTo(menuEl, { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" });
       gsap.fromTo(
         menuEl.querySelectorAll(".fab-menu-item"),
         { opacity: 0, y: 8 },
@@ -302,7 +307,7 @@ const expandMenu = () => {
           stagger: 0.04,
           ease: "power2.out",
           delay: 0.05,
-        }
+        },
       );
     }
   });
@@ -315,7 +320,7 @@ const collapseMenu = () => {
       opacity: 0,
       y: -8,
       duration: 0.15,
-      ease: "power2.in"
+      ease: "power2.in",
     });
     gsap.to(menuEl.querySelectorAll(".fab-menu-item"), {
       opacity: 0,
@@ -404,8 +409,8 @@ const handleContainerMouseLeave = () => {
   }
 };
 
-const handleMouseEnter = () => { };
-const handleMouseLeave = () => { };
+const handleMouseEnter = () => {};
+const handleMouseLeave = () => {};
 
 const handleWheel = (event) => {
   event.preventDefault();
@@ -413,17 +418,16 @@ const handleWheel = (event) => {
   isAnimating.value = true;
 
   const direction = event.deltaY > 0 ? 1 : -1;
-  const newIndex =
-    (currentIndex.value + direction + icons.length) % icons.length;
+  const newIndex = (currentIndex.value + direction + icons.length) % icons.length;
 
-  // 设置下一个图标
+  // Set next icon index
   nextDisplayIndex.value = newIndex;
 
   gsap.killTweensOf(currentIconEl.value);
   gsap.killTweensOf(nextIconEl.value);
   gsap.killTweensOf(tooltip.value);
 
-  // tooltip淡出淡入
+  // Fade out/in tooltip
   gsap.to(tooltip.value, {
     opacity: 0,
     duration: 0.1,
@@ -440,10 +444,10 @@ const handleWheel = (event) => {
     },
   });
 
-  // 设置下一个图标初始位置（从下方进入）
+  // Set next icon initial position (entering from below)
   gsap.set(nextIconEl.value, { y: direction * 40, opacity: 1 });
 
-  // 当前图标滑出 + 下一个图标滑入（同步）
+  // Current icon slides out + next icon slides in (synchronized)
   const duration = 0.25;
   gsap.to(currentIconEl.value, {
     y: -direction * 40,
@@ -457,7 +461,7 @@ const handleWheel = (event) => {
     duration,
     ease: "power2.inOut",
     onComplete: () => {
-      // 动画完成后，更新显示索引并重置位置
+      // After animation, update display index and reset positions
       displayIndex.value = newIndex;
       gsap.set(currentIconEl.value, { y: 0, opacity: 1 });
       gsap.set(nextIconEl.value, { y: 40, opacity: 0 });
@@ -497,7 +501,7 @@ const showScrollHint = () => {
   const hint = document.createElement("div");
   hint.className = "scroll-hint";
   hint.innerHTML = `<div class="scroll-hint-content"><div class="scroll-hint-icon">🖱️</div><div class="scroll-hint-text">${t(
-    "floatingButton.scrollHint"
+    "floatingButton.scrollHint",
   )}</div></div>`;
   document.body.appendChild(hint);
   gsap.fromTo(
@@ -520,7 +524,7 @@ const showScrollHint = () => {
           immediateRender: false,
           onComplete: () => hint.remove(),
         }),
-    }
+    },
   );
 };
 
@@ -533,19 +537,16 @@ const initStyleObserver = (container) => {
     left: "auto",
   };
   styleObserver = new MutationObserver((mutations) => {
-    // 动画期间不干扰
+    // Skip during active transitions
     if (isTransitioning) return;
     for (const m of mutations) {
       if (m.type !== "attributes" || m.attributeName !== "style") continue;
-      // 只检查定位相关属性，不检查transform/opacity/visibility
+      // Only check positioning properties, not transform/opacity/visibility
       const needsRestore = Object.entries(expected).some(([k, v]) => {
         const c = container.style.getPropertyValue(k);
         return c && c !== v;
       });
-      if (needsRestore)
-        Object.entries(expected).forEach(([k, v]) =>
-          container.style.setProperty(k, v, "important")
-        );
+      if (needsRestore) Object.entries(expected).forEach(([k, v]) => container.style.setProperty(k, v, "important"));
     }
   });
   styleObserver.observe(container, {
@@ -558,7 +559,7 @@ const initStyleObserver = (container) => {
 onMounted(() => {
   const container = floatingActionContainer.value;
   if (container) {
-    // 初始状态：隐藏
+    // Initial state: hidden
     gsap.set(container, { opacity: 0, scale: 0.8, y: 20 });
     applyContainerStyles(container, {
       "z-index": "10000",
@@ -566,31 +567,25 @@ onMounted(() => {
     });
     initStyleObserver(container);
   }
-  // 初始化：当前图标可见，下一个图标隐藏在下方
+  // Initialize: current icon visible, next icon hidden below
   if (currentIconEl.value) gsap.set(currentIconEl.value, { y: 0, opacity: 1 });
   if (nextIconEl.value) gsap.set(nextIconEl.value, { y: 40, opacity: 0 });
-  if (tooltip.value)
-    gsap.set(tooltip.value, { opacity: 0, y: 10, visibility: "hidden" });
-  if (fabMenu.value)
-    gsap.set(fabMenu.value, { opacity: 0, y: -8 });
-  // 延迟显示动画
+  if (tooltip.value) gsap.set(tooltip.value, { opacity: 0, y: 10, visibility: "hidden" });
+  if (fabMenu.value) gsap.set(fabMenu.value, { opacity: 0, y: -8 });
+  // Delayed show animation
   if (shouldRender.value && isHomePage.value) {
     nextTick(() => setTimeout(showFloatingButton, 100));
   }
-  if (
-    !storage.getItem("fabScrollHintShown") &&
-    shouldRender.value &&
-    isHomePage.value
-  ) {
+  if (!storage.getItem("fabScrollHintShown") && shouldRender.value && isHomePage.value) {
     setTimeout(showScrollHint, 1000);
     storage.setItem("fabScrollHintShown", "true");
   }
-  // 添加滚动监听
+  // Add scroll listener
   scrollListener = () => {
     requestAnimationFrame(updateFabPosition);
   };
 
-  // 尝试监听容器滚动，否则监听 window 滚动
+  // Try container scroll listener, fallback to window scroll
   const scrollContainer = document.querySelector(".archive-list-container, .quick-create-main");
   if (scrollContainer) {
     scrollContainer.addEventListener("scroll", scrollListener, { passive: true });
@@ -599,7 +594,7 @@ onMounted(() => {
   }
   updateFabPosition();
 
-  // 短暂延迟后断开 styleObserver，避免干扰 transform 动画
+  // Disconnect styleObserver after brief delay to avoid interfering with transform animations
   setTimeout(() => {
     if (styleObserver) {
       styleObserver.disconnect();
@@ -639,6 +634,7 @@ onUnmounted(() => {
   transform: translateX(var(--fab-translate-x, 0)) !important;
   transform-origin: center center;
   isolation: isolate;
+  contain: layout;
   clip: auto !important;
   clip-path: none !important;
   margin: 0 !important;

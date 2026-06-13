@@ -31,7 +31,7 @@ export function useLocalInstallModal(props, emit) {
     () => props.show,
     (val) => {
       document.body.style.overflow = val ? "hidden" : "";
-    }
+    },
   );
 
   return {

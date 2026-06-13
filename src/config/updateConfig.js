@@ -1,6 +1,6 @@
 /**
- * 更新配置
- * 使用 GitHub 作为唯一更新源
+ * Update configuration
+ * Uses GitHub as the sole update source
  */
 
 import storage from "../services/storageService";
@@ -18,16 +18,16 @@ export const UPDATE_SOURCES = {
 export const DEFAULT_UPDATE_SOURCE = "GITHUB";
 
 /**
- * 获取用户选择的更新源
- * @returns {string} 更新源标识
+ * Get the user-selected update source
+ * @returns {string} Update source identifier
  */
 export function getUserUpdateSource() {
   return DEFAULT_UPDATE_SOURCE;
 }
 
 /**
- * 设置用户选择的更新源
- * @param {string} source - 更新源标识
+ * Set the user-selected update source
+ * @param {string} source - Update source identifier
  */
 export function setUserUpdateSource(source) {
   if (UPDATE_SOURCES[source]) {
@@ -38,16 +38,16 @@ export function setUserUpdateSource(source) {
 }
 
 /**
- * 获取当前更新源的详细信息
- * @returns {Object} 更新源配置
+ * Get detailed information about the current update source
+ * @returns {Object} Update source configuration
  */
 export function getCurrentUpdateSource() {
   return UPDATE_SOURCES[DEFAULT_UPDATE_SOURCE];
 }
 
 /**
- * 获取所有可用的更新源
- * @returns {Object} 所有更新源
+ * Get all available update sources
+ * @returns {Object} All update sources
  */
 export function getAllUpdateSources() {
   return UPDATE_SOURCES;

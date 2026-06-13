@@ -23,7 +23,7 @@ export function useArchiveActions(archiveData, filters) {
   const handleToggleVisibility = async (updatedArchive, callbacks = {}) => {
     const { onSuccess, onError, onRefresh } = callbacks;
     try {
-      // updatedArchive.isVisible 已经是切换后的新值（由 ArchiveCard 组件传入）
+      // updatedArchive.isVisible is already the new toggled value (passed from ArchiveCard component)
       const newVisibility = updatedArchive.isVisible;
       const originalVisibility = !newVisibility;
       if (archiveData.updateArchiveVisibility) {
@@ -39,14 +39,11 @@ export function useArchiveActions(archiveData, filters) {
         try {
           resultObj = typeof result === "string" ? JSON.parse(result) : result;
         } catch (e) {
-          throw new Error("解析后端返回结果失败");
+          throw new Error("解析后端返回结果失败", { cause: e });
         }
         if (!resultObj || !resultObj.success) {
           if (archiveData.updateArchiveVisibility) {
-            archiveData.updateArchiveVisibility(
-              updatedArchive.id,
-              originalVisibility
-            );
+            archiveData.updateArchiveVisibility(updatedArchive.id, originalVisibility);
           }
           throw new Error(resultObj?.error || "操作失败");
         }
@@ -71,8 +68,6 @@ export function useArchiveActions(archiveData, filters) {
     showDeleteConfirm.value = true;
   };
 
-
-
   const confirmDelete = async (callbacks = {}) => {
     const { onSuccess, onError } = callbacks;
     if (!archiveToDelete.value || isDeleting.value) return;
@@ -81,19 +76,15 @@ export function useArchiveActions(archiveData, filters) {
     deletingCardId.value = archiveToDelete.value.id;
 
     try {
-      const archiveIndex = archiveData.archives.value.findIndex(
-        (a) => a.id === archiveToDelete.value.id
-      );
+      const archiveIndex = archiveData.archives.value.findIndex((a) => a.id === archiveToDelete.value.id);
       if (archiveIndex === -1) throw new Error("未找到要删除的存档数据");
 
       const archive = archiveData.archives.value[archiveIndex];
       showDeleteConfirm.value = false;
 
-      const cardElement = document.querySelector(
-        `[data-archive-id="${archive.id}"]`
-      );
+      const cardElement = document.querySelector(`[data-archive-id="${archive.id}"]`);
 
-      // 播放删除卡片的淡出动画
+      // Play fade-out animation for delete card
       if (cardElement) {
         await new Promise((resolve) => {
           gsap.to(cardElement, {
@@ -105,12 +96,12 @@ export function useArchiveActions(archiveData, filters) {
         });
       }
 
-      // 调用后端删除
+      // Call backend delete
       if (archive.path) {
         await invoke("delete_file", { filePath: archive.path });
       }
 
-      // 从数据中移除（虚拟滚动会自动处理位置变化）
+      // Remove from data (virtual scrolling will handle position changes automatically)
       if (archiveIndex >= 0 && archiveIndex < archiveData.archives.value.length) {
         archiveData.archives.value.splice(archiveIndex, 1);
       } else {
@@ -156,9 +147,7 @@ export function useArchiveActions(archiveData, filters) {
 
     for (const archive of archiveList) {
       try {
-        const archiveIndex = archiveData.archives.value.findIndex(
-          (a) => a.id === archive.id
-        );
+        const archiveIndex = archiveData.archives.value.findIndex((a) => a.id === archive.id);
 
         if (archiveIndex === -1) {
           console.warn(`[batchDelete] 存档不存在: ${archive.id}`);

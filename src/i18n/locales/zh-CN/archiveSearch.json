@@ -22,6 +22,7 @@
   "tryDifferentFilters": "请尝试使用不同的筛选条件",
   "startSearching": "开始搜索",
   "useFiltersAbove": "使用上方的搜索和筛选功能",
+  "refreshed": "存档列表已刷新",
   "loadingArchives": "正在加载存档...",
   "scanningFiles": "正在扫描存档文件",
   "multiSelect": {

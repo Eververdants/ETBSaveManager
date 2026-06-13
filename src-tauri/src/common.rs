@@ -1,6 +1,7 @@
 //! Common utilities module - Shared tools and types across modules
 //! Optimized version: Using Arc to reduce clones, with cache warmup
 
+use crate::error::{AppError, AppResult};
 use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::{BufReader, BufWriter, Write};
@@ -12,16 +13,16 @@ use uesave::{
 };
 
 /// Cache local app data directory path (using Arc to avoid clones)
-static LOCAL_APPDATA_DIR: OnceLock<Arc<Result<PathBuf, String>>> = OnceLock::new();
-static SAVE_GAMES_DIR: OnceLock<Arc<Result<PathBuf, String>>> = OnceLock::new();
-static APP_CONFIG_DIR: OnceLock<Arc<Result<PathBuf, String>>> = OnceLock::new();
+static LOCAL_APPDATA_DIR: OnceLock<Arc<AppResult<PathBuf>>> = OnceLock::new();
+static SAVE_GAMES_DIR: OnceLock<Arc<AppResult<PathBuf>>> = OnceLock::new();
+static APP_CONFIG_DIR: OnceLock<Arc<AppResult<PathBuf>>> = OnceLock::new();
 
 /// I/O buffer size (16KB is more efficient for small files)
 const IO_BUFFER_SIZE: usize = 16384;
 
 /// Get local app data directory (with caching, returns reference to avoid clones)
 #[inline]
-pub fn get_local_appdata_dir() -> Result<PathBuf, String> {
+pub fn get_local_appdata_dir() -> AppResult<PathBuf> {
     LOCAL_APPDATA_DIR
         .get_or_init(|| {
             Arc::new({
@@ -29,11 +30,11 @@ pub fn get_local_appdata_dir() -> Result<PathBuf, String> {
                 {
                     std::env::var("LOCALAPPDATA")
                         .map(PathBuf::from)
-                        .map_err(|e| format!("获取 LOCALAPPDATA 失败: {}", e))
+                        .map_err(|e| AppError { message: format!("Failed to get LOCALAPPDATA: {}", e) })
                 }
                 #[cfg(not(target_os = "windows"))]
                 {
-                    Err("仅支持 Windows 系统".to_string())
+                    Err(AppError { message: "Only Windows is supported".to_string() })
                 }
             })
         })
@@ -43,7 +44,7 @@ pub fn get_local_appdata_dir() -> Result<PathBuf, String> {
 
 /// Get save games directory path (with caching)
 #[inline]
-pub fn get_save_games_dir() -> Result<PathBuf, String> {
+pub fn get_save_games_dir() -> AppResult<PathBuf> {
     SAVE_GAMES_DIR
         .get_or_init(|| {
             Arc::new(get_local_appdata_dir().map(|p| p.join("EscapeTheBackrooms/Saved/SaveGames")))
@@ -52,15 +53,15 @@ pub fn get_save_games_dir() -> Result<PathBuf, String> {
         .clone()
 }
 
-/// 获取 MAINSAVE.sav 文件路径（内联优化）
+/// Get MAINSAVE.sav file path (inline optimized)
 #[inline(always)]
-pub fn get_mainsave_path() -> Result<PathBuf, String> {
+pub fn get_mainsave_path() -> AppResult<PathBuf> {
     get_save_games_dir().map(|p| p.join("MAINSAVE.sav"))
 }
 
-/// 获取应用配置目录（带缓存）
+/// Get app config directory (with caching)
 #[inline]
-pub fn get_app_config_dir() -> Result<PathBuf, String> {
+pub fn get_app_config_dir() -> AppResult<PathBuf> {
     APP_CONFIG_DIR
         .get_or_init(|| Arc::new(get_local_appdata_dir().map(|p| p.join("ETBSaveManager"))))
         .as_ref()
@@ -68,17 +69,17 @@ pub fn get_app_config_dir() -> Result<PathBuf, String> {
 }
 
 /// Read MAINSAVE.sav file (optimized buffer size)
-pub fn read_mainsave() -> Result<Save, String> {
+pub fn read_mainsave() -> AppResult<Save> {
     let mainsave_path = get_mainsave_path()?;
 
     let file = File::open(&mainsave_path).map_err(|e| format!("Failed to open MAINSAVE.sav: {}", e))?;
     let mut reader = BufReader::with_capacity(IO_BUFFER_SIZE, file);
 
-    Save::read(&mut reader).map_err(|e| format!("Failed to parse MAINSAVE.sav: {:?}", e))
+    Ok(Save::read(&mut reader).map_err(|e| format!("Failed to parse MAINSAVE.sav: {:?}", e))?)
 }
 
 /// Write MAINSAVE.sav file (using temp file for atomicity)
-pub fn write_mainsave(save: &Save) -> Result<(), String> {
+pub fn write_mainsave(save: &Save) -> AppResult<()> {
     let save_dir = get_save_games_dir()?;
     let mainsave_path = save_dir.join("MAINSAVE.sav");
     let temp_path = save_dir.join("MAINSAVE_temp.sav");
@@ -95,11 +96,11 @@ pub fn write_mainsave(save: &Save) -> Result<(), String> {
         .map_err(|e| format!("Failed to flush buffer: {}", e))?;
 
     // Atomic replace
-    fs::rename(&temp_path, &mainsave_path).map_err(|e| format!("Failed to replace MAINSAVE.sav: {}", e))
+    Ok(fs::rename(&temp_path, &mainsave_path).map_err(|e| format!("Failed to replace MAINSAVE.sav: {}", e))?)
 }
 
 /// Get visible saves list from MAINSAVE (pre-allocated capacity)
-pub fn get_visible_saves_set() -> Result<HashSet<String>, String> {
+pub fn get_visible_saves_set() -> AppResult<HashSet<String>> {
     let mainsave = match read_mainsave() {
         Ok(save) => save,
         Err(_) => return Ok(HashSet::with_capacity(0)),
@@ -118,8 +119,8 @@ pub fn get_visible_saves_set() -> Result<HashSet<String>, String> {
     Ok(HashSet::with_capacity(0))
 }
 
-/// 从 MAINSAVE 的存档列表中添加存档名称
-pub fn add_save_to_mainsave(archive_name: &str) -> Result<(), String> {
+/// Add save name to MAINSAVE's save list
+pub fn add_save_to_mainsave(archive_name: &str) -> AppResult<()> {
     let mut mainsave = match read_mainsave() {
         Ok(save) => save,
         Err(_) => return Ok(()), // Silently skip
@@ -132,11 +133,11 @@ pub fn add_save_to_mainsave(archive_name: &str) -> Result<(), String> {
             &mut prop.inner
         {
             if saves.iter().any(|s| s == archive_name) {
-                return Ok(()); // 已存在，无需操作
+                return Ok(()); // Already exists, no action needed
             }
             saves.push(archive_name.to_string());
         } else {
-            return Err("SingleplayerSaves field format incorrect".to_string());
+            return Err("SingleplayerSaves field format incorrect".to_string().into());
         }
     } else {
         let new_prop = Property {
@@ -157,7 +158,7 @@ pub fn add_save_to_mainsave(archive_name: &str) -> Result<(), String> {
 }
 
 /// Remove save name from MAINSAVE's save list
-pub fn remove_save_from_mainsave(archive_name: &str) -> Result<bool, String> {
+pub fn remove_save_from_mainsave(archive_name: &str) -> AppResult<bool> {
     let mut mainsave = match read_mainsave() {
         Ok(save) => save,
         Err(_) => return Ok(false),
@@ -187,12 +188,12 @@ pub fn extract_archive_name(filename: &str) -> &str {
     filename.strip_suffix(".sav").unwrap_or(filename)
 }
 
-pub fn normalize_existing_path(path: &Path) -> Result<PathBuf, String> {
-    path.canonicalize()
-        .map_err(|e| format!("路径解析失败: {}", e))
+pub fn normalize_existing_path(path: &Path) -> AppResult<PathBuf> {
+    Ok(path.canonicalize()
+        .map_err(|e| format!("Path resolution failed: {}", e))?)
 }
 
-pub fn normalize_path_for_write(path: &Path) -> Result<PathBuf, String> {
+pub fn normalize_path_for_write(path: &Path) -> AppResult<PathBuf> {
     if path.exists() {
         return normalize_existing_path(path);
     }
@@ -201,7 +202,7 @@ pub fn normalize_path_for_write(path: &Path) -> Result<PathBuf, String> {
         .parent()
         .ok_or_else(|| "Invalid path".to_string())?;
     if !parent.exists() {
-        return Err("Parent directory does not exist".to_string());
+        return Err("Parent directory does not exist".to_string().into());
     }
 
     let parent_canon = normalize_existing_path(parent)?;
@@ -211,18 +212,18 @@ pub fn normalize_path_for_write(path: &Path) -> Result<PathBuf, String> {
     Ok(parent_canon.join(filename))
 }
 
-pub fn validate_path_under_base(path: &Path, allowed_base: &Path) -> Result<(), String> {
-    // 第一层检查：拒绝明显的路径遍历尝试
+pub fn validate_path_under_base(path: &Path, allowed_base: &Path) -> AppResult<()> {
+    // First layer check: reject obvious path traversal attempts
     let path_str = path.to_string_lossy();
     if path_str.contains("..") {
-        return Err("Invalid path detected".to_string());
+        return Err("Invalid path detected".to_string().into());
     }
 
-    // 解析允许的基础目录为规范路径
+    // Resolve the allowed base directory to canonical path
     let allowed = normalize_existing_path(allowed_base)?;
 
-    // 第二层检查：解析目标路径为规范路径
-    // 注意：必须在实际文件操作前立即执行此检查，避免 TOCTOU 竞态条件
+    // Second layer check: resolve target path to canonical path
+    // Note: this check must be performed immediately before actual file operations to avoid TOCTOU race conditions
     let normalized = if path.exists() {
         normalize_existing_path(path)?
     } else {
@@ -230,28 +231,28 @@ pub fn validate_path_under_base(path: &Path, allowed_base: &Path) -> Result<(), 
     };
 
     if !normalized.starts_with(&allowed) {
-        return Err("Path not in allowed range".to_string());
+        return Err("Path not in allowed range".to_string().into());
     }
 
     Ok(())
 }
 
-/// 安全地打开文件，使用 O_NOFOLLOW 防止符号链接攻击
-pub fn safe_file_open(path: &Path) -> Result<File, String> {
-    // 在打开文件前验证路径
+/// Safely open a file, using O_NOFOLLOW to prevent symlink attacks
+pub fn safe_file_open(path: &Path) -> AppResult<File> {
+    // Validate path before opening the file
     validate_save_games_path(path)?;
 
-    // 打开文件，拒绝符号链接（Windows 下由 canonicalize 保证）
-    File::open(path).map_err(|e| format!("无法打开文件: {}", e))
+    // Open file, reject symlinks (guaranteed by canonicalize on Windows)
+    Ok(File::open(path).map_err(|e| format!("Failed to open file: {}", e))?)
 }
 
-pub fn validate_save_games_path(path: &Path) -> Result<(), String> {
+pub fn validate_save_games_path(path: &Path) -> AppResult<()> {
     let base = get_save_games_dir()?;
     validate_path_under_base(path, &base)
 }
 
 #[allow(dead_code)]
-pub fn validate_app_config_path(path: &Path) -> Result<(), String> {
+pub fn validate_app_config_path(path: &Path) -> AppResult<()> {
     let base = get_app_config_dir()?;
     validate_path_under_base(path, &base)
 }

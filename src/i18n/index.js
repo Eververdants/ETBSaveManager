@@ -1,12 +1,12 @@
 import { createI18n } from "vue-i18n";
 import storage from "../services/storageService";
 
-// 本地写死的语言包
+// Locally bundled language packs
 import zhCN from "./locales/zh-CN/index.js";
 import zhTW from "./locales/zh-TW/index.js";
 import enUS from "./locales/en-US/index.js";
 
-// 更新公告数据（确保被打包）- 现在是单个对象而不是数组
+// Release notes data (ensured to be bundled) - now a single object instead of an array
 import releaseNotesZhCN from "./locales/release-notes.zh-CN.json";
 import releaseNotesEnUS from "./locales/release-notes.en-US.json";
 import releaseNotesZhTW from "./locales/release-notes.zh-TW.json";
@@ -17,19 +17,16 @@ const messages = {
   "en-US": enUS,
 };
 
-// 导出更新公告数据，供其他模块使用
+// Export release notes data for other modules to use
 export const releaseNotesData = {
   "zh-CN": releaseNotesZhCN,
   "zh-TW": releaseNotesZhTW,
   "en-US": releaseNotesEnUS,
 };
 
-// 调试输出：显示已加载的数据信息
+// Debug output: show loaded data information
 console.log("🌍 [i18n/index.js] 语言文件已加载:", Object.keys(messages));
-console.log(
-  "📋 [i18n/index.js] 更新公告数据已加载:",
-  Object.keys(releaseNotesData)
-);
+console.log("📋 [i18n/index.js] 更新公告数据已加载:", Object.keys(releaseNotesData));
 console.log("📊 [i18n/index.js] 当前版本:", releaseNotesZhCN?.version || "未知");
 
 function getUserLocale() {
@@ -50,7 +47,7 @@ export const i18n = createI18n({
   silentFallbackWarn: false,
   missingWarn: true,
   messages,
-  // 将更新公告数据挂载到全局
+  // Mount release notes data to global
   releaseNotes: releaseNotesData,
 });
 

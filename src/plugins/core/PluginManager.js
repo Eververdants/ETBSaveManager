@@ -282,17 +282,13 @@ class PluginManager {
       for (const plugin of plugins) {
         // 验证语言插件必须有 data 字段
         if (plugin.type === "language" && !plugin.data) {
-          console.warn(
-            `⚠️ [PluginManager] 跳过无效插件 ${plugin.id}：缺少翻译数据`
-          );
+          console.warn(`⚠️ [PluginManager] 跳过无效插件 ${plugin.id}：缺少翻译数据`);
           continue;
         }
 
         // 验证主题插件必须有 data 字段
         if (plugin.type === "theme" && !plugin.data) {
-          console.warn(
-            `⚠️ [PluginManager] 跳过无效插件 ${plugin.id}：缺少主题数据`
-          );
+          console.warn(`⚠️ [PluginManager] 跳过无效插件 ${plugin.id}：缺少主题数据`);
           continue;
         }
 

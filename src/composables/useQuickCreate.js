@@ -6,19 +6,19 @@ import {
   hasIndividualSettings,
 } from "./useConfigResolver";
 import { validate } from "./useValidator";
-import { parseName } from "./useNameParser";
+import { parseName } from "@/utils/nameParser";
 import storage from "../services/storageService";
 
 /**
- * 批量创建配置
+ * Batch creation configuration
  */
-const BATCH_SIZE = 5; // 每批创建5个存档
-const BATCH_DELAY = 100; // 每批之间的延迟（毫秒）
+const BATCH_SIZE = 5; // 5 archives per batch
+const BATCH_DELAY = 100; // Delay between batches (ms)
 
 /**
- * 主线剧情层级列表（前17个层级）
- * 用于判断快速模式下是否为主线剧情
- * 如果选择的层级不在此列表中，则视为支线剧情，需要生成全部层级数据
+ * Main storyline level list (first 17 levels)
+ * Used to determine if quick mode is a main storyline
+ * If the selected level is not in this list, it is considered a side storyline and needs full level data
  */
 const MAIN_STORYLINE_LEVELS = [
   "Level0",
@@ -41,30 +41,30 @@ const MAIN_STORYLINE_LEVELS = [
 ];
 
 /**
- * 大量数据阈值配置
+ * Large data threshold configuration
  * Requirements: 16.5, 17.1
  */
-const LARGE_ARCHIVE_THRESHOLD = 100; // 超过此数量显示建议
-const VERY_LARGE_NAME_THRESHOLD = 1000; // 超过此数量建议分批
+const LARGE_ARCHIVE_THRESHOLD = 100; // Show suggestion when exceeding this count
+const VERY_LARGE_NAME_THRESHOLD = 1000; // Suggest batching when exceeding this count
 
 /**
- * 防抖延迟配置
- * Requirements: 16.2 - 统一配置变更时 300ms 防抖
+ * Debounce delay configuration
+ * Requirements: 16.2 - 300ms debounce when uniform config changes
  */
-const DEBOUNCE_DELAY = 300; // 防抖延迟（毫秒）
+const DEBOUNCE_DELAY = 300; // Debounce delay (ms)
 
 /**
- * 草稿自动保存配置
- * Requirements: 16.3, 16.4 - 每 30 秒保存到 localStorage，页面加载时检测并提示恢复
+ * Draft auto-save configuration
+ * Requirements: 16.3, 16.4 - Save to localStorage every 30 seconds, detect and prompt restore on page load
  */
 const DRAFT_KEY = "quick_create_draft";
-const DRAFT_SAVE_INTERVAL = 30000; // 30秒
+const DRAFT_SAVE_INTERVAL = 30000; // 30 seconds
 
 /**
- * 创建防抖函数
- * @param {Function} fn - 要防抖的函数
- * @param {number} delay - 延迟时间（毫秒）
- * @returns {Function} 防抖后的函数
+ * Create debounce function
+ * @param {Function} fn - Function to debounce
+ * @param {number} delay - Delay in milliseconds
+ * @returns {Function} Debounced function
  */
 function debounce(fn, delay) {
   let timeoutId = null;
@@ -79,7 +79,7 @@ function debounce(fn, delay) {
     }, delay);
   };
 
-  // 添加取消方法
+  // Add cancel method
   debouncedFn.cancel = () => {
     if (timeoutId) {
       clearTimeout(timeoutId);
@@ -87,7 +87,7 @@ function debounce(fn, delay) {
     }
   };
 
-  // 添加立即执行方法
+  // Add flush method
   debouncedFn.flush = () => {
     if (timeoutId) {
       clearTimeout(timeoutId);
@@ -100,17 +100,17 @@ function debounce(fn, delay) {
 }
 
 /**
- * 草稿存储管理
+ * Draft storage management
  * Requirements: 16.3, 16.4
  */
 const draftStorage = {
   /**
-   * 保存草稿到 localStorage
-   * @param {Object} state - 要保存的状态
+   * Save draft to localStorage
+   * @param {Object} state - State to save
    */
   save(state) {
     try {
-      // 只保存必要的数据，排除计算属性和临时状态
+      // Only save necessary data, exclude computed properties and temporary state
       const draftData = {
         archives: state.archives.map((archive) => ({
           id: archive.id,
@@ -120,8 +120,8 @@ const draftStorage = {
           actualDifficulty: archive.actualDifficulty,
           inventoryTemplate: archive.inventoryTemplate,
         })),
-        uniformConfig: JSON.parse(JSON.stringify(state.uniformConfig)), // 深拷贝
-        smartRules: JSON.parse(JSON.stringify(state.smartRules)), // 深拷贝
+        uniformConfig: JSON.parse(JSON.stringify(state.uniformConfig)), // Deep copy
+        smartRules: JSON.parse(JSON.stringify(state.smartRules)), // Deep copy
         selectedArchiveIds: Array.from(state.selectedArchiveIds),
         savedAt: Date.now(),
       };
@@ -140,8 +140,8 @@ const draftStorage = {
   },
 
   /**
-   * 从 localStorage 加载草稿
-   * @returns {Object|null} 草稿数据或 null
+   * Load draft from localStorage
+   * @returns {Object|null} Draft data or null
    */
   load() {
     try {
@@ -157,7 +157,7 @@ const draftStorage = {
         return null;
       }
 
-      // 验证草稿数据的有效性
+      // Validate draft data validity
       if (!draftData || typeof draftData !== "object") {
         console.warn("[QuickCreate] 草稿数据格式无效");
         this.clear();
@@ -170,7 +170,7 @@ const draftStorage = {
         return null;
       }
 
-      // 验证保存时间是否过期（7天）
+      // Validate save time hasn't expired (7 days)
       const MAX_AGE = 7 * 24 * 60 * 60 * 1000;
       if (draftData.savedAt && Date.now() - draftData.savedAt > MAX_AGE) {
         console.log("[QuickCreate] 草稿已过期，清除");
@@ -186,7 +186,7 @@ const draftStorage = {
   },
 
   /**
-   * 清除草稿
+   * Clear draft
    */
   clear() {
     try {
@@ -197,7 +197,7 @@ const draftStorage = {
   },
 
   /**
-   * 检查是否有未保存的草稿
+   * Check if there is an unsaved draft
    * @returns {boolean}
    */
   hasUnsavedDraft() {
@@ -213,8 +213,8 @@ const draftStorage = {
   },
 
   /**
-   * 获取草稿信息（用于显示恢复提示）
-   * @returns {Object|null} 草稿信息
+   * Get draft info (for showing restore prompt)
+   * @returns {Object|null} Draft info
    */
   getDraftInfo() {
     try {
@@ -235,13 +235,13 @@ const draftStorage = {
 };
 
 /**
- * 快速创建存档主状态管理 composable
+ * Quick create archive main state management composable
  *
  * Requirements: 15.1
  */
 
 /**
- * 生成唯一ID
+ * Generate unique ID
  * @returns {string}
  */
 function generateId() {
@@ -249,9 +249,9 @@ function generateId() {
 }
 
 /**
- * 创建存档配置对象
- * @param {string} name - 存档名称
- * @returns {Object} 存档配置
+ * Create archive config object
+ * @param {string} name - Archive name
+ * @returns {Object} Archive config
  */
 function createArchiveConfig(name) {
   const parsedInfo = parseName(name);
@@ -261,43 +261,43 @@ function createArchiveConfig(name) {
     name: name,
     parsedInfo: parsedInfo,
 
-    // 个别配置值 (null 表示继承)
+    // Individual config values (null means inherit)
     level: null,
     difficulty: null,
     actualDifficulty: null,
     inventoryTemplate: null,
 
-    // 最终解析值（由 resolve 计算）
+    // Final resolved values (computed by resolve)
     finalLevel: null,
     finalDifficulty: null,
     finalActualDifficulty: null,
     finalInventory: [],
 
-    // 状态
+    // State
     hasIndividualSettings: false,
     validationErrors: [],
   };
 }
 
 /**
- * 创建初始状态
+ * Create initial state
  * @returns {Object}
  */
 function createInitialState() {
   return {
-    // 存档列表
+    // Archive list
     archives: [],
 
-    // 统一配置
+    // Uniform config
     uniformConfig: createDefaultUniformConfig(),
 
-    // 智能规则
+    // Smart rules
     smartRules: createDefaultSmartRules(),
 
-    // 选择状态
+    // Selection state
     selectedArchiveIds: new Set(),
 
-    // UI 状态
+    // UI state
     isCreating: false,
     creationProgress: 0,
     showTutorial: false,
@@ -308,15 +308,15 @@ function createInitialState() {
 }
 
 /**
- * 快速创建存档状态管理
+ * Quick create archive state management
  * @returns {Object}
  */
 export function useQuickCreate() {
-  // 响应式状态
+  // Reactive state
   const state = reactive(createInitialState());
 
   /**
-   * 重新计算所有存档的最终配置
+   * Recalculate final configuration for all archives
    */
   const recalculateArchives = () => {
     for (const archive of state.archives) {
@@ -324,11 +324,11 @@ export function useQuickCreate() {
       archive.finalLevel = resolved.level;
       archive.finalDifficulty = resolved.difficulty;
       archive.finalActualDifficulty = resolved.actualDifficulty;
-      archive.finalInventory = resolved.inventoryTemplate ? [] : []; // 将在后续任务中实现模板解析
+      archive.finalInventory = resolved.inventoryTemplate ? [] : []; // Template parsing will be implemented in a follow-up task
       archive.hasIndividualSettings = hasIndividualSettings(archive);
     }
 
-    // 重新验证
+    // Re-validate
     const validationResult = validate(state.archives);
     for (const archive of state.archives) {
       archive.validationErrors = validationResult.errors
@@ -338,18 +338,15 @@ export function useQuickCreate() {
   };
 
   /**
-   * 防抖版本的重新计算函数
-   * Requirements: 16.2 - 统一配置变更时 300ms 防抖
+   * Debounced version of the recalculate function
+   * Requirements: 16.2 - 300ms debounce when uniform config changes
    */
-  const debouncedRecalculateArchives = debounce(
-    recalculateArchives,
-    DEBOUNCE_DELAY
-  );
+  const debouncedRecalculateArchives = debounce(recalculateArchives, DEBOUNCE_DELAY);
 
   /**
-   * 添加存档
-   * @param {string[]} names - 存档名称列表
-   * @returns {Object} 添加结果，包含警告信息
+   * Add archives
+   * @param {string[]} names - Archive name list
+   * @returns {Object} Add result including warnings
    */
   const addArchives = (names) => {
     const result = {
@@ -358,7 +355,7 @@ export function useQuickCreate() {
       errors: [],
     };
 
-    // 过滤掉包含下划线的名称
+    // Filter out names containing underscores
     const validNames = names.filter((name) => {
       if (!name || !name.trim()) {
         return false;
@@ -375,8 +372,8 @@ export function useQuickCreate() {
 
     const newArchives = validNames.map((name) => createArchiveConfig(name.trim()));
 
-    // 检查是否超过大量数据阈值
-    // Requirements: 17.1 - 超过 1000 个名称时建议分批
+    // Check if exceeding large data threshold
+    // Requirements: 17.1 - Suggest batching when exceeding 1000 names
     if (names.length > VERY_LARGE_NAME_THRESHOLD) {
       result.warnings.push({
         type: "very_large_input",
@@ -385,7 +382,7 @@ export function useQuickCreate() {
       });
     }
 
-    // 处理重复名称
+    // Handle duplicate names
     if (state.smartRules.autoRenameDuplicates) {
       handleDuplicateNames(newArchives);
     }
@@ -393,8 +390,8 @@ export function useQuickCreate() {
     state.archives.push(...newArchives);
     result.added = newArchives.length;
 
-    // 检查总数是否超过建议阈值
-    // Requirements: 16.5 - 超过 100 个存档时显示建议
+    // Check if total exceeds recommended threshold
+    // Requirements: 16.5 - Show suggestion when exceeding 100 archives
     if (state.archives.length > LARGE_ARCHIVE_THRESHOLD) {
       result.warnings.push({
         type: "large_archive_count",
@@ -409,15 +406,15 @@ export function useQuickCreate() {
   };
 
   /**
-   * 处理重复名称，自动添加后缀
-   * 使用连字符(-)替代下划线(_)以避免与文件名格式冲突
-   * @param {Object[]} newArchives - 新存档列表
+   * Handle duplicate names by auto-adding suffix
+   * Use hyphen(-) instead of underscore(_) to avoid filename format conflicts
+   * @param {Object[]} newArchives - New archive list
    */
   const handleDuplicateNames = (newArchives) => {
-    // 收集所有现有名称
+    // Collect all existing names
     const existingNames = new Set(state.archives.map((a) => a.name));
 
-    // 收集新存档中的名称计数
+    // Collect name counts of new archives
     const nameCount = new Map();
 
     for (const archive of newArchives) {
@@ -425,8 +422,8 @@ export function useQuickCreate() {
       let finalName = baseName;
       let suffix = 1;
 
-      // 检查是否与现有名称或已处理的新名称重复
-      // 使用连字符(-)替代下划线(_)以避免与文件名格式冲突
+      // Check for duplicates with existing or already-processed new names
+      // Use hyphen(-) instead of underscore(_) to avoid filename format conflicts
       while (existingNames.has(finalName) || nameCount.has(finalName)) {
         finalName = `${baseName}-${suffix}`;
         suffix++;
@@ -442,8 +439,8 @@ export function useQuickCreate() {
   };
 
   /**
-   * 添加单个存档
-   * @param {string} name - 存档名称
+   * Add a single archive
+   * @param {string} name - Archive name
    * @returns {Object} { success: boolean, error?: string }
    */
   const addArchive = (name) => {
@@ -453,7 +450,7 @@ export function useQuickCreate() {
 
     const trimmedName = name.trim();
 
-    // 检查存档名称是否包含下划线
+    // Check if archive name contains underscore
     if (trimmedName.includes("_")) {
       return { success: false, error: "存档名称不能包含下划线" };
     }
@@ -464,8 +461,8 @@ export function useQuickCreate() {
   };
 
   /**
-   * 移除存档
-   * @param {string} archiveId - 存档ID
+   * Remove archive
+   * @param {string} archiveId - Archive ID
    */
   const removeArchive = (archiveId) => {
     const index = state.archives.findIndex((a) => a.id === archiveId);
@@ -477,7 +474,7 @@ export function useQuickCreate() {
   };
 
   /**
-   * 清空所有存档
+   * Clear all archives
    */
   const clearArchives = () => {
     state.archives = [];
@@ -485,9 +482,9 @@ export function useQuickCreate() {
   };
 
   /**
-   * 更新存档配置
-   * @param {string} archiveId - 存档ID
-   * @param {Object} updates - 更新内容
+   * Update archive config
+   * @param {string} archiveId - Archive ID
+   * @param {Object} updates - Update content
    */
   const updateArchive = (archiveId, updates) => {
     const archive = state.archives.find((a) => a.id === archiveId);
@@ -498,39 +495,39 @@ export function useQuickCreate() {
   };
 
   /**
-   * 更新统一配置
-   * Requirements: 16.2 - 统一配置变更时 300ms 防抖
-   * @param {string} field - 字段名
-   * @param {Object} value - 新值
+   * Update uniform config
+   * Requirements: 16.2 - 300ms debounce when uniform config changes
+   * @param {string} field - Field name
+   * @param {Object} value - New value
    */
   const updateUniformConfig = (field, value) => {
     if (state.uniformConfig[field]) {
       state.uniformConfig[field] = { ...state.uniformConfig[field], ...value };
-      // 使用防抖版本的重新计算
+      // Use debounced version of recalculate
       debouncedRecalculateArchives();
     }
   };
 
   /**
-   * 更新智能规则
-   * Requirements: 16.2 - 统一配置变更时 300ms 防抖
-   * @param {Object} updates - 更新内容
+   * Update smart rules
+   * Requirements: 16.2 - 300ms debounce when uniform config changes
+   * @param {Object} updates - Update content
    */
   const updateSmartRules = (updates) => {
     Object.assign(state.smartRules, updates);
-    // 使用防抖版本的重新计算
+    // Use debounced version of recalculate
     debouncedRecalculateArchives();
   };
 
   /**
-   * 全选
+   * Select all
    */
   const selectAll = () => {
     state.selectedArchiveIds = new Set(state.archives.map((a) => a.id));
   };
 
   /**
-   * 反选
+   * Invert selection
    */
   const invertSelection = () => {
     const newSelection = new Set();
@@ -543,8 +540,8 @@ export function useQuickCreate() {
   };
 
   /**
-   * 切换存档选择状态
-   * @param {string} archiveId - 存档ID
+   * Toggle archive selection state
+   * @param {string} archiveId - Archive ID
    */
   const toggleArchiveSelection = (archiveId) => {
     if (state.selectedArchiveIds.has(archiveId)) {
@@ -552,19 +549,19 @@ export function useQuickCreate() {
     } else {
       state.selectedArchiveIds.add(archiveId);
     }
-    // 触发响应式更新
+    // Trigger reactive update
     state.selectedArchiveIds = new Set(state.selectedArchiveIds);
   };
 
   /**
-   * 批量更新选中的存档
-   * @param {Object} updates - 更新内容
+   * Batch update selected archives
+   * @param {Object} updates - Update content
    */
   const batchUpdateSelected = (updates) => {
     for (const archiveId of state.selectedArchiveIds) {
       const archive = state.archives.find((a) => a.id === archiveId);
       if (archive) {
-        // 只更新非 "保持原样" 的字段
+        // Only update fields that are not "keep original"
         for (const [key, value] of Object.entries(updates)) {
           if (value !== "__keep_original__") {
             archive[key] = value;
@@ -576,13 +573,13 @@ export function useQuickCreate() {
   };
 
   /**
-   * 复制存档
-   * @param {string} archiveId - 存档ID
+   * Copy archive
+   * @param {string} archiveId - Archive ID
    */
   const copyArchive = (archiveId) => {
     const archive = state.archives.find((a) => a.id === archiveId);
     if (archive) {
-      // 使用连字符(-)替代下划线(_)以避免与文件名格式冲突
+      // Use hyphen(-) instead of underscore(_) to avoid filename format conflicts
       const newArchive = {
         ...archive,
         id: generateId(),
@@ -590,7 +587,7 @@ export function useQuickCreate() {
         parsedInfo: parseName(`${archive.name}-copy`),
       };
 
-      // 找到原存档位置，在其后插入
+      // Find original archive position, insert after it
       const index = state.archives.findIndex((a) => a.id === archiveId);
       state.archives.splice(index + 1, 0, newArchive);
       recalculateArchives();
@@ -598,13 +595,13 @@ export function useQuickCreate() {
   };
 
   /**
-   * 重置状态
+   * Reset state
    */
   const resetState = () => {
     Object.assign(state, createInitialState());
   };
 
-  // 计算属性：摘要统计
+  // Computed property: summary statistics
   const summaryStats = computed(() => {
     const total = state.archives.length;
     let uniformCount = 0;
@@ -631,28 +628,28 @@ export function useQuickCreate() {
     };
   });
 
-  // 计算属性：是否可以创建
+  // Computed property: whether creation is possible
   const canCreate = computed(() => {
     if (state.archives.length === 0) return false;
 
-    // 检查是否有验证错误
+    // Check for validation errors
     const hasErrors = state.archives.some((a) => a.validationErrors.length > 0);
     return !hasErrors;
   });
 
-  // 计算属性：选中的存档
+  // Computed property: selected archives
   const selectedArchives = computed(() => {
     return state.archives.filter((a) => state.selectedArchiveIds.has(a.id));
   });
 
   /**
-   * 计算属性：大量数据警告
+   * Computed property: large data warnings
    * Requirements: 16.5, 17.1
    */
   const largeDataWarnings = computed(() => {
     const warnings = [];
 
-    // 检查存档数量是否超过建议阈值
+    // Check if archive count exceeds recommended threshold
     if (state.archives.length > LARGE_ARCHIVE_THRESHOLD) {
       warnings.push({
         type: "large_archive_count",
@@ -665,7 +662,7 @@ export function useQuickCreate() {
   });
 
   /**
-   * 计算属性：是否有大量数据
+   * Computed property: whether there is large data
    * Requirements: 16.5
    */
   const hasLargeData = computed(() => {
@@ -673,7 +670,7 @@ export function useQuickCreate() {
   });
 
   /**
-   * 计算属性：是否有非常大量的数据（需要分批处理）
+   * Computed property: whether there is very large data (needs batching)
    * Requirements: 17.1
    */
   const hasVeryLargeData = computed(() => {
@@ -681,19 +678,17 @@ export function useQuickCreate() {
   });
 
   /**
-   * 将难度值转换为后端期望的格式
-   * @param {string} difficulty - 难度值 (easy, normal, hard, nightmare)
-   * @returns {string} 格式化后的难度值 (Easy, Normal, Hard, Nightmare)
+   * Convert difficulty value to backend expected format
+   * @param {string} difficulty - Difficulty value (easy, normal, hard, nightmare)
+   * @returns {string} Formatted difficulty value (Easy, Normal, Hard, Nightmare)
    */
   const formatDifficulty = (difficulty) => {
     if (!difficulty) return "Normal";
-    return (
-      difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase()
-    );
+    return difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
   };
 
   /**
-   * 加载 BasicArchive.json 模板
+   * Load BasicArchive.json template
    * @returns {Promise<Object|null>}
    */
   const loadBasicArchive = async () => {
@@ -708,9 +703,9 @@ export function useQuickCreate() {
   };
 
   /**
-   * 创建单个存档
-   * @param {Object} archive - 存档配置
-   * @param {Object} basicArchive - 基础存档模板
+   * Create a single archive
+   * @param {Object} archive - Archive config
+   * @param {Object} basicArchive - Basic archive template
    * @returns {Promise<{success: boolean, error?: string}>}
    */
   const createSingleArchive = async (archive, basicArchive) => {
@@ -719,33 +714,26 @@ export function useQuickCreate() {
 
       const level = archive.finalLevel || "Level0";
 
-      // 判断是否为支线剧情：如果层级不在主线17个层级中，则为支线
-      // main_ending: true 表示支线（非主线结局），需要生成全部层级数据
-      // main_ending: false 表示主线，只生成到当前层级的数据
+      // Determine if it's a side storyline: if level is not in the main 17 levels, it's a side story
+      // main_ending: true means side story (non-main ending), needs full level data generation
+      // main_ending: false means main story, only generate data up to the current level
       const isSideStoryline = !MAIN_STORYLINE_LEVELS.includes(level);
 
-      // MEG 解锁判断：前6个层级（Level0 到 TheHub）MEG 未解锁
-      const megLevels = [
-        "Level0",
-        "TopFloor",
-        "MiddleFloor",
-        "GarageLevel2",
-        "BottomFloor",
-        "TheHub",
-      ];
+      // MEG unlock check: first 6 levels (Level0 to TheHub) MEG is locked
+      const megLevels = ["Level0", "TopFloor", "MiddleFloor", "GarageLevel2", "BottomFloor", "TheHub"];
       const isMEGUnlocked = !megLevels.includes(level);
 
-      // 构建保存数据
+      // Build save data
       const saveData = {
         archive_name: archive.name,
         level: level,
-        game_mode: "multiplayer", // 始终设置为多人模式
+        game_mode: "multiplayer", // Always set to multiplayer mode
         difficulty: formatDifficulty(archive.finalDifficulty),
         actual_difficulty: formatDifficulty(archive.finalActualDifficulty),
-        players: [], // 空玩家列表，后续可扩展
+        players: [], // Empty player list, expandable later
         basic_archive: basicArchive,
-        main_ending: isSideStoryline, // 支线剧情时为 true
-        meg_unlocked: isMEGUnlocked, // 根据层级判断 MEG 是否解锁
+        main_ending: isSideStoryline, // Set to true for side storyline
+        meg_unlocked: isMEGUnlocked, // Determine MEG unlock status based on level
       };
 
       await invoke("handle_new_save", { saveData });
@@ -757,7 +745,7 @@ export function useQuickCreate() {
   };
 
   /**
-   * 批量创建存档
+   * Batch create archives
    * Requirements: 14.1, 14.2, 14.3, 17.3
    *
    * Note: If creation is interrupted (e.g., browser closed), already created archives
@@ -766,7 +754,7 @@ export function useQuickCreate() {
    * @returns {Promise<{success: number, failed: number, errors: Array<{name: string, error: string}>}>}
    */
   const batchCreateArchives = async () => {
-    // 获取要创建的存档列表（选中的或全部）
+    // Get the list of archives to create (selected or all)
     const archivesToCreate =
       state.selectedArchiveIds.size > 0
         ? state.archives.filter((a) => state.selectedArchiveIds.has(a.id))
@@ -776,7 +764,7 @@ export function useQuickCreate() {
       return { success: 0, failed: 0, errors: [] };
     }
 
-    // 加载基础存档模板
+    // Load basic archive template
     const basicArchive = await loadBasicArchive();
     if (!basicArchive) {
       return {
@@ -786,7 +774,7 @@ export function useQuickCreate() {
       };
     }
 
-    // 设置创建状态
+    // Set creating state
     state.isCreating = true;
     state.creationProgress = 0;
 
@@ -794,26 +782,24 @@ export function useQuickCreate() {
       success: 0,
       failed: 0,
       errors: [],
-      lastCreatedName: null, // 记录最后成功创建的存档名称
+      lastCreatedName: null, // Record the name of the last successfully created archive
     };
 
-    // 分批创建
+    // Create in batches
     for (let i = 0; i < archivesToCreate.length; i += BATCH_SIZE) {
       const batch = archivesToCreate.slice(i, i + BATCH_SIZE);
 
-      // 并行创建当前批次
-      const batchResults = await Promise.allSettled(
-        batch.map((archive) => createSingleArchive(archive, basicArchive))
-      );
+      // Create current batch in parallel
+      const batchResults = await Promise.allSettled(batch.map((archive) => createSingleArchive(archive, basicArchive)));
 
-      // 处理批次结果
+      // Process batch results
       for (let j = 0; j < batchResults.length; j++) {
         const result = batchResults[j];
         const archive = batch[j];
 
         if (result.status === "fulfilled" && result.value.success) {
           results.success++;
-          results.lastCreatedName = archive.name; // 记录最后成功创建的存档名称
+          results.lastCreatedName = archive.name; // Record the name of the last successfully created archive
         } else {
           results.failed++;
           const errorMsg =
@@ -824,40 +810,40 @@ export function useQuickCreate() {
         }
       }
 
-      // 更新进度
+      // Update progress
       const completed = Math.min(i + BATCH_SIZE, archivesToCreate.length);
       state.creationProgress = (completed / archivesToCreate.length) * 100;
 
-      // 让 UI 有时间刷新
+      // Give UI time to update
       await nextTick();
 
-      // 批次间延迟
+      // Delay between batches
       if (i + BATCH_SIZE < archivesToCreate.length) {
         await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY));
       }
     }
 
-    // 完成创建
+    // Finish creation
     state.creationProgress = 100;
     state.isCreating = false;
 
     return results;
   };
 
-  // ==================== 草稿管理 ====================
+  // ==================== Draft Management ====================
 
   /**
-   * 自动保存定时器引用
+   * Auto-save timer reference
    */
   let autoSaveIntervalId = null;
 
   /**
-   * 保存草稿
-   * Requirements: 16.3 - 每 30 秒保存到 localStorage
-   * @returns {boolean} 是否保存成功
+   * Save draft
+   * Requirements: 16.3 - Save to localStorage every 30 seconds
+   * @returns {boolean} Whether save was successful
    */
   const saveDraft = () => {
-    // 只有当有存档时才保存
+    // Only save when there are archives
     if (state.archives.length === 0) {
       return false;
     }
@@ -865,9 +851,9 @@ export function useQuickCreate() {
   };
 
   /**
-   * 加载草稿
-   * Requirements: 16.4 - 页面加载时检测并提示恢复
-   * @returns {boolean} 是否加载成功
+   * Load draft
+   * Requirements: 16.4 - Detect and prompt restore on page load
+   * @returns {boolean} Whether load was successful
    */
   const loadDraft = () => {
     const draftData = draftStorage.load();
@@ -876,7 +862,7 @@ export function useQuickCreate() {
     try {
       console.log("[QuickCreate] 开始恢复草稿:", draftData);
 
-      // 恢复存档列表
+      // Restore archive list
       state.archives = draftData.archives.map((archiveData) => {
         const archive = createArchiveConfig(archiveData.name);
         archive.id = archiveData.id;
@@ -892,46 +878,34 @@ export function useQuickCreate() {
         return archive;
       });
 
-      // 恢复统一配置 - 深度合并
+      // Restore uniform config - deep merge
       if (draftData.uniformConfig) {
-        // 深度合并每个配置项
+        // Deep merge each config item
         for (const key of Object.keys(draftData.uniformConfig)) {
-          if (
-            state.uniformConfig[key] &&
-            typeof draftData.uniformConfig[key] === "object"
-          ) {
-            Object.assign(
-              state.uniformConfig[key],
-              draftData.uniformConfig[key]
-            );
+          if (state.uniformConfig[key] && typeof draftData.uniformConfig[key] === "object") {
+            Object.assign(state.uniformConfig[key], draftData.uniformConfig[key]);
           } else {
             state.uniformConfig[key] = draftData.uniformConfig[key];
           }
         }
-        console.log(
-          "[QuickCreate] 恢复统一配置:",
-          JSON.stringify(state.uniformConfig)
-        );
+        console.log("[QuickCreate] 恢复统一配置:", JSON.stringify(state.uniformConfig));
       }
 
-      // 恢复智能规则
+      // Restore smart rules
       if (draftData.smartRules) {
         Object.assign(state.smartRules, draftData.smartRules);
         console.log("[QuickCreate] 恢复智能规则:", state.smartRules);
       }
 
-      // 恢复选择状态
+      // Restore selection state
       if (draftData.selectedArchiveIds) {
         state.selectedArchiveIds = new Set(draftData.selectedArchiveIds);
       }
 
-      // 重新计算所有存档
+      // Recalculate all archives
       recalculateArchives();
 
-      console.log(
-        "[QuickCreate] 草稿恢复完成，存档数量:",
-        state.archives.length
-      );
+      console.log("[QuickCreate] 草稿恢复完成，存档数量:", state.archives.length);
       console.log(
         "[QuickCreate] 第一个存档的最终配置:",
         state.archives[0]
@@ -940,7 +914,7 @@ export function useQuickCreate() {
               finalDifficulty: state.archives[0].finalDifficulty,
               finalActualDifficulty: state.archives[0].finalActualDifficulty,
             }
-          : "N/A"
+          : "N/A",
       );
 
       return true;
@@ -951,14 +925,14 @@ export function useQuickCreate() {
   };
 
   /**
-   * 清除草稿
+   * Clear draft
    */
   const clearDraft = () => {
     draftStorage.clear();
   };
 
   /**
-   * 检查是否有未保存的草稿
+   * Check if there is an unsaved draft
    * @returns {boolean}
    */
   const hasUnsavedDraft = () => {
@@ -966,24 +940,24 @@ export function useQuickCreate() {
   };
 
   /**
-   * 获取草稿信息
-   * @returns {Object|null} 草稿信息
+   * Get draft info
+   * @returns {Object|null} Draft info
    */
   const getDraftInfo = () => {
     return draftStorage.getDraftInfo();
   };
 
   /**
-   * 启动自动保存
-   * Requirements: 16.3 - 每 30 秒保存到 localStorage
+   * Start auto-save
+   * Requirements: 16.3 - Save to localStorage every 30 seconds
    */
   const startAutoSave = () => {
-    // 清除已有的定时器
+    // Clear existing timer
     if (autoSaveIntervalId) {
       clearInterval(autoSaveIntervalId);
     }
 
-    // 启动新的定时器
+    // Start new timer
     autoSaveIntervalId = setInterval(() => {
       if (state.archives.length > 0 && !state.isCreating) {
         saveDraft();
@@ -993,7 +967,7 @@ export function useQuickCreate() {
   };
 
   /**
-   * 停止自动保存
+   * Stop auto-save
    */
   const stopAutoSave = () => {
     if (autoSaveIntervalId) {
@@ -1002,25 +976,25 @@ export function useQuickCreate() {
     }
   };
 
-  // ==================== 中断处理 ====================
+  // ==================== Interruption Handling ====================
 
   /**
-   * beforeunload 事件处理器引用
+   * beforeunload event handler reference
    */
   let beforeUnloadHandler = null;
 
   /**
-   * 注册 beforeunload 警告
-   * Requirements: 17.2 - 浏览器关闭时警告用户
+   * Register beforeunload warning
+   * Requirements: 17.2 - Warn user when browser closes
    */
   const registerBeforeUnloadWarning = () => {
-    if (beforeUnloadHandler) return; // 已注册
+    if (beforeUnloadHandler) return; // Already registered
 
     beforeUnloadHandler = (event) => {
-      // 只有在创建过程中或有未保存的存档时才警告
+      // Only warn during creation or when there are unsaved archives
       if (state.isCreating || state.archives.length > 0) {
         event.preventDefault();
-        // 现代浏览器会忽略自定义消息，但仍需设置 returnValue
+        // Modern browsers ignore custom messages, but returnValue still needs to be set
         event.returnValue = "";
         return "";
       }
@@ -1030,7 +1004,7 @@ export function useQuickCreate() {
   };
 
   /**
-   * 取消注册 beforeunload 警告
+   * Unregister beforeunload warning
    */
   const unregisterBeforeUnloadWarning = () => {
     if (beforeUnloadHandler) {
@@ -1040,7 +1014,7 @@ export function useQuickCreate() {
   };
 
   /**
-   * 检查是否正在创建中
+   * Check if creation is in progress
    * @returns {boolean}
    */
   const isCreationInProgress = () => {
@@ -1048,18 +1022,18 @@ export function useQuickCreate() {
   };
 
   /**
-   * 获取创建进度
-   * @returns {number} 0-100 的进度值
+   * Get creation progress
+   * @returns {number} Progress value from 0-100
    */
   const getCreationProgress = () => {
     return state.creationProgress;
   };
 
   return {
-    // 状态
+    // State
     state,
 
-    // 计算属性
+    // Computed properties
     summaryStats,
     canCreate,
     selectedArchives,
@@ -1067,7 +1041,7 @@ export function useQuickCreate() {
     hasLargeData,
     hasVeryLargeData,
 
-    // 存档操作
+    // Archive operations
     addArchives,
     addArchive,
     removeArchive,
@@ -1075,24 +1049,24 @@ export function useQuickCreate() {
     updateArchive,
     copyArchive,
 
-    // 配置操作
+    // Config operations
     updateUniformConfig,
     updateSmartRules,
 
-    // 选择操作
+    // Selection operations
     selectAll,
     invertSelection,
     toggleArchiveSelection,
     batchUpdateSelected,
 
-    // 批量创建
+    // Batch creation
     batchCreateArchives,
 
-    // 状态管理
+    // State management
     resetState,
     recalculateArchives,
 
-    // 草稿管理
+    // Draft management
     saveDraft,
     loadDraft,
     clearDraft,
@@ -1101,13 +1075,13 @@ export function useQuickCreate() {
     startAutoSave,
     stopAutoSave,
 
-    // 中断处理
+    // Interruption handling
     registerBeforeUnloadWarning,
     unregisterBeforeUnloadWarning,
     isCreationInProgress,
     getCreationProgress,
 
-    // 阈值常量（供外部使用）
+    // Threshold constants (for external use)
     LARGE_ARCHIVE_THRESHOLD,
     VERY_LARGE_NAME_THRESHOLD,
   };

@@ -7,17 +7,17 @@ export function usePlayerManager(props, t) {
   };
 
   const title = computed(() => {
-    const key = getPropValue('titleKey', "editArchive.playerManagement");
+    const key = getPropValue("titleKey", "editArchive.playerManagement");
     return t(key);
   });
-  
+
   const emptyHint = computed(() => {
-    const key = getPropValue('emptyHintKey', "editArchive.noPlayersHint");
+    const key = getPropValue("emptyHintKey", "editArchive.noPlayersHint");
     return t(key);
   });
-  
+
   const steamIdPlaceholder = computed(() => {
-    const key = getPropValue('steamIdPlaceholderKey', "editArchive.steamIdPlaceholder");
+    const key = getPropValue("steamIdPlaceholderKey", "editArchive.steamIdPlaceholder");
     return t(key);
   });
 

@@ -1,6 +1,6 @@
 /**
  * Feedback Service
- * 封装与 Tauri 后端的反馈系统通信
+ * Encapsulates communication with the Tauri backend feedback system
  * Requirements: 3.1, 7.1, 2.2, 2.3, 2.4, 8.1, 8.2
  */
 
@@ -8,7 +8,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { logService } from "./logService";
 
 /**
- * 反馈状态枚举
+ * Feedback status enum
  */
 export const FeedbackStatus = {
   PENDING: "pending",
@@ -17,7 +17,7 @@ export const FeedbackStatus = {
 };
 
 /**
- * 反馈类型枚举
+ * Feedback type enum
  */
 export const FeedbackType = {
   BUG: "bug",
@@ -27,7 +27,7 @@ export const FeedbackType = {
 };
 
 /**
- * Bug 严重程度枚举
+ * Bug severity level enum
  */
 export const BugSeverity = {
   LOW: "low",
@@ -37,12 +37,12 @@ export const BugSeverity = {
 };
 
 // ============================================
-// 输入验证常量
+// Input validation constants
 // Requirements: 2.2, 2.3, 2.4, 8.1, 8.2
 // ============================================
 
 /**
- * 验证限制常量
+ * Validation limit constants
  */
 export const ValidationLimits = {
   TITLE_MAX_LENGTH: 100,
@@ -53,7 +53,7 @@ export const ValidationLimits = {
 
 const LOG_MAX_CHARS = 20000;
 
-// 基础脱敏规则（仅用于日志与描述字段）
+// Basic redaction rules (used only for logs and description fields)
 const REDACTION_PATTERNS = [
   {
     regex: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
@@ -103,20 +103,12 @@ function truncateText(text, maxLength) {
 }
 
 /**
- * 允许的附件文件扩展名
+ * Allowed attachment file extensions
  */
-export const AllowedFileExtensions = [
-  "png",
-  "jpg",
-  "jpeg",
-  "gif",
-  "txt",
-  "log",
-  "json",
-];
+export const AllowedFileExtensions = ["png", "jpg", "jpeg", "gif", "txt", "log", "json"];
 
 /**
- * 允许的 MIME 类型映射
+ * Allowed MIME type mapping
  */
 export const AllowedMimeTypes = {
   png: "image/png",
@@ -129,21 +121,21 @@ export const AllowedMimeTypes = {
 };
 
 // ============================================
-// 输入验证工具函数
+// Input validation utility functions
 // Requirements: 2.2, 2.3, 2.4, 8.1, 8.2
 // ============================================
 
 /**
- * 验证结果对象
+ * Validation result object
  * @typedef {Object} ValidationResult
- * @property {boolean} valid - 是否验证通过
- * @property {string|null} error - 错误消息（如果验证失败）
+ * @property {boolean} valid - Whether validation passed
+ * @property {string|null} error - Error message (if validation failed)
  */
 
 /**
- * 验证标题长度
- * @param {string} title - 标题文本
- * @returns {ValidationResult} 验证结果
+ * Validate title length
+ * @param {string} title - Title text
+ * @returns {ValidationResult} Validation result
  * Requirements: 2.2
  */
 export function validateTitle(title) {
@@ -167,9 +159,9 @@ export function validateTitle(title) {
 }
 
 /**
- * 验证描述长度
- * @param {string} description - 描述文本
- * @returns {ValidationResult} 验证结果
+ * Validate description length
+ * @param {string} description - Description text
+ * @returns {ValidationResult} Validation result
  * Requirements: 2.3
  */
 export function validateDescription(description) {
@@ -193,9 +185,9 @@ export function validateDescription(description) {
 }
 
 /**
- * 获取文件扩展名（小写）
- * @param {string} filename - 文件名
- * @returns {string} 小写扩展名
+ * Get file extension (lowercase)
+ * @param {string} filename - Filename
+ * @returns {string} Lowercase extension
  */
 export function getFileExtension(filename) {
   if (!filename || typeof filename !== "string") {
@@ -209,9 +201,9 @@ export function getFileExtension(filename) {
 }
 
 /**
- * 验证附件文件类型
- * @param {File|{name: string}} file - 文件对象
- * @returns {ValidationResult} 验证结果
+ * Validate attachment file type
+ * @param {File|{name: string}} file - File object
+ * @returns {ValidationResult} Validation result
  * Requirements: 8.1
  */
 export function validateAttachmentType(file) {
@@ -219,7 +211,7 @@ export function validateAttachmentType(file) {
     return { valid: false, error: "无效的文件" };
   }
 
-  // 支持两种格式：原始 File 对象或已转换的附件对象
+  // Supports two formats: raw File object or converted attachment object
   const fileName = file.name || file.fileName;
   if (!fileName) {
     return { valid: false, error: "无效的文件" };
@@ -233,9 +225,7 @@ export function validateAttachmentType(file) {
   if (!AllowedFileExtensions.includes(ext)) {
     return {
       valid: false,
-      error: `不支持的文件类型: .${ext}。支持的类型: ${AllowedFileExtensions.join(
-        ", "
-      )}`,
+      error: `不支持的文件类型: .${ext}。支持的类型: ${AllowedFileExtensions.join(", ")}`,
     };
   }
 
@@ -243,9 +233,9 @@ export function validateAttachmentType(file) {
 }
 
 /**
- * 验证附件文件大小
- * @param {File|{size: number, name: string}} file - 文件对象
- * @returns {ValidationResult} 验证结果
+ * Validate attachment file size
+ * @param {File|{size: number, name: string}} file - File object
+ * @returns {ValidationResult} Validation result
  * Requirements: 8.2
  */
 export function validateAttachmentSize(file) {
@@ -253,11 +243,11 @@ export function validateAttachmentSize(file) {
     return { valid: false, error: "无效的文件" };
   }
 
-  // 支持两种格式：原始 File 对象或已转换的附件对象（可能没有 size）
+  // Supports two formats: raw File object or converted attachment object (may not have size)
   const fileSize = file.size;
   const fileName = file.name || file.fileName || "未知文件";
 
-  // 如果没有 size 属性（已转换的附件），跳过大小验证
+  // If no size attribute (converted attachment), skip size validation
   if (typeof fileSize !== "number") {
     return { valid: true, error: null };
   }
@@ -274,14 +264,14 @@ export function validateAttachmentSize(file) {
 }
 
 /**
- * 验证附件数量
- * @param {Array} attachments - 附件数组
- * @returns {ValidationResult} 验证结果
+ * Validate attachment count
+ * @param {Array} attachments - Attachment array
+ * @returns {ValidationResult} Validation result
  * Requirements: 2.4
  */
 export function validateAttachmentCount(attachments) {
   if (!Array.isArray(attachments)) {
-    return { valid: true, error: null }; // 空数组视为有效
+    return { valid: true, error: null }; // Empty array is considered valid
   }
 
   if (attachments.length > ValidationLimits.MAX_ATTACHMENT_COUNT) {
@@ -295,19 +285,19 @@ export function validateAttachmentCount(attachments) {
 }
 
 /**
- * 验证单个附件（类型和大小）
- * @param {File|{name: string, size: number}} file - 文件对象
- * @returns {ValidationResult} 验证结果
+ * Validate a single attachment (type and size)
+ * @param {File|{name: string, size: number}} file - File object
+ * @returns {ValidationResult} Validation result
  * Requirements: 8.1, 8.2
  */
 export function validateAttachment(file) {
-  // 验证类型
+  // Validate type
   const typeResult = validateAttachmentType(file);
   if (!typeResult.valid) {
     return typeResult;
   }
 
-  // 验证大小
+  // Validate size
   const sizeResult = validateAttachmentSize(file);
   if (!sizeResult.valid) {
     return sizeResult;
@@ -317,19 +307,19 @@ export function validateAttachment(file) {
 }
 
 /**
- * 验证所有附件
- * @param {Array<File|{name: string, size: number}>} attachments - 附件数组
- * @returns {ValidationResult} 验证结果
+ * Validate all attachments
+ * @param {Array<File|{name: string, size: number}>} attachments - Attachment array
+ * @returns {ValidationResult} Validation result
  * Requirements: 2.4, 8.1, 8.2
  */
 export function validateAttachments(attachments) {
-  // 验证数量
+  // Validate count
   const countResult = validateAttachmentCount(attachments);
   if (!countResult.valid) {
     return countResult;
   }
 
-  // 验证每个附件
+  // Validate each attachment
   if (Array.isArray(attachments)) {
     for (const file of attachments) {
       const result = validateAttachment(file);
@@ -343,9 +333,9 @@ export function validateAttachments(attachments) {
 }
 
 /**
- * 验证反馈类型
- * @param {string} type - 反馈类型
- * @returns {ValidationResult} 验证结果
+ * Validate feedback type
+ * @param {string} type - Feedback type
+ * @returns {ValidationResult} Validation result
  */
 export function validateFeedbackType(type) {
   const validTypes = Object.values(FeedbackType);
@@ -359,19 +349,19 @@ export function validateFeedbackType(type) {
 }
 
 /**
- * 验证 Bug 严重程度
- * @param {string} severity - 严重程度
- * @param {string} feedbackType - 反馈类型
- * @returns {ValidationResult} 验证结果
+ * Validate Bug severity level
+ * @param {string} severity - Severity level
+ * @param {string} feedbackType - Feedback type
+ * @returns {ValidationResult} Validation result
  */
 export function validateSeverity(severity, feedbackType) {
-  // 只有 bug 类型需要验证严重程度
+  // Only bug type requires severity validation
   if (feedbackType?.toLowerCase() !== FeedbackType.BUG) {
     return { valid: true, error: null };
   }
 
   if (!severity) {
-    return { valid: true, error: null }; // 严重程度是可选的
+    return { valid: true, error: null }; // Severity is optional
   }
 
   const validSeverities = Object.values(BugSeverity);
@@ -386,35 +376,35 @@ export function validateSeverity(severity, feedbackType) {
 }
 
 /**
- * 验证完整的反馈表单数据（简化版，无附件）
- * @param {Object} data - 反馈数据
- * @param {string} data.type - 反馈类型
- * @param {string} [data.severity] - Bug 严重程度
- * @param {string} data.title - 标题
- * @param {string} data.description - 描述
- * @returns {ValidationResult} 验证结果
+ * Validate complete feedback form data (simplified, no attachments)
+ * @param {Object} data - Feedback data
+ * @param {string} data.type - Feedback type
+ * @param {string} [data.severity] - Bug severity level
+ * @param {string} data.title - Title
+ * @param {string} data.description - Description
+ * @returns {ValidationResult} Validation result
  * Requirements: 2.2, 2.3
  */
 export function validateFeedbackForm(data) {
-  // 验证反馈类型
+  // Validate feedback type
   const typeResult = validateFeedbackType(data.type);
   if (!typeResult.valid) {
     return typeResult;
   }
 
-  // 验证严重程度（仅 bug 类型）
+  // Validate severity (bug type only)
   const severityResult = validateSeverity(data.severity, data.type);
   if (!severityResult.valid) {
     return severityResult;
   }
 
-  // 验证标题
+  // Validate title
   const titleResult = validateTitle(data.title);
   if (!titleResult.valid) {
     return titleResult;
   }
 
-  // 验证描述
+  // Validate description
   const descriptionResult = validateDescription(data.description);
   if (!descriptionResult.valid) {
     return descriptionResult;
@@ -424,7 +414,7 @@ export function validateFeedbackForm(data) {
 }
 
 /**
- * 反馈服务类
+ * Feedback service class
  */
 class FeedbackService {
   constructor() {
@@ -432,10 +422,10 @@ class FeedbackService {
   }
 
   /**
-   * 直接发送反馈到 Cloudflare Worker（简化版）
-   * @param {string} content - 反馈内容
-   * @param {string} [email] - 可选的联系邮箱
-   * @returns {Promise<{success: boolean, error?: string}>} 提交结果
+   * Send feedback directly to Cloudflare Worker (simplified)
+   * @param {string} content - Feedback content
+   * @param {string} [email] - Optional contact email
+   * @returns {Promise<{success: boolean, error?: string}>} Submission result
    */
   async sendFeedback(content, email = null) {
     try {
@@ -451,45 +441,39 @@ class FeedbackService {
   }
 
   /**
-   * 提交反馈到 Cloudflare Worker（完整版，带系统信息）
-   * @param {Object} data - 反馈数据
-   * @param {string} data.type - 反馈类型 (bug, idea, general, ui)
-   * @param {string} [data.severity] - Bug 严重程度 (仅 bug 类型)
-   * @param {string} [data.sender] - 发送人名称/邮箱（可选）
-   * @param {string} data.title - 反馈标题
-   * @param {string} data.description - 反馈描述
-   * @param {string} [data.language] - 应用语言设置
-   * @param {string} [data.screenResolution] - 屏幕分辨率
-   * @param {boolean} [data.includeLogs] - 是否包含日志，默认 false
-   * @returns {Promise<Object>} 提交结果
+   * Submit feedback to Cloudflare Worker (full version, with system info)
+   * @param {Object} data - Feedback data
+   * @param {string} data.type - Feedback type (bug, idea, general, ui)
+   * @param {string} [data.severity] - Bug severity level (bug type only)
+   * @param {string} [data.sender] - Sender name/email (optional)
+   * @param {string} data.title - Feedback title
+   * @param {string} data.description - Feedback description
+   * @param {string} [data.language] - Application language setting
+   * @param {string} [data.screenResolution] - Screen resolution
+   * @param {boolean} [data.includeLogs] - Whether to include logs, defaults to false
+   * @returns {Promise<Object>} Submission result
    */
   async submitFeedback(data) {
-    // 前端验证（不再验证附件）
+    // Frontend validation (attachments no longer validated here)
     const validationResult = validateFeedbackForm(data);
     if (!validationResult.valid) {
       throw new Error(validationResult.error);
     }
 
     try {
-      // 获取语言和分辨率信息
-      const language =
-        data.language || document.documentElement.lang || "zh-CN";
-      const screenResolution =
-        data.screenResolution ||
-        `${window.screen.width}x${window.screen.height}`;
+      // Get language and resolution info
+      const language = data.language || document.documentElement.lang || "zh-CN";
+      const screenResolution = data.screenResolution || `${window.screen.width}x${window.screen.height}`;
 
-      // 收集日志（默认不包含，可通过 includeLogs: true 启用）
+      // Collect logs (disabled by default, enable with includeLogs: true)
       let descriptionWithLogs = data.description || "";
-      const includeLogs = data.includeLogs === true; // 默认不包含日志
+      const includeLogs = data.includeLogs === true; // Disabled by default
 
       if (includeLogs) {
-        // 获取前端日志（包含所有 console 输出和 Tauri 调用错误）
-        const frontendLogs = truncateText(
-          sanitizeText(logService.getRecentLogs(100)),
-          LOG_MAX_CHARS
-        );
+        // Get frontend logs (includes all console output and Tauri invocation errors)
+        const frontendLogs = truncateText(sanitizeText(logService.getRecentLogs(100)), LOG_MAX_CHARS);
 
-        // 获取后端日志
+        // Get backend logs
         let backendLogs = "";
         try {
           backendLogs = await invoke("get_backend_logs");
@@ -498,30 +482,25 @@ class FeedbackService {
         }
         backendLogs = truncateText(sanitizeText(backendLogs), LOG_MAX_CHARS);
 
-        // 将日志附加到描述末尾
+        // Append logs to the end of the description
         descriptionWithLogs += "\n\n---\n\n## 📋 Application Logs\n";
 
         if (frontendLogs) {
-          descriptionWithLogs +=
-            "\n<details>\n<summary>Frontend Console Logs (Last 100 entries)</summary>\n\n```\n";
+          descriptionWithLogs += "\n<details>\n<summary>Frontend Console Logs (Last 100 entries)</summary>\n\n```\n";
           descriptionWithLogs += frontendLogs;
           descriptionWithLogs += "\n```\n</details>\n";
         }
 
         if (backendLogs) {
-          descriptionWithLogs +=
-            "\n<details>\n<summary>Backend Logs (Last 100 entries)</summary>\n\n```\n";
+          descriptionWithLogs += "\n<details>\n<summary>Backend Logs (Last 100 entries)</summary>\n\n```\n";
           descriptionWithLogs += backendLogs;
           descriptionWithLogs += "\n```\n</details>\n";
         }
       }
 
-      // 脱敏并截断，保证不超过后端限制
+      // Sanitize and truncate to ensure we don't exceed backend limits
       descriptionWithLogs = sanitizeText(descriptionWithLogs);
-      descriptionWithLogs = truncateText(
-        descriptionWithLogs,
-        ValidationLimits.DESCRIPTION_MAX_LENGTH
-      );
+      descriptionWithLogs = truncateText(descriptionWithLogs, ValidationLimits.DESCRIPTION_MAX_LENGTH);
 
       const result = await invoke("submit_feedback", {
         data: {
@@ -542,8 +521,8 @@ class FeedbackService {
   }
 
   /**
-   * 获取反馈历史记录
-   * @returns {Promise<Array<Object>>} 反馈历史列表
+   * Get feedback history
+   * @returns {Promise<Array<Object>>} Feedback history list
    */
   async getHistory({ limit = 50, offset = 0 } = {}) {
     try {
@@ -556,8 +535,8 @@ class FeedbackService {
   }
 
   /**
-   * 重试失败的反馈
-   * @param {string} id - 反馈 ID
+   * Retry failed feedback
+   * @param {string} id - Feedback ID
    * @returns {Promise<void>}
    */
   async retryFeedback(id) {
@@ -570,8 +549,8 @@ class FeedbackService {
   }
 
   /**
-   * 删除反馈
-   * @param {string} id - 反馈 ID
+   * Delete feedback
+   * @param {string} id - Feedback ID
    * @returns {Promise<void>}
    */
   async deleteFeedback(id) {
@@ -584,17 +563,16 @@ class FeedbackService {
   }
 
   /**
-   * 获取系统信息
-   * @param {string} [language] - 应用语言设置
-   * @param {string} [screenResolution] - 屏幕分辨率
-   * @returns {Promise<Object>} 系统信息
+   * Get system information
+   * @param {string} [language] - Application language setting
+   * @param {string} [screenResolution] - Screen resolution
+   * @returns {Promise<Object>} System information
    */
   async getSystemInfo(language, screenResolution) {
     try {
-      // 获取语言和分辨率信息
+      // Get language and resolution info
       const lang = language || document.documentElement.lang || "zh-CN";
-      const resolution =
-        screenResolution || `${window.screen.width}x${window.screen.height}`;
+      const resolution = screenResolution || `${window.screen.width}x${window.screen.height}`;
 
       const systemInfo = await invoke("get_system_info", {
         language: lang,
@@ -608,5 +586,5 @@ class FeedbackService {
   }
 }
 
-// 创建单例实例
+// Create singleton instance
 export const feedbackService = new FeedbackService();

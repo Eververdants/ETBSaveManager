@@ -31,7 +31,7 @@
                   </span>
                   <span v-if="showStatus" class="meta-tag status-tag" :class="{ active: plugin.status === 'active' }">
                     <font-awesome-icon :icon="['fas', plugin.status === 'active' ? 'check-circle' : 'pause-circle']" />
-                    {{ plugin.status === 'active' ? $t('plugin.enabled') : $t('plugin.disabled') }}
+                    {{ plugin.status === "active" ? $t("plugin.enabled") : $t("plugin.disabled") }}
                   </span>
                 </div>
               </div>
@@ -44,10 +44,10 @@
             <div class="content-section">
               <div class="section-header">
                 <font-awesome-icon :icon="['fas', 'align-left']" class="section-icon" />
-                <h3>{{ $t('plugin.description') }}</h3>
+                <h3>{{ $t("plugin.description") }}</h3>
               </div>
               <p class="description-text">
-                {{ plugin.description || $t('plugin.noDescription') }}
+                {{ plugin.description || $t("plugin.noDescription") }}
               </p>
             </div>
 
@@ -55,7 +55,7 @@
             <div class="content-section">
               <div class="section-header">
                 <font-awesome-icon :icon="['fas', 'info-circle']" class="section-icon" />
-                <h3>{{ $t('plugin.detailsTitle') }}</h3>
+                <h3>{{ $t("plugin.detailsTitle") }}</h3>
               </div>
               <div class="info-grid">
                 <div class="info-card">
@@ -63,8 +63,8 @@
                     <font-awesome-icon :icon="['fas', 'user']" />
                   </div>
                   <div class="info-text">
-                    <span class="info-label">{{ $t('plugin.author') }}</span>
-                    <span class="info-value">{{ plugin.author || 'Unknown' }}</span>
+                    <span class="info-label">{{ $t("plugin.author") }}</span>
+                    <span class="info-value">{{ plugin.author || "Unknown" }}</span>
                   </div>
                 </div>
                 <div v-if="plugin.license" class="info-card">
@@ -72,7 +72,7 @@
                     <font-awesome-icon :icon="['fas', 'certificate']" />
                   </div>
                   <div class="info-text">
-                    <span class="info-label">{{ $t('plugin.license') }}</span>
+                    <span class="info-label">{{ $t("plugin.license") }}</span>
                     <span class="info-value">{{ plugin.license }}</span>
                   </div>
                 </div>
@@ -81,7 +81,7 @@
                     <font-awesome-icon :icon="['fas', 'language']" />
                   </div>
                   <div class="info-text">
-                    <span class="info-label">{{ $t('plugin.languageCode') }}</span>
+                    <span class="info-label">{{ $t("plugin.languageCode") }}</span>
                     <span class="info-value">{{ plugin.locale }}</span>
                   </div>
                 </div>
@@ -90,7 +90,7 @@
                     <font-awesome-icon :icon="['fas', 'globe']" />
                   </div>
                   <div class="info-text">
-                    <span class="info-label">{{ $t('plugin.languageName') }}</span>
+                    <span class="info-label">{{ $t("plugin.languageName") }}</span>
                     <span class="info-value">{{ plugin.localeName }}</span>
                   </div>
                 </div>
@@ -99,7 +99,7 @@
                     <font-awesome-icon :icon="['fas', 'palette']" />
                   </div>
                   <div class="info-text">
-                    <span class="info-label">{{ $t('plugin.themeId') }}</span>
+                    <span class="info-label">{{ $t("plugin.themeId") }}</span>
                     <span class="info-value">{{ plugin.themeId }}</span>
                   </div>
                 </div>
@@ -110,35 +110,31 @@
           <!-- 底部操作栏 -->
           <div class="modal-footer">
             <template v-if="showStatus">
-              <button 
+              <button
                 class="action-btn secondary-btn"
                 :class="{ active: plugin.status === 'active' }"
                 @click="$emit('toggle', plugin)"
               >
                 <font-awesome-icon :icon="['fas', plugin.status === 'active' ? 'pause' : 'play']" />
-                <span>{{ plugin.status === 'active' ? $t('plugin.disablePlugin') : $t('plugin.enablePlugin') }}</span>
+                <span>{{ plugin.status === "active" ? $t("plugin.disablePlugin") : $t("plugin.enablePlugin") }}</span>
               </button>
               <button class="action-btn danger-btn" @click="$emit('uninstall', plugin)">
                 <font-awesome-icon :icon="['fas', 'trash-alt']" />
-                <span>{{ $t('plugin.uninstallPlugin') }}</span>
+                <span>{{ $t("plugin.uninstallPlugin") }}</span>
               </button>
             </template>
             <template v-else>
-              <button 
+              <button
                 v-if="plugin.installed"
                 class="action-btn success-btn full-width"
                 @click="$emit('uninstall', plugin)"
               >
                 <font-awesome-icon :icon="['fas', 'check-circle']" />
-                <span>{{ $t('plugin.installed') }}</span>
+                <span>{{ $t("plugin.installed") }}</span>
               </button>
-              <button 
-                v-else
-                class="action-btn primary-btn full-width"
-                @click="$emit('install', plugin)"
-              >
+              <button v-else class="action-btn primary-btn full-width" @click="$emit('install', plugin)">
                 <font-awesome-icon :icon="['fas', 'download']" />
-                <span>{{ $t('plugin.install') }}</span>
+                <span>{{ $t("plugin.install") }}</span>
               </button>
             </template>
           </div>
@@ -149,28 +145,28 @@
 </template>
 
 <script setup>
-import { computed, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { usePluginDetailModal } from '@/composables/usePluginDetailModal';
+import { computed, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { usePluginDetailModal } from "@/composables/usePluginDetailModal";
 
 const { t } = useI18n();
 
 const props = defineProps({
   show: {
     type: Boolean,
-    default: false
+    default: false,
   },
   plugin: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
   showStatus: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-defineEmits(['close', 'toggle', 'install', 'uninstall']);
+defineEmits(["close", "toggle", "install", "uninstall"]);
 
 const { typeClass, iconName, typeLabel } = usePluginDetailModal(props);
 </script>
@@ -189,7 +185,9 @@ const { typeClass, iconName, typeLabel } = usePluginDetailModal(props);
 
 .modal-fade-enter-active .modal-container,
 .modal-fade-leave-active .modal-container {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.3s ease;
 }
 
 .modal-fade-enter-from .modal-container,
@@ -307,9 +305,15 @@ const { typeClass, iconName, typeLabel } = usePluginDetailModal(props);
   background: var(--accent-color);
 }
 
-.icon-glow.type-language { background: #667eea; }
-.icon-glow.type-theme { background: #f093fb; }
-.icon-glow.type-feature { background: #4facfe; }
+.icon-glow.type-language {
+  background: #667eea;
+}
+.icon-glow.type-theme {
+  background: #f093fb;
+}
+.icon-glow.type-feature {
+  background: #4facfe;
+}
 
 .icon-main {
   position: relative;

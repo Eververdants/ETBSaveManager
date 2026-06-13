@@ -133,16 +133,11 @@
    * 卡片样式 (Card Styles)
    * ========================================== */
   --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.1);
-  --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(255, 215, 0, 0.15);
+  --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 215, 0, 0.15);
   --card-border: 1px solid rgba(255, 215, 0, 0.25);
   --card-radius: 16px;
   --card-padding: 16px;
-  --card-highlight: linear-gradient(
-    135deg,
-    rgba(255, 215, 0, 0.15),
-    rgba(229, 57, 53, 0.1)
-  );
+  --card-highlight: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(229, 57, 53, 0.1));
   --card-active-indicator: var(--new-year-gold);
   --card-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --card-hover-transform: translateY(-2px);
@@ -200,21 +195,10 @@
   bottom: 0;
   pointer-events: none;
   z-index: 9999;
-  background-image: radial-gradient(
-      circle at 10% 20%,
-      rgba(255, 215, 0, 0.03) 0%,
-      transparent 20%
-    ),
-    radial-gradient(
-      circle at 90% 80%,
-      rgba(229, 57, 53, 0.03) 0%,
-      transparent 20%
-    ),
-    radial-gradient(
-      circle at 50% 50%,
-      rgba(255, 215, 0, 0.02) 0%,
-      transparent 30%
-    );
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255, 215, 0, 0.03) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(229, 57, 53, 0.03) 0%, transparent 20%),
+    radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.02) 0%, transparent 30%);
   animation: newYearGlow 8s ease-in-out infinite;
 }
 
@@ -244,6 +228,7 @@
 
 /* 侧边栏活跃项金色光晕 */
 [data-theme="new-year"] .sidebar-item.active {
-  box-shadow: inset 3px 0 0 var(--new-year-gold),
+  box-shadow:
+    inset 3px 0 0 var(--new-year-gold),
     0 0 15px rgba(255, 215, 0, 0.1);
 }

@@ -1,22 +1,26 @@
 <template>
-  <div class="custom-dropdown" :class="{ disabled: disabled }" ref="dropdownRef">
+  <div ref="dropdownRef" class="custom-dropdown" :class="{ disabled: disabled }">
     <div class="dropdown-display" @click="toggleDropdown">
       <transition name="text-swift" mode="out-in">
-        <span :key="(selectedLabel || placeholder) + '-' + $i18n.locale" class="dropdown-text">{{ selectedLabel ||
-          placeholder }}</span>
+        <span :key="(selectedLabel || placeholder) + '-' + $i18n.locale" class="dropdown-text">{{
+          selectedLabel || placeholder
+        }}</span>
       </transition>
       <span class="dropdown-icon">▼</span>
     </div>
 
     <Teleport to="body">
       <transition name="dropdown" @enter="handleMenuEnter" @leave="handleMenuLeave">
-        <div v-if="isOpen" class="dropdown-menu" :style="menuStyle" ref="menuRef">
-          <div v-for="option in options" :key="option.value + '-' + $i18n.locale" class="dropdown-option"
-            :class="{ selected: option.value === modelValue }" @click="selectOption(option)">
+        <div v-if="isOpen" ref="menuRef" class="dropdown-menu" :style="menuStyle">
+          <div
+            v-for="option in options"
+            :key="option.value + '-' + $i18n.locale"
+            class="dropdown-option"
+            :class="{ selected: option.value === modelValue }"
+            @click="selectOption(option)"
+          >
             <transition name="text-swift" mode="out-in">
-              <span :key="option.label + '-' + $i18n.locale">{{
-                option.label
-                }}</span>
+              <span :key="option.label + '-' + $i18n.locale">{{ option.label }}</span>
             </transition>
           </div>
         </div>
@@ -75,14 +79,11 @@ const useDropdownPosition = (dropdownRef, menuRef, isOpen, menuStyle) => {
     const viewportHeight = window.innerHeight;
 
     const spaceBelow = viewportHeight - dropdownRect.bottom;
-    const shouldOpenUp =
-      spaceBelow < menuHeight && dropdownRect.top > menuHeight;
+    const shouldOpenUp = spaceBelow < menuHeight && dropdownRect.top > menuHeight;
 
     menuStyle.value = {
       position: "fixed",
-      top: shouldOpenUp
-        ? `${dropdownRect.top - menuHeight - 4}px`
-        : `${dropdownRect.bottom + 4}px`,
+      top: shouldOpenUp ? `${dropdownRect.top - menuHeight - 4}px` : `${dropdownRect.bottom + 4}px`,
       left: `${dropdownRect.left}px`,
       width: `${dropdownRect.width}px`,
       zIndex: 1000,
@@ -174,7 +175,7 @@ const useDropdownAnimations = (menuRef, isAnimating) => {
             isAnimating.value = false;
             done();
           },
-        }
+        },
       );
     });
   };
@@ -228,28 +229,18 @@ const useDropdownActions = (props, emit, isOpen, isAnimating) => {
   };
 };
 
-const {
-  dropdownRef,
-  menuRef,
+const { dropdownRef, menuRef, isAnimating, menuStyle, isOpen } = useDropdownState();
+
+const { updateMenuPosition } = useDropdownPosition(dropdownRef, menuRef, isOpen, menuStyle);
+
+const { handleMenuEnter, handleMenuLeave } = useDropdownAnimations(menuRef, isAnimating);
+
+const { toggleDropdown, selectOption, handleMouseDown, handleMouseUp } = useDropdownActions(
+  props,
+  emit,
+  isOpen,
   isAnimating,
-  menuStyle,
-  isOpen,
-} = useDropdownState();
-
-const { updateMenuPosition } = useDropdownPosition(
-  dropdownRef,
-  menuRef,
-  isOpen,
-  menuStyle
 );
-
-const { handleMenuEnter, handleMenuLeave } = useDropdownAnimations(
-  menuRef,
-  isAnimating
-);
-
-const { toggleDropdown, selectOption, handleMouseDown, handleMouseUp } =
-  useDropdownActions(props, emit, isOpen, isAnimating);
 
 const handleClickOutside = (event) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
@@ -266,9 +257,7 @@ onUnmounted(() => {
 });
 
 const selectedLabel = computed(() => {
-  const selected = props.options.find(
-    (option) => option.value === props.modelValue
-  );
+  const selected = props.options.find((option) => option.value === props.modelValue);
   return selected ? selected.label : "";
 });
 </script>

@@ -26,7 +26,7 @@ pub async fn load_all_saves(
 ) -> AppResult<Vec<SaveFileInfo>> {
     let start_time = Instant::now();
 
-    // 并行获取文件列表和可见存档集合
+    // Parallel fetch file list and visible saves set
     let (paths_result, visible_saves_result) = rayon::join(
         || get_file_path::list_save_paths(),
         || get_visible_saves_set(),
@@ -36,7 +36,7 @@ pub async fn load_all_saves(
     let visible_saves = Arc::new(visible_saves_result?);
     let path_count = paths.len();
 
-    // 使用 rayon 并行处理所有存档文件
+    // Use rayon to process all save files in parallel
     let results: Vec<SaveFileInfo> = paths
         .into_par_iter()
         .enumerate()
@@ -57,7 +57,7 @@ pub async fn load_all_saves(
     Ok(results)
 }
 
-/// 处理单个存档文件（优化版）
+/// Process a single save file (optimized version)
 #[inline]
 fn process_save_file(
     index: usize,
@@ -101,9 +101,9 @@ pub fn delete_file(file_path: String) -> AppResult<()> {
     validate_save_games_path(path)?;
 
     fs::remove_file(&file_path)
-        .map_err(|e| format!("删除文件失败: {}", e))?;
+        .map_err(|e| format!("Failed to delete file: {}", e))?;
 
-    // 从 MAINSAVE 中移除记录（失败不影响主操作）
+    // Remove from MAINSAVE records (failure does not affect main operation)
     let _ = remove_save_from_mainsave(extract_archive_name(filename));
 
     Ok(())
@@ -153,7 +153,7 @@ pub fn handle_file(
     action: Option<String>,
     _archive_name: Option<String>,
 ) -> AppResult<String> {
-    // 处理读取 MAINSAVE 文件的特殊请求
+    // Handle special request to read MAINSAVE file
     if action.as_deref() == Some("read") && file_path == "MAINSAVE.sav" {
         let visible_saves: Vec<String> = get_visible_saves_set()?.into_iter().collect();
         return Ok(serde_json::to_string(&visible_saves)?);
@@ -161,7 +161,7 @@ pub fn handle_file(
 
     let file_path = PathBuf::from(&file_path);
     if !file_path.exists() {
-        return Err("文件不存在".to_string().into());
+        return Err("File does not exist".to_string().into());
     }
 
     validate_save_games_path(&file_path)?;
@@ -169,10 +169,10 @@ pub fn handle_file(
     let file_name = file_path
         .file_name()
         .and_then(|n| n.to_str())
-        .ok_or("无效的文件名")?;
+        .ok_or("Invalid filename")?;
     let archive_name = extract_archive_name(file_name);
 
-    // 获取当前可见性状态并切换
+    // Get current visibility state and toggle
     let visible_saves = get_visible_saves_set().unwrap_or_default();
     let is_visible = visible_saves.contains(archive_name);
 
@@ -244,7 +244,7 @@ pub fn convert_sav_to_json(file_path: String) -> AppResult<Value> {
     let save = cli_handlers::parse_sav_file(path)?;
     let save_json = serde_json::to_value(&save).map_err(|e| format!("Failed to convert to JSON: {}", e))?;
     let json_string = serde_json::to_string_pretty(&save_json)
-        .map_err(|e| format!("JSON格式化失败: {}", e))?;
+        .map_err(|e| format!("JSON formatting failed: {}", e))?;
 
     Ok(json!({
         "success": true,

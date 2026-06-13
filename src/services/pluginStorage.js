@@ -1,28 +1,20 @@
 /**
- * 插件存储服务
- * 每个插件单独存储在 plugins/<plugin-id>/ 文件夹中
- * 结构：
+ * Plugin storage service
+ * Each plugin is stored in a separate plugins/<plugin-id>/ folder
+ * Structure:
  *   plugins/
  *     <plugin-id>/
- *       plugin.json    - 插件元数据
- *       data.json      - 插件数据（翻译/主题等）
+ *       plugin.json    - Plugin metadata
+ *       data.json      - Plugin data (translations/themes/etc.)
  */
 
-import {
-  BaseDirectory,
-  exists,
-  mkdir,
-  readTextFile,
-  writeTextFile,
-  readDir,
-  remove,
-} from "@tauri-apps/plugin-fs";
+import { BaseDirectory, exists, mkdir, readTextFile, writeTextFile, readDir, remove } from "@tauri-apps/plugin-fs";
 
-// 插件存储目录
+// Plugin storage directory
 const PLUGINS_DIR = "plugins";
 
 /**
- * 确保插件目录存在
+ * Ensure the plugins directory exists
  */
 async function ensurePluginsDir() {
   try {
@@ -42,8 +34,8 @@ async function ensurePluginsDir() {
 }
 
 /**
- * 保存插件到本地
- * @param {Object} plugin - 插件对象
+ * Save plugin to local storage
+ * @param {Object} plugin - Plugin object
  */
 export async function savePlugin(plugin) {
   try {
@@ -51,7 +43,7 @@ export async function savePlugin(plugin) {
 
     const pluginDir = `${PLUGINS_DIR}/${plugin.id}`;
 
-    // 创建插件目录
+    // Create plugin directory
     const dirExists = await exists(pluginDir, {
       baseDir: BaseDirectory.AppData,
     });
@@ -62,16 +54,16 @@ export async function savePlugin(plugin) {
       });
     }
 
-    // 分离元数据和数据
+    // Separate metadata and data
     const { data, ...metadata } = plugin;
 
-    // 保存元数据 (plugin.json)
+    // Save metadata (plugin.json)
     const metaPath = `${pluginDir}/plugin.json`;
     await writeTextFile(metaPath, JSON.stringify(metadata, null, 2), {
       baseDir: BaseDirectory.AppData,
     });
 
-    // 保存数据 (data.json) - 翻译数据或主题数据
+    // Save data (data.json) - translation data or theme data
     if (data) {
       const dataPath = `${pluginDir}/data.json`;
       await writeTextFile(dataPath, JSON.stringify(data, null, 2), {
@@ -88,14 +80,14 @@ export async function savePlugin(plugin) {
 }
 
 /**
- * 加载单个插件
- * @param {string} pluginId - 插件ID
+ * Load a single plugin
+ * @param {string} pluginId - Plugin ID
  */
 export async function loadPlugin(pluginId) {
   try {
     const pluginDir = `${PLUGINS_DIR}/${pluginId}`;
 
-    // 检查插件目录是否存在
+    // Check if plugin directory exists
     const dirExists = await exists(pluginDir, {
       baseDir: BaseDirectory.AppData,
     });
@@ -103,7 +95,7 @@ export async function loadPlugin(pluginId) {
       return null;
     }
 
-    // 读取元数据
+    // Read metadata
     const metaPath = `${pluginDir}/plugin.json`;
     const metaExists = await exists(metaPath, {
       baseDir: BaseDirectory.AppData,
@@ -118,7 +110,7 @@ export async function loadPlugin(pluginId) {
     });
     const metadata = JSON.parse(metaContent);
 
-    // 读取数据
+    // Read data
     const dataPath = `${pluginDir}/data.json`;
     const dataExists = await exists(dataPath, {
       baseDir: BaseDirectory.AppData,
@@ -140,20 +132,20 @@ export async function loadPlugin(pluginId) {
 }
 
 /**
- * 加载所有已安装的插件
+ * Load all installed plugins
  */
 export async function loadAllPlugins() {
   try {
     await ensurePluginsDir();
 
-    // 读取插件目录
+    // Read the plugins directory
     const entries = await readDir(PLUGINS_DIR, {
       baseDir: BaseDirectory.AppData,
     });
     const plugins = [];
 
     for (const entry of entries) {
-      // 只处理目录
+      // Only process directories
       if (entry.isDirectory) {
         const plugin = await loadPlugin(entry.name);
         if (plugin) {
@@ -171,8 +163,8 @@ export async function loadAllPlugins() {
 }
 
 /**
- * 删除插件
- * @param {string} pluginId - 插件ID
+ * Delete a plugin
+ * @param {string} pluginId - Plugin ID
  */
 export async function deletePlugin(pluginId) {
   try {
@@ -198,9 +190,9 @@ export async function deletePlugin(pluginId) {
 }
 
 /**
- * 更新插件状态
- * @param {string} pluginId - 插件ID
- * @param {Object} updates - 要更新的字段
+ * Update plugin metadata
+ * @param {string} pluginId - Plugin ID
+ * @param {Object} updates - Fields to update
  */
 export async function updatePluginMeta(pluginId, updates) {
   try {
@@ -219,17 +211,14 @@ export async function updatePluginMeta(pluginId, updates) {
 
     return true;
   } catch (error) {
-    console.error(
-      `❌ [PluginStorage] 更新插件元数据失败 (${pluginId}):`,
-      error
-    );
+    console.error(`❌ [PluginStorage] 更新插件元数据失败 (${pluginId}):`, error);
     return false;
   }
 }
 
 /**
- * 检查插件是否存在
- * @param {string} pluginId - 插件ID
+ * Check if a plugin exists
+ * @param {string} pluginId - Plugin ID
  */
 export async function pluginExists(pluginId) {
   try {

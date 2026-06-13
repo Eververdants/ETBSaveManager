@@ -36,7 +36,7 @@ import {
   faExchangeAlt,
   faTrashAlt,
   faCheck,
-  faArrowRotateRight
+  faArrowRotateRight,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { faCircle } from "@fortawesome/free-regular-svg-icons";
@@ -75,7 +75,7 @@ export function registerCriticalIcons() {
     faExchangeAlt,
     faTrashAlt,
     faCheck,
-    faArrowRotateRight
+    faArrowRotateRight,
   );
 }
 

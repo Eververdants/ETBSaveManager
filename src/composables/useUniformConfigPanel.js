@@ -75,9 +75,7 @@ export function useUniformConfigPanel(props, emit, t, te) {
     { value: "nightmare", label: getDifficultyText("nightmare") },
   ]);
 
-  const inventoryTemplateOptions = computed(() => [
-    { value: "empty", label: "默认空背包" },
-  ]);
+  const inventoryTemplateOptions = computed(() => [{ value: "empty", label: "默认空背包" }]);
 
   const handleLevelModeChange = (enabled) => {
     emit("update:config", {

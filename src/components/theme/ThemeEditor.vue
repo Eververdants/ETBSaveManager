@@ -3,8 +3,14 @@
     <!-- Header -->
     <div class="editor-header">
       <div class="header-left">
-        <input v-model="themeName" type="text" class="theme-name-input" :placeholder="$t('theme.enterThemeName')"
-          :aria-label="$t('theme.themeName')" @input="validateName" />
+        <input
+          v-model="themeName"
+          type="text"
+          class="theme-name-input"
+          :placeholder="$t('theme.enterThemeName')"
+          :aria-label="$t('theme.themeName')"
+          @input="validateName"
+        />
         <span v-if="nameError" class="name-error" role="alert">
           {{ nameError }}
         </span>
@@ -23,12 +29,17 @@
       <div class="color-section">
         <h3 class="section-title">{{ $t("theme.backgroundColors") }}</h3>
         <div class="color-grid">
-          <div class="color-item" v-for="item in backgroundColorItems" :key="item.key">
+          <div v-for="item in backgroundColorItems" :key="item.key" class="color-item">
             <label class="color-label">{{ item.label }}</label>
             <div class="color-row">
               <div class="color-swatch" :style="{ backgroundColor: colors[item.key] }" />
-              <input type="text" class="color-value-input" v-model="colors[item.key]"
-                @input="handleColorChange(item.key)" @blur="validateColor(item.key)" />
+              <input
+                v-model="colors[item.key]"
+                type="text"
+                class="color-value-input"
+                @input="handleColorChange(item.key)"
+                @blur="validateColor(item.key)"
+              />
             </div>
           </div>
         </div>
@@ -38,21 +49,24 @@
       <div class="color-section">
         <h3 class="section-title">{{ $t("theme.textColors") }}</h3>
         <div class="color-grid">
-          <div class="color-item" v-for="item in textColorItems" :key="item.key">
+          <div v-for="item in textColorItems" :key="item.key" class="color-item">
             <label class="color-label">{{ item.label }}</label>
             <div class="color-row">
               <div class="color-swatch" :style="{ backgroundColor: colors[item.key] }" />
-              <input type="text" class="color-value-input" v-model="colors[item.key]"
-                @input="handleColorChange(item.key)" @blur="validateColor(item.key)" />
-              <div v-if="item.contrastWith" class="mini-contrast" :class="getContrastClass(colors[item.key], colors[item.contrastWith])
-                " :title="getContrastTooltip(
-                  colors[item.key],
-                  colors[item.contrastWith]
-                )
-                  ">
-                {{
-                  getContrastRatio(colors[item.key], colors[item.contrastWith])
-                }}
+              <input
+                v-model="colors[item.key]"
+                type="text"
+                class="color-value-input"
+                @input="handleColorChange(item.key)"
+                @blur="validateColor(item.key)"
+              />
+              <div
+                v-if="item.contrastWith"
+                class="mini-contrast"
+                :class="getContrastClass(colors[item.key], colors[item.contrastWith])"
+                :title="getContrastTooltip(colors[item.key], colors[item.contrastWith])"
+              >
+                {{ getContrastRatio(colors[item.key], colors[item.contrastWith]) }}
               </div>
             </div>
           </div>
@@ -63,12 +77,17 @@
       <div class="color-section">
         <h3 class="section-title">{{ $t("theme.accentColors") }}</h3>
         <div class="color-grid">
-          <div class="color-item" v-for="item in accentColorItems" :key="item.key">
+          <div v-for="item in accentColorItems" :key="item.key" class="color-item">
             <label class="color-label">{{ item.label }}</label>
             <div class="color-row">
               <div class="color-swatch" :style="{ backgroundColor: colors[item.key] }" />
-              <input type="text" class="color-value-input" v-model="colors[item.key]"
-                @input="handleColorChange(item.key)" @blur="validateColor(item.key)" />
+              <input
+                v-model="colors[item.key]"
+                type="text"
+                class="color-value-input"
+                @input="handleColorChange(item.key)"
+                @blur="validateColor(item.key)"
+              />
             </div>
           </div>
         </div>
@@ -78,12 +97,17 @@
       <div class="color-section">
         <h3 class="section-title">{{ $t("theme.sidebarColors") }}</h3>
         <div class="color-grid">
-          <div class="color-item" v-for="item in sidebarColorItems" :key="item.key">
+          <div v-for="item in sidebarColorItems" :key="item.key" class="color-item">
             <label class="color-label">{{ item.label }}</label>
             <div class="color-row">
               <div class="color-swatch" :style="{ backgroundColor: colors[item.key] }" />
-              <input type="text" class="color-value-input" v-model="colors[item.key]"
-                @input="handleColorChange(item.key)" @blur="validateColor(item.key)" />
+              <input
+                v-model="colors[item.key]"
+                type="text"
+                class="color-value-input"
+                @input="handleColorChange(item.key)"
+                @blur="validateColor(item.key)"
+              />
             </div>
           </div>
         </div>
@@ -93,12 +117,17 @@
       <div class="color-section">
         <h3 class="section-title">{{ $t("theme.cardColors") }}</h3>
         <div class="color-grid">
-          <div class="color-item" v-for="item in cardColorItems" :key="item.key">
+          <div v-for="item in cardColorItems" :key="item.key" class="color-item">
             <label class="color-label">{{ item.label }}</label>
             <div class="color-row">
               <div class="color-swatch" :style="{ backgroundColor: colors[item.key] }" />
-              <input type="text" class="color-value-input" v-model="colors[item.key]"
-                @input="handleColorChange(item.key)" @blur="validateColor(item.key)" />
+              <input
+                v-model="colors[item.key]"
+                type="text"
+                class="color-value-input"
+                @input="handleColorChange(item.key)"
+                @blur="validateColor(item.key)"
+              />
             </div>
           </div>
         </div>
@@ -119,7 +148,7 @@
         <button class="btn-cancel" @click="handleCancel">
           {{ $t("common.cancel") }}
         </button>
-        <button class="btn-save" @click="handleSave" :disabled="!canSave">
+        <button class="btn-save" :disabled="!canSave" @click="handleSave">
           {{ $t("common.save") }}
         </button>
       </div>
@@ -131,10 +160,7 @@
 import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import ThemePreview from "./ThemePreview.vue";
-import {
-  themeValidator,
-  DEFAULT_THEME_TEMPLATE,
-} from "@/services/themeValidator.js";
+import { themeValidator, DEFAULT_THEME_TEMPLATE } from "@/services/themeValidator.js";
 import { accessibilityChecker } from "@/services/accessibilityChecker.js";
 import themeManager from "@/styles/theme-config.js";
 
@@ -271,7 +297,7 @@ watch(
       }
     }
   },
-  { deep: true }
+  { deep: true },
 );
 
 // Methods

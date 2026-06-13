@@ -1,10 +1,10 @@
 /**
- * CDN配置文件
- * 用于优化第三方依赖的加载
+ * CDN configuration file
+ * Used to optimize loading of third-party dependencies
  */
 
 const CDN_CONFIG = {
-  // 生产环境使用CDN，开发环境使用本地依赖
+  // Use CDN in production, local dependencies in development
   production: {
     fontawesome: {
       baseUrl: "https://cdn.jsdelivr.net/npm/@fortawesome",
@@ -23,7 +23,7 @@ const CDN_CONFIG = {
     },
   },
 
-  // 开发环境配置
+  // Development environment configuration
   development: {
     useLocal: true,
     localPaths: {
@@ -34,10 +34,10 @@ const CDN_CONFIG = {
   },
 };
 
-// 动态加载CDN资源的工具函数
+// Utility function for dynamically loading CDN resources
 export const loadCDNResource = async (resourceType, library, version) => {
   if (process.env.NODE_ENV === "development") {
-    return null; // 开发环境不使用CDN
+    return null; // CDN not used in development
   }
 
   const config = CDN_CONFIG.production[resourceType];
@@ -57,7 +57,7 @@ export const loadCDNResource = async (resourceType, library, version) => {
   }
 };
 
-// 动态加载Script标签的工具函数
+// Utility function for dynamically loading script tags
 const loadScript = (src) => {
   return new Promise((resolve, reject) => {
     const existingScript = document.querySelector(`script[src="${src}"]`);
@@ -77,7 +77,7 @@ const loadScript = (src) => {
   });
 };
 
-// 预加载关键CDN资源
+// Preload critical CDN resources
 export const preloadCriticalCDNResources = async () => {
   if (process.env.NODE_ENV === "development") return;
 
@@ -101,7 +101,7 @@ export const preloadCriticalCDNResources = async () => {
   }
 };
 
-// 检查CDN资源是否可用
+// Check if CDN resources are available
 export const checkCDNAvailability = () => {
   const checks = {
     fontawesome: () => !!window.FontAwesomeIcon,

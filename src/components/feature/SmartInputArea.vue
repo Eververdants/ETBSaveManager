@@ -5,7 +5,7 @@
         <font-awesome-icon :icon="['fas', 'keyboard']" />
         {{ $t("quickCreate.inputArea.title") }}
       </h2>
-      <span class="section-badge" v-if="nameCount > 0">
+      <span v-if="nameCount > 0" class="section-badge">
         {{ nameCount }}
       </span>
     </div>
@@ -13,23 +13,28 @@
     <div class="section-content">
       <!-- 输入方式按钮 -->
       <div class="input-methods">
-        <button class="input-method-btn" @click="handlePasteNames" :title="$t('quickCreate.inputArea.pasteNames')">
+        <button class="input-method-btn" :title="$t('quickCreate.inputArea.pasteNames')" @click="handlePasteNames">
           <font-awesome-icon :icon="['fas', 'paste']" />
           <span>{{ $t("quickCreate.inputArea.pasteNames") }}</span>
         </button>
-        <button class="input-method-btn" @click="handleImportFile" :title="$t('quickCreate.inputArea.importFile')">
+        <button class="input-method-btn" :title="$t('quickCreate.inputArea.importFile')" @click="handleImportFile">
           <font-awesome-icon :icon="['fas', 'file-import']" />
           <span>{{ $t("quickCreate.inputArea.importFile") }}</span>
         </button>
-        <button class="input-method-btn" @click="handleManualAdd" :title="$t('quickCreate.inputArea.manualAdd')">
+        <button class="input-method-btn" :title="$t('quickCreate.inputArea.manualAdd')" @click="handleManualAdd">
           <font-awesome-icon :icon="['fas', 'plus']" />
           <span>{{ $t("quickCreate.inputArea.manualAdd") }}</span>
         </button>
       </div>
 
       <!-- 拖放区域 -->
-      <div class="drop-zone" @dragover.prevent="onDragOver" @dragleave="onDragLeave" @drop.prevent="onDrop"
-        :class="dropZoneClass">
+      <div
+        class="drop-zone"
+        :class="dropZoneClass"
+        @dragover.prevent="onDragOver"
+        @dragleave="onDragLeave"
+        @drop.prevent="onDrop"
+      >
         <!-- 空状态 -->
         <template v-if="nameCount === 0 && !hasErrors">
           <font-awesome-icon :icon="['fas', 'cloud-upload-alt']" class="drop-icon" />
@@ -46,9 +51,7 @@
         <template v-else-if="hasErrors">
           <div class="status-info">
             <font-awesome-icon :icon="['fas', 'exclamation-circle']" class="status-icon error" />
-            <span class="status-text error">{{
-              $t("quickCreate.inputArea.importFailed")
-            }}</span>
+            <span class="status-text error">{{ $t("quickCreate.inputArea.importFailed") }}</span>
           </div>
           <div class="error-list">
             <p v-for="(err, idx) in lastParseResult.errors" :key="idx" class="error-item">
@@ -70,7 +73,7 @@
             </span>
           </div>
 
-          <div class="detected-info" v-if="levelDetectedCount > 0 || difficultyDetectedCount > 0">
+          <div v-if="levelDetectedCount > 0 || difficultyDetectedCount > 0" class="detected-info">
             <span v-if="levelDetectedCount > 0" class="detected-tag level">
               <font-awesome-icon :icon="['fas', 'map-marker-alt']" />
               {{ levelDetectedCount }} 个层级
@@ -81,7 +84,7 @@
             </span>
           </div>
 
-          <div class="warning-list" v-if="hasWarnings">
+          <div v-if="hasWarnings" class="warning-list">
             <p v-for="(warn, idx) in displayWarnings" :key="idx" class="warning-item">
               <font-awesome-icon :icon="['fas', 'exclamation-triangle']" />
               {{ warn }}
@@ -91,7 +94,7 @@
             </p>
           </div>
 
-          <div class="info-list" v-if="hasInfo">
+          <div v-if="hasInfo" class="info-list">
             <p v-for="(info, idx) in lastParseResult.info" :key="idx" class="info-item">
               <font-awesome-icon :icon="['fas', 'info-circle']" />
               {{ info }}
@@ -114,7 +117,8 @@
 <script>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
-import { useNameParser, parseMultiple } from "@/composables/useNameParser";
+import { parseMultiple } from "@/utils/nameParser";
+import { useNameParser } from "@/composables/useNameParser";
 
 export default {
   name: "SmartInputArea",
@@ -136,13 +140,7 @@ export default {
       default: 0,
     },
   },
-  emits: [
-    "update:modelValue",
-    "parse-complete",
-    "parse-result",
-    "manual-add",
-    "load-template",
-  ],
+  emits: ["update:modelValue", "parse-complete", "parse-result", "manual-add", "load-template"],
   setup(props, { emit }) {
     const { t } = useI18n();
 
@@ -157,19 +155,13 @@ export default {
     // 使用父组件传入的计数
     const displayNameCount = computed(() => props.archiveCount);
     const displayLevelCount = computed(() => props.levelDetectedCount);
-    const displayDifficultyCount = computed(
-      () => props.difficultyDetectedCount
-    );
+    const displayDifficultyCount = computed(() => props.difficultyDetectedCount);
 
     // 计算属性
     const hasErrors = computed(() => lastParseResult.value?.errors?.length > 0);
-    const hasWarnings = computed(
-      () => lastParseResult.value?.warnings?.length > 0
-    );
+    const hasWarnings = computed(() => lastParseResult.value?.warnings?.length > 0);
     const hasInfo = computed(() => lastParseResult.value?.info?.length > 0);
-    const displayWarnings = computed(
-      () => lastParseResult.value?.warnings?.slice(0, 3) || []
-    );
+    const displayWarnings = computed(() => lastParseResult.value?.warnings?.slice(0, 3) || []);
 
     const dropZoneClass = computed(() => ({
       "drag-over": isDragOver.value,
@@ -196,7 +188,7 @@ export default {
               processTextInput(text);
             }
           })
-          .catch(() => { });
+          .catch(() => {});
       }
     };
 
@@ -278,11 +270,7 @@ export default {
 
     const handleGlobalPaste = (event) => {
       const el = document.activeElement;
-      if (
-        el &&
-        (el.tagName === "INPUT" || el.tagName === "TEXTAREA") &&
-        el !== pasteArea.value
-      ) {
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA") && el !== pasteArea.value) {
         return;
       }
 
@@ -292,7 +280,7 @@ export default {
           .then((text) => {
             if (text && text.trim()) processTextInput(text);
           })
-          .catch(() => { });
+          .catch(() => {});
       }
     };
 
@@ -321,11 +309,7 @@ export default {
           try {
             const templateData = JSON.parse(text);
             // 验证是否是有效的模板格式
-            if (
-              templateData.version &&
-              templateData.archives &&
-              Array.isArray(templateData.archives)
-            ) {
+            if (templateData.version && templateData.archives && Array.isArray(templateData.archives)) {
               // 这是一个模板文件，通知父组件加载
               emit("load-template", templateData);
               return;
@@ -364,9 +348,7 @@ export default {
       if (files.length === 0) return;
 
       const file = files[0];
-      const valid = [".txt", ".csv", ".json"].some((ext) =>
-        file.name.toLowerCase().endsWith(ext)
-      );
+      const valid = [".txt", ".csv", ".json"].some((ext) => file.name.toLowerCase().endsWith(ext));
 
       if (!valid) {
         lastParseResult.value = {
@@ -387,11 +369,7 @@ export default {
           try {
             const templateData = JSON.parse(text);
             // 验证是否是有效的模板格式
-            if (
-              templateData.version &&
-              templateData.archives &&
-              Array.isArray(templateData.archives)
-            ) {
+            if (templateData.version && templateData.archives && Array.isArray(templateData.archives)) {
               // 这是一个模板文件，通知父组件加载
               emit("load-template", templateData);
               return;
@@ -429,8 +407,6 @@ export default {
     return {
       parsedNames,
       nameCount: displayNameCount,
-      levelDetectedCount: displayLevelCount,
-      difficultyDetectedCount: displayDifficultyCount,
       isDragOver,
       lastParseResult,
       isProcessing,

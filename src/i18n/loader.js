@@ -1,19 +1,19 @@
 /**
- * i18n 加载器 - 优化版
- * 支持按需加载语言包
+ * i18n loader - optimized
+ * Supports on-demand language pack loading
  */
 import { createI18n } from "vue-i18n";
 import storage from "../services/storageService";
 
-// 单例实例
+// Singleton instance
 let i18nInstance = null;
 
-// 语言包缓存
+// Language pack cache
 const messagesCache = {};
 const releaseNotesCache = {};
 
 /**
- * 获取用户语言偏好
+ * Get user language preference
  */
 const getUserLocale = () => {
   const saved = storage.getItem("locale") || storage.getItem("language");
@@ -29,7 +29,7 @@ const getUserLocale = () => {
 };
 
 /**
- * 加载语言包
+ * Load language pack
  */
 const loadLocaleMessages = async (locale) => {
   if (messagesCache[locale]) {
@@ -56,7 +56,7 @@ const loadLocaleMessages = async (locale) => {
 };
 
 /**
- * 加载更新公告数据（现在是单个对象而不是数组）
+ * Load release notes data (now a single object instead of an array)
  */
 const loadReleaseNotes = async (locale) => {
   if (releaseNotesCache[locale]) {
@@ -87,7 +87,7 @@ const loadReleaseNotes = async (locale) => {
 };
 
 /**
- * 创建 i18n 实例
+ * Create i18n instance
  */
 export const createI18nInstance = async () => {
   if (i18nInstance) return i18nInstance;
@@ -105,32 +105,35 @@ export const createI18nInstance = async () => {
     fallbackWarn: false,
   });
 
-  // 延迟加载其他语言
-  requestIdleCallback(async () => {
-    const otherLocales = ["zh-CN", "zh-TW", "en-US"].filter(l => l !== locale);
-    for (const loc of otherLocales) {
-      const msg = await loadLocaleMessages(loc);
-      i18nInstance.global.setLocaleMessage(loc, msg);
-    }
-  }, { timeout: 5000 });
+  // Lazily load other languages
+  requestIdleCallback(
+    async () => {
+      const otherLocales = ["zh-CN", "zh-TW", "en-US"].filter((l) => l !== locale);
+      for (const loc of otherLocales) {
+        const msg = await loadLocaleMessages(loc);
+        i18nInstance.global.setLocaleMessage(loc, msg);
+      }
+    },
+    { timeout: 5000 },
+  );
 
   return i18nInstance;
 };
 
 /**
- * 获取当前 i18n 实例
+ * Get current i18n instance
  */
 export const getI18n = () => i18nInstance;
 
 /**
- * 切换语言
+ * Switch language
  */
 export const switchLanguage = async (newLocale) => {
   if (!i18nInstance || !["zh-CN", "zh-TW", "en-US"].includes(newLocale)) {
     return;
   }
 
-  // 确保语言包已加载
+  // Ensure language pack is loaded
   if (!i18nInstance.global.messages.value[newLocale]) {
     const messages = await loadLocaleMessages(newLocale);
     i18nInstance.global.setLocaleMessage(newLocale, messages);
@@ -140,19 +143,19 @@ export const switchLanguage = async (newLocale) => {
   storage.setItem("locale", newLocale);
   storage.setItem("language", newLocale);
 
-  // 触发语言变化事件
+  // Dispatch language change event
   window.dispatchEvent(new CustomEvent("language-changed", { detail: { locale: newLocale } }));
 };
 
 /**
- * 获取当前语言
+ * Get current language
  */
 export const getCurrentLanguage = () => {
   return i18nInstance?.global.locale.value || getUserLocale();
 };
 
 /**
- * 获取更新公告数据
+ * Get release notes data
  */
 export const getReleaseNotesData = async (locale) => {
   const targetLocale = locale || getCurrentLanguage();
@@ -160,7 +163,7 @@ export const getReleaseNotesData = async (locale) => {
 };
 
 /**
- * 预加载 i18n
+ * Preload i18n
  */
 export const preloadI18n = () => createI18nInstance();
 

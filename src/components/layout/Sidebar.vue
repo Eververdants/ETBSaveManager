@@ -1,19 +1,35 @@
 <template>
-  <div ref="sidebarRef" class="sidebar" :class="{ expanded: isExpanded }" @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave">
+  <div
+    ref="sidebarRef"
+    class="sidebar"
+    :class="{ expanded: isExpanded }"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+  >
     <div class="sidebar-content">
       <!-- 顶部区域 -->
       <div class="sidebar-section top-section">
-        <div class="sidebar-item" v-for="item in filteredTopMenuItems" :key="item.id"
-          :class="['sidebar-item', { active: item.id === activeItemId }]" @click="handleItemClick(item, $event)"
-          @mousedown="handleMouseDown" @mouseenter="handleMouseEnterItem" @mouseleave="handleMouseLeaveItem"
-          @mouseup="handleMouseUp">
+        <div
+          v-for="item in filteredTopMenuItems"
+          :key="item.id"
+          class="sidebar-item"
+          :class="['sidebar-item', { active: item.id === activeItemId }]"
+          @click="handleItemClick(item, $event)"
+          @mousedown="handleMouseDown"
+          @mouseenter="handleMouseEnterItem"
+          @mouseleave="handleMouseLeaveItem"
+          @mouseup="handleMouseUp"
+        >
           <div class="sidebar-icon-container">
             <font-awesome-icon :icon="item.icon" class="sidebar-icon" />
           </div>
           <div class="sidebar-text-container">
-            <span class="sidebar-text" :data-text="safeT(item.textKey)" :class="{ visible: isExpanded }"
-              :data-lang="currentLanguage">
+            <span
+              class="sidebar-text"
+              :data-text="safeT(item.textKey)"
+              :class="{ visible: isExpanded }"
+              :data-lang="currentLanguage"
+            >
               {{ safeT(item.textKey) }}
             </span>
           </div>
@@ -22,16 +38,27 @@
 
       <!-- 底部区域 -->
       <div class="sidebar-section bottom-section">
-        <div class="sidebar-item" v-for="item in bottomMenuItems" :key="item.id"
-          :class="['sidebar-item', { active: item.id === activeItemId }]" @click="handleItemClick(item, $event)"
-          @mousedown="handleMouseDown" @mouseenter="handleMouseEnterItem" @mouseleave="handleMouseLeaveItem"
-          @mouseup="handleMouseUp">
+        <div
+          v-for="item in bottomMenuItems"
+          :key="item.id"
+          class="sidebar-item"
+          :class="['sidebar-item', { active: item.id === activeItemId }]"
+          @click="handleItemClick(item, $event)"
+          @mousedown="handleMouseDown"
+          @mouseenter="handleMouseEnterItem"
+          @mouseleave="handleMouseLeaveItem"
+          @mouseup="handleMouseUp"
+        >
           <div class="sidebar-icon-container">
             <font-awesome-icon :icon="item.icon" class="sidebar-icon" />
           </div>
           <div class="sidebar-text-container">
-            <span class="sidebar-text" :data-text="safeT(item.textKey)" :class="{ visible: isExpanded }"
-              :data-lang="currentLanguage">
+            <span
+              class="sidebar-text"
+              :data-text="safeT(item.textKey)"
+              :class="{ visible: isExpanded }"
+              :data-lang="currentLanguage"
+            >
               {{ safeT(item.textKey) }}
             </span>
           </div>
@@ -42,13 +69,7 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  computed,
-  onMounted,
-  nextTick,
-  watch,
-} from "vue";
+import { ref, computed, onMounted, nextTick, watch } from "vue";
 import { useRoute } from "vue-router";
 import { topMenuItems, bottomMenuItems } from "../../config/sidebarMenu.js";
 import { gsap } from "gsap";
@@ -106,7 +127,7 @@ const useSidebarMenuItems = () => {
 const useSidebarRouteHandler = (activeItemId) => {
   const setActiveItemFromRoute = () => {
     const allMenuItems = [...topMenuItems.value, ...bottomMenuItems.value];
-    let activeItem = null;
+    let activeItem;
 
     if (route.name === "SelectCreateMode") {
       activeItem = allMenuItems.find((item) => item.route === "CreateArchive");
@@ -147,9 +168,7 @@ const useSidebarTheme = (sidebarRef) => {
 
 const useSidebarMenuItemManager = (activeItemId, setActiveItemFromRoute) => {
   const addLogMenuItem = () => {
-    const existingLogItem = [...topMenuItems.value, ...bottomMenuItems.value].find(
-      (item) => item.action === "openLog"
-    );
+    const existingLogItem = [...topMenuItems.value, ...bottomMenuItems.value].find((item) => item.action === "openLog");
 
     if (!existingLogItem) {
       const allItems = [...topMenuItems.value, ...bottomMenuItems.value];
@@ -186,7 +205,7 @@ const useSidebarMenuItemManager = (activeItemId, setActiveItemFromRoute) => {
 
   const addTestArchiveMenuItem = () => {
     const existingTestArchiveItem = [...topMenuItems.value, ...bottomMenuItems.value].find(
-      (item) => item.action === "openTestArchive"
+      (item) => item.action === "openTestArchive",
     );
 
     if (!existingTestArchiveItem) {
@@ -208,9 +227,7 @@ const useSidebarMenuItemManager = (activeItemId, setActiveItemFromRoute) => {
   };
 
   const removeTestArchiveMenuItem = () => {
-    const testArchiveItemIndex = topMenuItems.value.findIndex(
-      (item) => item.action === "openTestArchive"
-    );
+    const testArchiveItemIndex = topMenuItems.value.findIndex((item) => item.action === "openTestArchive");
 
     if (testArchiveItemIndex !== -1) {
       const testArchiveItemId = topMenuItems.value[testArchiveItemIndex].id;
@@ -234,8 +251,7 @@ const useSidebarTextMeasurement = () => {
     tempElement.style.visibility = "hidden";
     tempElement.style.whiteSpace = "nowrap";
     tempElement.style.fontSize = "16px";
-    tempElement.style.fontFamily =
-      '-apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif';
+    tempElement.style.fontFamily = '-apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif';
     tempElement.textContent = text;
 
     document.body.appendChild(tempElement);
@@ -337,15 +353,11 @@ const useSidebarActions = (activeItemId, safeT) => {
     console.log("项目被点击:", safeT(item.textKey));
 
     if (item.action) {
-      window.dispatchEvent(
-        new CustomEvent("sidebar-action", { detail: { action: item.action, item } })
-      );
+      window.dispatchEvent(new CustomEvent("sidebar-action", { detail: { action: item.action, item } }));
     }
 
     if (item.route) {
-      window.dispatchEvent(
-        new CustomEvent("sidebar-route-change", { detail: { route: item.route } })
-      );
+      window.dispatchEvent(new CustomEvent("sidebar-route-change", { detail: { route: item.route } }));
     }
 
     if (currentPressedItem) {
@@ -365,17 +377,22 @@ const { detectTheme } = useSidebarTheme(sidebarRef);
 const { addLogMenuItem, removeLogMenuItem, addTestArchiveMenuItem, removeTestArchiveMenuItem } =
   useSidebarMenuItemManager(activeItemId, setActiveItemFromRoute);
 const { getTextWidth, checkTextOverflow } = useSidebarTextMeasurement();
-const { handleMouseDown, handleMouseEnterItem, handleMouseLeaveItem, handleMouseUp } =
-  useSidebarMouseInteractions(checkTextOverflow, getTextWidth);
+const { handleMouseDown, handleMouseEnterItem, handleMouseLeaveItem, handleMouseUp } = useSidebarMouseInteractions(
+  checkTextOverflow,
+  getTextWidth,
+);
 const { handleItemClick } = useSidebarActions(activeItemId, safeT);
 
 onMounted(() => {
   setActiveItemFromRoute();
   detectTheme();
 
-  watch(() => route.name, () => setActiveItemFromRoute());
+  watch(
+    () => route.name,
+    () => setActiveItemFromRoute(),
+  );
 
-  watch(currentLanguage, () => nextTick(() => { }));
+  watch(currentLanguage, () => nextTick(() => {}));
 
   window.addEventListener("toggle-sidebar", (e) => {
     if (e.detail.collapsed && isExpanded.value) handleMouseLeave();
@@ -401,16 +418,13 @@ onMounted(() => {
     event.detail.enabled ? addTestArchiveMenuItem() : removeTestArchiveMenuItem();
   });
 
-  window.addEventListener("language-changed", () => nextTick(() => { }));
+  window.addEventListener("language-changed", () => nextTick(() => {}));
 
   if (storageService.getItem("testArchiveEnabled") === "true") {
     addTestArchiveMenuItem();
   }
 
-  if (
-    storageService.getItem("developerMode") === "true" &&
-    storageService.getItem("logMenuEnabled") === "true"
-  ) {
+  if (storageService.getItem("developerMode") === "true" && storageService.getItem("logMenuEnabled") === "true") {
     addLogMenuItem();
   }
 });
@@ -436,10 +450,13 @@ onMounted(() => {
   overflow: hidden;
   border-right: 1px solid var(--sidebar-border-color);
   border-radius: 0 var(--radius-sidebar) var(--radius-sidebar) 0;
-  font-family: -apple-system, BlinkMacSystemFont, "San Francisco",
-    "Helvetica Neue", sans-serif;
-  transition: background 0.25s ease, border-right 0.25s ease,
-    box-shadow 0.25s ease, width 0.3s ease, --sidebar-width 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
+  transition:
+    background 0.25s ease,
+    border-right 0.25s ease,
+    box-shadow 0.25s ease,
+    width 0.3s ease,
+    --sidebar-width 0.3s ease;
 }
 
 /* 侧边栏展开样式 */
@@ -459,13 +476,14 @@ onMounted(() => {
 /* 侧边栏文本样式 */
 .sidebar-text {
   opacity: 0;
-  transition: opacity 0.3s ease,
-    transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.25s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    color 0.25s ease;
   font-size: 16px;
   white-space: nowrap;
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "San Francisco",
-    "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
   transform: translateX(-10px);
   display: block;
   position: relative;
@@ -480,7 +498,10 @@ onMounted(() => {
   align-items: center;
   padding: var(--space-3) 0;
   cursor: pointer;
-  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease,
+  transition:
+    all 0.2s ease,
+    background-color 0.25s ease,
+    color 0.25s ease,
     box-shadow 0.25s ease;
   white-space: nowrap;
   border-radius: var(--radius-sidebar);
@@ -496,7 +517,10 @@ onMounted(() => {
 .sidebar-item:hover {
   background: var(--sidebar-hover-bg);
   box-shadow: var(--shadow-md);
-  transition: all 0.2s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    all 0.2s ease,
+    background-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 /* 侧边栏项激活状态样式 */
@@ -504,14 +528,20 @@ onMounted(() => {
   background: var(--sidebar-active-bg);
   color: var(--sidebar-active-color);
   box-shadow: inset 0 0 0 2px var(--sidebar-active-border);
-  transition: all 0.2s ease, background-color 0.25s ease, color 0.25s ease,
+  transition:
+    all 0.2s ease,
+    background-color 0.25s ease,
+    color 0.25s ease,
     box-shadow 0.25s ease;
 }
 
 /* 侧边栏项激活+悬停状态样式 */
 .sidebar-item.active:hover {
   background: var(--sidebar-active-hover-bg);
-  transition: all 0.2s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    all 0.2s ease,
+    background-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 /* 侧边栏内容区域样式 */
@@ -672,13 +702,13 @@ onMounted(() => {
 /* 侧边栏文本样式 */
 .sidebar-text {
   opacity: 0;
-  transition: opacity 0.3s ease,
+  transition:
+    opacity 0.3s ease,
     transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   font-size: 16px;
   white-space: nowrap;
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "San Francisco",
-    "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
   transform: translateX(-10px);
   display: block;
   position: relative;
@@ -699,7 +729,8 @@ onMounted(() => {
 }
 
 .sidebar-text.fade-enter-active {
-  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+  transition:
+    opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

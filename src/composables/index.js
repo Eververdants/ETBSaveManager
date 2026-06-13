@@ -5,8 +5,8 @@ export { usePerformanceMonitor } from "./usePerformanceMonitor";
 export { useToast } from "./useToast";
 export { useAnimations } from "./useAnimations";
 export { useFloatingButton } from "./useFloatingButton";
+export { useNameParser } from "./useNameParser";
 export {
-  useNameParser,
   parseName,
   parseMultiple,
   parseNames,
@@ -18,7 +18,7 @@ export {
   DIFFICULTY_KEYWORDS,
   BACKPACK_KEYWORDS,
   COLUMN_ALIASES,
-} from "./useNameParser";
+} from "@/utils/nameParser";
 export {
   useConfigResolver,
   resolve,

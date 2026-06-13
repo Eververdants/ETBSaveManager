@@ -4,7 +4,7 @@
       <div class="modal-container" @click.stop>
         <div class="modal-header">
           <h3 class="modal-title">{{ title }}</h3>
-          <button class="modal-close" @click="handleCancel" aria-label="关闭">
+          <button class="modal-close" aria-label="关闭" @click="handleCancel">
             <font-awesome-icon icon="fa-solid fa-times" />
           </button>
         </div>
@@ -22,9 +22,7 @@
                 <font-awesome-icon icon="fa-solid fa-layer-group" />
                 {{ t("confirmModal.archiveDetails.currentLevel") }}
               </span>
-              <span class="detail-value">{{
-                archiveDetails.currentLevel || t("common.unknown")
-                }}</span>
+              <span class="detail-value">{{ archiveDetails.currentLevel || t("common.unknown") }}</span>
             </div>
             <div class="archive-detail-row">
               <span class="detail-label">
@@ -42,9 +40,7 @@
                 <font-awesome-icon icon="fa-solid fa-clock" />
                 {{ t("confirmModal.archiveDetails.modifiedTime") }}
               </span>
-              <span class="detail-value">{{
-                formatDate(archiveDetails.date)
-                }}</span>
+              <span class="detail-value">{{ formatDate(archiveDetails.date) }}</span>
             </div>
           </div>
 
@@ -52,10 +48,10 @@
         </div>
 
         <div class="modal-footer">
-          <button class="btn btn-secondary" @click="handleCancel" :disabled="loading">
+          <button class="btn btn-secondary" :disabled="loading" @click="handleCancel">
             {{ cancelText }}
           </button>
-          <button class="btn" :class="`btn-${type}`" @click="handleConfirm" :disabled="loading">
+          <button class="btn" :class="`btn-${type}`" :disabled="loading" @click="handleConfirm">
             <span v-if="loading" class="loading-spinner"></span>
             {{ confirmText }}
           </button>
@@ -193,10 +189,8 @@ const useConfirmModalActions = () => {
 };
 
 const { icon } = useConfirmModalIcons();
-const { getGameModeText, getDifficultyText, formatDate } =
-  useArchiveDetailsFormatter();
-const { handleConfirm, handleCancel, handleOverlayClick, handleKeydown } =
-  useConfirmModalActions();
+const { getGameModeText, getDifficultyText, formatDate } = useArchiveDetailsFormatter();
+const { handleConfirm, handleCancel, handleOverlayClick, handleKeydown } = useConfirmModalActions();
 
 onMounted(() => {
   document.addEventListener("keydown", handleKeydown);

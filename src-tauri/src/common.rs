@@ -30,11 +30,11 @@ pub fn get_local_appdata_dir() -> AppResult<PathBuf> {
                 {
                     std::env::var("LOCALAPPDATA")
                         .map(PathBuf::from)
-                        .map_err(|e| AppError { message: format!("Failed to get LOCALAPPDATA: {}", e) })
+                        .map_err(|e| AppError::General(format!("Failed to get LOCALAPPDATA: {}", e)))
                 }
                 #[cfg(not(target_os = "windows"))]
                 {
-                    Err(AppError { message: "Only Windows is supported".to_string() })
+                    Err(AppError::General("Only Windows is supported".to_string()))
                 }
             })
         })

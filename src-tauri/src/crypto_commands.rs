@@ -1,5 +1,6 @@
 use crate::encryption;
 use crate::error::AppResult;
+use zeroize::Zeroizing;
 
 #[tauri::command]
 pub fn init_config_command(password: String, custom_dir: Option<String>) -> AppResult<()> {
@@ -18,7 +19,8 @@ pub fn encrypt_file_command(
     input_path: String,
     output_path: String,
 ) -> AppResult<()> {
-    Ok(encryption::encrypt_file(&master_key, &input_path, &output_path)?)
+    let key = Zeroizing::new(master_key);
+    Ok(encryption::encrypt_file(&key, &input_path, &output_path)?)
 }
 
 #[tauri::command]
@@ -27,7 +29,8 @@ pub fn decrypt_file_command(
     input_path: String,
     output_path: String,
 ) -> AppResult<()> {
-    Ok(encryption::decrypt_file(&master_key, &input_path, &output_path)?)
+    let key = Zeroizing::new(master_key);
+    Ok(encryption::decrypt_file(&key, &input_path, &output_path)?)
 }
 
 #[tauri::command]

@@ -37,6 +37,20 @@ const MAX_CUSTOM_THEMES = 10;
 export class ThemeStorage {
   constructor() {
     this.validator = themeValidator;
+
+    /**
+     * In-memory cache of custom themes. `null` = stale / not yet loaded.
+     * @type {Object[]|null}
+     */
+    this._cache = null;
+  }
+
+  /**
+   * Invalidates the in-memory cache, forcing the next read to reload
+   * from the backend.
+   */
+  _invalidateCache() {
+    this._cache = null;
   }
 
   /**
@@ -68,6 +82,7 @@ export class ThemeStorage {
       };
 
       await invoke("save_custom_theme", { theme: themeToSave });
+      this._invalidateCache();
 
       return {
         success: true,
@@ -83,19 +98,26 @@ export class ThemeStorage {
   }
 
   /**
-   * Loads all custom themes from local storage via Tauri backend
+   * Loads all custom themes from local storage via Tauri backend.
+   * Results are cached in memory to avoid repeated IPC calls.
    *
    * @returns {Promise<Object[]>} Array of custom themes
    */
   async loadCustomThemes() {
+    if (this._cache) {
+      return this._cache;
+    }
+
     try {
       const themes = await invoke("load_custom_themes");
 
       // Merge each theme with template to ensure completeness
-      return themes.map((theme) => ({
+      this._cache = themes.map((theme) => ({
         ...theme,
         colors: this.validator.mergeWithTemplate(theme.colors),
       }));
+
+      return this._cache;
     } catch (error) {
       console.error("Failed to load custom themes:", error);
       return [];
@@ -116,6 +138,7 @@ export class ThemeStorage {
       }
 
       const result = await invoke("delete_custom_theme", { themeId });
+      this._invalidateCache();
       return result;
     } catch (error) {
       console.error("Failed to delete custom theme:", error);
@@ -211,6 +234,8 @@ export class ThemeStorage {
         ...importedTheme,
         colors: this.validator.mergeWithTemplate(importedTheme.colors),
       };
+
+      this._invalidateCache();
 
       return {
         success: true,

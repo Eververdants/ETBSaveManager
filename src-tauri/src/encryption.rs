@@ -172,7 +172,7 @@ pub fn clear_saved_password() -> AppResult<()> {
 
 /// Encrypt file
 pub fn encrypt_file(
-    master_key: &[u8; MASTER_KEY_LEN],
+    master_key: &Zeroizing<[u8; MASTER_KEY_LEN]>,
     input_path: &str,
     output_path: &str,
 ) -> AppResult<()> {
@@ -184,7 +184,7 @@ pub fn encrypt_file(
 
 /// Decrypt file
 pub fn decrypt_file(
-    master_key: &[u8; MASTER_KEY_LEN],
+    master_key: &Zeroizing<[u8; MASTER_KEY_LEN]>,
     input_path: &str,
     output_path: &str,
 ) -> AppResult<()> {
@@ -196,13 +196,14 @@ pub fn decrypt_file(
 
 /// Encrypt data
 pub fn encrypt_data(
-    master_key: &[u8; MASTER_KEY_LEN],
+    master_key: &Zeroizing<[u8; MASTER_KEY_LEN]>,
     plaintext: &[u8],
 ) -> AppResult<Vec<u8>> {
     let mut nonce_bytes = [0u8; NONCE_LEN];
     OsRng.fill(&mut nonce_bytes);
 
-    let cipher = Aes256Gcm::new(master_key.into());
+    let key_ref: &[u8; MASTER_KEY_LEN] = &**master_key;
+    let cipher = Aes256Gcm::new(key_ref.into());
     let nonce = Nonce::from_slice(&nonce_bytes);
 
     let ciphertext = cipher
@@ -218,7 +219,7 @@ pub fn encrypt_data(
 
 /// Decrypt data
 pub fn decrypt_data(
-    master_key: &[u8; MASTER_KEY_LEN],
+    master_key: &Zeroizing<[u8; MASTER_KEY_LEN]>,
     ciphertext: &[u8],
 ) -> AppResult<Vec<u8>> {
     if ciphertext.len() < NONCE_LEN {
@@ -228,7 +229,8 @@ pub fn decrypt_data(
     let (nonce_bytes, encrypted_data) = ciphertext.split_at(NONCE_LEN);
     let nonce = Nonce::from_slice(nonce_bytes);
 
-    let cipher = Aes256Gcm::new(master_key.into());
+    let key_ref: &[u8; MASTER_KEY_LEN] = &**master_key;
+    let cipher = Aes256Gcm::new(key_ref.into());
 
     Ok(cipher
         .decrypt(nonce, encrypted_data)

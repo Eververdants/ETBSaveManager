@@ -238,7 +238,7 @@ export function disableInteractions() {
       -webkit-touch-callout: none !important;
       -webkit-tap-highlight-color: transparent !important;
     }
-    
+
     img {
       -webkit-user-drag: none !important;
       -khtml-user-drag: none !important;
@@ -247,7 +247,7 @@ export function disableInteractions() {
       user-drag: none !important;
       pointer-events: none !important;
     }
-    
+
     input, textarea {
       -webkit-user-select: text !important;
       -moz-user-select: text !important;
@@ -266,8 +266,3 @@ export function disableInteractions() {
 export function enableInteractions() {
   console.log("交互已恢复");
 }
-
-// // 自动应用
-// if (typeof window !== 'undefined') {
-//   disableInteractions();
-// }

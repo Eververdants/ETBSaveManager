@@ -3,10 +3,7 @@ import { ref, onMounted, onUnmounted, shallowRef, computed, nextTick, watch } fr
 import { useRouter, useRoute } from "vue-router";
 import storage from "./services/storageService";
 import PerformanceMonitor from "./components/system/PerformanceMonitor.vue";
-import AutoFeedbackConsentModal from "./components/modal/AutoFeedbackConsentModal.vue";
 import GlobalSearchPanel from "./components/feature/GlobalSearchPanel.vue";
-import { isSeasonalThemeAvailable } from "./config/seasonalThemeConfig";
-
 const Sidebar = shallowRef(null);
 const TitleBar = shallowRef(null);
 
@@ -26,41 +23,8 @@ const performanceMonitorEnabled = ref(normalizeBool(storage.getItem("performance
 const developerModeEnabled = ref(normalizeBool(storage.getItem("developerMode", false)));
 const shouldShowPerformanceMonitor = computed(() => performanceMonitorEnabled.value && developerModeEnabled.value);
 
-const showAutoFeedbackConsent = ref(false);
-const autoFeedbackConsentShown = ref(false);
-
-const CONSENT_KEY = "autoFeedbackConsentShown";
-
-function checkAndShowAutoFeedbackConsent() {
-  const alreadyShown = storage.getItem(CONSENT_KEY, false);
-  if (alreadyShown) {
-    return;
-  }
-  showAutoFeedbackConsent.value = true;
-}
-
-function handleAutoFeedbackAccept() {
-  storage.setItem("autoFeedbackEnabled", true);
-  storage.setItem(CONSENT_KEY, true);
-  window.dispatchEvent(
-    new CustomEvent("auto-feedback-toggle", {
-      detail: { enabled: true },
-    }),
-  );
-}
-
-function handleAutoFeedbackDecline() {
-  storage.setItem("autoFeedbackEnabled", false);
-  storage.setItem(CONSENT_KEY, true);
-  window.dispatchEvent(
-    new CustomEvent("auto-feedback-toggle", {
-      detail: { enabled: false },
-    }),
-  );
-}
-
-const cachedComponents = ["Home", "Settings", "CreateArchive", "PluginMarket", "CoreArchive", "Log"];
-const excludedComponents = ["BatchCreateArchive", "EditArchive", "SteamCache"];
+const cachedComponents = ["Home", "Settings", "CreateArchive", "Log"];
+const excludedComponents = ["BatchCreateArchive", "EditArchive"];
 
 const handleSidebarExpand = (expanded) => {
   sidebarExpanded.value = expanded;
@@ -207,7 +171,6 @@ onMounted(() => {
   requestIdleCallback(
     () => {
       initThemeSystem();
-      checkAndShowAutoFeedbackConsent();
     },
     { timeout: 1000 },
   );
@@ -232,50 +195,15 @@ async function initThemeSystem() {
     await storage.initStorage();
   }
 
-  const isSeasonalTheme = (id) => ["new-year", "spring-festival-dark", "spring-festival-light"].includes(id);
-
-  const seasonalMode = storage.getItem("seasonalThemeMode") || "auto";
-  const isSeasonalAvailable = (id) => isSeasonalThemeAvailable(id, { mode: seasonalMode });
-
   let theme = storage.getItem("theme") || window.__initialTheme || "light";
-
-  const initialTheme = window.__initialTheme;
-
-  if (isSeasonalTheme(theme) && !isSeasonalAvailable(theme)) {
-    theme = storage.getItem("themeBeforeNewYear") || "light";
-    storage.setItem("theme", theme);
-  }
 
   if (window.themeManager) {
     window.themeManager.setTheme(theme);
   } else {
     document.documentElement.setAttribute("data-theme", theme);
   }
-
-  if (theme !== initialTheme) {
-    updateBodyBackground(theme);
-  }
 }
 
-function updateBodyBackground(theme) {
-  const body = document.body;
-  if (!body) return;
-
-  const bgColors = {
-    dark: "#1c1c1e",
-    light: "#f8f9fa",
-    "new-year": "#1a0a0a",
-    "spring-festival-dark": "#1c0a14",
-    "spring-festival-light": "#fefce8",
-  };
-
-  const bg = bgColors[theme] || bgColors["light"];
-  body.style.backgroundColor = bg;
-
-  setTimeout(() => {
-    body.style.backgroundColor = "";
-  }, 100);
-}
 </script>
 
 <template>
@@ -283,13 +211,6 @@ function updateBodyBackground(theme) {
     <component :is="TitleBar" v-if="TitleBar" />
     <PerformanceMonitor v-if="shouldShowPerformanceMonitor" class="performance-monitor" />
     <GlobalSearchPanel ref="globalSearchRef" :visible="showGlobalSearch" @close="closeGlobalSearch" />
-    <AutoFeedbackConsentModal
-      :show="showAutoFeedbackConsent"
-      :title="$t('settings.autoFeedbackConsent.title')"
-      :message="$t('settings.autoFeedbackConsent.message')"
-      @accept="handleAutoFeedbackAccept"
-      @decline="handleAutoFeedbackDecline"
-    />
     <div class="content-wrapper">
       <component :is="Sidebar" v-if="Sidebar" @sidebar-expand="handleSidebarExpand" />
       <main

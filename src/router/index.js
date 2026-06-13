@@ -22,12 +22,6 @@ const routes = [
     meta: { keepAlive: false, priority: 2 },
   },
   {
-    path: "/plugins",
-    name: "PluginMarket",
-    component: () => import("../views/PluginMarket.vue"),
-    meta: { keepAlive: true },
-  },
-  {
     path: "/select-create-mode",
     name: "SelectCreateMode",
     component: () => import("../views/SelectCreateMode.vue"),
@@ -63,30 +57,6 @@ const routes = [
     name: "Log",
     component: () => import("../views/Log.vue"),
     meta: { keepAlive: true },
-  },
-  {
-    path: "/steam-cache",
-    name: "SteamCache",
-    component: () => import("../views/SteamCache.vue"),
-    meta: { keepAlive: false },
-  },
-  {
-    path: "/feedback",
-    name: "Feedback",
-    component: () => import("../views/Feedback.vue"),
-    meta: { keepAlive: false },
-  },
-  {
-    path: "/theme-editor",
-    name: "ThemeEditor",
-    component: () => import("../views/ThemeEditor.vue"),
-    meta: { keepAlive: false },
-  },
-  {
-    path: "/theme-editor/:themeId",
-    name: "ThemeEditorEdit",
-    component: () => import("../views/ThemeEditor.vue"),
-    meta: { keepAlive: false },
   },
 ];
 
@@ -128,10 +98,5 @@ router.afterEach((to, from) => {
     preloadPriorityRoutes();
   }
 });
-
-// Expose router instance globally for the auto-feedback service
-if (typeof window !== "undefined") {
-  window.__VUE_ROUTER__ = router;
-}
 
 export default router;

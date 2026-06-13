@@ -133,8 +133,6 @@ const useSidebarRouteHandler = (activeItemId) => {
       activeItem = allMenuItems.find((item) => item.route === "CreateArchive");
     } else if (["CreateArchive", "QuickCreateArchive", "BatchCreateArchive"].includes(route.name)) {
       activeItem = allMenuItems.find((item) => item.route === "CreateArchive");
-    } else if (route.name === "SteamCache") {
-      activeItem = allMenuItems.find((item) => item.route === "Settings");
     } else {
       activeItem = allMenuItems.find((item) => item.route === route.name);
     }

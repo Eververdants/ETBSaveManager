@@ -47,23 +47,12 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, nextTick, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { getInstalledThemePlugins, PluginStatus } from "../../plugins";
-import { isSeasonalThemeAvailable } from "../../config/seasonalThemeConfig";
-
 const { t, te, locale } = useI18n();
 
 const props = defineProps({
   modelValue: {
     type: String,
     default: "light",
-  },
-  showSeasonalThemes: {
-    type: Boolean,
-    default: false,
-  },
-  seasonalThemeMode: {
-    type: String,
-    default: "auto",
   },
 });
 
@@ -116,50 +105,7 @@ const scrollRight = () => {
   scrollContainer.value.scrollBy({ left: 224, behavior: "smooth" });
 };
 
-// 刷新触发器
-const refreshTrigger = ref(0);
-
-// 插件主题列表 - 使用 computed 确保响应式
-const pluginThemes = computed(() => {
-  // 依赖 refreshTrigger 以支持手动刷新
-  refreshTrigger.value;
-
-  const installed = getInstalledThemePlugins();
-  return installed
-    .filter((p) => p.status === PluginStatus.ACTIVE)
-    .map((p) => ({
-      id: p.themeId,
-      name: p.name,
-      isPlugin: true,
-      colors: p.data?.previewColors || {
-        bg: "#1a1a25",
-        sidebar: "#12121a",
-        header: "#1e1e2a",
-        card: "#12121a",
-        accent: "#ff00ff",
-      },
-    }));
-});
-
-// 刷新插件主题
-const refreshPluginThemes = () => {
-  refreshTrigger.value++;
-};
-
-// 监听主题插件变化事件
-const handleThemePluginChanged = () => {
-  refreshPluginThemes();
-  // 使用多次 nextTick 确保 DOM 完全更新
-  nextTick(() => {
-    nextTick(() => {
-      updateScrollState();
-    });
-  });
-};
-
 onMounted(() => {
-  window.addEventListener("theme-plugin-changed", handleThemePluginChanged);
-
   // 使用 ResizeObserver 监听容器大小变化
   if (scrollContainer.value) {
     resizeObserver = new ResizeObserver(() => {
@@ -182,7 +128,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  window.removeEventListener("theme-plugin-changed", handleThemePluginChanged);
   if (resizeObserver && scrollContainer.value) {
     resizeObserver.unobserve(scrollContainer.value);
     resizeObserver.disconnect();
@@ -190,15 +135,7 @@ onUnmounted(() => {
   }
 });
 
-// 暴露刷新方法
-defineExpose({ refreshPluginThemes });
-
 const getThemeName = (themeId) => {
-  const pluginTheme = pluginThemes.value.find((t) => t.id === themeId);
-  if (pluginTheme) {
-    return pluginTheme.name;
-  }
-
   const themeIdToKey = {
     light: "light",
     dark: "dark",
@@ -210,9 +147,6 @@ const getThemeName = (themeId) => {
     mint: "mint",
     peach: "peach",
     sky: "sky",
-    "new-year": "newYear",
-    "spring-festival-dark": "springFestivalDark",
-    "spring-festival-light": "springFestivalLight",
   };
 
   const translationKey = `common.${themeIdToKey[themeId] || themeId}`;
@@ -290,27 +224,6 @@ const themeColors = {
     card: "#ffffff",
     accent: "#0284c7",
   },
-  "new-year": {
-    bg: "#1a0a0a",
-    sidebar: "#2d1515",
-    header: "#3d1f1f",
-    card: "#2d1515",
-    accent: "#ffd700",
-  },
-  "spring-festival-dark": {
-    bg: "#1c0a14",
-    sidebar: "#2d1020",
-    header: "#3c162a",
-    card: "#2d1020",
-    accent: "#ca8a04",
-  },
-  "spring-festival-light": {
-    bg: "#fefce8",
-    sidebar: "#fef9c3",
-    header: "#ffffff",
-    card: "#ffffff",
-    accent: "#be123c",
-  },
 };
 
 const themes = computed(() => {
@@ -326,36 +239,6 @@ const themes = computed(() => {
     { id: "lavender", colors: themeColors.lavender },
     { id: "rose", colors: themeColors.rose },
   ];
-
-  // 添加限时主题
-  if (props.showSeasonalThemes) {
-    if (isSeasonalThemeAvailable("new-year", { mode: props.seasonalThemeMode })) {
-      baseThemes.push({ id: "new-year", colors: themeColors["new-year"] });
-    }
-    if (
-      isSeasonalThemeAvailable("spring-festival-dark", {
-        mode: props.seasonalThemeMode,
-      })
-    ) {
-      baseThemes.push({
-        id: "spring-festival-dark",
-        colors: themeColors["spring-festival-dark"],
-      });
-    }
-    if (
-      isSeasonalThemeAvailable("spring-festival-light", {
-        mode: props.seasonalThemeMode,
-      })
-    ) {
-      baseThemes.push({
-        id: "spring-festival-light",
-        colors: themeColors["spring-festival-light"],
-      });
-    }
-  }
-
-  // 添加插件主题
-  baseThemes.push(...pluginThemes.value);
 
   return baseThemes;
 });

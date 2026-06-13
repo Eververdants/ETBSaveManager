@@ -163,9 +163,7 @@ async function initApp() {
       Promise.all([
         loadAllIcons(),
         loadOtherLocales(),
-        initPluginSystem(),
         initWindowTitle(i18n),
-        initAutoFeedbackMonitoring(),
       ]).then(() => {
         console.log(`[Startup] Full initialization: ${(performance.now() - startTime).toFixed(0)}ms`);
       });
@@ -174,21 +172,6 @@ async function initApp() {
   );
 
   return app;
-}
-
-// Plugin system initialization (delayed)
-async function initPluginSystem() {
-  try {
-    const { initializePluginSystem, languagePluginLoader, pagePluginLoader } = await import("./plugins");
-    languagePluginLoader.setI18nInstance(i18nInstance);
-    pagePluginLoader.setRouterInstance(router);
-
-    // router is already exposed globally above
-
-    await initializePluginSystem();
-  } catch (error) {
-    console.warn("[Plugins] Initialization failed:", error);
-  }
 }
 
 // Window title setup (delayed)
@@ -206,16 +189,6 @@ async function initWindowTitle(i18n) {
     });
   } catch (error) {
     console.warn("[Window] Failed to set title:", error);
-  }
-}
-
-// Auto-feedback initialization (delayed)
-async function initAutoFeedbackMonitoring() {
-  try {
-    const { autoFeedbackService } = await import("./services/autoFeedbackService");
-    autoFeedbackService.init();
-  } catch (error) {
-    console.warn("[AutoFeedback] Initialization failed:", error);
   }
 }
 
@@ -241,3 +214,4 @@ if (import.meta.env.PROD) {
     disableInteractions();
   });
 }
+

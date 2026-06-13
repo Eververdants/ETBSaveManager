@@ -4,7 +4,6 @@ use crate::common::{
     remove_save_from_mainsave, validate_save_games_path,
 };
 use crate::error::AppResult;
-use crate::feedback_commands;
 use crate::get_file_path;
 use crate::new_save;
 use crate::player_data;
@@ -18,12 +17,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
-use tauri::State;
 
 #[tauri::command]
-pub async fn load_all_saves(
-    log_state: State<'_, feedback_commands::BackendLogState>,
-) -> AppResult<Vec<SaveFileInfo>> {
+pub async fn load_all_saves() -> AppResult<Vec<SaveFileInfo>> {
     let start_time = Instant::now();
 
     // Parallel fetch file list and visible saves set
@@ -44,14 +40,11 @@ pub async fn load_all_saves(
         .collect();
 
     let elapsed = start_time.elapsed();
-    log_state.add_log(
-        "info",
-        &format!(
-            "load_all_saves: {}/{} saves, took {:.2}ms",
-            results.len(),
-            path_count,
-            elapsed.as_secs_f64() * 1000.0
-        ),
+    println!(
+        "load_all_saves: {}/{} saves, took {:.2}ms",
+        results.len(),
+        path_count,
+        elapsed.as_secs_f64() * 1000.0
     );
 
     Ok(results)

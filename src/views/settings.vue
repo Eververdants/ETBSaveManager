@@ -1,12 +1,5 @@
 <template>
   <div class="settings-container">
-    <AutoFeedbackConsentModal
-      :show="showAutoFeedbackConsent"
-      :title="$t('settings.autoFeedbackConsent.title')"
-      :message="$t('settings.autoFeedbackConsent.message')"
-      @accept="handleAutoFeedbackAccept"
-      @decline="handleAutoFeedbackDecline"
-    />
     <!-- Appearance and language settings group -->
     <div class="setting-group">
       <transition name="text-swift" mode="out-in">
@@ -36,8 +29,6 @@
             <ThemeSelector
               ref="themeSelectorRef"
               v-model="currentTheme"
-              :show-seasonal-themes="shouldShowSeasonalThemes"
-              :seasonal-theme-mode="seasonalThemeMode"
               @change="handleThemeChange"
             />
           </div>
@@ -74,54 +65,6 @@
       </div>
     </div>
 
-    <!-- Custom theme settings group -->
-    <div class="setting-group custom-theme-group">
-      <transition name="text-swift" mode="out-in">
-        <div :key="currentLanguage" class="section-header">
-          {{ t("theme.customThemes") }}
-        </div>
-      </transition>
-
-      <div class="custom-theme-content">
-        <ThemeList
-          @create="handleCreateTheme"
-          @edit="handleEditTheme"
-          @delete="handleDeleteTheme"
-          @select="handleSelectTheme"
-          @import="handleImportTheme"
-          @export="handleExportTheme"
-        />
-      </div>
-    </div>
-
-    <!-- Theme editor modal -->
-    <transition name="modal-fade">
-      <div v-if="showThemeEditor" class="theme-editor-modal" @click.self="handleCancelThemeEdit">
-        <div class="theme-editor-container">
-          <div class="modal-header">
-            <h2 class="modal-title">
-              {{
-                themeEditorMode === "create"
-                  ? t("theme.createCustomTheme")
-                  : t("theme.editTheme", {
-                      name: editingTheme?.name || "",
-                    })
-              }}
-            </h2>
-            <button class="modal-close-btn" @click="handleCancelThemeEdit">
-              <font-awesome-icon :icon="['fas', 'times']" />
-            </button>
-          </div>
-          <ThemeEditor
-            :theme="editingTheme"
-            :mode="themeEditorMode"
-            @save="handleSaveTheme"
-            @cancel="handleCancelThemeEdit"
-          />
-        </div>
-      </div>
-    </transition>
-
     <!-- Advanced settings group -->
     <div class="setting-group">
       <transition name="text-swift" mode="out-in">
@@ -155,30 +98,6 @@
         </div>
       </div>
 
-      <!-- Auto feedback toggle (available to all users) -->
-      <div class="setting-item">
-        <div class="setting-icon">
-          <font-awesome-icon :icon="['fas', 'exclamation-triangle']" />
-        </div>
-        <div class="setting-details">
-          <transition name="text-swift" mode="out-in">
-            <div :key="currentLanguage" class="setting-title">
-              {{ t("settings.autoFeedbackEnabled") }}
-            </div>
-          </transition>
-          <transition name="text-swift" mode="out-in">
-            <div :key="currentLanguage" class="setting-description">
-              {{ t("settings.autoFeedbackEnabledDescription") }}
-            </div>
-          </transition>
-        </div>
-        <div class="setting-action">
-          <label class="switch">
-            <input v-model="autoFeedbackEnabled" type="checkbox" @change="handleAutoFeedbackToggle" />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
     </div>
 
     <!-- System and updates settings group -->
@@ -215,96 +134,6 @@
               </span>
             </transition>
           </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Steam API settings group -->
-    <div class="setting-group">
-      <transition name="text-swift" mode="out-in">
-        <div :key="currentLanguage" class="section-header">
-          {{ t("settings.steamApi.title") }}
-        </div>
-      </transition>
-
-      <!-- API Key settings -->
-      <div class="setting-item">
-        <div class="setting-icon">
-          <font-awesome-icon :icon="['fas', 'key']" />
-        </div>
-        <div class="setting-details">
-          <transition name="text-swift" mode="out-in">
-            <div :key="currentLanguage" class="setting-title">
-              {{ t("settings.steamApi.apiKey") }}
-            </div>
-          </transition>
-          <transition name="text-swift" mode="out-in">
-            <div :key="currentLanguage" class="setting-description">
-              {{ t("settings.steamApi.apiKeyDescription") }}
-            </div>
-          </transition>
-        </div>
-        <div class="setting-action">
-          <div class="api-key-container">
-            <div class="api-key-input-wrapper">
-              <input
-                v-model="steamApiKey"
-                :type="showApiKey ? 'text' : 'password'"
-                class="api-key-input"
-                :placeholder="t('settings.steamApi.apiKeyPlaceholder')"
-              />
-              <button
-                class="toggle-visibility-btn"
-                :title="showApiKey ? t('settings.steamApi.hideApiKey') : t('settings.steamApi.showApiKey')"
-                @click="showApiKey = !showApiKey"
-              >
-                <font-awesome-icon :icon="showApiKey ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
-              </button>
-              <button class="save-api-key-btn" :title="t('settings.steamApi.saveApiKey')" @click="saveSteamApiKey">
-                <font-awesome-icon :icon="['fas', 'save']" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cache status -->
-      <div class="setting-item">
-        <div class="setting-icon">
-          <font-awesome-icon :icon="['fas', 'database']" />
-        </div>
-        <div class="setting-details">
-          <transition name="text-swift" mode="out-in">
-            <div :key="currentLanguage" class="setting-title">
-              {{ t("settings.steamApi.cacheStatus") }}
-            </div>
-          </transition>
-          <transition name="text-swift" mode="out-in">
-            <div :key="currentLanguage" class="setting-description">
-              {{ t("settings.steamApi.cacheStatusDescription") }}
-            </div>
-          </transition>
-        </div>
-        <div class="setting-action">
-          <div class="cache-info">
-            <transition name="text-swift" mode="out-in">
-              <span :key="currentLanguage + '-' + cacheEntryCount" class="cache-count"
-                >{{ cacheEntryCount }} {{ t("settings.steamApi.cacheEntries") }}</span
-              >
-            </transition>
-            <button class="view-cache-btn" @click="navigateToSteamCache">
-              <font-awesome-icon :icon="['fas', 'eye']" />
-              <transition name="text-swift" mode="out-in">
-                <span :key="currentLanguage + '-viewCache'">{{ t("settings.steamApi.viewCache") }}</span>
-              </transition>
-            </button>
-            <button class="clear-cache-btn" @click="clearSteamCache">
-              <font-awesome-icon :icon="['fas', 'trash']" />
-              <transition name="text-swift" mode="out-in">
-                <span :key="currentLanguage + '-clearCache'">{{ t("settings.steamApi.clearCache") }}</span>
-              </transition>
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -417,35 +246,6 @@
         </div>
       </div>
 
-      <!-- Seasonal theme control -->
-      <div v-if="developerModeEnabled" class="setting-item">
-        <div class="setting-icon">
-          <font-awesome-icon :icon="['fas', 'snowflake']" style="color: #e53935" />
-        </div>
-        <div class="setting-details">
-          <transition name="text-swift" mode="out-in">
-            <div :key="currentLanguage" class="setting-title">
-              {{ t("settings.seasonalThemeControl") }}
-            </div>
-          </transition>
-          <transition name="text-swift" mode="out-in">
-            <div :key="currentLanguage" class="setting-description">
-              {{ t("settings.seasonalThemeControlDescription") }}
-            </div>
-          </transition>
-        </div>
-        <div class="setting-action">
-          <CustomDropdown
-            v-model="seasonalThemeMode"
-            :options="seasonalThemeModeOptions"
-            :is-open="activeDropdown === 'seasonalTheme'"
-            :placeholder="t('common.select')"
-            @change="handleSeasonalThemeModeChange"
-            @dropdown-open="handleDropdownOpen('seasonalTheme')"
-          />
-        </div>
-      </div>
-
       <!-- Reset tutorial button -->
       <div v-if="developerModeEnabled" class="setting-item">
         <div class="setting-icon">
@@ -552,31 +352,19 @@
 import { updateService, UpdateStatus } from "../services/updateService.js";
 import CustomDropdown from "../components/ui/CustomDropdown.vue";
 import ThemeSelector from "../components/theme/ThemeSelector.vue";
-import ThemeList from "../components/theme/ThemeList.vue";
-import ThemeEditor from "../components/theme/ThemeEditor.vue";
-import AutoFeedbackConsentModal from "../components/modal/AutoFeedbackConsentModal.vue";
 import { useI18n } from "vue-i18n";
 import { invoke } from "@tauri-apps/api/core";
 import themeManager from "../styles/theme-config.js";
 import { themeStorage } from "../services/themeStorage.js";
-import { getAllAvailableLanguages, getInstalledThemePlugins } from "../plugins";
 import storage from "../services/storageService";
 import { notify } from "../services/notificationService";
 import { APP_VERSION } from "../config/version";
-import {
-  isNewYearPeriod as checkNewYearPeriod,
-  isSpringFestivalPeriod as checkSpringFestivalPeriod,
-  isSeasonalThemeAvailable as checkSeasonalThemeAvailable,
-} from "../config/seasonalThemeConfig";
 
 export default {
   name: "Settings",
   components: {
     CustomDropdown,
     ThemeSelector,
-    ThemeList,
-    ThemeEditor,
-    AutoFeedbackConsentModal,
   },
   setup() {
     const { t, locale } = useI18n({ useScope: "global" });
@@ -590,17 +378,7 @@ export default {
       developerModeEnabled: storage.getItem("developerMode", false) === true, // Developer mode state
       developerOptionsEnabled: storage.getItem("developerMode", false) === true, // Whether developer options are visible
       logMenuEnabled: storage.getItem("logMenuEnabled", false) === true, // Log feature toggle state
-      autoFeedbackEnabled:
-        storage.getItem("autoFeedbackEnabled", true) === true ||
-        storage.getItem("autoFeedbackEnabled", true) === "true" ||
-        storage.getItem("autoFeedbackEnabled", true) === null ||
-        storage.getItem("autoFeedbackEnabled", true) === undefined, // Auto feedback toggle state, enabled by default
-      testArchiveEnabled: storage.getItem("testArchiveEnabled", true) !== false, // Test archive display toggle state, enabled by default
       gpuAccelerationDisabled: storage.getItem("gpuAccelerationDisabled", false) === true, // GPU acceleration toggle state
-      // Steam API related
-      steamApiKey: "",
-      showApiKey: false,
-      cacheEntryCount: 0,
       checkingUpdate: false,
       appVersion: APP_VERSION,
       activeDropdown: null,
@@ -614,72 +392,15 @@ export default {
       isParsing: false,
       isPacking: false,
       // Seasonal theme control
-      seasonalThemeMode: storage.getItem("seasonalThemeMode", "auto"),
-      // Custom theme related
-      showThemeEditor: false,
-      themeEditorMode: "create", // 'create' or 'edit'
-      editingTheme: null,
-      isImporting: false,
-      isExporting: false,
-      showAutoFeedbackConsent: false,
-      pendingAutoFeedbackState: null,
     };
   },
   computed: {
-    themeOptions() {
-      const options = [
-        { value: "light", label: this.$t("common.light") },
-        { value: "dark", label: this.$t("common.dark") },
-        { value: "ocean", label: this.$t("common.ocean") },
-        { value: "forest", label: this.$t("common.forest") },
-        { value: "sunset", label: this.$t("common.sunset") },
-        { value: "lavender", label: this.$t("common.lavender") },
-        { value: "rose", label: this.$t("common.rose") },
-        { value: "mint", label: this.$t("common.mint") },
-        { value: "peach", label: this.$t("common.peach") },
-        { value: "sky", label: this.$t("common.sky") },
-      ];
-      // Decide whether to show seasonal theme options based on mode and date
-      if (this.shouldShowSeasonalThemes) {
-        // New Year theme
-        if (this.isNewYearPeriod() || this.seasonalThemeMode === "force") {
-          options.push({ value: "new-year", label: this.$t("common.newYear") });
-        }
-        // Spring Festival theme
-        if (this.isSpringFestivalPeriod() || this.seasonalThemeMode === "force") {
-          options.push({
-            value: "spring-festival-dark",
-            label: this.$t("common.springFestivalDark"),
-          });
-          options.push({
-            value: "spring-festival-light",
-            label: this.$t("common.springFestivalLight"),
-          });
-        }
-      }
-      return options;
-    },
-    shouldShowSeasonalThemes() {
-      // Check seasonal theme control in developer mode
-      const mode = this.seasonalThemeMode;
-      if (mode === "force") return true;
-      if (mode === "hide") return false;
-      // auto mode: at least one seasonal theme is currently valid
-      return this.isNewYearPeriod() || this.isSpringFestivalPeriod();
-    },
-    seasonalThemeModeOptions() {
-      return [
-        { value: "auto", label: this.$t("settings.seasonalThemeModeAuto") },
-        { value: "force", label: this.$t("settings.seasonalThemeModeForce") },
-        { value: "hide", label: this.$t("settings.seasonalThemeModeHide") },
-      ];
-    },
     languageOptions() {
-      const languages = getAllAvailableLanguages();
-      return languages.map((lang) => ({
-        value: lang.locale,
-        label: lang.name,
-      }));
+      return [
+        { value: "zh-CN", label: "简体中文" },
+        { value: "en-US", label: "English" },
+        { value: "zh-TW", label: "繁體中文" },
+      ];
     },
   },
   beforeUnmount() {
@@ -705,14 +426,8 @@ export default {
     // Listen for developer mode change events
     window.addEventListener("developer-mode-changed", this.handleDeveloperModeChanged);
 
-    // Check auto feedback consent
-    this.checkAndShowAutoFeedbackConsent();
-
     // Initialize GPU acceleration state
     this.initializeGpuAccelerationStatus();
-
-    // Initialize Steam API settings
-    await this.initializeSteamApiSettings();
 
     // Check for updates
     if (updateService.canCheckUpdate && updateService.canCheckUpdate()) {
@@ -725,34 +440,6 @@ export default {
     }
   },
   methods: {
-    checkAndShowAutoFeedbackConsent() {
-      // No longer auto-popup when opening settings page
-      // Only popup when user tries to enable auto feedback
-    },
-    handleAutoFeedbackAccept() {
-      storage.setItem("autoFeedbackEnabled", true);
-      storage.setItem("autoFeedbackConsentShown", true);
-      this.autoFeedbackEnabled = true;
-      this.pendingAutoFeedbackState = null;
-      this.showAutoFeedbackConsent = false;
-      window.dispatchEvent(
-        new CustomEvent("auto-feedback-toggle", {
-          detail: { enabled: true },
-        }),
-      );
-    },
-    handleAutoFeedbackDecline() {
-      storage.setItem("autoFeedbackEnabled", false);
-      storage.setItem("autoFeedbackConsentShown", true);
-      this.autoFeedbackEnabled = false;
-      this.pendingAutoFeedbackState = null;
-      this.showAutoFeedbackConsent = false;
-      window.dispatchEvent(
-        new CustomEvent("auto-feedback-toggle", {
-          detail: { enabled: false },
-        }),
-      );
-    },
     formatUpdateNotes(body) {
       if (!body) return this.t("settings.noUpdateNotes");
 
@@ -799,19 +486,6 @@ export default {
 
     handleThemeChange(option) {
       const theme = option.value;
-      const previousTheme = this.currentTheme;
-
-      // If New Year theme is selected, save the previous non-New Year theme for restoration
-      if (theme === "new-year") {
-        // Only record if previous theme was not New Year
-        if (previousTheme && previousTheme !== "new-year") {
-          storage.setItem("themeBeforeNewYear", previousTheme);
-        }
-      } else {
-        // If a non-New Year theme is selected, also update themeBeforeNewYear
-        // So even if user switches directly from New Year to dark, next restore will be dark
-        storage.setItem("themeBeforeNewYear", theme);
-      }
 
       // Update current theme
       this.currentTheme = theme;
@@ -841,21 +515,6 @@ export default {
           bg: "#0d0d0f",
           bgPrimary: "#0d0d0f",
           bgSecondary: "#161618",
-        },
-        "new-year": {
-          bg: "#1a0a0a",
-          bgPrimary: "#1a0a0a",
-          bgSecondary: "rgba(45, 21, 21, 0.95)",
-        },
-        "spring-festival-dark": {
-          bg: "#1c0a14",
-          bgPrimary: "#1c0a14",
-          bgSecondary: "rgba(45, 16, 32, 0.95)",
-        },
-        "spring-festival-light": {
-          bg: "#fefce8",
-          bgPrimary: "#fefce8",
-          bgSecondary: "rgba(255, 255, 255, 0.95)",
         },
         ocean: {
           bg: "#0c1929",
@@ -906,22 +565,9 @@ export default {
 
       let colors = themeBackgrounds[theme];
 
-      // If it's a plugin theme, get colors from plugin data
+      // Final fallback
       if (!colors) {
-        const themePlugins = getInstalledThemePlugins();
-        const pluginTheme = themePlugins.find((p) => p.themeId === theme);
-
-        if (pluginTheme && pluginTheme.data && pluginTheme.data.variables) {
-          const vars = pluginTheme.data.variables;
-          colors = {
-            bg: vars["--bg"] || vars["--bg-primary"] || "#0a0a0f",
-            bgPrimary: vars["--bg-primary"] || vars["--bg"] || "#0a0a0f",
-            bgSecondary: vars["--bg-secondary"] || "#12121a",
-          };
-        } else {
-          // Final fallback
-          colors = themeBackgrounds.light;
-        }
+        colors = themeBackgrounds.light;
       }
 
       root.style.setProperty("--bg", colors.bg);
@@ -1091,22 +737,6 @@ export default {
       );
     },
 
-    handleAutoFeedbackToggle() {
-      if (this.autoFeedbackEnabled) {
-        this.pendingAutoFeedbackState = true;
-        this.showAutoFeedbackConsent = true;
-        this.autoFeedbackEnabled = false;
-        return;
-      }
-
-      storage.setItem("autoFeedbackEnabled", this.autoFeedbackEnabled);
-      window.dispatchEvent(
-        new CustomEvent("auto-feedback-toggle", {
-          detail: { enabled: this.autoFeedbackEnabled },
-        }),
-      );
-    },
-
     handleTestArchiveToggle() {
       storage.setItem("testArchiveEnabled", this.testArchiveEnabled);
       // Dispatch custom event to notify sidebar to update state
@@ -1115,70 +745,6 @@ export default {
           detail: { enabled: this.testArchiveEnabled },
         }),
       );
-    },
-
-    // Check if current date is during New Year period (Dec 31 - Jan 4)
-    isNewYearPeriod() {
-      return checkNewYearPeriod();
-    },
-
-    // Check if current date is during Spring Festival period (dates read from seasonalThemeConfig)
-    isSpringFestivalPeriod() {
-      return checkSpringFestivalPeriod();
-    },
-
-    // Check if theme is a seasonal theme
-    isSeasonalTheme(themeId) {
-      return ["new-year", "spring-festival-dark", "spring-festival-light"].includes(themeId);
-    },
-
-    // Check if seasonal theme is currently available
-    isSeasonalThemeAvailable(themeId) {
-      return checkSeasonalThemeAvailable(themeId, {
-        mode: this.seasonalThemeMode,
-      });
-    },
-
-    handleSeasonalThemeModeChange(option) {
-      const mode = option.value;
-      this.seasonalThemeMode = mode;
-      storage.setItem("seasonalThemeMode", mode);
-
-      // If current theme is seasonal but hidden, restore previous theme
-      if (mode === "hide" && this.isSeasonalTheme(this.currentTheme)) {
-        const themeBeforeSeasonal = storage.getItem("themeBeforeNewYear") || "light";
-        this.currentTheme = themeBeforeSeasonal;
-        storage.setItem("theme", themeBeforeSeasonal);
-        if (window.themeManager) {
-          window.themeManager.setTheme(themeBeforeSeasonal);
-        } else {
-          document.documentElement.setAttribute("data-theme", themeBeforeSeasonal);
-        }
-        this.forceThemeBackgroundUpdate(themeBeforeSeasonal);
-      }
-
-      // If switching to auto mode and current theme is seasonal but not valid, also restore
-      if (
-        mode === "auto" &&
-        this.isSeasonalTheme(this.currentTheme) &&
-        !this.isSeasonalThemeAvailable(this.currentTheme)
-      ) {
-        const themeBeforeSeasonal = storage.getItem("themeBeforeNewYear") || "light";
-        this.currentTheme = themeBeforeSeasonal;
-        storage.setItem("theme", themeBeforeSeasonal);
-        if (window.themeManager) {
-          window.themeManager.setTheme(themeBeforeSeasonal);
-        } else {
-          document.documentElement.setAttribute("data-theme", themeBeforeSeasonal);
-        }
-        this.forceThemeBackgroundUpdate(themeBeforeSeasonal);
-      }
-
-      // Close dropdown
-      this.activeDropdown = null;
-
-      // Show notification
-      notify.success(this.t("settings.seasonalThemeModeChanged"));
     },
 
     handleResetTutorial() {
@@ -1451,294 +1017,6 @@ export default {
       }
     },
 
-    // Initialize Steam API settings
-    async initializeSteamApiSettings() {
-      try {
-        // Get encrypted API key from storage
-        const encryptedApiKey = storage.getItem("steamApiKey");
-        if (encryptedApiKey) {
-          try {
-            // Call backend to decrypt API key
-            this.steamApiKey = await invoke("decrypt_steam_api_key", {
-              encryptedKey: encryptedApiKey,
-            });
-          } catch (error) {
-            console.error(this.t("settings.steamApi.decryptKeyFailed"), error);
-            // If decryption fails, clear stored key
-            storage.removeItem("steamApiKey");
-          }
-        }
-
-        // Get cache entry count
-        this.updateCacheEntryCount();
-      } catch (error) {
-        console.error(this.t("settings.steamApi.initFailed"), error);
-      }
-    },
-
-    // Save Steam API key
-    async saveSteamApiKey() {
-      if (!this.steamApiKey.trim()) {
-        notify.error(this.t("settings.steamApi.apiKeyPlaceholder"));
-        return;
-      }
-
-      try {
-        // Show testing prompt
-        notify.info(this.t("settings.steamApi.validatingKey"));
-
-        // Generate a random Steam ID for testing
-        const testSteamId = this.generateRandomSteamId();
-        console.log(
-          this.t("settings.steamApi.testSteamId"),
-          testSteamId,
-          this.t("settings.steamApi.idLength"),
-          testSteamId.length,
-        );
-
-        // Test if API key is valid
-        let apiTestPassed = false;
-        try {
-          console.log(this.t("settings.steamApi.startKeyTest"));
-          // Directly use the user-entered API key for testing, instead of reading from config
-          const result = await invoke("test_steam_api_key", {
-            apiKey: this.steamApiKey,
-            steamId: testSteamId,
-          });
-          console.log(this.t("settings.steamApi.apiCallSuccess"), result);
-          // If successful, the API key is valid
-          apiTestPassed = true;
-        } catch (error) {
-          // Handle error object, could be string or {message: string} object
-          const errorMsg = typeof error === "string" ? error : error.message || error.toString();
-          console.log(this.t("settings.steamApi.apiCallFailed"), errorMsg);
-
-          // If it's a 403 error, the API key is invalid
-          if (errorMsg.includes("403") || errorMsg.includes("Forbidden")) {
-            console.log(this.t("settings.steamApi.detected403Error"));
-            notify.error(this.t("settings.steamApi.keyInvalid"));
-            return; // Return directly, do not save key
-          }
-
-          // If it's a Steam ID format error, our generated ID has an issue, but it's not an API key issue
-          if (
-            errorMsg.includes(this.t("settings.steamApi.error.invalidSteamIdFormat")) ||
-            errorMsg.includes("Invalid Steam ID format")
-          ) {
-            console.log(this.t("settings.steamApi.detectedSteamIdFormatError"));
-            // It's our generated ID issue, not API key issue, can continue saving
-            apiTestPassed = true;
-          }
-          // If it's a Steam API error, the API key is valid, just our generated ID doesn't exist
-          else if (errorMsg.includes(this.t("settings.steamApi.error.steamApiError"))) {
-            console.log(this.t("settings.steamApi.detectedSteamApiError"));
-            apiTestPassed = true;
-          }
-          // Other errors may be network issues, can continue saving
-          else {
-            console.warn(this.t("settings.steamApi.otherError"), error);
-            apiTestPassed = true;
-          }
-        }
-
-        // Only save key if API test passes
-        if (!apiTestPassed) {
-          console.log(this.t("settings.steamApi.apiTestFailed"));
-          notify.error(this.t("settings.steamApi.keyTestFailed"));
-          return;
-        }
-
-        console.log(this.t("settings.steamApi.keyValidationPassed"));
-        // Call backend to save API key to config file
-        await invoke("save_steam_api_key", { apiKey: this.steamApiKey });
-        console.log(this.t("settings.steamApi.keySavedToConfig"));
-
-        // Also save to localStorage for compatibility
-        const encryptedApiKey = await invoke("encrypt_steam_api_key", {
-          apiKey: this.steamApiKey,
-        });
-        storage.setItem("steamApiKey", encryptedApiKey);
-        console.log(this.t("settings.steamApi.keySavedToLocalStorage"));
-
-        // Show success notification
-        notify.success(this.t("settings.steamApi.keySaved"));
-      } catch (error) {
-        console.error(this.t("settings.steamApi.saveKeyFailed"), error);
-        notify.error(this.t("settings.steamApi.saveKeyFailed") + ": " + error);
-      }
-    },
-
-    // Generate random Steam ID for testing
-    generateRandomSteamId() {
-      // Steam ID format is typically 7656119XXXXXXXXX (17 digits)
-      // 7656119 is Steam ID prefix, need 10 more digits to reach 17
-      const prefix = "7656119";
-      const randomSuffix = Math.floor(Math.random() * 10000000000)
-        .toString()
-        .padStart(10, "0");
-      return prefix + randomSuffix;
-    },
-
-    // Clear Steam cache
-    async clearSteamCache() {
-      try {
-        // Call backend to clear cache
-        await invoke("clear_steam_cache");
-
-        // Update cache entry count
-        this.updateCacheEntryCount();
-
-        // Show success notification
-        notify.success(this.t("settings.steamApi.cacheCleared"));
-      } catch (error) {
-        console.error(this.t("settings.steamApi.clearCacheFailed"), error);
-        notify.error(this.t("settings.steamApi.clearCacheFailed") + ": " + error);
-      }
-    },
-
-    // Update cache entry count
-    async updateCacheEntryCount() {
-      try {
-        // Call backend to get cache entry count
-        this.cacheEntryCount = await invoke("get_steam_cache_count");
-      } catch (error) {
-        console.error(this.t("settings.steamApi.getCacheCountFailed"), error);
-        this.cacheEntryCount = 0;
-      }
-    },
-
-    // Navigate to Steam cache page
-    navigateToSteamCache() {
-      this.$router.push("/steam-cache");
-    },
-
-    // Format date
-    formatDate(timestamp) {
-      if (!timestamp) return this.t("common.unknown");
-      const date = new Date(timestamp * 1000);
-      return date.toLocaleString();
-    },
-
-    // Steam ID masking
-    maskSteamId(steamId) {
-      if (!steamId) return "";
-      // Steam ID format is typically 7656119XXXXXXXXX (17 digits)
-      if (steamId.length >= 8) {
-        const start = steamId.substring(0, 4);
-        const end = steamId.substring(steamId.length - 4);
-        const middle = "*".repeat(steamId.length - 8);
-        return start + middle + end;
-      }
-      // If length is less than 8, only show first two digits
-      return steamId.substring(0, 2) + "*".repeat(steamId.length - 2);
-    },
-
-    // ========== Custom theme methods ==========
-
-    // Open create theme editor - navigate to theme editor page
-    handleCreateTheme() {
-      this.$router.push("/theme-editor");
-    },
-
-    // Open edit theme editor - navigate to theme editor page (with theme ID)
-    handleEditTheme(theme) {
-      this.$router.push(`/theme-editor/${theme.id}`);
-    },
-
-    // Handle theme deletion
-    handleDeleteTheme(theme) {
-      // ThemeList component already handles deletion logic, we can add extra prompts here
-      notify.success(this.t("theme.themeDeleted", { name: theme.name }));
-    },
-
-    // Handle theme selection
-    handleSelectTheme(themeId) {
-      // Update current theme status
-      this.currentTheme = themeId;
-      storage.setItem("theme", themeId);
-    },
-
-    // Handle theme import
-    async handleImportTheme() {
-      if (this.isImporting) return;
-
-      this.isImporting = true;
-
-      try {
-        const result = await themeStorage.importTheme();
-
-        if (result.success && result.theme) {
-          // Save imported theme
-          const saveResult = await themeManager.addCustomTheme(result.theme);
-
-          if (saveResult.success) {
-            notify.success(this.t("theme.importSuccess", { name: result.theme.name }));
-          } else {
-            throw new Error(saveResult.error || this.t("theme.importFailed"));
-          }
-        } else if (result.error) {
-          throw new Error(result.error);
-        }
-        // If result.success is false and no error, user cancelled the dialog
-      } catch (error) {
-        console.error("Failed to import theme:", error);
-        notify.error(this.t("theme.importFailed") + ": " + (error.message || error));
-      } finally {
-        this.isImporting = false;
-      }
-    },
-
-    // Handle theme export
-    async handleExportTheme(theme) {
-      if (this.isExporting) return;
-
-      this.isExporting = true;
-
-      try {
-        const exportPath = await themeStorage.exportTheme(theme.id);
-
-        if (exportPath) {
-          notify.success(this.t("theme.exportSuccess", { name: theme.name }));
-        }
-        // If exportPath is null, user cancelled the dialog
-      } catch (error) {
-        console.error("Failed to export theme:", error);
-        notify.error(this.t("theme.exportFailed") + ": " + (error.message || error));
-      } finally {
-        this.isExporting = false;
-      }
-    },
-
-    // Save theme (create or update)
-    async handleSaveTheme(themeData) {
-      try {
-        const result = await themeManager.addCustomTheme(themeData);
-
-        if (result.success) {
-          this.showThemeEditor = false;
-          this.editingTheme = null;
-
-          // Apply newly saved theme
-          await themeManager.setTheme(themeData.id);
-          this.currentTheme = themeData.id;
-
-          notify.success(this.t("theme.themeSaved", { name: themeData.name }));
-        } else {
-          throw new Error(result.error || this.t("theme.saveFailed"));
-        }
-      } catch (error) {
-        console.error("Failed to save theme:", error);
-        notify.error(this.t("theme.saveFailed") + ": " + (error.message || error));
-      }
-    },
-
-    // Cancel theme editing
-    handleCancelThemeEdit() {
-      // Cancel preview
-      themeManager.cancelPreview();
-      this.showThemeEditor = false;
-      this.editingTheme = null;
-    },
   },
 };
 </script>

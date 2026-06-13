@@ -38,9 +38,6 @@
 /* 暗色主题 */
 @import "./dark.css";
 
-/* 元旦主题 🎊 */
-@import "./new-year.css";
-
 /* 高对比度主题 ♿ */
 @import "./high-contrast.css";
 
@@ -68,5 +65,3 @@
 /* ☁️ 天空主题 (浅色) */
 @import "./sky.css";
 
-/* 🧧 春节主题 (限时) */
-@import "./spring-festival.css";

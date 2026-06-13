@@ -24,14 +24,6 @@ export const topMenuItems = ref([
     descriptionKey: "archive.createDescription",
     route: "CreateArchive",
   },
-  {
-    id: 4,
-    textKey: "sidebar.pluginMarket",
-    icon: ["fas", "store"],
-    action: "openPluginMarket",
-    descriptionKey: "plugin.marketDescription",
-    route: "PluginMarket",
-  },
 ]);
 
 /**
@@ -39,14 +31,6 @@ export const topMenuItems = ref([
  * 用于侧边栏下半部分的菜单
  */
 export const bottomMenuItems = ref([
-  {
-    id: 7,
-    textKey: "sidebar.feedback",
-    icon: ["fas", "comment-dots"],
-    action: "openFeedback",
-    descriptionKey: "feedback.sidebarDescription",
-    route: "Feedback",
-  },
   {
     id: 5,
     textKey: "sidebar.about",

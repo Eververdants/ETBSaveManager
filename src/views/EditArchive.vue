@@ -747,8 +747,7 @@ onMounted(() => {
 
 <style scoped>
 .edit-archive-container {
-  height: 100%;
-  max-height: calc(100vh - 38px);
+  height: calc(100vh - 38px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -865,7 +864,7 @@ onMounted(() => {
 .tab-content {
   flex: 1;
   overflow: hidden;
-  padding: 24px;
+  padding: 0;
   min-height: 0;
   box-sizing: border-box;
   position: relative;
@@ -883,16 +882,16 @@ onMounted(() => {
   opacity: 0;
   pointer-events: none;
   transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 
 .slide-right .tab-panel {
-  transform: translateX(20px);
+  transform: translateX(24px);
 }
 
 .slide-left .tab-panel {
-  transform: translateX(-20px);
+  transform: translateX(-24px);
 }
 
 .tab-panel.tab-active {

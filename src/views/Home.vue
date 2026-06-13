@@ -88,6 +88,11 @@
         </div>
       </template>
 
+      <!-- Loading skeleton -->
+      <template v-else-if="loading && !dataLoadComplete">
+        <SkeletonLoader type="grid" :columns="columnsPerRow || 4" :count="8" />
+      </template>
+
       <!-- Empty state -->
       <template v-else>
         <div v-if="archives.length > 0 && hasActiveFilters" class="empty-state">
@@ -244,6 +249,7 @@ import { useAnimations } from "../composables/useAnimations";
 import { useFloatingButton } from "../composables/useFloatingButton";
 import { useToast } from "../composables/useToast";
 import { markInitialLoadComplete, resetInitialLoad } from "../composables/useArchiveCard";
+import SkeletonLoader from "../components/ui/SkeletonLoader.vue";
 
 // Composables
 const archiveData = useArchiveData();
@@ -275,6 +281,8 @@ const {
   createNewArchive,
   openSaveGamesFolder: openSaveGamesFolderBase,
   batchDeleteArchives,
+  registerUndoShortcuts,
+  unregisterUndoShortcuts,
 } = archiveActions;
 
 const performanceMonitor = usePerformanceMonitor();
@@ -617,9 +625,11 @@ onMounted(async () => {
   }
 
   markInitialLoadComplete();
+  registerUndoShortcuts();
 });
 
 onUnmounted(() => {
+  unregisterUndoShortcuts();
   window.removeEventListener("open-archive-search", handleOpenArchiveSearchEvent);
 
   isUnmounted = true;

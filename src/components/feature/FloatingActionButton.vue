@@ -98,6 +98,7 @@ const updateFabPosition = () => {
   // Try to get the Home page scroll container
   const scrollContainer = document.querySelector(".archive-list-container, .quick-create-main");
   let scrollBottom;
+  let canScroll = true;
 
   if (scrollContainer) {
     // Container scroll
@@ -105,12 +106,20 @@ const updateFabPosition = () => {
     const clientHeight = scrollContainer.clientHeight;
     const scrollHeight = scrollContainer.scrollHeight;
     scrollBottom = scrollHeight - scrollTop - clientHeight;
+    canScroll = scrollHeight > clientHeight;
   } else {
     // Fallback to window scroll
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
     scrollBottom = documentHeight - scrollTop - windowHeight;
+    canScroll = documentHeight > windowHeight;
+  }
+
+  // If content doesn't overflow (no scroll possible), always show the FAB
+  if (!canScroll) {
+    container.style.setProperty("--fab-translate-x", "0px");
+    return;
   }
 
   // Calculate movement progress

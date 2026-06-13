@@ -9,6 +9,7 @@ const TitleBar = shallowRef(null);
 
 import SidebarComponent from "./components/layout/Sidebar.vue";
 import TitleBarComponent from "./components/layout/TitleBar.vue";
+import ErrorBoundary from "./components/ui/ErrorBoundary.vue";
 
 Sidebar.value = SidebarComponent;
 TitleBar.value = TitleBarComponent;
@@ -223,7 +224,9 @@ async function initThemeSystem() {
         <router-view v-slot="{ Component, route }">
           <transition name="page-fade" mode="out-in">
             <keep-alive :include="cachedComponents" :exclude="excludedComponents">
-              <component :is="Component" :key="route.fullPath" />
+              <ErrorBoundary :key="'eb-' + route.fullPath">
+                <component :is="Component" :key="route.fullPath" />
+              </ErrorBoundary>
             </keep-alive>
           </transition>
         </router-view>

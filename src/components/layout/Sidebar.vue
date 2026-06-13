@@ -3,8 +3,11 @@
     ref="sidebarRef"
     class="sidebar"
     :class="{ expanded: isExpanded }"
+    role="navigation"
+    aria-label="主菜单"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
+    @keydown="handleKeydown"
   >
     <div class="sidebar-content">
       <!-- 顶部区域 -->
@@ -14,6 +17,11 @@
           :key="item.id"
           class="sidebar-item"
           :class="['sidebar-item', { active: item.id === activeItemId }]"
+          :tabindex="isExpanded ? 0 : -1"
+          role="link"
+          :aria-label="safeT(item.textKey)"
+          :aria-current="item.id === activeItemId ? 'page' : undefined"
+          :data-item-id="item.id"
           @click="handleItemClick(item, $event)"
           @mousedown="handleMouseDown"
           @mouseenter="handleMouseEnterItem"
@@ -21,7 +29,7 @@
           @mouseup="handleMouseUp"
         >
           <div class="sidebar-icon-container">
-            <font-awesome-icon :icon="item.icon" class="sidebar-icon" />
+            <font-awesome-icon :icon="item.icon" class="sidebar-icon" aria-hidden="true" />
           </div>
           <div class="sidebar-text-container">
             <span
@@ -43,6 +51,11 @@
           :key="item.id"
           class="sidebar-item"
           :class="['sidebar-item', { active: item.id === activeItemId }]"
+          :tabindex="isExpanded ? 0 : -1"
+          role="link"
+          :aria-label="safeT(item.textKey)"
+          :aria-current="item.id === activeItemId ? 'page' : undefined"
+          :data-item-id="item.id"
           @click="handleItemClick(item, $event)"
           @mousedown="handleMouseDown"
           @mouseenter="handleMouseEnterItem"
@@ -50,7 +63,7 @@
           @mouseup="handleMouseUp"
         >
           <div class="sidebar-icon-container">
-            <font-awesome-icon :icon="item.icon" class="sidebar-icon" />
+            <font-awesome-icon :icon="item.icon" class="sidebar-icon" aria-hidden="true" />
           </div>
           <div class="sidebar-text-container">
             <span
@@ -346,6 +359,10 @@ const useSidebarMouseInteractions = (checkTextOverflow, getTextWidth) => {
 const useSidebarActions = (activeItemId, safeT) => {
   let currentPressedItem = null;
 
+  const allFlatMenuItems = computed(() => {
+    return [...topMenuItems.value, ...bottomMenuItems.value];
+  });
+
   const handleItemClick = (item) => {
     activeItemId.value = item.id;
     console.log("项目被点击:", safeT(item.textKey));
@@ -364,7 +381,54 @@ const useSidebarActions = (activeItemId, safeT) => {
     }
   };
 
-  return { handleItemClick };
+  const handleKeydown = (event) => {
+    if (!isExpanded.value) return;
+
+    const flatItems = allFlatMenuItems.value;
+    if (flatItems.length === 0) return;
+
+    const currentIndex = flatItems.findIndex((item) => item.id === activeItemId.value);
+    let targetIndex = currentIndex;
+
+    switch (event.key) {
+      case "ArrowDown":
+        event.preventDefault();
+        targetIndex = currentIndex < flatItems.length - 1 ? currentIndex + 1 : 0;
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        targetIndex = currentIndex > 0 ? currentIndex - 1 : flatItems.length - 1;
+        break;
+      case "Home":
+        event.preventDefault();
+        targetIndex = 0;
+        break;
+      case "End":
+        event.preventDefault();
+        targetIndex = flatItems.length - 1;
+        break;
+      case "Enter":
+      case " ":
+        event.preventDefault();
+        if (currentIndex >= 0 && currentIndex < flatItems.length) {
+          handleItemClick(flatItems[currentIndex]);
+        }
+        return;
+      default:
+        return;
+    }
+
+    if (targetIndex >= 0 && targetIndex < flatItems.length) {
+      const targetItem = flatItems[targetIndex];
+      activeItemId.value = targetItem.id;
+
+      // Focus the corresponding DOM element
+      const targetEl = document.querySelector(`[data-item-id="${targetItem.id}"]`);
+      if (targetEl) targetEl.focus();
+    }
+  };
+
+  return { handleItemClick, handleKeydown };
 };
 
 const { isExpanded, sidebarRef, activeItemId, handleMouseEnter, handleMouseLeave } = useSidebarState();
@@ -379,7 +443,7 @@ const { handleMouseDown, handleMouseEnterItem, handleMouseLeaveItem, handleMouse
   checkTextOverflow,
   getTextWidth,
 );
-const { handleItemClick } = useSidebarActions(activeItemId, safeT);
+const { handleItemClick, handleKeydown } = useSidebarActions(activeItemId, safeT);
 
 onMounted(() => {
   setActiveItemFromRoute();

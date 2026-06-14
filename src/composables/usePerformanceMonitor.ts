@@ -1,7 +1,7 @@
-import { ref, onUnmounted, watch } from "vue";
-import { detectDevicePerformance, createPerformanceMonitor } from "../utils/performance.js";
-import type { Ref, WatchStopHandle } from "vue";
-import type { PerformanceMonitor } from "../utils/performance.js";
+import { ref, onUnmounted, watch, type Ref, type WatchStopHandle } from "vue";
+import { detectDevicePerformance, createPerformanceMonitor } from "../utils/performance";
+
+import type { PerformanceMonitor } from "../utils/performance";
 
 let monitorInitialized = false;
 let globalPerformanceMonitor: PerformanceMonitor | null = null;

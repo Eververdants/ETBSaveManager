@@ -41,16 +41,16 @@ const loadLocaleMessages = async (locale: string): Promise<unknown> => {
   let messages: unknown;
   switch (locale) {
     case "zh-CN":
-      messages = (await import("./locales/zh-CN/index.js")).default;
+      messages = (await import("./locales/zh-CN/index")).default;
       break;
     case "zh-TW":
-      messages = (await import("./locales/zh-TW/index.js")).default;
+      messages = (await import("./locales/zh-TW/index")).default;
       break;
     case "en-US":
-      messages = (await import("./locales/en-US/index.js")).default;
+      messages = (await import("./locales/en-US/index")).default;
       break;
     default:
-      messages = (await import("./locales/zh-CN/index.js")).default;
+      messages = (await import("./locales/zh-CN/index")).default;
   }
 
   messagesCache[locale] = messages;

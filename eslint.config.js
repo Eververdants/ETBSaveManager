@@ -17,7 +17,7 @@ export default [
 
   // 自定义规则
   {
-    files: ["src/**/*.{js,vue}"],
+    files: ["src/**/*.{ts,vue}"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -46,7 +46,7 @@ export default [
       "eqeqeq": ["warn", "always"],
 
       // 已定义但未使用的变量（不检查函数参数）
-      "no-unused-vars": ["warn", { args: "none", ignoreRestSiblings: true }],
+      "no-unused-vars": "off",
 
       // 禁止 var
       "no-var": "error",
@@ -88,7 +88,7 @@ export default [
 
   // 测试文件宽松规则
   {
-    files: ["src/**/*.test.js", "src/**/*.spec.js", "src/**/__tests__/**"],
+    files: ["src/**/*.test.ts", "src/**/*.spec.ts", "src/**/__tests__/**"],
     rules: {
       "no-console": "off",
       "no-unused-vars": "off",

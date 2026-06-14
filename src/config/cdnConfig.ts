@@ -65,7 +65,7 @@ export const loadCDNResource = async (
   library: string,
   version: string
 ): Promise<boolean | null> => {
-  if (process.env.NODE_ENV === "development") {
+  if (import.meta.env.DEV) {
     return null; // CDN not used in development
   }
 
@@ -108,7 +108,7 @@ const loadScript = (src: string): Promise<void> => {
 
 // Preload critical CDN resources
 export const preloadCriticalCDNResources = async (): Promise<void> => {
-  if (process.env.NODE_ENV === "development") return;
+  if (import.meta.env.DEV) return;
 
   const criticalResources = [
     { type: "fontawesome", library: "fontawesome-svg-core" },

@@ -8,7 +8,7 @@
  */
 
 // Polyfills - must be loaded first
-import "./utils/polyfills.js";
+import "./utils/polyfills";
 
 // FontAwesome styles (prevent icon size issues if style injection fails in production)
 import "@fortawesome/fontawesome-svg-core/styles.css";
@@ -18,7 +18,7 @@ faConfig.autoAddCss = false;
 import * as vueRuntime from "vue";
 import App from "./App.vue";
 
-import { setAppContext } from "./appContext.js";
+import { setAppContext } from "./appContext";
 import storage, { initStorage } from "./services/storageService";
 const { createApp } = vueRuntime;
 
@@ -39,7 +39,7 @@ let i18nInstance: any = null;
 // Load critical icons (required for startup)
 const loadCriticalIcons = async (): Promise<any> => {
   const { FontAwesomeIcon: FAIcon } = await import("@fortawesome/vue-fontawesome");
-  const { registerCriticalIcons } = await import("./utils/icons-critical.js");
+  const { registerCriticalIcons } = await import("./utils/icons-critical");
 
   registerCriticalIcons();
 
@@ -48,7 +48,7 @@ const loadCriticalIcons = async (): Promise<any> => {
 
 // Lazy load full icon set
 const loadAllIcons = async (): Promise<void> => {
-  const { registerIcons } = await import("./utils/icons-full.js");
+  const { registerIcons } = await import("./utils/icons-full");
   registerIcons();
 };
 
@@ -75,11 +75,11 @@ const initI18n = async (): Promise<any> => {
 
   // Only load current language
   if (locale === "zh-CN") {
-    messages["zh-CN"] = (await import("./i18n/locales/zh-CN/index.js")).default;
+    messages["zh-CN"] = (await import("./i18n/locales/zh-CN/index")).default;
   } else if (locale === "en-US") {
-    messages["en-US"] = (await import("./i18n/locales/en-US/index.js")).default;
+    messages["en-US"] = (await import("./i18n/locales/en-US/index")).default;
   } else if (locale === "zh-TW") {
-    messages["zh-TW"] = (await import("./i18n/locales/zh-TW/index.js")).default;
+    messages["zh-TW"] = (await import("./i18n/locales/zh-TW/index")).default;
   }
 
   i18nInstance = createI18n({
@@ -104,7 +104,7 @@ const loadOtherLocales = async (): Promise<void> => {
 
   for (const locale of locales) {
     if (!i18nInstance.global.messages.value[locale]) {
-      const messages = (await import(`./i18n/locales/${locale}/index.js`)).default;
+      const messages = (await import(`./i18n/locales/${locale}/index.ts`)).default;
       i18nInstance.global.setLocaleMessage(locale, messages);
     }
   }
@@ -205,7 +205,7 @@ initApp().catch((error: unknown) => {
 // Floating button protection (delayed initialization)
 requestIdleCallback(
   () => {
-    import("./utils/floatingButtonProtection.js").then(({ initGlobalFloatingButtonProtection }) => {
+    import("./utils/floatingButtonProtection").then(({ initGlobalFloatingButtonProtection }) => {
       initGlobalFloatingButtonProtection();
     });
   },
@@ -214,7 +214,7 @@ requestIdleCallback(
 
 // Disable interactions in production mode (prevent shortcuts, text selection, etc.)
 if (import.meta.env.PROD) {
-  import("./utils/disableInteractions.js").then(({ disableInteractions }) => {
+  import("./utils/disableInteractions").then(({ disableInteractions }) => {
     disableInteractions();
   });
 }

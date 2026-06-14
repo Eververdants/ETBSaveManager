@@ -157,9 +157,10 @@ export function useFocusTrap(
           trigger.focus();
         }
       });
-    } else if (previouslyFocused && typeof previouslyFocused.focus === "function") {
+    } else if (previouslyFocused && typeof (previouslyFocused as HTMLElement).focus === "function") {
+      const el = previouslyFocused as HTMLElement;
       requestAnimationFrame(() => {
-        previouslyFocused!.focus();
+        el.focus();
       });
     }
 

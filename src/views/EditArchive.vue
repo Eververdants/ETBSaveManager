@@ -451,27 +451,9 @@ const loadPlayerData = async (archive) => {
         }
       });
       if (formData.players.length > 0) activePlayerIndex.value = 0;
-      await fetchSteamUsernames();
     }
   } catch (error) {
     console.error("Load player data failed:", error);
-  }
-};
-
-const fetchSteamUsernames = async () => {
-  try {
-    const steamIds = formData.players
-      .filter((p) => !p.isOfflinePlayer && p.steamId?.length === 17 && /^\d+$/.test(p.steamId))
-      .map((p) => p.steamId);
-    if (steamIds.length === 0) return;
-    const usernames = await invoke("get_steam_usernames_command", { steamIds });
-    formData.players.forEach((player) => {
-      if (!player.isOfflinePlayer && usernames[player.steamId]) {
-        player.username = usernames[player.steamId];
-      }
-    });
-  } catch (error) {
-    console.error("Fetch usernames failed:", error);
   }
 };
 
@@ -571,18 +553,6 @@ const addPlayer = async () => {
   showMessage(t("editArchive.playerAddedSuccess"), "success");
   newSteamId.value = "";
   activePlayerIndex.value = formData.players.length - 1;
-
-  if (!validation.isOfflinePlayer) {
-    try {
-      const usernames = await invoke("get_steam_usernames_command", { steamIds: [validation.processedSteamId] });
-      if (usernames[validation.processedSteamId]) {
-        formData.players[formData.players.length - 1].username = usernames[validation.processedSteamId];
-      }
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      console.error("获取 Steam 用户名失败:", errorMessage || e);
-    }
-  }
 };
 
 const showMessage = (msg, type) => {

@@ -4,7 +4,7 @@ import type {
   ValidationError,
   ValidationWarning,
   ValidationResult,
-} from "../../types.js";
+} from "../../types";
 import {
   isEmptyName,
   findDuplicateNames,
@@ -14,7 +14,8 @@ import {
   getArchiveWarnings,
   hasArchiveErrors,
   getValidationStats,
-} from "../useValidator.js";
+} from "../useValidator";
+
 
 // =============================================================================
 // isEmptyName

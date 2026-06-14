@@ -21,7 +21,7 @@ if (typeof globalThis.localStorage === "undefined") {
   } as Storage;
 }
 
-import { getItem, setItem, removeItem, clear, keys, isInitialized, initStorage, flush } from "../storageService.js";
+import { getItem, setItem, removeItem, clear, keys, isInitialized, initStorage, flush } from "../storageService";
 
 // The storage module has module-level state (cache object).
 // Since imports are cached, we test the exported functions.

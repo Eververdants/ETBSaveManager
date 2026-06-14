@@ -27,22 +27,11 @@ regex = "1.11.1"
 uesave = "0.6.2"
 chrono = "0.4.41"
 walkdir = "2.5.0"
-keyring = "3.6.2"
-aes-gcm = "0.10.3"
-argon2 = "0.5.3"
-rand = "0.8.5"
-zeroize = "1.8.1"
-rand_core = "0.6"
-indexmap = "2.10.0"
 uuid = { version = "1.17.0", features = ["v4"] }
-reqwest = { version = "0.12", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
-hex = "0.4"
 rayon = "1.10"
 memmap2 = "0.9"
 rusqlite = { version = "0.31", features = ["bundled"] }
-base64 = "0.22"
-urlencoding = "2.1"
 thiserror = "1"
 
 # 仅在发布时启用优化，不影响开发编译速度

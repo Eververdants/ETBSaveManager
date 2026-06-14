@@ -11,6 +11,8 @@ import type { ArchiveData, UndoAction } from "@/types";
 // Cache of recently deleted archives for undo (max 20 entries)
 const deletedArchivesCache = new Map<number, ArchiveData>();
 const MAX_CACHE_SIZE = 20;
+// Pending permanent deletes: after toast closes, wait 5s then delete
+const pendingPermanentDeletes = new Map<number, ReturnType<typeof setTimeout>>();
 
 interface ArchiveActionsCallbacks {
   onSuccess?: () => void;
@@ -207,9 +209,9 @@ export function useArchiveActions(
         });
       }
 
-      // Call backend delete
+      // Call backend soft-delete (rename .sav → .sav.trash)
       if (archive.path) {
-        await invoke("delete_file", { filePath: archive.path });
+        await invoke("soft_delete_file", { filePath: archive.path });
       }
 
       // Remove from data (virtual scrolling will handle position changes automatically)
@@ -230,20 +232,31 @@ export function useArchiveActions(
       pushAction({
         description: `删除「${archiveName}」`,
         undo: async () => {
-          // Restore the archive
-          const cached = deletedArchivesCache.get(archiveId);
-          if (!cached) return;
-
-          // Determine insertion index (restore at beginning since it was deleted)
-          archiveData.archives.value.unshift(cached);
-
-          if (callbacks.onRefresh) await callbacks.onRefresh();
-        },
-        redo: async () => {
-          // Re-delete from backend
+          // Cancel pending permanent delete (safety)
+          const p = pendingPermanentDeletes.get(archiveId);
+          if (p) { clearTimeout(p); pendingPermanentDeletes.delete(archiveId); }
+          // Actually restore the file from trash
           if (archiveSnapshot.path) {
             try {
-              await invoke("delete_file", { filePath: archiveSnapshot.path });
+              await invoke("restore_file", { filePath: archiveSnapshot.path });
+            } catch (e) {
+              console.warn("[undo] 恢复文件失败:", e);
+              toast.showError("恢复文件失败");
+              return;
+            }
+          }
+          // Restore in frontend data
+          const cached = deletedArchivesCache.get(archiveId);
+          if (cached) {
+            archiveData.archives.value.unshift(cached);
+            if (callbacks.onRefresh) await callbacks.onRefresh();
+          }
+        },
+        redo: async () => {
+          // Re-delete via soft-delete
+          if (archiveSnapshot.path) {
+            try {
+              await invoke("soft_delete_file", { filePath: archiveSnapshot.path });
             } catch (e) {
               console.warn("[redo] 删除失败:", e);
             }
@@ -256,13 +269,30 @@ export function useArchiveActions(
         },
       });
 
-      // Show undo toast
+      // Show undo toast; once it actually closes, wait 5s then permanently delete
+      const schedulePermanentDelete = () => {
+        const timer = setTimeout(async () => {
+          pendingPermanentDeletes.delete(archiveId);
+          if (archiveSnapshot.path) {
+            try {
+              await invoke("permanent_delete_file", { filePath: archiveSnapshot.path });
+            } catch (e) {
+              console.warn("[permanent_delete] 永久删除失败:", e);
+            }
+          }
+        }, 5000);
+        pendingPermanentDeletes.set(archiveId, timer);
+      };
+
       toast.showSuccess(`${archiveName} 已删除`, {
         duration: 6000,
+        onClose: schedulePermanentDelete,
         actions: [
           {
             text: "撤销",
             onClick: async () => {
+              const p = pendingPermanentDeletes.get(archiveId);
+              if (p) { clearTimeout(p); pendingPermanentDeletes.delete(archiveId); }
               try {
                 await undo();
                 toast.showInfo(`已撤销删除「${archiveName}」`, { duration: 3000 });
@@ -327,7 +357,7 @@ export function useArchiveActions(
         batchSnapshots.push({ index: archiveIndex, snapshot });
 
         if (archive.path) {
-          await invoke("delete_file", { filePath: archive.path });
+          await invoke("soft_delete_file", { filePath: archive.path });
         }
 
         archiveData.archives.value.splice(archiveIndex, 1);
@@ -343,19 +373,33 @@ export function useArchiveActions(
       pushAction({
         description: `批量删除 ${batchSnapshots.length} 个存档`,
         undo: async () => {
-          // Restore all deleted archives in reverse order (to preserve indices)
-          const sorted = [...batchSnapshots].sort((a, b) => a.index - b.index);
-          for (const { snapshot } of sorted) {
+          // Cancel all pending permanent deletes for this batch
+          for (const { snapshot } of batchSnapshots) {
+            const p = pendingPermanentDeletes.get(snapshot.id);
+            if (p) { clearTimeout(p); pendingPermanentDeletes.delete(snapshot.id); }
+          }
+          // Actually restore each file from trash
+          for (const { snapshot } of batchSnapshots) {
+            if (snapshot.path) {
+              try {
+                await invoke("restore_file", { filePath: snapshot.path });
+              } catch (e) {
+                console.warn("[undo batch] 恢复文件失败:", e);
+              }
+            }
+          }
+          // Restore in frontend data
+          for (const { snapshot } of batchSnapshots) {
             archiveData.archives.value.push(snapshot);
           }
           if (callbacks.onRefresh) await callbacks.onRefresh();
         },
         redo: async () => {
-          // Re-delete
+          // Re-delete via soft-delete
           for (const { snapshot } of batchSnapshots) {
             if (snapshot.path) {
               try {
-                await invoke("delete_file", { filePath: snapshot.path });
+                await invoke("soft_delete_file", { filePath: snapshot.path });
               } catch (e) {
                 console.warn("[redo batch] 删除失败:", e);
               }
@@ -368,16 +412,36 @@ export function useArchiveActions(
         },
       });
 
-      // Show with undo action
+      // After toast closes, schedule permanent delete for each file (5s grace)
+      const scheduleBatchPermanentDelete = () => {
+        for (const { snapshot } of batchSnapshots) {
+          if (!snapshot.path) continue;
+          const timer = setTimeout(async () => {
+            pendingPermanentDeletes.delete(snapshot.id);
+            try {
+              await invoke("permanent_delete_file", { filePath: snapshot.path });
+            } catch (e) {
+              console.warn("[permanent_delete batch] 永久删除失败:", e);
+            }
+          }, 5000);
+          pendingPermanentDeletes.set(snapshot.id, timer);
+        }
+      };
+
       toast.showSuccess(`已删除 ${batchSnapshots.length} 个存档`, {
         duration: 6000,
+        onClose: scheduleBatchPermanentDelete,
         actions: [
           {
             text: "撤销",
             onClick: async () => {
+              for (const { snapshot } of batchSnapshots) {
+                const p = pendingPermanentDeletes.get(snapshot.id);
+                if (p) { clearTimeout(p); pendingPermanentDeletes.delete(snapshot.id); }
+              }
               try {
                 await undo();
-                toast.showInfo(`已撤销批量删除`, { duration: 3000 });
+                toast.showInfo("已撤销批量删除", { duration: 3000 });
               } catch (e) {
                 toast.showError("撤销失败");
               }

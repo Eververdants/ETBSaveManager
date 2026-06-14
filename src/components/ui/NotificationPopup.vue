@@ -300,6 +300,11 @@ const useNotificationActions = (getNotificationsByPosition, startTimer, getNotif
     }
     const index = notifications.value.findIndex((n) => n.id === id);
     if (index > -1) {
+      // Fire onClose callback before removing
+      const notification = notifications.value[index];
+      if (notification.onClose && typeof notification.onClose === "function") {
+        notification.onClose(id);
+      }
       notifications.value.splice(index, 1);
     }
   };

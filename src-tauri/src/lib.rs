@@ -29,6 +29,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             save_commands::load_all_saves,
             save_commands::delete_file,
+            save_commands::soft_delete_file,
+            save_commands::restore_file,
+            save_commands::permanent_delete_file,
             save_commands::handle_file,
             save_commands::get_player_data,
             save_commands::unlock_all_hub_doors,

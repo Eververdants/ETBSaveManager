@@ -80,7 +80,7 @@ export function useArchiveFilter(
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase();
       filtered = filtered.filter((archive) => {
-        // 匹配存档名、关卡名称、难度标签、游戏模式
+        // Match archive name, level name, difficulty tag, game mode
         const nameMatch = archive.name.toLowerCase().includes(query);
         const levelMatch = archive.currentLevel?.toLowerCase().includes(query) ?? false;
         const diffMatch = archive.archiveDifficulty?.toLowerCase().includes(query) ?? false;
@@ -106,7 +106,7 @@ export function useArchiveFilter(
     return filtered;
   });
 
-  // 搜索建议：最匹配的前3条
+  // Search suggestions: top 3 matches
   const searchSuggestions = computed((): ArchiveData[] => {
     const archivesArray: ArchiveData[] = "value" in archives ? archives.value : archives;
     if (!searchQuery.value || !archivesArray || archivesArray.length === 0) return [];

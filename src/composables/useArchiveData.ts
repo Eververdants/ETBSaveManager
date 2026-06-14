@@ -77,7 +77,6 @@ export function useArchiveData(): {
   refreshArchivesSilent: () => Promise<void>;
   removeArchive: (archiveId: number) => void;
   updateArchiveVisibility: (archiveId: number, isVisible: boolean) => void;
-  updateArchiveFavorite: (archiveId: number, isFavorite: boolean) => void;
 } {
   const { t } = useI18n({ useScope: "global" });
   const toast = useToast();
@@ -118,8 +117,6 @@ export function useArchiveData(): {
       archiveDifficulty: difficultyMap[item.difficulty!] || item.difficulty?.toLowerCase() || "normal",
       actualDifficulty: difficultyMap[item.actual_difficulty!] || item.actual_difficulty?.toLowerCase() || "normal",
       isVisible: item.is_visible === true,
-      isFavorite: false,
-      sortOrder: 0,
       path: item.path ?? "",
       date: item.date ?? new Date().toISOString(),
     };
@@ -139,8 +136,6 @@ export function useArchiveData(): {
       archiveDifficulty: diff,
       actualDifficulty: diff,
       isVisible: meta.is_visible,
-      isFavorite: false,
-      sortOrder: 0,
       path: meta.path,
       date: meta.date,
     };
@@ -401,18 +396,6 @@ export function useArchiveData(): {
     }
   };
 
-  const updateArchiveFavorite = (archiveId: number, isFavorite: boolean): void => {
-    const archiveIndex = archives.value.findIndex((a) => a.id === archiveId);
-    if (archiveIndex > -1) {
-      archives.value[archiveIndex].isFavorite = isFavorite;
-    }
-
-    const displayIndex = displayArchives.value.findIndex((a) => a.id === archiveId);
-    if (displayIndex > -1) {
-      displayArchives.value[displayIndex].isFavorite = isFavorite;
-    }
-  };
-
   const updateArchiveVisibility = (archiveId: number, isVisible: boolean): void => {
     const archiveIndex = archives.value.findIndex((a) => a.id === archiveId);
     if (archiveIndex > -1) {
@@ -446,6 +429,5 @@ export function useArchiveData(): {
     refreshArchivesSilent,
     removeArchive,
     updateArchiveVisibility,
-    updateArchiveFavorite,
   };
 }

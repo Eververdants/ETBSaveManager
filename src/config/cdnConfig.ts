@@ -71,17 +71,17 @@ export const loadCDNResource = async (
 
   const config = CDN_CONFIG.production[resourceType];
   if (!config) {
-    console.warn(`CDN配置未找到: ${resourceType}`);
+    console.warn(`CDN config not found: ${resourceType}`);
     return null;
   }
 
   try {
     const url = `${config.baseUrl}@${config.versions[library]}/dist/${library}.min.js`;
     await loadScript(url);
-    console.log(`✅ CDN资源加载成功: ${library}`);
+    console.log(`✅ CDN resource loaded successfully: ${library}`);
     return true;
   } catch (error) {
-    console.error(`❌ CDN资源加载失败: ${library}`, error);
+    console.error(`❌ CDN resource failed to load: ${library}`, error);
     return false;
   }
 };
@@ -126,7 +126,7 @@ export const preloadCriticalCDNResources = async (): Promise<void> => {
   try {
     await Promise.allSettled(loadPromises);
   } catch (error) {
-    console.warn("部分CDN资源加载失败，但不影响应用启动");
+    console.warn("Some CDN resources failed to load, but application startup is not affected");
   }
 };
 

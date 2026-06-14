@@ -1,6 +1,6 @@
 <template>
   <div class="step-content" data-step="1">
-    <!-- 结局选择器 -->
+    <!-- Ending selector -->
     <transition name="ending-selector" appear>
       <div class="ending-selector">
         <div class="ending-tabs">
@@ -19,7 +19,7 @@
       </div>
     </transition>
 
-    <!-- 层级选择卡片 -->
+    <!-- Level selection cards -->
     <div class="section-card">
       <Transition name="level-grid-fade" mode="out-in">
         <div :key="selectedEnding" class="level-grid">
@@ -71,7 +71,7 @@ const handleSelectLevel = (index, event) => {
 </script>
 
 <style scoped>
-/* 结局选择器动画 */
+/* Ending selector animation */
 .ending-selector-enter-active {
   transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -90,7 +90,7 @@ const handleSelectLevel = (index, event) => {
   transform: translateY(-20px) scale(0.95);
 }
 
-/* 结局选择器样式 */
+/* Ending selector styles */
 .ending-selector {
   margin-bottom: 20px;
   overflow: hidden;
@@ -150,7 +150,7 @@ const handleSelectLevel = (index, event) => {
   white-space: nowrap;
 }
 
-/* 卡片样式 - 优化版 */
+/* Card styles - optimized */
 .section-card {
   background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border-radius: 20px;
@@ -168,7 +168,7 @@ const handleSelectLevel = (index, event) => {
   position: relative;
 }
 
-/* 顶部高光效果 */
+/* Top highlight effect */
 .section-card::before {
   content: "";
   position: absolute;
@@ -180,7 +180,7 @@ const handleSelectLevel = (index, event) => {
   pointer-events: none;
 }
 
-/* 自定义滚动条 */
+/* Custom scrollbar */
 .section-card::-webkit-scrollbar {
   width: 6px;
 }
@@ -200,7 +200,7 @@ const handleSelectLevel = (index, event) => {
   background: rgba(var(--accent-color-rgb), 0.5);
 }
 
-/* 层级网格 */
+/* Level grid */
 .level-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

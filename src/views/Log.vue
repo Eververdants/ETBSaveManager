@@ -32,29 +32,7 @@
     </div>
 
     <div ref="logContainer" class="log-container">
-      <!-- 首次加载终端风格骨架屏 -->
-      <template v-if="isFirstLoad">
-        <div class="terminal-skeleton">
-          <div class="terminal-prompt-line">
-            <span class="terminal-prompt-sign">$</span>
-            <span class="terminal-loading-text">loading logs...</span>
-            <span class="terminal-cursor">&block;</span>
-          </div>
-          <div
-            v-for="i in 8"
-            :key="'skel-' + i"
-            class="terminal-skel-line"
-            :style="{ '--skel-delay': `${(i - 1) * 0.12}s` }"
-          >
-            <span class="skel-time" />
-            <span class="skel-level" :style="{ width: `${Math.max(36, 60 - i * 3)}px` }" />
-            <span class="skel-msg" :style="{ width: `${Math.max(100, 320 - i * 25)}px` }" />
-          </div>
-        </div>
-      </template>
-
-      <template v-else>
-        <div v-for="(log, index) in filteredLogs" :key="index" :class="['log-entry', log.type]">
+      <div v-for="(log, index) in filteredLogs" :key="index" :class="['log-entry', log.type]">
           <div class="log-time">{{ formatTime(log.date) }}</div>
           <div class="log-level" :class="log.type">[{{ log.type.toUpperCase() }}]</div>
           <div class="log-message">
@@ -77,7 +55,6 @@
         <div v-if="filteredLogs.length === 0" class="no-logs">
           {{ t("logs.noLogs") }}
         </div>
-      </template>
     </div>
   </div>
 </template>
@@ -93,8 +70,6 @@ const logs = ref([]);
 const filterLevel = ref("");
 const searchText = ref("");
 const logContainer = ref(null);
-const isFirstLoad = ref(true);
-
 
 // Get filtered logs
 const filteredLogs = computed(() => {
@@ -180,14 +155,6 @@ const checkUserScrolling = () => {
 onMounted(() => {
   updateLogs();
   lastLogCount = logs.value.length;
-
-  // 首次加载完成后隐藏骨架屏
-  if (isFirstLoad.value) {
-    // 给骨架屏一点展示时间，然后平滑过渡到真实内容
-    setTimeout(() => {
-      isFirstLoad.value = false;
-    }, 600);
-  }
 
   // Listen for log updates
   window.addEventListener("logs-updated", updateLogs);
@@ -468,112 +435,6 @@ select,
   color: var(--log-text-muted);
   opacity: 0.7;
   font-size: 12px;
-}
-
-/* ===== Terminal Skeleton ===== */
-.terminal-skeleton {
-  padding: 8px 0;
-  font-family: "Consolas", "Monaco", "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace;
-}
-
-.terminal-prompt-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--log-border, #2a2a4a);
-  color: var(--log-text-secondary, #94a3b8);
-  font-size: 13px;
-}
-
-.terminal-prompt-sign {
-  color: #4ade80;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.terminal-loading-text {
-  color: var(--log-text-muted, #64748b);
-}
-
-.terminal-cursor {
-  display: inline-block;
-  width: 8px;
-  height: 15px;
-  background: #4ade80;
-  animation: term-blink 1s step-end infinite;
-  margin-left: 2px;
-}
-
-@keyframes term-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-.terminal-skel-line {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 6px;
-  opacity: 0;
-  animation: termLineIn 0.25s ease forwards;
-  animation-delay: var(--skel-delay, 0s);
-}
-
-@keyframes termLineIn {
-  to { opacity: 0.5; }
-}
-
-.skel-time {
-  display: inline-block;
-  width: 100px;
-  height: 14px;
-  border-radius: 2px;
-  background: var(--log-border, #2a2a4a);
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.skel-time::after,
-.skel-level::after,
-.skel-msg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.08) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: skelShimmer 2s ease-in-out infinite;
-}
-
-.skel-level {
-  display: inline-block;
-  height: 14px;
-  border-radius: 2px;
-  background: var(--log-border, #2a2a4a);
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.skel-msg {
-  display: inline-block;
-  height: 14px;
-  border-radius: 2px;
-  background: var(--log-border, #2a2a4a);
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-}
-
-@keyframes skelShimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
 }
 
 /* Scrollbar styles */

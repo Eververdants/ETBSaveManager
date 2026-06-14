@@ -1,15 +1,15 @@
 <template>
   <div class="create-archive-container" :class="{ 'sidebar-expanded': isSidebarExpanded }">
-    <!-- 步骤指示器 -->
+    <!-- Step indicator -->
     <div class="step-indicator">
-      <!-- 左侧按钮区域 -->
+      <!-- Left button area -->
       <div class="step-indicator-left">
-        <!-- 返回快速模式按钮 - 只在快速模式下显示，且只在第一步显示 -->
+        <!-- Back to quick mode button - only shown in quick mode and only on step 1 -->
         <button v-if="isQuickMode && currentStep === 1" class="back-to-quick-mode-btn" @click="goBackToQuickMode">
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
           <span>{{ $t("createArchive.backToQuickMode") }}</span>
         </button>
-        <!-- 选择创建模式按钮 - 只在非快速模式下显示，且只在第一步显示 -->
+        <!-- Select creation mode button - only shown in non-quick mode and only on step 1 -->
         <button v-else-if="currentStep === 1" class="mode-select-button" @click="goToSelectMode">
           <font-awesome-icon :icon="['fas', 'th-large']" />
           <span>{{ $t("createMode.title") }}</span>
@@ -31,15 +31,15 @@
         <span class="step-label">{{ $t("createArchive.steps.editInventory") }}</span>
       </div>
 
-      <!-- 右侧占位，保持居中 -->
+      <!-- Right spacer to keep centered -->
       <div class="step-indicator-right"></div>
     </div>
 
-    <!-- 主要内容区域 -->
+    <!-- Main content area -->
     <div ref="contentWrapperRef" class="content-wrapper" :class="{ 'no-ending-selector': currentStep !== 1 }">
       <transition name="step-transition" mode="out-in" @enter="onStepEnter" @leave="onStepLeave">
         <div :key="currentStep" class="step-container">
-          <!-- 步骤1: 选择层级 -->
+          <!-- Step 1: Select level -->
           <Step1SelectLevel
             v-if="currentStep === 1"
             :selected-level="selectedLevel"
@@ -50,7 +50,7 @@
             @select-ending="selectEnding"
           />
 
-          <!-- 步骤2: 配置存档 -->
+          <!-- Step 2: Configure archive -->
           <Step2ConfigArchive
             v-else-if="currentStep === 2"
             v-model:archive-name="archiveName"
@@ -62,7 +62,7 @@
             @select-actual-difficulty="selectActualDifficulty"
           />
 
-          <!-- 步骤3: 编辑背包 -->
+          <!-- Step 3: Edit inventory -->
           <Step3EditInventory
             v-else-if="currentStep === 3"
             v-model:new-steam-id="newSteamId"
@@ -80,7 +80,7 @@
       </transition>
     </div>
 
-    <!-- 底部操作按钮 -->
+    <!-- Bottom action buttons -->
     <div class="bottom-actions">
       <button class="action-button secondary" :disabled="currentStep === 1" @click="previousStep">
         <font-awesome-icon :icon="['fas', 'arrow-left']" />
@@ -111,7 +111,7 @@
       </button>
     </div>
 
-    <!-- 物品选择器 -->
+    <!-- Item selector -->
     <InventoryItemSelector
       :visible="showItemSelector"
       :selected-item="selectedItem"
@@ -119,7 +119,7 @@
       @update:visible="showItemSelector = $event"
     />
 
-    <!-- 创建成功弹窗 -->
+    <!-- Creation success modal -->
     <Teleport to="body">
       <Transition name="success-modal">
         <div v-if="showSuccessModal" class="success-modal-overlay" @click.self="closeSuccessModal">
@@ -137,7 +137,7 @@
             </div>
             <h2 class="success-modal-title">{{ $t("createArchive.archiveCreated") }}</h2>
             <p class="success-modal-subtitle">{{ $t("createArchive.archiveCreatedMessage") }}</p>
-            <!-- 创建成功后操作选项 -->
+            <!-- Post-creation action options -->
             <div class="success-modal-actions">
               <button class="success-action-btn primary" @click="handleEditCreatedArchive">
                 <font-awesome-icon :icon="['fas', 'pen']" />
@@ -157,32 +157,7 @@
       </Transition>
     </Teleport>
 
-    <!-- 草稿恢复弹窗 -->
-    <Teleport to="body">
-      <Transition name="success-modal">
-        <div v-if="showDraftDialog" class="success-modal-overlay" @click.self="showDraftDialog = false">
-          <div class="success-modal-card">
-            <div class="draft-icon-circle">
-              <font-awesome-icon :icon="['fas', 'rotate-left']" />
-            </div>
-            <h2 class="success-modal-title">{{ $t("createArchive.draftFoundTitle") }}</h2>
-            <p class="success-modal-subtitle">
-              {{ $t("createArchive.draftFoundMessage", { step: draftData?.step || 1 }) }}
-            </p>
-            <div class="success-modal-actions">
-              <button class="success-action-btn primary" @click="restoreDraft">
-                <font-awesome-icon :icon="['fas', 'rotate-left']" />
-                {{ $t("createArchive.restoreDraft") }}
-              </button>
-              <button class="success-action-btn secondary" @click="discardDraft">
-                <font-awesome-icon :icon="['fas', 'times']" />
-                {{ $t("createArchive.discardDraft") }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+
   </div>
 </template>
 
@@ -206,7 +181,7 @@ const getLevelName = (levelKey) => {
   return te(translationKey) ? t(translationKey) : levelKey;
 };
 
-// 检测是否从快速模式进入
+// Check if entering from quick mode
 const isQuickMode = computed(() => route.query.quickMode === "true");
 const currentStep = ref(1);
 const previousStepValue = ref(1);
@@ -236,94 +211,11 @@ const availableLevels = reactive([]);
 const players = reactive([]);
 let successModalTimer = null;
 
-// 草稿持久化
-const CREATE_DRAFT_KEY = "create-archive-draft";
-const showDraftDialog = ref(false);
-const draftData = ref(null);
 const createdArchiveName = ref("");
 
-// 草稿函数
-const collectFormData = () => ({
-  step: currentStep.value,
-  selectedLevel: selectedLevel.value,
-  selectedEnding: selectedEnding.value,
-  archiveName: archiveName.value,
-  selectedGameMode: selectedGameMode.value,
-  selectedDifficulty: selectedDifficulty.value,
-  selectedActualDifficulty: selectedActualDifficulty.value,
-  players: JSON.parse(JSON.stringify(players)),
-  savedAt: Date.now(),
-});
 
-const saveDraft = () => {
-  try {
-    const data = collectFormData();
-    if (data.archiveName || data.selectedLevel !== -1 || players.length > 0) {
-      sessionStorage.setItem(CREATE_DRAFT_KEY, JSON.stringify(data));
-    }
-  } catch (e) {
-    // sessionStorage 写入失败不做处理
-  }
-};
 
-const checkDraft = () => {
-  try {
-    const raw = sessionStorage.getItem(CREATE_DRAFT_KEY);
-    if (!raw) return false;
-    draftData.value = JSON.parse(raw);
-    // 草稿超过30分钟视为过期
-    if (Date.now() - draftData.value.savedAt > 30 * 60 * 1000) {
-      clearDraft();
-      return false;
-    }
-    return true;
-  } catch (e) {
-    clearDraft();
-    return false;
-  }
-};
-
-const restoreDraft = () => {
-  if (!draftData.value) return;
-  const d = draftData.value;
-  currentStep.value = d.step || 1;
-  selectedLevel.value = d.selectedLevel ?? -1;
-  selectedEnding.value = d.selectedEnding ?? 0;
-  archiveName.value = d.archiveName || "";
-  selectedGameMode.value = d.selectedGameMode || "multiplayer";
-  selectedDifficulty.value = d.selectedDifficulty || "normal";
-  selectedActualDifficulty.value = d.selectedActualDifficulty || "normal";
-  players.splice(0, players.length, ...(d.players || []));
-  if (players.length > 0) activePlayerIndex.value = 0;
-  showDraftDialog.value = false;
-  draftData.value = null;
-  // 加载对应结局的关卡
-  loadLevelsForEnding(selectedEnding.value);
-  nextTick(saveDraft); // 刷新保存时间
-};
-
-const discardDraft = () => {
-  clearDraft();
-  showDraftDialog.value = false;
-  resetForm();
-};
-
-const clearDraft = () => {
-  try {
-    sessionStorage.removeItem(CREATE_DRAFT_KEY);
-  } catch (e) { /* ignore */ }
-  draftData.value = null;
-  showDraftDialog.value = false;
-};
-
-// 自动保存草稿（防抖1秒）
-let draftDebounceTimer = null;
-const debouncedSaveDraft = () => {
-  if (draftDebounceTimer) clearTimeout(draftDebounceTimer);
-  draftDebounceTimer = setTimeout(saveDraft, 1000);
-};
-
-// 结局数据 - 存储 levels 数据
+// Ending data - store levels data
 const endingLevelsData = reactive({
   0: [],
   1: [],
@@ -333,7 +225,7 @@ const endingLevelsData = reactive({
   5: [],
 });
 
-// 结局数据 - 使用 computed 实现语言响应式
+// Ending data - use computed for language reactivity
 const endings = computed(() => [
   {
     id: 0,
@@ -386,17 +278,6 @@ const canProceed = computed(() => {
 
 watch(selectedEnding, () => {});
 
-// 自动保存草稿 - 监听表单数据变化
-watch(
-  [currentStep, selectedLevel, selectedEnding, archiveName, selectedDifficulty, selectedActualDifficulty, players],
-  () => {
-    if (!showDraftDialog.value) {
-      debouncedSaveDraft();
-    }
-  },
-  { deep: true },
-);
-
 const selectDifficulty = (difficulty) => {
   selectedDifficulty.value = difficulty;
 };
@@ -418,7 +299,7 @@ const goToSelectMode = () => {
 };
 
 const goBackToQuickMode = () => {
-  // 清除 sessionStorage 中的状态数据
+  // Clear state data from sessionStorage
   sessionStorage.removeItem("quickModeArchiveConfig");
   sessionStorage.removeItem("quickModeCurrentState");
   router.push("/quick-create-archive");
@@ -487,7 +368,7 @@ const loadLevelsForEnding = async (endingIndex) => {
 
 const selectLevel = (index) => {
   selectedLevel.value = index;
-  // 动画已移至 Step1SelectLevel 组件中处理
+  // Animation moved to Step1SelectLevel component
 };
 
 const validateSteamId = (steamId) => {
@@ -639,16 +520,16 @@ const resetForm = () => {
   loadLevelsForEnding(0);
 };
 
-// 步骤切换方向：1 = 前进（向左滑出），-1 = 后退（向右滑出）
+// Step transition direction: 1 = forward (slide left), -1 = backward (slide right)
 const stepDirection = ref(1);
 
 const nextStep = () => {
   if (currentStep.value < 3 && canProceed.value) {
-    stepDirection.value = 1; // 前进方向
+    stepDirection.value = 1; // Forward direction
     previousStepValue.value = currentStep.value;
     currentStep.value++;
   } else if (currentStep.value === 3) {
-    // 如果是快速模式，将配置数据传回快速模式页面
+    // If in quick mode, pass config data back to quick mode page
     if (isQuickMode.value) {
       finishAndReturnToQuickMode();
     } else {
@@ -658,15 +539,15 @@ const nextStep = () => {
 };
 
 /**
- * 完成配置并返回快速模式
- * 将当前配置的存档数据传回快速模式页面
+ * Complete config and return to quick mode
+ * Pass current archive config data back to quick mode page
  */
 const finishAndReturnToQuickMode = () => {
   const selectedLevelData = availableLevels[selectedLevel.value];
 
-  // 构建存档配置数据
+  // Build archive config data
   const archiveConfig = {
-    name: archiveName.value.trim() || "未命名存档",
+    name: archiveName.value.trim() || "Unnamed Archive",
     level: selectedLevelData?.levelKey || null,
     difficulty: selectedDifficulty.value,
     actualDifficulty: selectedActualDifficulty.value,
@@ -679,16 +560,16 @@ const finishAndReturnToQuickMode = () => {
     ending: selectedEnding.value,
   };
 
-  // 将配置数据存储到 sessionStorage，供快速模式页面读取
+  // Store config data in sessionStorage for quick mode page to read
   sessionStorage.setItem("quickModeArchiveConfig", JSON.stringify(archiveConfig));
 
-  // 跳转回快速模式页面
+  // Navigate back to quick mode page
   router.push("/quick-create-archive");
 };
 
 const previousStep = () => {
   if (currentStep.value > 1) {
-    stepDirection.value = -1; // 后退方向
+    stepDirection.value = -1; // Backward direction
     previousStepValue.value = currentStep.value;
     currentStep.value--;
   }
@@ -710,7 +591,7 @@ const fetchSteamUsernames = async () => {
       }
     });
   } catch (error) {
-    console.error("获取Steam用户名失败:", error);
+      console.error("Failed to fetch Steam usernames:", error);
     let errorMessage = error.toString();
     let userFriendlyMessage;
     if (errorMessage.includes("403") || errorMessage.includes("Forbidden")) {
@@ -731,10 +612,10 @@ const fetchSteamUsernames = async () => {
 const loadJsonFile = async (filename) => {
   try {
     const response = await fetch(`/${filename}`);
-    if (!response.ok) throw new Error(`HTTP错误! 状态: ${response.status}`);
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
     return await response.json();
   } catch (error) {
-    console.error(`读取 ${filename} 失败:`, error);
+    console.error(`Failed to read ${filename}:`, error);
     return null;
   }
 };
@@ -758,7 +639,7 @@ const createArchive = async () => {
     const isMainEnding = selectedEnding.value === 0;
     const megLevels = ["Level0", "TopFloor", "MiddleFloor", "GarageLevel2", "BottomFloor", "TheHub"];
     const isMEGUnlocked = !megLevels.includes(selectedLevelData.levelKey);
-    const savedName = archiveName.value.trim() || "未命名存档";
+    const savedName = archiveName.value.trim() || "Unnamed Archive";
     createdArchiveName.value = savedName;
     const saveData = {
       archive_name: savedName,
@@ -789,16 +670,14 @@ const createArchive = async () => {
       return;
     }
     const { invoke } = await import("@tauri-apps/api/core");
-    // 创建中进度指示
+    // Creating progress indicator
     await invoke("handle_new_save", { saveData });
-    // 创建成功后清除草稿
-    clearDraft();
     createParticleExplosion();
     openSuccessModal();
   } catch (error) {
-    console.error("创建存档失败:", error);
-    // 显示更具体的错误信息
-    const errorMsg = error.message || error.toString() || "未知错误";
+    console.error("Failed to create archive:", error);
+    // Show more specific error message
+    const errorMsg = error.message || error.toString() || "Unknown error";
     notify.error(t("createArchive.createFailed", { error: errorMsg }));
     isCreating.value = false;
   }
@@ -874,14 +753,14 @@ const openSuccessModal = () => {
   clearSuccessModalTimer();
   isCreating.value = false;
   showSuccessModal.value = true;
-  // 不再自动关闭，等待用户操作
+  // No longer auto-close, wait for user action
 };
 
 const closeSuccessModal = () => {
   finishCreateFlow();
 };
 
-// 创建成功后操作选项
+// Post-creation action options
 const handleEditCreatedArchive = () => {
   showSuccessModal.value = false;
   router.push({
@@ -892,7 +771,7 @@ const handleEditCreatedArchive = () => {
 
 const handleCreateAnother = () => {
   showSuccessModal.value = false;
-  // 重置表单但不清除草稿，继续创建
+  // Reset form and continue creating
   currentStep.value = 1;
   selectedLevel.value = -1;
   selectedEnding.value = 0;
@@ -928,15 +807,7 @@ const updateBottomActionsPosition = () => {
 };
 
 onMounted(async () => {
-  // 进入页面时先检查草稿
-  const hasDraft = checkDraft();
-  if (!hasDraft) {
-    resetForm();
-  } else {
-    // 有草稿时暂时不重置，等待用户选择
-    showDraftDialog.value = true;
-    await loadLevels();
-  }
+  resetForm();
   await loadLevels();
   window.addEventListener("sidebar-expand", handleSidebarExpand);
   window.addEventListener("beforeunload", handleBeforeUnload);
@@ -944,22 +815,13 @@ onMounted(async () => {
   updateBottomActionsPosition();
 });
 
-// 由于路由设置了 keepAlive，组件会被缓存
-// 使用 onActivated 确保每次进入页面时检查草稿
 onActivated(() => {
-  const hasDraft = checkDraft();
-  if (!hasDraft) {
-    resetForm();
-  } else {
-    showDraftDialog.value = true;
-  }
+  resetForm();
 });
 
 const handleBeforeUnload = (e) => {
-  // 如果有表单数据、正在创建中或显示成功弹窗，提示用户
+  // If there is form data, creation in progress, or success modal shown, warn user
   if (archiveName.value || selectedLevel.value !== -1 || players.length > 0 || isCreating.value || showSuccessModal.value) {
-    // 先保存草稿
-    saveDraft();
     e.preventDefault();
     e.returnValue = "";
   }
@@ -969,11 +831,10 @@ onUnmounted(() => {
   window.removeEventListener("sidebar-expand", handleSidebarExpand);
   window.removeEventListener("beforeunload", handleBeforeUnload);
   clearSuccessModalTimer();
-  if (draftDebounceTimer) clearTimeout(draftDebounceTimer);
 });
 
 const onStepEnter = (el, done) => {
-  // 前进时从右边进入，后退时从左边进入
+  // Enter from right when forward, from left when backward
   const fromX = stepDirection.value === 1 ? 30 : -30;
   gsap.fromTo(
     el,
@@ -989,7 +850,7 @@ const onStepEnter = (el, done) => {
 };
 
 const onStepLeave = (el, done) => {
-  // 直接淡出，不做位移，避免布局问题
+  // Fade out directly without translation to avoid layout issues
   gsap.to(el, {
     opacity: 0,
     duration: 0.15,
@@ -1020,7 +881,7 @@ const onStepLeave = (el, done) => {
   position: relative;
 }
 
-/* 左右两侧占位区域 */
+/* Left and right spacer areas */
 .step-indicator-left,
 .step-indicator-right {
   position: absolute;
@@ -1037,7 +898,7 @@ const onStepLeave = (el, done) => {
   right: 0;
 }
 
-/* 返回快速模式按钮 */
+/* Back to quick mode button */
 .back-to-quick-mode-btn {
   display: flex;
   align-items: center;
@@ -1063,7 +924,7 @@ const onStepLeave = (el, done) => {
   font-size: 12px;
 }
 
-/* 选择创建模式按钮 */
+/* Select creation mode button */
 .mode-select-button {
   display: flex;
   align-items: center;
@@ -1150,7 +1011,7 @@ const onStepLeave = (el, done) => {
   height: calc(100vh - 248px);
   padding: 0 20px;
   padding-bottom: 100px;
-  /* 为悬浮底部操作栏留出空间 */
+  /* Space for floating bottom action bar */
   box-sizing: border-box;
   position: relative;
 }
@@ -1158,7 +1019,7 @@ const onStepLeave = (el, done) => {
 .content-wrapper.no-ending-selector {
   height: calc(100vh - 178px);
   padding-bottom: 100px;
-  /* 为悬浮底部操作栏留出空间 */
+  /* Space for floating bottom action bar */
 }
 
 .step-container {
@@ -1259,13 +1120,13 @@ const onStepLeave = (el, done) => {
   transform: translateY(-10px);
 }
 
-/* 步骤切换动画由 gsap 控制 */
+/* Step transition animation controlled by gsap */
 .step-transition-enter-active,
 .step-transition-leave-active {
   will-change: transform, opacity;
 }
 
-/* 创建成功弹窗 */
+/* Creation success modal */
 .success-modal-overlay {
   position: fixed;
   inset: 0;
@@ -1341,7 +1202,7 @@ const onStepLeave = (el, done) => {
   opacity: 0;
 }
 
-/* 成功弹窗操作按钮 */
+/* Success modal action buttons */
 .success-modal-actions {
   display: flex;
   flex-direction: column;
@@ -1384,21 +1245,6 @@ const onStepLeave = (el, done) => {
 .success-action-btn.secondary:hover {
   background: var(--bg-hover);
   transform: translateY(-1px);
-}
-
-/* 草稿恢复弹窗图标 */
-.draft-icon-circle {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 18px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-color), #5ac8fa);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 28px;
-  box-shadow: 0 8px 28px rgba(var(--accent-color-rgb), 0.35);
 }
 
 @media (max-width: 768px) {

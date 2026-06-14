@@ -1,7 +1,7 @@
 /**
- * ThemeManager - 核心主题管理器 (simplified)
+ * ThemeManager - Core theme manager (simplified)
  *
- * 仅负责预设主题的切换与持久化。
+ * Handles preset theme switching and persistence only.
  */
 
 import { ref, readonly } from "vue";
@@ -16,20 +16,20 @@ interface PresetTheme {
 }
 
 /**
- * 预设主题定义
+ * Preset theme definitions
  */
 export const PRESET_THEMES: Record<string, PresetTheme> = {
-  light: { id: "light", name: "亮色", type: "preset" },
-  dark: { id: "dark", name: "暗色", type: "preset" },
-  "high-contrast": { id: "high-contrast", name: "高对比度", type: "preset" },
-  ocean: { id: "ocean", name: "海洋", type: "preset" },
-  forest: { id: "forest", name: "森林", type: "preset" },
-  sunset: { id: "sunset", name: "日落", type: "preset" },
-  lavender: { id: "lavender", name: "薰衣草", type: "preset" },
-  rose: { id: "rose", name: "玫瑰", type: "preset" },
-  mint: { id: "mint", name: "薄荷", type: "preset" },
-  peach: { id: "peach", name: "蜜桃", type: "preset" },
-  sky: { id: "sky", name: "天空", type: "preset" },
+  light: { id: "light", name: "Light", type: "preset" },
+  dark: { id: "dark", name: "Dark", type: "preset" },
+  "high-contrast": { id: "high-contrast", name: "High Contrast", type: "preset" },
+  ocean: { id: "ocean", name: "Ocean", type: "preset" },
+  forest: { id: "forest", name: "Forest", type: "preset" },
+  sunset: { id: "sunset", name: "Sunset", type: "preset" },
+  lavender: { id: "lavender", name: "Lavender", type: "preset" },
+  rose: { id: "rose", name: "Rose", type: "preset" },
+  mint: { id: "mint", name: "Mint", type: "preset" },
+  peach: { id: "peach", name: "Peach", type: "preset" },
+  sky: { id: "sky", name: "Sky", type: "preset" },
 };
 
 const DEFAULT_THEME_ID = "light";
@@ -177,11 +177,11 @@ class ThemeManager {
   }
 }
 
-// 创建单例实例
+// Create singleton instance
 const themeManager = new ThemeManager();
 
 export { themeManager, ThemeManager };
 export default themeManager;
 
-// 兼容旧版 API
+// Legacy API compatibility
 export const themePresets: Record<string, PresetTheme> = PRESET_THEMES;

@@ -1,7 +1,7 @@
 <template>
   <div class="step-content" data-step="2">
     <div class="config-grid">
-      <!-- 存档名称 - 占满第一行 -->
+      <!-- Archive name - full width row -->
       <div class="config-card full-width">
         <h3 class="form-section-title">
           {{ $t("createArchive.archiveName") }}
@@ -25,7 +25,7 @@
         </div>
       </div>
 
-      <!-- 存档难度 -->
+      <!-- Archive difficulty -->
       <div class="config-card">
         <h3 class="form-section-title">{{ $t("createArchive.difficulty") }}</h3>
         <div class="difficulty-grid">
@@ -47,7 +47,7 @@
         </div>
       </div>
 
-      <!-- 实际难度 -->
+      <!-- Actual difficulty -->
       <div class="config-card">
         <h3 class="form-section-title">
           {{ $t("createArchive.actualDifficulty") }}
@@ -104,7 +104,7 @@ const getDifficultyText = (difficultyKey) => {
 </script>
 
 <style scoped>
-/* 配置网格 */
+/* Config grid */
 .config-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -214,7 +214,7 @@ const getDifficultyText = (difficultyKey) => {
   opacity: 0.7;
 }
 
-/* 错误消息 */
+/* Error message */
 .error-message {
   display: flex;
   align-items: center;
@@ -238,7 +238,7 @@ const getDifficultyText = (difficultyKey) => {
   transform: translateY(-10px);
 }
 
-/* 难度选择 */
+/* Difficulty selection */
 .difficulty-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

@@ -1,20 +1,5 @@
 <template>
-  <!-- 初始加载骨架屏 -->
-  <div v-if="pageLoading" class="settings-container">
-    <div class="setting-group-skeleton" v-for="group in 3" :key="'skel-group-' + group">
-      <div class="skel-section-header" />
-      <div class="setting-item-skeleton" v-for="item in (group === 3 ? 1 : 3)" :key="'skel-item-' + group + '-' + item">
-        <div class="skel-icon-box" />
-        <div class="skel-text-block">
-          <div class="skel-line skel-line-title" />
-          <div class="skel-line skel-line-subtitle" />
-        </div>
-        <div class="skel-action-box" />
-      </div>
-    </div>
-  </div>
-
-  <div v-else class="settings-container">
+  <div class="settings-container">
     <!-- Appearance and language settings group -->
     <div class="setting-group">
       <transition name="text-swift" mode="out-in">
@@ -387,7 +372,6 @@ export default {
   },
   data() {
     return {
-      pageLoading: true,
       currentTheme: storage.getItem("theme", "light"),
       currentLanguage: storage.getItem("language", "zh-CN"),
       performanceMonitorEnabled: storage.getItem("performanceMonitor", true) !== false, // Enabled by default
@@ -456,9 +440,6 @@ export default {
         console.error(this.t("settings.startupUpdateCheckFailed"), error);
       }
     }
-
-    // 初始加载完成后隐藏骨架屏
-    this.pageLoading = false;
   },
   methods: {
     formatUpdateNotes(body) {
@@ -961,179 +942,6 @@ export default {
 </script>
 
 <style scoped>
-/* Settings page skeleton styles */
-.setting-group-skeleton {
-  margin-bottom: 32px;
-}
-
-.skel-section-header {
-  width: 200px;
-  height: 20px;
-  border-radius: 6px;
-  background: var(--bg-tertiary, #e5e7eb);
-  margin-bottom: 20px;
-  position: relative;
-  overflow: hidden;
-}
-
-.skel-section-header::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.15) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: skelShine 1.8s ease-in-out infinite;
-}
-
-[data-theme="dark"] .skel-section-header::after {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.06) 50%,
-    transparent 100%
-  );
-}
-
-.setting-item-skeleton {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px 16px;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
-}
-
-.skel-icon-box {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: var(--bg-tertiary, #e5e7eb);
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.skel-icon-box::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.15) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: skelShine 1.8s ease-in-out infinite;
-}
-
-[data-theme="dark"] .skel-icon-box::after {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.06) 50%,
-    transparent 100%
-  );
-}
-
-.skel-text-block {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.skel-line {
-  height: 12px;
-  border-radius: 6px;
-  background: var(--bg-tertiary, #e5e7eb);
-  position: relative;
-  overflow: hidden;
-}
-
-.skel-line::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.15) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: skelShine 1.8s ease-in-out infinite;
-}
-
-[data-theme="dark"] .skel-line::after {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.06) 50%,
-    transparent 100%
-  );
-}
-
-.skel-line-title {
-  width: 65%;
-  height: 16px;
-}
-
-.skel-line-subtitle {
-  width: 45%;
-  height: 10px;
-}
-
-.skel-action-box {
-  width: 60px;
-  height: 30px;
-  border-radius: 6px;
-  background: var(--bg-tertiary, #e5e7eb);
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.skel-action-box::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.15) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: skelShine 1.8s ease-in-out infinite;
-}
-
-[data-theme="dark"] .skel-action-box::after {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.06) 50%,
-    transparent 100%
-  );
-}
-
-@keyframes skelShine {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-[data-performance-mode="low"] .skel-line::after,
-[data-performance-mode="low"] .skel-section-header::after,
-[data-performance-mode="low"] .skel-icon-box::after,
-[data-performance-mode="low"] .skel-action-box::after {
-  animation: none;
-  background: none;
-}
-
 /* Settings page styles */
 .settings-container {
   height: 100%;

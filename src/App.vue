@@ -10,7 +10,6 @@ const TitleBar = shallowRef(null);
 import SidebarComponent from "./components/layout/Sidebar.vue";
 import TitleBarComponent from "./components/layout/TitleBar.vue";
 import ErrorBoundary from "./components/ui/ErrorBoundary.vue";
-import PageSkeleton from "./components/ui/PageSkeleton.vue";
 
 Sidebar.value = SidebarComponent;
 TitleBar.value = TitleBarComponent;
@@ -20,7 +19,6 @@ const route = useRoute();
 const sidebarExpanded = ref(false);
 const showGlobalSearch = ref(false);
 const globalSearchRef = ref(null);
-const isRouteLoading = ref(false);
 const normalizeBool = (value) => value === true || value === "true";
 const performanceMonitorEnabled = ref(normalizeBool(storage.getItem("performanceMonitor", false)));
 const developerModeEnabled = ref(normalizeBool(storage.getItem("developerMode", false)));
@@ -104,7 +102,7 @@ const handleGlobalKeydown = (event) => {
     return;
   }
 
-  // Ctrl+Shift+F — 打开高级全局搜索
+  // Ctrl+Shift+F — Open advanced global search
   const isAdvancedFindShortcut = (event.ctrlKey || event.metaKey) && event.shiftKey && key === "f";
   if (isAdvancedFindShortcut) {
     event.preventDefault();
@@ -174,15 +172,7 @@ onMounted(() => {
     }
   });
 
-  // Route loading skeleton: shown during lazy route component loading
-  router.beforeResolve((to, from) => {
-    if (to.name !== from.name) {
-      isRouteLoading.value = true;
-    }
-  });
-
   router.afterEach((to, from) => {
-    isRouteLoading.value = false;
     if (to.name !== from.name) {
       const mainContent = getMainContent();
       if (mainContent) {
@@ -246,10 +236,8 @@ async function initThemeSystem() {
         <router-view v-slot="{ Component, route }">
           <transition name="page-fade" mode="out-in">
             <keep-alive :include="cachedComponents" :exclude="excludedComponents">
-              <ErrorBoundary :key="'eb-' + route.fullPath">
-                <!-- 路由懒加载时显示骨架屏，加载完成后显示实际组件 -->
-                <PageSkeleton v-if="isRouteLoading" :key="'skel-' + route.fullPath" />
-                <component v-else :is="Component" :key="route.fullPath" />
+              <ErrorBoundary :key="'eb-' + route.name">
+                <component :is="Component" :key="route.fullPath" />
               </ErrorBoundary>
             </keep-alive>
           </transition>

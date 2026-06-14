@@ -108,21 +108,21 @@ export function useArchiveActions(
         try {
           resultObj = typeof result === "string" ? JSON.parse(result) : result;
         } catch (e) {
-          throw new Error("解析后端返回结果失败");
+          throw new Error("Failed to parse backend response");
         }
         if (!resultObj || !resultObj.success) {
           // Rollback optimistic update
           if (archiveData.updateArchiveVisibility) {
             archiveData.updateArchiveVisibility(updatedArchive.id, originalVisibility);
           }
-          throw new Error(resultObj?.error || "操作失败");
+          throw new Error(resultObj?.error || "Operation failed");
         }
 
         // Register undo action
         const archiveId = updatedArchive.id;
         const archiveSnapshot: ArchiveData = { ...updatedArchive, isVisible: originalVisibility };
         pushAction({
-          description: `切换「${updatedArchive.name}」可见性`,
+          description: `Toggle visibility of "${updatedArchive.name}"`,
           undo: async () => {
             // Restore original visibility
             if (archiveData.updateArchiveVisibility) {
@@ -135,7 +135,7 @@ export function useArchiveActions(
                 archiveName: archiveSnapshot.name,
               });
             } catch (e) {
-              console.warn("[undo] 切换可见性失败:", e);
+              console.warn("[undo] Failed to toggle visibility:", e);
             }
           },
           redo: async () => {
@@ -150,7 +150,7 @@ export function useArchiveActions(
                 archiveName: archiveSnapshot.name,
               });
             } catch (e) {
-              console.warn("[redo] 切换可见性失败:", e);
+              console.warn("[redo] Failed to toggle visibility:", e);
             }
           },
         });
@@ -159,7 +159,7 @@ export function useArchiveActions(
         if (onSuccess) onSuccess();
       }
     } catch (error) {
-      toast.showError("切换可见性失败: " + (error as Error).message);
+      toast.showError("Failed to toggle visibility: " + (error as Error).message);
       if (onError) onError(error);
     }
   };
@@ -185,7 +185,7 @@ export function useArchiveActions(
 
     try {
       const archiveIndex = archiveData.archives.value.findIndex((a) => a.id === archiveToDelete.value!.id);
-      if (archiveIndex === -1) throw new Error("未找到要删除的存档数据");
+      if (archiveIndex === -1) throw new Error("Archive data not found for deletion");
 
       const archive = archiveData.archives.value[archiveIndex];
       showDeleteConfirm.value = false;
@@ -193,7 +193,7 @@ export function useArchiveActions(
       // Save snapshot for undo
       const archiveSnapshot: ArchiveData = { ...archive };
       const archiveId = archive.id;
-      const archiveName = archive.name || "存档";
+      const archiveName = archive.name || "Archive";
 
       const cardElement = document.querySelector(`[data-archive-id="${archive.id}"]`) as HTMLElement | null;
 
@@ -218,7 +218,7 @@ export function useArchiveActions(
       if (archiveIndex >= 0 && archiveIndex < archiveData.archives.value.length) {
         archiveData.archives.value.splice(archiveIndex, 1);
       } else {
-        console.warn("[useArchiveActions] 删除时存档索引无效:", archiveIndex);
+        console.warn("[useArchiveActions] Invalid archive index during deletion:", archiveIndex);
       }
 
       // Cache deleted archive for potential undo
@@ -230,7 +230,7 @@ export function useArchiveActions(
 
       // Register undo action with toast
       pushAction({
-        description: `删除「${archiveName}」`,
+        description: `Delete "${archiveName}"`,
         undo: async () => {
           // Cancel pending permanent delete (safety)
           const p = pendingPermanentDeletes.get(archiveId);
@@ -240,8 +240,8 @@ export function useArchiveActions(
             try {
               await invoke("restore_file", { filePath: archiveSnapshot.path });
             } catch (e) {
-              console.warn("[undo] 恢复文件失败:", e);
-              toast.showError("恢复文件失败");
+              console.warn("[undo] Failed to restore file:", e);
+              toast.showError("Failed to restore file");
               return;
             }
           }
@@ -258,7 +258,7 @@ export function useArchiveActions(
             try {
               await invoke("soft_delete_file", { filePath: archiveSnapshot.path });
             } catch (e) {
-              console.warn("[redo] 删除失败:", e);
+              console.warn("[redo] Failed to delete:", e);
             }
           }
           // Remove from data
@@ -277,27 +277,27 @@ export function useArchiveActions(
             try {
               await invoke("permanent_delete_file", { filePath: archiveSnapshot.path });
             } catch (e) {
-              console.warn("[permanent_delete] 永久删除失败:", e);
+              console.warn("[permanent_delete] Failed to permanently delete:", e);
             }
           }
         }, 5000);
         pendingPermanentDeletes.set(archiveId, timer);
       };
 
-      toast.showSuccess(`${archiveName} 已删除`, {
+      schedulePermanentDelete();
+      toast.showSuccess(`${archiveName} deleted`, {
         duration: 6000,
-        onClose: schedulePermanentDelete,
         actions: [
           {
-            text: "撤销",
+            text: "Undo",
             onClick: async () => {
               const p = pendingPermanentDeletes.get(archiveId);
               if (p) { clearTimeout(p); pendingPermanentDeletes.delete(archiveId); }
               try {
                 await undo();
-                toast.showInfo(`已撤销删除「${archiveName}」`, { duration: 3000 });
+                toast.showInfo(`Undo delete of "${archiveName}"`, { duration: 3000 });
               } catch (e) {
-                toast.showError("撤销失败");
+                toast.showError("Undo failed");
               }
             },
           },
@@ -309,7 +309,7 @@ export function useArchiveActions(
       deletingCardId.value = null;
       if (onSuccess) onSuccess();
     } catch (error) {
-      toast.showError("删除失败: " + ((error as Error).message || error));
+      toast.showError("Delete failed: " + ((error as Error).message || error));
       closeDeleteModal();
       if (onError) onError(error);
     }
@@ -329,10 +329,10 @@ export function useArchiveActions(
   const openSaveGamesFolder = async (callbacks: Pick<ArchiveActionsCallbacks, "onSuccess"> = {}): Promise<void> => {
     try {
       await invoke("open_save_games_folder");
-      toast.showFolder("已打开存档文件夹");
+      toast.showFolder("Save folder opened");
       if (callbacks.onSuccess) callbacks.onSuccess();
     } catch (error) {
-      console.error("打开文件夹失败:", error);
+      console.error("Failed to open folder:", error);
     }
   };
 
@@ -349,7 +349,7 @@ export function useArchiveActions(
         const archiveIndex = archiveData.archives.value.findIndex((a) => a.id === archive.id);
 
         if (archiveIndex === -1) {
-          console.warn(`[batchDelete] 存档不存在: ${archive.id}`);
+          console.warn(`[batchDelete] Archive not found: ${archive.id}`);
           continue;
         }
 
@@ -363,7 +363,7 @@ export function useArchiveActions(
         archiveData.archives.value.splice(archiveIndex, 1);
         deleteResults.success.push(archive.id);
       } catch (error) {
-        console.error(`[batchDelete] 删除失败: ${archive.id}`, error);
+        console.error(`[batchDelete] Failed to delete: ${archive.id}`, error);
         deleteResults.failed.push({ id: archive.id, error });
       }
     }
@@ -371,7 +371,7 @@ export function useArchiveActions(
     // Register batch delete as single undo action
     if (batchSnapshots.length > 0) {
       pushAction({
-        description: `批量删除 ${batchSnapshots.length} 个存档`,
+        description: `Batch delete ${batchSnapshots.length} archives`,
         undo: async () => {
           // Cancel all pending permanent deletes for this batch
           for (const { snapshot } of batchSnapshots) {
@@ -384,7 +384,7 @@ export function useArchiveActions(
               try {
                 await invoke("restore_file", { filePath: snapshot.path });
               } catch (e) {
-                console.warn("[undo batch] 恢复文件失败:", e);
+                console.warn("[undo batch] Failed to restore file:", e);
               }
             }
           }
@@ -401,7 +401,7 @@ export function useArchiveActions(
               try {
                 await invoke("soft_delete_file", { filePath: snapshot.path });
               } catch (e) {
-                console.warn("[redo batch] 删除失败:", e);
+                console.warn("[redo batch] Failed to delete:", e);
               }
             }
             const idx = archiveData.archives.value.findIndex((a) => a.id === snapshot.id);
@@ -421,19 +421,19 @@ export function useArchiveActions(
             try {
               await invoke("permanent_delete_file", { filePath: snapshot.path });
             } catch (e) {
-              console.warn("[permanent_delete batch] 永久删除失败:", e);
+              console.warn("[permanent_delete batch] Failed to permanently delete:", e);
             }
           }, 5000);
           pendingPermanentDeletes.set(snapshot.id, timer);
         }
       };
 
-      toast.showSuccess(`已删除 ${batchSnapshots.length} 个存档`, {
+      scheduleBatchPermanentDelete();
+      toast.showSuccess(`Deleted ${batchSnapshots.length} archives`, {
         duration: 6000,
-        onClose: scheduleBatchPermanentDelete,
         actions: [
           {
-            text: "撤销",
+            text: "Undo",
             onClick: async () => {
               for (const { snapshot } of batchSnapshots) {
                 const p = pendingPermanentDeletes.get(snapshot.id);
@@ -441,9 +441,9 @@ export function useArchiveActions(
               }
               try {
                 await undo();
-                toast.showInfo("已撤销批量删除", { duration: 3000 });
+                toast.showInfo("Batch delete undone", { duration: 3000 });
               } catch (e) {
-                toast.showError("撤销失败");
+                toast.showError("Undo failed");
               }
             },
           },
@@ -452,7 +452,7 @@ export function useArchiveActions(
     }
 
     if (deleteResults.failed.length > 0) {
-      toast.showError(`批量删除完成，${deleteResults.success.length} 个成功，${deleteResults.failed.length} 个失败`);
+      toast.showError(`Batch delete complete: ${deleteResults.success.length} succeeded, ${deleteResults.failed.length} failed`);
       if (onError) onError(deleteResults);
     }
 
@@ -476,7 +476,7 @@ export function useArchiveActions(
         const tag = document.activeElement?.tagName || "";
         if (!["INPUT", "TEXTAREA", "SELECT"].includes(tag)) {
           undo().then((desc: string | null) => {
-            if (desc) toast.showInfo(`已撤销: ${desc}`, { duration: 3000 });
+            if (desc) toast.showInfo(`Undone: ${desc}`, { duration: 3000 });
           });
         }
       } else if (event.key === "z" && event.shiftKey) {
@@ -484,7 +484,7 @@ export function useArchiveActions(
         const tag = document.activeElement?.tagName || "";
         if (!["INPUT", "TEXTAREA", "SELECT"].includes(tag)) {
           redo().then((desc: string | null) => {
-            if (desc) toast.showInfo(`已重做: ${desc}`, { duration: 3000 });
+            if (desc) toast.showInfo(`Redone: ${desc}`, { duration: 3000 });
           });
         }
       }

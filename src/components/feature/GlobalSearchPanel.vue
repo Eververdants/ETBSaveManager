@@ -31,7 +31,7 @@
           </button>
         </div>
 
-        <!-- 高级查询标签 -->
+        <!-- Advanced query tags -->
         <div v-if="advancedQuery && (advancedQuery.name || advancedQuery.level || advancedQuery.difficulty)" class="advanced-tags">
           <span v-if="advancedQuery.name" class="adv-tag adv-tag-name">
             <font-awesome-icon icon="fa-solid fa-tag" /> name:{{ advancedQuery.name }}
@@ -44,7 +44,7 @@
           </span>
         </div>
 
-        <!-- 搜索历史 -->
+        <!-- Search history -->
         <div v-if="showHistory && searchHistory.length > 0" class="search-history-dropdown" @mousedown.prevent>
           <div class="history-header">
             <span class="history-title">{{ t('archiveSearch.searchHistory') }}</span>

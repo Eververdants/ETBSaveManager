@@ -24,7 +24,7 @@
               {{
                 players[activePlayerIndex].username ||
                 (players[activePlayerIndex].isOfflinePlayer
-                  ? `${players[activePlayerIndex].steamId}(本地)`
+                  ? `${players[activePlayerIndex].steamId}(Local)`
                   : players[activePlayerIndex].steamId)
               }}
             </span>
@@ -142,7 +142,7 @@ const emit = defineEmits(["update:newSteamId", "add-steam-id", "remove-player", 
 
 const { t, te } = useI18n();
 
-/* 获取槽位标签文本（i18n） */
+/* Get slot label text (i18n) */
 const getSlotLabelText = (slotIndex) => {
   const labels = ["mainHand", "offHand1", "offHand2"];
   const label = labels[slotIndex] || "";
@@ -150,17 +150,17 @@ const getSlotLabelText = (slotIndex) => {
   return te(translationKey) ? t(translationKey) : label;
 };
 
-/* 当前选中玩家的理智值 */
+/* Current selected player's sanity */
 const currentPlayerSanity = ref(100);
 
-/* 切换活跃玩家时同步理智值 */
+/* Sync sanity when switching active player */
 watch(() => props.activePlayerIndex, (newIndex) => {
   if (newIndex === -1) return;
   const player = props.players?.[newIndex];
   currentPlayerSanity.value = player?.sanity ?? 100;
 }, { immediate: true });
 
-/* 理智值变化时发射事件 */
+/* Emit event when sanity changes */
 watch(currentPlayerSanity, (newVal) => {
   if (props.activePlayerIndex === -1) return;
   emit("update-player-sanity", {
@@ -169,7 +169,7 @@ watch(currentPlayerSanity, (newVal) => {
   });
 });
 
-/* 样式判断 */
+/* Style determination */
 const getSanityClass = (val) => {
   if (val >= 80) return "sanity-high";
   if (val >= 50) return "sanity-medium";
@@ -195,7 +195,7 @@ const getItemImageFile = (itemName) => {
 </script>
 
 <style scoped>
-/* 背包编辑区域 */
+/* Backpack editing area */
 .step-content {
   height: 100%;
   min-height: 0;

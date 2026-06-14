@@ -4,13 +4,13 @@
     class="sidebar"
     :class="{ expanded: isExpanded }"
     role="navigation"
-    aria-label="主菜单"
+    aria-label="Main menu"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
     @keydown="handleKeydown"
   >
     <div class="sidebar-content">
-      <!-- 顶部区域 -->
+      <!-- Top section -->
       <div class="sidebar-section top-section">
         <div
           v-for="item in filteredTopMenuItems"
@@ -44,7 +44,7 @@
         </div>
       </div>
 
-      <!-- 底部区域 -->
+      <!-- Bottom section -->
       <div class="sidebar-section bottom-section">
         <div
           v-for="item in bottomMenuItems"
@@ -365,7 +365,7 @@ const useSidebarActions = (activeItemId, safeT) => {
 
   const handleItemClick = (item) => {
     activeItemId.value = item.id;
-    console.log("项目被点击:", safeT(item.textKey));
+    console.log("Item clicked:", safeT(item.textKey));
 
     if (item.action) {
       window.dispatchEvent(new CustomEvent("sidebar-action", { detail: { action: item.action, item } }));
@@ -493,16 +493,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 侧边栏容器样式 */
+/* Sidebar container styles */
 .sidebar {
   position: fixed;
   top: 38px;
-  /* 从标题栏下方开始，标题栏高度38px */
+  /* Starts below title bar, title bar height is 38px */
   left: 0;
   height: calc(100vh - 38px);
-  /* 减去标题栏高度 */
+  /* Minus title bar height */
   width: 70px;
-  /* 收起时的宽度 */
+  /* Collapsed width */
   --sidebar-width: 70px;
   background: var(--bg-sidebar);
   backdrop-filter: blur(10px);
@@ -521,21 +521,21 @@ onMounted(() => {
     --sidebar-width 0.3s ease;
 }
 
-/* 侧边栏展开样式 */
+/* Sidebar expanded styles */
 .sidebar.expanded {
   width: 220px;
-  /* 展开时的宽度 */
+  /* Expanded width */
   --sidebar-width: 220px;
 }
 
-/* 侧边栏图标样式 */
+/* Sidebar icon styles */
 .sidebar-icon {
   font-size: 18px;
   color: var(--text);
   transition: color 0.25s ease;
 }
 
-/* 侧边栏文本样式 */
+/* Sidebar text styles */
 .sidebar-text {
   opacity: 0;
   transition:
@@ -554,7 +554,7 @@ onMounted(() => {
   max-width: none;
 }
 
-/* 侧边栏项样式 */
+/* Sidebar item styles */
 .sidebar-item {
   display: flex;
   align-items: center;
@@ -572,10 +572,10 @@ onMounted(() => {
   justify-content: flex-start;
   color: var(--sidebar-text-color);
   min-height: 48px;
-  /* 确保收起和展开状态高度一致 */
+  /* Ensure consistent height between collapsed and expanded states */
 }
 
-/* 侧边栏项悬停状态样式 */
+/* Sidebar item hover state styles */
 .sidebar-item:hover {
   background: var(--sidebar-hover-bg);
   box-shadow: var(--shadow-md);
@@ -585,7 +585,7 @@ onMounted(() => {
     box-shadow 0.25s ease;
 }
 
-/* 侧边栏项激活状态样式 */
+/* Sidebar item active state styles */
 .sidebar-item.active {
   background: var(--sidebar-active-bg);
   color: var(--sidebar-active-color);
@@ -597,7 +597,7 @@ onMounted(() => {
     box-shadow 0.25s ease;
 }
 
-/* 侧边栏项激活+悬停状态样式 */
+/* Sidebar item active+hover state styles */
 .sidebar-item.active:hover {
   background: var(--sidebar-active-hover-bg);
   transition:
@@ -606,7 +606,7 @@ onMounted(() => {
     box-shadow 0.25s ease;
 }
 
-/* 侧边栏内容区域样式 */
+/* Sidebar content area styles */
 .sidebar-content {
   display: flex;
   flex-direction: column;
@@ -616,7 +616,7 @@ onMounted(() => {
   overflow-y: hidden;
   scrollbar-width: none;
   gap: var(--space-4);
-  /* 使用统一的间距变量 */
+  /* Use unified spacing variable */
 
   .sidebar.expanded & {
     overflow-y: auto;
@@ -638,14 +638,14 @@ onMounted(() => {
   }
 }
 
-/* 侧边栏分区样式 */
+/* Sidebar section styles */
 .sidebar-section {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
 
-/* 顶部区域样式 */
+/* Top section styles */
 .top-section {
   flex: 1;
   overflow-x: hidden;
@@ -716,24 +716,24 @@ onMounted(() => {
   background: transparent;
 }
 
-/* 底部区域样式 */
+/* Bottom section styles */
 .bottom-section {
   flex-shrink: 0;
   margin-top: auto;
   padding: var(--space-4) 0;
-  /* 使用统一的间距变量 */
+  /* Use unified spacing variable */
 }
 
 .bottom-section .sidebar-item:last-child {
   margin-bottom: 0px;
-  /* 移除最后一个项目的额外下边距 */
+  /* Remove extra bottom margin from last item */
 }
 
-/* 侧边栏图标容器样式 */
+/* Sidebar icon container styles */
 .sidebar-icon-container {
   position: absolute;
   left: 7px;
-  /* 居中图标：70px总宽 - 24px图标 = 46px，23px居中 */
+  /* Center icon: 70px total width - 24px icon = 46px, 23px centered */
   z-index: 1;
   transition: all 0.3s ease;
   width: 24px;
@@ -743,25 +743,25 @@ onMounted(() => {
   justify-content: center;
 }
 
-/* 侧边栏图标样式 */
+/* Sidebar icon styles */
 .sidebar-icon {
   font-size: 18px;
   color: var(--text);
   transition: all 0.3s ease;
 }
 
-/* 侧边栏文本容器样式 */
+/* Sidebar text container styles */
 .sidebar-text-container {
   margin-left: 55px;
-  /* 统一间距为展开状态的标准 */
+  /* Unified spacing for expanded state */
   transition: all 0.3s ease;
   flex: 1;
   overflow: hidden;
   padding-right: var(--space-5);
-  /* 使用统一的间距变量 */
+  /* Use unified spacing variable */
 }
 
-/* 侧边栏文本样式 */
+/* Sidebar text styles */
 .sidebar-text {
   opacity: 0;
   transition:
@@ -784,7 +784,7 @@ onMounted(() => {
   transform: translateX(0);
 }
 
-/* Swift UI风格的文字切换动画 */
+/* Swift UI style text switch animation */
 .sidebar-text.fade-enter {
   opacity: 0;
   transform: translateY(4px);
@@ -803,7 +803,7 @@ onMounted(() => {
 
 .sidebar.expanded .sidebar-text-container {
   margin-left: 55px;
-  /* 统一间距，保持一致 */
+  /* Unified spacing, keep consistent */
 }
 
 .sidebar.expanded .sidebar-item:hover .sidebar-text-container {
@@ -833,10 +833,10 @@ onMounted(() => {
   white-space: nowrap;
   width: max-content;
   margin-left: var(--space-4);
-  /* 使用统一的间距变量 */
+  /* Use unified spacing variable */
 }
 
-/* 文本滚动动画 */
+/* Text scroll animation */
 @keyframes scroll-text {
   0% {
     transform: translateX(0);
@@ -844,11 +844,11 @@ onMounted(() => {
 
   100% {
     transform: translateX(calc(-100% - var(--space-4)));
-    /* 使用统一的间距变量 */
+  /* Use unified spacing variable */
   }
 }
 
-/* 通知动画 */
+/* Notification animation */
 @keyframes fadeInOut {
   0% {
     opacity: 0;
@@ -875,7 +875,7 @@ onMounted(() => {
   animation: none !important;
 }
 
-/* 侧边栏项样式 */
+/* Sidebar item styles */
 .sidebar-item {
   display: flex;
   align-items: center;
@@ -889,23 +889,23 @@ onMounted(() => {
   justify-content: flex-start;
   color: var(--sidebar-text-color);
   min-height: 48px;
-  /* 确保收起和展开状态高度一致 */
+  /* Ensure consistent height between collapsed and expanded states */
 }
 
-/* 侧边栏项悬停状态样式 */
+/* Sidebar item hover state styles */
 .sidebar-item:hover {
   background: var(--sidebar-hover-bg);
   box-shadow: var(--shadow-md);
 }
 
-/* 侧边栏项激活状态样式 */
+/* Sidebar item active state styles */
 .sidebar-item.active {
   background: var(--sidebar-active-bg);
   color: var(--sidebar-active-color);
   box-shadow: inset 0 0 0 2px var(--sidebar-active-border);
 }
 
-/* 侧边栏项激活+悬停状态样式 */
+/* Sidebar item active+hover state styles */
 .sidebar-item.active:hover {
   background: var(--sidebar-active-hover-bg);
 }

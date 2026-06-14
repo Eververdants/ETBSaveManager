@@ -1,12 +1,12 @@
 /**
- * useFocusTrap - 焦点陷阱 composable
+ * useFocusTrap - Focus trap composable
  *
- * 在 Modal/Dropdown 打开时，将 TAB 键循环限制在容器内。
- * 关闭时自动恢复焦点到触发元素。
+ * When Modal/Dropdown opens, restricts TAB key cycling within the container.
+ * Automatically restores focus to the trigger element on close.
  *
- * 用法：
- *   const triggerRef = ref(null)  // 打开弹窗的按钮元素
- *   const containerRef = ref(null) // 弹窗容器元素
+ * Usage:
+ *   const triggerRef = ref(null)  // Button element that opens the modal
+ *   const containerRef = ref(null) // Modal container element
  *   const { activate, deactivate } = useFocusTrap(containerRef, {
  *     triggerRef,
  *     onEscape: () => { show.value = false }

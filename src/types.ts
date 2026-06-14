@@ -112,8 +112,6 @@ export interface ArchiveData {
   archiveDifficulty: string;
   actualDifficulty: string;
   isVisible: boolean;
-  isFavorite?: boolean;
-  sortOrder?: number;
   path: string;
   date: string;
 }
@@ -218,21 +216,6 @@ export interface AnimationParams {
   delay: number;
   force3D: boolean;
   stagger?: number;
-}
-
-export interface DraftData {
-  archives: Array<{
-    id: string;
-    name: string;
-    level: string | null;
-    difficulty: DifficultyLevel | null;
-    actualDifficulty: DifficultyLevel | null;
-    inventoryTemplate: string | null;
-  }>;
-  uniformConfig: UniformConfig;
-  smartRules: SmartRules;
-  selectedArchiveIds: string[];
-  savedAt: number;
 }
 
 export interface QuickCreateBatchResult {

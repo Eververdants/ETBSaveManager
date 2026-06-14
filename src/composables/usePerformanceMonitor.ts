@@ -64,14 +64,14 @@ export function usePerformanceMonitor(): PerformanceMonitorReturn {
       onLowPerformance: () => {
         performanceMode.value = "low";
         animationQuality.value = "low";
-        console.log("检测到性能问题，已切换到低性能模式");
+        console.log("Performance issue detected, switched to low performance mode");
         isLowPerfMode = true;
       },
       onPerformanceRecovery: () => {
         if (performanceMode.value === "low") {
           performanceMode.value = "auto";
           animationQuality.value = "medium";
-          console.log("性能已恢复，已切换到自动性能模式");
+          console.log("Performance recovered, switched to auto performance mode");
           isLowPerfMode = false;
         }
       },
@@ -79,7 +79,7 @@ export function usePerformanceMonitor(): PerformanceMonitorReturn {
         if (fps < fpsThreshold && fps > 0) {
           longTaskCount++;
           if (longTaskCount >= 3 && !isLowPerfMode) {
-            console.warn(`检测到帧率过低 (${fps} FPS)，自动切换到低性能模式`);
+            console.warn(`Low FPS detected (${fps} FPS), auto-switched to low performance mode`);
             performanceMode.value = "low";
             animationQuality.value = "low";
             isLowPerfMode = true;

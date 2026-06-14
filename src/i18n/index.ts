@@ -32,9 +32,9 @@ export const releaseNotesData: Record<string, ReleaseNotesData> = {
 };
 
 // Debug output: show loaded data information
-console.log("🌍 [i18n/index.js] 语言文件已加载:", Object.keys(messages));
-console.log("📋 [i18n/index.js] 更新公告数据已加载:", Object.keys(releaseNotesData));
-console.log("📊 [i18n/index.js] 当前版本:", releaseNotesZhCN?.version || "未知");
+console.log("🌍 [i18n/index.js] Language files loaded:", Object.keys(messages));
+console.log("📋 [i18n/index.js] Release notes data loaded:", Object.keys(releaseNotesData));
+console.log("📊 [i18n/index.js] Current version:", releaseNotesZhCN?.version || "Unknown");
 
 function getUserLocale(): string {
   const saved = storage.getItem<string>("locale");

@@ -1,11 +1,11 @@
 <template>
   <div class="lazy-image-container" :class="{ loaded: imageLoaded, error: imageError }">
-    <!-- 首次加载占位符：只在组件首次渲染且图片未加载时显示 -->
+    <!-- Initial loading placeholder: only shown on first render when image not loaded -->
     <div v-if="!imageLoaded && !imageError" class="image-placeholder">
       <div class="placeholder-spinner"></div>
     </div>
 
-    <!-- 加载失败占位 -->
+    <!-- Load failure placeholder -->
     <div v-if="imageError" class="image-error-fallback">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -14,7 +14,7 @@
       </svg>
     </div>
 
-    <!-- 实际图片：用 displayedSrc 而非 props.src，确保只显示已加载完成的图片 -->
+    <!-- Actual image: uses displayedSrc instead of props.src to ensure only loaded images are displayed -->
     <img
       :src="displayedSrc"
       :alt="alt"
@@ -58,15 +58,15 @@ const props = defineProps({
 
 const emit = defineEmits(["load", "error"]);
 
-/** 全局缓存：已成功加载的图片 URL，避免重复预加载 */
+/** Global cache: successfully loaded image URLs to avoid repeated preloading */
 const loadedImages = new Set();
 
-// 当前实际显示的 src（只有已加载完成的图片才会被赋给这个 ref）
+// Currently displayed src (only fully loaded images are assigned to this ref)
 const displayedSrc = ref(props.src);
 const imageLoaded = ref(false);
 const imageError = ref(false);
 
-/** 预加载一张图片，返回加载成功与否 */
+/** Preload an image, returns success or failure */
 const preloadImage = (url) => {
   return new Promise((resolve) => {
     if (loadedImages.has(url)) {
@@ -83,30 +83,30 @@ const preloadImage = (url) => {
   });
 };
 
-/** 切换到新图片：预加载 → 加载成功后更新 displayedSrc */
+/** Switch to new image: preload -> update displayedSrc on success */
 const swapToSrc = async (newSrc) => {
   if (!newSrc || newSrc === displayedSrc.value) return;
 
   const ok = await preloadImage(newSrc);
-  // 预加载完成后，一次性切换 src（浏览器从缓存读取，无闪白）
+  // After preloading, switch src in one go (browser reads from cache, no white flash)
   displayedSrc.value = newSrc;
   imageError.value = !ok;
-  // imageLoaded 保持 true 不断，容器不显示 spinner
+  // imageLoaded stays true, container won't show spinner
   imageLoaded.value = true;
 };
 
-// 首次挂载时预加载初始 src
+// Preload initial src on first mount
 onMounted(async () => {
   if (props.src) {
     const ok = await preloadImage(props.src);
-    // 如果初始图加载失败，进 error 状态
+    // If initial image fails to load, enter error state
     imageError.value = !ok;
     imageLoaded.value = true;
     displayedSrc.value = props.src;
   }
 });
 
-// props.src 变化时：预加载新图 → 静默切换，不重置 imageLoaded
+// When props.src changes: preload new image -> silent switch, don't reset imageLoaded
 watch(
   () => props.src,
   (newSrc) => {
@@ -123,7 +123,7 @@ const handleImageLoad = () => {
 };
 
 const onImageError = (event) => {
-  // 只有 displayedSrc 加载失败才算真正的错误
+  // Only a failed displayedSrc load counts as a real error
   imageError.value = true;
   emit("error", event);
 };
@@ -135,7 +135,7 @@ const onImageError = (event) => {
   overflow: hidden;
   width: 100%;
   height: 100%;
-  /* 确保容器在过渡期间保持稳定 */
+  /* Ensure container stays stable during transitions */
   will-change: transform;
   backface-visibility: hidden;
   transform: translateZ(0);
@@ -152,17 +152,17 @@ const onImageError = (event) => {
   display: block;
   max-width: 100%;
   max-height: 100%;
-  /* 确保图片在过渡期间保持稳定 */
+  /* Ensure image stays stable during transitions */
   will-change: transform, opacity;
   backface-visibility: hidden;
   transform: translateZ(0);
-  /* 防止图片在过渡期间放大 */
+  /* Prevent image from scaling during transitions */
   box-sizing: border-box;
-  /* 确保图片在过渡期间不会超出容器 */
+  /* Ensure image doesn't exceed container during transitions */
   overflow: hidden;
 }
 
-/* 如果图片类包含item-image，则使用contain而不是cover */
+/* If image class contains item-image, use contain instead of cover */
 .lazy-image-container img.item-image {
   object-fit: contain;
   position: absolute;
@@ -176,7 +176,7 @@ const onImageError = (event) => {
   display: block;
 }
 
-/* 如果图片类包含level-image，确保在过渡期间尺寸稳定 */
+/* If image class contains level-image, ensure stable size during transitions */
 .lazy-image-container img.level-image {
   position: absolute;
   top: 0;
@@ -186,13 +186,13 @@ const onImageError = (event) => {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
-  /* 确保图片在过渡期间保持稳定 */
+  /* Ensure image stays stable during transitions */
   will-change: transform, opacity;
   backface-visibility: hidden;
   transform: translateZ(0);
-  /* 防止图片在过渡期间放大 */
+  /* Prevent image from scaling during transitions */
   box-sizing: border-box;
-  /* 确保图片在过渡期间不会超出容器 */
+  /* Ensure image doesn't exceed container during transitions */
   overflow: hidden;
 }
 
@@ -241,7 +241,7 @@ const onImageError = (event) => {
   display: none;
 }
 
-/* 图片加载失败时显示兜底图标 */
+/* Fallback icon shown when image fails to load */
 .image-error-fallback {
   position: absolute;
   inset: 0;
@@ -257,7 +257,7 @@ const onImageError = (event) => {
   display: none;
 }
 
-/* 深色模式适配 */
+/* Dark mode adaptation */
 @media (prefers-color-scheme: dark) {
   .image-placeholder {
     background-color: var(--bg-secondary, rgba(255, 255, 255, 0.05));

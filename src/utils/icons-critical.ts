@@ -38,11 +38,10 @@ import {
   faCheck,
   faArrowRotateRight,
   faRotateLeft,
-  faStar,
   faArrowUpWideShort,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { faCircle, faStar as faStarRegular } from "@fortawesome/free-regular-svg-icons";
+import { faCircle } from "@fortawesome/free-regular-svg-icons";
 
 export function registerCriticalIcons(): void {
   library.add(
@@ -80,9 +79,7 @@ export function registerCriticalIcons(): void {
     faCheck,
     faArrowRotateRight,
     faRotateLeft,
-    faStar,
     faArrowUpWideShort,
-    faStarRegular,
   );
 }
 

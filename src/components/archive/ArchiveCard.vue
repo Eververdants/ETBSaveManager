@@ -7,11 +7,10 @@
       'archive-entering': !hasEntered,
       'multi-select-mode': isMultiSelectMode,
       'is-selected': isSelected,
-      'is-favorite': archive.isFavorite,
     }"
     @click="handleCardClick"
   >
-    <!-- 多选模式复选框 -->
+    <!-- Multi-select mode checkbox -->
     <div
       v-if="isMultiSelectMode"
       class="multi-select-checkbox"
@@ -21,31 +20,20 @@
       <font-awesome-icon :icon="isSelected ? 'fa-solid fa-check' : 'fa-regular fa-circle'" class="check-icon" />
     </div>
 
-    <!-- 收藏星标 -->
-    <button
-      v-if="!isMultiSelectMode"
-      class="favorite-btn"
-      :class="{ 'is-favorited': archive.isFavorite }"
-      :title="archive.isFavorite ? t('archiveCard.removeFavorite') : t('archiveCard.addFavorite')"
-      @click.stop="toggleFavorite"
-    >
-      <font-awesome-icon :icon="archive.isFavorite ? 'fa-solid fa-star' : 'fa-regular fa-star'" />
-    </button>
-
-    <!-- 上半背景区域 -->
+    <!-- Upper background area -->
     <div class="card-background">
       <LazyImage :src="backgroundImage" :alt="currentLevelName" image-class="background-image" />
       <div class="background-overlay"></div>
 
-      <!-- 隐藏状态标签 -->
+      <!-- Hidden status badge -->
       <div v-if="!localVisible" class="hidden-badge">
         <font-awesome-icon icon="fa-solid fa-eye-slash" />
         <span>{{ t("archiveCard.hidden") }}</span>
       </div>
 
-      <!-- 存档信息 -->
+      <!-- Archive info -->
       <div class="archive-info">
-        <!-- 内联重命名 -->
+        <!-- Inline rename -->
         <div v-if="isRenaming" class="inline-rename" @click.stop @dblclick.stop>
           <input
             ref="renameInputRef"
@@ -80,7 +68,7 @@
       </div>
     </div>
 
-    <!-- 下半信息区域 -->
+    <!-- Lower info area -->
     <div class="card-info">
       <span class="current-level" v-html="highlightedLevel"></span>
       <div class="action-buttons">
@@ -133,9 +121,9 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["toggle-visibility", "edit", "delete", "select", "toggle-select", "toggle-favorite", "rename"]);
+const emit = defineEmits(["toggle-visibility", "edit", "delete", "select", "toggle-select", "rename"]);
 
-// 内联重命名状态
+// Inline rename state
 const isRenaming = ref(false);
 const renameValue = ref("");
 const renameInputRef = ref(null);
@@ -165,11 +153,6 @@ const commitRename = () => {
 const cancelRename = () => {
   isRenaming.value = false;
   renameValue.value = "";
-};
-
-const toggleFavorite = () => {
-  if (props.isMultiSelectMode) return;
-  emit("toggle-favorite", { id: props.archive.id, isFavorite: !props.archive.isFavorite });
 };
 
 const { t, te } = useI18n({ useScope: "global" });
@@ -234,7 +217,7 @@ const toggleSelection = () => {
 </script>
 
 <style scoped>
-/* 卡片容器 - 优化 GPU 加速 */
+/* Card container - optimized GPU acceleration */
 .archive-card {
   position: relative;
   width: 100%;
@@ -261,7 +244,7 @@ const toggleSelection = () => {
     transform 0.3s ease;
 }
 
-/* 删除时禁用所有 transform 相关动画，避免与 GSAP 冲突 */
+/* Disable all transform-related animations during deletion to avoid GSAP conflicts */
 .archive-card.deleting,
 .archive-card.deleting *,
 .archive-card.deleting *::before,
@@ -281,7 +264,7 @@ const toggleSelection = () => {
   transition: none !important;
 }
 
-/* 光泽扫过效果 - 仅悬浮时激活 */
+/* Shine sweep effect - activated only on hover */
 .archive-card::before {
   content: "";
   position: absolute;
@@ -312,7 +295,7 @@ const toggleSelection = () => {
   z-index: 2;
 }
 
-/* 背景区域 */
+/* Background area */
 .card-background {
   position: relative;
   width: 100%;
@@ -335,7 +318,7 @@ const toggleSelection = () => {
   transform: scale(1.02);
 }
 
-/* 背景渐变遮罩 */
+/* Background gradient overlay */
 .background-overlay {
   position: absolute;
   inset: 0;
@@ -353,7 +336,7 @@ const toggleSelection = () => {
   opacity: 0.85;
 }
 
-/* 存档信息 */
+/* Archive info */
 .archive-info {
   position: absolute;
   bottom: var(--space-2);
@@ -383,7 +366,7 @@ const toggleSelection = () => {
   text-decoration-color: rgba(255, 255, 255, 0.4);
 }
 
-/* 内联重命名输入框 */
+/* Inline rename input */
 .inline-rename {
   margin-bottom: 4px;
 }
@@ -406,52 +389,7 @@ const toggleSelection = () => {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
 }
 
-/* 收藏星标按钮 */
-.favorite-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 5;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.35);
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 13px;
-  backdrop-filter: blur(4px);
-  opacity: 0;
-  transform: scale(0.85);
-}
-
-.archive-card:hover .favorite-btn,
-.favorite-btn.is-favorited {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.favorite-btn:hover {
-  background: rgba(0, 0, 0, 0.5);
-  color: #fbbf24;
-  transform: scale(1.1);
-}
-
-.favorite-btn.is-favorited {
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.2);
-}
-
-.favorite-btn.is-favorited:hover {
-  background: rgba(251, 191, 36, 0.3);
-  color: #f59e0b;
-}
-
-/* 游戏模式信息 */
+/* Game mode info */
 .game-mode-info {
   display: flex;
   gap: 4px;
@@ -459,7 +397,7 @@ const toggleSelection = () => {
   flex-wrap: wrap;
 }
 
-/* 难度标签 */
+/* Difficulty tag */
 .difficulty-tag {
   display: inline-flex;
   align-items: center;
@@ -518,7 +456,7 @@ const toggleSelection = () => {
   opacity: 1;
 }
 
-/* 难度颜色 - 悬浮时显示 */
+/* Difficulty colors - shown on hover */
 .archive-card:hover .difficulty-easy {
   background: rgba(52, 199, 89, 0.25);
   color: #34c759;
@@ -547,7 +485,7 @@ const toggleSelection = () => {
   box-shadow: 0 2px 8px rgba(175, 82, 222, 0.3);
 }
 
-/* 下半信息区域 */
+/* Lower info area */
 .card-info {
   height: 60px;
   padding: var(--space-3);
@@ -573,7 +511,7 @@ const toggleSelection = () => {
   text-overflow: ellipsis;
 }
 
-/* 操作按钮 */
+/* Action buttons */
 .action-buttons {
   display: flex;
   gap: var(--space-2);
@@ -606,7 +544,7 @@ const toggleSelection = () => {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 按钮光泽效果 - 使用 @keyframes 确保每次 hover 都重新触发 */
+/* Button shine effect - uses @keyframes to ensure re-trigger on each hover */
 .action-btn::after {
   content: "";
   position: absolute;
@@ -638,7 +576,7 @@ const toggleSelection = () => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* 按钮悬浮时显示颜色 - 只有按钮自身 hover 时才变色 */
+/* Button hover colors - only change when button itself is hovered */
 .action-btn.edit:hover {
   background: rgba(52, 199, 89, 0.15);
   color: #34c759;
@@ -660,7 +598,7 @@ const toggleSelection = () => {
   box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
 }
 
-/* 按钮按下时的样式 */
+/* Button active/pressed styles */
 .action-btn.edit:active {
   background: rgba(52, 199, 89, 0.25);
   transform: scale(0.95);
@@ -676,7 +614,7 @@ const toggleSelection = () => {
   transform: scale(0.95);
 }
 
-/* ========== 隐藏模式：状态标签 ========== */
+/* ========== Hidden mode: status badge ========== */
 .hidden-badge {
   position: absolute;
   top: 12px;
@@ -714,10 +652,10 @@ const toggleSelection = () => {
   background: rgba(0, 0, 0, 0.7);
 }
 
-/* ========== 隐藏模式样式 ========== */
-/* 核心原则：不降低内容的可读性，用附加的视觉标记指示隐藏状态 */
+/* ========== Hidden mode styles ========== */
+/* Core principle: preserve content readability, use additional visual indicators for hidden state */
 
-/* 隐藏状态：左侧金色标记条 - 主要状态指示 */
+/* Hidden state: left gold marker bar - primary status indicator */
 .archive-hidden::after {
   content: "";
   position: absolute;
@@ -738,7 +676,7 @@ const toggleSelection = () => {
   width: 5px;
 }
 
-/* 隐藏状态：边框加入金色点缀 */
+/* Hidden state: border with gold accent */
 .archive-hidden {
   border-color: rgba(255, 200, 50, 0.15);
   transition:
@@ -752,7 +690,7 @@ const toggleSelection = () => {
   box-shadow: var(--card-shadow-hover);
 }
 
-/* 隐藏状态：背景图片仅轻微减饱和，保留清晰度 */
+/* Hidden state: background image slightly desaturated, preserving clarity */
 .archive-hidden .card-background :deep(.lazy-image-container) {
   filter: grayscale(0.35) brightness(0.9);
   transition:
@@ -765,7 +703,7 @@ const toggleSelection = () => {
   transform: scale(1.02);
 }
 
-/* 隐藏状态：背景遮罩保持不变，让图片内容仍然可见 */
+/* Hidden state: background overlay unchanged, keeping image content visible */
 .archive-hidden .background-overlay {
   background: linear-gradient(
     180deg,
@@ -776,7 +714,7 @@ const toggleSelection = () => {
   );
 }
 
-/* 隐藏状态：存档名称略微柔和 */
+/* Hidden state: archive name slightly softened */
 .archive-hidden .archive-name {
   color: rgba(255, 255, 255, 0.75);
 }
@@ -786,7 +724,7 @@ const toggleSelection = () => {
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
-/* 隐藏状态：难度标签正常显示 */
+/* Hidden state: difficulty tags display normally */
 .archive-hidden .difficulty-tag {
   opacity: 0.85;
 }
@@ -795,7 +733,7 @@ const toggleSelection = () => {
   opacity: 1;
 }
 
-/* 隐藏状态：底部信息保持完整可读 */
+/* Hidden state: bottom info remains fully readable */
 .archive-hidden .card-info {
   opacity: 0.85;
   transition: opacity 0.35s ease;
@@ -813,7 +751,7 @@ const toggleSelection = () => {
   color: var(--text-primary);
 }
 
-/* 隐藏状态：操作按钮保持可用 */
+/* Hidden state: action buttons remain usable */
 .archive-hidden .action-btn {
   opacity: 0.6;
 }
@@ -826,7 +764,7 @@ const toggleSelection = () => {
   opacity: 1;
 }
 
-/* 隐藏状态：眼睛图标柔和提示 */
+/* Hidden state: eye icon subtle hint */
 .archive-hidden .copy .fa-eye-slash {
   color: rgba(255, 200, 50, 0.5);
 }
@@ -835,7 +773,7 @@ const toggleSelection = () => {
   color: rgba(255, 200, 50, 0.85);
 }
 
-/* 可见性切换过渡动画 */
+/* Visibility toggle transition animation */
 .visibility-transitioning {
   transition: opacity 0.25s ease !important;
 }
@@ -858,7 +796,7 @@ const toggleSelection = () => {
   transition: opacity 0.25s ease !important;
 }
 
-/* 响应式 */
+/* Responsive */
 @media (max-width: 768px) {
   .archive-card {
     min-width: 280px;
@@ -929,7 +867,7 @@ const toggleSelection = () => {
   }
 }
 
-/* 触摸设备 */
+/* Touch devices */
 @media (hover: none) and (pointer: coarse) {
   .action-btn {
     min-width: 40px;
@@ -940,7 +878,7 @@ const toggleSelection = () => {
     transform: none;
   }
 
-  /* 触摸设备标签始终展开 */
+  /* Touch devices: tags always expanded */
   .difficulty-tag {
     width: var(--w-full, var(--w-short, auto));
     padding: 0 12px;
@@ -955,7 +893,7 @@ const toggleSelection = () => {
   }
 }
 
-/* 搜索结果高亮标记 */
+/* Search result highlight marker */
 .archive-name :deep(.search-highlight),
 .current-level :deep(.search-highlight) {
   background: rgba(var(--accent-color-rgb), 0.3);
@@ -964,7 +902,7 @@ const toggleSelection = () => {
   padding: 0 1px;
 }
 
-/* 多选模式样式 */
+/* Multi-select mode styles */
 .multi-select-checkbox {
   position: absolute;
   top: 12px;

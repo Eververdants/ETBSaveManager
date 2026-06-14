@@ -23,7 +23,7 @@
           </div>
           <p class="modal-message" :title="message">{{ message }}</p>
 
-          <!-- 存档详情卡片 -->
+          <!-- Archive details card -->
           <div v-if="archiveDetails" class="archive-details-card">
             <div class="archive-detail-row">
               <span class="detail-label">
@@ -230,7 +230,7 @@ const { icon } = useConfirmModalIcons();
 const { getGameModeText, getDifficultyText, formatDate } = useArchiveDetailsFormatter();
 const { handleConfirm, handleCancel, handleOverlayClick } = useConfirmModalActions();
 
-/* 使用 i18n 兜底的显示文本 */
+/* Display text with i18n fallback */
 const displayTitle = computed(() => props.title || t('confirmModal.title'));
 const displayConfirmText = computed(() => props.confirmText || t('confirmModal.confirm'));
 const displayCancelText = computed(() => props.cancelText || t('confirmModal.cancel'));
@@ -334,7 +334,7 @@ const displayCancelText = computed(() => props.cancelText || t('confirmModal.can
   line-height: 1.4;
 }
 
-/* 存档详情卡片 */
+/* Archive details card */
 .archive-details-card {
   background: var(--bg-secondary);
   border-radius: var(--radius-lg);
@@ -516,7 +516,7 @@ const displayCancelText = computed(() => props.cancelText || t('confirmModal.can
   }
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 480px) {
   .modal-overlay {
     padding: 16px;
@@ -545,7 +545,7 @@ const displayCancelText = computed(() => props.cancelText || t('confirmModal.can
   }
 }
 
-/* 模态框动画 */
+/* Modal animation */
 .modal-enter-active {
   transition: opacity 0.3s ease-out;
 }

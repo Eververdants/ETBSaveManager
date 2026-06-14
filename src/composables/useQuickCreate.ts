@@ -8,7 +8,6 @@ import {
 } from "./useConfigResolver";
 import { validate } from "./useValidator";
 import { parseName } from "@/utils/nameParser";
-import storage from "../services/storageService";
 import type {
   ArchiveConfig,
   UniformConfig,
@@ -65,35 +64,6 @@ const VERY_LARGE_NAME_THRESHOLD = 1000; // Suggest batching when exceeding this 
  */
 const DEBOUNCE_DELAY = 300; // Debounce delay (ms)
 
-/**
- * Draft auto-save configuration
- * Requirements: 16.3, 16.4 - Save to localStorage every 30 seconds, detect and prompt restore on page load
- */
-const DRAFT_KEY = "quick_create_draft";
-const DRAFT_SAVE_INTERVAL = 30000; // 30 seconds
-
-interface DraftArchiveData {
-  id: string;
-  name: string;
-  level: string | null;
-  difficulty: DifficultyLevel | null;
-  actualDifficulty: DifficultyLevel | null;
-  inventoryTemplate: string | null;
-}
-
-interface DraftData {
-  archives: DraftArchiveData[];
-  uniformConfig: UniformConfig;
-  smartRules: SmartRules;
-  selectedArchiveIds: string[];
-  savedAt: number;
-}
-
-interface DraftInfo {
-  archiveCount: number;
-  savedAt: Date | null;
-}
-
 interface AddResult {
   added: number;
   warnings: Array<{ type: string; count: number; threshold: number }>;
@@ -144,14 +114,6 @@ interface DebouncedFunction {
   flush: () => void;
 }
 
-interface DraftStorage {
-  save(state: QuickCreateState): boolean;
-  load(): DraftData | null;
-  clear(): void;
-  hasUnsavedDraft(): boolean;
-  getDraftInfo(): DraftInfo | null;
-}
-
 interface QuickCreateReturn {
   state: Reactive<QuickCreateState>;
   summaryStats: ComputedRef<SummaryStats>;
@@ -175,13 +137,6 @@ interface QuickCreateReturn {
   batchCreateArchives: () => Promise<QuickCreateBatchResult>;
   resetState: () => void;
   recalculateArchives: () => void;
-  saveDraft: () => boolean;
-  loadDraft: () => boolean;
-  clearDraft: () => void;
-  hasUnsavedDraft: () => boolean;
-  getDraftInfo: () => DraftInfo | null;
-  startAutoSave: () => void;
-  stopAutoSave: () => void;
   registerBeforeUnloadWarning: () => void;
   unregisterBeforeUnloadWarning: () => void;
   isCreationInProgress: () => boolean;
@@ -228,140 +183,6 @@ function debounce(fn: () => void, delay: number): DebouncedFunction {
 
   return debouncedFn;
 }
-
-/**
- * Draft storage management
- * Requirements: 16.3, 16.4
- */
-const draftStorage: DraftStorage = {
-  /**
-   * Save draft to localStorage
-   */
-  save(state: QuickCreateState): boolean {
-    try {
-      // Only save necessary data, exclude computed properties and temporary state
-      const draftData: DraftData = {
-        archives: state.archives.map((archive) => ({
-          id: archive.id,
-          name: archive.name,
-          level: archive.level,
-          difficulty: archive.difficulty,
-          actualDifficulty: archive.actualDifficulty,
-          inventoryTemplate: archive.inventoryTemplate,
-        })),
-        uniformConfig: JSON.parse(JSON.stringify(state.uniformConfig)), // Deep copy
-        smartRules: JSON.parse(JSON.stringify(state.smartRules)), // Deep copy
-        selectedArchiveIds: Array.from(state.selectedArchiveIds),
-        savedAt: Date.now(),
-      };
-      console.log("[QuickCreate] 保存草稿:", {
-        archiveCount: draftData.archives.length,
-        uniformConfig: draftData.uniformConfig,
-        smartRules: draftData.smartRules,
-        firstArchive: draftData.archives[0],
-      });
-      storage.setItem(DRAFT_KEY, JSON.stringify(draftData));
-      return true;
-    } catch (error) {
-      console.error("保存草稿失败:", error);
-      return false;
-    }
-  },
-
-  /**
-   * Load draft from localStorage
-   */
-  load(): DraftData | null {
-    try {
-      const draftJson = storage.getItem<string>(DRAFT_KEY);
-      if (!draftJson) return null;
-
-      let draftData: unknown;
-      try {
-        draftData = JSON.parse(draftJson);
-      } catch (parseError) {
-        console.error("[QuickCreate] 草稿JSON解析失败:", parseError);
-        this.clear();
-        return null;
-      }
-
-      // Validate draft data validity
-      if (!draftData || typeof draftData !== "object") {
-        console.warn("[QuickCreate] 草稿数据格式无效");
-        this.clear();
-        return null;
-      }
-
-      const draft = draftData as Record<string, unknown>;
-      if (!draft.archives || !Array.isArray(draft.archives)) {
-        console.warn("[QuickCreate] 草稿archives字段无效");
-        this.clear();
-        return null;
-      }
-
-      // Validate save time hasn't expired (7 days)
-      const MAX_AGE = 7 * 24 * 60 * 60 * 1000;
-      if (draft.savedAt && Date.now() - (draft.savedAt as number) > MAX_AGE) {
-        console.log("[QuickCreate] 草稿已过期，清除");
-        this.clear();
-        return null;
-      }
-
-      return draftData as DraftData;
-    } catch (error) {
-      console.error("加载草稿失败:", error);
-      return null;
-    }
-  },
-
-  /**
-   * Clear draft
-   */
-  clear(): void {
-    try {
-      storage.removeItem(DRAFT_KEY);
-    } catch (error) {
-      console.error("清除草稿失败:", error);
-    }
-  },
-
-  /**
-   * Check if there is an unsaved draft
-   */
-  hasUnsavedDraft(): boolean {
-    try {
-      const draftJson = storage.getItem<string>(DRAFT_KEY);
-      if (!draftJson) return false;
-
-      const draftData = JSON.parse(draftJson) as Record<string, unknown>;
-      const archives = draftData.archives;
-      return Array.isArray(archives) && archives.length > 0;
-    } catch (error) {
-      return false;
-    }
-  },
-
-  /**
-   * Get draft info (for showing restore prompt)
-   */
-  getDraftInfo(): DraftInfo | null {
-    try {
-      const draftJson = storage.getItem<string>(DRAFT_KEY);
-      if (!draftJson) return null;
-
-      const draftData = JSON.parse(draftJson) as Record<string, unknown>;
-      const archives = draftData.archives as DraftArchiveData[] | undefined;
-      if (!archives || archives.length === 0) return null;
-
-      return {
-        archiveCount: archives.length,
-        savedAt: draftData.savedAt ? new Date(draftData.savedAt as number) : null,
-      };
-    } catch (error) {
-      return null;
-    }
-  },
-};
 
 /**
  * Quick create archive main state management composable
@@ -485,7 +306,7 @@ export function useQuickCreate(): QuickCreateReturn {
       if (name.includes("_")) {
         result.errors.push({
           name: name,
-          error: "存档名称不能包含下划线",
+          error: "Archive name cannot contain underscores",
         });
         return false;
       }
@@ -564,14 +385,14 @@ export function useQuickCreate(): QuickCreateReturn {
    */
   const addArchive = (name: string): AddSingleResult => {
     if (!name || !name.trim()) {
-      return { success: false, error: "存档名称不能为空" };
+      return { success: false, error: "Archive name cannot be empty" };
     }
 
     const trimmedName = name.trim();
 
     // Check if archive name contains underscore
     if (trimmedName.includes("_")) {
-      return { success: false, error: "存档名称不能包含下划线" };
+      return { success: false, error: "Archive name cannot contain underscores" };
     }
 
     state.archives.push(createArchiveConfig(trimmedName));
@@ -807,10 +628,10 @@ export function useQuickCreate(): QuickCreateReturn {
   const loadBasicArchive = async (): Promise<Record<string, unknown> | null> => {
     try {
       const response = await fetch("/BasicArchive.json");
-      if (!response.ok) throw new Error(`HTTP错误! 状态: ${response.status}`);
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       return await response.json();
     } catch (error) {
-      console.error("读取 BasicArchive.json 失败:", error);
+      console.error("Failed to read BasicArchive.json:", error);
       return null;
     }
   };
@@ -852,7 +673,7 @@ export function useQuickCreate(): QuickCreateReturn {
       await invoke("handle_new_save", { saveData });
       return { success: true };
     } catch (error) {
-      console.error(`创建存档 "${archive.name}" 失败:`, error);
+      console.error(`Failed to create archive "${archive.name}":`, error);
       return { success: false, error: (error as Error).message || String(error) };
     }
   };
@@ -881,7 +702,7 @@ export function useQuickCreate(): QuickCreateReturn {
       return {
         success: 0,
         failed: archivesToCreate.length,
-        errors: [{ name: "all", error: "无法加载存档模板" }],
+        errors: [{ name: "all", error: "Failed to load archive template" }],
       };
     }
 
@@ -916,7 +737,7 @@ export function useQuickCreate(): QuickCreateReturn {
           const errorMsg =
             result.status === "rejected"
               ? (result.reason as Error)?.message || String(result.reason)
-              : result.value?.error || "未知错误";
+              : result.value?.error || "Unknown error";
           results.errors.push({ name: archive.name, error: errorMsg });
         }
       }
@@ -939,148 +760,6 @@ export function useQuickCreate(): QuickCreateReturn {
     state.isCreating = false;
 
     return results;
-  };
-
-  // ==================== Draft Management ====================
-
-  /**
-   * Auto-save timer reference
-   */
-  let autoSaveIntervalId: ReturnType<typeof setInterval> | null = null;
-
-  /**
-   * Save draft
-   * Requirements: 16.3 - Save to localStorage every 30 seconds
-   */
-  const saveDraft = (): boolean => {
-    // Only save when there are archives
-    if (state.archives.length === 0) {
-      return false;
-    }
-    return draftStorage.save(state);
-  };
-
-  /**
-   * Load draft
-   * Requirements: 16.4 - Detect and prompt restore on page load
-   */
-  const loadDraft = (): boolean => {
-    const draftData = draftStorage.load();
-    if (!draftData) return false;
-
-    try {
-      console.log("[QuickCreate] 开始恢复草稿:", draftData);
-
-      // Restore archive list
-      state.archives = draftData.archives.map((archiveData) => {
-        const archive = createArchiveConfig(archiveData.name);
-        archive.id = archiveData.id;
-        archive.level = archiveData.level;
-        archive.difficulty = archiveData.difficulty;
-        archive.actualDifficulty = archiveData.actualDifficulty;
-        archive.inventoryTemplate = archiveData.inventoryTemplate;
-        console.log("[QuickCreate] 恢复存档:", archiveData.name, {
-          level: archiveData.level,
-          difficulty: archiveData.difficulty,
-          actualDifficulty: archiveData.actualDifficulty,
-        });
-        return archive;
-      });
-
-      // Restore uniform config - deep merge
-      if (draftData.uniformConfig) {
-        // Deep merge each config item
-        for (const key of Object.keys(draftData.uniformConfig) as Array<keyof UniformConfig>) {
-          if (state.uniformConfig[key] && typeof draftData.uniformConfig[key] === "object") {
-            Object.assign(state.uniformConfig[key], draftData.uniformConfig[key]);
-          } else {
-            (state.uniformConfig as Record<string, unknown>)[key] = draftData.uniformConfig[key];
-          }
-        }
-        console.log("[QuickCreate] 恢复统一配置:", JSON.stringify(state.uniformConfig));
-      }
-
-      // Restore smart rules
-      if (draftData.smartRules) {
-        Object.assign(state.smartRules, draftData.smartRules);
-        console.log("[QuickCreate] 恢复智能规则:", state.smartRules);
-      }
-
-      // Restore selection state
-      if (draftData.selectedArchiveIds) {
-        state.selectedArchiveIds = new Set(draftData.selectedArchiveIds);
-      }
-
-      // Recalculate all archives
-      recalculateArchives();
-
-      console.log("[QuickCreate] 草稿恢复完成，存档数量:", state.archives.length);
-      console.log(
-        "[QuickCreate] 第一个存档的最终配置:",
-        state.archives[0]
-          ? {
-              finalLevel: state.archives[0].finalLevel,
-              finalDifficulty: state.archives[0].finalDifficulty,
-              finalActualDifficulty: state.archives[0].finalActualDifficulty,
-            }
-          : "N/A",
-      );
-
-      return true;
-    } catch (error) {
-      console.error("恢复草稿失败:", error);
-      return false;
-    }
-  };
-
-  /**
-   * Clear draft
-   */
-  const clearDraft = (): void => {
-    draftStorage.clear();
-  };
-
-  /**
-   * Check if there is an unsaved draft
-   */
-  const hasUnsavedDraft = (): boolean => {
-    return draftStorage.hasUnsavedDraft();
-  };
-
-  /**
-   * Get draft info
-   */
-  const getDraftInfo = (): DraftInfo | null => {
-    return draftStorage.getDraftInfo();
-  };
-
-  /**
-   * Start auto-save
-   * Requirements: 16.3 - Save to localStorage every 30 seconds
-   */
-  const startAutoSave = (): void => {
-    // Clear existing timer
-    if (autoSaveIntervalId) {
-      clearInterval(autoSaveIntervalId);
-    }
-
-    // Start new timer
-    autoSaveIntervalId = setInterval(() => {
-      if (state.archives.length > 0 && !state.isCreating) {
-        saveDraft();
-        console.log("[QuickCreate] 草稿已自动保存");
-      }
-    }, DRAFT_SAVE_INTERVAL);
-  };
-
-  /**
-   * Stop auto-save
-   */
-  const stopAutoSave = (): void => {
-    if (autoSaveIntervalId) {
-      clearInterval(autoSaveIntervalId);
-      autoSaveIntervalId = null;
-    }
   };
 
   // ==================== Interruption Handling ====================
@@ -1170,15 +849,6 @@ export function useQuickCreate(): QuickCreateReturn {
     // State management
     resetState,
     recalculateArchives,
-
-    // Draft management
-    saveDraft,
-    loadDraft,
-    clearDraft,
-    hasUnsavedDraft,
-    getDraftInfo,
-    startAutoSave,
-    stopAutoSave,
 
     // Interruption handling
     registerBeforeUnloadWarning,

@@ -65,10 +65,6 @@ export default defineConfig(async ({ mode }) => {
           if (id.includes("gsap")) {
             return "animations";
           }
-          // 拖拽库 - 按需加载
-          if (id.includes("vuedraggable") || id.includes("sortablejs")) {
-            return "draggable";
-          }
           // Markdown - 按需加载
           if (id.includes("markdown-it")) {
             return "markdown";

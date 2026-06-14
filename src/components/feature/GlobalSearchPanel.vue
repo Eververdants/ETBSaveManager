@@ -9,22 +9,59 @@
             v-model="query"
             class="search-input"
             type="text"
-            :placeholder="uiText.placeholder"
+            :placeholder="t('archiveSearch.searchPanel.placeholder')"
             @keydown.enter.prevent="handleEnter"
             @keydown.esc.prevent="closePanel"
+            @focus="onInputFocus"
+            @blur="onInputBlur"
+            @keydown.down.prevent="highlightNextHistory"
+            @keydown.up.prevent="highlightPrevHistory"
           />
           <button
             class="icon-btn match-case-btn"
             :class="{ active: matchCase }"
             type="button"
-            :title="uiText.matchCase"
+            :title="t('archiveSearch.searchPanel.matchCase')"
             @click="toggleMatchCase"
           >
             Aa
           </button>
-          <button class="icon-btn close-btn" type="button" :title="uiText.close" @click="closePanel">
+          <button class="icon-btn close-btn" type="button" :title="t('common.close')" @click="closePanel">
             <font-awesome-icon icon="fa-solid fa-xmark" />
           </button>
+        </div>
+
+        <!-- 高级查询标签 -->
+        <div v-if="advancedQuery && (advancedQuery.name || advancedQuery.level || advancedQuery.difficulty)" class="advanced-tags">
+          <span v-if="advancedQuery.name" class="adv-tag adv-tag-name">
+            <font-awesome-icon icon="fa-solid fa-tag" /> name:{{ advancedQuery.name }}
+          </span>
+          <span v-if="advancedQuery.level" class="adv-tag adv-tag-level">
+            <font-awesome-icon icon="fa-solid fa-layer-group" /> level:{{ advancedQuery.level }}
+          </span>
+          <span v-if="advancedQuery.difficulty" class="adv-tag adv-tag-difficulty">
+            <font-awesome-icon icon="fa-solid fa-gauge-high" /> difficulty:{{ advancedQuery.difficulty }}
+          </span>
+        </div>
+
+        <!-- 搜索历史 -->
+        <div v-if="showHistory && searchHistory.length > 0" class="search-history-dropdown" @mousedown.prevent>
+          <div class="history-header">
+            <span class="history-title">{{ t('archiveSearch.searchHistory') }}</span>
+            <button class="history-clear-btn" type="button" @click="clearHistory">
+              {{ t('archiveSearch.clearHistory') }}
+            </button>
+          </div>
+          <div
+            v-for="(item, idx) in filteredHistory"
+            :key="idx"
+            class="history-item"
+            :class="{ 'history-item-highlighted': highlightedHistoryIdx === idx }"
+            @mousedown.prevent="selectHistoryItem(item)"
+          >
+            <font-awesome-icon icon="fa-solid fa-clock-rotate-left" class="history-icon" />
+            <span class="history-text">{{ item }}</span>
+          </div>
         </div>
 
         <div class="toolbar-row">
@@ -34,12 +71,12 @@
               class="nav-btn"
               type="button"
               :disabled="!matches.length"
-              :title="uiText.previous"
+              :title="t('archiveSearch.searchPanel.previous')"
               @click="findPrevious"
             >
               <font-awesome-icon icon="fa-solid fa-chevron-up" />
             </button>
-            <button class="nav-btn" type="button" :disabled="!matches.length" :title="uiText.next" @click="findNext">
+            <button class="nav-btn" type="button" :disabled="!matches.length" :title="t('archiveSearch.searchPanel.next')" @click="findNext">
               <font-awesome-icon icon="fa-solid fa-chevron-down" />
             </button>
           </div>
@@ -62,13 +99,17 @@ const emit = defineEmits(["close"]);
 
 const inputRef = ref(null);
 const visibleRef = toRef(props, "visible");
+const highlightedHistoryIdx = ref(-1);
 
-const { locale } = useI18n({ useScope: "global" });
+const { t } = useI18n({ useScope: "global" });
 const {
   query,
   matchCase,
   matches,
   currentMatchIndex,
+  advancedQuery,
+  searchHistory,
+  showHistory,
   captureScrollSnapshot,
   restoreScrollSnapshot,
   findNext,
@@ -76,50 +117,30 @@ const {
   focusInput,
   cleanup,
   scheduleSearch,
+  selectHistoryItem,
+  clearHistory,
 } = useGlobalSearchPanel();
 
-const uiText = computed(() => {
-  const normalized = String(locale.value || "").toLowerCase();
-  if (normalized.startsWith("en")) {
-    return {
-      placeholder: "Find in current page",
-      hint: "Type to search",
-      noResult: "No matches",
-      matchCase: "Match case",
-      previous: "Previous result",
-      next: "Next result",
-      close: "Close",
-    };
-  }
-  if (normalized.startsWith("zh-tw")) {
-    return {
-      placeholder: "在目前頁面搜尋",
-      hint: "輸入關鍵字開始搜尋",
-      noResult: "找不到符合項",
-      matchCase: "區分大小寫",
-      previous: "上一個結果",
-      next: "下一個結果",
-      close: "關閉",
-    };
-  }
-  return {
-    placeholder: "在当前页面查找",
-    hint: "输入关键词开始查找",
-    noResult: "未找到匹配项",
-    matchCase: "区分大小写",
-    previous: "上一条结果",
-    next: "下一条结果",
-    close: "关闭",
-  };
-});
-
 const resultText = computed(() => {
-  if (!query.value.trim()) return uiText.value.hint;
-  if (!matches.value.length) return uiText.value.noResult;
+  if (!query.value.trim()) return t('archiveSearch.searchPanel.hint');
+  if (!matches.value.length) return t('archiveSearch.searchPanel.noResult');
   return `${currentMatchIndex.value + 1} / ${matches.value.length}`;
 });
 
+/** Filter history items that match the current query prefix */
+const filteredHistory = computed(() => {
+  const q = query.value.trim().toLowerCase();
+  if (!q) return searchHistory.value;
+  return searchHistory.value.filter((item) => item.toLowerCase().includes(q));
+});
+
 const handleEnter = (event) => {
+  // If history is shown and an item is highlighted, select it
+  if (showHistory.value && highlightedHistoryIdx.value >= 0 && filteredHistory.value[highlightedHistoryIdx.value]) {
+    selectHistoryItem(filteredHistory.value[highlightedHistoryIdx.value]);
+    highlightedHistoryIdx.value = -1;
+    return;
+  }
   if (event.shiftKey) {
     findPrevious();
     return;
@@ -133,6 +154,31 @@ const toggleMatchCase = () => {
 const closePanel = () => emit("close");
 const exposeFocusInput = (selectAll = true) => {
   focusInput(inputRef, selectAll);
+};
+
+const onInputFocus = () => {
+  if (searchHistory.value.length > 0) {
+    showHistory.value = true;
+  }
+};
+
+const onInputBlur = () => {
+  // Delay hiding so click on history item registers
+  setTimeout(() => {
+    showHistory.value = false;
+    highlightedHistoryIdx.value = -1;
+  }, 200);
+};
+
+const highlightNextHistory = () => {
+  if (!showHistory.value || !filteredHistory.value.length) return;
+  highlightedHistoryIdx.value = (highlightedHistoryIdx.value + 1) % filteredHistory.value.length;
+};
+
+const highlightPrevHistory = () => {
+  if (!showHistory.value || !filteredHistory.value.length) return;
+  highlightedHistoryIdx.value =
+    (highlightedHistoryIdx.value - 1 + filteredHistory.value.length) % filteredHistory.value.length;
 };
 
 watch([query, matchCase], () => {
@@ -151,6 +197,8 @@ watch(
       return;
     }
     restoreScrollSnapshot();
+    showHistory.value = false;
+    highlightedHistoryIdx.value = -1;
   },
 );
 
@@ -266,6 +314,117 @@ defineExpose({ focusInput: exposeFocusInput, findNext, findPrevious });
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.2px;
+}
+
+/* ===== Advanced Query Tags ===== */
+.advanced-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.adv-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.adv-tag svg {
+  font-size: 10px;
+}
+
+.adv-tag-name {
+  background: color-mix(in srgb, #3b82f6 15%, transparent);
+  color: #3b82f6;
+  border: 1px solid color-mix(in srgb, #3b82f6 30%, transparent);
+}
+
+.adv-tag-level {
+  background: color-mix(in srgb, #8b5cf6 15%, transparent);
+  color: #8b5cf6;
+  border: 1px solid color-mix(in srgb, #8b5cf6 30%, transparent);
+}
+
+.adv-tag-difficulty {
+  background: color-mix(in srgb, #f59e0b 15%, transparent);
+  color: #f59e0b;
+  border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent);
+}
+
+/* ===== Search History ===== */
+.search-history-dropdown {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px 4px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 4px;
+}
+
+.history-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.history-clear-btn {
+  background: none;
+  border: none;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.history-clear-btn:hover {
+  color: var(--error-color, #ef4444);
+  background: color-mix(in srgb, var(--error-color, #ef4444) 10%, transparent);
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: background 0.15s ease;
+}
+
+.history-item:hover,
+.history-item-highlighted {
+  background: var(--bg-tertiary);
+}
+
+.history-icon {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.history-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .global-find-panel-enter-active,

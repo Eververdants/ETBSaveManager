@@ -70,5 +70,12 @@
     "branch1": "空无之城",
     "branch2": "死寂郊野",
     "branch3": "胭脂之屋"
-  }
+  },
+  "editArchive": "编辑此存档",
+  "createAnother": "继续创建",
+  "goHome": "返回首页",
+  "draftFoundTitle": "发现未完成的存档",
+  "draftFoundMessage": "检测到未完成的存档创建（上次在步骤 {step}），是否恢复？",
+  "restoreDraft": "恢复草稿",
+  "discardDraft": "重新开始"
 }

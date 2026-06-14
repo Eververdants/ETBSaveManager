@@ -504,7 +504,7 @@ onMounted(() => {
   width: 70px;
   /* 收起时的宽度 */
   --sidebar-width: 70px;
-  background: var(--sidebar-bg);
+  background: var(--bg-sidebar);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: var(--shadow-lg);

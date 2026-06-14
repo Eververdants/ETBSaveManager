@@ -53,7 +53,7 @@ defineOptions({ inheritAttrs: false });
 
 const { t } = useI18n({ useScope: "global" });
 const route = useRoute();
-const emit = defineEmits(["search-click", "folder-click", "refresh-click", "multi-select-click"]);
+const emit = defineEmits(["search-click", "folder-click", "refresh-click", "multi-select-click", "sort-click"]);
 
 // DOM refs
 const actionButton = ref(null);
@@ -64,7 +64,7 @@ const fabMenu = ref(null);
 const floatingActionContainer = ref(null);
 
 // State
-const icons = ["search", "folder", "refresh", "multi-select-delete"];
+const icons = ["search", "folder", "refresh", "sort", "multi-select-delete"];
 const currentIndex = ref(0);
 const displayIndex = ref(0); // Currently displayed icon index
 const nextDisplayIndex = ref(1); // Next icon index
@@ -130,18 +130,21 @@ const iconMap = {
   search: "magnifying-glass",
   folder: "folder",
   refresh: "arrow-rotate-right",
+  sort: "arrow-up-wide-short",
   "multi-select-delete": "trash-alt",
 };
 const tooltipKeys = {
   search: "floatingButton.searchArchive",
   folder: "floatingButton.openFolder",
   refresh: "floatingButton.refreshList",
+  sort: "floatingButton.sortArchives",
   "multi-select-delete": "floatingButton.multiSelectDelete",
 };
 const eventMap = {
   search: "search-click",
   folder: "folder-click",
   refresh: "refresh-click",
+  sort: "sort-click",
   "multi-select-delete": "multi-select-click",
 };
 

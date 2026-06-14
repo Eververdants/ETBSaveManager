@@ -1,5 +1,5 @@
 <template>
-  <div class="perf-monitor" style="pointer-events: none">
+  <div class="perf-monitor">
     <h3>{{ t("performanceMonitor.title") }}</h3>
     <div class="stats">
       <div class="stat-item">
@@ -356,22 +356,24 @@ export default {
   font-size: 12px;
   padding: 10px;
   border-radius: 8px;
-  pointer-events: none;
-  /* 鼠标穿透 */
+  /* 默认半透明，不干扰主界面 */
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.perf-monitor:hover {
+  /* hover 时完全可见可读 */
+  opacity: 1;
 }
 
 .perf-monitor h3 {
   margin: 0 0 5px;
   font-size: 14px;
   color: #fff;
-  pointer-events: none;
-  /* 鼠标穿透 */
 }
 
 .stats {
   margin-bottom: 10px;
-  pointer-events: none;
-  /* 鼠标穿透 */
 }
 
 .stat-item {
@@ -379,8 +381,6 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2px;
-  pointer-events: none;
-  /* 鼠标穿透 */
 }
 
 .rating {
@@ -391,8 +391,6 @@ export default {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  pointer-events: none;
-  /* 鼠标穿透 */
 }
 
 .rating.excellent {
@@ -424,12 +422,5 @@ export default {
   width: 100% !important;
   height: 80px !important;
   margin-bottom: 8px;
-  pointer-events: none;
-  /* 鼠标穿透 */
-}
-
-.charts {
-  pointer-events: none;
-  /* 鼠标穿透 */
 }
 </style>

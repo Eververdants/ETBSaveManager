@@ -74,51 +74,32 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { useI18n } from "vue-i18n";
 
-export default {
-  name: "Step2ConfigArchive",
-  props: {
-    archiveName: {
-      type: String,
-      default: "",
-    },
-    selectedGameMode: {
-      type: String,
-      default: "multiplayer",
-    },
-    selectedDifficulty: {
-      type: String,
-      default: "normal",
-    },
-    selectedActualDifficulty: {
-      type: String,
-      default: "normal",
-    },
-    difficultyLevels: {
-      type: Array,
-      default: () => [
-        { value: "easy", label: "easy", icon: ["fas", "smile"] },
-        { value: "normal", label: "normal", icon: ["fas", "meh"] },
-        { value: "hard", label: "hard", icon: ["fas", "frown"] },
-        { value: "nightmare", label: "nightmare", icon: ["fas", "skull"] },
-      ],
-    },
+defineProps({
+  archiveName: { type: String, default: "" },
+  selectedGameMode: { type: String, default: "multiplayer" },
+  selectedDifficulty: { type: String, default: "normal" },
+  selectedActualDifficulty: { type: String, default: "normal" },
+  difficultyLevels: {
+    type: Array,
+    default: () => [
+      { value: "easy", label: "easy", icon: ["fas", "smile"] },
+      { value: "normal", label: "normal", icon: ["fas", "meh"] },
+      { value: "hard", label: "hard", icon: ["fas", "frown"] },
+      { value: "nightmare", label: "nightmare", icon: ["fas", "skull"] },
+    ],
   },
-  emits: ["update:archiveName", "select-difficulty", "select-actual-difficulty"],
-  setup() {
-    const { t, te } = useI18n();
+});
 
-    const getDifficultyText = (difficultyKey) => {
-      const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
-      return te(translationKey) ? t(translationKey) : difficultyKey;
-    };
+defineEmits(["update:archiveName", "select-difficulty", "select-actual-difficulty"]);
 
-    return {
-      getDifficultyText,
-    };
-  },
+const { t, te } = useI18n();
+
+const getDifficultyText = (difficultyKey) => {
+  const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
+  return te(translationKey) ? t(translationKey) : difficultyKey;
 };
 </script>
 

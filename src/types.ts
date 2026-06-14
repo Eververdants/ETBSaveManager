@@ -112,6 +112,8 @@ export interface ArchiveData {
   archiveDifficulty: string;
   actualDifficulty: string;
   isVisible: boolean;
+  isFavorite?: boolean;
+  sortOrder?: number;
   path: string;
   date: string;
 }

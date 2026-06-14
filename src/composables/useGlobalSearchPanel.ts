@@ -10,11 +10,22 @@ interface PerformSearchOptions {
   scrollToCurrent?: boolean;
 }
 
+export interface AdvancedQuery {
+  raw: string;
+  name?: string;
+  level?: string;
+  difficulty?: string;
+  text: string; // remaining plain text after stripping advanced prefixes
+}
+
 interface GlobalSearchPanelReturn {
   query: Ref<string>;
   matchCase: Ref<boolean>;
   matches: Ref<HTMLElement[]>;
   currentMatchIndex: Ref<number>;
+  searchHistory: Ref<string[]>;
+  advancedQuery: Ref<AdvancedQuery | null>;
+  showHistory: Ref<boolean>;
   captureScrollSnapshot: () => void;
   restoreScrollSnapshot: () => void;
   clearHighlights: () => void;
@@ -23,7 +34,71 @@ interface GlobalSearchPanelReturn {
   findNext: () => void;
   findPrevious: () => void;
   focusInput: (inputRef: Ref<{ focus: () => void; select: () => void } | null> | null, selectAll?: boolean) => void;
+  selectHistoryItem: (item: string) => void;
+  clearHistory: () => void;
   cleanup: () => void;
+}
+
+const HISTORY_KEY = "global-search-history";
+const MAX_HISTORY = 20;
+
+function loadHistory(): string[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.slice(0, MAX_HISTORY);
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return [];
+}
+
+function saveHistory(history: string[]): void {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+/**
+ * Parse advanced query syntax:
+ *   name:xxx      — filter by archive name
+ *   level:xxx     — filter by level
+ *   difficulty:hard — filter by difficulty
+ *   plain text    — regular text search
+ */
+function parseAdvancedQuery(raw: string): AdvancedQuery | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
+  const result: AdvancedQuery = { raw: trimmed, text: "" };
+  const parts: string[] = [];
+  let remaining = trimmed;
+
+  // Match prefixes: name:xxx, level:xxx, difficulty:xxx
+  const prefixRegex = /^(name|level|difficulty):(\S+)\s*/;
+  let match: RegExpExecArray | null;
+  const regex = new RegExp(prefixRegex.source, "g");
+  while ((match = regex.exec(remaining)) !== null) {
+    const key = match[1] as "name" | "level" | "difficulty";
+    const value = match[2];
+    if (key === "name") result.name = value;
+    else if (key === "level") result.level = value;
+    else if (key === "difficulty") result.difficulty = value;
+    parts.push(match[0]);
+    regex.lastIndex = 0;
+  }
+
+  // Remove matched prefixes from the remaining text
+  for (const p of parts) {
+    remaining = remaining.replace(p, "").trim();
+  }
+
+  result.text = remaining;
+  return result;
 }
 
 export function useGlobalSearchPanel(): GlobalSearchPanelReturn {
@@ -31,8 +106,16 @@ export function useGlobalSearchPanel(): GlobalSearchPanelReturn {
   const matchCase = ref(false);
   const matches = ref<HTMLElement[]>([]);
   const currentMatchIndex = ref(-1);
+  const searchHistory = ref<string[]>(loadHistory());
+  const showHistory = ref(false);
   let searchTimer: ReturnType<typeof setTimeout> | null = null;
   let scrollSnapshot: ScrollSnapshot | null = null;
+
+  const advancedQuery = computed<AdvancedQuery | null>(() => {
+    const q = query.value.trim();
+    if (!q || q.length < 3) return null;
+    return parseAdvancedQuery(q);
+  });
 
   const getSearchRoot = (): Element | null => document.querySelector(".main-content");
 
@@ -103,11 +186,18 @@ export function useGlobalSearchPanel(): GlobalSearchPanelReturn {
     if (scroll) scrollActiveMatchIntoView(activeMatch);
   };
 
+  /** Get the effective search text: for advanced queries, use the text portion */
+  const getEffectiveSearchText = (): string => {
+    const adv = advancedQuery.value;
+    if (adv) return adv.text || adv.raw;
+    return query.value.trim();
+  };
+
   const performSearch = ({ scrollToCurrent = false } = {}): void => {
     const root = getSearchRoot();
     if (!root) return;
     clearHighlights();
-    const keyword = query.value.trim();
+    const keyword = getEffectiveSearchText();
     if (!keyword) return;
     const regex = new RegExp(escapeRegExp(keyword), matchCase.value ? "g" : "gi");
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -146,9 +236,29 @@ export function useGlobalSearchPanel(): GlobalSearchPanelReturn {
       currentMatchIndex.value = 0;
       activateCurrentMatch(scrollToCurrent);
     }
+
+    // Save to history when search has actual results or meaningful query
+    const trimmed = query.value.trim();
+    if (trimmed && trimmed.length >= 2) {
+      addToHistory(trimmed);
+    }
+  };
+
+  const addToHistory = (item: string): void => {
+    // Remove if exists (move to top), then prepend
+    const existing = searchHistory.value.indexOf(item);
+    if (existing > -1) {
+      searchHistory.value.splice(existing, 1);
+    }
+    searchHistory.value.unshift(item);
+    if (searchHistory.value.length > MAX_HISTORY) {
+      searchHistory.value = searchHistory.value.slice(0, MAX_HISTORY);
+    }
+    saveHistory(searchHistory.value);
   };
 
   const scheduleSearch = (): void => {
+    showHistory.value = false;
     if (searchTimer) clearTimeout(searchTimer);
     searchTimer = setTimeout(() => performSearch(), 120);
   };
@@ -191,6 +301,19 @@ export function useGlobalSearchPanel(): GlobalSearchPanelReturn {
     });
   };
 
+  /** Select a history item as the current query */
+  const selectHistoryItem = (item: string): void => {
+    query.value = item;
+    showHistory.value = false;
+    scheduleSearch();
+  };
+
+  /** Clear all search history */
+  const clearHistory = (): void => {
+    searchHistory.value = [];
+    saveHistory([]);
+  };
+
   const cleanup = (): void => {
     if (searchTimer) {
       clearTimeout(searchTimer);
@@ -205,6 +328,9 @@ export function useGlobalSearchPanel(): GlobalSearchPanelReturn {
     matchCase,
     matches,
     currentMatchIndex,
+    searchHistory,
+    advancedQuery,
+    showHistory,
     captureScrollSnapshot,
     restoreScrollSnapshot,
     clearHighlights,
@@ -213,6 +339,8 @@ export function useGlobalSearchPanel(): GlobalSearchPanelReturn {
     findNext,
     findPrevious,
     focusInput,
+    selectHistoryItem,
+    clearHistory,
     cleanup,
   };
 }

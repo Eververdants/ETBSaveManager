@@ -31,5 +31,16 @@
     "exit": "退出多选",
     "selected": "已选择 {count} / {total} 个",
     "batchDelete": "批量删除"
+  },
+  "suggestions": "搜索建议",
+  "searchHistory": "搜索历史",
+  "clearHistory": "清除",
+  "searchPanel": {
+    "placeholder": "在当前页面查找（支持 name:/level:/difficulty:）",
+    "hint": "输入关键词开始查找",
+    "noResult": "未找到匹配项",
+    "matchCase": "区分大小写",
+    "previous": "上一条结果",
+    "next": "下一条结果"
   }
 }

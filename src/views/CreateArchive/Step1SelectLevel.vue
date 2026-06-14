@@ -46,57 +46,27 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { gsap } from "gsap";
 import LazyImage from "@/components/ui/LazyImage.vue";
 
-export default {
-  name: "Step1SelectLevel",
-  components: {
-    LazyImage,
-  },
-  props: {
-    selectedLevel: {
-      type: Number,
-      default: -1,
-    },
-    selectedEnding: {
-      type: Number,
-      default: 0,
-    },
-    availableLevels: {
-      type: Array,
-      default: () => [],
-    },
-    endings: {
-      type: Array,
-      default: () => [],
-    },
-  },
-  emits: ["select-level", "select-ending"],
-  methods: {
-    handleSelectLevel(index, event) {
-      const card = event.currentTarget;
-      // 先清除可能存在的动画
-      gsap.killTweensOf(card);
-      // 执行点击反馈动画
-      gsap
-        .timeline()
-        .to(card, {
-          scale: 1.08,
-          duration: 0.1,
-          ease: "power2.out",
-          overwrite: true,
-        })
-        .to(card, {
-          scale: 1,
-          duration: 0.2,
-          ease: "elastic.out(1, 0.5)",
-        });
-      // 触发事件
-      this.$emit("select-level", index);
-    },
-  },
+defineProps({
+  selectedLevel: { type: Number, default: -1 },
+  selectedEnding: { type: Number, default: 0 },
+  availableLevels: { type: Array, default: () => [] },
+  endings: { type: Array, default: () => [] },
+});
+
+const emit = defineEmits(["select-level", "select-ending"]);
+
+const handleSelectLevel = (index, event) => {
+  const card = event.currentTarget;
+  gsap.killTweensOf(card);
+  gsap
+    .timeline()
+    .to(card, { scale: 1.08, duration: 0.1, ease: "power2.out", overwrite: true })
+    .to(card, { scale: 1, duration: 0.2, ease: "elastic.out(1, 0.5)" });
+  emit("select-level", index);
 };
 </script>
 

@@ -91,7 +91,7 @@ export function useArchiveFilters(): {
   ): ArchiveData[] | undefined => {
     const now = Date.now();
 
-    if (now - lastUpdateTime < 50) {
+    if (now - lastUpdateTime < 250) {
       return;
     }
 

@@ -70,5 +70,12 @@
     "branch1": "Empty City",
     "branch2": "The Suburbs",
     "branch3": "The Pink House"
-  }
+  },
+  "editArchive": "Edit Archive",
+  "createAnother": "Create Another",
+  "goHome": "Return Home",
+  "draftFoundTitle": "Draft Found",
+  "draftFoundMessage": "An incomplete archive creation was found (step {step}). Would you like to restore it?",
+  "restoreDraft": "Restore Draft",
+  "discardDraft": "Start Over"
 }

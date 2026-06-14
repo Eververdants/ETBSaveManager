@@ -14,7 +14,6 @@ interface PerformanceMonitorReturn {
   hardwareAcceleration: Ref<boolean>;
   virtualizationEnabled: Ref<boolean>;
   initPerformanceMonitor: () => void;
-  resetPerformanceMode: () => void;
   cleanup: () => void;
 }
 
@@ -110,13 +109,6 @@ export function usePerformanceMonitor(): PerformanceMonitorReturn {
   };
 
   /**
-   * Reset performance mode
-   */
-  const resetPerformanceMode = (): void => {
-    performanceMode.value = "normal";
-  };
-
-  /**
    * Clean up resources
    */
   const cleanup = (): void => {
@@ -139,7 +131,6 @@ export function usePerformanceMonitor(): PerformanceMonitorReturn {
     hardwareAcceleration,
     virtualizationEnabled,
     initPerformanceMonitor,
-    resetPerformanceMode,
     cleanup,
   };
 }

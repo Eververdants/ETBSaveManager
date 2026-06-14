@@ -124,105 +124,73 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import PlayerManager from "@/components/system/PlayerManager.vue";
 import CustomSlider from "@/components/ui/CustomSlider.vue";
 
-export default {
-  name: "Step3EditInventory",
-  components: {
-    PlayerManager,
-    CustomSlider,
-  },
-  props: {
-    newSteamId: {
-      type: String,
-      default: "",
-    },
-    players: {
-      type: Array,
-      default: () => [],
-    },
-    activePlayerIndex: {
-      type: Number,
-      default: -1,
-    },
-    playerInputMessage: {
-      type: String,
-      default: "",
-    },
-    playerInputMessageType: {
-      type: String,
-      default: "",
-    },
-  },
-  emits: ["update:newSteamId", "add-steam-id", "remove-player", "select-player", "edit-slot", "update-player-sanity"],
-  setup() {
-    const { t, te } = useI18n();
+const props = defineProps({
+  newSteamId: { type: String, default: "" },
+  players: { type: Array, default: () => [] },
+  activePlayerIndex: { type: Number, default: -1 },
+  playerInputMessage: { type: String, default: "" },
+  playerInputMessageType: { type: String, default: "" },
+});
 
-    const getSlotLabelText = (slotIndex) => {
-      const labels = ["mainHand", "offHand1", "offHand2"];
-      const label = labels[slotIndex] || "";
-      const translationKey = `createArchive.${label}`;
-      return te(translationKey) ? t(translationKey) : label;
-    };
+const emit = defineEmits(["update:newSteamId", "add-steam-id", "remove-player", "select-player", "edit-slot", "update-player-sanity"]);
 
-    return {
-      getSlotLabelText,
-    };
-  },
-  data() {
-    return {
-      currentPlayerSanity: 100,
-    };
-  },
-  watch: {
-    activePlayerIndex: {
-      immediate: true,
-      handler(newIndex) {
-        if (newIndex === -1) return;
-        const player = this.players?.[newIndex];
-        this.currentPlayerSanity = player?.sanity ?? 100;
-      },
-    },
-    currentPlayerSanity(newVal) {
-      if (this.activePlayerIndex === -1) return;
-      this.$emit("update-player-sanity", {
-        playerIndex: this.activePlayerIndex,
-        sanity: newVal,
-      });
-    },
-  },
-  methods: {
-    getSanityClass(val) {
-      if (val >= 80) return "sanity-high";
-      if (val >= 50) return "sanity-medium";
-      if (val >= 20) return "sanity-low";
-      return "sanity-critical";
-    },
-    setMinSanity() {
-      this.currentPlayerSanity = 0;
-    },
-    setMaxSanity() {
-      this.currentPlayerSanity = 100;
-    },
-    getSlotContent(playerIndex, slotIndex) {
-      if (this.players[playerIndex] && this.players[playerIndex].inventory) {
-        return this.players[playerIndex].inventory[slotIndex];
-      }
-      return null;
-    },
-    getItemImageFile(itemName) {
-      if (!itemName || itemName === "None" || itemName === null) return "None";
-      if (itemName === "Toy") return "Teddy_Bear";
-      return itemName;
-    },
-    getSlotLabel(slotIndex) {
-      const labels = ["mainHand", "offHand1", "offHand2"];
-      return labels[slotIndex] || "";
-    },
-  },
+const { t, te } = useI18n();
+
+/* 获取槽位标签文本（i18n） */
+const getSlotLabelText = (slotIndex) => {
+  const labels = ["mainHand", "offHand1", "offHand2"];
+  const label = labels[slotIndex] || "";
+  const translationKey = `createArchive.${label}`;
+  return te(translationKey) ? t(translationKey) : label;
+};
+
+/* 当前选中玩家的理智值 */
+const currentPlayerSanity = ref(100);
+
+/* 切换活跃玩家时同步理智值 */
+watch(() => props.activePlayerIndex, (newIndex) => {
+  if (newIndex === -1) return;
+  const player = props.players?.[newIndex];
+  currentPlayerSanity.value = player?.sanity ?? 100;
+}, { immediate: true });
+
+/* 理智值变化时发射事件 */
+watch(currentPlayerSanity, (newVal) => {
+  if (props.activePlayerIndex === -1) return;
+  emit("update-player-sanity", {
+    playerIndex: props.activePlayerIndex,
+    sanity: newVal,
+  });
+});
+
+/* 样式判断 */
+const getSanityClass = (val) => {
+  if (val >= 80) return "sanity-high";
+  if (val >= 50) return "sanity-medium";
+  if (val >= 20) return "sanity-low";
+  return "sanity-critical";
+};
+
+const setMinSanity = () => { currentPlayerSanity.value = 0; };
+const setMaxSanity = () => { currentPlayerSanity.value = 100; };
+
+const getSlotContent = (playerIndex, slotIndex) => {
+  if (props.players[playerIndex] && props.players[playerIndex].inventory) {
+    return props.players[playerIndex].inventory[slotIndex];
+  }
+  return null;
+};
+
+const getItemImageFile = (itemName) => {
+  if (!itemName || itemName === "None" || itemName === null) return "None";
+  if (itemName === "Toy") return "Teddy_Bear";
+  return itemName;
 };
 </script>
 

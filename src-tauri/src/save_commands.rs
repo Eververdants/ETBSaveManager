@@ -117,6 +117,85 @@ pub async fn delete_file(file_path: String) -> AppResult<()> {
     .await
 }
 
+/// Soft-delete: rename .sav → .sav.trash so it can be restored later.
+/// Removes from MAINSAVE records.
+#[tauri::command]
+pub async fn soft_delete_file(file_path: String) -> AppResult<()> {
+    run_blocking(move || {
+        let path = Path::new(&file_path);
+        let filename = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .ok_or("Invalid file path")?;
+
+        if !filename.to_lowercase().ends_with(".sav") {
+            return Err("Only .sav save files can be soft-deleted".to_string().into());
+        }
+
+        validate_save_games_path(path)?;
+
+        let trash_path = path.with_extension("sav.trash");
+
+        // Move to trash (rename)
+        fs::rename(path, &trash_path)
+            .map_err(|e| format!("Failed to move file to trash: {}", e))?;
+
+        // Remove from MAINSAVE records
+        remove_save_from_mainsave(extract_archive_name(filename))?;
+
+        Ok(())
+    })
+    .await
+}
+
+/// Restore a soft-deleted file: rename .sav.trash → .sav.
+/// Adds back to MAINSAVE records.
+#[tauri::command]
+pub async fn restore_file(file_path: String) -> AppResult<()> {
+    run_blocking(move || {
+        let path = Path::new(&file_path);
+
+        // The .trash path is the original path with .sav.trash extension
+        let trash_path = path.with_extension("sav.trash");
+
+        if !trash_path.exists() {
+            return Err(format!("Trash file not found: {}", trash_path.display()).into());
+        }
+
+        let filename = trash_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .ok_or("Invalid trash file path")?;
+
+        // Restore (rename back)
+        fs::rename(&trash_path, path)
+            .map_err(|e| format!("Failed to restore file: {}", e))?;
+
+        // Add back to MAINSAVE records
+        add_save_to_mainsave(extract_archive_name(filename))?;
+
+        Ok(())
+    })
+    .await
+}
+
+/// Permanently delete a trashed file (.sav.trash).
+/// Called after the undo window expires.
+#[tauri::command]
+pub async fn permanent_delete_file(file_path: String) -> AppResult<()> {
+    run_blocking(move || {
+        let path = Path::new(&file_path);
+        let trash_path = path.with_extension("sav.trash");
+
+        if trash_path.exists() {
+            fs::remove_file(&trash_path)
+                .map_err(|e| format!("Failed to delete trash file: {}", e))?;
+        }
+        Ok(())
+    })
+    .await
+}
+
 #[tauri::command]
 pub async fn open_save_games_folder() -> AppResult<()> {
     run_blocking(move || {

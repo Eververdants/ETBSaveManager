@@ -15,8 +15,8 @@ import {
   LEVEL_KEYWORDS,
   DIFFICULTY_KEYWORDS,
   BACKPACK_KEYWORDS,
-} from "../../utils/nameParser.js";
-import type { ParsedNameInfo, ParseResult } from "../../types.js";
+} from "../../utils/nameParser";
+import type { ParsedNameInfo, ParseResult } from "../../types";
 
 // =============================================================================
 // detectDelimiter

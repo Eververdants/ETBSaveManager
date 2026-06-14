@@ -5,14 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm sync-version && vite",
-    "build": "pnpm sync-version && vite build",
+    "build": "pnpm sync-version && vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
+    "typecheck": "vue-tsc --noEmit",
     "test:unit": "vitest run",
     "test:watch": "vitest",
     "sync-version": "node scripts/sync-version.js",
-    "lint": "eslint src --ext .js,.vue",
-    "lint:fix": "eslint src --ext .js,.vue --fix",
+    "lint": "eslint src --ext .ts,.vue",
+    "lint:fix": "eslint src --ext .ts,.vue --fix",
     "format": "prettier --check src",
     "format:fix": "prettier --write src"
   },
@@ -50,8 +51,10 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@tauri-apps/cli": "^2",
+    "@types/markdown-it": "^14.1.2",
     "@vitejs/plugin-vue": "^6.0.3",
     "@vue/test-utils": "^2.4.6",
+    "@vue/tsconfig": "^0.9.1",
     "eslint": "^10.5.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.9.2",
@@ -62,9 +65,11 @@
     "prettier": "^3.8.4",
     "sass-embedded": "^1.90.0",
     "terser": "^5.44.1",
+    "typescript": "^5.8.3",
     "vite": "^6.0.3",
     "vite-bundle-analyzer": "^0.8.0",
     "vitest": "^4.0.17",
-    "vue-eslint-parser": "^10.4.1"
+    "vue-eslint-parser": "^10.4.1",
+    "vue-tsc": "^3.3.5"
   }
 }

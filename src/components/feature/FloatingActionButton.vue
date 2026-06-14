@@ -80,54 +80,49 @@ let styleObserver = null;
 const getScrollHideConfig = () => {
   const width = window.innerWidth;
   if (width <= 480) {
-    return { triggerThreshold: 150, maxTranslateX: 80 };
+    return { triggerThreshold: 250, maxTranslateY: 120 };
   } else if (width <= 768) {
-    return { triggerThreshold: 180, maxTranslateX: 100 };
+    return { triggerThreshold: 300, maxTranslateY: 140 };
   }
-  return { triggerThreshold: 200, maxTranslateX: 120 };
+  return { triggerThreshold: 350, maxTranslateY: 160 };
 };
 
 let scrollListener = null;
+
+const getArchiveScrollBottom = () => {
+  // First check the virtual-scroll container (archive list)
+  const archiveEl = document.querySelector(".archive-list-container");
+  if (archiveEl && archiveEl.scrollHeight > archiveEl.clientHeight) {
+    const scrollBottom = archiveEl.scrollHeight - archiveEl.scrollTop - archiveEl.clientHeight;
+    return { scrollBottom, canScroll: true };
+  }
+  // Fallback: check main-content (the actual page scroll container)
+  const mainEl = document.querySelector(".main-content");
+  if (mainEl && mainEl.scrollHeight > mainEl.clientHeight) {
+    const scrollBottom = mainEl.scrollHeight - mainEl.scrollTop - mainEl.clientHeight;
+    return { scrollBottom, canScroll: true };
+  }
+  return { scrollBottom: 0, canScroll: false };
+};
 
 const updateFabPosition = () => {
   const container = floatingActionContainer.value;
   if (!container) return;
 
   const config = getScrollHideConfig();
-
-  // Try to get the Home page scroll container
-  const scrollContainer = document.querySelector(".archive-list-container, .quick-create-main");
-  let scrollBottom;
-  let canScroll = true;
-
-  if (scrollContainer) {
-    // Container scroll
-    const scrollTop = scrollContainer.scrollTop;
-    const clientHeight = scrollContainer.clientHeight;
-    const scrollHeight = scrollContainer.scrollHeight;
-    scrollBottom = scrollHeight - scrollTop - clientHeight;
-    canScroll = scrollHeight > clientHeight;
-  } else {
-    // Fallback to window scroll
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-    scrollBottom = documentHeight - scrollTop - windowHeight;
-    canScroll = documentHeight > windowHeight;
-  }
+  const { scrollBottom, canScroll } = getArchiveScrollBottom();
 
   // If content doesn't overflow (no scroll possible), always show the FAB
   if (!canScroll) {
-    container.style.setProperty("--fab-translate-x", "0px");
+    container.classList.remove("fab-scroll-hidden");
     return;
   }
 
   // Calculate movement progress
   const progress = Math.max(0, Math.min(1, 1 - scrollBottom / config.triggerThreshold));
-  const translateX = progress * config.maxTranslateX;
 
-  // Use CSS variable to control movement distance
-  container.style.setProperty("--fab-translate-x", `${translateX}px`);
+  // At the bottom: hide the FAB so it doesn't block card buttons
+  container.classList.toggle("fab-scroll-hidden", progress >= 1);
 };
 
 // Mapping configuration
@@ -589,18 +584,11 @@ onMounted(() => {
     setTimeout(showScrollHint, 1000);
     storage.setItem("fabScrollHintShown", "true");
   }
-  // Add scroll listener
+  // Add scroll listener — use window with capture to catch ALL scroll events
   scrollListener = () => {
     requestAnimationFrame(updateFabPosition);
   };
-
-  // Try container scroll listener, fallback to window scroll
-  const scrollContainer = document.querySelector(".archive-list-container, .quick-create-main");
-  if (scrollContainer) {
-    scrollContainer.addEventListener("scroll", scrollListener, { passive: true });
-  } else {
-    window.addEventListener("scroll", scrollListener, { passive: true });
-  }
+  window.addEventListener("scroll", scrollListener, { passive: true, capture: true });
   updateFabPosition();
 
   // Disconnect styleObserver after brief delay to avoid interfering with transform animations
@@ -621,12 +609,7 @@ onUnmounted(() => {
     styleObserver = null;
   }
   if (scrollListener) {
-    const scrollContainer = document.querySelector(".archive-list-container, .quick-create-main");
-    if (scrollContainer) {
-      scrollContainer.removeEventListener("scroll", scrollListener);
-    } else {
-      window.removeEventListener("scroll", scrollListener);
-    }
+    window.removeEventListener("scroll", scrollListener, { capture: true });
     scrollListener = null;
   }
 });
@@ -640,7 +623,6 @@ onUnmounted(() => {
   z-index: 10000 !important;
   top: auto !important;
   left: auto !important;
-  transform: translateX(var(--fab-translate-x, 0)) !important;
   transform-origin: center center;
   isolation: isolate;
   contain: layout;
@@ -649,11 +631,15 @@ onUnmounted(() => {
   margin: 0 !important;
   padding: 0 !important;
   border: none !important;
-  will-change: transform, opacity;
   display: flex;
   flex-direction: column;
   align-items: center;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Scroll to bottom: slide FAB off-screen below the viewport */
+.floating-action-container.fab-scroll-hidden {
+  transform: translateY(160px) !important;
 }
 
 .action-button {

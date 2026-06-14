@@ -3,9 +3,9 @@ import type { I18n } from "vue-i18n";
 import storage from "../services/storageService";
 
 // Locally bundled language packs
-import zhCN from "./locales/zh-CN/index.js";
-import zhTW from "./locales/zh-TW/index.js";
-import enUS from "./locales/en-US/index.js";
+import zhCN from "./locales/zh-CN/index";
+import zhTW from "./locales/zh-TW/index";
+import enUS from "./locales/en-US/index";
 
 // Release notes data (ensured to be bundled) - now a single object instead of an array
 import releaseNotesZhCN from "./locales/release-notes.zh-CN.json";

@@ -6,7 +6,7 @@
 
 import { ref, readonly } from "vue";
 import type { Ref, DeepReadonly } from "vue";
-import { themeStorage } from "../services/themeStorage.js";
+import { themeStorage } from "../services/themeStorage";
 import storage from "../services/storageService";
 
 interface PresetTheme {

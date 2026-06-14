@@ -31,15 +31,6 @@
   }
 }
 
-/* Swift UI风格的文字动画 */
-.text-swift-enter-active {
-  animation: fadeInUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.text-swift-leave-active {
-  animation: fadeInUp 0.25s cubic-bezier(0.4, 0, 0.2, 1) reverse;
-}
-
 /* 按钮悬停效果 */
 .switch-btn:hover {
   animation: springPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);

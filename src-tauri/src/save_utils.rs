@@ -54,6 +54,29 @@ pub struct SaveFileInfo {
     pub is_visible: Option<bool>,
 }
 
+/// Lightweight save file metadata — derived from filename + filesystem only,
+/// no .sav parsing. Used for fast incremental loading.
+#[derive(Serialize)]
+pub struct SaveFileMeta {
+    pub id: u32,
+    pub name: String,
+    pub difficulty: String,
+    pub mode: String,
+    pub date: String,
+    pub hidden: bool,
+    pub path: String,
+    pub is_visible: Option<bool>,
+    pub file_size: u64,
+}
+
+/// Detailed info that requires .sav parsing, loaded on demand.
+#[derive(Serialize)]
+pub struct SaveFileDetail {
+    pub path: String,
+    pub current_level: String,
+    pub actual_difficulty: String,
+}
+
 /// Difficulty mapping (using match is faster than lookup)
 #[inline]
 fn map_difficulty(raw: &str) -> (Cow<'static, str>, Cow<'static, str>) {
@@ -117,5 +140,45 @@ pub fn build_save_info<S: Into<String>>(
         hidden,
         path: path.to_str().unwrap_or_default().to_string(),
         is_visible: None,
+    })
+}
+
+/// Build lightweight save metadata from filename + filesystem only.
+/// No .sav file opening — very fast even for 1000+ files.
+pub fn build_save_meta(
+    index: u32,
+    path: &Path,
+    date: String,
+    is_visible: bool,
+) -> AppResult<SaveFileMeta> {
+    use std::fs;
+
+    let file_name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .ok_or("Invalid filename")?;
+
+    let caps = get_save_file_regex()
+        .captures(file_name)
+        .ok_or_else(|| format!("Filename format mismatch: {}", file_name))?;
+
+    let mode_raw = caps.get(1).ok_or("Failed to extract game mode")?.as_str();
+    let name = caps.get(2).ok_or("Failed to extract save name")?.as_str();
+    let difficulty_raw = caps.get(3).ok_or("Failed to extract difficulty")?.as_str();
+
+    let file_size = fs::metadata(path)
+        .map(|m| m.len())
+        .unwrap_or(0);
+
+    Ok(SaveFileMeta {
+        id: index,
+        name: name.to_string(),
+        difficulty: map_difficulty(difficulty_raw).0.into_owned(),
+        mode: map_mode(mode_raw).to_string(),
+        date,
+        hidden: path.parent() != get_save_games_base_dir().map(|p| p.as_path()),
+        path: path.to_str().unwrap_or_default().to_string(),
+        is_visible: Some(is_visible),
+        file_size,
     })
 }

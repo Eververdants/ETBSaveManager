@@ -11,8 +11,8 @@
     >
       <div class="modal-container" @click.stop>
         <div class="modal-header">
-          <h3 class="modal-title">{{ title }}</h3>
-          <button class="modal-close" aria-label="关闭" @click="handleCancel">
+          <h3 class="modal-title">{{ displayTitle }}</h3>
+          <button class="modal-close" :aria-label="t('common.close')" @click="handleCancel">
             <font-awesome-icon icon="fa-solid fa-times" />
           </button>
         </div>
@@ -62,7 +62,7 @@
             :disabled="loading"
             @click="handleCancel"
           >
-            {{ cancelText }}
+            {{ displayCancelText }}
           </button>
           <button
             ref="confirmBtnRef"
@@ -72,7 +72,7 @@
             @click="handleConfirm"
           >
             <span v-if="loading" class="loading-spinner" aria-hidden="true"></span>
-            {{ confirmText }}
+            {{ displayConfirmText }}
           </button>
         </div>
       </div>
@@ -94,7 +94,7 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: "确认操作",
+    default: "",
   },
   message: {
     type: String,
@@ -111,11 +111,11 @@ const props = defineProps({
   },
   confirmText: {
     type: String,
-    default: "确认",
+    default: "",
   },
   cancelText: {
     type: String,
-    default: "取消",
+    default: "",
   },
   loading: {
     type: Boolean,
@@ -229,6 +229,11 @@ const useConfirmModalActions = () => {
 const { icon } = useConfirmModalIcons();
 const { getGameModeText, getDifficultyText, formatDate } = useArchiveDetailsFormatter();
 const { handleConfirm, handleCancel, handleOverlayClick } = useConfirmModalActions();
+
+/* 使用 i18n 兜底的显示文本 */
+const displayTitle = computed(() => props.title || t('confirmModal.title'));
+const displayConfirmText = computed(() => props.confirmText || t('confirmModal.confirm'));
+const displayCancelText = computed(() => props.cancelText || t('confirmModal.cancel'));
 </script>
 
 <style scoped>

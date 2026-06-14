@@ -16,10 +16,13 @@
             <div class="search-input-group">
               <font-awesome-icon icon="fa-solid fa-search" class="search-icon" />
               <input
+                ref="searchInputRef"
                 v-model="searchQuery"
                 type="text"
                 :placeholder="$t('archiveSearch.searchPlaceholder')"
                 class="search-input"
+                @focus="showSuggestions = true"
+                @blur="onSearchBlur"
               />
               <transition name="clear-btn" mode="out-in">
                 <button v-if="searchQuery" key="clear-btn" class="clear-btn" @click="clearSearch">
@@ -27,6 +30,43 @@
                 </button>
               </transition>
             </div>
+
+            <!-- 搜索建议面板 -->
+            <transition name="suggestions-fade">
+              <div v-if="showSuggestions && (suggestionList.length > 0 || searchHistoryList.length > 0)" class="search-suggestions" @mousedown.prevent>
+                <!-- 搜索建议 -->
+                <div v-if="suggestionList.length > 0 && searchQuery" class="suggestions-group">
+                  <div class="suggestions-label">{{ $t("archiveSearch.suggestions") }}</div>
+                  <div
+                    v-for="suggestion in suggestionList"
+                    :key="suggestion.id"
+                    class="suggestion-item"
+                    @mousedown.prevent="selectSuggestion(suggestion.name)"
+                  >
+                    <font-awesome-icon icon="fa-solid fa-file" class="suggestion-icon" />
+                    <span class="suggestion-text">{{ suggestion.name }}</span>
+                  </div>
+                </div>
+                <!-- 搜索历史 -->
+                <div v-if="searchHistoryList.length > 0" class="suggestions-group">
+                  <div class="suggestions-label suggestions-label-row">
+                    <span>{{ $t("archiveSearch.searchHistory") }}</span>
+                    <button class="clear-history-btn" @mousedown.prevent="clearSearchHistory">
+                      {{ $t("archiveSearch.clearHistory") }}
+                    </button>
+                  </div>
+                  <div
+                    v-for="(historyItem, idx) in searchHistoryList"
+                    :key="'h-' + idx"
+                    class="suggestion-item history-item"
+                    @mousedown.prevent="selectSuggestion(historyItem)"
+                  >
+                    <font-awesome-icon icon="fa-solid fa-clock" class="suggestion-icon" />
+                    <span class="suggestion-text">{{ historyItem }}</span>
+                  </div>
+                </div>
+              </div>
+            </transition>
           </div>
 
           <!-- 筛选区域 -->
@@ -74,7 +114,14 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick, toRef } from "v
 import { useI18n } from "vue-i18n";
 import CustomDropdown from "../ui/CustomDropdown.vue";
 import { safeModifyBodyStyles, protectFloatingButtonPosition } from "../../utils/floatingButtonProtection.js";
-import { useSearchState, useArchiveFilter, useFilterState } from "@/composables/useArchiveSearchFilter";
+import {
+  useSearchState,
+  useArchiveFilter,
+  useFilterState,
+  getSearchHistory,
+  addSearchHistory,
+  clearSearchHistory as clearHistoryStorage,
+} from "@/composables/useArchiveSearchFilter";
 
 const { t } = useI18n({ useScope: "global" });
 
@@ -94,6 +141,12 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["filtered", "filters-changed", "close"]);
+
+// 搜索建议与历史
+const searchInputRef = ref(null);
+const showSuggestions = ref(false);
+const searchHistoryList = ref(getSearchHistory());
+const suggestionList = computed(() => searchSuggestions.value || []);
 
 const handleKeydown = (event) => {
   if (event.key === "Escape" && showComponent.value) {
@@ -116,7 +169,7 @@ const visibleRef = toRef(props, "visible");
 
 const { searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility } =
   useSearchState(initialFiltersRef);
-const { filteredArchives } = useArchiveFilter(
+const { filteredArchives, searchSuggestions } = useArchiveFilter(
   archivesRef,
   searchQuery,
   selectedArchiveDifficulty,
@@ -154,6 +207,10 @@ const emitFiltersChanged = () => {
 };
 
 const handleSearchChange = () => {
+  if (searchQuery.value) {
+    addSearchHistory(searchQuery.value);
+    searchHistoryList.value = getSearchHistory();
+  }
   nextTick(() => {
     emit("filtered", filteredArchives.value);
     emitFiltersChanged();
@@ -167,8 +224,30 @@ const handleFilterChange = () => {
 
 const clearSearch = () => {
   searchQuery.value = "";
+  showSuggestions.value = false;
   emit("filtered", filteredArchives.value);
   emitFiltersChanged();
+};
+
+// 搜索建议与历史
+const onSearchBlur = () => {
+  // 延迟关闭，让点击事件有足够时间触发
+  setTimeout(() => { showSuggestions.value = false; }, 200);
+};
+
+const selectSuggestion = (text) => {
+  searchQuery.value = text;
+  showSuggestions.value = false;
+  addSearchHistory(text);
+  searchHistoryList.value = getSearchHistory();
+  emit("filtered", filteredArchives.value);
+  emitFiltersChanged();
+  nextTick(() => searchInputRef.value?.focus());
+};
+
+const clearSearchHistory = () => {
+  clearHistoryStorage();
+  searchHistoryList.value = [];
 };
 
 const showComponent = ref(true);
@@ -181,6 +260,9 @@ watch(
     const archiveListContainer = document.querySelector(".archive-list-container");
 
     if (newVal) {
+      // 计算滚动条宽度用于 padding-right 补偿，防止 layout shift
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+
       if (mainContent) {
         mainContent.dataset.scrollY = mainContent.scrollTop;
         mainContent.style.overflow = "hidden";
@@ -190,14 +272,13 @@ watch(
         archiveListContainer.style.overflow = "hidden";
       }
 
-      const currentScrollY = window.scrollY;
-      safeModifyBodyStyles({
-        overflow: "hidden",
-        position: "fixed",
-        top: `-${currentScrollY}px`,
-        width: "100%",
-        height: "100vh",
-      });
+      // 使用 overflow: hidden + paddingRight 补偿，替代 position: fixed
+      if (document.body.style.overflow !== "hidden") {
+        document.body.style.overflow = "hidden";
+        document.body.style.paddingRight = `${scrollBarWidth}px`;
+        document.documentElement.style.overflow = "hidden";
+        document.documentElement.style.paddingRight = `${scrollBarWidth}px`;
+      }
     } else {
       if (mainContent) {
         mainContent.style.overflow = "";
@@ -212,13 +293,11 @@ watch(
         }
       }
 
-      safeModifyBodyStyles({ overflow: "", position: "", top: "", width: "", height: "auto" });
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+      document.documentElement.style.overflow = "";
+      document.documentElement.style.paddingRight = "";
       protectFloatingButtonPosition();
-
-      const scrollY = document.body.style.top;
-      if (scrollY) {
-        window.scrollTo({ top: parseInt(scrollY || "0") * -1, behavior: "smooth" });
-      }
     }
   },
   { immediate: true },
@@ -292,18 +371,16 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  const scrollY = document.body.style.top;
-  safeModifyBodyStyles(() => {
-    document.body.style.overflow = "";
-    document.body.style.position = "";
-    document.body.style.top = "";
-    document.body.style.width = "";
-    document.body.style.height = "auto";
-  });
+  document.body.style.overflow = "";
+  document.body.style.paddingRight = "";
+  document.documentElement.style.overflow = "";
+  document.documentElement.style.paddingRight = "";
   protectFloatingButtonPosition();
-  if (scrollY) {
-    window.scrollTo(0, parseInt(scrollY || "0") * -1);
-  }
+});
+
+defineExpose({
+  searchQuery,
+  filteredArchives,
 });
 </script>
 
@@ -646,6 +723,110 @@ onUnmounted(() => {
 
 .filter-item:active {
   transform: translateY(0);
+}
+
+/* 搜索建议面板 */
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--card-bg, rgba(255, 255, 255, 0.98));
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  z-index: 200;
+  max-height: 300px;
+  overflow-y: auto;
+  backdrop-filter: blur(20px);
+}
+
+.suggestions-group {
+  padding: 8px;
+}
+
+.suggestions-group + .suggestions-group {
+  border-top: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
+}
+
+.suggestions-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 6px 10px;
+}
+
+.suggestions-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.clear-history-btn {
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.clear-history-btn:hover {
+  background: rgba(var(--accent-color-rgb), 0.1);
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.suggestion-item:hover {
+  background: var(--bg-secondary, rgba(0, 0, 0, 0.04));
+}
+
+.suggestion-icon {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.suggestion-text {
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestions-fade-enter-active,
+.suggestions-fade-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.suggestions-fade-enter-from,
+.suggestions-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* 搜索结果高亮 */
+:deep(.search-highlight) {
+  background: rgba(var(--accent-color-rgb), 0.2);
+  color: var(--accent-color);
+  border-radius: 3px;
+  padding: 0 2px;
+  font-weight: 600;
 }
 
 /* 响应式设计 */

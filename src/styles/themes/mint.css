@@ -13,6 +13,7 @@
   --bg-primary: #f0fdf4;
   --bg-secondary: #ffffff;
   --bg-tertiary: #dcfce7;
+  --bg-hover: #c8f0d4;
   --bg-elevated: #ffffff;
 
   /* ==========================================
@@ -62,6 +63,7 @@
   /* ==========================================
    * 侧边栏 (Sidebar)
    * ========================================== */
+  --bg-sidebar: rgba(240, 253, 244, 0.95);
   --sidebar-bg: rgba(240, 253, 244, 0.95);
   --sidebar-text-color: #14532d;
   --sidebar-border-color: rgba(34, 197, 94, 0.15);
@@ -123,7 +125,6 @@
   --card-shadow: 0 2px 12px rgba(34, 197, 94, 0.1), 0 0 1px rgba(34, 197, 94, 0.15);
   --card-shadow-hover: 0 8px 32px rgba(34, 197, 94, 0.15), 0 0 1px rgba(34, 197, 94, 0.2);
   --card-border: 1px solid rgba(34, 197, 94, 0.15);
-  --card-radius: 16px;
   --card-padding: 16px;
   --card-highlight: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, transparent 50%);
   --card-active-indicator: #16a34a;

@@ -1,5 +1,5 @@
 <template>
-  <div class="home-container" :class="{ 'multi-select-mode': isMultiSelectMode }">
+  <div class="home-container" :class="{ 'multi-select-mode': isMultiSelectMode, 'drag-sort-mode': isDragSortMode }">
     <!-- Multi-select mode toolbar -->
     <transition name="toolbar-slide">
       <div v-show="isMultiSelectMode" class="multi-select-toolbar">
@@ -38,6 +38,28 @@
       </div>
     </transition>
 
+    <!-- Drag sort mode toolbar -->
+    <transition name="toolbar-slide">
+      <div v-show="isDragSortMode" class="drag-sort-toolbar">
+        <div class="toolbar-left">
+          <button class="toolbar-btn" @click="exitDragSortMode">
+            <font-awesome-icon icon="fa-solid fa-arrow-left" />
+            {{ $t("archiveSearch.dragSort.done", "完成排序") }}
+          </button>
+          <span class="drag-sort-hint">
+            <font-awesome-icon icon="fa-solid fa-arrow-up-wide-short" />
+            {{ $t("archiveSearch.dragSort.hint", "拖拽卡片调整顺序") }}
+          </span>
+        </div>
+        <div class="toolbar-right">
+          <button class="toolbar-btn" @click="resetCustomOrder">
+            <font-awesome-icon icon="fa-solid fa-rotate-left" />
+            {{ $t("archiveSearch.dragSort.reset", "重置顺序") }}
+          </button>
+        </div>
+      </div>
+    </transition>
+
     <div
       ref="scrollContainerRef"
       class="archive-list-container"
@@ -67,21 +89,35 @@
               transform: `translateY(${virtualRow.start}px)`,
             }"
           >
-            <div class="archive-grid">
+            <div
+              class="archive-grid"
+              :class="{ 'drag-active': isDragSortMode }"
+              @dragover.prevent="handleDragOver"
+              @drop.prevent="handleDrop"
+            >
               <ArchiveCard
                 v-for="archive in getRowItems(virtualRow.index)"
                 :key="archive.id"
                 :archive="archive"
                 :index="archive._originalIndex"
                 :data-archive-id="archive.id"
-                :class="{ deleting: deletingCardId === archive.id }"
+                :draggable="isDragSortMode"
+                :class="{
+                  deleting: deletingCardId === archive.id,
+                  'drag-dragging': isDragSortMode && dragSourceId === archive.id,
+                }"
                 :is-multi-select-mode="isMultiSelectMode"
                 :is-selected="selectedArchives.has(archive.id)"
+                :search-query="activeSearchQuery"
+                @dragstart="handleDragStart(archive.id, $event)"
+                @dragend="handleDragEnd"
                 @toggle-visibility="handleToggleVisibility"
                 @edit="handleEdit"
                 @delete="deleteArchive"
                 @select="selectArchive"
                 @toggle-select="toggleArchiveSelection"
+                @toggle-favorite="handleToggleFavorite"
+                @rename="handleRenameArchive"
               />
             </div>
           </div>
@@ -227,6 +263,7 @@
       @refresh-click="refreshArchives"
       @folder-click="openSaveGamesFolder"
       @multi-select-click="enterMultiSelectMode"
+      @sort-click="enterDragSortMode"
     />
   </div>
 </template>
@@ -258,6 +295,7 @@ const {
   displayArchives,
   loading,
   dataLoadComplete,
+  incrementalLoadState,
   initializeArchives,
   refreshArchives: refreshArchivesBase,
   refreshArchivesSilent,
@@ -313,6 +351,7 @@ const showSearch = ref(false);
 const isPageActive = ref(false);
 const columnsPerRow = ref(4);
 const shouldResetScroll = ref(false);
+const activeSearchQuery = ref("");
 
 // Multi-select mode state
 const isMultiSelectMode = ref(false);
@@ -320,11 +359,28 @@ const selectedArchives = ref(new Set());
 const showBatchDeleteConfirm = ref(false);
 const isBatchDeleting = ref(false);
 
+// Drag sort mode state
+const isDragSortMode = ref(false);
+const dragSourceId = ref(null);
+const dragTargetId = ref(null);
+
 // Schedule a single virtualizer remeasure after DOM update
 const remeasureVirtualizer = () => {
   nextTick(() => {
     rowVirtualizer?.measure?.();
   });
+};
+
+// Debounced container size update (300ms) to avoid excessive measurement
+let resizeTimer = null;
+const debouncedUpdateContainerSize = () => {
+  if (resizeTimer) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    updateContainerSize();
+    syncVirtualList();
+    protectFloatingButtonPosition();
+    resizeTimer = null;
+  }, 300);
 };
 
 // Watch for data or column count changes, remeasure virtual scrolling
@@ -409,6 +465,8 @@ const handleFilteredArchives = (filteredArchives) => {
   if (!loading.value) {
     shouldResetScroll.value = true; // Reset scroll when filter changes
     displayArchives.value = filteredArchives;
+    // 从 ArchiveSearchFilter 获取当前搜索关键词用于高亮
+    activeSearchQuery.value = archiveSearchFilter.value?.searchQuery || "";
     nextTick(() => protectFloatingButtonPosition());
   }
 };
@@ -418,6 +476,7 @@ const clearAllFilters = () => {
   resetFilters();
   shouldResetScroll.value = true;
   displayArchives.value = [...archives.value];
+  activeSearchQuery.value = "";
   protectFloatingButtonPosition();
 };
 
@@ -425,6 +484,33 @@ const handleToggleVisibility = (archive) => {
   handleToggleVisibilityBase(archive, {
     onSuccess: () => protectFloatingButtonPosition(),
   });
+};
+
+const handleToggleFavorite = ({ id, isFavorite }) => {
+  archiveData.updateArchiveFavorite(id, isFavorite);
+  // 收藏的排前面：重新应用筛选以更新顺序
+  debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
+    // 收藏的排前面，其余保持原顺序
+    const sorted = [...filtered].sort((a, b) => {
+      if (a.isFavorite && !b.isFavorite) return -1;
+      if (!a.isFavorite && b.isFavorite) return 1;
+      return (a.sortOrder || 0) - (b.sortOrder || 0);
+    });
+    displayArchives.value = sorted;
+  });
+};
+
+const handleRenameArchive = ({ id, name }) => {
+  const archive = archives.value.find((a) => a.id === id);
+  if (archive) {
+    archive.name = name;
+  }
+  const displayArchive = displayArchives.value.find((a) => a.id === id);
+  if (displayArchive) {
+    displayArchive.name = name;
+  }
+  // 可以发送到后端保存
+  toast.showSuccess(t("archiveSearch.renameSuccess", "存档已重命名"));
 };
 
 const confirmDelete = () => {
@@ -511,6 +597,113 @@ const handleShowBatchDeleteConfirm = () => {
 
 const cancelBatchDelete = () => {
   showBatchDeleteConfirm.value = false;
+};
+
+// Drag sort mode methods
+const enterDragSortMode = () => {
+  isDragSortMode.value = true;
+  document.body.style.overflow = "hidden";
+  document.body.style.position = "fixed";
+  document.body.style.width = "100%";
+  document.body.style.height = "100%";
+  document.documentElement.style.overflow = "hidden";
+};
+
+const exitDragSortMode = () => {
+  isDragSortMode.value = false;
+  dragSourceId.value = null;
+  dragTargetId.value = null;
+  document.body.style.overflow = "";
+  document.body.style.position = "";
+  document.body.style.width = "";
+  document.body.style.height = "";
+  document.documentElement.style.overflow = "";
+};
+
+const handleDragStart = (archiveId, event) => {
+  if (!isDragSortMode.value) return;
+  dragSourceId.value = archiveId;
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", String(archiveId));
+  // Add drag feedback
+  event.dataTransfer.setDragImage(new Image(), 0, 0);
+};
+
+const handleDragOver = (event) => {
+  if (!isDragSortMode.value || !dragSourceId.value) return;
+  const card = event.target.closest("[data-archive-id]");
+  if (card) {
+    dragTargetId.value = Number(card.dataset.archiveId);
+    card.style.outline = "2px solid var(--primary-color)";
+    card.style.outlineOffset = "2px";
+  }
+};
+
+const handleDrop = (event) => {
+  // Clear visual feedback
+  document.querySelectorAll(".archive-card").forEach((el) => {
+    el.style.outline = "";
+    el.style.outlineOffset = "";
+  });
+
+  if (!isDragSortMode.value || !dragSourceId.value) {
+    handleDragEnd();
+    return;
+  }
+
+  const targetCard = event.target.closest("[data-archive-id]");
+  if (!targetCard) {
+    handleDragEnd();
+    return;
+  }
+
+  const targetId = Number(targetCard.dataset.archiveId);
+  if (targetId === dragSourceId.value) {
+    handleDragEnd();
+    return;
+  }
+
+  // Reorder the archives
+  const flatList = [...displayArchives.value];
+  const sourceIdx = flatList.findIndex((a) => a.id === dragSourceId.value);
+  const targetIdx = flatList.findIndex((a) => a.id === targetId);
+  if (sourceIdx === -1 || targetIdx === -1) {
+    handleDragEnd();
+    return;
+  }
+
+  // Move source to target position
+  const [moved] = flatList.splice(sourceIdx, 1);
+  const adjustedTarget = sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
+  flatList.splice(adjustedTarget, 0, moved);
+
+  // Update sortOrder
+  flatList.forEach((archive, idx) => {
+    archive.sortOrder = idx;
+  });
+
+  displayArchives.value = flatList;
+  syncVirtualList();
+  handleDragEnd();
+};
+
+const handleDragEnd = () => {
+  // Clear visual feedback from all cards
+  document.querySelectorAll(".archive-card").forEach((el) => {
+    el.style.outline = "";
+    el.style.outlineOffset = "";
+  });
+  dragSourceId.value = null;
+  dragTargetId.value = null;
+};
+
+const resetCustomOrder = () => {
+  // Reset sortOrder to 0 for all archives
+  displayArchives.value.forEach((a) => (a.sortOrder = 0));
+  // Re-apply filters to get default order
+  debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
+    displayArchives.value = filtered;
+  });
 };
 
 const confirmBatchDelete = async () => {
@@ -607,9 +800,7 @@ onMounted(async () => {
 
   const handleResize = () => {
     if (!isUnmounted) {
-      updateContainerSize();
-      syncVirtualList();
-      protectFloatingButtonPosition();
+      debouncedUpdateContainerSize();
     }
   };
   window.addEventListener("resize", handleResize);
@@ -617,8 +808,7 @@ onMounted(async () => {
   if (scrollContainerRef.value && "ResizeObserver" in window) {
     resizeObserver = new ResizeObserver(() => {
       if (!isUnmounted) {
-        updateContainerSize();
-        syncVirtualList();
+        debouncedUpdateContainerSize();
       }
     });
     resizeObserver.observe(scrollContainerRef.value);
@@ -633,6 +823,10 @@ onUnmounted(() => {
   window.removeEventListener("open-archive-search", handleOpenArchiveSearchEvent);
 
   isUnmounted = true;
+  if (resizeTimer) {
+    clearTimeout(resizeTimer);
+    resizeTimer = null;
+  }
   if (resizeObserver) {
     resizeObserver.disconnect();
     resizeObserver = null;
@@ -656,14 +850,15 @@ onUnmounted(() => {
   document.documentElement.style.overflow = "";
 });
 
+// Shallow watch: only react to length changes (add/remove), not deep property changes.
+// Individual property updates (e.g. isVisible) are handled by direct mutation methods.
 watch(
-  archives,
-  (newArchives) => {
-    debouncedApplyFilters(newArchives, lastSearchFilters.value, (filtered) => {
+  () => archives.value.length,
+  () => {
+    debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
       displayArchives.value = filtered;
     });
   },
-  { deep: true },
 );
 
 watch(
@@ -752,7 +947,7 @@ watch(columnsPerRow, () => {
 }
 
 .archive-grid :deep(.archive-card:hover) {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .empty-state {
@@ -1034,6 +1229,63 @@ watch(columnsPerRow, () => {
 
 [data-theme="dark"] .multi-select-toolbar .selection-count {
   background: rgba(10, 132, 255, 0.15);
+}
+
+/* Drag sort toolbar */
+.drag-sort-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-5);
+  background: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  gap: var(--space-4);
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.drag-sort-toolbar .toolbar-left,
+.drag-sort-toolbar .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.drag-sort-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: var(--space-1) var(--space-3);
+  background: rgba(0, 122, 255, 0.08);
+  border-radius: var(--radius-pill);
+}
+
+.drag-sort-mode .archive-grid {
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.drag-sort-mode .archive-card {
+  cursor: grab;
+  user-select: none;
+}
+
+.drag-sort-mode .archive-card:active {
+  cursor: grabbing;
+}
+
+.drag-sort-mode .archive-card.drag-dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+}
+
+.drag-active .archive-card[draggable="true"]:hover {
+  outline: 2px dashed var(--primary-color);
+  outline-offset: 2px;
 }
 
 .toolbar-slide-enter-active,

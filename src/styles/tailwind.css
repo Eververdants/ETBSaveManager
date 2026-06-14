@@ -43,7 +43,7 @@
   --color-info: var(--info-color);
 
   /* 侧边栏颜色 */
-  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-bg: var(--bg-sidebar);
   --color-sidebar-text: var(--sidebar-text-color);
   --color-sidebar-hover: var(--sidebar-hover-bg);
   --color-sidebar-active: var(--sidebar-active-bg);

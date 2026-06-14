@@ -31,5 +31,16 @@
     "exit": "Exit Multi-select",
     "selected": "{count} / {total} selected",
     "batchDelete": "Batch Delete"
+  },
+  "suggestions": "Suggestions",
+  "searchHistory": "Recent Searches",
+  "clearHistory": "Clear",
+  "searchPanel": {
+    "placeholder": "Find in current page (name:, level:, difficulty:)",
+    "hint": "Type to search, or use name:/level:/difficulty: filters",
+    "noResult": "No matches",
+    "matchCase": "Match case",
+    "previous": "Previous result",
+    "next": "Next result"
   }
 }

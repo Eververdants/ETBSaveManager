@@ -24,11 +24,23 @@
   "useFiltersAbove": "使用上方的搜尋和篩選功能",
   "loadingArchives": "正在載入存檔……",
   "scanningFiles": "正在掃描存檔檔案",
+  "refreshed": "存檔列表已重新整理",
   "multiSelect": {
     "selectAll": "全選",
     "invertSelection": "反選",
     "exit": "退出多選",
     "selected": "已選擇 {count} / {total} 個",
     "batchDelete": "批次刪除"
+  },
+  "suggestions": "搜尋建議",
+  "searchHistory": "搜尋歷史",
+  "clearHistory": "清除",
+  "searchPanel": {
+    "placeholder": "在目前頁面搜尋（可用 name:/level:/difficulty:）",
+    "hint": "輸入關鍵字開始搜尋",
+    "noResult": "找不到符合項",
+    "matchCase": "區分大小寫",
+    "previous": "上一個結果",
+    "next": "下一個結果"
   }
 }

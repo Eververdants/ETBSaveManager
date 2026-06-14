@@ -28,6 +28,8 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             save_commands::load_all_saves,
+            save_commands::load_save_metadata,
+            save_commands::load_save_details_batch,
             save_commands::delete_file,
             save_commands::soft_delete_file,
             save_commands::restore_file,

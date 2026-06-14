@@ -2,6 +2,7 @@
   "searchArchive": "搜索存档",
   "openFolder": "打开文件夹",
   "refreshList": "刷新列表",
+  "sortArchives": "排序存档",
   "multiSelectDelete": "多选删除",
   "scrollHint": "滚动切换功能"
 }

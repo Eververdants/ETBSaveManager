@@ -9,7 +9,7 @@ use crate::new_save;
 use crate::player_data;
 use crate::save_editor;
 use crate::save_utils;
-use crate::save_utils::SaveFileInfo;
+use crate::save_utils::{SaveFileDetail, SaveFileInfo, SaveFileMeta};
 use rayon::prelude::*;
 use serde_json::{json, Value};
 use std::borrow::Cow;
@@ -56,6 +56,76 @@ pub async fn load_all_saves() -> AppResult<Vec<SaveFileInfo>> {
         "load_all_saves: {}/{} saves, took {:.2}ms",
         results.len(),
         path_count,
+        elapsed.as_secs_f64() * 1000.0
+    );
+
+    Ok(results)
+}
+
+/// Phase 1 of incremental loading: return only filename-derived metadata,
+/// no .sav file parsing. Extremely fast even for 1000+ files.
+#[tauri::command]
+pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
+    let start_time = Instant::now();
+
+    let (paths_result, visible_saves_result) = rayon::join(
+        || get_file_path::list_save_paths(),
+        || get_visible_saves_set(),
+    );
+
+    let paths = paths_result?;
+    let visible_saves = visible_saves_result?;
+
+    let mut results: Vec<SaveFileMeta> = Vec::with_capacity(paths.len());
+    for (i, path) in paths.iter().enumerate() {
+        let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+        let archive_name = extract_archive_name(file_name);
+        let date = cli_handlers::get_modified_date(path).unwrap_or_default();
+        let is_visible = visible_saves.contains(archive_name);
+
+        if let Ok(meta) = save_utils::build_save_meta(i as u32, path, date, is_visible) {
+            results.push(meta);
+        }
+    }
+
+    let elapsed = start_time.elapsed();
+    println!(
+        "load_save_metadata: {} saves, took {:.2}ms",
+        results.len(),
+        elapsed.as_secs_f64() * 1000.0
+    );
+
+    Ok(results)
+}
+
+/// Phase 2 of incremental loading: parse specific .sav files in batch
+/// to get current_level and actual_difficulty.
+#[tauri::command]
+pub async fn load_save_details_batch(paths: Vec<String>) -> AppResult<Vec<SaveFileDetail>> {
+    let start_time = Instant::now();
+    let count = paths.len();
+
+    let results: Vec<SaveFileDetail> = paths
+        .into_par_iter()
+        .filter_map(|path| {
+            let p = Path::new(&path);
+            cli_handlers::parse_sav_file(p).ok().map(|save| {
+                let current_level = cli_handlers::extract_current_level(&save);
+                let actual_difficulty = cli_handlers::extract_difficulty_label(&save).into_owned();
+                SaveFileDetail {
+                    path,
+                    current_level,
+                    actual_difficulty,
+                }
+            })
+        })
+        .collect();
+
+    let elapsed = start_time.elapsed();
+    println!(
+        "load_save_details_batch: {}/{}, took {:.2}ms",
+        results.len(),
+        count,
         elapsed.as_secs_f64() * 1000.0
     );
 

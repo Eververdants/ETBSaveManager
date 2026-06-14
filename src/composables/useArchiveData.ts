@@ -16,6 +16,24 @@ interface RawSaveItem {
   date?: string;
 }
 
+interface SaveFileMeta {
+  id: number;
+  name: string;
+  difficulty: string;
+  mode: string;
+  date: string;
+  hidden: boolean;
+  path: string;
+  is_visible: boolean;
+  file_size: number;
+}
+
+interface SaveFileDetail {
+  path: string;
+  current_level: string;
+  actual_difficulty: string;
+}
+
 interface FileHandleResponse {
   success: boolean;
   data?: {
@@ -29,8 +47,20 @@ interface ArchiveStats {
   hidden: number;
 }
 
+export interface IncrementalLoadState {
+  phase: "idle" | "metadata" | "details" | "complete";
+  totalDetails: number;
+  loadedDetails: number;
+}
+
+const BATCH_SIZE = 50;
+const IMMEDIATE_COUNT = 30; // First N archives get full details before UI shows
+
 /**
  * Archive data management composable
+ * Supports two-phase incremental loading for fast initial display:
+ *   Phase 1 (metadata) — filename + filesystem only, no .sav parsing
+ *   Phase 2 (details)  — batch-parses .sav files to fill currentLevel & actualDifficulty
  */
 export function useArchiveData(): {
   archives: Ref<ArchiveData[]>;
@@ -39,6 +69,7 @@ export function useArchiveData(): {
   loading: Ref<boolean>;
   dataLoadComplete: Ref<boolean>;
   archiveStats: ComputedRef<ArchiveStats>;
+  incrementalLoadState: Ref<IncrementalLoadState>;
   loadVisibleSaves: () => Promise<void>;
   loadRealArchives: () => Promise<ArchiveData[]>;
   initializeArchives: (silent?: boolean) => Promise<void>;
@@ -46,6 +77,7 @@ export function useArchiveData(): {
   refreshArchivesSilent: () => Promise<void>;
   removeArchive: (archiveId: number) => void;
   updateArchiveVisibility: (archiveId: number, isVisible: boolean) => void;
+  updateArchiveFavorite: (archiveId: number, isFavorite: boolean) => void;
 } {
   const { t } = useI18n({ useScope: "global" });
   const toast = useToast();
@@ -55,6 +87,11 @@ export function useArchiveData(): {
 
   const loading = ref(false);
   const dataLoadComplete = ref(false);
+  const incrementalLoadState = ref<IncrementalLoadState>({
+    phase: "idle",
+    totalDetails: 0,
+    loadedDetails: 0,
+  });
 
   // Map Chinese difficulty names from game save files to normalized keys
   const difficultyMap: Record<string, string> = {
@@ -81,8 +118,31 @@ export function useArchiveData(): {
       archiveDifficulty: difficultyMap[item.difficulty!] || item.difficulty?.toLowerCase() || "normal",
       actualDifficulty: difficultyMap[item.actual_difficulty!] || item.actual_difficulty?.toLowerCase() || "normal",
       isVisible: item.is_visible === true,
+      isFavorite: false,
+      sortOrder: 0,
       path: item.path ?? "",
       date: item.date ?? new Date().toISOString(),
+    };
+  };
+
+  /** Map SaveFileMeta (from Rust, no .sav parsing) to ArchiveData.
+   *  Uses "Level0" as safe default for currentLevel so the background
+   *  image URL is valid from the start. Phase 2 will overwrite it. */
+  const mapMetaToArchive = (meta: SaveFileMeta): ArchiveData => {
+    const gameMode = modeMap[meta.mode] || meta.mode?.toLowerCase() || "singleplayer";
+    const diff = difficultyMap[meta.difficulty] || meta.difficulty?.toLowerCase() || "normal";
+    return {
+      id: meta.id,
+      name: meta.name,
+      currentLevel: "Level0",
+      gameMode,
+      archiveDifficulty: diff,
+      actualDifficulty: diff,
+      isVisible: meta.is_visible,
+      isFavorite: false,
+      sortOrder: 0,
+      path: meta.path,
+      date: meta.date,
     };
   };
 
@@ -115,7 +175,11 @@ export function useArchiveData(): {
       return [];
     } catch (error) {
       console.error("Failed to load archives:", error);
-      const errorMessage = (error as { message?: string; msg?: string })?.message || (error as { msg?: string })?.msg || JSON.stringify(error) || t("common.unknown");
+      const errorMessage =
+        (error as { message?: string; msg?: string })?.message ||
+        (error as { msg?: string })?.msg ||
+        JSON.stringify(error) ||
+        t("common.unknown");
       if (errorMessage.includes("Save directory not found")) {
         toast.showError(
           t("archiveCard.saveDirNotFound", "Please open the game first to initialize the save directory"),
@@ -127,7 +191,93 @@ export function useArchiveData(): {
     }
   };
 
+  /** Phase 1: Load metadata from filenames only (no .sav parsing) */
+  const loadMetadata = async (): Promise<ArchiveData[]> => {
+    try {
+      const metaList = await invoke<SaveFileMeta[]>("load_save_metadata");
+      if (metaList && Array.isArray(metaList)) {
+        return metaList.map(mapMetaToArchive);
+      }
+      return [];
+    } catch (error) {
+      console.error("Failed to load archive metadata:", error);
+      return [];
+    }
+  };
+
+  /**
+   * Phase 2: Load detail data (.sav parsing) for archives that only have
+   * filename-derived metadata. Loads in batches and replaces ArchiveData
+   * objects immutably so Vue reactivity picks up every change.
+   */
+  const startDetailLoading = async (): Promise<void> => {
+    // Archives that still have the default "Level0" (not yet filled by Phase 2)
+    const pendingPaths = archives.value
+      .filter((a) => a.currentLevel === "Level0")
+      .map((a) => a.path);
+
+    if (pendingPaths.length === 0) {
+      incrementalLoadState.value = {
+        phase: "complete",
+        totalDetails: 0,
+        loadedDetails: 0,
+      };
+      return;
+    }
+
+    incrementalLoadState.value = {
+      phase: "details",
+      totalDetails: pendingPaths.length,
+      loadedDetails: 0,
+    };
+
+    for (let i = 0; i < pendingPaths.length; i += BATCH_SIZE) {
+      const batch = pendingPaths.slice(i, i + BATCH_SIZE);
+      try {
+        const details = await invoke<SaveFileDetail[]>("load_save_details_batch", { paths: batch });
+
+        // Replace each matched ArchiveData with a new object so Vue detects the change
+        const updated = [...archives.value];
+        for (const detail of details) {
+          const idx = updated.findIndex((a) => a.path === detail.path);
+          if (idx !== -1) {
+            updated[idx] = {
+              ...updated[idx],
+              currentLevel: detail.current_level,
+              actualDifficulty:
+                difficultyMap[detail.actual_difficulty] ||
+                detail.actual_difficulty?.toLowerCase() ||
+                updated[idx].actualDifficulty,
+            };
+          }
+        }
+        archives.value = updated;
+        displayArchives.value = [...displayArchives.value];
+
+        incrementalLoadState.value.loadedDetails += batch.length;
+      } catch (error) {
+        console.error(`Failed to load detail batch (${i}–${i + batch.length}):`, error);
+      }
+    }
+
+    incrementalLoadState.value.phase = "complete";
+    console.log(
+      `Detail loading complete: ${incrementalLoadState.value.loadedDetails}/${incrementalLoadState.value.totalDetails} saves`,
+    );
+  };
+
+  /** Cancel any in-progress detail loading by resetting state */
+  const cancelDetailLoading = (): void => {
+    incrementalLoadState.value = {
+      phase: "idle",
+      totalDetails: 0,
+      loadedDetails: 0,
+    };
+  };
+
   const initializeArchives = async (silent = false): Promise<void> => {
+    cancelDetailLoading();
+
     if (!silent) {
       loading.value = true;
       archives.value = [];
@@ -136,18 +286,25 @@ export function useArchiveData(): {
     }
 
     try {
-      await Promise.all([
-        loadVisibleSaves(),
-        loadRealArchives().then((realArchives) => {
-          archives.value = realArchives;
-          displayArchives.value = realArchives;
-        }),
-      ]);
+      incrementalLoadState.value = { phase: "metadata", totalDetails: 0, loadedDetails: 0 };
 
+      // Load metadata + first-N details together — cards render ONCE
+      const merged = await loadMergedArchives();
+      archives.value = merged;
+      displayArchives.value = [...merged];
       dataLoadComplete.value = true;
 
-      if (archives.value.length === 0) {
-        console.warn("No archives found");
+      // Release UI — cards are visible, first N have full details
+      if (!silent) {
+        loading.value = false;
+      }
+
+      // Phase 2 — background batch details for remaining archives (N+1 … end)
+      const remaining = archives.value.filter((a) => a.currentLevel === "Level0").length;
+      if (remaining > 0) {
+        startDetailLoading();
+      } else {
+        incrementalLoadState.value = { phase: "complete", totalDetails: 0, loadedDetails: 0 };
       }
     } catch (error) {
       console.error("Failed to initialize archives:", error);
@@ -156,6 +313,7 @@ export function useArchiveData(): {
         displayArchives.value = [];
       }
       dataLoadComplete.value = true;
+      incrementalLoadState.value = { phase: "complete", totalDetails: 0, loadedDetails: 0 };
     } finally {
       if (!silent) {
         setTimeout(() => {
@@ -165,16 +323,55 @@ export function useArchiveData(): {
     }
   };
 
+  /** Shared: load metadata + details for first N, return merged ArchiveData[].
+   *  First N have real currentLevel/actualDifficulty; the rest use Level0. */
+  const loadMergedArchives = async (): Promise<ArchiveData[]> => {
+    const [, metaArchives] = await Promise.all([
+      loadVisibleSaves(),
+      loadMetadata(),
+    ]);
+    if (metaArchives.length === 0) return [];
+
+    // Load details for first N before returning
+    const firstPaths = metaArchives.slice(0, IMMEDIATE_COUNT).map((a) => a.path).filter(Boolean);
+    const detailMap = new Map<string, { current_level: string; actual_difficulty: string }>();
+    if (firstPaths.length > 0) {
+      try {
+        const details = await invoke<SaveFileDetail[]>("load_save_details_batch", { paths: firstPaths });
+        for (const d of details) detailMap.set(d.path, d);
+      } catch (e) {
+        console.error("Failed to preload first-batch details:", e);
+      }
+    }
+
+    return metaArchives.map((item) => {
+      const d = detailMap.get(item.path);
+      if (d) {
+        return {
+          ...item,
+          currentLevel: d.current_level,
+          actualDifficulty:
+            difficultyMap[d.actual_difficulty] ||
+            d.actual_difficulty?.toLowerCase() ||
+            item.actualDifficulty,
+        };
+      }
+      return item;
+    });
+  };
+
   const refreshArchives = async (): Promise<void> => {
     loading.value = true;
+    cancelDetailLoading();
 
     try {
-      await Promise.all([
-        loadVisibleSaves(),
-        loadRealArchives().then((realArchives) => {
-          archives.value = realArchives;
-        }),
-      ]);
+      const merged = await loadMergedArchives();
+      archives.value = merged;
+      displayArchives.value = [...merged];
+
+      // Background for remaining (N+1 … end)
+      const remaining = archives.value.filter((a) => a.currentLevel === "Level0").length;
+      if (remaining > 0) startDetailLoading();
     } catch (error) {
       console.error("Failed to refresh archives:", error);
     } finally {
@@ -186,12 +383,12 @@ export function useArchiveData(): {
 
   const refreshArchivesSilent = async (): Promise<void> => {
     try {
-      await Promise.all([
-        loadVisibleSaves(),
-        loadRealArchives().then((realArchives) => {
-          archives.value = realArchives;
-        }),
-      ]);
+      const merged = await loadMergedArchives();
+      archives.value = merged;
+      displayArchives.value = [...merged];
+
+      const remaining = archives.value.filter((a) => a.currentLevel === "Level0").length;
+      if (remaining > 0) startDetailLoading();
     } catch (error) {
       console.error("Failed to refresh archives:", error);
     }
@@ -201,6 +398,18 @@ export function useArchiveData(): {
     const index = archives.value.findIndex((a) => a.id === archiveId);
     if (index > -1) {
       archives.value.splice(index, 1);
+    }
+  };
+
+  const updateArchiveFavorite = (archiveId: number, isFavorite: boolean): void => {
+    const archiveIndex = archives.value.findIndex((a) => a.id === archiveId);
+    if (archiveIndex > -1) {
+      archives.value[archiveIndex].isFavorite = isFavorite;
+    }
+
+    const displayIndex = displayArchives.value.findIndex((a) => a.id === archiveId);
+    if (displayIndex > -1) {
+      displayArchives.value[displayIndex].isFavorite = isFavorite;
     }
   };
 
@@ -229,6 +438,7 @@ export function useArchiveData(): {
     loading,
     dataLoadComplete,
     archiveStats,
+    incrementalLoadState,
     loadVisibleSaves,
     loadRealArchives,
     initializeArchives,
@@ -236,5 +446,6 @@ export function useArchiveData(): {
     refreshArchivesSilent,
     removeArchive,
     updateArchiveVisibility,
+    updateArchiveFavorite,
   };
 }

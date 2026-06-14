@@ -137,6 +137,48 @@
             </div>
             <h2 class="success-modal-title">{{ $t("createArchive.archiveCreated") }}</h2>
             <p class="success-modal-subtitle">{{ $t("createArchive.archiveCreatedMessage") }}</p>
+            <!-- 创建成功后操作选项 -->
+            <div class="success-modal-actions">
+              <button class="success-action-btn primary" @click="handleEditCreatedArchive">
+                <font-awesome-icon :icon="['fas', 'pen']" />
+                {{ $t("createArchive.editArchive") }}
+              </button>
+              <button class="success-action-btn secondary" @click="handleCreateAnother">
+                <font-awesome-icon :icon="['fas', 'plus']" />
+                {{ $t("createArchive.createAnother") }}
+              </button>
+              <button class="success-action-btn secondary" @click="handleGoHome">
+                <font-awesome-icon :icon="['fas', 'home']" />
+                {{ $t("createArchive.goHome") }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- 草稿恢复弹窗 -->
+    <Teleport to="body">
+      <Transition name="success-modal">
+        <div v-if="showDraftDialog" class="success-modal-overlay" @click.self="showDraftDialog = false">
+          <div class="success-modal-card">
+            <div class="draft-icon-circle">
+              <font-awesome-icon :icon="['fas', 'rotate-left']" />
+            </div>
+            <h2 class="success-modal-title">{{ $t("createArchive.draftFoundTitle") }}</h2>
+            <p class="success-modal-subtitle">
+              {{ $t("createArchive.draftFoundMessage", { step: draftData?.step || 1 }) }}
+            </p>
+            <div class="success-modal-actions">
+              <button class="success-action-btn primary" @click="restoreDraft">
+                <font-awesome-icon :icon="['fas', 'rotate-left']" />
+                {{ $t("createArchive.restoreDraft") }}
+              </button>
+              <button class="success-action-btn secondary" @click="discardDraft">
+                <font-awesome-icon :icon="['fas', 'times']" />
+                {{ $t("createArchive.discardDraft") }}
+              </button>
+            </div>
           </div>
         </div>
       </Transition>
@@ -193,6 +235,93 @@ const playerInputMessageType = ref("");
 const availableLevels = reactive([]);
 const players = reactive([]);
 let successModalTimer = null;
+
+// 草稿持久化
+const CREATE_DRAFT_KEY = "create-archive-draft";
+const showDraftDialog = ref(false);
+const draftData = ref(null);
+const createdArchiveName = ref("");
+
+// 草稿函数
+const collectFormData = () => ({
+  step: currentStep.value,
+  selectedLevel: selectedLevel.value,
+  selectedEnding: selectedEnding.value,
+  archiveName: archiveName.value,
+  selectedGameMode: selectedGameMode.value,
+  selectedDifficulty: selectedDifficulty.value,
+  selectedActualDifficulty: selectedActualDifficulty.value,
+  players: JSON.parse(JSON.stringify(players)),
+  savedAt: Date.now(),
+});
+
+const saveDraft = () => {
+  try {
+    const data = collectFormData();
+    if (data.archiveName || data.selectedLevel !== -1 || players.length > 0) {
+      sessionStorage.setItem(CREATE_DRAFT_KEY, JSON.stringify(data));
+    }
+  } catch (e) {
+    // sessionStorage 写入失败不做处理
+  }
+};
+
+const checkDraft = () => {
+  try {
+    const raw = sessionStorage.getItem(CREATE_DRAFT_KEY);
+    if (!raw) return false;
+    draftData.value = JSON.parse(raw);
+    // 草稿超过30分钟视为过期
+    if (Date.now() - draftData.value.savedAt > 30 * 60 * 1000) {
+      clearDraft();
+      return false;
+    }
+    return true;
+  } catch (e) {
+    clearDraft();
+    return false;
+  }
+};
+
+const restoreDraft = () => {
+  if (!draftData.value) return;
+  const d = draftData.value;
+  currentStep.value = d.step || 1;
+  selectedLevel.value = d.selectedLevel ?? -1;
+  selectedEnding.value = d.selectedEnding ?? 0;
+  archiveName.value = d.archiveName || "";
+  selectedGameMode.value = d.selectedGameMode || "multiplayer";
+  selectedDifficulty.value = d.selectedDifficulty || "normal";
+  selectedActualDifficulty.value = d.selectedActualDifficulty || "normal";
+  players.splice(0, players.length, ...(d.players || []));
+  if (players.length > 0) activePlayerIndex.value = 0;
+  showDraftDialog.value = false;
+  draftData.value = null;
+  // 加载对应结局的关卡
+  loadLevelsForEnding(selectedEnding.value);
+  nextTick(saveDraft); // 刷新保存时间
+};
+
+const discardDraft = () => {
+  clearDraft();
+  showDraftDialog.value = false;
+  resetForm();
+};
+
+const clearDraft = () => {
+  try {
+    sessionStorage.removeItem(CREATE_DRAFT_KEY);
+  } catch (e) { /* ignore */ }
+  draftData.value = null;
+  showDraftDialog.value = false;
+};
+
+// 自动保存草稿（防抖1秒）
+let draftDebounceTimer = null;
+const debouncedSaveDraft = () => {
+  if (draftDebounceTimer) clearTimeout(draftDebounceTimer);
+  draftDebounceTimer = setTimeout(saveDraft, 1000);
+};
 
 // 结局数据 - 存储 levels 数据
 const endingLevelsData = reactive({
@@ -256,6 +385,17 @@ const canProceed = computed(() => {
 });
 
 watch(selectedEnding, () => {});
+
+// 自动保存草稿 - 监听表单数据变化
+watch(
+  [currentStep, selectedLevel, selectedEnding, archiveName, selectedDifficulty, selectedActualDifficulty, players],
+  () => {
+    if (!showDraftDialog.value) {
+      debouncedSaveDraft();
+    }
+  },
+  { deep: true },
+);
 
 const selectDifficulty = (difficulty) => {
   selectedDifficulty.value = difficulty;
@@ -618,8 +758,10 @@ const createArchive = async () => {
     const isMainEnding = selectedEnding.value === 0;
     const megLevels = ["Level0", "TopFloor", "MiddleFloor", "GarageLevel2", "BottomFloor", "TheHub"];
     const isMEGUnlocked = !megLevels.includes(selectedLevelData.levelKey);
+    const savedName = archiveName.value.trim() || "未命名存档";
+    createdArchiveName.value = savedName;
     const saveData = {
-      archive_name: archiveName.value.trim() || "未命名存档",
+      archive_name: savedName,
       level: selectedLevelData.levelKey || "Level0",
       game_mode: "multiplayer",
       difficulty: selectedDifficulty.value.charAt(0).toUpperCase() + selectedDifficulty.value.slice(1) || "Normal",
@@ -647,12 +789,17 @@ const createArchive = async () => {
       return;
     }
     const { invoke } = await import("@tauri-apps/api/core");
+    // 创建中进度指示
     await invoke("handle_new_save", { saveData });
+    // 创建成功后清除草稿
+    clearDraft();
     createParticleExplosion();
     openSuccessModal();
   } catch (error) {
     console.error("创建存档失败:", error);
-    notify.error(t("createArchive.createFailed", { error: error.message || "未知错误" }));
+    // 显示更具体的错误信息
+    const errorMsg = error.message || error.toString() || "未知错误";
+    notify.error(t("createArchive.createFailed", { error: errorMsg }));
     isCreating.value = false;
   }
 };
@@ -725,14 +872,45 @@ const finishCreateFlow = () => {
 
 const openSuccessModal = () => {
   clearSuccessModalTimer();
+  isCreating.value = false;
   showSuccessModal.value = true;
-  successModalTimer = setTimeout(() => {
-    finishCreateFlow();
-  }, 1400);
+  // 不再自动关闭，等待用户操作
 };
 
 const closeSuccessModal = () => {
   finishCreateFlow();
+};
+
+// 创建成功后操作选项
+const handleEditCreatedArchive = () => {
+  showSuccessModal.value = false;
+  router.push({
+    name: "EditArchive",
+    params: { archiveData: JSON.stringify({ name: createdArchiveName.value }) },
+  });
+};
+
+const handleCreateAnother = () => {
+  showSuccessModal.value = false;
+  // 重置表单但不清除草稿，继续创建
+  currentStep.value = 1;
+  selectedLevel.value = -1;
+  selectedEnding.value = 0;
+  archiveName.value = "";
+  selectedDifficulty.value = "normal";
+  selectedActualDifficulty.value = "normal";
+  newSteamId.value = "";
+  activePlayerIndex.value = -1;
+  players.splice(0, players.length);
+  loadLevelsForEnding(0);
+  nextTick(() => {
+    gsap.set(contentWrapperRef.value, { x: "0%", opacity: 1 });
+  });
+};
+
+const handleGoHome = () => {
+  showSuccessModal.value = false;
+  router.push("/");
 };
 
 const isSidebarExpanded = ref(false);
@@ -750,23 +928,48 @@ const updateBottomActionsPosition = () => {
 };
 
 onMounted(async () => {
-  // 进入页面时重置所有状态，确保从第一步开始
-  resetForm();
+  // 进入页面时先检查草稿
+  const hasDraft = checkDraft();
+  if (!hasDraft) {
+    resetForm();
+  } else {
+    // 有草稿时暂时不重置，等待用户选择
+    showDraftDialog.value = true;
+    await loadLevels();
+  }
   await loadLevels();
   window.addEventListener("sidebar-expand", handleSidebarExpand);
+  window.addEventListener("beforeunload", handleBeforeUnload);
   if (players.length > 0) await fetchSteamUsernames();
   updateBottomActionsPosition();
 });
 
 // 由于路由设置了 keepAlive，组件会被缓存
-// 使用 onActivated 确保每次进入页面时都重置状态
+// 使用 onActivated 确保每次进入页面时检查草稿
 onActivated(() => {
-  resetForm();
+  const hasDraft = checkDraft();
+  if (!hasDraft) {
+    resetForm();
+  } else {
+    showDraftDialog.value = true;
+  }
 });
+
+const handleBeforeUnload = (e) => {
+  // 如果有表单数据、正在创建中或显示成功弹窗，提示用户
+  if (archiveName.value || selectedLevel.value !== -1 || players.length > 0 || isCreating.value || showSuccessModal.value) {
+    // 先保存草稿
+    saveDraft();
+    e.preventDefault();
+    e.returnValue = "";
+  }
+};
 
 onUnmounted(() => {
   window.removeEventListener("sidebar-expand", handleSidebarExpand);
+  window.removeEventListener("beforeunload", handleBeforeUnload);
   clearSuccessModalTimer();
+  if (draftDebounceTimer) clearTimeout(draftDebounceTimer);
 });
 
 const onStepEnter = (el, done) => {
@@ -1136,6 +1339,66 @@ const onStepLeave = (el, done) => {
 .success-modal-leave-to .success-modal-card {
   transform: scale(0.94);
   opacity: 0;
+}
+
+/* 成功弹窗操作按钮 */
+.success-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.success-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.success-action-btn.primary {
+  background: var(--accent-color);
+  color: white;
+  box-shadow: 0 4px 14px rgba(var(--accent-color-rgb), 0.3);
+}
+
+.success-action-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(var(--accent-color-rgb), 0.4);
+}
+
+.success-action-btn.secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--divider-light);
+}
+
+.success-action-btn.secondary:hover {
+  background: var(--bg-hover);
+  transform: translateY(-1px);
+}
+
+/* 草稿恢复弹窗图标 */
+.draft-icon-circle {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-color), #5ac8fa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 28px;
+  box-shadow: 0 8px 28px rgba(var(--accent-color-rgb), 0.35);
 }
 
 @media (max-width: 768px) {

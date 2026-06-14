@@ -1,4 +1,7 @@
 {
+  "title": "確認操作",
+  "confirm": "確認",
+  "cancel": "取消",
   "deleteArchiveTitle": "刪除存檔",
   "deleteArchiveMessage": "確定要刪除存檔「{name}」嗎？",
   "deleteArchiveDescription": "此操作將永久刪除存檔檔案，無法復原。",

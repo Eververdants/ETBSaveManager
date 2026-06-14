@@ -7,6 +7,7 @@
       'archive-entering': !hasEntered,
       'multi-select-mode': isMultiSelectMode,
       'is-selected': isSelected,
+      'is-favorite': archive.isFavorite,
     }"
     @click="handleCardClick"
   >
@@ -19,6 +20,17 @@
     >
       <font-awesome-icon :icon="isSelected ? 'fa-solid fa-check' : 'fa-regular fa-circle'" class="check-icon" />
     </div>
+
+    <!-- 收藏星标 -->
+    <button
+      v-if="!isMultiSelectMode"
+      class="favorite-btn"
+      :class="{ 'is-favorited': archive.isFavorite }"
+      :title="archive.isFavorite ? t('archiveCard.removeFavorite') : t('archiveCard.addFavorite')"
+      @click.stop="toggleFavorite"
+    >
+      <font-awesome-icon :icon="archive.isFavorite ? 'fa-solid fa-star' : 'fa-regular fa-star'" />
+    </button>
 
     <!-- 上半背景区域 -->
     <div class="card-background">
@@ -33,7 +45,20 @@
 
       <!-- 存档信息 -->
       <div class="archive-info">
-        <h3 class="archive-name">{{ archive.name }}</h3>
+        <!-- 内联重命名 -->
+        <div v-if="isRenaming" class="inline-rename" @click.stop @dblclick.stop>
+          <input
+            ref="renameInputRef"
+            v-model="renameValue"
+            class="rename-input"
+            type="text"
+            :placeholder="archive.name"
+            @keydown.enter.prevent="commitRename"
+            @keydown.esc.prevent="cancelRename"
+            @blur="commitRename"
+          />
+        </div>
+        <h3 v-else class="archive-name" v-html="highlightedName" @dblclick.stop="startRename"></h3>
         <div class="game-mode-info">
           <span
             class="difficulty-tag"
@@ -57,7 +82,7 @@
 
     <!-- 下半信息区域 -->
     <div class="card-info">
-      <span class="current-level">{{ currentLevelName }}</span>
+      <span class="current-level" v-html="highlightedLevel"></span>
       <div class="action-buttons">
         <button class="action-btn edit" type="button" aria-label="编辑存档" @click.stop="editArchive">
           <font-awesome-icon icon="fa-solid fa-edit" aria-hidden="true" />
@@ -79,10 +104,11 @@
 </template>
 
 <script setup>
-import { computed, toRef } from "vue";
+import { computed, ref, toRef, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import LazyImage from "../ui/LazyImage.vue";
 import { useArchiveCard } from "@/composables/useArchiveCard";
+import { highlightMatch } from "@/composables/useArchiveSearchFilter";
 
 const props = defineProps({
   archive: {
@@ -101,9 +127,50 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  searchQuery: {
+    type: String,
+    default: "",
+  },
 });
 
-const emit = defineEmits(["toggle-visibility", "edit", "delete", "select", "toggle-select"]);
+const emit = defineEmits(["toggle-visibility", "edit", "delete", "select", "toggle-select", "toggle-favorite", "rename"]);
+
+// 内联重命名状态
+const isRenaming = ref(false);
+const renameValue = ref("");
+const renameInputRef = ref(null);
+
+const startRename = () => {
+  if (props.isMultiSelectMode) return;
+  renameValue.value = props.archive.name;
+  isRenaming.value = true;
+  nextTick(() => {
+    if (renameInputRef.value) {
+      renameInputRef.value.focus();
+      renameInputRef.value.select();
+    }
+  });
+};
+
+const commitRename = () => {
+  if (!isRenaming.value) return;
+  const trimmed = renameValue.value.trim();
+  if (trimmed && trimmed !== props.archive.name) {
+    emit("rename", { id: props.archive.id, name: trimmed });
+  }
+  isRenaming.value = false;
+  renameValue.value = "";
+};
+
+const cancelRename = () => {
+  isRenaming.value = false;
+  renameValue.value = "";
+};
+
+const toggleFavorite = () => {
+  if (props.isMultiSelectMode) return;
+  emit("toggle-favorite", { id: props.archive.id, isFavorite: !props.archive.isFavorite });
+};
 
 const { t, te } = useI18n({ useScope: "global" });
 
@@ -143,6 +210,16 @@ const {
   handleCardClick: baseHandleCardClick,
 } = useArchiveCard(archiveRef, indexRef, emit, translations);
 
+const highlightedName = computed(() => {
+  if (!props.searchQuery) return props.archive.name;
+  return highlightMatch(props.archive.name, props.searchQuery);
+});
+
+const highlightedLevel = computed(() => {
+  if (!props.searchQuery) return currentLevelName.value;
+  return highlightMatch(currentLevelName.value, props.searchQuery);
+});
+
 const handleCardClick = () => {
   if (props.isMultiSelectMode) {
     toggleSelection();
@@ -174,9 +251,6 @@ const toggleSelection = () => {
     box-shadow 0.3s ease,
     opacity 0.5s ease;
   transform: translateZ(0);
-  will-change: transform, opacity;
-  contain: layout style;
-  isolation: isolate;
 }
 
 .archive-card.archive-entering {
@@ -234,9 +308,7 @@ const toggleSelection = () => {
 
 .archive-card:hover {
   transform: translateY(-4px) scale(1.01);
-  box-shadow:
-    0 12px 24px -10px rgba(0, 0, 0, 0.4),
-    0 4px 8px -4px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--card-shadow-hover);
   z-index: 2;
 }
 
@@ -303,6 +375,80 @@ const toggleSelection = () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: text;
+}
+
+.archive-name:hover {
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.4);
+}
+
+/* 内联重命名输入框 */
+.inline-rename {
+  margin-bottom: 4px;
+}
+
+.rename-input {
+  width: 100%;
+  padding: 2px 6px;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.rename-input:focus {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+/* 收藏星标按钮 */
+.favorite-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transform: scale(0.85);
+}
+
+.archive-card:hover .favorite-btn,
+.favorite-btn.is-favorited {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.favorite-btn:hover {
+  background: rgba(0, 0, 0, 0.5);
+  color: #fbbf24;
+  transform: scale(1.1);
+}
+
+.favorite-btn.is-favorited {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.2);
+}
+
+.favorite-btn.is-favorited:hover {
+  background: rgba(251, 191, 36, 0.3);
+  color: #f59e0b;
 }
 
 /* 游戏模式信息 */
@@ -460,7 +606,7 @@ const toggleSelection = () => {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 按钮光泽效果 */
+/* 按钮光泽效果 - 使用 @keyframes 确保每次 hover 都重新触发 */
 .action-btn::after {
   content: "";
   position: absolute;
@@ -469,11 +615,22 @@ const toggleSelection = () => {
   width: 50%;
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.4s ease;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .action-btn:hover::after {
-  left: 100%;
+  opacity: 1;
+  animation: btn-shine 0.5s ease-out forwards;
+}
+
+@keyframes btn-shine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
 }
 
 .action-btn:hover {
@@ -592,9 +749,7 @@ const toggleSelection = () => {
 .archive-hidden:hover {
   border-color: rgba(255, 200, 50, 0.25);
   transform: translateY(-3px);
-  box-shadow:
-    0 10px 20px -10px rgba(0, 0, 0, 0.5),
-    0 4px 8px -4px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--card-shadow-hover);
 }
 
 /* 隐藏状态：背景图片仅轻微减饱和，保留清晰度 */
@@ -798,6 +953,15 @@ const toggleSelection = () => {
   .tag-full {
     opacity: 1;
   }
+}
+
+/* 搜索结果高亮标记 */
+.archive-name :deep(.search-highlight),
+.current-level :deep(.search-highlight) {
+  background: rgba(var(--accent-color-rgb), 0.3);
+  color: var(--accent-color);
+  border-radius: 2px;
+  padding: 0 1px;
 }
 
 /* 多选模式样式 */

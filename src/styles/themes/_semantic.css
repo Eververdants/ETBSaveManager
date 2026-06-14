@@ -217,21 +217,38 @@
 /* ==========================================
  * 暗色主题语义化颜色覆盖
  * ========================================== */
-[data-theme="dark"] {
+[data-theme="dark"],
+[data-theme="ocean"],
+[data-theme="forest"],
+[data-theme="sunset"],
+[data-theme="lavender"],
+[data-theme="rose"] {
   /* 状态颜色 - 柔和但清晰 */
   --color-success: #4ade80;
+  --color-success-light: rgba(74, 222, 128, 0.15);
+  --color-success-dark: #22c55e;
+  --color-success-hover: #22c55e;
   --color-success-bg: rgba(74, 222, 128, 0.1);
   --color-success-border: rgba(74, 222, 128, 0.24);
 
   --color-error: #f87171;
+  --color-error-light: rgba(248, 113, 113, 0.15);
+  --color-error-dark: #ef4444;
+  --color-error-hover: #ef4444;
   --color-error-bg: rgba(248, 113, 113, 0.1);
   --color-error-border: rgba(248, 113, 113, 0.24);
 
   --color-warning: #fbbf24;
+  --color-warning-light: rgba(251, 191, 36, 0.15);
+  --color-warning-dark: #f59e0b;
+  --color-warning-hover: #f59e0b;
   --color-warning-bg: rgba(251, 191, 36, 0.1);
   --color-warning-border: rgba(251, 191, 36, 0.24);
 
   --color-info: rgba(255, 255, 255, 0.6);
+  --color-info-light: rgba(255, 255, 255, 0.08);
+  --color-info-dark: rgba(255, 255, 255, 0.4);
+  --color-info-hover: rgba(255, 255, 255, 0.4);
   --color-info-bg: rgba(255, 255, 255, 0.06);
   --color-info-border: rgba(255, 255, 255, 0.12);
 
@@ -243,6 +260,34 @@
   --version-enhancement-bg: rgba(74, 222, 128, 0.06);
   --version-improvement-bg: rgba(74, 222, 128, 0.04);
   --version-stability-bg: rgba(251, 191, 36, 0.06);
+
+  /* Toast 颜色 */
+  --toast-success: #4ade80;
+  --toast-success-dark: #22c55e;
+  --toast-error: #f87171;
+  --toast-error-dark: #ef4444;
+  --toast-info: #60a5fa;
+  --toast-info-dark: #3b82f6;
+  --toast-warning: #fbbf24;
+  --toast-warning-dark: #f59e0b;
+  --toast-folder: #a78bfa;
+  --toast-folder-dark: #8b5cf6;
+
+  /* 星星/评分 */
+  --color-star: #fbbf24;
+  --color-star-empty: rgba(255, 255, 255, 0.2);
+
+  /* 高亮/徽章 */
+  --color-highlight: #fbbf24;
+  --color-badge-featured: #fbbf24;
+  --color-badge-featured-light: rgba(251, 191, 36, 0.15);
+
+  /* 粒子动画颜色 */
+  --particle-teal: #2dd4bf;
+  --particle-blue: #60a5fa;
+  --particle-red: #f87171;
+  --particle-orange: #fb923c;
+  --particle-purple: #a78bfa;
 
   /* 开关控件 */
   --switch-bg-off: rgba(255, 255, 255, 0.16);

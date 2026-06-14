@@ -15,6 +15,7 @@
   --bg-primary: #f8f8fa;
   --bg-secondary: #ffffff;
   --bg-tertiary: #f0f0f2;
+  --bg-hover: #e8e8eb;
   --bg-elevated: #ffffff;
   --app-bg:
     radial-gradient(1100px 650px at 15% -10%, rgba(59, 130, 246, 0.1) 0%, transparent 55%),
@@ -72,6 +73,7 @@
   /* ==========================================
    * 侧边栏 (Sidebar)
    * ========================================== */
+  --bg-sidebar: rgba(248, 248, 250, 0.92);
   --sidebar-bg: rgba(248, 248, 250, 0.92);
   --sidebar-text-color: #1a1a1c;
   --sidebar-border-color: rgba(0, 0, 0, 0.06);
@@ -135,7 +137,6 @@
   --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
   --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.1);
   --card-border: 1px solid rgba(0, 0, 0, 0.06);
-  --card-radius: 16px;
   --card-padding: 16px;
   --card-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, transparent 50%);
   --card-active-indicator: #3b82f6;

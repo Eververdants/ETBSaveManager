@@ -73,6 +73,7 @@
               <ArchiveCard
                 v-for="archive in getRowItems(virtualRow.index)"
                 :key="archive.id"
+                :data-archive-id="archive.id"
                 :archive="archive"
                 :index="archive._originalIndex"
                 :class="{

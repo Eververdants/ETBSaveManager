@@ -236,7 +236,7 @@ async function initThemeSystem() {
         <router-view v-slot="{ Component, route }">
           <transition name="page-fade" mode="out-in">
             <keep-alive :include="cachedComponents" :exclude="excludedComponents">
-              <ErrorBoundary :key="'eb-' + route.name">
+              <ErrorBoundary :key="'eb-' + route.fullPath">
                 <component :is="Component" :key="route.fullPath" />
               </ErrorBoundary>
             </keep-alive>

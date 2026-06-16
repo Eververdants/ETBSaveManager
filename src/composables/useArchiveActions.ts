@@ -284,7 +284,6 @@ export function useArchiveActions(
         pendingPermanentDeletes.set(archiveId, timer);
       };
 
-      schedulePermanentDelete();
       toast.showSuccess(`${archiveName} deleted`, {
         duration: 6000,
         actions: [
@@ -302,6 +301,7 @@ export function useArchiveActions(
             },
           },
         ],
+        onClose: schedulePermanentDelete,
       });
 
       archiveToDelete.value = null;
@@ -428,7 +428,6 @@ export function useArchiveActions(
         }
       };
 
-      scheduleBatchPermanentDelete();
       toast.showSuccess(`Deleted ${batchSnapshots.length} archives`, {
         duration: 6000,
         actions: [
@@ -448,6 +447,7 @@ export function useArchiveActions(
             },
           },
         ],
+        onClose: scheduleBatchPermanentDelete,
       });
     }
 

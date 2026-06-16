@@ -1,24 +1,31 @@
 {
-  "version": "3.1.0",
-  "date": "2026-03-14",
-  "title": "Global Search & Batch Management",
+  "version": "3.2.0",
+  "date": "2026-06-16",
+  "title": "Code Cleanup & Performance Optimization",
   "type": "major",
   "categories": {
     "newFeatures": [
-      "Added global search with keyboard shortcut support",
-      "Added multi-select mode for batch archive deletion",
-      "Added floating button auto-hide on scroll for cleaner UI"
+      "Full migration to TypeScript — improved type safety and code reliability",
+      "Added soft delete with undo, restore, and permanent delete capabilities",
+      "Added incremental loading for faster archive list display"
     ],
     "improvements": [
-      "Enhanced dropdown menu and search component interactions",
-      "Improved animation smoothness and responsiveness",
-      "Better initial loading experience"
+      "Removed plugin system, feedback service, and seasonal themes — leaner core",
+      "Removed redundant SkeletonLoader and PageSkeleton components for reduced bundle size",
+      "Cleaned up unused i18n translation files and JS-only implementation files",
+      "Optimized QuickCreateArchive flow — reduced bundle size by 2 KB",
+      "Improved delete undo UX — extended undo window to ~11 seconds for safer recovery",
+      "Enhanced permanent delete timing — timer now starts after toast closes"
     ],
     "bugFixes": [
-      "Fixed compatibility issues with archive names containing underscores",
-      "Fixed floating button animation conflicts during scrolling",
-      "Fixed virtual scroll list refresh logic"
+      "Fixed QuickCreateArchive crash from orphaned draft function references",
+      "Fixed missing delete animation caused by removed data-archive-id attribute",
+      "Fixed ErrorBoundary key collision across same-name routes with different query parameters"
     ],
-    "performance": []
+    "performance": [
+      "Reduced total JS bundle size through dead code elimination",
+      "Optimized virtual scroll rendering and animation performance",
+      "Streamlined dependency tree by removing unused packages"
+    ]
   }
 }

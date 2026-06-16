@@ -151,6 +151,7 @@ export interface NotificationOptions {
   duration?: number;
   icon?: [string, string];
   actions?: Array<{ text: string; onClick: (id: string) => void }>;
+  onClose?: (id: string) => void;
 }
 
 export interface UpdateInfo {

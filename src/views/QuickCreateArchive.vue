@@ -197,45 +197,6 @@
         </div>
       </div>
 
-      <!-- Draft recovery prompt modal -->
-      <div v-if="showDraftRecoveryPrompt" class="result-modal-overlay" @click.self="ignoreDraft">
-        <div class="result-modal draft-recovery-modal">
-          <div class="result-modal-header">
-            <h3 class="result-modal-title">
-              <font-awesome-icon :icon="['fas', 'file-alt']" class="draft-icon" />
-              {{ $t("quickCreate.draft.title") }}
-            </h3>
-            <button class="close-btn" @click="ignoreDraft">
-              <font-awesome-icon :icon="['fas', 'times']" />
-            </button>
-          </div>
-
-          <div class="result-modal-body">
-            <p class="draft-message">
-              {{
-                $t("quickCreate.draft.message", {
-                  count: draftInfo?.archiveCount || 0,
-                })
-              }}
-            </p>
-            <p v-if="draftInfo?.savedAt" class="draft-time">
-              {{ $t("quickCreate.draft.savedAt") }}:
-              {{ formatDraftTime(draftInfo.savedAt) }}
-            </p>
-          </div>
-
-          <div class="result-modal-footer">
-            <button class="action-btn secondary-btn" @click="ignoreDraft">
-              {{ $t("quickCreate.draft.ignore") }}
-            </button>
-            <button class="action-btn primary-btn" @click="recoverDraft">
-              <font-awesome-icon :icon="['fas', 'undo']" />
-              {{ $t("quickCreate.draft.recover") }}
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- Large data warning modal -->
       <div v-if="showLargeDataWarning" class="result-modal-overlay" @click.self="dismissLargeDataWarning">
         <div class="result-modal large-data-warning-modal">
@@ -333,10 +294,6 @@ export default {
     const creationResult = ref(null);
     const showResultModal = ref(false);
 
-    // Draft recovery prompt state
-    const showDraftRecoveryPrompt = ref(false);
-    const draftInfo = ref(null);
-
     // Large data warning state
     const showLargeDataWarning = ref(false);
     const largeDataWarningInfo = ref(null);
@@ -361,14 +318,6 @@ export default {
       updateArchive,
       batchUpdateSelected,
       batchCreateArchives,
-      // Draft management
-      saveDraft,
-      loadDraft,
-      clearDraft,
-      hasUnsavedDraft,
-      getDraftInfo,
-      startAutoSave,
-      stopAutoSave,
       // Interruption handling
       registerBeforeUnloadWarning,
       unregisterBeforeUnloadWarning,
@@ -859,41 +808,6 @@ export default {
       batchUpdateSelected(updates);
     };
 
-    // ==================== Draft management ====================
-
-    /**
-     * Recover draft
-     * Requirements: 16.4 - Detect and prompt recovery on page load
-     */
-    const recoverDraft = async () => {
-      // Set restoring state flag to prevent watch(inputNames) from triggering clearArchives
-      isRestoringState.value = true;
-
-      if (loadDraft()) {
-        // Extract names from restored archives for input area display
-        inputNames.value = state.archives.map((a) => a.name);
-
-        // Wait for Vue to complete reactive updates, ensuring watch won't be triggered
-        await nextTick();
-
-        showInfo(t("quickCreate.draft.recovered"), "📋");
-      }
-      showDraftRecoveryPrompt.value = false;
-      draftInfo.value = null;
-
-      // Reset restoring state flag
-      isRestoringState.value = false;
-    };
-
-    /**
-     * Ignore draft
-     */
-    const ignoreDraft = () => {
-      clearDraft();
-      showDraftRecoveryPrompt.value = false;
-      draftInfo.value = null;
-    };
-
     /**
      * Dismiss large data warning
      * Requirements: 16.5, 17.1
@@ -901,34 +815,6 @@ export default {
     const dismissLargeDataWarning = () => {
       showLargeDataWarning.value = false;
       largeDataWarningInfo.value = null;
-    };
-
-    /**
-     * Format draft save time
-     * @param {Date} date - Save time
-     * @returns {string} Formatted time string
-     */
-    const formatDraftTime = (date) => {
-      if (!date) return "";
-      const now = new Date();
-      const diff = now - date;
-
-      // Less than 1 minute
-      if (diff < 60000) {
-        return t("quickCreate.draft.justNow");
-      }
-      // Less than 1 hour
-      if (diff < 3600000) {
-        const minutes = Math.floor(diff / 60000);
-        return t("quickCreate.draft.minutesAgo", { count: minutes });
-      }
-      // Less than 24 hours
-      if (diff < 86400000) {
-        const hours = Math.floor(diff / 3600000);
-        return t("quickCreate.draft.hoursAgo", { count: hours });
-      }
-      // More than 24 hours, show date
-      return date.toLocaleDateString();
     };
 
     // Check if tutorial should be shown
@@ -1035,44 +921,23 @@ export default {
           console.error("Failed to parse classic mode config data:", error);
         }
 
-        // When returning from classic mode, clear draft (since we've restored state)
-        clearDraft();
       } else {
         // Clean up any residual state
         sessionStorage.removeItem("quickModeCurrentState");
 
-        // Only check for unsaved draft if not returning from classic mode
-        if (hasUnsavedDraft()) {
-          draftInfo.value = getDraftInfo();
-          if (draftInfo.value && draftInfo.value.archiveCount > 0) {
-            showDraftRecoveryPrompt.value = true;
-          }
-        } else {
-          // If no draft recovery prompt, check if tutorial should be shown
-          // Requirements: 18.1 - Show tutorial on first visit
-          checkTutorial();
-        }
+        // Check if tutorial should be shown on first visit
+        // Requirements: 18.1 - Show tutorial on first visit
+        checkTutorial();
       }
-
-      // Start auto-save
-      startAutoSave();
 
       // Register beforeunload warning
       // Requirements: 17.2 - Warn user when closing browser
       registerBeforeUnloadWarning();
     });
 
-    // Stop auto-save and save current draft on unmount
+    // Unregister beforeunload warning on unmount
     onUnmounted(() => {
-      stopAutoSave();
-
-      // Unregister beforeunload warning
       unregisterBeforeUnloadWarning();
-
-      // If there are unsaved archives, save draft
-      if (state.archives.length > 0 && !state.isCreating) {
-        saveDraft();
-      }
     });
 
     return {
@@ -1088,8 +953,6 @@ export default {
       editingArchive,
       creationResult,
       showResultModal,
-      showDraftRecoveryPrompt,
-      draftInfo,
       // Large data warnings
       showLargeDataWarning,
       largeDataWarningInfo,
@@ -1122,10 +985,6 @@ export default {
       closeResultModal,
       navigateToArchives,
       editSingleArchive,
-      // Draft management
-      recoverDraft,
-      ignoreDraft,
-      formatDraftTime,
       // Large data warnings
       dismissLargeDataWarning,
       // Tutorial

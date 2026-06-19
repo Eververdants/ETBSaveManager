@@ -23,7 +23,8 @@ describe("HeroSection", () => {
 
   it("exposes a secondary GitHub CTA", () => {
     render(<HeroSection />);
-    const cta = screen.getByRole("link", { name: /view on github/i });
+    // aria-label="GitHub repository" 覆盖了 accessible name,改用 href 定位
+    const cta = screen.getByRole("link", { name: /github repository/i });
     expect(cta).toHaveAttribute("href", site.githubUrl);
   });
 });

@@ -2,7 +2,7 @@ name: Deploy Landing Page to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - 'landing-page-react/**'
       - '.github/workflows/pages.yml'

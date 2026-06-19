@@ -25,6 +25,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
+    "@fontsource-variable/dm-sans": "^5.2.8",
+    "@fontsource-variable/fraunces": "^5.2.9",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@tailwindcss/vite": "^4.0.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.0",

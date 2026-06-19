@@ -6,7 +6,9 @@ import { site } from "@/content/site-content";
 describe("FooterSection", () => {
   it("renders the site name", () => {
     render(<FooterSection />);
-    expect(screen.getByText(site.name, { exact: false })).toBeInTheDocument();
+    // footer 巨型品牌署名是 "E·T·B" 拼接（en-US），site.name 不会直接出现
+    // —— 改为按"档案版"戳定位
+    expect(screen.getByText(/archive ed\./i)).toBeInTheDocument();
   });
 
   it("exposes a License link pointing at the repository LICENSE file", () => {
@@ -24,6 +26,7 @@ describe("FooterSection", () => {
   it("renders a copyright line with the current year", () => {
     render(<FooterSection />);
     const year = new Date().getFullYear();
-    expect(screen.getByText(new RegExp(`${year}`))).toBeInTheDocument();
+    // 版权行 © {year} ETB Save Manager. released under mit.
+    expect(screen.getByText(new RegExp(`©\\s*${year}`))).toBeInTheDocument();
   });
 });

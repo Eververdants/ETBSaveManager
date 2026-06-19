@@ -12,9 +12,7 @@ describe("DownloadSection", () => {
   it("renders one button per download entry pointing at releases/latest", () => {
     render(<DownloadSection />);
     const links = screen.getAllByRole("link");
-    const downloadLinks = links.filter((link) =>
-      site.downloads.some((d) => d.label === link.textContent?.trim()),
-    );
+    const downloadLinks = links.filter((link) => site.downloads.some((d) => d.label === link.textContent?.trim()));
     expect(downloadLinks).toHaveLength(site.downloads.length);
     downloadLinks.forEach((link) => {
       expect(link).toHaveAttribute("href", site.releasesUrl);

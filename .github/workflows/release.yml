@@ -9,17 +9,21 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
+  build:
+    name: Build (${{ matrix.label }})
     strategy:
       fail-fast: false
       matrix:
         include:
           - target: x64
             arch: x86_64-pc-windows-msvc
+            label: x64
           - target: x86
             arch: i686-pc-windows-msvc
+            label: x86
           - target: arm64
             arch: aarch64-pc-windows-msvc
+            label: arm64
 
     runs-on: windows-latest
 
@@ -72,7 +76,49 @@ jobs:
           tauriScript: pnpm tauri
           args: --target ${{ matrix.arch }}
           tagName: ${{ github.ref_name }}
-          releaseName: 'v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: false
+          # 关键：3 个 build job 全部不创建 release，由后置 release job 统一处理
+          createRelease: false
+          # 保留 updater 资源（latest.json / sig 仍然生成在 target/.../bundle/ 下）
+          includeUpdaterJson: true
+
+      - name: Upload bundle artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundles-${{ matrix.label }}
+          path: |
+            src-tauri/target/${{ matrix.arch }}/release/bundle/msi/*.msi
+            src-tauri/target/${{ matrix.arch }}/release/bundle/nsis/*-setup.exe
+            src-tauri/target/${{ matrix.arch }}/release/bundle/latest.json
+            src-tauri/target/${{ matrix.arch }}/release/bundle/*.sig
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all bundle artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List downloaded files
+        run: ls -lR artifacts
+
+      - name: Create release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: 'v__VERSION__'
+          body: 'See the assets to download this version and install.'
+          draft: false
           prerelease: false
+          files: |
+            artifacts/**/*.msi
+            artifacts/**/*-setup.exe
+            artifacts/**/latest.json
+            artifacts/**/*.sig
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

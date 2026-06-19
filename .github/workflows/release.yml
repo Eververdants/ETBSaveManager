@@ -44,7 +44,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -76,8 +76,8 @@ jobs:
           tauriScript: pnpm tauri
           args: --target ${{ matrix.arch }}
           tagName: ${{ github.ref_name }}
-          # 关键：3 个 build job 全部不创建 release，由后置 release job 统一处理
-          createRelease: false
+          # 后置 release job 统一创建 release，build job 不创建
+          includeRelease: false
           # 保留 updater 资源（latest.json / sig 仍然生成在 target/.../bundle/ 下）
           includeUpdaterJson: true
 

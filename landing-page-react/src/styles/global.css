@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* 启用 dark 模式：通过 <html class="dark"> 触发 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 设计 tokens */
+@theme {
+  --color-brand-50: oklch(0.97 0.02 250);
+  --color-brand-100: oklch(0.93 0.04 250);
+  --color-brand-500: oklch(0.6 0.18 250);
+  --color-brand-600: oklch(0.52 0.2 250);
+  --color-brand-700: oklch(0.44 0.18 250);
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC",
+    sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* 全局基线 */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-900);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html.dark body {
+  background-color: var(--color-slate-950);
+  color: var(--color-slate-100);
+}
+
+/* 焦点可见性 */
+:where(a, button, [role="button"]):focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

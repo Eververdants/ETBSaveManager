@@ -7,7 +7,7 @@
 
 ## 1. 背景与目标
 
-主项目 `ETBSaveManager-Project` 是基于 Vue 3 + Vite 6 + Tauri 2.0 的 Windows 桌面应用（Escape The Backrooms 存档管理器）。仓库当前缺少可直接分享与 SEO 友好的落地页；用户访问 GitHub 仓库时仅能通过 README 了解项目，缺少具视觉冲击力的产品介绍与一键下载入口。
+主项目 `ETBSaveManager-Project` 是基于 Vue 3 + Vite 6 + Tauri 2.0 的 Windows 桌面应用（Escape The Backrooms 存档管理器）。仓库当前缺少可直接分享与 SEO 友好的落地页；用户访问 GitHub 仓库时仅能通过 README 了解项目，缺少有视觉冲击力的产品介绍与一键下载入口。
 
 本次目标：
 
@@ -149,14 +149,16 @@ landing-page-react/
 
 ### 6.4 数据源（`site-content.ts`）
 
+> 以下为结构示例。实际实现时 `name`、`tagline`、`description`、每个 feature 的 `title` / `description` 等占位字段需替换为真实文案。
+
 ```ts
 export const site = {
   name: "E.T.B. Save Manager",
   tagline: "A modern save management tool for Escape The Backrooms",
-  description: "...",
+  description: "<真实描述文案>",
   features: [
-    { id: "crud", title: "...", description: "...", iconKey: "icon-key-1" },
-    ...
+    { id: "crud", title: "<标题>", description: "<描述>", iconKey: "icon-crud" },
+    // ... 共 6 项
   ],
   downloads: [
     { id: "win-x64", label: "Windows x64", href: "https://github.com/Eververdants/ETBSaveManager/releases/latest" },
@@ -270,7 +272,7 @@ jobs:
 
 1. **触发**：`push` 到 `main` 且 `landing-page-react/**` 变更；保留 `workflow_dispatch` 手动触发。
 2. **Runner**：Pages 部署用 `ubuntu-latest`（轻、快）；Tauri release 仍用 `windows-latest`（构建 Windows 安装包必需），互不影响。
-3. **环境变量 `VITE_BASE_PATH`**：在 `vite.config.ts` 中通过 `import.meta.env.VITE_BASE_PATH` 读取并写入 `base` 选项，便于本地（`/`）与生产（`/ETBSaveManager-Project/`）切换。
+3. **环境变量 `VITE_BASE_PATH`**：在 `vite.config.ts`（Node 环境）中通过 `process.env.VITE_BASE_PATH` 读取并写入 `base` 选项，便于本地（`/`）与生产（`/ETBSaveManager-Project/`）切换。
 4. **质量门禁**：lint → typecheck → test → build，任意失败则终止部署。
 5. **官方部署方案**：`actions/configure-pages@v5` + `actions/upload-pages-artifact@v3` + `actions/deploy-pages@v4`。
 6. **Environment**：使用内置 `github-pages` environment，部署链接可在 Actions 页面直接预览。

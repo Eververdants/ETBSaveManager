@@ -38,14 +38,11 @@ export function MetadataStrip(): React.JSX.Element {
           <span className="hidden tabular-nums sm:inline">
             {t("meta.buildLabel")} {site.meta.build}
           </span>
-        </div>
-        <div className="flex items-center gap-3 sm:gap-4">
-          <span className="hidden tabular-nums md:inline">{site.meta.releaseDate}</span>
           <span
             aria-hidden="true"
-            className="hidden h-3 w-px bg-[var(--color-paper)]/40 md:inline-block dark:bg-[var(--color-ink)]/30"
+            className="hidden h-3 w-px bg-[var(--color-paper)]/40 sm:inline-block dark:bg-[var(--color-ink)]/30"
           />
-          <span className="tabular-nums">{t("meta.localCn")}</span>
+          <span className="hidden tabular-nums md:inline">{site.meta.releaseDate}</span>
         </div>
       </div>
     </div>

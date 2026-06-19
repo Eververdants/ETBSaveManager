@@ -111,7 +111,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: 'v__VERSION__'
+          name: ${{ github.ref_name }}
           body: 'See the assets to download this version and install.'
           draft: false
           prerelease: false

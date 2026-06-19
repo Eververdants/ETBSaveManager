@@ -56,7 +56,7 @@ jobs:
         working-directory: landing-page-react
         run: pnpm build
         env:
-          VITE_BASE_PATH: /ETBSaveManager-Project/
+          VITE_BASE_PATH: /ETBSaveManager/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

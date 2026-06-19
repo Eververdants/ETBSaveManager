@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.1.0-blue.svg" alt="版本"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.2.0-blue.svg" alt="版本"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/授權-MIT-green.svg" alt="授權"></a>
   <img src="https://img.shields.io/badge/平台-Windows-0078D4.svg?logo=windows" alt="平台">
   <img src="https://img.shields.io/badge/框架-Tauri%202.0-orange.svg" alt="框架">
@@ -25,19 +25,23 @@
 
 ### 🗂️ 存檔管理
 
-- **完整的增刪改查** — 建立、編輯、刪除、複製、隱藏/顯示存檔
-- **批次操作** — 同時處理多個存檔
-- **智慧篩選** — 按層級、難度、遊戲模式篩選
+- **完整增刪改查** — 建立、編輯、刪除、複製、隱藏/顯示存檔
+- **軟刪除與資源回收筒** — 刪除的存檔可復原或永久刪除
+- **批次操作** — 多選模式，同時處理多個存檔
+- **收藏與排序** — 標記重要存檔；依名稱、日期、層級或收藏排序
+- **智慧篩選** — 按層級、難度、遊戲模式搜尋篩選
 - **快速搜尋** — 模糊匹配，即時定位目標存檔
-- **虛擬捲動** — 大量存檔時依然流暢
+- **復原 / 重做** — 完整的存檔操作復原與重做支援
+- **虛擬捲動** — 大量存檔時依然保持流暢
 
 ### 🎨 現代化介面
 
-- **現代化設計** — 簡潔直觀的介面，流暢的動畫效果
-- **15+ 主題** — 淺色、深色、多彩主題以及節日特別主題
+- **簡潔設計** — 直覺的介面，搭配 GSAP 驅動的流暢動畫
+- **13 套主題** — 淺色、深色及 10 套色彩主題
 - **響應式佈局** — 可摺疊側邊欄，自適應元件
-- **硬體加速** — GPU 優化渲染，確保流暢體驗
-- **GSAP 動畫** — 專業級動畫效果
+- **硬體加速** — GPU 最佳化渲染，確保流暢體驗
+- **全域搜尋** — 任意頁面按 `Ctrl+F` 即時搜尋
+- **新手引導** — 首次使用時的互動式引導覆蓋層
 
 ### 🌍 多語言支援
 
@@ -47,14 +51,7 @@
 - 繁體中文
 - English
 
-透過外掛擴充：
-
-- 日本語 (日語)
-- 한국어 (韓語)
-- Русский (俄語)
-- Português (巴西葡萄牙語)
-
-> ⚠️ **注意：** 語言外掛可能不會隨版本更新而及時更新。
+> 國際化系統採用模組化設計，可透過新增語言檔案來貢獻更多語言。
 
 ### 🛠️ 進階功能
 
@@ -62,12 +59,11 @@
   - 快速建立 — 簡化流程，快速產生存檔
   - 標準建立 — 完整的自訂選項，分步嚮導
 - **背包編輯器** — 可視化的玩家背包物品編輯器
-- **玩家資料編輯** — 編輯生命值、位置等玩家屬性
-- **Steam 快取管理** — 管理本機 Steam 快取資料
-- **反饋系統** — 內建反饋提交功能，支援離線佇列
-- **外掛市場** — 從外掛市場下載語言包和主題
-- **效能監控** — 內建診斷工具（開發模式）
-- **自動更新** — 自動檢查並安裝更新
+- **玩家資料編輯** — 編輯背包物品、理智值等玩家屬性
+- **通知系統** — 持久化通知中心，追蹤應用事件
+- **效能監控** — 內建 FPS 與記憶體診斷工具（開發模式）
+- **效能設定** — 調整 GPU 渲染與動畫偏好
+- **統一設定面板** — 集中化的設定管理介面
 
 ---
 
@@ -118,7 +114,7 @@ pnpm tauri build
 
 - Node.js 18+
 - Rust 工具鏈
-- 平台相關相依套件（參見 [Tauri 環境設定](https://tauri.app/v1/guides/getting-started/prerequisites)）
+- 平台相關相依套件（參見 [Tauri 環境設定](https://v2.tauri.app/start/prerequisites/)）
 
 ---
 
@@ -129,6 +125,7 @@ pnpm tauri build
 | 技術 | 用途 |
 |------|------|
 | Vue 3 + Composition API | 響應式 UI 框架 |
+| TypeScript | 型別安全的開發體驗 |
 | Vite 6 | 建置工具和開發伺服器 |
 | Tailwind CSS 4 | 原子化 CSS 框架 |
 | CSS Variables | 動態主題系統 |
@@ -139,6 +136,7 @@ pnpm tauri build
 | FontAwesome 7 | 向量圖示 |
 | Chart.js | 資料視覺化 |
 | @vue-flow/core | 節點流程編輯器 |
+| vitest + fast-check | 單元測試與屬性測試 |
 
 ### 後端 (Rust)
 
@@ -147,10 +145,14 @@ pnpm tauri build
 | Tauri 2.0 | 桌面應用框架 |
 | uesave 0.6.2 | UE4 存檔檔案解析 |
 | serde + serde_json | 資料序列化 |
-| aes-gcm + argon2 | 加密和安全 |
 | rusqlite | 本機 SQLite 資料庫 |
-| reqwest + tokio | 非同步 HTTP 客戶端 |
+| tokio + reqwest | 非同步 HTTP 用戶端 |
 | walkdir + memmap2 | 高效檔案操作 |
+| rayon | 平行運算 |
+| chrono | 日期/時間處理 |
+| uuid | 唯一 ID 生成 |
+| regex | 模式匹配 |
+| thiserror | 錯誤處理 |
 
 ---
 
@@ -158,125 +160,174 @@ pnpm tauri build
 
 ```
 ETBSaveManager/
-├── src/                          # Vue 前端
-│   ├── components/               # UI 元件
-│   │   ├── plugin/              # 外掛相關元件
-│   │   ├── ArchiveCard.vue      # 存檔卡片元件
-│   │   ├── ArchiveSearchFilter.vue # 搜尋篩選面板
-│   │   ├── Sidebar.vue          # 側邊導航欄
-│   │   ├── TitleBar.vue         # 視窗標題欄
-│   │   └── ...                  # 其他元件
-│   ├── composables/             # Vue 組合式函式
-│   │   ├── useArchiveActions.js # 存檔操作邏輯
-│   │   ├── useArchiveData.js    # 存檔資料管理
-│   │   └── ...                  # 其他組合式函式
-│   ├── config/                  # 設定檔
-│   ├── i18n/                    # 國際化
-│   │   └── locales/             # 語言檔案
-│   │       ├── zh-CN/           # 簡體中文
-│   │       ├── zh-TW/           # 繁體中文
-│   │       └── en-US/           # 英語
-│   ├── plugins/                 # 外掛系統
-│   │   ├── core/                # 外掛管理器
-│   │   └── loaders/             # 外掛載入器（語言、主題、頁面）
-│   ├── router/                  # Vue Router 設定
-│   ├── services/                # 業務邏輯服務
-│   ├── styles/                  # 樣式系統
-│   │   └── themes/              # 主題檔案（15+ 主題）
-│   ├── utils/                   # 工具函式
-│   ├── views/                   # 頁面視圖
-│   │   ├── CreateArchive/       # 建立存檔嚮導
-│   │   ├── Home.vue             # 存檔列表頁
-│   │   ├── EditArchive.vue      # 編輯存檔頁
-│   │   └── ...                  # 其他頁面
-│   ├── App.vue                  # 根元件
-│   └── main.js                  # 應用入口
-├── src-tauri/                    # Rust 後端
+├── src/                              # Vue 前端（TypeScript）
+│   ├── components/
+│   │   ├── archive/                  # 存檔相關元件
+│   │   │   ├── ArchiveCard.vue
+│   │   │   ├── ArchiveCardFlow.vue
+│   │   │   ├── ArchiveSearchFilter.vue
+│   │   │   └── QuickCreateArchiveCard.vue
+│   │   ├── feature/                  # 功能元件
+│   │   │   ├── FloatingActionButton.vue
+│   │   │   ├── GlobalSearchPanel.vue
+│   │   │   ├── InventoryItemSelector.vue
+│   │   │   ├── PreviewExecuteArea.vue
+│   │   │   ├── SmartInputArea.vue
+│   │   │   └── TutorialOverlay.vue
+│   │   ├── layout/                   # 佈局元件
+│   │   │   ├── Sidebar.vue
+│   │   │   └── TitleBar.vue
+│   │   ├── modal/                    # 模態對話框
+│   │   │   ├── ArchiveEditModal.vue
+│   │   │   ├── BatchEditModal.vue
+│   │   │   ├── ConfirmModal.vue
+│   │   │   └── PromptPopup.vue
+│   │   ├── system/                   # 系統工具
+│   │   │   ├── PerformanceMonitor.vue
+│   │   │   ├── PerformanceSettings.vue
+│   │   │   ├── PlayerManager.vue
+│   │   │   └── UniformConfigPanel.vue
+│   │   ├── theme/                    # 主題選擇
+│   │   │   └── ThemeSelector.vue
+│   │   └── ui/                       # 可複用 UI 元件
+│   │       ├── CustomDropdown.vue
+│   │       ├── CustomSlider.vue
+│   │       ├── ErrorBoundary.vue
+│   │       ├── LazyImage.vue
+│   │       └── NotificationPopup.vue
+│   ├── composables/                  # Vue 組合式函式
+│   │   ├── useArchiveActions.ts      # 存檔 CRUD 操作
+│   │   ├── useArchiveData.ts         # 存檔資料管理
+│   │   ├── useArchiveCard.ts         # 卡片互動
+│   │   ├── useArchiveCardFlow.ts     # 流模式邏輯
+│   │   ├── useArchiveFilters.ts      # 篩選與搜尋
+│   │   ├── useUndoRedo.ts            # 復原/重做
+│   │   ├── useGlobalSearchPanel.ts   # 全域搜尋
+│   │   ├── useFloatingActionButton.ts
+│   │   ├── useQuickCreate.ts
+│   │   ├── usePlayerManager.ts
+│   │   ├── usePerformanceMonitor.ts
+│   │   ├── usePerformanceSettings.ts
+│   │   ├── useTutorialOverlay.ts
+│   │   ├── useToast.ts
+│   │   ├── useValidator.ts
+│   │   ├── useNameParser.ts
+│   │   ├── useReleaseNotes.ts
+│   │   ├── useConfigResolver.ts
+│   │   ├── useFocusTrap.ts
+│   │   ├── useAnimations.ts
+│   │   ├── useUniformConfigPanel.ts
+│   │   └── useInventoryItemSelector.ts
+│   ├── config/                       # 應用設定
+│   │   ├── cdnConfig.ts
+│   │   ├── sidebarMenu.ts
+│   │   ├── updateConfig.ts
+│   │   └── version.ts
+│   ├── i18n/                         # 國際化
+│   │   ├── index.ts
+│   │   ├── loader.ts
+│   │   └── locales/
+│   │       ├── en-US/                # 英語（按領域劃分的 JSON 檔案）
+│   │       ├── zh-CN/                # 簡體中文
+│   │       └── zh-TW/                # 繁體中文
+│   ├── router/                       # Vue Router 設定
+│   ├── services/                     # 業務邏輯服務
+│   │   ├── storageService.ts         # 持久化儲存
+│   │   ├── logService.ts             # 日誌記錄
+│   │   ├── notificationService.ts    # 通知管理
+│   │   ├── popupService.ts           # 彈窗管理
+│   │   ├── themeStorage.ts           # 主題持久化
+│   │   ├── pluginStorage.ts          # 外掛資料
+│   │   └── updateService.ts          # 自動更新
+│   ├── styles/
+│   │   ├── animations.css
+│   │   └── themes/                   # 主題 CSS 檔案
+│   │       ├── _colors.css
+│   │       ├── _components.css
+│   │       ├── _semantic.css
+│   │       ├── light.css / dark.css
+│   │       ├── high-contrast.css
+│   │       ├── ocean.css / forest.css
+│   │       ├── sunset.css / lavender.css
+│   │       ├── rose.css / mint.css
+│   │       ├── peach.css / sky.css
+│   │       └── index.css
+│   ├── utils/                        # 工具函式
+│   │   ├── icons.ts / icons-full.ts / icons-critical.ts
+│   │   ├── nameParser.ts
+│   │   ├── performance.ts
+│   │   ├── consoleForwarder.ts
+│   │   ├── polyfills.ts
+│   │   ├── disableInteractions.ts
+│   │   └── floatingButtonProtection.ts
+│   ├── views/                        # 頁面視圖
+│   │   ├── Home.vue                  # 存檔列表
+│   │   ├── CreateArchive/            # 建立存檔嚮導
+│   │   ├── EditArchive.vue           # 編輯存檔
+│   │   ├── QuickCreateArchive.vue    # 快速建立
+│   │   ├── SelectCreateMode.vue      # 模式選擇
+│   │   ├── Settings.vue              # 應用設定
+│   │   ├── About.vue                 # 關於頁面
+│   │   ├── Log.vue                   # 操作日誌
+│   │   └── TestArchive.vue           # 測試工具
+│   ├── types.ts                      # 全域型別定義
+│   ├── appContext.ts                 # 依賴注入上下文
+│   ├── App.vue                       # 根元件
+│   └── main.ts                       # 應用入口
+├── src-tauri/                        # Rust 後端
 │   └── src/
-│       ├── lib.rs               # 庫入口
-│       ├── main.rs              # 主程式入口
-│       ├── save_commands.rs     # 存檔操作命令
-│       ├── save_editor.rs       # 存檔檔案編輯器
-│       ├── player_data.rs       # 玩家資料處理
-│       ├── steam_api.rs         # Steam API 整合
-│       ├── feedback_commands.rs # 反饋系統
-│       └── ...                  # 其他模組
-├── plugins/                      # 外掛目錄
-│   ├── lang-ja-JP/              # 日語語言包
-│   ├── lang-ko-KR/              # 韓語語言包
-│   ├── lang-ru-RU/              # 俄語語言包
-│   ├── lang-pt-BR/              # 巴西葡萄牙語包
-│   ├── theme-cyberpunk/         # 賽博龐克主題
-│   ├── theme-dracula/           # Dracula 主題
-│   ├── theme-monokai/           # Monokai 主題
-│   ├── theme-nord/              # Nord 主題
-│   └── theme-solarized/         # Solarized 主題
-├── public/                       # 靜態資源
-│   ├── icons/                   # 遊戲物品圖示（20+）
-│   └── images/                  # 遊戲關卡圖片（40+）
-└── docs/                         # 文件和截圖
+│       ├── lib.rs                    # 庫入口 / Tauri 設定
+│       ├── main.rs                   # 主程式入口
+│       ├── save_commands.rs          # 存檔 CRUD 命令
+│       ├── save_editor.rs            # 存檔檔案編輯
+│       ├── save_shared.rs            # 共享存檔型別
+│       ├── save_utils.rs             # 存檔檔案工具
+│       ├── new_save.rs               # 存檔建立邏輯
+│       ├── player_data.rs            # 玩家資料處理
+│       ├── cli_handlers.rs           # CLI 命令處理
+│       ├── system_commands.rs        # 系統級命令
+│       ├── theme_commands.rs         # 主題管理
+│       ├── gpu_settings.rs           # GPU/渲染設定
+│       ├── get_file_path.rs          # 檔案路徑解析
+│       ├── common.rs                 # 通用輔助函式
+│       └── error.rs                  # 錯誤型別定義
+├── public/                           # 靜態資源
+│   ├── icons/                        # 遊戲物品圖示
+│   └── images/                       # 遊戲關卡圖片
+├── docs/                             # 截圖
+├── scripts/                          # 建置腳本
+│   └── sync-version.js               # 版本同步
+├── dist/                             # 建置輸出
+├── index.html                        # HTML 入口
+├── vite.config.ts                    # Vite 設定
+├── tsconfig.json                     # TypeScript 設定
+├── eslint.config.js                  # ESLint 設定
+├── package.json
+└── pnpm-lock.yaml
 ```
 
 ---
 
 ## 🎨 主題列表
 
-ETB Save Manager 內建 15+ 主題：
+ETB Save Manager 內建 13 套主題：
 
 ### 基礎主題
 - **Light（淺色）** — 清新的淺色主題
 - **Dark（深色）** — 舒適的深色主題
-- **High Contrast（高對比度）** — 無障礙輔助主題
 
-### 彩色主題
-- **Ocean（海洋）** 🌊 — 深藍色海洋風格
-- **Forest（森林）** 🌲 — 自然綠色森林風格
-- **Sunset（日落）** 🌅 — 溫暖的橙色日落色調
-- **Lavender（薰衣草）** 💜 — 柔和的紫色薰衣草
-- **Rose（玫瑰）** 🌸 — 優雅的粉色玫瑰
-- **Mint（薄荷）** 🍃 — 清新的薄荷綠
-- **Peach（蜜桃）** 🍑 — 柔和的蜜桃色調
-- **Sky（天空）** ☁️ — 明亮的天空藍
+### 色彩主題
+- **Ocean（海洋）** — 深藍色海洋風格
+- **Forest（森林）** — 自然綠色森林風格
+- **Sunset（日落）** — 溫暖的橙色日落色調
+- **Lavender（薰衣草）** — 柔和的紫色薰衣草
+- **Rose（玫瑰）** — 優雅的粉色玫瑰
+- **Mint（薄荷）** — 清新的薄荷綠
+- **Peach（蜜桃）** — 柔和的蜜桃色調
+- **Sky（天空）** — 明亮的天空藍
 
-### 節日主題
-- **New Year（元旦）** 🎊 — 新年慶祝主題
-- **Spring Festival（春節）** 🧧 — 中國新年主題（限時）
-
-### 外掛主題
-- **Cyberpunk（賽博龐克）** — 霓虹賽博龐克風格
-- **Dracula** — 流行的 Dracula 配色方案
-- **Monokai** — 經典的 Monokai 主題
-- **Nord** — 北歐 Nord 調色盤
-- **Solarized** — Solarized 配色方案
-
----
-
-## 🚧 開發進度
-
-**目前版本：** `v3.1.0`
-
-| 功能 | 狀態 |
-|------|------|
-| 核心存檔管理 | ✅ 已完成 |
-| 搜尋與篩選 | ✅ 已完成 |
-| 主題系統（15+ 主題） | ✅ 已完成 |
-| 多語言支援 | ✅ 已完成 |
-| 存檔資料編輯 | ✅ 已完成 |
-| 多種建立模式（快速和標準） | ✅ 已完成 |
-| 反饋系統 | ✅ 已完成 |
-| 外掛系統 | ✅ 已完成 |
-| 主題編輯器 | ✅ 已完成 |
-| 背包編輯器 | ✅ 已完成 |
-| 玩家資料編輯器 | ✅ 已完成 |
-| Steam 快取管理 | ✅ 已完成 |
-| 自動更新 | ✅ 已完成 |
-| 層級資訊編輯 | 🔄 計劃中 |
-
----
-
-## 🎬 影片教學
-
-觀看詳細的操作指南：[Bilibili 影片介紹](https://www.bilibili.com/video/BV1L3yeYzEfi)（基於 2.6.0 版本）
+### 實用主題
+- **Custom（自訂）** — 透過主題編輯器自訂配色
 
 ---
 
@@ -284,13 +335,9 @@ ETB Save Manager 內建 15+ 主題：
 
 歡迎貢獻程式碼！這是一個個人學生專案，任何幫助都非常感謝。
 
-- 🐛 [回報 Bug](https://github.com/Eververdants/ETBSaveManager/issues)
-- 💡 [功能建議](https://github.com/Eververdants/ETBSaveManager/issues)
-- 📧 聯絡信箱：**llzgd@outlook.com**
-
-### 外掛開發
-
-想要建立自己的語言包或主題？查看 [外掛開發指南](./plugins/PLUGIN_DEV_GUIDE_CN.md)。
+- [回報 Bug](https://github.com/Eververdants/ETBSaveManager/issues)
+- [功能建議](https://github.com/Eververdants/ETBSaveManager/issues)
+- 聯絡信箱：**llzgd@outlook.com**
 
 ---
 
@@ -301,12 +348,11 @@ ETB Save Manager 內建 15+ 主題：
 遊戲素材（如關卡圖示）**僅用於識別目的**，以協助使用者辨識存檔所屬的關卡。  
 《逃離後室》及其素材的所有權利均屬於其各自所有者。
 
-----
 ---
 
 ## 📄 開源授權
 
-[MIT License](LICENSE) © 2024-NOW Eververdants
+[MIT License](LICENSE) © 2026 Eververdants
 
 ---
 

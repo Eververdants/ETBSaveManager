@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.1.0-blue.svg" alt="Version"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.2.0-blue.svg" alt="Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/Platform-Windows-0078D4.svg?logo=windows" alt="Platform">
   <img src="https://img.shields.io/badge/Framework-Tauri%202.0-orange.svg" alt="Framework">
@@ -26,35 +26,32 @@
 ### 🗂️ Save Management
 
 - **Full CRUD Operations** — Create, edit, delete, copy, hide/show saves
-- **Batch Operations** — Process multiple saves simultaneously
-- **Smart Filtering** — Filter by level, difficulty, game mode
+- **Soft Delete & Recycle Bin** — Trashed saves can be restored or permanently deleted
+- **Batch Operations** — Process multiple saves simultaneously with multi-select mode
+- **Favorites & Sorting** — Star your important saves; sort by name, date, level, or favorites
+- **Smart Filtering** — Filter by level, difficulty, game mode, and search keywords
 - **Quick Search** — Fuzzy matching to locate saves instantly
+- **Undo / Redo** — Full undo/redo support for archive operations
 - **Virtual Scrolling** — Smooth performance with large save collections
 
 ### 🎨 Modern UI/UX
 
-- **Modern Design** — Clean, intuitive interface with smooth animations
-- **15+ Themes** — Light, Dark, colorful themes, and seasonal specials
+- **Clean Interface** — Intuitive design with smooth GSAP-powered animations
+- **13 Themes** — Light, Dark, and 11 vibrant color themes
 - **Responsive Layout** — Collapsible sidebar, adaptive components
 - **Hardware Accelerated** — GPU-optimized rendering for smooth performance
-- **GSAP Animations** — Professional-grade animations throughout
+- **Global Search** — Press `Ctrl+F` to search across any page
+- **Tutorial Overlay** — Interactive guide for first-time users
 
 ### 🌍 Internationalization
 
 Built-in languages:
 
+- English
 - Simplified Chinese (简体中文)
 - Traditional Chinese (繁體中文)
-- English
 
-Additional languages via plugins:
-
-- 日本語 (Japanese)
-- 한국어 (Korean)
-- Русский (Russian)
-- Português (Brazilian Portuguese)
-
-> ⚠️ **Note:** Language plugins may not be updated immediately with new app versions.
+> The i18n system is modular — additional languages can be contributed by adding new locale files.
 
 ### 🛠️ Advanced Features
 
@@ -62,12 +59,11 @@ Additional languages via plugins:
   - Quick Create — Streamlined workflow for fast save generation
   - Standard Create — Full customization options with step-by-step wizard
 - **Inventory Editor** — Visual editor for player inventory items
-- **Player Data Editor** — Edit health, position, and other player stats
-- **Steam Cache Management** — Manage local Steam cache data
-- **Feedback System** — Built-in feedback submission with offline queue
-- **Plugin Market** — Download language packs and themes from the plugin marketplace
-- **Performance Monitor** — Built-in diagnostics (dev mode)
-- **Auto-Update** — Automatic update checks and installation
+- **Player Data Editor** — Edit inventory items, sanity, and other player stats
+- **Notification System** — Persistent notification center for app events
+- **Performance Monitor** — Built-in FPS and memory diagnostics (dev mode)
+- **Performance Settings** — Tweak GPU rendering and animation preferences
+- **Uniform Config Panel** — Centralized configuration interface
 
 ---
 
@@ -118,7 +114,7 @@ pnpm tauri build
 
 - Node.js 18+
 - Rust toolchain
-- Platform-specific dependencies (see [Tauri Prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites))
+- Platform-specific dependencies (see [Tauri Prerequisites](https://v2.tauri.app/start/prerequisites/))
 
 ---
 
@@ -129,6 +125,7 @@ pnpm tauri build
 | Technology | Purpose |
 |------------|---------|
 | Vue 3 + Composition API | Reactive UI framework |
+| TypeScript | Type-safe development |
 | Vite 6 | Build tool and dev server |
 | Tailwind CSS 4 | Utility-first CSS framework |
 | CSS Variables | Dynamic theme system |
@@ -139,6 +136,7 @@ pnpm tauri build
 | FontAwesome 7 | Vector icons |
 | Chart.js | Data visualization |
 | @vue-flow/core | Node-based flow editor |
+| vitest + fast-check | Unit & property-based testing |
 
 ### Backend (Rust)
 
@@ -147,10 +145,14 @@ pnpm tauri build
 | Tauri 2.0 | Desktop application framework |
 | uesave 0.6.2 | UE4 Save file parsing |
 | serde + serde_json | Data serialization |
-| aes-gcm + argon2 | Encryption and security |
 | rusqlite | Local SQLite database |
-| reqwest + tokio | Async HTTP client |
+| tokio + reqwest | Async HTTP client |
 | walkdir + memmap2 | Efficient file operations |
+| rayon | Parallel processing |
+| chrono | Date/time handling |
+| uuid | Unique ID generation |
+| regex | Pattern matching |
+| thiserror | Error handling |
 
 ---
 
@@ -158,125 +160,174 @@ pnpm tauri build
 
 ```
 ETBSaveManager/
-├── src/                          # Vue Frontend
-│   ├── components/               # UI Components
-│   │   ├── plugin/              # Plugin-related components
-│   │   ├── ArchiveCard.vue      # Save card component
-│   │   ├── ArchiveSearchFilter.vue # Search and filter panel
-│   │   ├── Sidebar.vue          # Navigation sidebar
-│   │   ├── TitleBar.vue         # Window title bar
-│   │   └── ...                  # Other components
-│   ├── composables/             # Vue Composition Functions
-│   │   ├── useArchiveActions.js # Save operations logic
-│   │   ├── useArchiveData.js    # Save data management
-│   │   └── ...                  # Other composables
-│   ├── config/                  # Configuration files
-│   ├── i18n/                    # Internationalization
-│   │   └── locales/             # Language files
-│   │       ├── zh-CN/           # Simplified Chinese
-│   │       ├── zh-TW/           # Traditional Chinese
-│   │       └── en-US/           # English
-│   ├── plugins/                 # Plugin System
-│   │   ├── core/                # Plugin manager
-│   │   └── loaders/             # Plugin loaders (language, theme, page)
-│   ├── router/                  # Vue Router configuration
-│   ├── services/                # Business logic services
-│   ├── styles/                  # Styling system
-│   │   └── themes/              # Theme files (15+ themes)
-│   ├── utils/                   # Utility functions
-│   ├── views/                   # Page views
-│   │   ├── CreateArchive/       # Create save wizard
-│   │   ├── Home.vue             # Save list page
-│   │   ├── EditArchive.vue      # Edit save page
-│   │   └── ...                  # Other pages
-│   ├── App.vue                  # Root component
-│   └── main.js                  # Application entry
-├── src-tauri/                    # Rust Backend
+├── src/                              # Vue frontend (TypeScript)
+│   ├── components/
+│   │   ├── archive/                  # Save-related components
+│   │   │   ├── ArchiveCard.vue
+│   │   │   ├── ArchiveCardFlow.vue
+│   │   │   ├── ArchiveSearchFilter.vue
+│   │   │   └── QuickCreateArchiveCard.vue
+│   │   ├── feature/                  # Feature-specific components
+│   │   │   ├── FloatingActionButton.vue
+│   │   │   ├── GlobalSearchPanel.vue
+│   │   │   ├── InventoryItemSelector.vue
+│   │   │   ├── PreviewExecuteArea.vue
+│   │   │   ├── SmartInputArea.vue
+│   │   │   └── TutorialOverlay.vue
+│   │   ├── layout/                   # Layout components
+│   │   │   ├── Sidebar.vue
+│   │   │   └── TitleBar.vue
+│   │   ├── modal/                    # Modal dialogs
+│   │   │   ├── ArchiveEditModal.vue
+│   │   │   ├── BatchEditModal.vue
+│   │   │   ├── ConfirmModal.vue
+│   │   │   └── PromptPopup.vue
+│   │   ├── system/                   # System utilities
+│   │   │   ├── PerformanceMonitor.vue
+│   │   │   ├── PerformanceSettings.vue
+│   │   │   ├── PlayerManager.vue
+│   │   │   └── UniformConfigPanel.vue
+│   │   ├── theme/                    # Theme selection
+│   │   │   └── ThemeSelector.vue
+│   │   └── ui/                       # Reusable UI primitives
+│   │       ├── CustomDropdown.vue
+│   │       ├── CustomSlider.vue
+│   │       ├── ErrorBoundary.vue
+│   │       ├── LazyImage.vue
+│   │       └── NotificationPopup.vue
+│   ├── composables/                  # Vue composition functions
+│   │   ├── useArchiveActions.ts      # Save CRUD operations
+│   │   ├── useArchiveData.ts         # Save data management
+│   │   ├── useArchiveCard.ts         # Card interactions
+│   │   ├── useArchiveCardFlow.ts     # Flow mode logic
+│   │   ├── useArchiveFilters.ts      # Filter & search
+│   │   ├── useUndoRedo.ts            # Undo/redo support
+│   │   ├── useGlobalSearchPanel.ts   # Global search
+│   │   ├── useFloatingActionButton.ts
+│   │   ├── useQuickCreate.ts
+│   │   ├── usePlayerManager.ts
+│   │   ├── usePerformanceMonitor.ts
+│   │   ├── usePerformanceSettings.ts
+│   │   ├── useTutorialOverlay.ts
+│   │   ├── useToast.ts
+│   │   ├── useValidator.ts
+│   │   ├── useNameParser.ts
+│   │   ├── useReleaseNotes.ts
+│   │   ├── useConfigResolver.ts
+│   │   ├── useFocusTrap.ts
+│   │   ├── useAnimations.ts
+│   │   ├── useUniformConfigPanel.ts
+│   │   └── useInventoryItemSelector.ts
+│   ├── config/                       # App configuration
+│   │   ├── cdnConfig.ts
+│   │   ├── sidebarMenu.ts
+│   │   ├── updateConfig.ts
+│   │   └── version.ts
+│   ├── i18n/                         # Internationalization
+│   │   ├── index.ts
+│   │   ├── loader.ts
+│   │   └── locales/
+│   │       ├── en-US/                # English (JSON files by domain)
+│   │       ├── zh-CN/                # Simplified Chinese
+│   │       └── zh-TW/                # Traditional Chinese
+│   ├── router/                       # Vue Router configuration
+│   ├── services/                     # Business logic services
+│   │   ├── storageService.ts         # Persistent storage
+│   │   ├── logService.ts             # Logging
+│   │   ├── notificationService.ts    # Notifications
+│   │   ├── popupService.ts           # Popup management
+│   │   ├── themeStorage.ts           # Theme persistence
+│   │   ├── pluginStorage.ts          # Plugin data
+│   │   └── updateService.ts          # Auto-update
+│   ├── styles/
+│   │   ├── animations.css
+│   │   └── themes/                   # Theme CSS files
+│   │       ├── _colors.css
+│   │       ├── _components.css
+│   │       ├── _semantic.css
+│   │       ├── light.css / dark.css
+│   │       ├── high-contrast.css
+│   │       ├── ocean.css / forest.css
+│   │       ├── sunset.css / lavender.css
+│   │       ├── rose.css / mint.css
+│   │       ├── peach.css / sky.css
+│   │       └── index.css
+│   ├── utils/                        # Utilities
+│   │   ├── icons.ts / icons-full.ts / icons-critical.ts
+│   │   ├── nameParser.ts
+│   │   ├── performance.ts
+│   │   ├── consoleForwarder.ts
+│   │   ├── polyfills.ts
+│   │   ├── disableInteractions.ts
+│   │   └── floatingButtonProtection.ts
+│   ├── views/                        # Page views
+│   │   ├── Home.vue                  # Save list
+│   │   ├── CreateArchive/            # Create save wizard
+│   │   ├── EditArchive.vue           # Edit save
+│   │   ├── QuickCreateArchive.vue    # Quick create
+│   │   ├── SelectCreateMode.vue      # Mode selection
+│   │   ├── Settings.vue              # App settings
+│   │   ├── About.vue                 # About page
+│   │   ├── Log.vue                   # Operation logs
+│   │   └── TestArchive.vue           # Testing utility
+│   ├── types.ts                      # Global type definitions
+│   ├── appContext.ts                 # Dependency injection context
+│   ├── App.vue                       # Root component
+│   └── main.ts                       # Application entry
+├── src-tauri/                        # Rust backend
 │   └── src/
-│       ├── lib.rs               # Library entry
-│       ├── main.rs              # Main entry
-│       ├── save_commands.rs     # Save operation commands
-│       ├── save_editor.rs       # Save file editor
-│       ├── player_data.rs       # Player data handling
-│       ├── steam_api.rs         # Steam API integration
-│       ├── feedback_commands.rs # Feedback system
-│       └── ...                  # Other modules
-├── plugins/                      # Plugin Directory
-│   ├── lang-ja-JP/              # Japanese language pack
-│   ├── lang-ko-KR/              # Korean language pack
-│   ├── lang-ru-RU/              # Russian language pack
-│   ├── lang-pt-BR/              # Brazilian Portuguese pack
-│   ├── theme-cyberpunk/         # Cyberpunk theme
-│   ├── theme-dracula/           # Dracula theme
-│   ├── theme-monokai/           # Monokai theme
-│   ├── theme-nord/              # Nord theme
-│   └── theme-solarized/         # Solarized theme
-├── public/                       # Static Assets
-│   ├── icons/                   # Game item icons (20+)
-│   └── images/                  # Game level images (40+)
-└── docs/                         # Documentation and screenshots
+│       ├── lib.rs                    # Library entry / Tauri setup
+│       ├── main.rs                   # Main entry
+│       ├── save_commands.rs          # Save CRUD commands
+│       ├── save_editor.rs            # Save file editing
+│       ├── save_shared.rs            # Shared save types
+│       ├── save_utils.rs             # Save file utilities
+│       ├── new_save.rs               # Save creation logic
+│       ├── player_data.rs            # Player data handling
+│       ├── cli_handlers.rs           # CLI command handlers
+│       ├── system_commands.rs        # System-level commands
+│       ├── theme_commands.rs         # Theme management
+│       ├── gpu_settings.rs           # GPU/rendering config
+│       ├── get_file_path.rs          # File path resolution
+│       ├── common.rs                 # Common helpers
+│       └── error.rs                  # Error types
+├── public/                           # Static assets
+│   ├── icons/                        # Game item icons
+│   └── images/                       # Game level images
+├── docs/                             # Screenshots
+├── scripts/                          # Build scripts
+│   └── sync-version.js               # Version syncing
+├── dist/                             # Build output
+├── index.html                        # HTML entry
+├── vite.config.ts                    # Vite configuration
+├── tsconfig.json                     # TypeScript configuration
+├── eslint.config.js                  # ESLint configuration
+├── package.json
+└── pnpm-lock.yaml
 ```
 
 ---
 
 ## 🎨 Themes
 
-ETB Save Manager includes 15+ built-in themes:
+ETB Save Manager includes 13 built-in themes:
 
-### Basic Themes
+### Base Themes
 - **Light** — Clean light theme
 - **Dark** — Comfortable dark theme
-- **High Contrast** — Accessibility-focused theme
 
 ### Color Themes
-- **Ocean** 🌊 — Deep blue ocean-inspired
-- **Forest** 🌲 — Natural green forest theme
-- **Sunset** 🌅 — Warm orange sunset colors
-- **Lavender** 💜 — Soft purple lavender
-- **Rose** 🌸 — Elegant pink rose
-- **Mint** 🍃 — Fresh mint green
-- **Peach** 🍑 — Soft peach tones
-- **Sky** ☁️ — Bright sky blue
+- **Ocean** — Deep blue ocean-inspired
+- **Forest** — Natural green forest theme
+- **Sunset** — Warm orange sunset colors
+- **Lavender** — Soft purple lavender
+- **Rose** — Elegant pink rose
+- **Mint** — Fresh mint green
+- **Peach** — Soft peach tones
+- **Sky** — Bright sky blue
 
-### Seasonal Themes
-- **New Year** 🎊 — New Year celebration theme
-- **Spring Festival** 🧧 — Chinese New Year theme (limited time)
-
-### Plugin Themes
-- **Cyberpunk** — Neon cyberpunk aesthetic
-- **Dracula** — Popular Dracula color scheme
-- **Monokai** — Classic Monokai theme
-- **Nord** — Arctic Nord color palette
-- **Solarized** — Solarized color scheme
-
----
-
-## 🚧 Development Status
-
-**Current Version:** `v3.1.0`
-
-| Feature | Status |
-|---------|--------|
-| Core Save Management | ✅ Complete |
-| Search & Filter | ✅ Complete |
-| Theme System (15+ themes) | ✅ Complete |
-| Multi-language Support | ✅ Complete |
-| Save Data Editor | ✅ Complete |
-| Creation Modes (Quick & Standard) | ✅ Complete |
-| Feedback System | ✅ Complete |
-| Plugin System | ✅ Complete |
-| Theme Editor | ✅ Complete |
-| Inventory Editor | ✅ Complete |
-| Player Data Editor | ✅ Complete |
-| Steam Cache Management | ✅ Complete |
-| Auto-Update | ✅ Complete |
-| Level Info Editor | 🔄 Planned |
-
----
-
-## 🎬 Video Tutorial
-
-Watch the detailed operation guide: [Bilibili Video](https://www.bilibili.com/video/BV1L3yeYzEfi) (Based on v2.6.0)
+### Utility Themes
+- **Custom** — Define your own colors via the theme editor
 
 ---
 
@@ -284,13 +335,9 @@ Watch the detailed operation guide: [Bilibili Video](https://www.bilibili.com/vi
 
 Contributions are welcome! This is a personal student project, and any help is appreciated.
 
-- 🐛 [Report bugs](https://github.com/Eververdants/ETBSaveManager/issues)
-- 💡 [Request features](https://github.com/Eververdants/ETBSaveManager/issues)
-- 📧 Contact: **llzgd@outlook.com**
-
-### Plugin Development
-
-Want to create your own language pack or theme? Check out the [Plugin Development Guide](./plugins/PLUGIN_DEV_GUIDE_EN.md).
+- [Report bugs](https://github.com/Eververdants/ETBSaveManager/issues)
+- [Request features](https://github.com/Eververdants/ETBSaveManager/issues)
+- Contact: **llzgd@outlook.com**
 
 ---
 
@@ -305,7 +352,7 @@ All rights to *Escape The Backrooms* and its assets belong to their respective o
 
 ## 📄 License
 
-[MIT License](LICENSE) © 2024-NOW Eververdants
+[MIT License](LICENSE) © 2026 Eververdants
 
 ---
 

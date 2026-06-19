@@ -1,3 +1,6 @@
+import "@fontsource-variable/fraunces";
+import "@fontsource-variable/dm-sans";
+import "@fontsource-variable/jetbrains-mono";
 import { i18nReady } from "@/i18n";
 import "@/styles/global.css";
 import { App } from "@/app";

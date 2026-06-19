@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="6" fill="#3D5AFE"/>
-  <text x="16" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">ETB</text>
+  <rect width="32" height="32" rx="3" fill="#1a1714"/>
+  <rect x="0" y="0" width="32" height="6" fill="#f4d738"/>
+  <text x="16" y="22" text-anchor="middle" font-family="ui-serif, Georgia, serif" font-size="11" font-weight="700" font-style="italic" fill="#f1ead8" letter-spacing="0.5">ETB</text>
+  <rect x="4" y="26" width="24" height="0.5" fill="#f4d738"/>
 </svg>

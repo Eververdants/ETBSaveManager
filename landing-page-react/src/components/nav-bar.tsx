@@ -1,10 +1,11 @@
 import { useTranslation } from "react-i18next";
 
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { site } from "@/content/site-content";
 
 /**
- * 导航条：档案柜标签 + 文件路径面包屑 + 主题切换
+ * 导航条：档案柜标签 + 文件路径面包屑 + 语言/主题切换
  */
 export function NavBar(): React.JSX.Element {
   const { t } = useTranslation();
@@ -54,6 +55,7 @@ export function NavBar(): React.JSX.Element {
               </svg>
               <span>{t("common.source")}</span>
             </a>
+            <LanguageSwitcher />
             <ThemeToggle />
           </div>
         </nav>

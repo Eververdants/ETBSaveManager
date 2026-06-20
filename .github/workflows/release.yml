@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -42,12 +42,12 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: 9
 
@@ -58,7 +58,7 @@ jobs:
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -69,20 +69,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build the app
-        uses: tauri-apps/tauri-action@v0
+        run: pnpm tauri build --target ${{ matrix.arch }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tauriScript: pnpm tauri
-          args: --target ${{ matrix.arch }}
-          tagName: ${{ github.ref_name }}
-          # 后置 release job 统一创建 release，build job 不创建
-          includeRelease: false
-          # 保留 updater 资源（latest.json / sig 仍然生成在 target/.../bundle/ 下）
-          includeUpdaterJson: true
 
       - name: Upload bundle artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: bundles-${{ matrix.label }}
           path: |
@@ -99,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download all bundle artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: artifacts
           merge-multiple: true

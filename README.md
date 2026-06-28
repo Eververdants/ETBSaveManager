@@ -118,6 +118,18 @@ pnpm tauri build
 
 ---
 
+## 🔄 Maintenance Policy
+
+This project is maintained on an **as-needed basis**:
+
+- **Map Updates** — When *Escape The Backrooms* releases new maps (levels), this project will be updated to support the new save data formats and level metadata.
+- **Bug Fixes & Optimizations** — When bugs or performance issues are identified and reported, fixes and optimizations will be applied in a timely manner.
+- **Feature Requests** — New features beyond game update compatibility are considered on a case-by-case basis. Feel free to open an issue to discuss.
+
+> The primary goal of this project is to keep the save manager functional and up-to-date with the game's evolution. Community contributions for new features are welcome!
+
+---
+
 ## 🧰 Tech Stack
 
 ### Frontend

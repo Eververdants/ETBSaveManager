@@ -1,4 +1,4 @@
-import { ref, nextTick } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { invoke } from "@tauri-apps/api/core";
 import { gsap } from "gsap";
@@ -6,7 +6,7 @@ import { useToast } from "./useToast";
 import { useUndoRedo } from "./useUndoRedo";
 import type { Ref } from "vue";
 import type { Router } from "vue-router";
-import type { ArchiveData, UndoAction } from "@/types";
+import type { ArchiveData } from "@/types";
 
 // Cache of recently deleted archives for undo (max 20 entries)
 const deletedArchivesCache = new Map<number, ArchiveData>();
@@ -65,7 +65,7 @@ interface ArchiveDataMethods {
 
 export function useArchiveActions(
   archiveData: ArchiveDataMethods,
-  filters: Record<string, unknown>,
+  _filters: Record<string, unknown>,
 ): ArchiveActionsReturn {
   const router: Router = useRouter();
   const toast = useToast();
@@ -75,7 +75,6 @@ export function useArchiveActions(
   const archiveToDelete = ref<ArchiveData | null>(null);
   const isDeleting = ref(false);
   const deletingCardId = ref<number | null>(null);
-  const showUndoDeleteToast = ref(false);
   const isProcessingClick = new Set<number>();
 
   const selectArchive = (archive: ArchiveData): void => {
@@ -234,7 +233,10 @@ export function useArchiveActions(
         undo: async () => {
           // Cancel pending permanent delete (safety)
           const p = pendingPermanentDeletes.get(archiveId);
-          if (p) { clearTimeout(p); pendingPermanentDeletes.delete(archiveId); }
+          if (p) {
+            clearTimeout(p);
+            pendingPermanentDeletes.delete(archiveId);
+          }
           // Actually restore the file from trash
           if (archiveSnapshot.path) {
             try {
@@ -291,7 +293,10 @@ export function useArchiveActions(
             text: "Undo",
             onClick: async () => {
               const p = pendingPermanentDeletes.get(archiveId);
-              if (p) { clearTimeout(p); pendingPermanentDeletes.delete(archiveId); }
+              if (p) {
+                clearTimeout(p);
+                pendingPermanentDeletes.delete(archiveId);
+              }
               try {
                 await undo();
                 toast.showInfo(`Undo delete of "${archiveName}"`, { duration: 3000 });
@@ -324,7 +329,9 @@ export function useArchiveActions(
     deletingCardId.value = null;
   };
 
-  const createNewArchive = (): void => { router.push({ name: "CreateArchive" }); };
+  const createNewArchive = (): void => {
+    router.push({ name: "CreateArchive" });
+  };
 
   const openSaveGamesFolder = async (callbacks: Pick<ArchiveActionsCallbacks, "onSuccess"> = {}): Promise<void> => {
     try {
@@ -376,7 +383,10 @@ export function useArchiveActions(
           // Cancel all pending permanent deletes for this batch
           for (const { snapshot } of batchSnapshots) {
             const p = pendingPermanentDeletes.get(snapshot.id);
-            if (p) { clearTimeout(p); pendingPermanentDeletes.delete(snapshot.id); }
+            if (p) {
+              clearTimeout(p);
+              pendingPermanentDeletes.delete(snapshot.id);
+            }
           }
           // Actually restore each file from trash
           for (const { snapshot } of batchSnapshots) {
@@ -436,7 +446,10 @@ export function useArchiveActions(
             onClick: async () => {
               for (const { snapshot } of batchSnapshots) {
                 const p = pendingPermanentDeletes.get(snapshot.id);
-                if (p) { clearTimeout(p); pendingPermanentDeletes.delete(snapshot.id); }
+                if (p) {
+                  clearTimeout(p);
+                  pendingPermanentDeletes.delete(snapshot.id);
+                }
               }
               try {
                 await undo();
@@ -452,7 +465,9 @@ export function useArchiveActions(
     }
 
     if (deleteResults.failed.length > 0) {
-      toast.showError(`Batch delete complete: ${deleteResults.success.length} succeeded, ${deleteResults.failed.length} failed`);
+      toast.showError(
+        `Batch delete complete: ${deleteResults.success.length} succeeded, ${deleteResults.failed.length} failed`,
+      );
       if (onError) onError(deleteResults);
     }
 

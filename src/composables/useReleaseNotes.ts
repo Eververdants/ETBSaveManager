@@ -3,7 +3,7 @@
  * Unified management of release notes data loading and access, avoiding code duplication
  * Now only retains the current version's release notes data
  */
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import type { ComputedRef } from "vue";
 

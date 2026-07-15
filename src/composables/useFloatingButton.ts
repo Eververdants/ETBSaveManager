@@ -1,4 +1,4 @@
-import { ref, onUnmounted } from "vue";
+import { ref } from "vue";
 import { initFloatingButtonProtection, cleanupFloatingButtonProtection } from "../utils/floatingButtonProtection";
 import type { Ref } from "vue";
 

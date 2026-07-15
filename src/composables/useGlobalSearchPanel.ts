@@ -1,4 +1,4 @@
-import { ref, computed, watch, onUnmounted, nextTick } from "vue";
+import { ref, computed, nextTick } from "vue";
 import type { Ref } from "vue";
 
 interface ScrollSnapshot {

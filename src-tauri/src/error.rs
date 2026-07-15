@@ -66,3 +66,9 @@ impl From<std::env::VarError> for AppError {
         Self::General(value.to_string())
     }
 }
+
+impl From<tauri::Error> for AppError {
+    fn from(value: tauri::Error) -> Self {
+        Self::General(value.to_string())
+    }
+}

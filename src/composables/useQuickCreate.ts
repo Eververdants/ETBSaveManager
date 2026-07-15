@@ -1,4 +1,4 @@
-import { ref, reactive, computed, nextTick } from "vue";
+import { reactive, computed, nextTick } from "vue";
 import type { ComputedRef, Reactive } from "vue";
 import {
   createDefaultUniformConfig,
@@ -13,8 +13,6 @@ import type {
   UniformConfig,
   SmartRules,
   QuickCreateBatchResult,
-  DifficultyLevel,
-  ConfigSource,
   ValidationResult,
   ParsedNameInfo,
   ResolvedConfig,
@@ -435,10 +433,7 @@ export function useQuickCreate(): QuickCreateReturn {
    * Update uniform config
    * Requirements: 16.2 - 300ms debounce when uniform config changes
    */
-  const updateUniformConfig = (
-    field: keyof UniformConfig,
-    value: Record<string, unknown>,
-  ): void => {
+  const updateUniformConfig = (field: keyof UniformConfig, value: Record<string, unknown>): void => {
     if (state.uniformConfig[field]) {
       (state.uniformConfig as Record<string, unknown>)[field] = {
         ...(state.uniformConfig[field] as Record<string, unknown>),

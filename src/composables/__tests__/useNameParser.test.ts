@@ -12,9 +12,6 @@ import {
   isCommentLine,
   isHeaderRow,
   mapColumns,
-  LEVEL_KEYWORDS,
-  DIFFICULTY_KEYWORDS,
-  BACKPACK_KEYWORDS,
 } from "../../utils/nameParser";
 import type { ParsedNameInfo, ParseResult } from "../../types";
 

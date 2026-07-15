@@ -3,7 +3,7 @@ use crate::error::AppResult;
 use crate::save_shared;
 use serde_json::Value as JsonValue;
 use std::fs::{self, File};
-use std::io::{BufReader, BufWriter};
+use std::io::{BufReader, BufWriter, Write};
 use std::path::Path;
 use uesave::{
     Properties, Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
@@ -212,17 +212,25 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     // Process player data
     process_player_data(&mut save, json_data)?;
 
+    // Write to temp file first to avoid data loss on crash
+    let temp_path = output_path.with_extension("sav.tmp");
+    {
+        let file = File::create(&temp_path).map_err(|e| format!("Failed to create temp file: {}", e))?;
+        let mut writer = BufWriter::new(file);
+        save.write(&mut writer)
+            .map_err(|e| format!("Failed to write save: {:?}", e))?;
+        writer.flush().map_err(|e| format!("Failed to flush buffer: {}", e))?;
+    }
+
     // Delete original save file
     if Path::new(&original_path).exists() {
         fs::remove_file(&original_path).map_err(|e| format!("Failed to delete old file: {}", e))?;
         println!("🗑️ Deleted original save file");
     }
 
-    // Write new file
-    let file = File::create(&output_path).map_err(|e| format!("Failed to create output file: {}", e))?;
-    let mut writer = BufWriter::new(file);
-    save.write(&mut writer)
-        .map_err(|e| format!("Failed to write save: {:?}", e))?;
+    // Atomically rename temp to target path
+    fs::rename(&temp_path, &output_path)
+        .map_err(|e| format!("Failed to rename temp file: {}", e))?;
 
     println!("💾 Save saved to: {:?}", output_path);
 
@@ -576,6 +584,7 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
     let mut writer = BufWriter::new(file);
     save.write(&mut writer)
         .map_err(|e| format!("Failed to write save: {:?}", e))?;
+    writer.flush().map_err(|e| format!("Failed to flush buffer: {}", e))?;
 
     println!("💾 Hub door unlocking complete, save saved");
     Ok("Hub doors unlocked successfully".to_string())

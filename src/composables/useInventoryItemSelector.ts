@@ -1,4 +1,4 @@
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, nextTick } from "vue";
 import type { ComputedRef, Ref } from "vue";
 
 interface InventoryItem {

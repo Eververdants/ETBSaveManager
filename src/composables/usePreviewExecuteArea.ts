@@ -12,8 +12,8 @@ interface PreviewExecuteAreaReturn {
 
 export function usePreviewExecuteArea(
   archives: Ref<ArchiveConfig[]>,
-  selectedCount: Ref<number>,
-  isCreating: Ref<boolean>,
+  _selectedCount: Ref<number>,
+  _isCreating: Ref<boolean>,
 ): PreviewExecuteAreaReturn {
   const uniformCount = computed((): number => {
     return archives.value?.filter((a) => !a.hasIndividualSettings).length || 0;

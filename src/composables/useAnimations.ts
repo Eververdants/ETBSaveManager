@@ -1,5 +1,5 @@
 import { gsap } from "gsap";
-import { getAnimationParams, detectDevicePerformance } from "../utils/performance";
+import { getAnimationParams } from "../utils/performance";
 import type { Ref } from "vue";
 
 interface AnimationHandlers {

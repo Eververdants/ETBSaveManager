@@ -1,13 +1,6 @@
-import { ref, computed } from "vue";
-import type { Ref, ComputedRef } from "vue";
-import type {
-  DifficultyLevel,
-  ConfigSource,
-  UniformConfig,
-  SmartRules,
-  ArchiveConfig,
-  ResolvedConfig,
-} from "@/types";
+import { ref } from "vue";
+import type { Ref } from "vue";
+import type { DifficultyLevel, UniformConfig, SmartRules, ArchiveConfig, ResolvedConfig } from "@/types";
 
 /**
  * Config inheritance resolver composable
@@ -68,11 +61,7 @@ export function createDefaultSmartRules(): SmartRules {
  * Resolve the final configuration for a single archive
  * Inheritance priority: individual settings > smart rules > uniform config > defaults
  */
-export function resolve(
-  archive: ArchiveConfig,
-  uniformConfig: UniformConfig,
-  smartRules: SmartRules,
-): ResolvedConfig {
+export function resolve(archive: ArchiveConfig, uniformConfig: UniformConfig, smartRules: SmartRules): ResolvedConfig {
   const result: ResolvedConfig = {
     level: null,
     difficulty: DEFAULT_CONFIG.difficulty,
@@ -260,7 +249,11 @@ interface ConfigResolverReturn {
   updateSmartRules: (updates: Partial<SmartRules>) => void;
   resetConfig: () => void;
   resolve: (archive: ArchiveConfig, uniformConfig: UniformConfig, smartRules: SmartRules) => ResolvedConfig;
-  resolveAll: (archives: ArchiveConfig[], uniformConfig: UniformConfig, smartRules: SmartRules) => Map<string, ResolvedConfig>;
+  resolveAll: (
+    archives: ArchiveConfig[],
+    uniformConfig: UniformConfig,
+    smartRules: SmartRules,
+  ) => Map<string, ResolvedConfig>;
   hasIndividualSettings: (archive: ArchiveConfig) => boolean;
   createDefaultUniformConfig: () => UniformConfig;
   createDefaultSmartRules: () => SmartRules;

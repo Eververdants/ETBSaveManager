@@ -46,7 +46,7 @@
             @blur="commitRename"
           />
         </div>
-        <h3 v-else class="archive-name" v-html="highlightedName" @dblclick.stop="startRename"></h3>
+        <h3 v-else class="archive-name" v-html="sanitize(highlightedName)" @dblclick.stop="startRename"></h3>
         <div class="game-mode-info">
           <span
             class="difficulty-tag"
@@ -70,7 +70,7 @@
 
     <!-- Lower info area -->
     <div class="card-info">
-      <span class="current-level" v-html="highlightedLevel"></span>
+      <span class="current-level" v-html="sanitize(highlightedLevel)"></span>
       <div class="action-buttons">
         <button class="action-btn edit" type="button" aria-label="编辑存档" @click.stop="editArchive">
           <font-awesome-icon icon="fa-solid fa-edit" aria-hidden="true" />
@@ -153,6 +153,17 @@ const commitRename = () => {
 const cancelRename = () => {
   isRenaming.value = false;
   renameValue.value = "";
+};
+
+const sanitize = (html) => {
+  // Strip dangerous attributes from <mark> tags, keep only safe class attribute
+  html = html.replace(/<(\/?)mark\b([^>]*)>/gi, (match, isClosing, attrs) => {
+    if (isClosing) return "</mark>";
+    const cls = attrs.match(/class\s*=\s*"(?:[^"\\]|\\.)*"/i);
+    return cls ? `<mark ${cls[0]}>` : "<mark>";
+  });
+  // Remove all other HTML tags
+  return html.replace(/<(?!\/?mark\b)[^>]*>/gi, "");
 };
 
 const { t, te } = useI18n({ useScope: "global" });

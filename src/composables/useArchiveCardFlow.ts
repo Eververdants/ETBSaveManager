@@ -1,4 +1,4 @@
-import { ref, computed, nextTick, type Ref, type ComputedRef } from "vue";
+import { ref, computed, type Ref, type ComputedRef } from "vue";
 import type { ArchiveData } from "@/types";
 
 const VIRTUAL_SCROLL_THRESHOLD = 50;

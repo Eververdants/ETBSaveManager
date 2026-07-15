@@ -14,7 +14,7 @@
  *   Ctrl+Shift+Z -> redo()
  */
 
-import { ref, computed, type Ref, type ComputedRef } from "vue";
+import { ref, computed, type ComputedRef } from "vue";
 import type { UndoAction } from "@/types";
 
 interface HistoryAction extends UndoAction {

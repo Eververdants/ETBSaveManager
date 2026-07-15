@@ -228,6 +228,8 @@ pub async fn restore_file(file_path: String) -> AppResult<()> {
         // The .trash path is the original path with .sav.trash extension
         let trash_path = path.with_extension("sav.trash");
 
+        validate_save_games_path(&trash_path)?;
+
         if !trash_path.exists() {
             return Err(format!("Trash file not found: {}", trash_path.display()).into());
         }
@@ -240,6 +242,9 @@ pub async fn restore_file(file_path: String) -> AppResult<()> {
         // Restore (rename back)
         fs::rename(&trash_path, path)
             .map_err(|e| format!("Failed to restore file: {}", e))?;
+
+        // Validate restored path
+        validate_save_games_path(path)?;
 
         // Add back to MAINSAVE records
         add_save_to_mainsave(extract_archive_name(filename))?;
@@ -256,6 +261,8 @@ pub async fn permanent_delete_file(file_path: String) -> AppResult<()> {
     run_blocking(move || {
         let path = Path::new(&file_path);
         let trash_path = path.with_extension("sav.trash");
+
+        validate_save_games_path(&trash_path)?;
 
         if trash_path.exists() {
             fs::remove_file(&trash_path)

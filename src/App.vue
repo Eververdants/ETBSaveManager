@@ -141,6 +141,24 @@ const handleFindNextEventFromLock = (event) => {
   handleFindNavigateShortcut(!!event?.detail?.backward);
 };
 
+const handlePerformanceToggle = (event) => {
+  performanceMonitorEnabled.value = !!event.detail?.enabled;
+};
+
+const handleDeveloperModeChanged = (event) => {
+  developerModeEnabled.value = !!event.detail?.enabled;
+  if (!developerModeEnabled.value) {
+    performanceMonitorEnabled.value = false;
+  }
+};
+
+const handleSidebarRouteChange = (event) => {
+  const routeName = event.detail.route;
+  if (routeName && router.hasRoute(routeName)) {
+    router.push({ name: routeName });
+  }
+};
+
 let mainContentCache = null;
 
 const getMainContent = () => {
@@ -155,24 +173,12 @@ onMounted(() => {
   window.addEventListener("app-global-find", handleFindEventFromLock);
   window.addEventListener("app-global-find-next", handleFindNextEventFromLock);
 
-  window.addEventListener("performance-monitor-toggle", (event) => {
-    performanceMonitorEnabled.value = !!event.detail?.enabled;
-  });
-  window.addEventListener("developer-mode-changed", (event) => {
-    developerModeEnabled.value = !!event.detail?.enabled;
-    if (!developerModeEnabled.value) {
-      performanceMonitorEnabled.value = false;
-    }
-  });
+  window.addEventListener("performance-monitor-toggle", handlePerformanceToggle);
+  window.addEventListener("developer-mode-changed", handleDeveloperModeChanged);
 
-  window.addEventListener("sidebar-route-change", (event) => {
-    const routeName = event.detail.route;
-    if (routeName && router.hasRoute(routeName)) {
-      router.push({ name: routeName });
-    }
-  });
+  window.addEventListener("sidebar-route-change", handleSidebarRouteChange);
 
-  router.afterEach((to, from) => {
+  const removeAfterEach = router.afterEach((to, from) => {
     if (to.name !== from.name) {
       const mainContent = getMainContent();
       if (mainContent) {
@@ -193,6 +199,10 @@ onUnmounted(() => {
   document.removeEventListener("keydown", handleGlobalKeydown, true);
   window.removeEventListener("app-global-find", handleFindEventFromLock);
   window.removeEventListener("app-global-find-next", handleFindNextEventFromLock);
+  window.removeEventListener("performance-monitor-toggle", handlePerformanceToggle);
+  window.removeEventListener("developer-mode-changed", handleDeveloperModeChanged);
+  window.removeEventListener("sidebar-route-change", handleSidebarRouteChange);
+  removeAfterEach();
   mainContentCache = null;
 });
 

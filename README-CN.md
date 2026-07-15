@@ -1,29 +1,30 @@
-# 🕳️ 逃离后室存档管理器 (E.T.B. Save Manager)
+<p align="center">
+  <img src="./src-tauri/icons/128x128.png" alt="ETB Save Manager" width="128">
+</p>
+
+<h1 align="center">ETB Save Manager</h1>
 
 <p align="center">
-  <img src="./src-tauri/icons/128x128.png" alt="E.T.B. Save Manager" width="128">
+  《逃离后室》存档管理工具，基于 Tauri 2.0 构建。
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.2.0-blue.svg" alt="版本"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/许可证-MIT-green.svg" alt="许可证"></a>
-  <img src="https://img.shields.io/badge/平台-Windows-0078D4.svg?logo=windows" alt="平台">
-  <img src="https://img.shields.io/badge/框架-Tauri%202.0-orange.svg" alt="框架">
+  <a href="#">简体中文</a>
+  · <a href="./README-HANT.md">繁體中文</a>
+  · <a href="./README.md">English</a>
 </p>
 
 <p align="center">
-  <b>一款现代化、跨平台的《逃离后室》存档管理工具</b>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/v/release/Eververdants/ETBSaveManager" alt="Version"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/actions"><img src="https://img.shields.io/github/actions/workflow/status/Eververdants/ETBSaveManager/release.yml" alt="CI"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/downloads/Eververdants/ETBSaveManager/total" alt="Downloads"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Eververdants/ETBSaveManager" alt="License"></a>
+  <img src="https://img.shields.io/badge/platform-Windows-blue" alt="Platform">
 </p>
 
-<p align="center">
-  <a href="#">简体中文</a> | <a href="./README-HANT.md">繁體中文</a> | <a href="./README.md">English</a>
-</p>
+## 功能特性
 
----
-
-## ✨ 功能特性
-
-### 🗂️ 存档管理
+### 存档管理
 
 - **完整增删改查** — 创建、编辑、删除、复制、隐藏/显示存档
 - **软删除与回收站** — 删除的存档可恢复或永久删除
@@ -34,7 +35,7 @@
 - **撤销 / 重做** — 完整的存档操作撤销与重做支持
 - **虚拟滚动** — 大量存档时依然保持流畅
 
-### 🎨 现代化界面
+### 现代化界面
 
 - **简洁设计** — 直观的界面，搭配 GSAP 驱动的流畅动画
 - **13 套主题** — 浅色、深色及 10 套色彩主题
@@ -43,7 +44,7 @@
 - **全局搜索** — 任意页面按 `Ctrl+F` 即时搜索
 - **新手引导** — 首次使用时的交互式引导覆盖层
 
-### 🌍 多语言支持
+### 多语言支持
 
 内置语言：
 
@@ -53,7 +54,7 @@
 
 > 国际化系统采用模块化设计，可通过添加新的语言文件来贡献更多语言。
 
-### 🛠️ 高级功能
+### 高级功能
 
 - **多种创建模式**
   - 快速创建 — 简化流程，快速生成存档
@@ -67,7 +68,7 @@
 
 ---
 
-## 🖥️ 界面预览
+## 界面预览
 
 > 以下截图使用"海洋"主题演示
 
@@ -83,7 +84,7 @@
 
 ---
 
-## 📦 安装方式
+## 安装方式
 
 ### 下载安装包
 
@@ -118,7 +119,7 @@ pnpm tauri build
 
 ---
 
-## 🔄 维护策略
+## 维护策略
 
 本项目按需进行维护：
 
@@ -130,7 +131,7 @@ pnpm tauri build
 
 ---
 
-## 🧰 技术栈
+## 技术栈
 
 ### 前端
 
@@ -168,7 +169,7 @@ pnpm tauri build
 
 ---
 
-## 📁 项目结构
+## 项目结构
 
 ```
 ETBSaveManager/
@@ -320,7 +321,7 @@ ETBSaveManager/
 
 ---
 
-## 🎨 主题列表
+## 主题列表
 
 ETB Save Manager 内置 13 套主题：
 
@@ -338,12 +339,9 @@ ETB Save Manager 内置 13 套主题：
 - **Peach（蜜桃）** 柔和的蜜桃色调
 - **Sky（天空）** 明亮的天空蓝
 
-### 实用主题
-- **Custom（自定义）** — 通过主题编辑器自定义配色
-
 ---
 
-## 🤝 参与贡献
+## 参与贡献
 
 欢迎贡献代码！这是一个个人学生项目，任何帮助都非常感谢。
 
@@ -353,7 +351,7 @@ ETB Save Manager 内置 13 套主题：
 
 ---
 
-## ⚠️ 免责声明
+## 免责声明
 
 本项目**与 Fancy Games 或《逃离后室》没有任何关联、背书或连接**。
 
@@ -362,12 +360,26 @@ ETB Save Manager 内置 13 套主题：
 
 ---
 
-## 📄 开源许可
+## 星标历史
+
+<p align="center">
+  <a href="https://star-history.com/#Eververdants/ETBSaveManager&Date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
+    </picture>
+  </a>
+</p>
+
+---
+
+## 开源许可
 
 [MIT License](LICENSE) © 2026 Eververdants
 
 ---
 
 <p align="center">
-  <sub>使用 Vue.js 和 Tauri 用 ❤️ 构建</sub>
+  <sub>使用 Vue.js 和 Tauri 构建</sub>
 </p>

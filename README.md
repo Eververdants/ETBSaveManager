@@ -1,34 +1,30 @@
 <p align="center">
-  <img src="./src-tauri/icons/128x128.png" alt="E.T.B. Save Manager" width="128">
+  <img src="./src-tauri/icons/128x128.png" alt="ETB Save Manager" width="128">
 </p>
 
-<h1 align="center">🕳️ E.T.B. Save Manager</h1>
+<h1 align="center">ETB Save Manager</h1>
 
 <p align="center">
-  <b>The ultimate save file manager for <i>Escape The Backrooms</i></b><br>
-  <i>Full CRUD · 13 Themes · 3 Languages · Tauri 2.0</i>
-</p>
-
-<p align="center">
-  <a href="./README-CN.md">简体中文</a> | <a href="./README-HANT.md">繁體中文</a> | <a href="#">English</a>
+  A save file manager for <em>Escape The Backrooms</em>, built with Tauri 2.0.
 </p>
 
 <p align="center">
-  <a href="https://eververdants.github.io/ETBSaveManager/"><img src="https://img.shields.io/badge/Landing_Page-Visit-8B5CF6.svg" alt="Landing Page"></a>
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/v/release/Eververdants/ETBSaveManager?color=blue&label=latest" alt="Version"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
-  <img src="https://img.shields.io/badge/Platform-Windows-0078D4.svg?logo=windows" alt="Platform">
-  <img src="https://img.shields.io/badge/Framework-Tauri%202.0-orange.svg" alt="Framework">
-  <a href="https://github.com/Eververdants/ETBSaveManager/actions"><img src="https://img.shields.io/github/actions/workflow/status/Eververdants/ETBSaveManager/release.yml?label=build" alt="CI Status"></a>
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/downloads/Eververdants/ETBSaveManager/total?color=success" alt="Downloads"></a>
-  <a href="https://github.com/Eververdants/ETBSaveManager/stargazers"><img src="https://img.shields.io/github/stars/Eververdants/ETBSaveManager?style=social" alt="Stars"></a>
+  <a href="https://eververdants.github.io/ETBSaveManager/">Landing Page</a>
+  · <a href="./README-CN.md">简体中文</a>
+  · <a href="./README-HANT.md">繁體中文</a>
 </p>
 
----
+<p align="center">
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/v/release/Eververdants/ETBSaveManager" alt="Version"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/actions"><img src="https://img.shields.io/github/actions/workflow/status/Eververdants/ETBSaveManager/release.yml" alt="CI"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/downloads/Eververdants/ETBSaveManager/total" alt="Downloads"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Eververdants/ETBSaveManager" alt="License"></a>
+  <img src="https://img.shields.io/badge/platform-Windows-blue" alt="Platform">
+</p>
 
-## ✨ Features
+## Features
 
-### 🗂️ Save Management
+### Save Management
 
 - **Full CRUD Operations** — Create, edit, delete, copy, hide/show saves
 - **Soft Delete & Recycle Bin** — Trashed saves can be restored or permanently deleted
@@ -39,7 +35,7 @@
 - **Undo / Redo** — Full undo/redo support for archive operations
 - **Virtual Scrolling** — Smooth performance with large save collections
 
-### 🎨 Modern UI/UX
+### UI/UX
 
 - **Clean Interface** — Intuitive design with smooth GSAP-powered animations
 - **13 Themes** — Light, Dark, and 11 vibrant color themes
@@ -48,7 +44,7 @@
 - **Global Search** — Press `Ctrl+F` to search across any page
 - **Tutorial Overlay** — Interactive guide for first-time users
 
-### 🌍 Internationalization
+### Internationalization
 
 Built-in languages:
 
@@ -58,7 +54,7 @@ Built-in languages:
 
 > The i18n system is modular — additional languages can be contributed by adding new locale files.
 
-### 🛠️ Advanced Features
+### Advanced Features
 
 - **Multiple Creation Modes**
   - Quick Create — Streamlined workflow for fast save generation
@@ -72,7 +68,7 @@ Built-in languages:
 
 ---
 
-## 🖥️ Screenshots
+## Screenshots
 
 > Screenshots below are demonstrated using the "Ocean" theme
 
@@ -88,21 +84,7 @@ Built-in languages:
 
 ---
 
-## 🎥 Demos
-
-> 🎬 Want to see it in action? *(Coming soon — GIF recordings of key workflows)*
-
-<p align="center">
-  <b>Manage saves</b> &nbsp;·&nbsp; <b>Create archives</b> &nbsp;·&nbsp; <b>Edit inventory</b> &nbsp;·&nbsp; <b>Switch themes</b>
-</p>
-
-<p align="center">
-  <sub><i>GIF demonstrations are being recorded. Contributions welcome! Use <a href="https://www.screentogif.com/">ScreenToGif</a> (free, open-source) to record and submit.</i></sub>
-</p>
-
----
-
-## 📦 Installation
+## Installation
 
 ### Download Release
 
@@ -137,7 +119,7 @@ pnpm tauri build
 
 ---
 
-## 🔄 Maintenance Policy
+## Maintenance Policy
 
 This project is maintained on an **as-needed basis**:
 
@@ -149,7 +131,7 @@ This project is maintained on an **as-needed basis**:
 
 ---
 
-## 🧰 Tech Stack
+## Tech Stack
 
 ### Frontend
 
@@ -187,7 +169,7 @@ This project is maintained on an **as-needed basis**:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ETBSaveManager/
@@ -339,7 +321,7 @@ ETBSaveManager/
 
 ---
 
-## 🎨 Themes
+## Themes
 
 ETB Save Manager includes 13 built-in themes:
 
@@ -357,12 +339,9 @@ ETB Save Manager includes 13 built-in themes:
 - **Peach** — Soft peach tones
 - **Sky** — Bright sky blue
 
-### Utility Themes
-- **Custom** — Define your own colors via the theme editor
-
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! This is a personal student project, and any help is appreciated.
 
@@ -372,7 +351,7 @@ Contributions are welcome! This is a personal student project, and any help is a
 
 ---
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 This project is **not affiliated with, endorsed by, or connected to** Fancy Games or *Escape The Backrooms* in any way.
 
@@ -381,7 +360,7 @@ All rights to *Escape The Backrooms* and its assets belong to their respective o
 
 ---
 
-## ⭐ Star History
+## Star History
 
 <p align="center">
   <a href="https://star-history.com/#Eververdants/ETBSaveManager&Date">
@@ -395,12 +374,12 @@ All rights to *Escape The Backrooms* and its assets belong to their respective o
 
 ---
 
-## 📄 License
+## License
 
 [MIT License](LICENSE) © 2026 Eververdants
 
 ---
 
 <p align="center">
-  <sub>Built with ❤️ using Vue.js and Tauri</sub>
+  <sub>Built with Vue.js and Tauri</sub>
 </p>

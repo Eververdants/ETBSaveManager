@@ -1,22 +1,27 @@
-# 🕳️ E.T.B. Save Manager
-
 <p align="center">
   <img src="./src-tauri/icons/128x128.png" alt="E.T.B. Save Manager" width="128">
 </p>
 
-<p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/Version-3.2.0-blue.svg" alt="Version"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
-  <img src="https://img.shields.io/badge/Platform-Windows-0078D4.svg?logo=windows" alt="Platform">
-  <img src="https://img.shields.io/badge/Framework-Tauri%202.0-orange.svg" alt="Framework">
-</p>
+<h1 align="center">🕳️ E.T.B. Save Manager</h1>
 
 <p align="center">
-  <b>A modern, cross-platform save management tool for "Escape The Backrooms"</b>
+  <b>The ultimate save file manager for <i>Escape The Backrooms</i></b><br>
+  <i>Full CRUD · 13 Themes · 3 Languages · Tauri 2.0</i>
 </p>
 
 <p align="center">
   <a href="./README-CN.md">简体中文</a> | <a href="./README-HANT.md">繁體中文</a> | <a href="#">English</a>
+</p>
+
+<p align="center">
+  <a href="https://eververdants.github.io/ETBSaveManager/"><img src="https://img.shields.io/badge/Landing_Page-Visit-8B5CF6.svg" alt="Landing Page"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/v/release/Eververdants/ETBSaveManager?color=blue&label=latest" alt="Version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
+  <img src="https://img.shields.io/badge/Platform-Windows-0078D4.svg?logo=windows" alt="Platform">
+  <img src="https://img.shields.io/badge/Framework-Tauri%202.0-orange.svg" alt="Framework">
+  <a href="https://github.com/Eververdants/ETBSaveManager/actions"><img src="https://img.shields.io/github/actions/workflow/status/Eververdants/ETBSaveManager/release.yml?label=build" alt="CI Status"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/downloads/Eververdants/ETBSaveManager/total?color=success" alt="Downloads"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/stargazers"><img src="https://img.shields.io/github/stars/Eververdants/ETBSaveManager?style=social" alt="Stars"></a>
 </p>
 
 ---
@@ -79,6 +84,20 @@ Built-in languages:
 <p align="center">
   <img src="./docs/快速创建存档页面-en.png" alt="Quick Create Archive" width="49%">
   <img src="./docs/编辑页面-en.png" alt="Edit Archive" width="49%">
+</p>
+
+---
+
+## 🎥 Demos
+
+> 🎬 Want to see it in action? *(Coming soon — GIF recordings of key workflows)*
+
+<p align="center">
+  <b>Manage saves</b> &nbsp;·&nbsp; <b>Create archives</b> &nbsp;·&nbsp; <b>Edit inventory</b> &nbsp;·&nbsp; <b>Switch themes</b>
+</p>
+
+<p align="center">
+  <sub><i>GIF demonstrations are being recorded. Contributions welcome! Use <a href="https://www.screentogif.com/">ScreenToGif</a> (free, open-source) to record and submit.</i></sub>
 </p>
 
 ---
@@ -359,6 +378,20 @@ This project is **not affiliated with, endorsed by, or connected to** Fancy Game
 
 Game assets (e.g., level icons) are used **strictly for identification purposes** to help users recognize which level a save file belongs to.  
 All rights to *Escape The Backrooms* and its assets belong to their respective owners.
+
+---
+
+## ⭐ Star History
+
+<p align="center">
+  <a href="https://star-history.com/#Eververdants/ETBSaveManager&Date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
+    </picture>
+  </a>
+</p>
 
 ---
 

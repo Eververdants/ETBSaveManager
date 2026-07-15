@@ -206,7 +206,7 @@ const toggleDetail = () => {
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   animation: spin 0.6s linear infinite;
 }
 

@@ -360,7 +360,7 @@ onUnmounted(() => {
 .step-dot {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -408,7 +408,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   background: rgba(var(--accent-color-rgb), 0.1);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   color: var(--accent-color);
   font-size: 24px;
 }

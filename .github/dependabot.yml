@@ -1,0 +1,59 @@
+version: 2
+updates:
+  # Frontend dependencies (npm/pnpm)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "frontend"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    groups:
+      vue-ecosystem:
+        patterns:
+          - "vue*"
+          - "@vue/*"
+          - "vue-*"
+          - "vue-router"
+          - "pinia"
+          - "vue-i18n"
+      tauri-ecosystem:
+        patterns:
+          - "@tauri-apps/*"
+      fontawesome:
+        patterns:
+          - "@fortawesome/*"
+      testing:
+        patterns:
+          - "vitest"
+          - "@vue/test-utils"
+          - "happy-dom"
+          - "jsdom"
+          - "fast-check"
+
+  # Backend dependencies (Rust/Cargo)
+  - package-ecosystem: "cargo"
+    directory: "/src-tauri"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "backend"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ci"

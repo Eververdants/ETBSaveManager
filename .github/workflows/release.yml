@@ -104,7 +104,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
-          body: 'See the assets to download this version and install.'
+          generate_release_notes: true
           draft: false
           prerelease: false
           files: |

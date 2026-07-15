@@ -114,7 +114,7 @@ const getDifficultyText = (difficultyKey) => {
 
 .config-card {
   background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   padding: 24px;
   box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.08),
@@ -164,7 +164,7 @@ const getDifficultyText = (difficultyKey) => {
   width: 4px;
   height: 16px;
   background: linear-gradient(180deg, var(--accent-color), rgba(var(--accent-color-rgb), 0.5));
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
 }
 
 .form-group {
@@ -186,7 +186,7 @@ const getDifficultyText = (difficultyKey) => {
 .form-input {
   width: 100%;
   padding: 14px 18px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   color: var(--text-primary);
@@ -222,7 +222,7 @@ const getDifficultyText = (difficultyKey) => {
   margin-top: 8px;
   padding: 8px 12px;
   background: rgba(255, 59, 48, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   color: var(--error-color);
   font-size: 13px;
 }
@@ -251,7 +251,7 @@ const getDifficultyText = (difficultyKey) => {
   align-items: center;
   gap: 10px;
   padding: 18px 12px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   border: 2px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;

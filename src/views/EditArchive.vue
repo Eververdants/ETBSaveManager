@@ -754,7 +754,7 @@ onMounted(() => {
   gap: 6px;
   padding: 8px 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-button);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -787,7 +787,7 @@ onMounted(() => {
   gap: 4px;
   padding: 6px;
   background: var(--bg-tertiary);
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -797,7 +797,7 @@ onMounted(() => {
   left: 6px;
   height: calc(100% - 12px);
   background: var(--primary);
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent);
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -813,7 +813,7 @@ onMounted(() => {
   gap: 6px;
   padding: 8px 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   background: transparent;
   color: var(--text-secondary);
   font-size: 13px;
@@ -879,7 +879,7 @@ onMounted(() => {
 
 .form-card {
   background: var(--card-bg);
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   padding: 20px;
   border: 1px solid var(--border-color);
 }
@@ -897,7 +897,7 @@ onMounted(() => {
   padding: 12px 16px;
   font-size: 14px;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-input);
   background: var(--bg-secondary);
   color: var(--text-primary);
   outline: none;
@@ -919,7 +919,7 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   background: var(--bg-secondary);
   color: var(--text-secondary);
   font-size: 13px;
@@ -946,7 +946,7 @@ onMounted(() => {
   width: 100%;
   padding: 12px 20px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-button);
   background: var(--primary);
   color: white;
   font-size: 14px;
@@ -974,7 +974,7 @@ onMounted(() => {
 }
 
 .level-card {
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   overflow: hidden;
   cursor: pointer;
   transition: all 0.2s;
@@ -1036,7 +1036,7 @@ onMounted(() => {
 .player-list-section,
 .player-detail-section {
   background: var(--card-bg);
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -1094,7 +1094,7 @@ onMounted(() => {
   background: var(--primary);
   color: white;
   padding: 2px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-tag);
   font-size: 12px;
 }
 
@@ -1112,7 +1112,7 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: var(--bg-secondary);
   cursor: pointer;
   transition: all 0.15s;
@@ -1130,7 +1130,7 @@ onMounted(() => {
 .player-avatar {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   background: var(--bg-tertiary);
   display: flex;
   align-items: center;
@@ -1163,7 +1163,7 @@ onMounted(() => {
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-tag);
   margin-top: 4px;
 }
 
@@ -1194,7 +1194,7 @@ onMounted(() => {
   color: var(--text-tertiary);
   cursor: pointer;
   padding: 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   transition: all 0.15s;
 }
 
@@ -1239,7 +1239,7 @@ onMounted(() => {
   background: var(--primary);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-button);
   padding: 12px 16px;
   cursor: pointer;
   transition: all 0.15s;
@@ -1252,7 +1252,7 @@ onMounted(() => {
 .msg-tip {
   padding: 10px 12px;
   margin: 0 12px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   font-size: 12px;
 }
 
@@ -1309,7 +1309,7 @@ onMounted(() => {
 
 .detail-block {
   background: var(--bg-secondary);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 16px;
 }
 
@@ -1360,13 +1360,13 @@ onMounted(() => {
   flex: 1;
   height: 8px;
   background: var(--bg-tertiary);
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
   overflow: hidden;
 }
 
 .sanity-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
   transition:
     width 0.3s,
     background 0.4s;
@@ -1407,7 +1407,7 @@ onMounted(() => {
   width: 32px;
   height: 32px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1455,7 +1455,7 @@ onMounted(() => {
   position: relative;
   width: 56px;
   height: 56px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: var(--card-bg);
   border: 2px solid var(--border-color);
   cursor: pointer;
@@ -1482,7 +1482,7 @@ onMounted(() => {
   color: var(--text-tertiary);
   background: var(--bg-secondary);
   padding: 1px 4px;
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
 }
 
 .slot-num {

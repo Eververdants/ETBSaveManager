@@ -15,7 +15,7 @@
           <h3 class="category-title">{{ $t("createMode.singleArchive") }}</h3>
           <div class="mode-cards single">
             <!-- Classic mode -->
-            <div class="mode-card" :class="{ selected: selectedMode === 'classic' }" @click="goToMode('classic')">
+            <div class="mode-card" v-squircle="24" :class="{ selected: selectedMode === 'classic' }" @click="goToMode('classic')">
               <div class="mode-card-image">
                 <LazyImage :src="classicModeImage" alt="Classic Mode" :image-class="'mode-card-img'" />
                 <div class="mode-card-overlay">
@@ -43,7 +43,7 @@
           <h3 class="category-title">{{ $t("createMode.multiArchive") }}</h3>
           <div class="mode-cards multi">
             <!-- Quick mode -->
-            <div class="mode-card" :class="{ selected: selectedMode === 'quick' }" @click="goToMode('quick')">
+            <div class="mode-card" v-squircle="24" :class="{ selected: selectedMode === 'quick' }" @click="goToMode('quick')">
               <div class="mode-card-image">
                 <LazyImage :src="quickModeImage" alt="Quick Mode" :image-class="'mode-card-img'" />
                 <div class="mode-card-overlay">
@@ -240,7 +240,7 @@ const goToMode = (mode) => {
 .mode-card {
   background: var(--bg-secondary);
   border: 2px solid var(--divider-light);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -383,7 +383,7 @@ const goToMode = (mode) => {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 28px;
+  border-radius: var(--radius-xl);
   color: white;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -454,7 +454,7 @@ const goToMode = (mode) => {
   width: 0;
   height: 0;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   transform: translate(-50%, -50%);
   transition: all 0.6s ease;
   z-index: 1;

@@ -9,7 +9,7 @@
       :aria-label="title"
       @click="handleOverlayClick"
     >
-      <div class="modal-container" @click.stop>
+      <div class="modal-container" v-squircle="24" @click.stop>
         <div class="modal-header">
           <h3 class="modal-title">{{ displayTitle }}</h3>
           <button class="modal-close" :aria-label="t('common.close')" @click="handleCancel">
@@ -284,8 +284,8 @@ const displayCancelText = computed(() => props.cancelText || t('confirmModal.can
   color: var(--text-secondary);
   font-size: 16px;
   cursor: pointer;
-  padding: 4px;
-  border-radius: var(--radius-xs);
+  padding: 6px;
+  border-radius: var(--radius-sm);
   transition: all 0.2s ease;
 }
 
@@ -337,8 +337,8 @@ const displayCancelText = computed(() => props.cancelText || t('confirmModal.can
 /* Archive details card */
 .archive-details-card {
   background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  padding: 16px;
+  border-radius: var(--radius-xl);
+  padding: 18px;
   margin: 16px 0;
   text-align: left;
   border: 1px solid var(--divider-color);
@@ -500,7 +500,7 @@ const displayCancelText = computed(() => props.cancelText || t('confirmModal.can
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   border-top-color: white;
   animation: spin 1s linear infinite;
   margin-right: 6px;

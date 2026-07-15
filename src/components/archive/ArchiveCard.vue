@@ -1,6 +1,7 @@
 <template>
   <div
     class="archive-card"
+    v-squircle="20"
     :class="{
       'archive-hidden': !localVisible,
       'visibility-transitioning': isAnimating,
@@ -384,11 +385,11 @@ const toggleSelection = () => {
 
 .rename-input {
   width: 100%;
-  padding: 2px 6px;
+  padding: 4px 10px;
   font-size: 15px;
   font-weight: 600;
   border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   background: rgba(0, 0, 0, 0.5);
   color: white;
   outline: none;
@@ -634,11 +635,11 @@ const toggleSelection = () => {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 200, 50, 0.25);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   color: rgba(255, 200, 50, 0.8);
   font-size: 11px;
   font-weight: 500;
@@ -909,7 +910,7 @@ const toggleSelection = () => {
 .current-level :deep(.search-highlight) {
   background: rgba(var(--accent-color-rgb), 0.3);
   color: var(--accent-color);
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   padding: 0 1px;
 }
 
@@ -919,14 +920,14 @@ const toggleSelection = () => {
   top: 12px;
   left: 12px;
   z-index: 20;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.5);
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
 }

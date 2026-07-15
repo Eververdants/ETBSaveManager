@@ -218,7 +218,7 @@ const getItemImageFile = (itemName) => {
 
 .player-detail-section {
   background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   padding: 24px;
   box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.08),
@@ -322,7 +322,7 @@ const getItemImageFile = (itemName) => {
   width: 4px;
   height: 16px;
   background: linear-gradient(180deg, var(--accent-color), rgba(var(--accent-color-rgb), 0.5));
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
 }
 
 .detail-header {
@@ -342,7 +342,7 @@ const getItemImageFile = (itemName) => {
 
 .detail-block {
   background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -373,7 +373,7 @@ const getItemImageFile = (itemName) => {
 .sanity-bar {
   flex: 1;
   height: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
@@ -412,7 +412,7 @@ const getItemImageFile = (itemName) => {
 .qbtn {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
   display: flex;
@@ -480,7 +480,7 @@ const getItemImageFile = (itemName) => {
   aspect-ratio: 1;
   min-width: 56px;
   min-height: 56px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   border: 2px solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   display: flex;
@@ -496,7 +496,7 @@ const getItemImageFile = (itemName) => {
   min-width: 56px;
   min-height: 56px;
   aspect-ratio: auto;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
 }
 
 .inv-slot:hover {

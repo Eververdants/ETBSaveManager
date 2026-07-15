@@ -18,31 +18,46 @@
 
 /* ==========================================
  * 圆角系统 (Border Radius System)
- * 基于 8px 网格系统
+ * 🍎 连续曲率圆角 + 同心圆角设计
+ *
+ * 设计原则：
+ * - 连续曲率: corner-shape: squircle 使圆角过渡更自然
+ * - 同心递减: 外层 → 内层 逐层递减约 4px
+ * - 大圆角优先: 基础值提升 30%~60%
+ * - 胶囊风格: 按钮/标签/开关使用 --radius-pill
  * ========================================== */
 :root {
-  /* 基础圆角值 */
-  --radius-xs: 4px; /* 小元素：标签、按钮等 */
-  --radius-sm: 8px; /* 小型组件：输入框、小卡片 */
-  --radius-md: 12px; /* 中型组件：表单元素、按钮 */
-  --radius-lg: 16px; /* 大型组件：卡片、面板 */
-  --radius-xl: 20px; /* 特大组件：模态框、大卡片 */
-  --radius-2xl: 24px; /* 超大组件：特殊容器 */
+  /* ── 基础圆角值（同心递减关系） ──
+   *   从大到小：2xl(36) → xl(28) → lg(22) → md(18) → sm(14) → xs(10)
+   *   每层递减约 4-6px，确保嵌套时视觉和谐
+   */
+  --radius-xs: 10px;  /* 第 6 层：最内层元素（标签、徽章）*/
+  --radius-sm: 14px;  /* 第 5 层：内层元素（输入框、小卡片）*/
+  --radius-md: 18px;  /* 第 4 层：中层元素（表单元素、分组）*/
+  --radius-lg: 22px;  /* 第 3 层：外层元素（卡片、面板）*/
+  --radius-xl: 28px;  /* 第 2 层：大容器（模态框、顶部面板）*/
+  --radius-2xl: 36px; /* 第 1 层：最大容器（特殊容器、页面级）*/
 
   /* 特殊圆角值 */
-  --radius-pill: 9999px; /* 胶囊形状：标签、按钮 */
-  --radius-circle: 50%; /* 圆形：头像、图标按钮 */
+  --radius-pill: 9999px; /* 胶囊形状：按钮、切换开关、标签 */
+  --radius-circle: 50%;  /* 圆形：头像、图标按钮 */
 
-  /* 组件特定圆角 */
-  --radius-sidebar: 16px;
-  --radius-card: 16px;
-  --radius-modal: 20px;
-  --radius-dropdown: 12px;
-  --radius-button: 12px;
-  --radius-input: 12px;
-  --radius-tag: 8px;
-  --radius-tooltip: 8px;
-  --radius-image: 12px;
+  /* ── 组件特定圆角（连续曲率 + 大圆角 + 胶囊风格） ── */
+  --radius-sidebar: 22px;  /* 侧边栏 */
+  --radius-card: 22px;     /* 卡片（与 lg 对齐，保证卡片内部同心）*/
+  --radius-modal: 32px;    /* 模态框（使用 2xl 级别，更醒目）*/
+  --radius-dropdown: 9999px; /* 下拉菜单改为胶囊状 */
+  --radius-button: 9999px; /* 按钮改为胶囊式（pill 形状）*/
+  --radius-input: 9999px;  /* 输入框改为胶囊式 */
+  --radius-tag: 9999px;    /* 标签改为胶囊式 */
+  --radius-tooltip: 9999px; /* 工具提示改为胶囊式 */
+  --radius-image: 18px;    /* 图片容器（与 md 对齐）*/
+
+  /* ── 为 corner-shape: squircle 添加声明 ──
+   *   corner-shape: squircle 将标准 border-radius 转换为连续曲率圆角
+   *   支持 Chrome 139+/Safari (TP)，不支持时自动降级为 border-radius
+   */
+  /* corner-shape will be applied via .squircle-enabled class in useSquircle.ts */
 }
 
 /* ==========================================

@@ -249,7 +249,7 @@ const handleAppIconClick = () => {
       background: var(--primary);
       color: white;
       padding: 12px 24px;
-      border-radius: 8px;
+      border-radius: var(--radius-md);
       z-index: 9999;
       font-size: 14px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -290,7 +290,7 @@ const handleAppIconClick = () => {
   background: var(--about-glass-bg);
   backdrop-filter: blur(14px);
   border: 1px solid var(--about-glass-border);
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   padding: 1rem;
   display: flex;
   gap: 1rem;
@@ -314,7 +314,7 @@ const handleAppIconClick = () => {
 .easter-egg-image {
   max-height: 60px;
   opacity: 0.8;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
 }
 
 .easter-egg-image.loaded {
@@ -369,7 +369,7 @@ const handleAppIconClick = () => {
 .app-icon {
   width: 72px;
   height: 72px;
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   background: rgba(128, 128, 128, 0.1);
   border: 1px solid rgba(128, 128, 128, 0.2);
   padding: 8px;
@@ -408,7 +408,7 @@ const handleAppIconClick = () => {
   background: var(--about-list-bg);
   backdrop-filter: blur(10px);
   border: 1px solid var(--about-glass-border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -458,7 +458,7 @@ const handleAppIconClick = () => {
   justify-content: center;
   height: 42px;
   padding: 0 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-button);
   font-size: 1.2rem;
   color: var(--text-secondary);
   background: var(--bg-secondary);
@@ -556,7 +556,7 @@ const handleAppIconClick = () => {
 
 .version-tag {
   padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -595,7 +595,7 @@ const handleAppIconClick = () => {
 .item-dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   margin-top: 0.45rem;
   flex-shrink: 0;
 }

@@ -123,7 +123,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
 <style scoped>
 .player-list-section {
   background: var(--card-bg);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -154,7 +154,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
   background: var(--primary);
   color: white;
   padding: 2px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
 }
 
@@ -172,7 +172,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: var(--bg-secondary);
   cursor: pointer;
   transition: all 0.15s;
@@ -190,7 +190,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
 .player-avatar {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   background: color-mix(in srgb, var(--primary) 12%, transparent);
   color: var(--primary);
   display: flex;
@@ -218,7 +218,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
 .sanity-tag {
   font-size: 12px;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-weight: 700;
 }
 
@@ -245,7 +245,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
 .del-btn {
   width: 32px;
   height: 32px;
-  border-radius: 10px;
+  border-radius: var(--radius-button);
   border: none;
   background: rgba(239, 68, 68, 0.12);
   color: var(--error-color);
@@ -285,7 +285,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
   padding: 12px 14px;
   font-size: 14px;
   border: 1px solid var(--border-color);
-  border-radius: 10px;
+  border-radius: var(--radius-input);
   background: var(--bg-secondary);
   color: var(--text-primary);
   outline: none;
@@ -294,7 +294,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
 .add-btn {
   width: 44px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-button);
   background: var(--primary);
   color: white;
   cursor: pointer;
@@ -303,7 +303,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
 .msg-tip {
   padding: 10px 16px;
   margin: 0 16px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
 }
 

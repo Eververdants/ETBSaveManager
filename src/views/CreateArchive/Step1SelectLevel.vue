@@ -108,7 +108,7 @@ const handleSelectLevel = (index, event) => {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   background: var(--bg-secondary);
   border: 1px solid var(--divider-light);
   cursor: pointer;
@@ -147,7 +147,7 @@ const handleSelectLevel = (index, event) => {
 /* Card styles - optimized */
 .section-card {
   background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   padding: 24px;
   margin-bottom: 16px;
   box-shadow:
@@ -186,7 +186,7 @@ const handleSelectLevel = (index, event) => {
 
 .section-card::-webkit-scrollbar-thumb {
   background: rgba(var(--accent-color-rgb), 0.3);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   transition: background 0.2s ease;
 }
 
@@ -214,7 +214,7 @@ const handleSelectLevel = (index, event) => {
 
 .level-card {
   background: linear-gradient(160deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);

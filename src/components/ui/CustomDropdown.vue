@@ -277,13 +277,13 @@ const selectedLabel = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 10px 14px;
   background: var(--dropdown-bg);
   border: 1px solid var(--dropdown-border);
   border-radius: var(--radius-dropdown);
   cursor: pointer;
   transition: all 0.2s ease;
-  min-height: 36px;
+  min-height: 40px;
   user-select: none;
 }
 
@@ -326,12 +326,14 @@ const selectedLabel = computed(() => {
 }
 
 .dropdown-option {
-  padding: 8px 12px;
+  padding: 10px 14px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 14px;
   color: var(--dropdown-text);
   user-select: none;
+  margin: 2px 4px;
+  border-radius: var(--radius-md);
 }
 
 .dropdown-option:hover {
@@ -342,11 +344,10 @@ const selectedLabel = computed(() => {
   background: var(--dropdown-selected-bg);
   color: var(--dropdown-selected-text);
   font-weight: 600;
-  box-shadow: inset 0 0 0 1px var(--dropdown-selected-border);
 }
 
 .dropdown-option:not(:last-child) {
-  border-bottom: 1px solid var(--dropdown-border);
+  border-bottom: none;
 }
 
 /* 暗色主题适配 */

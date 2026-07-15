@@ -687,7 +687,7 @@ const createParticleExplosion = () => {
     const size = Math.random() * 6 + 3;
     const x = window.innerWidth / 2 + (Math.random() - 0.5) * 50;
     const y = window.innerHeight / 2 + (Math.random() - 0.5) * 50;
-    particle.style.cssText = `position:fixed;width:${size}px;height:${size}px;background:${color};left:${x}px;top:${y}px;border-radius:50%;pointer-events:none;z-index:999;`;
+    particle.style.cssText = `position:fixed;width:${size}px;height:${size}px;background:${color};left:${x}px;top:${y}px;border-radius:var(--radius-circle);pointer-events:none;z-index:999;`;
     document.body.appendChild(particle);
     const angle = Math.random() * Math.PI * 2;
     const distance = Math.random() * 100 + 50;
@@ -951,7 +951,7 @@ const onStepLeave = (el, done) => {
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   background: var(--bg-secondary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
@@ -971,7 +971,7 @@ const onStepLeave = (el, done) => {
 .step-number {
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
@@ -993,7 +993,7 @@ const onStepLeave = (el, done) => {
   width: 40px;
   height: 2px;
   background: var(--divider-color);
-  border-radius: 1px;
+  border-radius: var(--radius-pill);
 }
 
 .content-wrapper {
@@ -1030,7 +1030,7 @@ const onStepLeave = (el, done) => {
   padding: 16px 48px;
   background: var(--bg-secondary);
   border: 1px solid var(--divider-light);
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   position: fixed;
   bottom: 16px;
   left: calc(50% + 35px);
@@ -1048,7 +1048,7 @@ const onStepLeave = (el, done) => {
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  border-radius: 12px;
+  border-radius: var(--radius-button);
   border: none;
   font-size: 14px;
   font-weight: 500;
@@ -1139,7 +1139,7 @@ const onStepLeave = (el, done) => {
   max-width: min(92vw, 520px);
   background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border: 1px solid var(--divider-light);
-  border-radius: 20px;
+  border-radius: var(--radius-modal);
   padding: 32px 28px;
   text-align: center;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
@@ -1149,7 +1149,7 @@ const onStepLeave = (el, done) => {
   width: 72px;
   height: 72px;
   margin: 0 auto 18px;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: linear-gradient(135deg, var(--success-color), #00d4aa);
   display: flex;
   align-items: center;
@@ -1214,7 +1214,7 @@ const onStepLeave = (el, done) => {
   width: 100%;
   padding: 12px 20px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-button);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;

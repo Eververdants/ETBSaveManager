@@ -258,14 +258,14 @@ onUnmounted(() => {
   position: relative;
   height: 8px;
   background: #e5e7eb;
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   overflow: visible;
 }
 
 .slider-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
   background: var(--fill-color);
   transition: background 0.4s ease;
   position: relative;
@@ -276,7 +276,7 @@ onUnmounted(() => {
   top: 50%;
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: var(--thumb-color);
   cursor: grab;
   transform: translateY(-50%);
@@ -314,7 +314,7 @@ onUnmounted(() => {
   content: "";
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: rgba(255, 255, 255, 0.9);
   transition: all 0.3s ease;
 }
@@ -327,7 +327,7 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 500;
   opacity: 0;

@@ -162,11 +162,11 @@ const themeColors = {
     accent: "#8B8178",
   },
   dark: {
-    bg: "#0d0d0f",
-    sidebar: "#161618",
-    header: "#1f1f23",
-    card: "#161618",
-    accent: "#6b7280",
+    bg: "#0a0c10",
+    sidebar: "#13161c",
+    header: "#1c2028",
+    card: "#13161c",
+    accent: "#6b8fa8",
   },
   ocean: {
     bg: "#0c1929",
@@ -306,7 +306,7 @@ const selectTheme = (themeId) => {
   width: 32px;
   height: 32px;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: var(--bg-secondary);
   color: var(--text-primary);
   cursor: pointer;
@@ -358,7 +358,7 @@ const selectTheme = (themeId) => {
   flex-shrink: 0;
   width: 100px;
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   border: 2px solid transparent;
   transition:
@@ -400,12 +400,12 @@ const selectTheme = (themeId) => {
 
 .preview-header {
   height: 8px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
 }
 
 .preview-card {
   flex: 1;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
 }
 
 .preview-accent {
@@ -414,7 +414,7 @@ const selectTheme = (themeId) => {
   right: 6px;
   width: 16px;
   height: 16px;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 

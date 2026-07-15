@@ -512,7 +512,7 @@ onMounted(() => {
 .controls {
   background: var(--bg-secondary);
   border: 1px solid var(--divider-light);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 20px;
   margin-bottom: 20px;
 }
@@ -543,7 +543,7 @@ onMounted(() => {
   margin-top: 16px;
   padding: 16px;
   background: var(--bg-tertiary);
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   border: 1px solid var(--accent-color);
 }
 
@@ -570,7 +570,7 @@ onMounted(() => {
   width: 100%;
   height: 12px;
   background: var(--bg-tertiary);
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   overflow: hidden;
   border: 1px solid var(--divider-light);
   margin-bottom: 8px;
@@ -579,7 +579,7 @@ onMounted(() => {
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--accent-color), var(--success-color));
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   transition: width 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -619,7 +619,7 @@ onMounted(() => {
   margin-bottom: 20px;
   padding: 16px;
   background: var(--bg-secondary);
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   border: 1px solid var(--divider-light);
 }
 
@@ -659,7 +659,7 @@ onMounted(() => {
 .archive-card {
   background: var(--bg-secondary);
   border: 1px solid var(--divider-light);
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   padding: 16px;
   transition: all 0.2s ease;
 }
@@ -705,7 +705,7 @@ onMounted(() => {
   background: none;
   border: none;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-button);
   cursor: pointer;
   font-size: 16px;
   transition: all 0.2s ease;
@@ -753,7 +753,7 @@ onMounted(() => {
 .status-badge {
   display: inline-block;
   padding: 4px 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-tag);
   font-size: 12px;
   font-weight: 500;
 }
@@ -778,7 +778,7 @@ onMounted(() => {
   flex: 1;
   padding: 8px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-button);
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -814,7 +814,7 @@ onMounted(() => {
   transform: translateX(-50%);
   background: var(--bg-secondary);
   border: 1px solid var(--accent-color);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 16px;
   display: flex;
   align-items: center;
@@ -849,7 +849,7 @@ onMounted(() => {
 
 .modal-content {
   background: var(--bg-secondary);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   max-width: 600px;
   max-height: 80vh;
   overflow-y: auto;
@@ -903,7 +903,7 @@ onMounted(() => {
   justify-content: space-between;
   padding: 8px 12px;
   background: var(--bg-tertiary);
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
 }
 
 .detail-label {
@@ -917,7 +917,7 @@ onMounted(() => {
 
 .player-detail {
   background: var(--bg-tertiary);
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   padding: 12px;
   margin-bottom: 12px;
 }
@@ -959,7 +959,7 @@ onMounted(() => {
   background: var(--accent-color);
   color: white;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   font-size: 12px;
 }
 
@@ -974,7 +974,7 @@ onMounted(() => {
 .danger-btn {
   padding: 12px 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-button);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;

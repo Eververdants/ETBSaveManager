@@ -7,11 +7,6 @@ interface IdleDeadline {
   timeRemaining: () => number;
 }
 
-interface Window {
-  requestIdleCallback: (callback: (deadline: IdleDeadline) => void, options?: { timeout?: number }) => number;
-  cancelIdleCallback: (id: number) => void;
-}
-
 // requestIdleCallback polyfill
 if (typeof window !== "undefined" && !window.requestIdleCallback) {
   window.requestIdleCallback = (callback: (deadline: IdleDeadline) => void, options?: { timeout?: number }): number => {

@@ -99,7 +99,7 @@ const preloadPriorityRoutes = (): void => {
 };
 
 // Trigger preloading after first navigation
-router.afterEach((to, from) => {
+router.afterEach((_to, from) => {
   // After first navigation completes, preload high-priority routes
   if (!from.name) {
     preloadPriorityRoutes();

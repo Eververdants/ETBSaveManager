@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type {
-  ArchiveConfig,
-  ValidationError,
-  ValidationWarning,
-  ValidationResult,
-} from "../../types";
+import type { ArchiveConfig, ValidationResult } from "../../types";
 import {
   isEmptyName,
   findDuplicateNames,
@@ -15,7 +10,6 @@ import {
   hasArchiveErrors,
   getValidationStats,
 } from "../useValidator";
-
 
 // =============================================================================
 // isEmptyName
@@ -82,10 +76,7 @@ describe("findDuplicateNames", () => {
   });
 
   it("skips archives with empty names", () => {
-    const archives: ArchiveConfig[] = [
-      { id: "1", name: "" } as ArchiveConfig,
-      { id: "2", name: "" } as ArchiveConfig,
-    ];
+    const archives: ArchiveConfig[] = [{ id: "1", name: "" } as ArchiveConfig, { id: "2", name: "" } as ArchiveConfig];
     const result = findDuplicateNames(archives);
     expect(result.size).toBe(0);
   });
@@ -101,7 +92,7 @@ describe("findDuplicateNames", () => {
 describe("validateArchive", () => {
   it("returns errors for empty name", () => {
     const archive = { id: "1", name: "", finalLevel: "main" } as ArchiveConfig;
-    const { errors, warnings } = validateArchive(archive);
+    const { errors } = validateArchive(archive);
     expect(errors).toHaveLength(1);
     expect(errors[0]).toMatchObject({
       archiveId: "1",

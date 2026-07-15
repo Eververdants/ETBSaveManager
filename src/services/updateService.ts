@@ -210,7 +210,6 @@ class UpdateService {
       if (this.isNewVersion(latestVersion.version, CURRENT_VERSION)) {
         this.status = UpdateStatus.AVAILABLE;
         // Get download link
-        let downloadUrl = latestVersion.html_url || releasesUrl;
         let directDownloadUrl: string | null = null;
 
         // Try to get direct download link

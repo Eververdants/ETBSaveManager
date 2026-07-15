@@ -46,7 +46,10 @@ export default [
       "eqeqeq": ["warn", "always"],
 
       // 已定义但未使用的变量（不检查函数参数）
-      "no-unused-vars": "off",
+      "no-unused-vars": "warn",
+
+      // 禁止未定义的变量
+      "no-undef": "error",
 
       // 禁止 var
       "no-var": "error",
@@ -91,7 +94,7 @@ export default [
     files: ["src/**/*.test.ts", "src/**/*.spec.ts", "src/**/__tests__/**"],
     rules: {
       "no-console": "off",
-      "no-unused-vars": "off",
+      "no-unused-vars": "warn",
     },
   },
 

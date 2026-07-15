@@ -13,8 +13,8 @@ pub fn restart_app(app: tauri::AppHandle) {
 }
 
 #[tauri::command]
-pub fn set_window_title(title: String, window: Window) {
+pub fn set_window_title(title: String, window: Window) -> AppResult<()> {
     window
-        .set_title(&title)
-        .expect("Failed to set window title");
+        .set_title(&title)?;
+    Ok(())
 }

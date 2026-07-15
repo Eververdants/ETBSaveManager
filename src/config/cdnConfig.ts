@@ -63,7 +63,7 @@ const CDN_CONFIG: CDNConfig = {
 export const loadCDNResource = async (
   resourceType: string,
   library: string,
-  version: string
+  _version: string,
 ): Promise<boolean | null> => {
   if (import.meta.env.DEV) {
     return null; // CDN not used in development

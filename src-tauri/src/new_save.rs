@@ -110,9 +110,20 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     println!("  Player count: {}", save_data.players.len());
     println!("  Is main ending: {}", !save_data.main_ending);
 
-    // Check if save name contains underscores
-    if save_data.archive_name.contains('_') {
-        return Err("Save name cannot contain underscores".to_string().into());
+    // Validate archive_name: must not be empty, only alphanumeric, hyphens, and spaces
+    if save_data.archive_name.trim().is_empty() {
+        return Err("Save name cannot be empty".to_string().into());
+    }
+    if !save_data.archive_name.chars().all(|c| c.is_alphanumeric() || c == '-' || c == ' ') {
+        return Err("Save name can only contain letters, numbers, hyphens, and spaces".to_string().into());
+    }
+
+    // Sanitize difficulty: only allow alphanumeric characters
+    let sanitized_difficulty: String = save_data.difficulty.chars()
+        .filter(|c| c.is_alphanumeric())
+        .collect();
+    if sanitized_difficulty.is_empty() {
+        return Err("Difficulty must contain at least one alphanumeric character".to_string().into());
     }
 
     // Process level mapping
@@ -131,7 +142,7 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
 
     let file_name = format!(
         "MULTIPLAYER_{}_{}.sav",
-        save_data.archive_name, save_data.difficulty
+        save_data.archive_name, sanitized_difficulty
     );
     let save_path = save_dir.join(&file_name);
 

@@ -387,7 +387,6 @@ export function parseMultiple(input: string): ParseResult {
 
   const lines = input.split(/\r?\n/);
 
-  let hasHeader = false;
   let columnMapping: Record<string, number> = { name: 0 };
   let delimiter: "tab" | "comma" | "semicolon" | "none" = "none";
 
@@ -402,7 +401,6 @@ export function parseMultiple(input: string): ParseResult {
           : [line];
 
       if (isHeaderRow(fields)) {
-        hasHeader = true;
         columnMapping = mapColumns(fields);
         firstDataLineIndex = i + 1;
         result.info.push(`Detected header row, auto-mapping column names`);

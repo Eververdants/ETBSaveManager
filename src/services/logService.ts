@@ -94,7 +94,7 @@ class LogService {
             const seen = new WeakSet<object>();
             return JSON.stringify(
               arg,
-              (key: string, value: unknown) => {
+              (_key: string, value: unknown) => {
                 if (typeof value === "object" && value !== null) {
                   if (seen.has(value as object)) return "[Circular]";
                   seen.add(value as object);
@@ -220,9 +220,7 @@ class LogService {
   /**
    * Get recent logs as structured array (for feedback system)
    */
-  getRecentLogsArray(
-    count: number = 100,
-  ): Array<{ timestamp: string; type: LogEntry["type"]; message: string }> {
+  getRecentLogsArray(count: number = 100): Array<{ timestamp: string; type: LogEntry["type"]; message: string }> {
     return this.logs.slice(-count).map((log) => ({
       timestamp: log.timestamp,
       type: log.type,

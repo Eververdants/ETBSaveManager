@@ -1,4 +1,4 @@
-import { ref, computed, watch, type Ref, type ComputedRef } from "vue";
+import { ref, computed, type Ref, type ComputedRef } from "vue";
 import type { ArchiveData } from "@/types";
 
 const SEARCH_HISTORY_KEY = "archive-search-history";
@@ -20,13 +20,17 @@ export function addSearchHistory(query: string): void {
     history.unshift(query.trim());
     if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
     sessionStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 export function clearSearchHistory(): void {
   try {
     sessionStorage.removeItem(SEARCH_HISTORY_KEY);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 /**

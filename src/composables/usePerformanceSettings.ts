@@ -13,11 +13,6 @@ interface PerformanceSettingsProps {
 type EmitFn = (event: string, value: unknown) => void;
 type TranslateFn = (key: string) => string;
 
-interface SharedMonitor {
-  start: () => void;
-  stop: () => void;
-}
-
 interface PerformanceSettingsReturn {
   localPerformanceMode: Ref<string>;
   localAnimationQuality: Ref<string>;
@@ -32,9 +27,6 @@ interface PerformanceSettingsReturn {
   updateVirtualization: () => void;
   getPerformanceLevelText: (level: string) => string;
 }
-
-let monitorInstance: SharedMonitor | null = null;
-let monitorRefCount = 0;
 
 export function usePerformanceSettings(
   props: PerformanceSettingsProps,
@@ -55,75 +47,6 @@ export function usePerformanceSettings(
   let lastTime = performance.now();
   let fpsMonitorInterval: number | null = null;
   let longTaskObserver: PerformanceObserver | null = null;
-
-  const sharedMonitor = (): SharedMonitor => {
-    if (monitorInstance) {
-      monitorRefCount++;
-      return monitorInstance;
-    }
-
-    monitorRefCount = 1;
-    let frameCount = 0;
-    let lastTime = performance.now();
-    let fpsMonitorInterval: number | null = null;
-    let longTaskObserver: PerformanceObserver | null = null;
-
-    monitorInstance = {
-      start: () => {
-        const monitorFPS = (): void => {
-          frameCount++;
-          const now = performance.now();
-
-          if (now - lastTime >= 1000) {
-            currentFPS.value = Math.round((frameCount * 1000) / (now - lastTime));
-            frameCount = 0;
-            lastTime = now;
-          }
-
-          if (fpsMonitorInterval) {
-            fpsMonitorInterval = requestAnimationFrame(monitorFPS);
-          }
-        };
-
-        fpsMonitorInterval = requestAnimationFrame(monitorFPS);
-
-        if ("PerformanceObserver" in window) {
-          try {
-            longTaskObserver = new PerformanceObserver((list: PerformanceObserverEntryList) => {
-              longTaskCount.value = list.getEntries().length;
-            });
-
-            longTaskObserver.observe({ entryTypes: ["longtask"] });
-          } catch (e) {
-            console.warn("长任务监控不支持:", e);
-          }
-        }
-      },
-
-      stop: () => {
-        if (fpsMonitorInterval) {
-          cancelAnimationFrame(fpsMonitorInterval);
-          fpsMonitorInterval = null;
-        }
-
-        if (longTaskObserver) {
-          longTaskObserver.disconnect();
-          longTaskObserver = null;
-        }
-      },
-    };
-
-    return monitorInstance;
-  };
-
-  const releaseMonitor = (): void => {
-    monitorRefCount--;
-    if (monitorRefCount <= 0 && monitorInstance) {
-      monitorInstance.stop();
-      monitorInstance = null;
-      monitorRefCount = 0;
-    }
-  };
 
   watch(
     () => props.performanceMode,

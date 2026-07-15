@@ -19,6 +19,7 @@
           v-for="notification in getNotificationsByPosition(position)"
           :key="notification.id"
           class="notification-item"
+          v-squircle="24"
           :class="[
             `notification-${notification.type}`,
             { 'notification-hovering': notification.isHovering },
@@ -447,7 +448,7 @@ defineExpose({
   max-width: 400px;
   background: var(--card-bg, rgba(255, 255, 255, 0.95));
   backdrop-filter: blur(20px);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.2);
   pointer-events: auto;
@@ -470,7 +471,7 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
 }
 
 .notification-icon {
@@ -523,7 +524,7 @@ defineExpose({
   margin-top: 10px;
   padding: 10px;
   background: rgba(0, 0, 0, 0.03);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 12px;
 }
 
@@ -561,9 +562,9 @@ defineExpose({
 }
 
 .notification-btn {
-  padding: 8px 14px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-pill);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -619,7 +620,7 @@ defineExpose({
   justify-content: center;
   background: rgba(0, 0, 0, 0.05);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-pill);
   color: var(--text-tertiary, #c7c7cc);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -640,12 +641,12 @@ defineExpose({
   height: 3px;
   background: rgba(0, 0, 0, 0.06);
   overflow: hidden;
-  border-radius: 0 0 14px 14px;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
 }
 
 .notification-progress-bar {
   height: 100%;
-  border-radius: 0 0 14px 14px;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
 }
 
 .progress-success {

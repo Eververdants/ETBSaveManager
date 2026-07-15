@@ -218,7 +218,7 @@ defineExpose({ focusInput: exposeFocusInput, findNext, findPrevious });
   z-index: 10001;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   padding: 10px;
   display: flex;
@@ -243,7 +243,7 @@ defineExpose({ focusInput: exposeFocusInput, findNext, findPrevious });
   border: 1px solid var(--border-color);
   background: var(--bg-secondary);
   color: var(--text-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-input);
   height: 34px;
   padding: 0 10px;
   outline: none;
@@ -279,7 +279,7 @@ defineExpose({ focusInput: exposeFocusInput, findNext, findPrevious });
   border: 1px solid var(--border-color);
   background: var(--bg-secondary);
   color: var(--text-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-button);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -329,7 +329,7 @@ defineExpose({ focusInput: exposeFocusInput, findNext, findPrevious });
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-tag);
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
@@ -360,7 +360,7 @@ defineExpose({ focusInput: exposeFocusInput, findNext, findPrevious });
 /* ===== Search History ===== */
 .search-history-dropdown {
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   background: var(--bg-secondary);
   max-height: 200px;
   overflow-y: auto;
@@ -391,7 +391,7 @@ defineExpose({ focusInput: exposeFocusInput, findNext, findPrevious });
   color: var(--text-tertiary);
   cursor: pointer;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-button);
 }
 
 .history-clear-btn:hover {
@@ -451,7 +451,7 @@ defineExpose({ focusInput: exposeFocusInput, findNext, findPrevious });
 :global(mark.global-find-mark) {
   background: color-mix(in srgb, #ffd25f 65%, transparent);
   color: inherit;
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   padding: 0 1px;
 }
 

@@ -21,6 +21,8 @@
   --titlebar-close-bg: #ff5f57;
   --titlebar-close-bg-hover: #ff5f57;
   --titlebar-close-bg-active: #e5484d;
+  --titlebar-minimize-bg-hover: rgba(255, 255, 255, 0.12);
+  --titlebar-maximize-bg-hover: rgba(255, 255, 255, 0.12);
 }
 
 /* ==========================================
@@ -28,38 +30,38 @@
  * ========================================== */
 :root {
   /* 背景 */
-  --log-bg: #0d0d0f;
-  --log-bg-secondary: #161618;
-  --log-bg-tertiary: #1f1f23;
-  --log-bg-hover: #28282d;
+  --log-bg: #0a0c10;
+  --log-bg-secondary: #13161c;
+  --log-bg-tertiary: #181c22;
+  --log-bg-hover: #242933;
 
   /* 边框 */
-  --log-border: rgba(255, 255, 255, 0.08);
+  --log-border: rgba(255, 255, 255, 0.06);
 
   /* 文本 */
-  --log-text: #f0f0f2;
-  --log-text-secondary: rgba(240, 240, 242, 0.72);
-  --log-text-muted: rgba(240, 240, 242, 0.48);
+  --log-text: #e2e4e8;
+  --log-text-secondary: rgba(226, 228, 232, 0.7);
+  --log-text-muted: rgba(226, 228, 232, 0.45);
 
   /* 按钮 */
-  --log-btn-primary: rgba(255, 255, 255, 0.12);
-  --log-btn-primary-hover: rgba(255, 255, 255, 0.18);
-  --log-btn-secondary: rgba(255, 255, 255, 0.06);
-  --log-btn-secondary-hover: rgba(255, 255, 255, 0.1);
+  --log-btn-primary: rgba(255, 255, 255, 0.1);
+  --log-btn-primary-hover: rgba(255, 255, 255, 0.16);
+  --log-btn-secondary: rgba(255, 255, 255, 0.05);
+  --log-btn-secondary-hover: rgba(255, 255, 255, 0.09);
 
   /* 日志级别 */
   --log-level-error: #f87171;
   --log-level-warn: #fbbf24;
-  --log-level-info: rgba(255, 255, 255, 0.6);
-  --log-level-debug: rgba(255, 255, 255, 0.4);
+  --log-level-info: rgba(226, 228, 232, 0.55);
+  --log-level-debug: rgba(226, 228, 232, 0.35);
 
   /* 命令/提示符 */
   --log-command: #4ade80;
 
   /* 滚动条 */
   --log-scrollbar-track: transparent;
-  --log-scrollbar-thumb: rgba(255, 255, 255, 0.12);
-  --log-scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+  --log-scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --log-scrollbar-thumb-hover: rgba(255, 255, 255, 0.18);
 }
 
 /* ==========================================
@@ -103,26 +105,26 @@
 }
 
 [data-theme="dark"] {
-  /* 主要按钮 - 使用柔和的灰色 */
+  /* 主要按钮 - 使用低饱和钢蓝 */
   --btn-primary-bg: var(--primary);
   --btn-primary-bg-hover: var(--primary-hover);
   --btn-primary-text: #ffffff;
 
   /* 次要按钮 */
-  --btn-secondary-bg: rgba(255, 255, 255, 0.08);
-  --btn-secondary-bg-hover: rgba(255, 255, 255, 0.12);
-  --btn-secondary-text: #f0f0f2;
+  --btn-secondary-bg: rgba(255, 255, 255, 0.07);
+  --btn-secondary-bg-hover: rgba(255, 255, 255, 0.11);
+  --btn-secondary-text: #e2e4e8;
 
   /* 成功按钮 - 深色文字 */
-  --btn-success-text: #0d0d0f;
+  --btn-success-text: #0a0c10;
 
   /* 警告按钮 - 深色文字 */
-  --btn-warning-text: #0d0d0f;
+  --btn-warning-text: #0a0c10;
 
   /* 轮廓按钮 */
-  --btn-outline-border: rgba(255, 255, 255, 0.24);
-  --btn-outline-text: #f0f0f2;
-  --btn-outline-bg-hover: rgba(255, 255, 255, 0.06);
+  --btn-outline-border: rgba(255, 255, 255, 0.2);
+  --btn-outline-text: #e2e4e8;
+  --btn-outline-bg-hover: rgba(255, 255, 255, 0.05);
 }
 
 /* ==========================================
@@ -155,12 +157,12 @@
 }
 
 [data-theme="dark"] {
-  --popup-success-bg: #161618;
-  --popup-error-bg: #161618;
-  --popup-warning-bg: #161618;
-  --popup-info-bg: #161618;
-  --popup-info-icon-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
-  --popup-info-shadow: rgba(255, 255, 255, 0.1);
+  --popup-success-bg: #13161c;
+  --popup-error-bg: #13161c;
+  --popup-warning-bg: #13161c;
+  --popup-info-bg: #13161c;
+  --popup-info-icon-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%);
+  --popup-info-shadow: rgba(255, 255, 255, 0.08);
 }
 
 /* ==========================================
@@ -184,17 +186,17 @@
 }
 
 [data-theme="dark"] {
-  --release-note-bg: var(--color-gray-900);
-  --release-note-border: var(--color-gray-700);
-  --release-note-highlight-text: var(--color-gray-900);
+  --release-note-bg: #181c22;
+  --release-note-border: #252a33;
+  --release-note-highlight-text: #0a0c10;
 
   --release-show-more-bg: var(--color-gray-800);
   --release-show-more-bg-hover: var(--color-gray-700);
   --release-show-more-text: var(--color-gray-200);
 
-  --release-back-btn-bg: var(--color-gray-800);
-  --release-back-btn-border: var(--color-gray-700);
-  --release-back-btn-bg-hover: var(--color-gray-700);
+  --release-back-btn-bg: #13161c;
+  --release-back-btn-border: #252a33;
+  --release-back-btn-bg-hover: #181c22;
 }
 
 /* ==========================================
@@ -271,10 +273,10 @@
 }
 
 [data-theme="dark"] {
-  --checkbox-bg: #1f1f23;
-  --checkbox-border: rgba(255, 255, 255, 0.12);
-  --checkbox-border-hover: rgba(255, 255, 255, 0.24);
-  --checkbox-checked-bg: rgba(255, 255, 255, 0.9);
-  --checkbox-checked-border: rgba(255, 255, 255, 0.9);
-  --checkbox-checkmark-color: #0d0d0f;
+  --checkbox-bg: #181c22;
+  --checkbox-border: rgba(255, 255, 255, 0.1);
+  --checkbox-border-hover: rgba(255, 255, 255, 0.2);
+  --checkbox-checked-bg: rgba(255, 255, 255, 0.88);
+  --checkbox-checked-border: rgba(255, 255, 255, 0.88);
+  --checkbox-checkmark-color: #0a0c10;
 }

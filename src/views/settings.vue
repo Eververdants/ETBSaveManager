@@ -1105,7 +1105,7 @@ export default {
   bottom: 0;
   background-color: #ccc;
   transition: 0.3s;
-  border-radius: 24px;
+  border-radius: var(--radius-xl);
 }
 
 .slider:before {
@@ -1117,7 +1117,7 @@ export default {
   bottom: 4px;
   background-color: white;
   transition: 0.3s;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 input:checked + .slider {
@@ -1179,7 +1179,7 @@ input:checked + .slider:before {
     padding: 8px 12px;
     background: rgba(255, 193, 7, 0.1);
     border-left: 3px solid #ffc107;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
     font-size: 13px;
     color: var(--text-secondary);
   }
@@ -1412,7 +1412,7 @@ input:checked + .slider:before {
 .update-content :deep(code) {
   background: var(--bg-tertiary);
   padding: 0.125rem 0.25rem;
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   font-family: "Consolas", "Monaco", "Lucida Console", monospace;
   font-size: 0.7rem;
   color: var(--text);
@@ -1421,7 +1421,7 @@ input:checked + .slider:before {
 .update-content :deep(pre) {
   background: var(--bg-tertiary);
   padding: 0.4rem;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   overflow-x: auto;
   margin: 0.25rem 0;
   font-family: "Consolas", "Monaco", "Lucida Console", monospace;
@@ -1543,7 +1543,7 @@ input:checked + .slider:before {
   width: 12px;
   height: 12px;
   border: 2px solid var(--text-tertiary);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   border-top-color: var(--text);
   animation: spin 1s ease-in-out infinite;
 }
@@ -1949,7 +1949,7 @@ input:checked + .slider:before {
   color: #e53935;
   background: linear-gradient(90deg, rgba(229, 57, 53, 0.1), transparent);
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   margin-top: 6px;
 }
 

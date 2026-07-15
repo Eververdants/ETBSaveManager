@@ -141,25 +141,25 @@
   /* ==========================================
    * 日志页面专用颜色 (Log Page Colors)
    * ========================================== */
-  --log-bg: #0d0d0f;
-  --log-bg-secondary: #161618;
-  --log-bg-tertiary: #1f1f23;
-  --log-bg-hover: #28282d;
-  --log-header-bg: #161618;
-  --log-border: rgba(255, 255, 255, 0.08);
+  --log-bg: #0a0c10;
+  --log-bg-secondary: #13161c;
+  --log-bg-tertiary: #181c22;
+  --log-bg-hover: #242933;
+  --log-header-bg: #13161c;
+  --log-border: rgba(255, 255, 255, 0.06);
   --log-scrollbar-track: transparent;
-  --log-scrollbar-thumb: rgba(255, 255, 255, 0.12);
-  --log-scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
-  --log-text: #f0f0f2;
-  --log-text-secondary: rgba(240, 240, 242, 0.72);
-  --log-text-muted: rgba(240, 240, 242, 0.48);
-  --log-btn-primary: rgba(255, 255, 255, 0.12);
-  --log-btn-primary-hover: rgba(255, 255, 255, 0.18);
-  --log-btn-secondary: rgba(255, 255, 255, 0.06);
-  --log-btn-secondary-hover: rgba(255, 255, 255, 0.1);
+  --log-scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --log-scrollbar-thumb-hover: rgba(255, 255, 255, 0.18);
+  --log-text: #e2e4e8;
+  --log-text-secondary: rgba(226, 228, 232, 0.7);
+  --log-text-muted: rgba(226, 228, 232, 0.45);
+  --log-btn-primary: rgba(255, 255, 255, 0.1);
+  --log-btn-primary-hover: rgba(255, 255, 255, 0.16);
+  --log-btn-secondary: rgba(255, 255, 255, 0.05);
+  --log-btn-secondary-hover: rgba(255, 255, 255, 0.09);
   --log-level-error: #f87171;
   --log-level-warn: #fbbf24;
-  --log-level-info: rgba(255, 255, 255, 0.6);
+  --log-level-info: rgba(226, 228, 232, 0.55);
   --log-command: #4ade80;
 
   /* ==========================================
@@ -245,18 +245,18 @@
   --color-warning-bg: rgba(251, 191, 36, 0.1);
   --color-warning-border: rgba(251, 191, 36, 0.24);
 
-  --color-info: rgba(255, 255, 255, 0.6);
-  --color-info-light: rgba(255, 255, 255, 0.08);
-  --color-info-dark: rgba(255, 255, 255, 0.4);
-  --color-info-hover: rgba(255, 255, 255, 0.4);
-  --color-info-bg: rgba(255, 255, 255, 0.06);
-  --color-info-border: rgba(255, 255, 255, 0.12);
+  --color-info: rgba(226, 228, 232, 0.55);
+  --color-info-light: rgba(226, 228, 232, 0.08);
+  --color-info-dark: rgba(226, 228, 232, 0.38);
+  --color-info-hover: rgba(226, 228, 232, 0.38);
+  --color-info-bg: rgba(226, 228, 232, 0.05);
+  --color-info-border: rgba(226, 228, 232, 0.11);
 
   /* 版本标签 - 精致的背景色 */
   --version-major-bg: rgba(248, 113, 113, 0.06);
-  --version-minor-bg: rgba(255, 255, 255, 0.04);
-  --version-patch-bg: rgba(255, 255, 255, 0.04);
-  --version-feature-bg: rgba(255, 255, 255, 0.04);
+  --version-minor-bg: rgba(226, 228, 232, 0.035);
+  --version-patch-bg: rgba(226, 228, 232, 0.035);
+  --version-feature-bg: rgba(226, 228, 232, 0.035);
   --version-enhancement-bg: rgba(74, 222, 128, 0.06);
   --version-improvement-bg: rgba(74, 222, 128, 0.04);
   --version-stability-bg: rgba(251, 191, 36, 0.06);
@@ -275,7 +275,7 @@
 
   /* 星星/评分 */
   --color-star: #fbbf24;
-  --color-star-empty: rgba(255, 255, 255, 0.2);
+  --color-star-empty: rgba(226, 228, 232, 0.18);
 
   /* 高亮/徽章 */
   --color-highlight: #fbbf24;
@@ -290,6 +290,6 @@
   --particle-purple: #a78bfa;
 
   /* 开关控件 */
-  --switch-bg-off: rgba(255, 255, 255, 0.16);
+  --switch-bg-off: rgba(226, 228, 232, 0.15);
   --switch-bg-on: #4ade80;
 }

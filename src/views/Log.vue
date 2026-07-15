@@ -243,7 +243,7 @@ onUnmounted(() => {
 .btn {
   padding: 4px 12px;
   border: none;
-  border-radius: 2px;
+  border-radius: var(--radius-button);
   font-size: 12px;
   cursor: pointer;
   background: var(--log-btn-primary);
@@ -293,7 +293,7 @@ select,
 .search-input {
   padding: 4px 8px;
   border: 1px solid var(--log-border);
-  border-radius: 2px;
+  border-radius: var(--radius-input);
   background: var(--log-bg-tertiary);
   color: var(--log-text-secondary);
   font-size: 12px;

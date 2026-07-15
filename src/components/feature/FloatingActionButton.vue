@@ -11,7 +11,7 @@
       <div ref="tooltip" class="function-tooltip">
         <span class="tooltip-text">{{ getCurrentTooltip }}</span>
       </div>
-      <div v-show="isMenuExpanded" ref="fabMenu" class="fab-menu">
+      <div v-show="isMenuExpanded" ref="fabMenu" class="fab-menu" v-squircle="24">
         <div
           v-for="item in menuItems"
           :key="item.index"
@@ -654,7 +654,7 @@ onUnmounted(() => {
   min-height: var(--fab-size, 60px) !important;
   max-width: var(--fab-size, 60px) !important;
   max-height: var(--fab-size, 60px) !important;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: var(--glass-bg, rgba(255, 255, 255, 0.1));
   backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
@@ -749,7 +749,7 @@ onUnmounted(() => {
   margin-bottom: 12px !important;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-backdrop-filter);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   padding: 8px;
   min-width: 160px;
   max-width: calc(100vw - 80px);
@@ -773,7 +773,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s ease;

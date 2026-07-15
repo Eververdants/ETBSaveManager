@@ -128,6 +128,14 @@ async function initApp(): Promise<typeof app> {
 
   setAppContext({ i18n: i18n.global, router, vue: vueRuntime, storage });
 
+  // Register v-squircle directive for Apple-style continuous corners
+  const { vSquircle, enableGlobalSquircle } = await import("./composables/useSquircle");
+  app.directive("squircle", vSquircle);
+
+  // 全局启用连续曲率圆角（corner-shape: squircle）
+  // 所有使用 border-radius 的元素自动获得更自然的圆角过渡
+  enableGlobalSquircle();
+
   // Phase 3: Mount app (user-visible)
   console.log("[Startup] Mounting app...");
   app.mount("#app");
@@ -163,11 +171,7 @@ async function initApp(): Promise<typeof app> {
   // Phase 5: Background-load non-critical modules (non-blocking)
   requestIdleCallback(
     () => {
-      Promise.all([
-        loadAllIcons(),
-        loadOtherLocales(),
-        initWindowTitle(i18n),
-      ]).then(() => {
+      Promise.all([loadAllIcons(), loadOtherLocales(), initWindowTitle(i18n)]).then(() => {
         console.log(`[Startup] Full initialization: ${(performance.now() - startTime).toFixed(0)}ms`);
       });
     },

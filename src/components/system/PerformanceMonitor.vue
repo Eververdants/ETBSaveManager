@@ -355,7 +355,7 @@ export default {
   font-family: monospace;
   font-size: 12px;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   /* 默认半透明，不干扰主界面 */
   opacity: 0.3;
   transition: opacity 0.2s ease;
@@ -390,7 +390,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 .rating.excellent {

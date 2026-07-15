@@ -402,6 +402,85 @@ select {
   border-radius: var(--radius-image);
 }
 
+/* ── 额外全局圆角映射 ──
+ *   覆盖常见 UI 元素，确保大圆角 + 胶囊风格统一
+ */
+.btn-primary,
+.btn-secondary,
+.btn-outline,
+.btn-success,
+.btn-danger,
+.btn-warning,
+.btn-info,
+.button-primary,
+.button-secondary {
+  border-radius: var(--radius-button) !important;
+}
+
+select,
+.input,
+.input-field,
+.form-input,
+.form-control,
+.search-input {
+  border-radius: var(--radius-input);
+}
+
+.list-item,
+.menu-item,
+.dropdown-item,
+.select-option {
+  border-radius: var(--radius-md);
+}
+
+.section,
+.panel,
+.settings-section,
+.config-panel {
+  border-radius: var(--radius-card);
+}
+
+/* 胶囊标签 / 徽章 */
+.label-badge,
+.status-badge,
+.count-badge,
+.version-tag,
+.level-tag,
+.type-badge {
+  border-radius: var(--radius-tag);
+}
+
+/* 小元素也至少使用 xs 圆角 */
+.small-indicator,
+.progress-step,
+.dot-indicator,
+.color-swatch,
+.icon-wrapper {
+  border-radius: var(--radius-xs);
+}
+
+/* 模态框 / 弹窗 */
+.modal-window,
+.dialog-box,
+.alert-box,
+.prompt-box {
+  border-radius: var(--radius-modal);
+}
+
+/* 侧边栏 */
+.sidebar-panel,
+.nav-panel {
+  border-radius: var(--radius-sidebar);
+}
+
+/* ── 胶囊 / Pill 形状实用类 ──
+ *   使用时: <div class="pill"> 或 <span class="capsule">
+ */
+.pill,
+.capsule {
+  border-radius: var(--radius-pill) !important;
+}
+
 /* Hide all scrollbars while keeping scroll functionality */
 ::-webkit-scrollbar {
   width: 0px;

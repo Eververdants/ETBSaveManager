@@ -5,6 +5,7 @@
       v-if="isVisible"
       ref="popupRef"
       class="prompt-popup"
+      v-squircle="32"
       :class="popupClass"
       :style="popupStyle"
       @mouseenter="pauseAutoClose"
@@ -197,7 +198,7 @@ const resumeAutoClose = () => {
   position: fixed;
   z-index: 10001;
   padding: 20px 24px;
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(255, 255, 255, 0.1) inset,
@@ -247,7 +248,7 @@ const resumeAutoClose = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   background: linear-gradient(135deg, var(--primary, #8B8178) 0%, color-mix(in srgb, var(--primary) 95%, transparent) 100%);
   box-shadow:
     0 6px 16px color-mix(in srgb, var(--primary) 30%, transparent),
@@ -297,7 +298,7 @@ const resumeAutoClose = () => {
   border: none;
   width: 32px;
   height: 32px;
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -381,14 +382,14 @@ const resumeAutoClose = () => {
   right: 0;
   height: 4px;
   background: rgba(0, 0, 0, 0.04);
-  border-radius: 0 0 20px 20px;
+  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
   background: linear-gradient(90deg, var(--primary, #8B8178) 0%, color-mix(in srgb, var(--primary) 80%, transparent) 100%);
-  border-radius: 0 0 20px 20px;
+  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
   transition: width 0.1s ease;
   box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 50%, transparent);
 }

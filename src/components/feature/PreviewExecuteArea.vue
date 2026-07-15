@@ -223,14 +223,14 @@ const handleSaveTemplate = () => emit("save-template");
   flex: 1;
   height: 6px;
   background: var(--bg-tertiary);
-  border-radius: 3px;
+  border-radius: var(--radius-pill);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background: var(--accent-color);
-  border-radius: 3px;
+  border-radius: var(--radius-pill);
   transition: width 0.3s var(--ease-default);
 }
 

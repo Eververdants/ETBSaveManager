@@ -5,6 +5,7 @@
     :class="{ expanded: isExpanded }"
     role="navigation"
     aria-label="Main menu"
+    v-squircle="18"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
     @keydown="handleKeydown"
@@ -629,7 +630,7 @@ onMounted(() => {
 
     &::-webkit-scrollbar-thumb {
       background: var(--color-border);
-      border-radius: var(--radius-xs);
+      border-radius: var(--radius-pill);
     }
 
     &::-webkit-scrollbar-track {
@@ -675,7 +676,7 @@ onMounted(() => {
 
 .sidebar.expanded .top-section::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-pill);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   transform: translateZ(0);
   backface-visibility: hidden;

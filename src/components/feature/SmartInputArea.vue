@@ -589,7 +589,7 @@ export default {
   align-items: center;
   gap: 2px;
   padding: 1px var(--space-1);
-  border-radius: 3px;
+  border-radius: var(--radius-tag);
   font-size: 10px;
   font-weight: 500;
 }
@@ -648,7 +648,7 @@ export default {
   padding: 2px var(--space-2);
   background: transparent;
   border: 1px solid var(--error-color);
-  border-radius: 3px;
+  border-radius: var(--radius-button);
   color: var(--error-color);
   font-size: 11px;
   cursor: pointer;

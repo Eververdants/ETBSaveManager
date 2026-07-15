@@ -224,7 +224,7 @@ const {
 
 .config-content::-webkit-scrollbar-thumb {
   background: var(--divider-light);
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
 }
 
 .config-group {
@@ -264,7 +264,7 @@ const {
 .radio-mark {
   width: var(--radio-size, 16px);
   height: var(--radio-size, 16px);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   border: 2px solid var(--checkbox-border, var(--divider-medium));
   background: var(--checkbox-bg, var(--bg-tertiary));
   transition: all 0.2s var(--ease-default);
@@ -278,7 +278,7 @@ const {
   content: "";
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: var(--accent-color);
   transform: scale(0);
   transition: transform 0.2s var(--ease-default);
@@ -323,7 +323,7 @@ const {
 .checkbox-mark {
   width: var(--checkbox-size, 16px);
   height: var(--checkbox-size, 16px);
-  border-radius: var(--radius-xs, 3px);
+  border-radius: var(--radius-xs);
   border: 2px solid var(--checkbox-border, var(--divider-medium));
   background: var(--checkbox-bg, var(--bg-tertiary));
   transition: all 0.2s var(--ease-default);

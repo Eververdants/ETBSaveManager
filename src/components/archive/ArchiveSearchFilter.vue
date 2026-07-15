@@ -10,7 +10,7 @@
         @enter="enter"
         @leave="leave"
       >
-        <div v-show="showComponent" class="unified-search-filter">
+        <div v-show="showComponent" class="unified-search-filter" v-squircle="24">
           <!-- 搜索区域 -->
           <div class="search-section">
             <div class="search-input-group">
@@ -21,6 +21,7 @@
                 type="text"
                 :placeholder="$t('archiveSearch.searchPlaceholder')"
                 class="search-input"
+                v-squircle="16"
                 @focus="showSuggestions = true"
                 @blur="onSearchBlur"
               />
@@ -414,10 +415,10 @@ defineExpose({
   /* 改为垂直布局，适应小屏幕 */
   gap: 16px;
   background: var(--glass-bg, rgba(255, 255, 255, 0.95));
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
-  box-shadow: var(--shadow-lg, 0 8px 32px rgba(0, 0, 0, 0.15));
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  box-shadow: var(--shadow-xl, 0 8px 32px rgba(0, 0, 0, 0.15));
   z-index: 100;
   width: 100%;
   max-width: 800px;
@@ -444,7 +445,7 @@ defineExpose({
   width: 100%;
   padding: 12px 48px 12px 44px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   background: var(--bg-secondary, rgba(0, 0, 0, 0.05));
   color: var(--text-primary);
   font-size: 15px;
@@ -505,7 +506,7 @@ defineExpose({
   color: var(--text-secondary);
   cursor: pointer;
   padding: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   transition:
     background 0.3s ease,
     color 0.3s ease,
@@ -515,9 +516,9 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  margin-top: -14px;
+  width: 30px;
+  height: 30px;
+  margin-top: -15px;
   box-sizing: border-box;
   overflow: hidden;
   box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
@@ -561,9 +562,9 @@ defineExpose({
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
-  padding: 4px 8px;
+  padding: 4px 10px;
   background: var(--bg-secondary, rgba(0, 0, 0, 0.04));
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   display: inline-block;
   transition:
     background 0.3s ease,
@@ -712,7 +713,7 @@ defineExpose({
   transition:
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.2s ease;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 4px;
 }
 
@@ -728,12 +729,12 @@ defineExpose({
 /* 搜索建议面板 */
 .search-suggestions {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 6px);
   left: 0;
   right: 0;
   background: var(--card-bg, rgba(255, 255, 255, 0.98));
   border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   z-index: 200;
   max-height: 300px;
@@ -770,8 +771,8 @@ defineExpose({
   color: var(--accent-color);
   font-size: 11px;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
   transition: background 0.2s ease;
 }
 
@@ -783,8 +784,8 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: background 0.15s ease;
 }
@@ -824,8 +825,8 @@ defineExpose({
 :deep(.search-highlight) {
   background: rgba(var(--accent-color-rgb), 0.2);
   color: var(--accent-color);
-  border-radius: 3px;
-  padding: 0 2px;
+  border-radius: var(--radius-xs);
+  padding: 0 3px;
   font-weight: 600;
 }
 

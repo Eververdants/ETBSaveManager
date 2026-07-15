@@ -41,6 +41,7 @@
     <div
       ref="scrollContainerRef"
       class="archive-list-container"
+      v-squircle="24"
       :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode }"
     >
       <!-- Use virtual scrolling when archives exist -->
@@ -97,7 +98,7 @@
       <!-- Empty state -->
       <template v-else>
         <div v-if="archives.length > 0 && hasActiveFilters" class="empty-state">
-          <div class="empty-content">
+          <div class="empty-content" v-squircle="32">
             <div class="empty-icon">🔍</div>
             <h3 class="empty-title">{{ $t("archiveSearch.noResults") }}</h3>
             <p class="empty-description">
@@ -106,19 +107,19 @@
             <p class="empty-hint">
               {{ $t("archiveSearch.adjustSearchOrClearFilters") }}
             </p>
-            <button class="empty-action" @click="clearAllFilters">
+            <button class="empty-action" v-squircle="14" @click="clearAllFilters">
               {{ $t("archiveSearch.clearFilters") }}
             </button>
           </div>
         </div>
         <div v-else-if="dataLoadComplete && archives.length === 0" class="empty-state">
-          <div class="empty-content">
+          <div class="empty-content" v-squircle="32">
             <div class="empty-icon">📁</div>
             <h3 class="empty-title">{{ $t("archiveSearch.noArchives") }}</h3>
             <p class="empty-description">
               {{ $t("archiveSearch.createNewArchive") }}
             </p>
-            <button class="empty-action" @click="createNewArchive">
+            <button class="empty-action" v-squircle="14" @click="createNewArchive">
               {{ $t("archiveSearch.createArchive") }}
             </button>
           </div>
@@ -188,7 +189,7 @@
     <Teleport to="body">
       <transition name="modal">
         <div v-if="showPerformanceSettings" class="modal-overlay" @click.self="showPerformanceSettings = false">
-          <div class="modal-container">
+          <div class="modal-container" v-squircle="24">
             <div class="modal-header">
               <h2 class="modal-title">{{ $t("performanceSettings.title") }}</h2>
               <button class="modal-close" @click="showPerformanceSettings = false">
@@ -734,8 +735,8 @@ watch(columnsPerRow, () => {
   /* Optimize scroll performance */
   -webkit-overflow-scrolling: touch;
   transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin: 20px;
-  border-radius: var(--radius-lg);
+  margin: 16px;
+  border-radius: var(--radius-xl);
 }
 
 .archive-list-container.no-scroll {
@@ -797,8 +798,8 @@ watch(columnsPerRow, () => {
   max-width: 400px;
   padding: 48px;
   background: var(--card-bg);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
   border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
@@ -836,8 +837,8 @@ watch(columnsPerRow, () => {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
+  padding: 12px 28px;
+  border-radius: var(--radius-button);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -853,7 +854,8 @@ watch(columnsPerRow, () => {
   inset: 0 !important;
   z-index: 1000;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -872,7 +874,7 @@ watch(columnsPerRow, () => {
 
 .modal-container {
   background: var(--card-bg);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   max-width: 500px;
   width: 90%;
   max-height: 80vh;
@@ -899,8 +901,8 @@ watch(columnsPerRow, () => {
   border: none;
   cursor: pointer;
   color: var(--text-secondary);
-  padding: 4px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: var(--radius-pill);
 }
 
 .modal-close:hover {
@@ -965,12 +967,12 @@ watch(columnsPerRow, () => {
 
 .archive-list-container::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
 }
 
 .archive-list-container::-webkit-scrollbar-thumb {
   background: var(--primary-color);
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
 }
 
 .multi-select-toolbar {

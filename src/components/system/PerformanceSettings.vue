@@ -1,5 +1,5 @@
 <template>
-  <div class="performance-settings">
+  <div class="performance-settings" v-squircle="24">
     <h3 class="settings-title">{{ t("performanceSettings.title") }}</h3>
 
     <div class="setting-group">
@@ -155,7 +155,7 @@ const {
 .performance-settings {
   padding: 20px;
   background-color: var(--bg-color);
-  border-radius: 8px;
+  border-radius: var(--radius-xl);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   max-width: 600px;
   margin: 0 auto;
@@ -197,9 +197,9 @@ const {
 
 .setting-select {
   width: 100%;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
   background-color: var(--bg-color-secondary);
   color: var(--text-color);
   font-size: 0.9rem;
@@ -233,7 +233,7 @@ const {
   bottom: 0;
   background-color: #ccc;
   transition: 0.3s;
-  border-radius: 24px;
+  border-radius: var(--radius-xl);
 }
 
 .toggle-slider:before {
@@ -245,7 +245,7 @@ const {
   bottom: 3px;
   background-color: white;
   transition: 0.3s;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 input:checked + .toggle-slider {
@@ -259,8 +259,8 @@ input:checked + .toggle-slider:before {
 .device-info,
 .performance-stats {
   background-color: var(--bg-color-secondary);
-  border-radius: 6px;
-  padding: 15px;
+  border-radius: var(--radius-lg);
+  padding: 16px;
 }
 
 .info-item,

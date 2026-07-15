@@ -394,7 +394,8 @@ const handleContainerMouseLeave = () => {
   }
 
   gsap.killTweensOf(tooltip.value);
-  gsap.to(actionButton.value, { scale: 1, duration: 0.08, ease: "power2.out" });
+  gsap.killTweensOf(actionButton.value);
+  gsap.set(actionButton.value, { clearProps: "transform" });
 
   if (!isMenuExpanded.value) {
     tooltipTimer = setTimeout(() => {
@@ -487,6 +488,9 @@ const handleMouseUp = () => {
     scale: 1,
     duration: 0.08,
     ease: "back.out(2)",
+    onComplete: () => {
+      gsap.set(actionButton.value, { clearProps: "transform" });
+    },
   });
 };
 
@@ -668,7 +672,7 @@ onUnmounted(() => {
 }
 
 .action-button:hover {
-  background: var(--sidebar-item-hover-bg, var(--bg-tertiary));
+  background: var(--bg-tertiary);
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
   transform: var(--card-hover-transform);
 }

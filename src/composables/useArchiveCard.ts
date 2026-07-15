@@ -90,7 +90,10 @@ export function useArchiveCardVisibility(archive: Ref<ArchiveData>): {
   return { localVisible, isAnimating };
 }
 
-export function useArchiveCardActions(archive: Ref<ArchiveData>, emit: (event: string, ...args: unknown[]) => void): CardActions {
+export function useArchiveCardActions(
+  archive: Ref<ArchiveData>,
+  emit: (event: string, ...args: unknown[]) => void,
+): CardActions {
   const toggleVisibility = (): void => {
     emit("toggle-visibility", {
       ...archive.value,
@@ -165,8 +168,12 @@ export function useArchiveCard(
   const isVisible = computed((): boolean | undefined => archive.value?.isVisible);
   const currentLevelName = computed((): string => translations.getLevelName(archive.value?.currentLevel ?? ""));
   const backgroundImage = computed((): string => `/images/ETB/${archive.value?.currentLevel}.jpg`);
-  const archiveDifficultyText = computed((): string => translations.getDifficultyText(archive.value?.archiveDifficulty ?? ""));
-  const actualDifficultyText = computed((): string => translations.getDifficultyText(archive.value?.actualDifficulty ?? ""));
+  const archiveDifficultyText = computed((): string =>
+    translations.getDifficultyText(archive.value?.archiveDifficulty ?? ""),
+  );
+  const actualDifficultyText = computed((): string =>
+    translations.getDifficultyText(archive.value?.actualDifficulty ?? ""),
+  );
   const archiveDifficultyClass = computed((): string => `difficulty-${archive.value?.archiveDifficulty}`);
   const actualDifficultyClass = computed((): string => `difficulty-${archive.value?.actualDifficulty}`);
 

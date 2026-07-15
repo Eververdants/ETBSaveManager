@@ -382,7 +382,7 @@ const virtualizerOptions = computed(() => ({
   count: rowCount.value,
   getScrollElement: () => scrollContainerRef.value,
   estimateSize: () => 180, // Card height 160px + gap 20px
-  overscan: 2, // Reduce overscan to lower render count
+  overscan: 1, // Reduce overscan to lower render count
 }));
 
 // Virtualizer
@@ -617,8 +617,8 @@ onDeactivated(() => {
 onMounted(async () => {
   window.addEventListener("open-archive-search", handleOpenArchiveSearchEvent);
 
-  initPerformanceMonitor();
-  setTimeout(initButtonProtection, 1000);
+  requestIdleCallback(() => initPerformanceMonitor(), { timeout: 1500 });
+  requestIdleCallback(() => initButtonProtection(), { timeout: 2000 });
 
   await initializeArchives(true);
   displayArchives.value = [...archives.value];
@@ -629,11 +629,6 @@ onMounted(async () => {
   remeasureVirtualizer();
 
   isPageActive.value = true;
-  await refreshArchivesSilent();
-
-  // Remeasure once after data refresh
-  remeasureVirtualizer();
-
   window.cleanupRouteWatcher = () => {};
 
   const handleResize = () => {
@@ -1055,7 +1050,7 @@ watch(columnsPerRow, () => {
   font-weight: 500;
   color: var(--text-color);
   padding: var(--space-2) var(--space-4);
-  background: rgba(0, 122, 255, 0.12);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
   border-radius: var(--radius-pill);
 }
 

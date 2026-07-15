@@ -494,8 +494,8 @@ defineExpose({
 }
 
 .icon-info {
-  background: linear-gradient(135deg, #007aff, #5ac8fa);
-  box-shadow: 0 3px 10px rgba(0, 122, 255, 0.35);
+  background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 75%, #FFFFFF));
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--accent-color) 35%, transparent);
 }
 
 .notification-content {
@@ -578,7 +578,7 @@ defineExpose({
 }
 
 .notification-btn.primary {
-  background: linear-gradient(135deg, #007aff, #5ac8fa);
+  background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 75%, #FFFFFF));
   color: white;
 }
 
@@ -661,7 +661,7 @@ defineExpose({
 }
 
 .progress-info {
-  background: linear-gradient(90deg, #007aff, #5ac8fa);
+  background: linear-gradient(90deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 70%, #FFFFFF));
 }
 
 .notification-success {
@@ -677,7 +677,7 @@ defineExpose({
 }
 
 .notification-info {
-  border-left: 3px solid #007aff;
+  border-left: 3px solid var(--accent-color);
 }
 
 @media (prefers-color-scheme: dark) {

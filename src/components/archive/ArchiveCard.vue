@@ -970,7 +970,7 @@ const toggleSelection = () => {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 122, 255, 0.12);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
   pointer-events: none;
 }
 </style>

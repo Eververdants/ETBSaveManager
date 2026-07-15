@@ -207,9 +207,7 @@ export function useArchiveData(): {
    */
   const startDetailLoading = async (): Promise<void> => {
     // Archives that still have the default "Level0" (not yet filled by Phase 2)
-    const pendingPaths = archives.value
-      .filter((a) => a.currentLevel === "Level0")
-      .map((a) => a.path);
+    const pendingPaths = archives.value.filter((a) => a.currentLevel === "Level0").map((a) => a.path);
 
     if (pendingPaths.length === 0) {
       incrementalLoadState.value = {
@@ -297,7 +295,8 @@ export function useArchiveData(): {
       // Phase 2 — background batch details for remaining archives (N+1 … end)
       const remaining = archives.value.filter((a) => a.currentLevel === "Level0").length;
       if (remaining > 0) {
-        startDetailLoading();
+        // Defer to avoid blocking first paint
+        requestIdleCallback(() => startDetailLoading(), { timeout: 2000 });
       } else {
         incrementalLoadState.value = { phase: "complete", totalDetails: 0, loadedDetails: 0 };
       }
@@ -321,14 +320,14 @@ export function useArchiveData(): {
   /** Shared: load metadata + details for first N, return merged ArchiveData[].
    *  First N have real currentLevel/actualDifficulty; the rest use Level0. */
   const loadMergedArchives = async (): Promise<ArchiveData[]> => {
-    const [, metaArchives] = await Promise.all([
-      loadVisibleSaves(),
-      loadMetadata(),
-    ]);
+    const [, metaArchives] = await Promise.all([loadVisibleSaves(), loadMetadata()]);
     if (metaArchives.length === 0) return [];
 
     // Load details for first N before returning
-    const firstPaths = metaArchives.slice(0, IMMEDIATE_COUNT).map((a) => a.path).filter(Boolean);
+    const firstPaths = metaArchives
+      .slice(0, IMMEDIATE_COUNT)
+      .map((a) => a.path)
+      .filter(Boolean);
     const detailMap = new Map<string, { current_level: string; actual_difficulty: string }>();
     if (firstPaths.length > 0) {
       try {
@@ -346,9 +345,7 @@ export function useArchiveData(): {
           ...item,
           currentLevel: d.current_level,
           actualDifficulty:
-            difficultyMap[d.actual_difficulty] ||
-            d.actual_difficulty?.toLowerCase() ||
-            item.actualDifficulty,
+            difficultyMap[d.actual_difficulty] || d.actual_difficulty?.toLowerCase() || item.actualDifficulty,
         };
       }
       return item;
@@ -383,7 +380,7 @@ export function useArchiveData(): {
       displayArchives.value = [...merged];
 
       const remaining = archives.value.filter((a) => a.currentLevel === "Level0").length;
-      if (remaining > 0) startDetailLoading();
+      if (remaining > 0) requestIdleCallback(() => startDetailLoading(), { timeout: 2000 });
     } catch (error) {
       console.error("Failed to refresh archives:", error);
     }
@@ -408,11 +405,13 @@ export function useArchiveData(): {
     }
   };
 
-  const archiveStats = computed((): ArchiveStats => ({
-    total: archives.value.length,
-    visible: archives.value.filter((a) => a.isVisible).length,
-    hidden: archives.value.filter((a) => !a.isVisible).length,
-  }));
+  const archiveStats = computed(
+    (): ArchiveStats => ({
+      total: archives.value.length,
+      visible: archives.value.filter((a) => a.isVisible).length,
+      hidden: archives.value.filter((a) => !a.isVisible).length,
+    }),
+  );
 
   return {
     archives,

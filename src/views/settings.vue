@@ -1038,7 +1038,7 @@ export default {
   color: var(--accent-color);
   /* Add rounded background */
   border-radius: var(--radius-sm);
-  background-color: rgba(0, 122, 255, 0.1);
+  background-color: color-mix(in srgb, var(--accent-color) 10%, transparent);
 }
 
 .check-update-btn {
@@ -1679,7 +1679,7 @@ input:checked + .slider:before {
 .api-key-input:focus {
   outline: none;
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent);
 }
 
 .toggle-visibility-btn {
@@ -1767,7 +1767,7 @@ input:checked + .slider:before {
   justify-content: center;
   gap: var(--space-1);
   white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(0, 122, 255, 0.15);
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--accent-color) 15%, transparent);
   position: relative;
   overflow: hidden;
 }
@@ -1794,7 +1794,7 @@ input:checked + .slider:before {
   background-color: var(--accent-hover);
   border-color: var(--accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 122, 255, 0.25);
+  box-shadow: 0 4px 8px color-mix(in srgb, var(--accent-color) 25%, transparent);
 }
 
 .clear-cache-btn {
@@ -1885,12 +1885,12 @@ input:checked + .slider:before {
 
 .drop-zone:hover {
   border-color: var(--accent-color);
-  background-color: rgba(0, 122, 255, 0.05);
+  background-color: color-mix(in srgb, var(--accent-color) 5%, transparent);
 }
 
 .drop-zone.drag-over {
   border-color: var(--accent-color);
-  background-color: rgba(0, 122, 255, 0.1);
+  background-color: color-mix(in srgb, var(--accent-color) 10%, transparent);
   border-style: solid;
 }
 

@@ -230,25 +230,21 @@ const endings = computed(() => [
   {
     id: 0,
     label: t("createArchive.endings.main"),
-    icon: "🏆",
     levels: endingLevelsData[0],
   },
   {
     id: 1,
     label: t("createArchive.endings.branch1"),
-    icon: "🔍",
     levels: endingLevelsData[1],
   },
   {
     id: 2,
     label: t("createArchive.endings.branch2"),
-    icon: "🔬",
     levels: endingLevelsData[2],
   },
   {
     id: 3,
     label: t("createArchive.endings.branch3"),
-    icon: "🌟",
     levels: endingLevelsData[3],
   },
 ]);

@@ -1,9 +1,7 @@
 <template>
   <div class="lazy-image-container" :class="{ loaded: imageLoaded, error: imageError }">
-    <!-- Initial loading placeholder: only shown on first render when image not loaded -->
-    <div v-if="!imageLoaded && !imageError" class="image-placeholder">
-      <div class="placeholder-spinner"></div>
-    </div>
+    <!-- Initial loading placeholder: static gradient, no animation -->
+    <div v-if="!imageLoaded && !imageError" class="image-placeholder"></div>
 
     <!-- Load failure placeholder -->
     <div v-if="imageError" class="image-error-fallback">
@@ -28,6 +26,46 @@
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
+
+/**
+ * Global image preload queue with concurrency limit.
+ * Prevents disk I/O contention when many cards mount simultaneously.
+ */
+const PRELOAD_QUEUE_MAX = 4;
+const preloadQueue = [];
+let preloadActive = 0;
+const loadedImages = new Set();
+
+const processQueue = () => {
+  while (preloadActive < PRELOAD_QUEUE_MAX && preloadQueue.length > 0) {
+    const { url, resolve } = preloadQueue.shift();
+    preloadActive++;
+    const img = new Image();
+    img.onload = () => {
+      loadedImages.add(url);
+      preloadActive--;
+      resolve(true);
+      processQueue();
+    };
+    img.onerror = () => {
+      preloadActive--;
+      resolve(false);
+      processQueue();
+    };
+    img.src = url;
+  }
+};
+
+const enqueuePreload = (url) => {
+  return new Promise((resolve) => {
+    if (loadedImages.has(url)) {
+      resolve(true);
+      return;
+    }
+    preloadQueue.push({ url, resolve });
+    processQueue();
+  });
+};
 
 const props = defineProps({
   src: {
@@ -58,36 +96,16 @@ const props = defineProps({
 
 const emit = defineEmits(["load", "error"]);
 
-/** Global cache: successfully loaded image URLs to avoid repeated preloading */
-const loadedImages = new Set();
-
 // Currently displayed src (only fully loaded images are assigned to this ref)
 const displayedSrc = ref(props.src);
 const imageLoaded = ref(false);
 const imageError = ref(false);
 
-/** Preload an image, returns success or failure */
-const preloadImage = (url) => {
-  return new Promise((resolve) => {
-    if (loadedImages.has(url)) {
-      resolve(true);
-      return;
-    }
-    const img = new Image();
-    img.onload = () => {
-      loadedImages.add(url);
-      resolve(true);
-    };
-    img.onerror = () => resolve(false);
-    img.src = url;
-  });
-};
-
 /** Switch to new image: preload -> update displayedSrc on success */
 const swapToSrc = async (newSrc) => {
   if (!newSrc || newSrc === displayedSrc.value) return;
 
-  const ok = await preloadImage(newSrc);
+  const ok = await enqueuePreload(newSrc);
   // After preloading, switch src in one go (browser reads from cache, no white flash)
   displayedSrc.value = newSrc;
   imageError.value = !ok;
@@ -98,7 +116,7 @@ const swapToSrc = async (newSrc) => {
 // Preload initial src on first mount
 onMounted(async () => {
   if (props.src) {
-    const ok = await preloadImage(props.src);
+    const ok = await enqueuePreload(props.src);
     // If initial image fails to load, enter error state
     imageError.value = !ok;
     imageLoaded.value = true;
@@ -135,10 +153,6 @@ const onImageError = (event) => {
   overflow: hidden;
   width: 100%;
   height: 100%;
-  /* Ensure container stays stable during transitions */
-  will-change: transform;
-  backface-visibility: hidden;
-  transform: translateZ(0);
 }
 
 .lazy-image-container img {
@@ -152,13 +166,7 @@ const onImageError = (event) => {
   display: block;
   max-width: 100%;
   max-height: 100%;
-  /* Ensure image stays stable during transitions */
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-  /* Prevent image from scaling during transitions */
   box-sizing: border-box;
-  /* Ensure image doesn't exceed container during transitions */
   overflow: hidden;
 }
 
@@ -186,13 +194,7 @@ const onImageError = (event) => {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
-  /* Ensure image stays stable during transitions */
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-  /* Prevent image from scaling during transitions */
   box-sizing: border-box;
-  /* Ensure image doesn't exceed container during transitions */
   overflow: hidden;
 }
 
@@ -202,30 +204,8 @@ const onImageError = (event) => {
   left: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--bg-secondary, rgba(0, 0, 0, 0.05));
+  background: var(--bg-secondary, rgba(0, 0, 0, 0.05));
   z-index: 1;
-}
-
-.placeholder-spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--border-color, rgba(0, 0, 0, 0.1));
-  border-top: 2px solid var(--accent-color, #007bff);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 .lazy-image-container img {

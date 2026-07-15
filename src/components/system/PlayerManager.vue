@@ -183,7 +183,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
 }
 
 .player-item.active {
-  background: rgba(0, 122, 255, 0.1);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
   outline: 2px solid var(--primary);
 }
 
@@ -191,7 +191,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: rgba(0, 122, 255, 0.12);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
   color: var(--primary);
   display: flex;
   align-items: center;

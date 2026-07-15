@@ -252,17 +252,17 @@
   --radio-size: 16px;
 
   /* 未选中状态 */
-  --checkbox-bg: #f8f8fa;
-  --checkbox-border: rgba(0, 0, 0, 0.15);
-  --checkbox-border-hover: #4b5563;
+  --checkbox-bg: #F2F0EB;
+  --checkbox-border: rgba(26, 24, 21, 0.15);
+  --checkbox-border-hover: #8B8178;
 
   /* 选中状态 */
-  --checkbox-checked-bg: #4b5563;
-  --checkbox-checked-border: #4b5563;
-  --checkbox-checkmark-color: #ffffff;
+  --checkbox-checked-bg: #8B8178;
+  --checkbox-checked-border: #8B8178;
+  --checkbox-checkmark-color: #FFFFFF;
 
   /* 焦点状态 */
-  --checkbox-focus-shadow: 0 0 0 2px rgba(75, 85, 99, 0.2);
+  --checkbox-focus-shadow: 0 0 0 2px rgba(139, 129, 120, 0.2);
 
   /* 禁用状态 */
   --checkbox-disabled-bg: var(--bg-disabled);

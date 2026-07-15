@@ -633,7 +633,7 @@ export default {
      */
     const handleSaveTemplate = async () => {
       if (state.archives.length === 0) {
-        showError(t("quickCreate.template.noArchives"), "⚠️");
+        showError(t("quickCreate.template.noArchives"));
         return;
       }
 
@@ -693,7 +693,7 @@ export default {
       try {
         // Validate template format
         if (!templateData.version || !templateData.archives || !Array.isArray(templateData.archives)) {
-          showError(t("quickCreate.template.invalidFormat"), "⚠️");
+          showError(t("quickCreate.template.invalidFormat"));
           return;
         }
 

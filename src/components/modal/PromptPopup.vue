@@ -248,9 +248,9 @@ const resumeAutoClose = () => {
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--primary, #007aff) 0%, rgba(0, 122, 255, 0.95) 100%);
+  background: linear-gradient(135deg, var(--primary, #8B8178) 0%, color-mix(in srgb, var(--primary) 95%, transparent) 100%);
   box-shadow:
-    0 6px 16px rgba(0, 122, 255, 0.3),
+    0 6px 16px color-mix(in srgb, var(--primary) 30%, transparent),
     0 0 0 1px rgba(255, 255, 255, 0.15) inset;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -258,7 +258,7 @@ const resumeAutoClose = () => {
 .popup-icon-wrapper:hover {
   transform: scale(1.08) rotate(2deg);
   box-shadow:
-    0 8px 20px rgba(0, 122, 255, 0.4),
+    0 8px 20px color-mix(in srgb, var(--primary) 40%, transparent),
     0 0 0 1px rgba(255, 255, 255, 0.2) inset;
 }
 
@@ -387,10 +387,10 @@ const resumeAutoClose = () => {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary, #007aff) 0%, rgba(0, 122, 255, 0.8) 100%);
+  background: linear-gradient(90deg, var(--primary, #8B8178) 0%, color-mix(in srgb, var(--primary) 80%, transparent) 100%);
   border-radius: 0 0 20px 20px;
   transition: width 0.1s ease;
-  box-shadow: 0 0 12px rgba(0, 122, 255, 0.5);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 50%, transparent);
 }
 
 /* Dark mode support */
@@ -476,11 +476,11 @@ const resumeAutoClose = () => {
 
 @keyframes popupGlow {
   0% {
-    box-shadow: 0 0 0 rgba(0, 122, 255, 0);
+    box-shadow: 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
   }
 
   50% {
-    box-shadow: 0 0 20px rgba(0, 122, 255, 0.2);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 20%, transparent);
   }
 
   100% {
@@ -541,8 +541,8 @@ const resumeAutoClose = () => {
   background: var(--popup-info-bg);
   border: 1px solid var(--color-info-border);
   box-shadow:
-    0 20px 60px rgba(0, 122, 255, 0.12),
-    0 0 0 1px rgba(0, 122, 255, 0.1) inset;
+    0 20px 60px var(--popup-info-shadow, color-mix(in srgb, var(--accent-color) 12%, transparent)),
+    0 0 0 1px color-mix(in srgb, var(--accent-color) 10%, transparent) inset;
 }
 
 .popup-info .popup-icon-wrapper {

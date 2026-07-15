@@ -155,11 +155,11 @@ const getThemeName = (themeId) => {
 
 const themeColors = {
   light: {
-    bg: "#f8f8fa",
-    sidebar: "#f0f0f2",
-    header: "#ffffff",
-    card: "#ffffff",
-    accent: "#4b5563",
+    bg: "#F2F0EB",
+    sidebar: "#E8E4E0",
+    header: "#F0ECE8",
+    card: "#F0ECE8",
+    accent: "#8B8178",
   },
   dark: {
     bg: "#0d0d0f",

@@ -12,7 +12,6 @@
             :style="{ '--index': index }"
             @click="$emit('select-ending', index)"
           >
-            <span class="ending-icon">{{ ending.icon }}</span>
             <span class="ending-label">{{ ending.label }}</span>
           </div>
         </div>
@@ -137,11 +136,6 @@ const handleSelectLevel = (index, event) => {
 
 .ending-tab:hover {
   background: var(--bg-tertiary);
-}
-
-.ending-icon {
-  font-size: 18px;
-  line-height: 1;
 }
 
 .ending-label {

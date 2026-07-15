@@ -401,9 +401,9 @@ const {
 }
 
 .action-btn.copy:hover {
-  background: rgba(0, 122, 255, 0.1);
-  color: #007aff;
-  border-color: rgba(0, 122, 255, 0.3);
+  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  color: var(--accent-color);
+  border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
 }
 
 .action-btn.remove:hover {

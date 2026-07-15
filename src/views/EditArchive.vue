@@ -798,7 +798,7 @@ onMounted(() => {
   height: calc(100% - 12px);
   background: var(--primary);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent);
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -933,7 +933,7 @@ onMounted(() => {
 }
 
 .difficulty-btn.selected {
-  background: rgba(0, 122, 255, 0.1);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
   color: var(--primary);
   border-color: var(--primary);
 }
@@ -958,7 +958,7 @@ onMounted(() => {
 .action-btn:hover {
   background: var(--primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 .action-btn:active {
@@ -1123,7 +1123,7 @@ onMounted(() => {
 }
 
 .player-item.active {
-  background: rgba(0, 122, 255, 0.1);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
   outline: 2px solid var(--primary);
 }
 

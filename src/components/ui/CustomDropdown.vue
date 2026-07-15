@@ -294,7 +294,7 @@ const selectedLabel = computed(() => {
 
 .dropdown-display.open {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent);
 }
 
 .dropdown-text {

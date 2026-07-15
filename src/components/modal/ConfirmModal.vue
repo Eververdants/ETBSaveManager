@@ -313,7 +313,7 @@ const displayCancelText = computed(() => props.cancelText || t('confirmModal.can
 }
 
 .modal-icon.info {
-  color: #007aff;
+  color: var(--accent-color);
 }
 
 .modal-message {
@@ -389,8 +389,8 @@ const displayCancelText = computed(() => props.cancelText || t('confirmModal.can
 }
 
 .mode-badge.singleplayer {
-  background: rgba(0, 122, 255, 0.15);
-  color: #007aff;
+  background: color-mix(in srgb, var(--accent-color) 15%, transparent);
+  color: var(--accent-color);
 }
 
 .mode-badge.multiplayer {
@@ -484,15 +484,15 @@ const displayCancelText = computed(() => props.cancelText || t('confirmModal.can
 }
 
 .btn-info {
-  background: #007aff;
+  background: var(--accent-color);
   color: white;
-  border: 1px solid #007aff;
+  border: 1px solid var(--accent-color);
 }
 
 .btn-info:hover:not(:disabled) {
-  background: #0066e6;
+  background: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-color) 30%, transparent);
 }
 
 .loading-spinner {

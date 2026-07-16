@@ -11,11 +11,13 @@
 </p>
 
 <p align="center">
-  <a href="https://eververdants.github.io/ETBSaveManager/">🌐 Landing Page &amp; Demo</a>
+  <a href="https://eververdants.github.io/ETBSaveManager/">🌐 Landing Page</a>
   <span> · </span>
-  <a href="./README-CN.md">🇨🇳 简体中文</a>
+  <a href="./README-CN.md">简体中文</a>
   <span> · </span>
-  <a href="./README-HANT.md">🇭🇰 繁體中文</a>
+  <a href="./README-HANT.md">繁體中文</a>
+  <span> · </span>
+  <a href="./README.md">English</</a>
 </p>
 
 <p align="center">

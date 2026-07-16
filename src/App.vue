@@ -22,11 +22,17 @@ const sidebarExpanded = ref(false);
 const showGlobalSearch = ref(false);
 const globalSearchRef = ref(null);
 const appStore = useAppStore();
+
+// Compute effective margins based on sidebar/titlebar visibility
+const contentStyle = computed(() => ({
+  marginTop: appStore.titleBarVisible ? '38px' : '0',
+  marginLeft: appStore.sidebarVisible ? 'var(--sidebar-width, 70px)' : '0',
+}));
 const shouldShowPerformanceMonitor = computed(
   () => appStore.performanceMonitorEnabled && appStore.developerModeEnabled,
 );
 
-const cachedComponents = ["Home", "Settings", "CreateArchive", "Log"];
+const cachedComponents = ["Home", "Settings", "CreateArchive"];
 const excludedComponents = ["BatchCreateArchive", "EditArchive"];
 
 // ─── Resource Scheduler ──────────────────────────────────
@@ -39,8 +45,6 @@ const ROUTE_OPERATION_MAP = {
   SelectCreateMode: "previewing",
   Settings: "rendering",
   About: "rendering",
-  Log: "rendering",
-  TestArchive: "previewing",
 };
 
 // Track last route operation for cleanup on navigation
@@ -256,6 +260,12 @@ onMounted(() => {
     },
     { timeout: 1000 },
   );
+
+  // Expose dev toggle functions to console when in developer mode
+  if (appStore.developerModeEnabled) {
+    window.__toggleSidebar = () => appStore.toggleSidebar();
+    window.__toggleTitleBar = () => appStore.toggleTitleBar();
+  }
 });
 
 onUnmounted(() => {
@@ -295,18 +305,19 @@ async function initThemeSystem() {
 </script>
 
 <template>
-  <div class="app-container">
-    <component :is="TitleBar" v-if="TitleBar" />
+  <div class="app-container" :class="{ 'no-titlebar': !appStore.titleBarVisible }">
+    <component :is="TitleBar" v-if="TitleBar && appStore.titleBarVisible" />
     <PerformanceMonitor v-if="shouldShowPerformanceMonitor" class="performance-monitor" />
     <GlobalSearchPanel ref="globalSearchRef" :visible="showGlobalSearch" @close="closeGlobalSearch" />
     <div class="content-wrapper">
-      <component :is="Sidebar" v-if="Sidebar" @sidebar-expand="handleSidebarExpand" />
+      <component :is="Sidebar" v-if="Sidebar && appStore.sidebarVisible" @sidebar-expand="handleSidebarExpand" />
       <main
         class="main-content"
         :class="{
           'sidebar-collapsed': !sidebarExpanded,
           'sidebar-expanded': sidebarExpanded,
         }"
+        :style="contentStyle"
       >
         <router-view v-slot="{ Component, route }">
           <transition name="page-fade" mode="out-in">
@@ -612,10 +623,13 @@ select,
 .main-content {
   flex: 1;
   overflow-y: auto;
-  margin-left: var(--sidebar-width, 70px);
-  transition: margin-left 0.3s cubic-bezier(0.65, 0, 0.35, 1);
-  margin-top: 38px;
   height: 100vh;
   scroll-behavior: smooth;
+}
+
+/* When titlebar is hidden, adjust sidebar position */
+:deep(.no-titlebar .sidebar) {
+  top: 0 !important;
+  height: 100vh !important;
 }
 </style>

@@ -1,181 +1,221 @@
 <p align="center">
-  <img src="./src-tauri/icons/128x128.png" alt="ETB Save Manager" width="128">
+  <img src="./src-tauri/icons/128x128.png" alt="ETB Save Manager — Escape The Backrooms save file editor for Windows" width="128">
 </p>
 
 <h1 align="center">ETB Save Manager</h1>
 
 <p align="center">
-  A save file manager for <em>Escape The Backrooms</em>, built with Tauri 2.0.
+  <strong>A full-featured <em>Escape The Backrooms</em> save file manager and editor for Windows, built with Tauri 2.0.</strong>
+  <br>
+  View, edit, create, back up, and organize your <em>Escape The Backrooms</em> (ETB) save files on Windows with a polished desktop application.
 </p>
 
 <p align="center">
-  <a href="https://eververdants.github.io/ETBSaveManager/">Landing Page</a>
-  · <a href="./README-CN.md">简体中文</a>
-  · <a href="./README-HANT.md">繁體中文</a>
+  <a href="https://eververdants.github.io/ETBSaveManager/">🌐 Landing Page &amp; Demo</a>
+  <span> · </span>
+  <a href="./README-CN.md">🇨🇳 简体中文</a>
+  <span> · </span>
+  <a href="./README-HANT.md">🇭🇰 繁體中文</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/v/release/Eververdants/ETBSaveManager" alt="Version"></a>
-  <a href="https://github.com/Eververdants/ETBSaveManager/actions"><img src="https://img.shields.io/github/actions/workflow/status/Eververdants/ETBSaveManager/release.yml" alt="CI"></a>
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/downloads/Eververdants/ETBSaveManager/total" alt="Downloads"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/Eververdants/ETBSaveManager" alt="License"></a>
-  <img src="https://img.shields.io/badge/platform-Windows-blue" alt="Platform">
-</p>
-
-## Features
-
-### Save Management
-
-- **Full CRUD Operations** — Create, edit, delete, copy, hide/show saves
-- **Soft Delete & Recycle Bin** — Trashed saves can be restored or permanently deleted
-- **Batch Operations** — Process multiple saves simultaneously with multi-select mode
-- **Favorites & Sorting** — Star your important saves; sort by name, date, level, or favorites
-- **Smart Filtering** — Filter by level, difficulty, game mode, and search keywords
-- **Quick Search** — Fuzzy matching to locate saves instantly
-- **Undo / Redo** — Full undo/redo support for archive operations
-- **Virtual Scrolling** — Smooth performance with large save collections
-
-### UI/UX
-
-- **Clean Interface** — Intuitive design with smooth GSAP-powered animations
-- **13 Themes** — Light, Dark, and 11 vibrant color themes
-- **Responsive Layout** — Collapsible sidebar, adaptive components
-- **Hardware Accelerated** — GPU-optimized rendering for smooth performance
-- **Global Search** — Press `Ctrl+F` to search across any page
-- **Tutorial Overlay** — Interactive guide for first-time users
-
-### Internationalization
-
-Built-in languages:
-
-- English
-- Simplified Chinese (简体中文)
-- Traditional Chinese (繁體中文)
-
-> The i18n system is modular — additional languages can be contributed by adding new locale files.
-
-### Advanced Features
-
-- **Multiple Creation Modes**
-  - Quick Create — Streamlined workflow for fast save generation
-  - Standard Create — Full customization options with step-by-step wizard
-- **Inventory Editor** — Visual editor for player inventory items
-- **Player Data Editor** — Edit inventory items, sanity, and other player stats
-- **Notification System** — Persistent notification center for app events
-- **Performance Monitor** — Built-in FPS and memory diagnostics (dev mode)
-- **Performance Settings** — Tweak GPU rendering and animation preferences
-- **Uniform Config Panel** — Centralized configuration interface
-
----
-
-## Screenshots
-
-> Screenshots below are demonstrated using the "Ocean" theme
-
-<p align="center">
-  <img src="./docs/存档列表-en.png" alt="Archive List" width="49%">
-  <img src="./docs/创建存档页面第一步-en.png" alt="Create Archive Step 1" width="49%">
-</p>
-
-<p align="center">
-  <img src="./docs/快速创建存档页面-en.png" alt="Quick Create Archive" width="49%">
-  <img src="./docs/编辑页面-en.png" alt="Edit Archive" width="49%">
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/v/release/Eververdants/ETBSaveManager?label=latest%20release" alt="Latest Release"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/actions"><img src="https://img.shields.io/github/actions/workflow/status/Eververdants/ETBSaveManager/release.yml?label=CI%2FCD" alt="CI/CD Pipeline"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/downloads/Eververdants/ETBSaveManager/total?label=total%20downloads" alt="Total Downloads"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/stargazers"><img src="https://img.shields.io/github/stars/Eververdants/ETBSaveManager?label=stars" alt="GitHub Stars"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Eververdants/ETBSaveManager?label=license" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/platform-Windows-blue?label=platform" alt="Windows Only">
 </p>
 
 ---
 
-## Installation
+## Why ETB Save Manager?
 
-### Download Release
+Managing save files for *Escape The Backrooms* on Windows can be frustrating — save files are scattered across game directories, indistinguishable by name alone, and prone to accidental overwrites. **ETB Save Manager** solves this by providing a clean, powerful desktop tool that lets you:
 
-1. Go to [Releases](https://github.com/Eververdants/ETBSaveManager/releases/latest)
-2. Download the Windows installer (`.msi` or `.exe`)
-3. Run the installer
+- **Browse and manage** all your *Escape The Backrooms* save files in one place
+- **Edit player data** — inventory items, sanity, and other UE4 save fields
+- **Create new saves** from scratch or from templates, with full control over game state
+- **Organize** saves with custom names, filtering, and batch operations
+- **Recover deleted saves** with soft-delete and a built-in recycle bin
 
-> **Note:** You may need [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2) (usually pre-installed on Windows 10/11)
+Whether you are a casual player wanting to keep your progress safe or a power user experimenting with different game states, ETB Save Manager gives you complete control over your *Escape The Backrooms* save data.
 
-### Build from Source
+---
+
+## ✨ Features
+
+### 📂 Save File Management
+
+- **Full CRUD Operations** — Create, view, edit, rename, copy, delete, hide, and reveal saves
+- **Soft Delete & Recycle Bin** — Accidentally deleted a save? Restore it from the recycle bin before permanent deletion
+- **Batch Operations** — Select multiple saves at once to copy, delete, or export in bulk
+- **Multi-Dimension Sorting** — Sort saves by name, creation date, last modified date, or game level
+- **Smart Filtering** — Filter saves by game level, difficulty mode, game mode, or search keywords
+- **Fuzzy Search** — Type-ahead fuzzy matching to locate any save file instantly
+- **Undo / Redo** — Full undo and redo support for all archive operations, so mistakes are never permanent
+- **Virtual Scrolling** — Smooth performance even with hundreds of save files, powered by @tanstack/vue-virtual
+
+### ✏️ Save Editor & Player Data Tools
+
+- **Inventory Editor** — Visual editor for the player's inventory items: add, remove, and modify items with an intuitive interface
+- **Player Data Editor** — Edit sanity and other player stats stored in the UE4 save format
+- **Quick Create** — Streamlined workflow for generating a new save file in seconds
+- **Standard Create Wizard** — Full step-by-step wizard with every customization option available
+
+### 🎨 User Interface & Experience
+
+- **Clean, Modern Design** — Intuitive layout with smooth GSAP-powered animations and transitions
+- **13 Built-in Themes** — Light, Dark, and 11 colorful themes (Ocean, Forest, Sunset, Lavender, Rose, Mint, Peach, Sky, and more)
+- **Responsive Layout** — Collapsible sidebar and adaptive components that work at any window size
+- **Hardware Accelerated Rendering** — GPU-optimized rendering pipeline for consistently smooth performance
+- **Global Search** — Press `Ctrl+F` from anywhere in the app to search across pages
+- **Notification Center** — Persistent notification system tracking all app events and operations
+- **Uniform Config Panel** — Centralized configuration interface for all app settings
+
+### 🌐 Internationalization (i18n)
+
+| Language | File |
+|----------|------|
+| English | `en-US` (default) |
+| Simplified Chinese (简体中文) | `zh-CN` |
+| Traditional Chinese (繁體中文) | `zh-TW` |
+
+> The i18n system is modular — community contributions for additional languages are welcome. Add new locale files to extend support.
+
+---
+
+## 🖼️ Screenshots
+
+<p align="center">
+  <img src="./docs/存档列表-en.jpg" alt="ETB Save Manager — main save list view showing archive cards with level names, difficulty tags, and player info" width="49%">
+  <img src="./docs/创建存档页面第一步-en.jpg" alt="ETB Save Manager — standard create archive wizard step 1: selecting game level, difficulty, and player name" width="49%">
+</p>
+<p align="center">
+  <img src="./docs/快速创建存档页面-en.jpg" alt="ETB Save Manager — quick create archive page for generating a new Escape The Backrooms save file in seconds" width="49%">
+  <img src="./docs/编辑页面-en.jpg" alt="ETB Save Manager — save editor page with player data fields, inventory items, and sanity settings" width="49%">
+</p>
+
+---
+
+## 🚀 Installation
+
+### Option 1: Download Pre-built Installer (Recommended)
+
+1. Go to the [latest release page](https://github.com/Eververdants/ETBSaveManager/releases/latest)
+2. Download the Windows installer (`.exe` format)
+3. Run the installer — no additional setup required
+
+> **Note:** The app requires the [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2), which is pre-installed on most modern Windows 10 and Windows 11 systems. If missing, the installer can fetch it automatically.
+
+### Option 2: Build from Source
 
 ```bash
-# Clone repository
+# Clone the repository
 git clone https://github.com/Eververdants/ETBSaveManager.git
 cd ETBSaveManager
 
 # Install dependencies
-pnpm install
+npm install
 
-# Development mode
-pnpm tauri dev
+# Run in development mode (hot-reload)
+npm run tauri dev
 
-# Build for production
-pnpm tauri build
+# Build for production (creates installer)
+npm run tauri build
 ```
 
 **Prerequisites:**
 
-- Node.js 18+
-- Rust toolchain
-- Platform-specific dependencies (see [Tauri Prerequisites](https://v2.tauri.app/start/prerequisites/))
+- **Node.js 18+** — Runtime
+- **Rust toolchain** — Required to compile the Tauri backend (`rustc`, `cargo`)
+- **Platform-specific dependencies** — See the [Tauri v2 prerequisites guide](https://v2.tauri.app/start/prerequisites/) for your OS
 
 ---
 
-## Maintenance Policy
+## ❓ Frequently Asked Questions
 
-This project is maintained on an **as-needed basis**:
+**Q: Is this an official Fancy Games tool?**
+A: No. ETB Save Manager is an **independent, community-built open-source project**. It is not affiliated with, endorsed by, or connected to Fancy Games or the developers of *Escape The Backrooms*.
 
-- **Map Updates** — When *Escape The Backrooms* releases new maps (levels), this project will be updated to support the new save data formats and level metadata.
-- **Bug Fixes & Optimizations** — When bugs or performance issues are identified and reported, fixes and optimizations will be applied in a timely manner.
-- **Feature Requests** — New features beyond game update compatibility are considered on a case-by-case basis. Feel free to open an issue to discuss.
+**Q: Will editing save files corrupt my game?**
+A: The editor validates data where possible, but modifying save files always carries some risk. **Always back up your original save files** before editing. The app's recycle bin feature provides a safety net — deleted originals can be restored.
 
-> The primary goal of this project is to keep the save manager functional and up-to-date with the game's evolution. Community contributions for new features are welcome!
+**Q: Does this support the latest *Escape The Backrooms* update?**
+A: Yes. When new maps or game updates change the save data format, the tool is updated accordingly. Check the [releases page](https://github.com/Eververdants/ETBSaveManager/releases) for the latest update.
+
+**Q: How do I report a bug or request a feature?**
+A: Open an issue on the [GitHub issue tracker](https://github.com/Eververdants/ETBSaveManager/issues). Feature requests and bug reports are both welcome.
 
 ---
 
-## Tech Stack
+## 🔧 Technology Stack
 
 ### Frontend
 
-| Technology | Purpose |
-|------------|---------|
-| Vue 3 + Composition API | Reactive UI framework |
-| TypeScript | Type-safe development |
-| Vite 6 | Build tool and dev server |
-| Tailwind CSS 4 | Utility-first CSS framework |
-| CSS Variables | Dynamic theme system |
-| vue-i18n | Internationalization |
-| Vue Router 4 | SPA routing |
-| GSAP | High-performance animations |
-| @tanstack/vue-virtual | Virtual scrolling for large lists |
-| FontAwesome 7 | Vector icons |
-| Chart.js | Data visualization |
-| @vue-flow/core | Node-based flow editor |
-| vitest + fast-check | Unit & property-based testing |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| [Vue 3](https://vuejs.org/) + Composition API | 3.x | Reactive UI framework |
+| [TypeScript](https://www.typescriptlang.org/) | 5.x | Type-safe development |
+| [Vite](https://vite.dev/) | 6 | Build tool and dev server |
+| [Tailwind CSS](https://tailwindcss.com/) | 4 | Utility-first CSS framework |
+| CSS Custom Properties | — | Dynamic theme system |
+| [vue-i18n](https://vue-i18n.intlify.dev/) | — | Internationalization (i18n) |
+| [Vue Router](https://router.vuejs.org/) | 4 | SPA routing |
+| [GSAP](https://gsap.com/) | — | High-performance animations |
+| [@tanstack/vue-virtual](https://tanstack.com/virtual) | — | Virtual scrolling for large lists |
+| [FontAwesome](https://fontawesome.com/) | 7 | Vector icon library |
+| [Chart.js](https://www.chartjs.org/) | — | Data visualization charts |
+| [@vue-flow/core](https://vueflow.dev/) | — | Node-based flow editor |
+| [vitest](https://vitest.dev/) + [fast-check](https://fast-check.dev/) | — | Unit and property-based testing |
 
-### Backend (Rust)
+### Backend (Rust / Tauri)
 
-| Technology | Purpose |
-|------------|---------|
-| Tauri 2.0 | Desktop application framework |
-| uesave 0.6.2 | UE4 Save file parsing |
-| serde + serde_json | Data serialization |
-| rusqlite | Local SQLite database |
-| tokio + reqwest | Async HTTP client |
-| walkdir + memmap2 | Efficient file operations |
-| rayon | Parallel processing |
-| chrono | Date/time handling |
-| uuid | Unique ID generation |
-| regex | Pattern matching |
-| thiserror | Error handling |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| [Tauri](https://v2.tauri.app/) | 2.0 | Desktop application framework (Rust + WebView) |
+| [uesave](https://crates.io/crates/uesave) | 0.6.2 | UE4 save file parsing and serialization |
+| [serde](https://serde.rs/) + serde_json | — | Data serialization / deserialization |
+| [rusqlite](https://github.com/rusqlite/rusqlite) | — | Local SQLite database for app state |
+| [tokio](https://tokio.rs/) + [reqwest](https://docs.rs/reqwest/) | — | Async HTTP client (update checks) |
+| [walkdir](https://github.com/BurntSushi/walkdir) + [memmap2](https://docs.rs/memmap2/) | — | Efficient file system traversal and memory-mapped I/O |
+| [rayon](https://github.com/rayon-rs/rayon) | — | Parallel data processing |
+| [chrono](https://github.com/chronotope/chrono) | — | Date and time handling |
+| [uuid](https://github.com/uuid-rs/uuid) | — | Unique identifier generation |
+| [regex](https://github.com/rust-lang/regex) | — | Regular expression pattern matching |
+| [thiserror](https://docs.rs/thiserror/) | — | Ergonomic error type derivation |
 
 ---
 
-## Project Structure
+## 🎨 Theme Gallery
+
+ETB Save Manager ships with **10 built-in themes**:
+
+### Base Themes
+- **Light** — Clean light theme for daytime use
+- **Dark** — Comfortable dark theme for low-light environments
+
+### Color Themes
+| Theme | Description | Palette |
+|-------|-------------|---------|
+| **Ocean** | Deep blue ocean-inspired | Blues, teals |
+| **Forest** | Natural green forest | Greens, earth tones |
+| **Sunset** | Warm orange sunset | Oranges, reds |
+| **Lavender** | Soft purple lavender | Purples, violets |
+| **Rose** | Elegant pink rose | Pinks, roses |
+| **Mint** | Fresh mint green | Mint, sage |
+| **Peach** | Soft peach tones | Peach, coral |
+| **Sky** | Bright sky blue | Sky blues, whites |
+
+---
+
+## 📁 Project Structure
 
 ```
 ETBSaveManager/
-├── src/                              # Vue frontend (TypeScript)
+├── src/                              # Vue 3 frontend (TypeScript)
 │   ├── components/
-│   │   ├── archive/                  # Save-related components
+│   │   ├── archive/                  # Save file UI components
 │   │   │   ├── ArchiveCard.vue
 │   │   │   ├── ArchiveCardFlow.vue
 │   │   │   ├── ArchiveSearchFilter.vue
@@ -185,14 +225,12 @@ ETBSaveManager/
 │   │   │   ├── GlobalSearchPanel.vue
 │   │   │   ├── InventoryItemSelector.vue
 │   │   │   ├── PreviewExecuteArea.vue
-│   │   │   ├── SmartInputArea.vue
-│   │   │   └── TutorialOverlay.vue
+│   │   │   └── SmartInputArea.vue
 │   │   ├── layout/                   # Layout components
 │   │   │   ├── Sidebar.vue
 │   │   │   └── TitleBar.vue
 │   │   ├── modal/                    # Modal dialogs
 │   │   │   ├── ArchiveEditModal.vue
-│   │   │   ├── BatchEditModal.vue
 │   │   │   ├── ConfirmModal.vue
 │   │   │   └── PromptPopup.vue
 │   │   ├── system/                   # System utilities
@@ -200,7 +238,7 @@ ETBSaveManager/
 │   │   │   ├── PerformanceSettings.vue
 │   │   │   ├── PlayerManager.vue
 │   │   │   └── UniformConfigPanel.vue
-│   │   ├── theme/                    # Theme selection
+│   │   ├── theme/                    # Theme system
 │   │   │   └── ThemeSelector.vue
 │   │   └── ui/                       # Reusable UI primitives
 │   │       ├── CustomDropdown.vue
@@ -213,26 +251,11 @@ ETBSaveManager/
 │   │   ├── useArchiveData.ts         # Save data management
 │   │   ├── useArchiveCard.ts         # Card interactions
 │   │   ├── useArchiveCardFlow.ts     # Flow mode logic
-│   │   ├── useArchiveFilters.ts      # Filter & search
-│   │   ├── useUndoRedo.ts            # Undo/redo support
+│   │   ├── useArchiveFilters.ts      # Filter and search
+│   │   ├── useUndoRedo.ts            # Undo / redo support
 │   │   ├── useGlobalSearchPanel.ts   # Global search
-│   │   ├── useFloatingActionButton.ts
-│   │   ├── useQuickCreate.ts
-│   │   ├── usePlayerManager.ts
-│   │   ├── usePerformanceMonitor.ts
-│   │   ├── usePerformanceSettings.ts
-│   │   ├── useTutorialOverlay.ts
-│   │   ├── useToast.ts
-│   │   ├── useValidator.ts
-│   │   ├── useNameParser.ts
-│   │   ├── useReleaseNotes.ts
-│   │   ├── useConfigResolver.ts
-│   │   ├── useFocusTrap.ts
-│   │   ├── useAnimations.ts
-│   │   ├── useUniformConfigPanel.ts
-│   │   └── useInventoryItemSelector.ts
-│   ├── config/                       # App configuration
-│   │   ├── cdnConfig.ts
+│   │   └── ... (additional composables)
+│   ├── config/                       # Application configuration
 │   │   ├── sidebarMenu.ts
 │   │   ├── updateConfig.ts
 │   │   └── version.ts
@@ -240,146 +263,114 @@ ETBSaveManager/
 │   │   ├── index.ts
 │   │   ├── loader.ts
 │   │   └── locales/
-│   │       ├── en-US/                # English (JSON files by domain)
+│   │       ├── en-US/                # English locale files
 │   │       ├── zh-CN/                # Simplified Chinese
 │   │       └── zh-TW/                # Traditional Chinese
-│   ├── router/                       # Vue Router configuration
+│   ├── router/                       # Vue Router config
 │   ├── services/                     # Business logic services
-│   │   ├── storageService.ts         # Persistent storage
-│   │   ├── logService.ts             # Logging
-│   │   ├── notificationService.ts    # Notifications
+│   │   ├── storageService.ts         # Persistent storage via SQLite
+│   │   ├── logService.ts             # Logging service
+│   │   ├── notificationService.ts    # Notification center
 │   │   ├── popupService.ts           # Popup management
 │   │   ├── themeStorage.ts           # Theme persistence
-│   │   ├── pluginStorage.ts          # Plugin data
-│   │   └── updateService.ts          # Auto-update
+│   │   ├── pluginStorage.ts          # Plugin data storage
+│   │   └── updateService.ts          # Auto-update checker
 │   ├── styles/
 │   │   ├── animations.css
 │   │   └── themes/                   # Theme CSS files
-│   │       ├── _colors.css
-│   │       ├── _components.css
-│   │       ├── _semantic.css
-│   │       ├── light.css / dark.css
-│   │       ├── high-contrast.css
-│   │       ├── ocean.css / forest.css
-│   │       ├── sunset.css / lavender.css
-│   │       ├── rose.css / mint.css
+│   │       ├── _colors.css / _components.css / _semantic.css
+│   │       ├── light.css / dark.css / high-contrast.css
+│   │       ├── ocean.css / forest.css / sunset.css
+│   │       ├── lavender.css / rose.css / mint.css
 │   │       ├── peach.css / sky.css
 │   │       └── index.css
-│   ├── utils/                        # Utilities
-│   │   ├── icons.ts / icons-full.ts / icons-critical.ts
-│   │   ├── nameParser.ts
-│   │   ├── performance.ts
-│   │   ├── consoleForwarder.ts
-│   │   ├── polyfills.ts
-│   │   ├── disableInteractions.ts
-│   │   └── floatingButtonProtection.ts
+│   ├── utils/                        # Utility functions
 │   ├── views/                        # Page views
-│   │   ├── Home.vue                  # Save list
-│   │   ├── CreateArchive/            # Create save wizard
-│   │   ├── EditArchive.vue           # Edit save
-│   │   ├── QuickCreateArchive.vue    # Quick create
-│   │   ├── SelectCreateMode.vue      # Mode selection
-│   │   ├── Settings.vue              # App settings
-│   │   ├── About.vue                 # About page
-│   │   ├── Log.vue                   # Operation logs
-│   │   └── TestArchive.vue           # Testing utility
+│   │   ├── Home.vue                  # Save list (main view)
+│   │   ├── CreateArchive/            # Save creation wizard
+│   │   ├── EditArchive.vue           # Save editor
+│   │   ├── QuickCreateArchive.vue    # Quick save creation
+│   │   ├── SelectCreateMode.vue      # Mode picker
+│   │   ├── Settings.vue              # App settings page
+│   │   └── About.vue                 # About page
 │   ├── types.ts                      # Global type definitions
-│   ├── appContext.ts                 # Dependency injection context
+│   ├── appContext.ts                 # DI context
 │   ├── App.vue                       # Root component
-│   └── main.ts                       # Application entry
-├── src-tauri/                        # Rust backend
+│   └── main.ts                       # Application entry point
+├── src-tauri/                        # Rust backend (Tauri)
 │   └── src/
 │       ├── lib.rs                    # Library entry / Tauri setup
-│       ├── main.rs                   # Main entry
-│       ├── save_commands.rs          # Save CRUD commands
-│       ├── save_editor.rs            # Save file editing
+│       ├── main.rs                   # Main entry point
+│       ├── save_commands.rs          # Save CRUD Tauri commands
+│       ├── save_editor.rs            # Save file editing logic
 │       ├── save_shared.rs            # Shared save types
 │       ├── save_utils.rs             # Save file utilities
 │       ├── new_save.rs               # Save creation logic
 │       ├── player_data.rs            # Player data handling
 │       ├── cli_handlers.rs           # CLI command handlers
-│       ├── system_commands.rs        # System-level commands
+│       ├── system_commands.rs        # System-level Tauri commands
 │       ├── theme_commands.rs         # Theme management
-│       ├── gpu_settings.rs           # GPU/rendering config
+│       ├── gpu_settings.rs           # GPU / rendering config
 │       ├── get_file_path.rs          # File path resolution
 │       ├── common.rs                 # Common helpers
 │       └── error.rs                  # Error types
 ├── public/                           # Static assets
 │   ├── icons/                        # Game item icons
-│   └── images/                       # Game level images
-├── docs/                             # Screenshots
+│   └── images/                       # Level images
+├── docs/                             # Screenshots and documentation
 ├── scripts/                          # Build scripts
-│   └── sync-version.js               # Version syncing
-├── dist/                             # Build output
-├── index.html                        # HTML entry
+│   └── sync-version.js               # Version sync
+├── dist/                             # Production build output
+├── index.html                        # HTML entry point
 ├── vite.config.ts                    # Vite configuration
-├── tsconfig.json                     # TypeScript configuration
-├── eslint.config.js                  # ESLint configuration
+├── tsconfig.json                     # TypeScript config
+├── eslint.config.js                  # ESLint config
 ├── package.json
 └── pnpm-lock.yaml
 ```
 
 ---
 
-## Themes
+## 🤝 Contributing
 
-ETB Save Manager includes 13 built-in themes:
+Contributions of all kinds are welcome! This is a personal student project, and any help — whether code, bug reports, translations, or documentation — is greatly appreciated.
 
-### Base Themes
-- **Light** — Clean light theme
-- **Dark** — Comfortable dark theme
-
-### Color Themes
-- **Ocean** — Deep blue ocean-inspired
-- **Forest** — Natural green forest theme
-- **Sunset** — Warm orange sunset colors
-- **Lavender** — Soft purple lavender
-- **Rose** — Elegant pink rose
-- **Mint** — Fresh mint green
-- **Peach** — Soft peach tones
-- **Sky** — Bright sky blue
+- **🐛 Report bugs** — [Open a bug report](https://github.com/Eververdants/ETBSaveManager/issues)
+- **💡 Request features** — [Open a feature request](https://github.com/Eververdants/ETBSaveManager/issues)
+- **🌐 Add a translation** — The i18n system is modular; add new locale files to contribute a language
+- **📧 Contact** — llzgd@outlook.com
 
 ---
 
-## Contributing
-
-Contributions are welcome! This is a personal student project, and any help is appreciated.
-
-- [Report bugs](https://github.com/Eververdants/ETBSaveManager/issues)
-- [Request features](https://github.com/Eververdants/ETBSaveManager/issues)
-- Contact: **llzgd@outlook.com**
-
----
-
-## Disclaimer
-
-This project is **not affiliated with, endorsed by, or connected to** Fancy Games or *Escape The Backrooms* in any way.
-
-Game assets (e.g., level icons) are used **strictly for identification purposes** to help users recognize which level a save file belongs to.  
-All rights to *Escape The Backrooms* and its assets belong to their respective owners.
-
----
-
-## Star History
-
-<p align="center">
-  <a href="https://star-history.com/#Eververdants/ETBSaveManager&Date">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
-    </picture>
-  </a>
-</p>
-
----
-
-## License
+## 📄 License
 
 [MIT License](LICENSE) © 2026 Eververdants
 
 ---
 
+## ⭐ Support the Project
+
+ETB Save Manager is an open-source community project. If you find it useful, please consider supporting it:
+
 <p align="center">
-  <sub>Built with Vue.js and Tauri</sub>
+  <a href="https://github.com/Eververdants/ETBSaveManager/stargazers">
+    <img src="https://img.shields.io/github/stars/Eververdants/ETBSaveManager?style=for-the-badge&label=Star%20on%20GitHub&logo=github" alt="Star on GitHub">
+  </a>
+</p>
+
+> ⚠️ The previously used star-history.com chart has been removed as GitHub restricted third-party star data access for this repository. The live shields.io badge above reflects the current star count.
+
+---
+
+## ⚠️ Disclaimer
+
+This project is **not affiliated with, endorsed by, or connected to** Fancy Games or *Escape The Backrooms* in any way.
+
+Game assets (e.g., level icons, item sprites) are used **strictly for identification purposes** to help users recognize which level or item a save file belongs to.  
+All rights to *Escape The Backrooms* and its assets belong to their respective owners.
+
+---
+
+<p align="center">
+  <sub>Built with ❤️ using <a href="https://vuejs.org/">Vue.js</a> and <a href="https://v2.tauri.app/">Tauri</a></sub>
 </p>

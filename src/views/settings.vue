@@ -121,7 +121,7 @@
           </transition>
         </div>
         <div class="setting-action">
-          <button class="check-update-btn" :disabled="checkingUpdate" @click="checkForUpdates">
+          <button class="check-update-btn" :disabled="checkingUpdate" @click="checkForUpdates(true)">
             <font-awesome-icon v-if="checkingUpdate" :icon="['fas', 'spinner']" spin />
             <transition name="text-swift" mode="out-in">
               <span :key="currentLanguage + '-' + checkingUpdate">
@@ -166,31 +166,6 @@
         </div>
       </div>
 
-      <!-- Logging feature toggle -->
-      <div v-if="developerModeEnabled" class="setting-item">
-        <div class="setting-icon">
-          <font-awesome-icon :icon="['fas', 'file-alt']" />
-        </div>
-        <div class="setting-details">
-          <transition name="text-swift" mode="out-in">
-            <div :key="currentLanguage" class="setting-title">
-              {{ t("settings.enableLogging") }}
-            </div>
-          </transition>
-          <transition name="text-swift" mode="out-in">
-            <div :key="currentLanguage" class="setting-description">
-              {{ t("settings.enableLoggingDescription") }}
-            </div>
-          </transition>
-        </div>
-        <div class="setting-action">
-          <label class="switch">
-            <input v-model="logMenuEnabled" type="checkbox" @change="handleLogMenuToggle" />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-
       <!-- Performance monitor toggle -->
       <div v-if="developerModeEnabled" class="setting-item">
         <div class="setting-icon">
@@ -211,31 +186,6 @@
         <div class="setting-action">
           <label class="switch">
             <input v-model="performanceMonitorEnabled" type="checkbox" @change="handlePerformanceMonitorToggle" />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Test archive display toggle -->
-      <div v-if="developerModeEnabled" class="setting-item">
-        <div class="setting-icon">
-          <font-awesome-icon :icon="['fas', 'flask']" />
-        </div>
-        <div class="setting-details">
-          <transition name="text-swift" mode="out-in">
-            <div :key="currentLanguage" class="setting-title">
-              {{ t("settings.testArchiveDisplay") }}
-            </div>
-          </transition>
-          <transition name="text-swift" mode="out-in">
-            <div :key="currentLanguage" class="setting-description">
-              {{ t("settings.testArchiveDisplayDescription") }}
-            </div>
-          </transition>
-        </div>
-        <div class="setting-action">
-          <label class="switch">
-            <input v-model="testArchiveEnabled" type="checkbox" @change="handleTestArchiveToggle" />
             <span class="slider"></span>
           </label>
         </div>
@@ -374,11 +324,9 @@ export default {
       currentLanguage: storage.getItem("language", "zh-CN"),
       performanceMonitorEnabled: storage.getItem("performanceMonitor") ?? false,
       developerModeEnabled: storage.getItem("developerMode", false) === true, // Developer mode state
-      logMenuEnabled: storage.getItem("logMenuEnabled", false) === true, // Log feature toggle state
       gpuAccelerationDisabled:
         storage.getItem("gpuAccelerationDisabled", false) === true ||
         storage.getItem("gpuAccelerationDisabled") === "true", // GPU acceleration toggle state
-      testArchiveEnabled: storage.getItem("testArchiveEnabled", false) === true, // Test archive display toggle state
       checkingUpdate: false,
       appVersion: APP_VERSION,
       activeDropdown: null,
@@ -433,9 +381,7 @@ export default {
         this.developerModeEnabled = enabled;
         if (!enabled) {
           // Sync sub-setting states from store (they were reset by store action)
-          this.logMenuEnabled = this.appStore.logMenuEnabled;
           this.performanceMonitorEnabled = this.appStore.performanceMonitorEnabled;
-          this.testArchiveEnabled = this.appStore.testArchiveEnabled;
         }
       },
     );
@@ -443,9 +389,10 @@ export default {
     // Initialize GPU acceleration state
     this.initializeGpuAccelerationStatus();
 
-    // Auto-check for updates on startup (uses component method for proper guard/UI)
+    // Auto-check for updates on startup — silent on already up-to-date, once per day
     if (updateService.canCheckUpdate && updateService.canCheckUpdate()) {
-      await this.checkForUpdates();
+      await this.checkForUpdates(false);
+      updateService.recordLastCheck();
     }
   },
   methods: {
@@ -642,7 +589,7 @@ export default {
       }
     },
 
-    async checkForUpdates() {
+    async checkForUpdates(isManual = true) {
       if (this.isProcessing) return;
 
       this.isProcessing = true;
@@ -676,7 +623,10 @@ export default {
           });
         } else {
           this.updateStatus = UpdateStatus.NOT_AVAILABLE;
-          notify.success(this.t("settings.latestVersion"));
+          // Only show "already up to date" notification for manual checks
+          if (isManual) {
+            notify.success(this.t("settings.latestVersion"));
+          }
         }
       } catch (error) {
         this.updateStatus = UpdateStatus.ERROR;
@@ -728,29 +678,7 @@ export default {
     _disableDeveloperSubSettings() {
       this.appStore.disableDeveloperSubSettings();
       // Sync local state from store
-      this.logMenuEnabled = false;
       this.performanceMonitorEnabled = false;
-      this.testArchiveEnabled = false;
-    },
-
-    handleLogMenuToggle() {
-      try {
-        this.appStore.setLogMenu(this.logMenuEnabled);
-      } catch (error) {
-        console.error("Failed to toggle log menu:", error);
-        this.logMenuEnabled = this.appStore.logMenuEnabled;
-        notify.error("Failed to update log menu setting");
-      }
-    },
-
-    handleTestArchiveToggle() {
-      try {
-        this.appStore.setTestArchive(this.testArchiveEnabled);
-      } catch (error) {
-        console.error("Failed to toggle test archive:", error);
-        this.testArchiveEnabled = this.appStore.testArchiveEnabled;
-        notify.error("Failed to update test archive setting");
-      }
     },
 
     handleResetTutorial() {

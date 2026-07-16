@@ -49,23 +49,11 @@ const routes: RouteRecordRaw[] = [
     meta: { keepAlive: false },
   },
   {
-    path: "/test-archive",
-    name: "TestArchive",
-    component: () => import("../views/TestArchive.vue"),
-    meta: { keepAlive: false },
-  },
-  {
     path: "/edit-archive/:archiveData?",
     name: "EditArchive",
     component: () => import("../views/EditArchive.vue"),
     props: true,
     meta: { keepAlive: false },
-  },
-  {
-    path: "/logs",
-    name: "Log",
-    component: () => import("../views/Log.vue"),
-    meta: { keepAlive: true },
   },
 ];
 

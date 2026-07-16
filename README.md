@@ -17,7 +17,7 @@
   <span> · </span>
   <a href="./README-HANT.md">繁體中文</a>
   <span> · </span>
-  <a href="./README.md">English</</a>
+  <a href="#">English</a>
 </p>
 
 <p align="center">

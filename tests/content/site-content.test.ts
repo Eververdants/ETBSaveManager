@@ -8,8 +8,8 @@ describe("site-content", () => {
     expect(site.description.length).toBeGreaterThan(0);
   });
 
-  it("lists 6 features, each with id/title/description/iconKey", () => {
-    expect(site.features).toHaveLength(6);
+  it("lists 7 features, each with id/title/description/iconKey", () => {
+    expect(site.features).toHaveLength(7);
     site.features.forEach((feature) => {
       expect(feature.id.length).toBeGreaterThan(0);
       expect(feature.title.length).toBeGreaterThan(0);

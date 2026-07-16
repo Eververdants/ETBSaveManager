@@ -156,8 +156,6 @@
         </div>
       </Transition>
     </Teleport>
-
-
   </div>
 </template>
 
@@ -214,8 +212,6 @@ let successModalTimer = null;
 
 const createdArchiveName = ref("");
 
-
-
 // Ending data - store levels data
 const endingLevelsData = reactive({
   0: [],
@@ -232,7 +228,7 @@ const endings = computed(() =>
     id: cfg.id,
     label: t(`createArchive.endings.${cfg.labelKey}`),
     levels: endingLevelsData[cfg.id],
-  }))
+  })),
 );
 
 const gameModes = [{ value: "multiplayer", label: "multiplayer" }];
@@ -369,7 +365,7 @@ const addSteamId = async () => {
   const newPlayer = {
     steamId: validation.processedSteamId,
     inventory: Array(12).fill(null),
-    username: validation.isOfflinePlayer ? `${validation.processedSteamId}(本地)` : null,
+    username: validation.isOfflinePlayer ? `${validation.processedSteamId}${t("common.localPlayerSuffix")}` : null,
     isOfflinePlayer: validation.isOfflinePlayer,
     sanity: 100,
   };
@@ -530,7 +526,7 @@ const fetchSteamUsernames = async () => {
       }
     });
   } catch (error) {
-      console.error("Failed to fetch Steam usernames:", error);
+    console.error("Failed to fetch Steam usernames:", error);
     let errorMessage = error.toString();
     let userFriendlyMessage;
     if (errorMessage.includes("403") || errorMessage.includes("Forbidden")) {
@@ -760,7 +756,13 @@ onActivated(() => {
 
 const handleBeforeUnload = (e) => {
   // If there is form data, creation in progress, or success modal shown, warn user
-  if (archiveName.value || selectedLevel.value !== -1 || players.length > 0 || isCreating.value || showSuccessModal.value) {
+  if (
+    archiveName.value ||
+    selectedLevel.value !== -1 ||
+    players.length > 0 ||
+    isCreating.value ||
+    showSuccessModal.value
+  ) {
     e.preventDefault();
     e.returnValue = "";
   }

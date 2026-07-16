@@ -32,7 +32,10 @@
         </div>
 
         <!-- Advanced query tags -->
-        <div v-if="advancedQuery && (advancedQuery.name || advancedQuery.level || advancedQuery.difficulty)" class="advanced-tags">
+        <div
+          v-if="advancedQuery && (advancedQuery.name || advancedQuery.level || advancedQuery.difficulty)"
+          class="advanced-tags"
+        >
           <span v-if="advancedQuery.name" class="adv-tag adv-tag-name">
             <font-awesome-icon icon="fa-solid fa-tag" /> name:{{ advancedQuery.name }}
           </span>
@@ -47,9 +50,9 @@
         <!-- Search history -->
         <div v-if="showHistory && searchHistory.length > 0" class="search-history-dropdown" @mousedown.prevent>
           <div class="history-header">
-            <span class="history-title">{{ t('archiveSearch.searchHistory') }}</span>
+            <span class="history-title">{{ t("archiveSearch.searchHistory") }}</span>
             <button class="history-clear-btn" type="button" @click="clearHistory">
-              {{ t('archiveSearch.clearHistory') }}
+              {{ t("archiveSearch.clearHistory") }}
             </button>
           </div>
           <div
@@ -76,7 +79,13 @@
             >
               <font-awesome-icon icon="fa-solid fa-chevron-up" />
             </button>
-            <button class="nav-btn" type="button" :disabled="!matches.length" :title="t('archiveSearch.searchPanel.next')" @click="findNext">
+            <button
+              class="nav-btn"
+              type="button"
+              :disabled="!matches.length"
+              :title="t('archiveSearch.searchPanel.next')"
+              @click="findNext"
+            >
               <font-awesome-icon icon="fa-solid fa-chevron-down" />
             </button>
           </div>
@@ -122,8 +131,8 @@ const {
 } = useGlobalSearchPanel();
 
 const resultText = computed(() => {
-  if (!query.value.trim()) return t('archiveSearch.searchPanel.hint');
-  if (!matches.value.length) return t('archiveSearch.searchPanel.noResult');
+  if (!query.value.trim()) return t("archiveSearch.searchPanel.hint");
+  if (!matches.value.length) return t("archiveSearch.searchPanel.noResult");
   return `${currentMatchIndex.value + 1} / ${matches.value.length}`;
 });
 

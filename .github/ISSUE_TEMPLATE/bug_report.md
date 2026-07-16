@@ -1,9 +1,9 @@
 ---
 name: Bug Report / 报告 Bug
 about: Report a bug to help us improve
-title: '[Bug] '
+title: "[Bug] "
 labels: bug
-assignees: ''
+assignees: ""
 ---
 
 ## Description / 描述

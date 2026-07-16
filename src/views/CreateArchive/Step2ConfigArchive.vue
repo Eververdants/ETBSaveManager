@@ -1,7 +1,7 @@
 <template>
   <div class="step-content" data-step="2">
     <div class="basic-sections">
-      <!-- 📋 Archive name -->
+      <!-- Archive name -->
       <div class="settings-section">
         <h3 class="section-title">
           <font-awesome-icon :icon="['fas', 'info-circle']" />
@@ -26,7 +26,7 @@
         </div>
       </div>
 
-      <!-- 🎮 Difficulty Settings -->
+      <!-- Difficulty Settings -->
       <div class="settings-section">
         <h3 class="section-title">
           <font-awesome-icon :icon="['fas', 'gauge-high']" />
@@ -106,7 +106,7 @@ const getDifficultyText = (difficultyKey) => {
 
 <style scoped>
 /* ==========================================
- * 🍎 基础设置 — 同心圆角三段式布局
+ * 基础设置 — 同心圆角三段式布局
  *    Card: 36px(lg) → Inner: 28px(md) → 8px 递减
  * ========================================== */
 
@@ -177,13 +177,13 @@ const getDifficultyText = (difficultyKey) => {
   left: 24px;
   right: 24px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
   pointer-events: none;
 }
 
 .settings-card:hover {
-  border-color: rgba(255,255,255,0.12);
-  box-shadow: var(--shadow-card-hover, 0 8px 32px rgba(0,0,0,0.12));
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow-card-hover, 0 8px 32px rgba(0, 0, 0, 0.12));
 }
 
 /* 卡片标签 */
@@ -206,7 +206,7 @@ const getDifficultyText = (difficultyKey) => {
   font-size: 14px;
   box-sizing: border-box;
   outline: none;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: all var(--transition-normal) var(--ease-default);
 }
 
@@ -218,7 +218,7 @@ const getDifficultyText = (difficultyKey) => {
   border-color: var(--accent-color);
   box-shadow:
     0 0 0 3px color-mix(in srgb, var(--accent-color) 15%, transparent),
-    inset 0 1px 2px rgba(0,0,0,0.05);
+    inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .settings-input::placeholder {
@@ -273,7 +273,7 @@ const getDifficultyText = (difficultyKey) => {
   padding: 16px 8px;
   border-radius: var(--radius-md);
   background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-  border: 2px solid rgba(255,255,255,0.05);
+  border: 2px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
   transition: all var(--transition-normal) var(--ease-default);
   position: relative;
@@ -285,7 +285,11 @@ const getDifficultyText = (difficultyKey) => {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, color-mix(in srgb, var(--accent-color) 10%, transparent) 0%, transparent 70%);
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
+    transparent 70%
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -293,7 +297,7 @@ const getDifficultyText = (difficultyKey) => {
 .diff-option:hover:not(.disabled) {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .diff-option:hover:not(.disabled)::before {
@@ -302,7 +306,11 @@ const getDifficultyText = (difficultyKey) => {
 
 .diff-option.selected {
   border-color: var(--accent-color);
-  background: linear-gradient(145deg, color-mix(in srgb, var(--accent-color) 15%, transparent) 0%, color-mix(in srgb, var(--accent-color) 8%, transparent) 100%);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-color) 15%, transparent) 0%,
+    color-mix(in srgb, var(--accent-color) 8%, transparent) 100%
+  );
   box-shadow:
     0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent),
     0 4px 12px color-mix(in srgb, var(--accent-color) 15%, transparent);

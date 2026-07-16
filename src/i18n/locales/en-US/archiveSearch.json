@@ -23,6 +23,7 @@
   "startSearching": "Start searching",
   "useFiltersAbove": "Use the search and filters above",
   "refreshed": "Archive list refreshed",
+  "refreshCooldown": "Please wait a moment before refreshing again",
   "loadingArchives": "Loading archives...",
   "scanningFiles": "Scanning archive files",
   "multiSelect": {

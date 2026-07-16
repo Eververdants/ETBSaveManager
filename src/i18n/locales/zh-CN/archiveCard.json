@@ -12,5 +12,11 @@
   "visible": "可见",
   "hidden": "隐藏",
   "lastModified": "最后修改",
-  "id": "存档ID"
+  "id": "存档ID",
+  "editLabel": "编辑存档",
+  "hideLabel": "隐藏存档",
+  "showLabel": "显示存档",
+  "deleteLabel": "删除存档",
+  "saveDirNotFound": "请先打开游戏以初始化存档目录",
+  "loadFailed": "加载存档失败"
 }

@@ -89,9 +89,12 @@ onMounted(() => {
   });
 
   // 监听语言变化事件（通过 Pinia store，取代 window.dispatchEvent）
-  watch(() => appStore.language, () => {
-    updateAppName();
-  });
+  watch(
+    () => appStore.language,
+    () => {
+      updateAppName();
+    },
+  );
 
   // 标题栏拖拽功能
   const titlebar = document.getElementById("titlebar");
@@ -158,7 +161,6 @@ onMounted(() => {
   margin: 0;
   padding: 0;
   line-height: 1;
-  transition: color 0.25s ease;
 }
 
 .titlebar-controls {
@@ -264,20 +266,18 @@ onMounted(() => {
     height: 28px;
   }
 }
+</style>
 
-/* 动画过渡 */
-.text-swift-enter-active,
+<!-- 全局 text-swift 过渡动画 — 供 TitleBar、CustomDropdown 等跨组件使用 -->
+<style>
+.text-swift-enter-active {
+  transition: opacity 0.2s ease-out;
+}
 .text-swift-leave-active {
-  transition: all 0.3s ease;
+  transition: opacity 0.15s ease-in;
 }
-
-.text-swift-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
+.text-swift-enter-from,
 .text-swift-leave-to {
   opacity: 0;
-  transform: translateY(10px);
 }
 </style>

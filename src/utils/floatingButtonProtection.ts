@@ -63,7 +63,11 @@ export function initFloatingButtonProtection(): void {
     for (const prop of criticalProps) {
       const current = container.style.getPropertyValue(prop);
       const expected =
-        prop === "position" ? "fixed" : prop === "top" || prop === "left" ? "auto" : expectedPosition[prop as "bottom" | "right"];
+        prop === "position"
+          ? "fixed"
+          : prop === "top" || prop === "left"
+            ? "auto"
+            : expectedPosition[prop as "bottom" | "right"];
 
       if (current && current !== expected) {
         needsRestore = true;

@@ -6,5 +6,20 @@
   "updated": "更新內容",
   "updateDetails": "調整了存檔卡片的樣式，修復了部分錯誤",
   "thanks": "感謝所有為本專案提供回饋、建議與支援的朋友們",
-  "disclaimer": "本工具僅供學習交流使用"
+  "disclaimer": "本工具僅供學習交流使用",
+  "actions": {
+    "deleteSuccess": "{name} 已刪除",
+    "undo": "復原",
+    "undoDeleteOf": "復原刪除「{name}」",
+    "undoFailed": "復原失敗",
+    "deleteFailed": "刪除失敗：{error}",
+    "folderOpened": "已開啟存檔資料夾",
+    "toggleVisibilityFailed": "切換可見性失敗：{error}",
+    "batchDeleteSuccess": "已刪除 {count} 個存檔",
+    "batchDeleteComplete": "批次刪除完成：{success} 個成功，{failed} 個失敗",
+    "batchDeleteUndone": "已復原批次刪除",
+    "undone": "已復原：{desc}",
+    "redone": "已重做：{desc}",
+    "restoreFailed": "檔案還原失敗，但存檔將顯示在列表中"
+  }
 }

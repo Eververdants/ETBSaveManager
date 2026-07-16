@@ -1,9 +1,9 @@
 ---
 name: Feature Request / 功能请求
 about: Suggest an idea for this project
-title: '[Feature] '
+title: "[Feature] "
 labels: enhancement
-assignees: ''
+assignees: ""
 ---
 
 ## Is Your Feature Request Related to a Problem? / 该功能请求是否与某个问题相关？

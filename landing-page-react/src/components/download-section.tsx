@@ -103,9 +103,7 @@ export function DownloadSection(): React.JSX.Element {
                         <dt className="text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">
                           {t("download.section.type")}
                         </dt>
-                        <dd className="text-[var(--color-ink)] dark:text-[var(--color-paper)]">
-                          {t("download.section.typeValue")}
-                        </dd>
+                        <dd className="text-[var(--color-ink)] dark:text-[var(--color-paper)]">{download.format}</dd>
                       </div>
                     </dl>
                   </div>

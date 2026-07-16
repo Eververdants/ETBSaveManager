@@ -18,7 +18,7 @@
         </div>
         <div class="player-info">
           <span class="player-name">
-            {{ player.username || (player.isOfflinePlayer ? `${player.steamId}(本地)` : player.steamId) }}
+            {{ player.username || (player.isOfflinePlayer ? `${player.steamId}${$t('common.localPlayerSuffix')}` : player.steamId) }}
           </span>
           <span v-if="showSanity" class="sanity-tag" :class="getSanityClass(player.sanity ?? 100)">
             {{ player.sanity ?? 100 }}%

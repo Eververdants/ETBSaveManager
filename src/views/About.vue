@@ -117,7 +117,12 @@
             <font-awesome-icon :icon="['fab', 'x-twitter']" />
             <span class="social-label">X</span>
           </a>
-          <a class="social-btn bilibili" href="https://space.bilibili.com/2019959464" target="_blank" rel="noopener noreferrer">
+          <a
+            class="social-btn bilibili"
+            href="https://space.bilibili.com/2019959464"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <font-awesome-icon :icon="['fab', 'bilibili']" />
             <span class="social-label">Bilibili</span>
           </a>
@@ -130,7 +135,12 @@
             <font-awesome-icon :icon="['fab', 'tiktok']" />
             <span class="social-label">抖音</span>
           </a>
-          <a class="social-btn reddit" href="https://www.reddit.com/user/Vegetable_Web_1691/" target="_blank" rel="noopener noreferrer">
+          <a
+            class="social-btn reddit"
+            href="https://www.reddit.com/user/Vegetable_Web_1691/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <font-awesome-icon :icon="['fab', 'reddit-alien']" />
             <span class="social-label">Reddit</span>
           </a>
@@ -148,7 +158,7 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { useReleaseNotes } from "@/composables";
 import { notify } from "@/services/notificationService";
 import { useAppStore } from "@/stores/appStore";
@@ -176,12 +186,7 @@ const handleImageLoad = () => {
   iconLoaded.value = true;
 };
 
-onMounted(() => {
-  const img = new Image();
-  img.onload = handleImageLoad;
-  img.onerror = handleImageLoad;
-  img.src = "/app-icon.png";
-});
+// Image loading is handled by the <img> tag's @load/@error events in the template
 
 const handleEasterEgg = () => {
   if (clickTimer) {
@@ -584,4 +589,3 @@ const handleAppIconClick = () => {
   background: linear-gradient(to bottom, var(--about-bg-gradient-start), var(--about-bg-gradient-end));
 }
 </style>
-

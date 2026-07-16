@@ -16,6 +16,7 @@
   --bg-secondary: #13161c;
   --bg-tertiary: #181c22;
   --bg-hover: #242933;
+  --hover-bg: #242933;
   --bg-elevated: #1c2028;
   --app-bg:
     radial-gradient(1200px 700px at 20% -10%, rgba(255, 255, 255, 0.04) 0%, transparent 55%),
@@ -55,11 +56,11 @@
    * 低饱和钢蓝 #6B8FA8，克制不张扬
    * ========================================== */
   --primary: #6b8fa8;
-  --primary-hover: #8baac0;
+  --primary-hover: #4a6a84;
   --primary-color: #6b8fa8;
   --secondary-color: #4a5568;
   --accent-color: #6b8fa8;
-  --accent-hover: #8baac0;
+  --accent-hover: #4a6a84;
 
   /* ==========================================
    * 状态颜色 (Status Colors)

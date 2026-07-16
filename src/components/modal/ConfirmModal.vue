@@ -56,21 +56,10 @@
         </div>
 
         <div class="modal-footer">
-          <button
-            ref="cancelBtnRef"
-            class="btn btn-secondary"
-            :disabled="loading"
-            @click="handleCancel"
-          >
+          <button ref="cancelBtnRef" class="btn btn-secondary" :disabled="loading" @click="handleCancel">
             {{ displayCancelText }}
           </button>
-          <button
-            ref="confirmBtnRef"
-            class="btn"
-            :class="`btn-${type}`"
-            :disabled="loading"
-            @click="handleConfirm"
-          >
+          <button ref="confirmBtnRef" class="btn" :class="`btn-${type}`" :disabled="loading" @click="handleConfirm">
             <span v-if="loading" class="loading-spinner" aria-hidden="true"></span>
             {{ displayConfirmText }}
           </button>
@@ -231,9 +220,9 @@ const { getGameModeText, getDifficultyText, formatDate } = useArchiveDetailsForm
 const { handleConfirm, handleCancel, handleOverlayClick } = useConfirmModalActions();
 
 /* Display text with i18n fallback */
-const displayTitle = computed(() => props.title || t('confirmModal.title'));
-const displayConfirmText = computed(() => props.confirmText || t('confirmModal.confirm'));
-const displayCancelText = computed(() => props.cancelText || t('confirmModal.cancel'));
+const displayTitle = computed(() => props.title || t("confirmModal.title"));
+const displayConfirmText = computed(() => props.confirmText || t("confirmModal.confirm"));
+const displayCancelText = computed(() => props.cancelText || t("confirmModal.cancel"));
 </script>
 
 <style scoped>

@@ -2,10 +2,7 @@
   <div class="ending-selector">
     <div class="ending-label">{{ $t("quickCreate.endingSelector.label") }}</div>
     <div class="ending-group" ref="endingGroupRef">
-      <div
-        class="ending-slider"
-        :style="sliderStyle"
-      />
+      <div class="ending-slider" :style="sliderStyle" />
       <div
         v-for="ending in endings"
         :key="ending.id"
@@ -52,7 +49,10 @@ const updateSlider = () => {
   sliderActive.value = true;
 };
 
-watch(() => props.modelValue, () => nextTick(updateSlider));
+watch(
+  () => props.modelValue,
+  () => nextTick(updateSlider),
+);
 
 onMounted(() => {
   nextTick(() => requestAnimationFrame(() => requestAnimationFrame(updateSlider)));
@@ -83,7 +83,9 @@ const handleSelect = (id) => {
   border-radius: var(--radius-lg);
   padding: 4px;
   gap: 2px;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.08);
 }
 .ending-slider {
   position: absolute;
@@ -92,9 +94,12 @@ const handleSelect = (id) => {
   height: calc(100% - 8px);
   background: var(--accent-color);
   border-radius: var(--radius-md);
-  box-shadow: 0 2px 8px rgba(var(--accent-color-rgb),0.35);
+  box-shadow: 0 2px 8px rgba(var(--accent-color-rgb), 0.35);
   pointer-events: none;
-  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), width 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s ease;
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.2s ease;
   z-index: 0;
 }
 .ending-tab {
@@ -112,6 +117,11 @@ const handleSelect = (id) => {
   color: var(--text-secondary);
   transition: color 0.25s ease;
 }
-.ending-tab.active .ending-label-text { color: #ffffff; font-weight: 600; }
-.ending-tab:not(.active):hover .ending-label-text { color: var(--text-primary); }
+.ending-tab.active .ending-label-text {
+  color: #ffffff;
+  font-weight: 600;
+}
+.ending-tab:not(.active):hover .ending-label-text {
+  color: var(--text-primary);
+}
 </style>

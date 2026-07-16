@@ -15,7 +15,12 @@
           <h3 class="category-title">{{ $t("createMode.singleArchive") }}</h3>
           <div class="mode-cards single">
             <!-- Classic mode -->
-            <div class="mode-card" v-squircle="44" :class="{ selected: selectedMode === 'classic' }" @click="goToMode('classic')">
+            <div
+              class="mode-card"
+              v-squircle="44"
+              :class="{ selected: selectedMode === 'classic' }"
+              @click="goToMode('classic')"
+            >
               <div class="mode-card-image">
                 <LazyImage :src="classicModeImage" alt="Classic Mode" :image-class="'mode-card-img'" />
                 <div class="mode-card-overlay">
@@ -43,7 +48,12 @@
           <h3 class="category-title">{{ $t("createMode.multiArchive") }}</h3>
           <div class="mode-cards multi">
             <!-- Quick mode -->
-            <div class="mode-card" v-squircle="44" :class="{ selected: selectedMode === 'quick' }" @click="goToMode('quick')">
+            <div
+              class="mode-card"
+              v-squircle="44"
+              :class="{ selected: selectedMode === 'quick' }"
+              @click="goToMode('quick')"
+            >
               <div class="mode-card-image">
                 <LazyImage :src="quickModeImage" alt="Quick Mode" :image-class="'mode-card-img'" />
                 <div class="mode-card-overlay">

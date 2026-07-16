@@ -462,23 +462,35 @@ onMounted(() => {
   // ─── Watch Pinia store for shared state ────────────────
   // Replaces window.dispatchEvent/addEventListener pattern
 
-  watch(() => appStore.logMenuEnabled, (enabled) => {
-    enabled ? addLogMenuItem() : removeLogMenuItem();
-  });
+  watch(
+    () => appStore.logMenuEnabled,
+    (enabled) => {
+      enabled ? addLogMenuItem() : removeLogMenuItem();
+    },
+  );
 
-  watch(() => appStore.testArchiveEnabled, (enabled) => {
-    enabled ? addTestArchiveMenuItem() : removeTestArchiveMenuItem();
-  });
+  watch(
+    () => appStore.testArchiveEnabled,
+    (enabled) => {
+      enabled ? addTestArchiveMenuItem() : removeTestArchiveMenuItem();
+    },
+  );
 
-  watch(() => appStore.developerModeEnabled, (enabled) => {
-    if (enabled && appStore.logMenuEnabled) {
-      addLogMenuItem();
-    } else if (!enabled) {
-      removeLogMenuItem();
-    }
-  });
+  watch(
+    () => appStore.developerModeEnabled,
+    (enabled) => {
+      if (enabled && appStore.logMenuEnabled) {
+        addLogMenuItem();
+      } else if (!enabled) {
+        removeLogMenuItem();
+      }
+    },
+  );
 
-  watch(() => appStore.language, () => nextTick(() => {}));
+  watch(
+    () => appStore.language,
+    () => nextTick(() => {}),
+  );
 
   window.addEventListener("toggle-sidebar", (e) => {
     if (e.detail.collapsed && isExpanded.value) handleMouseLeave();
@@ -851,7 +863,7 @@ onMounted(() => {
 
   100% {
     transform: translateX(calc(-100% - var(--space-4)));
-  /* Use unified spacing variable */
+    /* Use unified spacing variable */
   }
 }
 

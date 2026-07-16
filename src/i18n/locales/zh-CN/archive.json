@@ -6,5 +6,20 @@
   "updated": "更新内容",
   "updateDetails": "调整了存档卡片的样式，修复了部分bug",
   "thanks": "感谢所有为本项目提供反馈、建议与支持的朋友们",
-  "disclaimer": "本工具仅供学习交流使用"
+  "disclaimer": "本工具仅供学习交流使用",
+  "actions": {
+    "deleteSuccess": "{name} 已删除",
+    "undo": "撤销",
+    "undoDeleteOf": "撤销删除「{name}」",
+    "undoFailed": "撤销失败",
+    "deleteFailed": "删除失败：{error}",
+    "folderOpened": "已打开存档文件夹",
+    "toggleVisibilityFailed": "切换可见性失败：{error}",
+    "batchDeleteSuccess": "已删除 {count} 个存档",
+    "batchDeleteComplete": "批量删除完成：{success} 个成功，{failed} 个失败",
+    "batchDeleteUndone": "已撤销批量删除",
+    "undone": "已撤销：{desc}",
+    "redone": "已重做：{desc}",
+    "restoreFailed": "文件恢复失败，但存档将显示在列表中"
+  }
 }

@@ -1,9 +1,10 @@
 import { getCurrentUpdateSource } from "../config/updateConfig";
 import storage from "./storageService";
 import type { UpdateInfo, UpdateSourceConfig } from "../types";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 // Version information
-const CURRENT_VERSION = "3.2.0";
+const CURRENT_VERSION = "3.3.0";
 
 // Simplified update status
 export const UpdateStatus = {
@@ -380,7 +381,7 @@ class UpdateService {
   }
 
   /**
-   * Download update file directly
+   * Open download URL in system browser via Tauri opener plugin
    */
   async downloadAndInstall(): Promise<void> {
     if (!this.updateInfo) {
@@ -388,24 +389,14 @@ class UpdateService {
     }
 
     try {
-      // Use direct download link
       const url = this.updateInfo.directDownloadUrl;
 
-      // Create temporary link element for direct download
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = ""; // Trigger download instead of navigation
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.style.display = "none";
+      // Use Tauri opener plugin to open URL in default browser
+      await openUrl(url);
 
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      console.log("已开始下载:", url);
+      console.log("已打开下载链接:", url);
     } catch (error: unknown) {
-      console.error("下载失败:", error);
+      console.error("打开下载链接失败:", error);
       this.status = UpdateStatus.ERROR;
       this.error = error instanceof Error ? error.message : String(error);
       throw error;
@@ -446,7 +437,7 @@ class UpdateService {
     if (!lastCheck) return true;
 
     const now = Date.now();
-    const lastCheckTime = parseInt(lastCheck);
+    const lastCheckTime = parseInt(lastCheck, 10);
     const hoursSinceLastCheck = (now - lastCheckTime) / (1000 * 60 * 60);
 
     return hoursSinceLastCheck >= 12;

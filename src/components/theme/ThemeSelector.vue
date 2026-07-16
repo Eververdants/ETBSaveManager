@@ -4,7 +4,7 @@
       <button
         v-show="needsScroll && canScrollLeft"
         class="scroll-btn scroll-left"
-        aria-label="向左滚动"
+        :aria-label="$t('common.scrollLeft')"
         @click="scrollLeft"
       >
         <font-awesome-icon :icon="['fas', 'chevron-left']" />
@@ -35,7 +35,7 @@
       <button
         v-show="needsScroll && canScrollRight"
         class="scroll-btn scroll-right"
-        aria-label="向右滚动"
+        :aria-label="$t('common.scrollRight')"
         @click="scrollRight"
       >
         <font-awesome-icon :icon="['fas', 'chevron-right']" />
@@ -358,7 +358,7 @@ const selectTheme = (themeId) => {
   flex-shrink: 0;
   width: 100px;
   cursor: pointer;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   overflow: hidden;
   border: 2px solid transparent;
   transition:

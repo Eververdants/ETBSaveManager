@@ -1,4 +1,4 @@
-import { ref, shallowRef, computed, type Ref, type ComputedRef } from "vue";
+import { ref, computed, type Ref, type ComputedRef } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useI18n } from "vue-i18n";
 import { useToast } from "./useToast";
@@ -57,15 +57,6 @@ export interface IncrementalLoadState {
 
 const BATCH_SIZE = 50;
 
-/** Shallow array equality — returns true when elements have same IDs */
-function arraysEqualById(a: ArchiveData[], b: ArchiveData[]): boolean {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i].id !== b[i].id) return false;
-  }
-  return true;
-}
-
 /**
  * Archive data management composable
  * Supports two-phase incremental loading for fast initial display:
@@ -78,7 +69,6 @@ function arraysEqualById(a: ArchiveData[], b: ArchiveData[]): boolean {
  */
 export function useArchiveData(): {
   archives: Ref<ArchiveData[]>;
-  displayArchives: Ref<ArchiveData[]>;
   visibleSaves: Ref<Set<number>>;
   loading: Ref<boolean>;
   dataLoadComplete: Ref<boolean>;
@@ -95,7 +85,6 @@ export function useArchiveData(): {
   const { t } = useI18n({ useScope: "global" });
   const toast = useToast();
   const archives = ref<ArchiveData[]>([]);
-  const displayArchives = shallowRef<ArchiveData[]>([]);
   const visibleSaves = ref(new Set<number>());
 
   const loading = ref(false);
@@ -105,6 +94,12 @@ export function useArchiveData(): {
     totalDetails: 0,
     loadedDetails: 0,
   });
+
+  // Cancellation token for Phase 2 detail loading.
+  // Set to true by cancelDetailLoading() — startDetailLoading checks this
+  // before each batch and exits early, preventing wasted IPC and stale data
+  // writes when refresh/init races with an in-flight detail load.
+  let detailLoadCancelled = false;
 
   // Map Chinese difficulty names from game save files to normalized keys
   const difficultyMap: Record<string, string> = {
@@ -221,9 +216,11 @@ export function useArchiveData(): {
    * indices in-place so unchanged cards skip re-render.
    */
   const startDetailLoading = async (): Promise<void> => {
+    detailLoadCancelled = false;
     const pendingPaths = archives.value.filter((a) => a.currentLevel === "Level0").map((a) => a.path);
 
     if (pendingPaths.length === 0) {
+      if (detailLoadCancelled) return;
       incrementalLoadState.value = {
         phase: "complete",
         totalDetails: 0,
@@ -240,9 +237,14 @@ export function useArchiveData(): {
     };
 
     for (let i = 0; i < pendingPaths.length; i += BATCH_SIZE) {
+      if (detailLoadCancelled) return;
       const batch = pendingPaths.slice(i, i + BATCH_SIZE);
       try {
         const details = await invoke<SaveFileDetail[]>("load_save_details_batch", { paths: batch });
+
+        // Re-check cancellation after await — another init/refresh may have
+        // replaced archives.value while IPC was in flight.
+        if (detailLoadCancelled) return;
 
         for (const detail of details) {
           if (detail.current_level) {
@@ -274,6 +276,7 @@ export function useArchiveData(): {
       }
     }
 
+    if (detailLoadCancelled) return;
     incrementalLoadState.value.phase = "complete";
     scheduler.endOperation("loading-archives");
     console.log(
@@ -282,6 +285,7 @@ export function useArchiveData(): {
   };
 
   const cancelDetailLoading = (): void => {
+    detailLoadCancelled = true;
     incrementalLoadState.value = {
       phase: "idle",
       totalDetails: 0,
@@ -302,7 +306,6 @@ export function useArchiveData(): {
     if (!silent) {
       loading.value = true;
       archives.value = [];
-      displayArchives.value = [];
       dataLoadComplete.value = false;
     }
 
@@ -319,7 +322,6 @@ export function useArchiveData(): {
       // this is faster than IPC round-trips for individual pages.
       const merged = await loadMergedArchives();
       archives.value = merged;
-      displayArchives.value = [...merged];
       dataLoadComplete.value = true;
 
       if (!silent) loading.value = false;
@@ -340,7 +342,6 @@ export function useArchiveData(): {
       console.error("Failed to initialize archives:", error);
       if (!silent) {
         archives.value = [];
-        displayArchives.value = [];
       }
       dataLoadComplete.value = true;
       incrementalLoadState.value = { phase: "complete", totalDetails: 0, loadedDetails: 0 };
@@ -362,9 +363,6 @@ export function useArchiveData(): {
     try {
       const merged = await loadMergedArchives();
       archives.value = merged;
-      if (!arraysEqualById(displayArchives.value, merged)) {
-        displayArchives.value = [...merged];
-      }
 
       const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
       if (pendingCount > 0) startDetailLoading();
@@ -384,9 +382,6 @@ export function useArchiveData(): {
     try {
       const merged = await loadMergedArchives();
       archives.value = merged;
-      if (!arraysEqualById(displayArchives.value, merged)) {
-        displayArchives.value = [...merged];
-      }
 
       const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
       if (pendingCount > 0) startDetailLoading();
@@ -409,13 +404,6 @@ export function useArchiveData(): {
     if (archiveIndex > -1) {
       archives.value[archiveIndex].isVisible = isVisible;
     }
-
-    const displayIndex = displayArchives.value.findIndex((a) => a.id === archiveId);
-    if (displayIndex > -1) {
-      const updated = [...displayArchives.value];
-      updated[displayIndex] = { ...updated[displayIndex], isVisible };
-      displayArchives.value = updated;
-    }
   };
 
   const archiveStats = computed(
@@ -428,7 +416,6 @@ export function useArchiveData(): {
 
   return {
     archives,
-    displayArchives,
     visibleSaves,
     loading,
     dataLoadComplete,

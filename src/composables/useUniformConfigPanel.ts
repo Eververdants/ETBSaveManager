@@ -107,7 +107,9 @@ export function useUniformConfigPanel(
     { value: "nightmare", label: getDifficultyText("nightmare") },
   ]);
 
-  const inventoryTemplateOptions = computed((): LevelOption[] => [{ value: "empty", label: "默认空背包" }]);
+  const inventoryTemplateOptions = computed((): LevelOption[] => [
+    { value: "empty", label: t("common.emptyBackpack") },
+  ]);
 
   const handleLevelModeChange = (enabled: boolean): void => {
     emit("update:config", {

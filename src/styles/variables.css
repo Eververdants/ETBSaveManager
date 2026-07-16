@@ -1,16 +1,7 @@
-/**
+/*
  * ============================================
  * 📐 设计系统变量 (Design System Variables)
  * ============================================
- * 
- * 本文件包含非颜色相关的设计变量：
- * - 圆角系统
- * - 间距系统
- * - 阴影系统
- * - 过渡动画
- * - 其他全局样式
- * 
- * 颜色变量已迁移至 themes/ 目录
  */
 
 /* 导入主题颜色系统 */
@@ -18,40 +9,33 @@
 
 /* ==========================================
  * 圆角系统 (Border Radius System)
- * 🍎 iOS 26 风格大圆角 + 同心等距 + 连续曲率
- *
- * 设计原则：
- * - 连续曲率: corner-shape: squircle 使圆角过渡更自然
- * - 同心等距: 8px 均匀递减 (52→44→36→28→20→12)
- * - 大圆角优先: iOS 26 风格，整体大幅提升
- * - 胶囊风格: 按钮/搜索框/标签使用 --radius-pill (9999px)
  * ========================================== */
 :root {
   /* ── 基础圆角值（同心等距系统） ──
    *   8px 等距递减：52 → 44 → 36 → 28 → 20 → 12
    *   确保嵌套时视觉和谐统一
    */
-  --radius-xs: 12px;  /* 第 6 层：最内层元素（标签、徽章、进度点）*/
-  --radius-sm: 20px;  /* 第 5 层：内层元素（小卡片、图标容器）*/
-  --radius-md: 28px;  /* 第 4 层：中层元素（列表项、表单组）*/
-  --radius-lg: 36px;  /* 第 3 层：外层元素（卡片、面板、分区）*/
-  --radius-xl: 44px;  /* 第 2 层：大容器（模态框、侧边栏、主面板）*/
+  --radius-xs: 12px; /* 第 6 层：最内层元素（标签、徽章、进度点）*/
+  --radius-sm: 20px; /* 第 5 层：内层元素（小卡片、图标容器）*/
+  --radius-md: 28px; /* 第 4 层：中层元素（列表项、表单组）*/
+  --radius-lg: 36px; /* 第 3 层：外层元素（卡片、面板、分区）*/
+  --radius-xl: 44px; /* 第 2 层：大容器（模态框、侧边栏、主面板）*/
   --radius-2xl: 52px; /* 第 1 层：最大容器（大模态框、页面级容器）*/
 
   /* 特殊圆角值 */
   --radius-pill: 9999px; /* 胶囊形状：按钮、搜索框、切换开关 */
-  --radius-circle: 50%;  /* 圆形：头像、图标按钮 */
+  --radius-circle: 50%; /* 圆形：头像、图标按钮 */
 
-  /* ── 组件特定圆角（iOS 26 风格大圆角 + 胶囊） ── */
-  --radius-sidebar: var(--radius-xl);   /* 侧边栏 44px */
-  --radius-card: var(--radius-lg);      /* 卡片 36px */
-  --radius-modal: var(--radius-2xl);    /* 模态框 52px */
-  --radius-dropdown: var(--radius-pill);/* 下拉菜单胶囊（pill 形状）*/
-  --radius-button: var(--radius-pill);  /* 按钮胶囊（pill 形状）*/
-  --radius-input: var(--radius-pill);   /* 输入框/搜索框胶囊 */
-  --radius-tag: var(--radius-pill);     /* 标签胶囊 */
+  /* ── 组件特定圆角 ── */
+  --radius-sidebar: var(--radius-xl); /* 侧边栏 44px */
+  --radius-card: var(--radius-lg); /* 卡片 36px */
+  --radius-modal: var(--radius-2xl); /* 模态框 52px */
+  --radius-dropdown: var(--radius-pill); /* 下拉菜单胶囊（pill 形状）*/
+  --radius-button: var(--radius-pill); /* 按钮胶囊（pill 形状）*/
+  --radius-input: var(--radius-pill); /* 输入框/搜索框胶囊 */
+  --radius-tag: var(--radius-pill); /* 标签胶囊 */
   --radius-tooltip: var(--radius-pill); /* 工具提示胶囊（pill 形状）*/
-  --radius-image: var(--radius-lg);     /* 图片容器 36px */
+  --radius-image: var(--radius-lg); /* 图片容器 36px */
 
   /* ── 为 corner-shape: squircle 添加声明 ──
    *   corner-shape: squircle 将标准 border-radius 转换为连续曲率圆角

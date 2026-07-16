@@ -35,13 +35,13 @@ function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
   if (!container) return [];
 
   const selectors = [
-    'a[href]:not([disabled])',
+    "a[href]:not([disabled])",
     'button:not([disabled]):not([aria-hidden="true"])',
-    'input:not([disabled])',
-    'textarea:not([disabled])',
-    'select:not([disabled])',
+    "input:not([disabled])",
+    "textarea:not([disabled])",
+    "select:not([disabled])",
     '[tabindex]:not([tabindex="-1"]):not([disabled])',
-    'details summary',
+    "details summary",
     '[contenteditable]:not([contenteditable="false"])',
   ];
 
@@ -54,16 +54,8 @@ function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
  * @param containerRef - The modal/panel container ref
  * @param options
  */
-export function useFocusTrap(
-  containerRef: Ref<HTMLElement | null>,
-  options: FocusTrapOptions = {},
-): FocusTrapReturn {
-  const {
-    triggerRef = null,
-    onEscape = null,
-    initialFocus = true,
-    initialFocusSelector = null,
-  } = options;
+export function useFocusTrap(containerRef: Ref<HTMLElement | null>, options: FocusTrapOptions = {}): FocusTrapReturn {
+  const { triggerRef = null, onEscape = null, initialFocus = true, initialFocusSelector = null } = options;
 
   let previouslyFocused: HTMLElement | null = null;
   let keydownHandler: ((event: KeyboardEvent) => void) | null = null;

@@ -1,5 +1,16 @@
-<template>
-  <div class="edit-archive-container">
+﻿<template>
+  <div v-if="parseError" class="edit-archive-container">
+    <div class="error-state">
+      <font-awesome-icon :icon="['fas', 'exclamation-triangle']" class="error-icon" />
+      <h2 class="error-title">{{ $t("editArchive.parseFailed") }}</h2>
+      <p class="error-desc">{{ $t("editArchive.parseFailed") }}</p>
+      <button class="btn-primary" @click="closeEdit">
+        <font-awesome-icon :icon="['fas', 'home']" />
+        Return to Home
+      </button>
+    </div>
+  </div>
+  <div v-else class="edit-archive-container">
     <!-- Top title bar + tab navigation -->
     <div class="page-header">
       <h1 class="page-title">{{ $t("editArchive.title") }}</h1>
@@ -36,7 +47,7 @@
       <!-- Basic settings -->
       <div class="tab-panel" :class="{ 'tab-active': activeTab === 'basic' }">
         <div class="basic-sections">
-          <!-- 📋 Basic Info -->
+          <!-- Basic Info -->
           <div class="settings-section">
             <h3 class="section-title">
               <font-awesome-icon :icon="['fas', 'info-circle']" />
@@ -54,7 +65,7 @@
             </div>
           </div>
 
-          <!-- 🎮 Difficulty Settings -->
+          <!-- Difficulty Settings -->
           <div class="settings-section">
             <h3 class="section-title">
               <font-awesome-icon :icon="['fas', 'gauge-high']" />
@@ -94,7 +105,7 @@
             </div>
           </div>
 
-          <!-- ⚡ Quick Action -->
+          <!-- Quick Action -->
           <button type="button" class="settings-card action-card" @click="unlockAllHubDoors">
             <div class="action-card-body">
               <div class="action-card-info">
@@ -259,7 +270,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick, watch } from "vue";
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { gsap } from "gsap";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -269,6 +280,8 @@ import LazyImage from "../components/ui/LazyImage.vue";
 import CustomSlider from "../components/ui/CustomSlider.vue";
 import PlayerManager from "../components/system/PlayerManager.vue";
 import { notify } from "../services/notificationService";
+import { editArchiveDataStore } from "../composables/useArchiveActions";
+import { formatDifficulty } from "../utils/archiveCreationUtils";
 
 const props = defineProps({
   archiveData: { type: String, default: "" },
@@ -351,6 +364,7 @@ const selectedItem = computed(() => {
 const playerInputMessage = ref("");
 const playerInputMessageType = ref("");
 const currentPlayerSanity = ref(100);
+const parseError = ref(false);
 const availableLevels = ref([]);
 
 const difficultyLevels = [
@@ -381,8 +395,8 @@ const handleSaveArchive = async () => {
       name: formData.name,
       mode: "Multiplayer",
       currentLevel: formData.currentLevel,
-      difficulty: formData.archiveDifficulty.charAt(0).toUpperCase() + formData.archiveDifficulty.slice(1),
-      actualDifficulty: formData.actualDifficulty.charAt(0).toUpperCase() + formData.actualDifficulty.slice(1),
+      difficulty: formatDifficulty(formData.archiveDifficulty),
+      actualDifficulty: formatDifficulty(formData.actualDifficulty),
       playerInventory,
       playerSanity,
     };
@@ -398,11 +412,7 @@ const handleSaveArchive = async () => {
     const errorMsg = error?.message || String(error);
     console.error("Save failed:", error);
 
-    if (
-      errorMsg.includes("Отказано в доступе") ||
-      errorMsg.includes("Access is denied") ||
-      errorMsg.includes("os error 5")
-    ) {
+    if (errorMsg.includes("拒绝访问") || errorMsg.includes("Access is denied") || errorMsg.includes("os error 5")) {
       notify.error(t("editArchive.saveErrorAccessDenied"));
     } else if (errorMsg.includes("正在使用") || errorMsg.includes("being used")) {
       notify.error(t("editArchive.saveErrorFileInUse"));
@@ -417,17 +427,35 @@ const initArchiveData = () => {
   try {
     if (props.archiveData) {
       let data;
-      try {
-        data = JSON.parse(props.archiveData);
-      } catch (parseError) {
-        console.error("存档数据解析失败:", parseError);
-        notify.error(t("editArchive.parseFailed") + " " + parseError.message);
-        return;
+
+      // Try lookup from editArchiveDataStore first (key-based)
+      const stored = editArchiveDataStore.get(props.archiveData);
+      if (stored) {
+        try {
+          data = JSON.parse(stored);
+        } catch (e) {
+          console.error("解析存档数据失败:", e);
+        }
+        // Clean up store entry
+        editArchiveDataStore.delete(props.archiveData);
+      }
+
+      // If store lookup failed, try direct JSON parse (backward compatibility)
+      if (!data) {
+        try {
+          data = JSON.parse(props.archiveData);
+        } catch (parseErr) {
+          console.error("存档数据解析失败:", parseErr);
+          notify.error(t("editArchive.parseFailed") + " " + parseErr.message);
+          parseError.value = true;
+          return;
+        }
       }
 
       if (!data || typeof data !== "object") {
         console.error("存档数据格式无效");
-        notify.error(t("editArchive.parseFailed") + " 数据格式无效");
+        notify.error(t("editArchive.parseFailedDataInvalid"));
+        parseError.value = true;
         return;
       }
 
@@ -442,6 +470,7 @@ const initArchiveData = () => {
   } catch (e) {
     console.error("初始化存档数据失败:", e);
     notify.error(t("editArchive.parseFailed") + " " + (e.message || e));
+    parseError.value = true;
   }
 };
 
@@ -464,7 +493,7 @@ const loadPlayerData = async (archive) => {
             const parts = steamId.split("-");
             processedId = parts[0];
             isOffline = true;
-            username = `${parts[0]}(本地)`;
+            username = `${parts[0]}${t("common.localPlayerSuffix")}`;
           }
 
           formData.players.push({
@@ -476,7 +505,10 @@ const loadPlayerData = async (archive) => {
           });
         }
       });
-      if (formData.players.length > 0) activePlayerIndex.value = 0;
+      if (formData.players.length > 0) {
+        activePlayerIndex.value = 0;
+        selectPlayer(0);
+      }
     }
   } catch (error) {
     console.error("Load player data failed:", error);
@@ -570,7 +602,7 @@ const addPlayer = async () => {
   const newPlayer = {
     steamId: validation.processedSteamId,
     inventory: Array(12).fill(null),
-    username: validation.isOfflinePlayer ? `${validation.processedSteamId}(本地)` : null,
+    username: validation.isOfflinePlayer ? `${validation.processedSteamId}${t("common.localPlayerSuffix")}` : null,
     isOfflinePlayer: validation.isOfflinePlayer,
     sanity: 100,
   };
@@ -600,8 +632,7 @@ const validateSteamId = (steamId) => {
     return { valid: false, message: t("editArchive.steamIdInvalid") };
   }
   if (!/^\d+$/.test(steamId)) return { valid: false, message: t("editArchive.steamIdInvalid") };
-  if (steamId.length !== 17)
-    return { valid: false, message: t("editArchive.steamIdValidationError", { error: "长度必须为17位" }) };
+  if (steamId.length !== 17) return { valid: false, message: t("editArchive.steamIdLengthError") };
   return { valid: true, isOfflinePlayer: false, processedSteamId: steamId };
 };
 
@@ -620,7 +651,7 @@ const selectPlayer = (index) => {
 const getCurrentPlayerDisplayName = () => {
   const player = formData.players[activePlayerIndex.value];
   if (!player) return "";
-  return player.username || `玩家 ${player.steamId.substring(0, 8)}...`;
+  return player.username || t("common.playerNameDisplay", { id: player.steamId.substring(0, 8) });
 };
 
 const getSanityClass = (val) => {
@@ -731,6 +762,12 @@ watch(currentPlayerSanity, (val) => {
   if (activePlayerIndex.value !== -1 && formData.players[activePlayerIndex.value]) {
     const numVal = Number(val);
     formData.players[activePlayerIndex.value].sanity = Math.max(0, Math.min(100, isNaN(numVal) ? 100 : numVal));
+  }
+});
+
+onUnmounted(() => {
+  if (props.archiveData) {
+    editArchiveDataStore.delete(props.archiveData);
   }
 });
 
@@ -897,8 +934,8 @@ onMounted(() => {
 }
 
 /* ==========================================
- * 🍎 基础设置 — 三段式布局
- *    连续曲率 + 大圆角 + 同心等距
+ * 基础设置 — 三段式布局
+ *     连续曲率 + 大圆角 + 同心等距
  *    Card: 36px(lg) → Inner: 28px(md) → 8px 递减
  * ========================================== */
 
@@ -911,14 +948,14 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-/* ── 区域分组 ── */
+/* ━━ 区域分组 ━━ */
 .settings-section {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-/* 区域标题（带 accent 竖条装饰） */
+/* 区域标题（带 accent 竖条装饰）*/
 .section-title {
   display: flex;
   align-items: center;
@@ -949,7 +986,7 @@ onMounted(() => {
   font-size: 16px;
 }
 
-/* ── 设置卡片 — 36px (lg) 大圆角连续曲率 ── */
+/* ━━ 设置卡片 — 36px (lg) 大圆角连续曲线 ━━ */
 .settings-card {
   background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border-radius: var(--radius-lg);
@@ -968,13 +1005,13 @@ onMounted(() => {
   left: 24px;
   right: 24px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
   pointer-events: none;
 }
 
 .settings-card:hover {
-  border-color: rgba(255,255,255,0.12);
-  box-shadow: var(--shadow-card-hover, 0 8px 32px rgba(0,0,0,0.12));
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow-card-hover, 0 8px 32px rgba(0, 0, 0, 0.12));
 }
 
 /* 卡片标签 */
@@ -986,7 +1023,7 @@ onMounted(() => {
   margin-bottom: 14px;
 }
 
-/* ── 输入框 — 28px (md) 同心第二层 ── */
+/* ━━ 输入框 — 28px (md) 同心第二层 ━━ */
 .settings-input {
   width: 100%;
   padding: 14px 18px;
@@ -997,7 +1034,7 @@ onMounted(() => {
   font-size: 14px;
   box-sizing: border-box;
   outline: none;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: all var(--transition-normal) var(--ease-default);
 }
 
@@ -1009,7 +1046,7 @@ onMounted(() => {
   border-color: var(--accent-color);
   box-shadow:
     0 0 0 3px color-mix(in srgb, var(--accent-color) 15%, transparent),
-    inset 0 1px 2px rgba(0,0,0,0.05);
+    inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .settings-input::placeholder {
@@ -1017,21 +1054,21 @@ onMounted(() => {
   opacity: 0.7;
 }
 
-/* ── 难度双列布局 ── */
+/* ━━ 难度双列布局 ━━ */
 .difficulty-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
-/* ── 难度网格 4 列 ── */
+/* ━━ 难度网格 4 列 ━━ */
 .diff-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
 
-/* ── 难度选项 — 28px (md) 同心第二层 ── */
+/* ━━ 难度选项 — 28px (md) 同心第二层 ━━ */
 .diff-option {
   display: flex;
   flex-direction: column;
@@ -1040,7 +1077,7 @@ onMounted(() => {
   padding: 16px 8px;
   border-radius: var(--radius-md);
   background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-  border: 2px solid rgba(255,255,255,0.05);
+  border: 2px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
   transition: all var(--transition-normal) var(--ease-default);
   position: relative;
@@ -1052,7 +1089,11 @@ onMounted(() => {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, color-mix(in srgb, var(--accent-color) 10%, transparent) 0%, transparent 70%);
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
+    transparent 70%
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -1060,7 +1101,7 @@ onMounted(() => {
 .diff-option:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .diff-option:hover::before {
@@ -1069,7 +1110,11 @@ onMounted(() => {
 
 .diff-option.selected {
   border-color: var(--accent-color);
-  background: linear-gradient(145deg, color-mix(in srgb, var(--accent-color) 15%, transparent) 0%, color-mix(in srgb, var(--accent-color) 8%, transparent) 100%);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-color) 15%, transparent) 0%,
+    color-mix(in srgb, var(--accent-color) 8%, transparent) 100%
+  );
   box-shadow:
     0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent),
     0 4px 12px color-mix(in srgb, var(--accent-color) 15%, transparent);
@@ -1102,10 +1147,14 @@ onMounted(() => {
   color: var(--accent-color);
 }
 
-/* ── 操作卡片 — 36px (lg) 大圆角 ── */
+/* ━━ 操作卡片 — 36px (lg) 大圆角 ━━ */
 .action-card {
   cursor: pointer;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--accent-color) 6%, transparent) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-color) 6%, transparent) 0%,
+    var(--bg-secondary) 100%
+  );
   border: 1px solid color-mix(in srgb, var(--accent-color) 12%, transparent);
   transition: all var(--transition-normal) var(--ease-default);
   /* Button reset: override default <button> styles */
@@ -1120,16 +1169,20 @@ onMounted(() => {
 }
 
 .action-card:hover {
-  background: linear-gradient(145deg, color-mix(in srgb, var(--accent-color) 10%, transparent) 0%, var(--bg-tertiary) 100%);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
+    var(--bg-tertiary) 100%
+  );
   border-color: color-mix(in srgb, var(--accent-color) 25%, transparent);
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .action-card:focus-visible {
   box-shadow:
     0 0 0 3px color-mix(in srgb, var(--accent-color) 25%, transparent),
-    0 8px 24px rgba(0,0,0,0.1);
+    0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .action-card:active {
@@ -1181,7 +1234,7 @@ onMounted(() => {
   transform: translateX(4px);
 }
 
-/* ── 响应式 ── */
+/* ━━ 响应式 ━━ */
 @media (max-width: 768px) {
   .basic-sections {
     max-width: 100%;
@@ -1745,6 +1798,39 @@ onMounted(() => {
   font-size: 18px;
   color: var(--text-tertiary);
   opacity: 0.4;
+}
+
+/* Error state */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+  padding: 40px;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 48px;
+  color: var(--text-tertiary);
+  opacity: 0.6;
+}
+
+.error-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.error-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 400px;
+  line-height: 1.5;
 }
 
 /* Animations */

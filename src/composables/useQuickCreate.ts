@@ -1,4 +1,4 @@
-import { reactive, computed, nextTick } from "vue";
+﻿import { reactive, computed, nextTick } from "vue";
 import type { ComputedRef, Reactive } from "vue";
 import {
   createDefaultUniformConfig,
@@ -18,6 +18,7 @@ import type {
   ParsedNameInfo,
   ResolvedConfig,
 } from "@/types";
+import { formatDifficulty, loadBasicArchive, isSideStoryline, isMEGUnlocked } from "@/utils/archiveCreationUtils";
 
 /**
  * Batch creation configuration
@@ -26,29 +27,6 @@ const BATCH_SIZE = 5; // 5 archives per batch
 const BATCH_DELAY = 100; // Delay between batches (ms)
 
 /**
- * Main storyline level list (first 17 levels)
- * Used to determine if quick mode is a main storyline
- * If the selected level is not in this list, it is considered a side storyline and needs full level data
- */
-const MAIN_STORYLINE_LEVELS: string[] = [
-  "Level0",
-  "TopFloor",
-  "MiddleFloor",
-  "GarageLevel2",
-  "BottomFloor",
-  "TheHub",
-  "Pipes1",
-  "ElectricalStation",
-  "Office",
-  "Hotel",
-  "Floor3",
-  "BoilerRoom",
-  "Pipes2",
-  "LevelFun",
-  "Poolrooms",
-  "LevelRun",
-  "TheEnd",
-];
 
 /**
  * Large data threshold configuration
@@ -211,7 +189,6 @@ function createArchiveConfig(name: string): ArchiveConfig {
     level: null,
     difficulty: null,
     actualDifficulty: null,
-    inventoryTemplate: null,
 
     // Final resolved values (computed by resolve)
     finalLevel: null,
@@ -268,7 +245,7 @@ export function useQuickCreate(): QuickCreateReturn {
       archive.finalLevel = resolved.level;
       archive.finalDifficulty = resolved.difficulty;
       archive.finalActualDifficulty = resolved.actualDifficulty;
-      archive.finalInventory = resolved.inventoryTemplate ? [] : []; // Template parsing will be implemented in a follow-up task
+      archive.finalInventory = [];
       archive.hasIndividualSettings = hasIndividualSettings(archive);
     }
 
@@ -609,29 +586,6 @@ export function useQuickCreate(): QuickCreateReturn {
   const hasVeryLargeData = computed((): boolean => {
     return state.archives.length > VERY_LARGE_NAME_THRESHOLD;
   });
-
-  /**
-   * Convert difficulty value to backend expected format
-   */
-  const formatDifficulty = (difficulty: string | null | undefined): string => {
-    if (!difficulty) return "Normal";
-    return difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
-  };
-
-  /**
-   * Load BasicArchive.json template
-   */
-  const loadBasicArchive = async (): Promise<Record<string, unknown> | null> => {
-    try {
-      const response = await fetch("/BasicArchive.json");
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error("Failed to read BasicArchive.json:", error);
-      return null;
-    }
-  };
-
   /**
    * Create a single archive
    */
@@ -644,15 +598,6 @@ export function useQuickCreate(): QuickCreateReturn {
 
       const level = archive.finalLevel || "Level0";
 
-      // Determine if it's a side storyline: if level is not in the main 17 levels, it's a side story
-      // main_ending: true means side story (non-main ending), needs full level data generation
-      // main_ending: false means main story, only generate data up to the current level
-      const isSideStoryline = !MAIN_STORYLINE_LEVELS.includes(level);
-
-      // MEG unlock check: first 6 levels (Level0 to TheHub) MEG is locked
-      const megLevels = ["Level0", "TopFloor", "MiddleFloor", "GarageLevel2", "BottomFloor", "TheHub"];
-      const isMEGUnlocked = !megLevels.includes(level);
-
       // Build save data
       const saveData: Record<string, unknown> = {
         archive_name: archive.name,
@@ -662,8 +607,8 @@ export function useQuickCreate(): QuickCreateReturn {
         actual_difficulty: formatDifficulty(archive.finalActualDifficulty),
         players: [], // Empty player list, expandable later
         basic_archive: basicArchive,
-        main_ending: isSideStoryline, // Set to true for side storyline
-        meg_unlocked: isMEGUnlocked, // Determine MEG unlock status based on level
+        main_ending: isSideStoryline(level),
+        meg_unlocked: isMEGUnlocked(level),
       };
 
       await invoke("handle_new_save", { saveData });

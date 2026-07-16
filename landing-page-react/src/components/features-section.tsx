@@ -89,7 +89,7 @@ export function FeaturesSection(): React.JSX.Element {
                 {/* 底部：file path + 编号 */}
                 <div className="mt-6 flex items-center justify-between border-t border-dashed border-[var(--color-ink)]/20 pt-3 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[var(--color-ink-3)] dark:border-[var(--color-paper-3)]/20 dark:text-[var(--color-paper-3)]/60">
                   <span>root / features / {feature.id}</span>
-                  <span className="tabular-nums">↳ {String(idx + 1).padStart(2, "0")}/06</span>
+                  <span className="tabular-nums">↳ {String(idx + 1).padStart(2, "0")}/07</span>
                 </div>
               </article>
             </li>
@@ -174,6 +174,14 @@ function FeatureIcon({ iconKey }: { iconKey: string }): React.JSX.Element {
         <svg {...common}>
           <path d="M3 17l5-5 4 3 8-9" />
           <path d="M14 6h6v6" />
+        </svg>
+      );
+    case "icon-scheduler":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="8" />
+          <path d="M12 4v4M12 16v4M4 12h4M16 12h4" strokeWidth={2} />
+          <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
         </svg>
       );
     default:

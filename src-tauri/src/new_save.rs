@@ -9,7 +9,6 @@ use uesave::{
     Properties, Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
     PropertyType, Save, StructType, StructValue, ValueArray, ValueVec,
 };
-use uuid;
 
 /// Main storyline level data: (DisplayName, LevelName)
 /// Arranged by game progress order - first 17 of endingLevelsData[0]
@@ -114,9 +113,11 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     if save_data.archive_name.trim().is_empty() {
         return Err("Save name cannot be empty".to_string().into());
     }
-    if !save_data.archive_name.chars().all(|c| {
-        c.is_alphanumeric() || c == '-' || c == ' ' || c == '_' || c == '(' || c == ')'
-    }) {
+    if !save_data
+        .archive_name
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '-' || c == ' ' || c == '_' || c == '(' || c == ')')
+    {
         return Err(
             "Save name can only contain letters, numbers, hyphens, underscores, parentheses, and spaces"
                 .to_string()
@@ -125,11 +126,17 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     }
 
     // Sanitize difficulty: only allow alphanumeric characters
-    let sanitized_difficulty: String = save_data.difficulty.chars()
+    let sanitized_difficulty: String = save_data
+        .difficulty
+        .chars()
         .filter(|c| c.is_alphanumeric())
         .collect();
     if sanitized_difficulty.is_empty() {
-        return Err("Difficulty must contain at least one alphanumeric character".to_string().into());
+        return Err(
+            "Difficulty must contain at least one alphanumeric character"
+                .to_string()
+                .into(),
+        );
     }
 
     // Process level mapping
@@ -143,7 +150,8 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     let save_dir = app_data_dir.join("EscapeTheBackrooms/Saved/SaveGames");
 
     if !save_dir.exists() {
-        fs::create_dir_all(&save_dir).map_err(|e| format!("Failed to create save directory: {}", e))?;
+        fs::create_dir_all(&save_dir)
+            .map_err(|e| format!("Failed to create save directory: {}", e))?;
     }
 
     let file_name = format!(
@@ -158,8 +166,7 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     let mut save: Save = serde_json::from_value(save_data.basic_archive.clone()).map_err(|e| {
         format!(
             "Failed to convert JSON to Save: {:?}, JSON content: {}",
-            e,
-            save_data.basic_archive.to_string()
+            e, save_data.basic_archive
         )
     })?;
 
@@ -167,7 +174,7 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     if processed_level == "Level0" {
         remove_current_level(&mut save);
     } else {
-        modify_current_level(&mut save, processed_level.clone());
+        save_shared::modify_current_level(&mut save, processed_level.clone());
     }
 
     // Handle Pipes UnlockedFun_0 field
@@ -192,7 +199,8 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     }
 
     // Write as .sav file
-    let file = fs::File::create(&save_path).map_err(|e| format!("Failed to create output file: {}", e))?;
+    let file =
+        fs::File::create(&save_path).map_err(|e| format!("Failed to create output file: {}", e))?;
     let mut writer = BufWriter::new(file);
     save.write(&mut writer)
         .map_err(|e| format!("Failed to write save: {:?}", e))?;
@@ -207,24 +215,6 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     add_save_to_mainsave(archive_name)?;
 
     Ok(())
-}
-
-/// Modify CurrentLevel_0.Name field value
-pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
-    let key = PropertyKey(0, "CurrentLevel".to_string());
-
-    if let Some(current_level_prop) = save.root.properties.0.get_mut(&key) {
-        if let PropertyInner::Name(ref mut name) = &mut current_level_prop.inner {
-            *name = new_level_name.clone();
-            println!("✅ CurrentLevel_0 modified to: {}", name);
-            return true;
-        }
-        eprintln!("❌ CurrentLevel_0 type error");
-        return false;
-    }
-
-    eprintln!("❌ CurrentLevel_0 field not found");
-    false
 }
 
 /// Delete the entire CurrentLevel_0 field
@@ -358,7 +348,10 @@ fn generate_levels_completed(
             let all_index = ALL_LEVELS.iter().position(|(_, l)| *l == level);
 
             if let Some(index) = all_index {
-                println!("📍 Non-main storyline level detected (main ending mode), index: {}", index);
+                println!(
+                    "📍 Non-main storyline level detected (main ending mode), index: {}",
+                    index
+                );
                 levels_to_generate = ALL_LEVELS[..=index]
                     .iter()
                     .enumerate()
@@ -375,7 +368,10 @@ fn generate_levels_completed(
         }
     }
 
-    println!("📝 Will generate {} level records", levels_to_generate.len());
+    println!(
+        "📝 Will generate {} level records",
+        levels_to_generate.len()
+    );
 
     // Get existing LevelsCompleted_0 as template
     let levels_completed_key = PropertyKey(0, "LevelsCompleted".to_string());
@@ -389,7 +385,7 @@ fn generate_levels_completed(
             value: _,
         }) = &prop.inner
         {
-            Some((id.clone(), struct_type.clone(), type_.clone()))
+            Some((*id, struct_type.clone(), *type_))
         } else {
             None
         }
@@ -466,15 +462,17 @@ fn generate_levels_completed(
             },
             inner: PropertyInner::Float(-1.0),
         };
-        level_props
-            .0
-            .insert(PropertyKey(0, save_shared::TIME_FIELD.to_string()), time_prop);
+        level_props.0.insert(
+            PropertyKey(0, save_shared::TIME_FIELD.to_string()),
+            time_prop,
+        );
 
         // World - Create default World structure
         let world_prop = save_shared::create_default_world_property();
-        level_props
-            .0
-            .insert(PropertyKey(0, save_shared::WORLD_FIELD.to_string()), world_prop);
+        level_props.0.insert(
+            PropertyKey(0, save_shared::WORLD_FIELD.to_string()),
+            world_prop,
+        );
 
         new_values.push(StructValue::Struct(level_props));
         println!(
@@ -497,7 +495,7 @@ fn generate_levels_completed(
         },
         inner: PropertyInner::Array(ValueArray::Struct {
             id: struct_id,
-            struct_type: struct_type,
+            struct_type,
             type_: type_name,
             value: new_values,
         }),
@@ -557,9 +555,10 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> AppResult<()> 
                 inner: PropertyInner::Array(ValueArray::Base(ValueVec::Name(inventory_items))),
             };
 
-            player_struct_properties
-                .0
-                .insert(PropertyKey(0, save_shared::SANITY_PROP_NAME.to_string()), sanity_prop);
+            player_struct_properties.0.insert(
+                PropertyKey(0, save_shared::SANITY_PROP_NAME.to_string()),
+                sanity_prop,
+            );
             player_struct_properties.0.insert(
                 PropertyKey(0, save_shared::INVENTORY_PROP_NAME.to_string()),
                 inventory_prop,

@@ -25,7 +25,11 @@
 
           <!-- 搜索建议面板 -->
           <transition name="suggestions-fade">
-            <div v-if="showSuggestions && (suggestionList.length > 0 || searchHistoryList.length > 0)" class="search-suggestions" @mousedown.prevent>
+            <div
+              v-if="showSuggestions && (suggestionList.length > 0 || searchHistoryList.length > 0)"
+              class="search-suggestions"
+              @mousedown.prevent
+            >
               <!-- 搜索建议 -->
               <div v-if="suggestionList.length > 0 && searchQueryModel" class="suggestions-group">
                 <div class="suggestions-label">{{ $t("archiveSearch.suggestions") }}</div>
@@ -188,7 +192,9 @@ const clearSearch = () => {
 };
 
 const onSearchBlur = () => {
-  setTimeout(() => { showSuggestions.value = false; }, 200);
+  setTimeout(() => {
+    showSuggestions.value = false;
+  }, 200);
   if (props.searchQuery) {
     addSearchHistory(props.searchQuery);
     searchHistoryList.value = getSearchHistory();
@@ -586,7 +592,9 @@ onUnmounted(() => {
 
 .suggestions-fade-enter-active,
 .suggestions-fade-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .suggestions-fade-enter-from,

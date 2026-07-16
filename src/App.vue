@@ -22,7 +22,9 @@ const sidebarExpanded = ref(false);
 const showGlobalSearch = ref(false);
 const globalSearchRef = ref(null);
 const appStore = useAppStore();
-const shouldShowPerformanceMonitor = computed(() => appStore.performanceMonitorEnabled && appStore.developerModeEnabled);
+const shouldShowPerformanceMonitor = computed(
+  () => appStore.performanceMonitorEnabled && appStore.developerModeEnabled,
+);
 
 const cachedComponents = ["Home", "Settings", "CreateArchive", "Log"];
 const excludedComponents = ["BatchCreateArchive", "EditArchive"];
@@ -290,7 +292,6 @@ async function initThemeSystem() {
     document.documentElement.setAttribute("data-theme", theme);
   }
 }
-
 </script>
 
 <template>

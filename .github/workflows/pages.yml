@@ -4,8 +4,8 @@ on:
   push:
     branches: [master]
     paths:
-      - 'landing-page-react/**'
-      - '.github/workflows/pages.yml'
+      - "landing-page-react/**"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -32,9 +32,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: 'landing-page-react/pnpm-lock.yaml'
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: "landing-page-react/pnpm-lock.yaml"
 
       - name: Install dependencies
         working-directory: landing-page-react

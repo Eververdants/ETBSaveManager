@@ -1,5 +1,5 @@
-use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
+use serde::{Serialize, Serializer};
 use thiserror::Error;
 
 pub type AppResult<T> = Result<T, AppError>;
@@ -11,6 +11,7 @@ pub enum AppError {
     #[error("Parse error: {0}")]
     Parse(String),
     #[error("Validation error: {0}")]
+    #[allow(dead_code)]
     Validation(String),
     #[error("{0}")]
     General(String),

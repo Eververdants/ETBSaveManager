@@ -9,35 +9,35 @@
   /* ==========================================
    * 背景层级 (Background Hierarchy)
    * ========================================== */
-  --bg: #F2F0EB;
-  --bg-primary: #F2F0EB;
-  --bg-secondary: #F0ECE8;
-  --bg-tertiary: #E8E4E0;
-  --bg-hover: #E4E8EC;
-  --hover-bg: #E4E8EC;
-  --bg-elevated: #F0ECE8;
+  --bg: #f2f0eb;
+  --bg-primary: #f2f0eb;
+  --bg-secondary: #f0ece8;
+  --bg-tertiary: #e8e4e0;
+  --bg-hover: #e4e8ec;
+  --hover-bg: #e4e8ec;
+  --bg-elevated: #f0ece8;
   --app-bg:
     radial-gradient(1100px 650px at 15% -10%, rgba(228, 232, 236, 0.3) 0%, transparent 55%),
     radial-gradient(900px 560px at 105% 0%, rgba(232, 228, 224, 0.2) 0%, transparent 45%),
-    linear-gradient(180deg, #F2F0EB 0%, #F0ECE8 100%);
+    linear-gradient(180deg, #f2f0eb 0%, #f0ece8 100%);
 
   /* ==========================================
    * 文本层级 (Text Hierarchy)
    * ========================================== */
-  --text: #1A1815;
-  --text-color: #1A1815;
-  --text-primary: #1A1815;
+  --text: #1a1815;
+  --text-color: #1a1815;
+  --text-primary: #1a1815;
   --text-secondary: rgba(26, 24, 21, 0.65);
   --text-tertiary: rgba(26, 24, 21, 0.45);
   --text-disabled: rgba(26, 24, 21, 0.28);
-  --text-inverse: #F2F0EB;
+  --text-inverse: #f2f0eb;
 
   /* ==========================================
    * 表面/卡片 (Surface/Card)
    * ========================================== */
-  --surface-color: #F0ECE8;
-  --surface-hover: #F2F0EB;
-  --card-bg: #F0ECE8;
+  --surface-color: #f0ece8;
+  --surface-hover: #f2f0eb;
+  --card-bg: #f0ece8;
 
   /* ==========================================
    * 边框/分割线 (Border/Divider)
@@ -50,33 +50,33 @@
   /* ==========================================
    * 主色调 (Primary Colors)
    * ========================================== */
-  --primary: #8B8178;
-  --primary-hover: #736A62;
-  --primary-color: #8B8178;
-  --secondary-color: #A69E98;
-  --accent: #9A8C80;
-  --accent-color: #9A8C80;
-  --accent-hover: #867A6E;
+  --primary: #8b8178;
+  --primary-hover: #736a62;
+  --primary-color: #8b8178;
+  --secondary-color: #a69e98;
+  --accent: #9a8c80;
+  --accent-color: #9a8c80;
+  --accent-hover: #867a6e;
 
   /* ==========================================
    * 状态颜色 (Status Colors)
    * ========================================== */
-  --success-color: #A3C4A3;
-  --error-color: #D4A0A0;
-  --warning-color: #D4C4A0;
-  --info-color: #A0A8B0;
+  --success-color: #a3c4a3;
+  --error-color: #d4a0a0;
+  --warning-color: #d4c4a0;
+  --info-color: #a0a8b0;
 
   /* ==========================================
    * 侧边栏 (Sidebar)
    * ========================================== */
   --bg-sidebar: rgba(242, 240, 235, 0.92);
   --sidebar-bg: rgba(242, 240, 235, 0.92);
-  --sidebar-text-color: #1A1815;
+  --sidebar-text-color: #1a1815;
   --sidebar-border-color: rgba(26, 24, 21, 0.05);
   --sidebar-hover-bg: rgba(228, 232, 236, 0.5);
   --sidebar-item-hover-bg: rgba(228, 232, 236, 0.5);
   --sidebar-active-bg: rgba(139, 129, 120, 0.1);
-  --sidebar-active-color: #1A1815;
+  --sidebar-active-color: #1a1815;
   --sidebar-active-border: rgba(139, 129, 120, 0.3);
   --sidebar-active-hover-bg: rgba(139, 129, 120, 0.15);
 
@@ -100,13 +100,13 @@
   --dropdown-bg: rgba(242, 240, 235, 0.96);
   --dropdown-border: rgba(26, 24, 21, 0.06);
   --dropdown-border-hover: rgba(26, 24, 21, 0.1);
-  --dropdown-text: #1A1815;
+  --dropdown-text: #1a1815;
   --dropdown-icon: rgba(26, 24, 21, 0.45);
   --dropdown-shadow: 0 8px 32px rgba(26, 24, 21, 0.1);
   --dropdown-shadow-hover: 0 12px 40px rgba(26, 24, 21, 0.14);
   --dropdown-hover-bg: rgba(228, 232, 236, 0.4);
-  --dropdown-selected-bg: #8B8178;
-  --dropdown-selected-text: #FFFFFF;
+  --dropdown-selected-bg: #8b8178;
+  --dropdown-selected-text: #ffffff;
   --dropdown-selected-border: rgba(139, 129, 120, 0.5);
 
   /* ==========================================
@@ -133,7 +133,7 @@
   --card-border: 1px solid rgba(26, 24, 21, 0.05);
   --card-padding: 16px;
   --card-highlight: linear-gradient(135deg, rgba(242, 240, 235, 0.8) 0%, transparent 50%);
-  --card-active-indicator: #8B8178;
+  --card-active-indicator: #8b8178;
   --card-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --card-hover-transform: translateY(-2px);
 
@@ -145,8 +145,8 @@
   --Card-border-color: var(--divider-color);
   --Card-shadow-normal: var(--card-shadow);
   --Card-shadow-hover: var(--card-shadow-hover);
-  --Card-accent-primary: #8B8178;
-  --Card-accent-secondary: #736A62;
+  --Card-accent-primary: #8b8178;
+  --Card-accent-secondary: #736a62;
   --Card-text-primary: var(--text-primary);
   --Card-text-secondary: var(--text-secondary);
   --Card-surface-overlay: rgba(26, 24, 21, 0.05);
@@ -168,32 +168,32 @@
    * ========================================== */
 
   /* 🌿 成功 — 鼠尾草绿 */
-  --color-success: #A3C4A3;
-  --color-success-light: #E8F0E4;
-  --color-success-dark: #8BAA7E;
-  --color-success-hover: #8BAA7E;
+  --color-success: #a3c4a3;
+  --color-success-light: #e8f0e4;
+  --color-success-dark: #8baa7e;
+  --color-success-hover: #8baa7e;
   --color-success-bg: rgba(163, 196, 163, 0.12);
   --color-success-border: rgba(163, 196, 163, 0.28);
 
   /* 🌸 错误 — 烟粉玫瑰 */
-  --color-error: #D4A0A0;
-  --color-error-light: #F0E4E4;
-  --color-error-dark: #C08484;
-  --color-error-hover: #C08484;
+  --color-error: #d4a0a0;
+  --color-error-light: #f0e4e4;
+  --color-error-dark: #c08484;
+  --color-error-hover: #c08484;
   --color-error-bg: rgba(212, 160, 160, 0.12);
   --color-error-border: rgba(212, 160, 160, 0.28);
 
   /* 🌾 警告 — 暖沙色 */
-  --color-warning: #D4C4A0;
-  --color-warning-light: #F0ECE0;
-  --color-warning-dark: #BCA880;
-  --color-warning-hover: #BCA880;
+  --color-warning: #d4c4a0;
+  --color-warning-light: #f0ece0;
+  --color-warning-dark: #bca880;
+  --color-warning-hover: #bca880;
   --color-warning-bg: rgba(212, 196, 160, 0.12);
   --color-warning-border: rgba(212, 196, 160, 0.28);
 
   /* 🌫️ 信息 — 雾灰蓝 */
-  --color-info: #A0A8B0;
-  --color-info-light: #E8ECF0;
+  --color-info: #a0a8b0;
+  --color-info-light: #e8ecf0;
   --color-info-dark: #808890;
   --color-info-hover: #808890;
   --color-info-bg: rgba(160, 168, 176, 0.12);

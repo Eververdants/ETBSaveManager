@@ -41,7 +41,7 @@
             <!-- 详情区域 -->
             <div v-if="notification.details" class="notification-details">
               <div v-if="notification.details.version" class="detail-item">
-                <span class="detail-label">版本:</span>
+                <span class="detail-label">{{ $t("common.versionLabel") }}</span>
                 <span class="detail-value">{{ notification.details.version }}</span>
               </div>
               <div v-if="notification.details.description" class="detail-item detail-desc">
@@ -496,7 +496,7 @@ defineExpose({
 }
 
 .icon-info {
-  background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 75%, #FFFFFF));
+  background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 75%, #ffffff));
   box-shadow: 0 3px 10px color-mix(in srgb, var(--accent-color) 35%, transparent);
 }
 
@@ -580,7 +580,7 @@ defineExpose({
 }
 
 .notification-btn.primary {
-  background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 75%, #FFFFFF));
+  background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 75%, #ffffff));
   color: white;
 }
 
@@ -663,7 +663,7 @@ defineExpose({
 }
 
 .progress-info {
-  background: linear-gradient(90deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 70%, #FFFFFF));
+  background: linear-gradient(90deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 70%, #ffffff));
 }
 
 .notification-success {

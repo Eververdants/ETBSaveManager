@@ -26,11 +26,7 @@
           </transition>
           <!-- Theme selector -->
           <div class="theme-selector-wrapper">
-            <ThemeSelector
-              ref="themeSelectorRef"
-              v-model="currentTheme"
-              @change="handleThemeChange"
-            />
+            <ThemeSelector ref="themeSelectorRef" v-model="currentTheme" @change="handleThemeChange" />
           </div>
         </div>
       </div>
@@ -97,7 +93,6 @@
           </label>
         </div>
       </div>
-
     </div>
 
     <!-- System and updates settings group -->
@@ -139,7 +134,7 @@
     </div>
 
     <!-- Developer options settings group -->
-    <div v-if="developerOptionsEnabled" class="setting-group">
+    <div v-if="developerModeEnabled" class="setting-group">
       <transition name="text-swift" mode="out-in">
         <div :key="currentLanguage" class="section-header">
           {{ t("settings.developerOptions") }}
@@ -379,9 +374,10 @@ export default {
       currentLanguage: storage.getItem("language", "zh-CN"),
       performanceMonitorEnabled: storage.getItem("performanceMonitor") ?? false,
       developerModeEnabled: storage.getItem("developerMode", false) === true, // Developer mode state
-      developerOptionsEnabled: storage.getItem("developerMode", false) === true, // Whether developer options are visible
       logMenuEnabled: storage.getItem("logMenuEnabled", false) === true, // Log feature toggle state
-      gpuAccelerationDisabled: storage.getItem("gpuAccelerationDisabled", false) === true, // GPU acceleration toggle state
+      gpuAccelerationDisabled:
+        storage.getItem("gpuAccelerationDisabled", false) === true ||
+        storage.getItem("gpuAccelerationDisabled") === "true", // GPU acceleration toggle state
       testArchiveEnabled: storage.getItem("testArchiveEnabled", false) === true, // Test archive display toggle state
       checkingUpdate: false,
       appVersion: APP_VERSION,
@@ -395,6 +391,7 @@ export default {
       isParsing: false,
       isPacking: false,
       // Seasonal theme control
+      _isUnmounted: false, // Guard flag for in-flight async operations
     };
   },
   computed: {
@@ -407,16 +404,14 @@ export default {
     },
   },
   beforeUnmount() {
-    // Clear any pending restart countdown
-    if (typeof this.clearRestartCountdown === "function") {
-      this.clearRestartCountdown();
-    }
     // Remove event listeners
     document.removeEventListener("click", this.handleClickOutside);
     // Stop store watcher
     if (typeof this._unwatchDeveloperMode === "function") {
       this._unwatchDeveloperMode();
     }
+    // Mark component as unmounted to guard in-flight async operations
+    this._isUnmounted = true;
   },
   async mounted() {
     // Apply saved theme
@@ -436,7 +431,6 @@ export default {
       () => this.appStore.developerModeEnabled,
       (enabled) => {
         this.developerModeEnabled = enabled;
-        this.developerOptionsEnabled = enabled;
         if (!enabled) {
           // Sync sub-setting states from store (they were reset by store action)
           this.logMenuEnabled = this.appStore.logMenuEnabled;
@@ -449,14 +443,9 @@ export default {
     // Initialize GPU acceleration state
     this.initializeGpuAccelerationStatus();
 
-    // Check for updates
+    // Auto-check for updates on startup (uses component method for proper guard/UI)
     if (updateService.canCheckUpdate && updateService.canCheckUpdate()) {
-      try {
-        await updateService.checkForUpdates();
-        updateService.recordLastCheck && updateService.recordLastCheck();
-      } catch (error) {
-        console.error(this.t("settings.startupUpdateCheckFailed"), error);
-      }
+      await this.checkForUpdates();
     }
   },
   methods: {
@@ -464,41 +453,91 @@ export default {
       if (!body) return this.t("settings.noUpdateNotes");
 
       let html = body;
+      const codeBlockPlaceholders = [];
 
-      // Process code blocks
-      html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
-      html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+      // Step 1: Extract and replace fenced code blocks with placeholders to protect from subsequent regexes
+      html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+        const placeholder = `%%CODEBLOCK_${codeBlockPlaceholders.length}%%`;
+        const escapedCode = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        codeBlockPlaceholders.push(`<pre><code class="language-${lang || ""}">${escapedCode}</code></pre>`);
+        return placeholder;
+      });
 
-      // Process headings
+      // Also protect inline code
+      html = html.replace(/`([^`]+)`/g, (match, code) => {
+        const placeholder = `%%CODEBLOCK_${codeBlockPlaceholders.length}%%`;
+        const escapedCode = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        codeBlockPlaceholders.push(`<code>${escapedCode}</code>`);
+        return placeholder;
+      });
+
+      // Step 2: Process headings (only outside code blocks now)
       html = html.replace(/^### (.*$)/gm, "<h3>$1</h3>");
       html = html.replace(/^## (.*$)/gm, "<h2>$1</h2>");
       html = html.replace(/^# (.*$)/gm, "<h1>$1</h1>");
 
-      // Process lists
+      // Step 3: Process lists
       html = html.replace(/^\* (.*$)/gm, "<li>$1</li>");
       html = html.replace(/^- (.*$)/gm, "<li>$1</li>");
-      // Wrap consecutive <li> groups in <ul> (support multiple separate lists)
-      html = html.replace(/(?:<li>[\s\S]*?<\/li>\n*)+/g, '<ul>\n$&\n</ul>');
+      html = html.replace(/(?:<li>[\s\S]*?<\/li>\n*)+/g, "<ul>\n$&\n</ul>");
 
-      // Process bold and italic
+      // Step 4: Process bold and italic
       html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
       html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
       html = html.replace(/__(.*?)__/g, "<strong>$1</strong>");
       html = html.replace(/_(.*?)_/g, "<em>$1</em>");
 
-      // Process links [text](url)
+      // Step 5: Process links [text](url)
       html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 
-      // Process line breaks
-      html = html.replace(/\n\n/g, "</p><p>");
-      html = html.replace(/\n/g, "<br>");
+      // Step 6: Process paragraph breaks — only where no heading/pre/list exists on the line
+      // Use a line-by-line approach to avoid orphan </p> when heading directly precedes newlines
+      const lines = html.split("\n");
+      const resultLines = [];
+      let inSpecialBlock = false;
 
-      // Wrap in paragraphs
-      if (!html.includes("<h") && !html.includes("<pre") && !html.includes("<ul")) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+
+        if (
+          trimmed.startsWith("<h") ||
+          trimmed.startsWith("<pre") ||
+          trimmed.startsWith("<ul") ||
+          trimmed.startsWith("</") ||
+          trimmed.startsWith("<li")
+        ) {
+          resultLines.push(line);
+          inSpecialBlock = trimmed !== "</ul>" && trimmed !== "</pre>";
+        } else if (trimmed === "" && i > 0 && i < lines.length - 1) {
+          // Empty line between content — paragraph break if not inside a special block
+          if (!inSpecialBlock) {
+            resultLines.push("</p><p>");
+          }
+        } else {
+          resultLines.push(line);
+          // Wrap standalone text in paragraph only if not already in one
+        }
+      }
+      html = resultLines.join("\n");
+
+      // Wrap in <p> if no block-level tags exist
+      if (!html.includes("<h") && !html.includes("<pre") && !html.includes("<ul") && !html.includes("<p>")) {
         html = "<p>" + html + "</p>";
       }
 
-      // Sanitize HTML output to prevent XSS (DOMPurify strips script tags, event handlers, etc.)
+      // Step 7: Replace newlines within paragraphs with <br>
+      html = html.replace(/<p>([\s\S]*?)<\/p>/g, (match, pContent) => {
+        const withBreaks = pContent.replace(/\n/g, "<br>");
+        return "<p>" + withBreaks + "</p>";
+      });
+
+      // Step 8: Restore code block placeholders (must be after all regex processing)
+      for (let i = 0; i < codeBlockPlaceholders.length; i++) {
+        html = html.replace(`%%CODEBLOCK_${i}%%`, codeBlockPlaceholders[i]);
+      }
+
+      // Step 9: Sanitize HTML output to prevent XSS
       return DOMPurify.sanitize(html);
     },
 
@@ -506,19 +545,32 @@ export default {
       this.activeDropdown = this.activeDropdown === dropdown ? null : dropdown;
     },
 
-    handleThemeChange(option) {
-      const theme = option.value;
+    async handleThemeChange(option) {
+      const newTheme = option.value;
+      const previousTheme = this.currentTheme;
 
-      // Update current theme
-      this.currentTheme = theme;
       this.activeDropdown = null;
 
-      // ThemeManager handles: data-theme attribute, storage, transitions
-      if (window.themeManager) {
-        window.themeManager.setTheme(theme);
-      } else {
-        document.documentElement.setAttribute("data-theme", theme);
-        storage.setItem("theme", theme);
+      try {
+        // ThemeManager handles: data-theme attribute, storage, transitions
+        if (window.themeManager) {
+          await window.themeManager.setTheme(newTheme);
+        } else {
+          document.documentElement.setAttribute("data-theme", newTheme);
+          storage.setItem("theme", newTheme);
+        }
+        // Only update state after successful application
+        this.currentTheme = newTheme;
+      } catch (error) {
+        console.error("Failed to apply theme:", error);
+        // Rollback to previous theme
+        this.currentTheme = previousTheme;
+        if (window.themeManager) {
+          window.themeManager.setTheme(previousTheme);
+        } else {
+          document.documentElement.setAttribute("data-theme", previousTheme);
+        }
+        notify.error("Theme change failed: " + (error.message || error));
       }
     },
 
@@ -530,22 +582,48 @@ export default {
       this.activeDropdown = null;
     },
 
+    /**
+     * Set language with concurrency guard and rollback.
+     * Uses a monotonic sequence counter: if a newer call has already started,
+     * this call's window title update is skipped to avoid race conditions.
+     */
     async setLanguage(lang) {
+      const previousLanguage = this.currentLanguage;
+      const previousLocale = this.$i18n ? this.$i18n.locale : null;
+
+      // Monotonic sequence counter for concurrency guard
+      if (!this._languageSwitchSeq) this._languageSwitchSeq = 0;
+      const currentSeq = ++this._languageSwitchSeq;
+
       this.currentLanguage = lang;
+      let rollbackNeeded = true;
       try {
-        // Use global i18n instance to set language
         if (this.$i18n) {
           this.$i18n.locale = lang;
         }
         storage.setItem("language", lang);
-
-        // Update store — components react via watchers
         this.appStore.setLanguage(lang);
 
-        // Update window title to app.name from language file
         await this.updateWindowTitle();
+
+        // Discard stale window title result — a newer switch may have overwritten it
+        if (this._languageSwitchSeq !== currentSeq) {
+          // Re-apply current language title since a newer call's title may have been overwritten
+          await invoke("set_window_title", { title: this.t("app.name") });
+        }
+        rollbackNeeded = false;
       } catch (error) {
         console.error(this.t("settings.languageSwitchFailed"), error);
+      } finally {
+        if (rollbackNeeded) {
+          this.currentLanguage = previousLanguage;
+          if (this.$i18n && previousLocale) {
+            this.$i18n.locale = previousLocale;
+          }
+          storage.setItem("language", previousLanguage);
+          this.appStore.setLanguage(previousLanguage);
+          notify.error(this.t("settings.languageSwitchFailed"));
+        }
       }
     },
 
@@ -582,7 +660,7 @@ export default {
           notify.info(this.t("settings.newVersionAvailable", { version: update.version }), {
             title: this.t("settings.updateAvailable"),
             icon: ["fas", "download"],
-            details: update.releaseNotes ? { description: update.releaseNotes.substring(0, 100) + "..." } : null,
+            details: update.body ? { description: update.body.substring(0, 100) + "..." } : null,
             actions: [
               {
                 text: this.t("settings.goToDownload"),
@@ -604,7 +682,7 @@ export default {
         this.updateStatus = UpdateStatus.ERROR;
 
         let errorText = this.t("settings.updateFailed");
-        if (error.message?.includes("rate limit") || error.message?.includes("429")) {
+        if (error.type === "Rate Limit") {
           errorText = this.t("settings.rateLimitError");
         } else if (error.type === "Network Connection") {
           errorText = this.t("settings.networkError");
@@ -618,15 +696,29 @@ export default {
       } finally {
         this.checkingUpdate = false;
         this.isProcessing = false;
+        // Always return to IDLE so the status machine can be reused
+        this.updateStatus = UpdateStatus.IDLE;
       }
     },
     handlePerformanceMonitorToggle() {
-      this.appStore.setPerformanceMonitor(this.performanceMonitorEnabled);
+      try {
+        this.appStore.setPerformanceMonitor(this.performanceMonitorEnabled);
+      } catch (error) {
+        console.error("Failed to toggle performance monitor:", error);
+        // Revert local state to match store
+        this.performanceMonitorEnabled = this.appStore.performanceMonitorEnabled;
+        notify.error("Failed to update performance monitor setting");
+      }
     },
 
     handleDeveloperModeToggle() {
-      this.appStore.setDeveloperMode(this.developerModeEnabled);
-      this.developerOptionsEnabled = this.developerModeEnabled;
+      try {
+        this.appStore.setDeveloperMode(this.developerModeEnabled);
+      } catch (error) {
+        console.error("Failed to toggle developer mode:", error);
+        this.developerModeEnabled = this.appStore.developerModeEnabled;
+        notify.error("Failed to update developer mode setting");
+      }
     },
 
     /**
@@ -642,11 +734,23 @@ export default {
     },
 
     handleLogMenuToggle() {
-      this.appStore.setLogMenu(this.logMenuEnabled);
+      try {
+        this.appStore.setLogMenu(this.logMenuEnabled);
+      } catch (error) {
+        console.error("Failed to toggle log menu:", error);
+        this.logMenuEnabled = this.appStore.logMenuEnabled;
+        notify.error("Failed to update log menu setting");
+      }
     },
 
     handleTestArchiveToggle() {
-      this.appStore.setTestArchive(this.testArchiveEnabled);
+      try {
+        this.appStore.setTestArchive(this.testArchiveEnabled);
+      } catch (error) {
+        console.error("Failed to toggle test archive:", error);
+        this.testArchiveEnabled = this.appStore.testArchiveEnabled;
+        notify.error("Failed to update test archive setting");
+      }
     },
 
     handleResetTutorial() {
@@ -692,16 +796,6 @@ export default {
         // Fallback: open file dialog if no valid file path from drop
         this.packJsonFile();
       }
-    },
-
-    handleParseFileSelect(event) {
-      // No longer used, switched to Tauri dialog
-      event.target.value = "";
-    },
-
-    handlePackFileSelect(event) {
-      // No longer used, switched to Tauri dialog
-      event.target.value = "";
     },
 
     async parseSavFile() {
@@ -817,8 +911,8 @@ export default {
           disabled: this.gpuAccelerationDisabled,
         });
 
-        // Save state to localStorage
-        storage.setItem("gpuAccelerationDisabled", this.gpuAccelerationDisabled.toString());
+        // Save state to storage (use boolean for type consistency)
+        storage.setItem("gpuAccelerationDisabled", this.gpuAccelerationDisabled);
 
         // Show prompt informing user to restart the application manually
         const message = this.gpuAccelerationDisabled
@@ -830,7 +924,7 @@ export default {
         console.error(this.t("settings.gpuAccelerationChangeFailed"), error);
         // Restore toggle state
         this.gpuAccelerationDisabled = !this.gpuAccelerationDisabled;
-        storage.setItem("gpuAccelerationDisabled", this.gpuAccelerationDisabled.toString());
+        storage.setItem("gpuAccelerationDisabled", this.gpuAccelerationDisabled);
 
         // Show error prompt
         notify.error(this.t("settings.gpuAccelerationChangeFailed") + ": " + error);
@@ -901,23 +995,25 @@ export default {
         // Try to get state from Tauri backend
         try {
           const backendState = await invoke("get_gpu_acceleration_status");
+          if (this._isUnmounted) return;
           // If backend state differs from localStorage, use backend state
           if (backendState !== localStorageState) {
             this.gpuAccelerationDisabled = backendState;
-            storage.setItem("gpuAccelerationDisabled", backendState.toString());
+            storage.setItem("gpuAccelerationDisabled", backendState);
           }
         } catch (error) {
+          if (this._isUnmounted) return;
           console.warn(this.t("settings.gpuStatusFetchFailed"), error);
           // Use localStorage state
           this.gpuAccelerationDisabled = localStorageState;
         }
       } catch (error) {
+        if (this._isUnmounted) return;
         console.error(this.t("settings.gpuStatusInitFailed"), error);
         // Enable GPU acceleration by default
         this.gpuAccelerationDisabled = false;
       }
     },
-
   },
 };
 </script>

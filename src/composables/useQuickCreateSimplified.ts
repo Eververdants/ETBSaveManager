@@ -2,9 +2,25 @@ import { reactive, computed } from "vue";
 import type { ComputedRef } from "vue";
 import { ENDING_LEVELS } from "@/data/endingsData";
 import type { DifficultyLevel, QuickCreateBatchResult } from "@/types";
+import { invoke } from "@tauri-apps/api/core";
+import { formatDifficulty, loadBasicArchive, isSideStoryline, isMEGUnlocked } from "@/utils/archiveCreationUtils";
+
+/** All unique levels across all endings, in order */
+const ALL_LEVELS = (() => {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const key of [0, 1, 2, 3]) {
+    for (const level of ENDING_LEVELS[key] || []) {
+      if (!seen.has(level)) {
+        seen.add(level);
+        result.push(level);
+      }
+    }
+  }
+  return result;
+})();
 
 interface SimplifiedState {
-  selectedEnding: number;
   selectedLevelKeys: string[];
   difficulty: DifficultyLevel;
   copies: number;
@@ -17,7 +33,6 @@ interface SimplifiedReturn {
   currentLevels: ComputedRef<string[]>;
   archiveNames: ComputedRef<string[]>;
   canCreate: ComputedRef<boolean>;
-  selectEnding: (index: number) => void;
   setDifficulty: (d: DifficultyLevel) => void;
   setCopies: (n: number) => void;
   batchCreate: () => Promise<QuickCreateBatchResult>;
@@ -26,7 +41,6 @@ interface SimplifiedReturn {
 
 function createInitialState(): SimplifiedState {
   return {
-    selectedEnding: 0,
     selectedLevelKeys: [],
     difficulty: "normal",
     copies: 1,
@@ -35,47 +49,16 @@ function createInitialState(): SimplifiedState {
   };
 }
 
-const MAIN_STORYLINE_LEVELS: string[] = [
-  "Level0",
-  "TopFloor",
-  "MiddleFloor",
-  "GarageLevel2",
-  "BottomFloor",
-  "TheHub",
-  "Pipes1",
-  "ElectricalStation",
-  "Office",
-  "Hotel",
-  "Floor3",
-  "BoilerRoom",
-  "Pipes2",
-  "LevelFun",
-  "Poolrooms",
-  "LevelRun",
-  "TheEnd",
-];
-
-// Default difficulty levels where MEG is locked
-const MEG_LOCKED_LEVELS = ["Level0", "TopFloor", "MiddleFloor", "GarageLevel2", "BottomFloor", "TheHub"];
-
-function formatDifficulty(difficulty: string | null | undefined): string {
-  if (!difficulty) return "Normal";
-  return difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
-}
-
 export function useQuickCreateSimplified(): SimplifiedReturn {
   const state = reactive<SimplifiedState>(createInitialState());
-
-  // Levels available in current ending
-  const currentLevels = computed(() => ENDING_LEVELS[state.selectedEnding] || []);
-
-  // Select ending and auto-select all its levels
-  const selectEnding = (index: number) => {
-    state.selectedEnding = index;
-    state.selectedLevelKeys = [...(ENDING_LEVELS[index] || [])];
-  };
-
-  // Generated archive names (just level key, no difficulty suffix)
+  const currentLevels = computed(() => ALL_LEVELS);
+  /**
+   * Preview archive names based on current selection and copies.
+   * NOTE: Final created names may differ from these preview names
+   * because batchCreate() resolves duplicates via resolveName()
+   * which appends "-2", "-3", etc. suffixes to avoid conflicts
+   * with existing saves on disk.
+   */
   const archiveNames = computed(() => {
     const names: string[] = [];
     for (const levelKey of state.selectedLevelKeys) {
@@ -89,25 +72,12 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
     }
     return names;
   });
-
   const canCreate = computed(() => state.selectedLevelKeys.length > 0 && !state.isCreating);
-
   const setDifficulty = (d: DifficultyLevel) => {
     state.difficulty = d;
   };
   const setCopies = (n: number) => {
     state.copies = Math.max(1, n);
-  };
-
-  const loadBasicArchive = async (): Promise<Record<string, unknown> | null> => {
-    try {
-      const response = await fetch("/BasicArchive.json");
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error("Failed to load BasicArchive.json:", error);
-      return null;
-    }
   };
 
   const createSingleArchive = async (
@@ -116,12 +86,7 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
     basicArchive: Record<string, unknown>,
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { invoke } = await import("@tauri-apps/api/core");
-
-      const isSideStoryline = !MAIN_STORYLINE_LEVELS.includes(levelKey);
-      const isMEGUnlocked = !MEG_LOCKED_LEVELS.includes(levelKey);
       const difficultyLabel = formatDifficulty(state.difficulty);
-
       const saveData: Record<string, unknown> = {
         archive_name: archiveName,
         level: levelKey,
@@ -130,10 +95,9 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
         actual_difficulty: difficultyLabel,
         players: [],
         basic_archive: basicArchive,
-        main_ending: isSideStoryline,
-        meg_unlocked: isMEGUnlocked,
+        main_ending: isSideStoryline(levelKey),
+        meg_unlocked: isMEGUnlocked(levelKey),
       };
-
       await invoke("handle_new_save", { saveData });
       return { success: true };
     } catch (error) {
@@ -141,20 +105,16 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
     }
   };
 
-  /**
-   * Resolve an archive name that doesn't conflict with existing/taken names.
-   * Appends a numeric suffix like "_2", "_3" as needed.
-   */
   function resolveName(baseName: string, takenNames: Set<string>): string {
     if (!takenNames.has(baseName)) {
       takenNames.add(baseName);
       return baseName;
     }
     let counter = 2;
-    while (takenNames.has(`${baseName}_${counter}`)) {
+    while (takenNames.has(`${baseName}-${counter}`)) {
       counter++;
     }
-    const resolved = `${baseName}_${counter}`;
+    const resolved = `${baseName}-${counter}`;
     takenNames.add(resolved);
     return resolved;
   }
@@ -164,20 +124,19 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
     if (levelsToCreate.length === 0) {
       return { success: 0, failed: 0, errors: [] };
     }
-
+    state.isCreating = true;
+    state.creationProgress = 0;
     const basicArchive = await loadBasicArchive();
     if (!basicArchive) {
+      state.isCreating = false;
       return {
         success: 0,
         failed: levelsToCreate.length,
         errors: [{ name: "all", error: "Failed to load archive template" }],
       };
     }
-
-    // ── Load existing archive names for duplicate protection ──
     let existingNames = new Set<string>();
     try {
-      const { invoke } = await import("@tauri-apps/api/core");
       const existingSaves = await invoke<Array<{ name: string }>>("load_all_saves");
       for (const save of existingSaves) {
         if (save.name) existingNames.add(save.name);
@@ -185,19 +144,13 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
     } catch (error) {
       console.warn("Failed to load existing saves for dedup check, proceeding without:", error);
     }
-
-    state.isCreating = true;
-    state.creationProgress = 0;
-
     const results: { success: number; failed: number; errors: Array<{ name: string; error: string }> } = {
       success: 0,
       failed: 0,
       errors: [],
     };
-
-    // Build a flat list of all archives to create, resolving duplicate names
     const allEntries: Array<{ levelKey: string; archiveName: string }> = [];
-    const takenNames = new Set(existingNames); // track all names used (existing + batch)
+    const takenNames = new Set(existingNames);
     for (const levelKey of levelsToCreate) {
       if (state.copies <= 1) {
         const resolved = resolveName(levelKey, takenNames);
@@ -210,43 +163,44 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
         }
       }
     }
-
-    // Process sequentially to avoid MAINSAVE.sav concurrent write conflicts
-    for (let i = 0; i < allEntries.length; i++) {
-      const { levelKey, archiveName } = allEntries[i];
-
-      const result = await createSingleArchive(archiveName, levelKey, basicArchive);
-      if (result.success) {
-        results.success++;
-      } else {
-        results.failed++;
-        results.errors.push({ name: archiveName, error: result.error || "Unknown error" });
+    const BATCH_SIZE = 5;
+    for (let i = 0; i < allEntries.length; i += BATCH_SIZE) {
+      const batch = allEntries.slice(i, i + BATCH_SIZE);
+      const batchResults = await Promise.allSettled(
+        batch.map(({ levelKey, archiveName }) => createSingleArchive(archiveName, levelKey, basicArchive)),
+      );
+      for (let j = 0; j < batchResults.length; j++) {
+        const result = batchResults[j];
+        const { archiveName } = batch[j];
+        if (result.status === "fulfilled" && result.value.success) {
+          results.success++;
+        } else {
+          results.failed++;
+          const errorMsg =
+            result.status === "rejected"
+              ? (result.reason as Error)?.message || String(result.reason)
+              : result.value?.error || "Unknown error";
+          results.errors.push({ name: archiveName, error: errorMsg });
+        }
       }
-
-      // Update progress
-      state.creationProgress = Math.round(((i + 1) / allEntries.length) * 100);
+      const completed = Math.min(i + BATCH_SIZE, allEntries.length);
+      state.creationProgress = Math.round((completed / allEntries.length) * 100);
     }
-
     state.creationProgress = 100;
     state.isCreating = false;
-
     return results;
   };
 
   const reset = () => {
     Object.assign(state, createInitialState());
-    state.selectedLevelKeys = [...(ENDING_LEVELS[0] || [])];
+    state.selectedLevelKeys = [...ALL_LEVELS];
   };
-
-  // Initialize with all levels from ending 0 selected
-  state.selectedLevelKeys = [...(ENDING_LEVELS[0] || [])];
-
+  state.selectedLevelKeys = [...ALL_LEVELS];
   return {
     state,
     currentLevels,
     archiveNames,
     canCreate,
-    selectEnding,
     setDifficulty,
     setCopies,
     batchCreate,

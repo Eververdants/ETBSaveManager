@@ -2,8 +2,8 @@
   <div ref="dropdownRef" class="custom-dropdown" :class="{ disabled: disabled }">
     <div class="dropdown-display" @click="toggleDropdown">
       <transition name="text-swift" mode="out-in">
-        <span :key="(selectedLabel || placeholder) + '-' + $i18n.locale" class="dropdown-text">{{
-          selectedLabel || placeholder
+        <span :key="(selectedLabel || placeholderText) + '-' + $i18n.locale" class="dropdown-text">{{
+          selectedLabel || placeholderText
         }}</span>
       </transition>
       <span class="dropdown-icon">▼</span>
@@ -32,6 +32,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { gsap } from "gsap";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   modelValue: {
@@ -44,7 +47,7 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: "请选择",
+    default: undefined,
   },
   disabled: {
     type: Boolean,
@@ -260,6 +263,8 @@ const selectedLabel = computed(() => {
   const selected = props.options.find((option) => option.value === props.modelValue);
   return selected ? selected.label : "";
 });
+
+const placeholderText = computed(() => props.placeholder ?? t("common.select"));
 </script>
 
 <style scoped>

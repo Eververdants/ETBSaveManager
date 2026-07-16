@@ -105,19 +105,19 @@
       <section class="list-section">
         <h3 class="section-title">{{ $t("about.contact") }}</h3>
         <div class="icon-row">
-          <a class="social-btn email" href="mailto:llzgd@outlook.com" target="_blank">
+          <a class="social-btn email" href="mailto:llzgd@outlook.com" target="_blank" rel="noopener noreferrer">
             <font-awesome-icon :icon="['fas', 'envelope']" />
             <span class="social-label">Email</span>
           </a>
-          <a class="social-btn github" href="https://github.com/Eververdants" target="_blank">
+          <a class="social-btn github" href="https://github.com/Eververdants" target="_blank" rel="noopener noreferrer">
             <font-awesome-icon :icon="['fab', 'github']" />
             <span class="social-label">GitHub</span>
           </a>
-          <a class="social-btn x-twitter" href="https://x.com/Eververdants" target="_blank">
+          <a class="social-btn x-twitter" href="https://x.com/Eververdants" target="_blank" rel="noopener noreferrer">
             <font-awesome-icon :icon="['fab', 'x-twitter']" />
             <span class="social-label">X</span>
           </a>
-          <a class="social-btn bilibili" href="https://space.bilibili.com/2019959464" target="_blank">
+          <a class="social-btn bilibili" href="https://space.bilibili.com/2019959464" target="_blank" rel="noopener noreferrer">
             <font-awesome-icon :icon="['fab', 'bilibili']" />
             <span class="social-label">Bilibili</span>
           </a>
@@ -125,6 +125,7 @@
             class="social-btn tiktok"
             href="https://www.douyin.com/user/MS4wLjABAAAA8MEFE6VVh4_nWkTLPbueZYywgSyN19xhUFkmDF-nkhlnWytZWiBZ9YWM5s3RsprJ"
             target="_blank"
+            rel="noopener noreferrer"
           >
             <font-awesome-icon :icon="['fab', 'tiktok']" />
             <span class="social-label">抖音</span>
@@ -143,32 +144,26 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
-import { computed, ref, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useReleaseNotes } from "@/composables";
-import storage from "@/services/storageService";
+import { notify } from "@/services/notificationService";
+import { useAppStore } from "@/stores/appStore";
 
 import { APP_VERSION } from "../config/version";
 
-const { t, locale } = useI18n({ useScope: "global" });
+const { t } = useI18n({ useScope: "global" });
 const version = APP_VERSION;
 
 // Use release notes data composable
 const { latestRelease, formatShortDate } = useReleaseNotes();
 
+const appStore = useAppStore();
 const showEasterEgg = ref(false);
 const iconLoaded = ref(false);
 const easterEggImageLoaded = ref(false);
 
-// Computed for translated text
-const $t = (key, values) => {
-  const text = t(key);
-  if (values && typeof values === "object") {
-    return text.replace(/\{(\w+)\}/g, (match, param) => {
-      return values[param] || match;
-    });
-  }
-  return text;
-};
+// Use date formatting provided by composable
+const formatDate = (dateString) => formatShortDate(dateString);
 
 let clickCount = 0;
 let clickTimer = null;
@@ -176,9 +171,6 @@ let clickTimer = null;
 const handleImageLoad = () => {
   iconLoaded.value = true;
 };
-
-// Use date formatting provided by composable
-const formatDate = (dateString) => formatShortDate(dateString);
 
 onMounted(() => {
   const img = new Image();
@@ -229,38 +221,11 @@ const handleAppIconClick = () => {
   appIconClickCount++;
 
   if (appIconClickCount >= 5) {
-    // Activate developer mode
-    storage.setItem("developerMode", "true");
+    // Activate developer mode via Pinia store (replaces window.dispatchEvent)
+    appStore.setDeveloperMode(true);
 
-    // Dispatch custom event to notify other components
-    window.dispatchEvent(
-      new CustomEvent("developer-mode-changed", {
-        detail: { enabled: true },
-      }),
-    );
-
-    // Show notification
-    const toast = document.createElement("div");
-    toast.style.cssText = `
-      position: fixed;
-      top: 50px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--primary);
-      color: white;
-      padding: 12px 24px;
-      border-radius: var(--radius-md);
-      z-index: 9999;
-      font-size: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      animation: fadeInOut 2s ease-in-out;
-    `;
-    toast.textContent = t("about.developerModeActivated");
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-      document.body.removeChild(toast);
-    }, 2000);
+    // Use existing notification service instead of manual DOM
+    notify.success(t("about.developerModeActivated"));
 
     appIconClickCount = 0;
     clearTimeout(appIconClickTimer);
@@ -331,28 +296,6 @@ const handleAppIconClick = () => {
   to {
     opacity: 0.8;
     transform: translateX(0);
-  }
-}
-
-@keyframes fadeInOut {
-  0% {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
-  }
-
-  20% {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  80% {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
   }
 }
 
@@ -632,3 +575,4 @@ const handleAppIconClick = () => {
   background: linear-gradient(to bottom, var(--about-bg-gradient-start), var(--about-bg-gradient-end));
 }
 </style>
+

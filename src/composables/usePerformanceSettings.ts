@@ -126,7 +126,7 @@ export function usePerformanceSettings(
     if ("PerformanceObserver" in window) {
       try {
         longTaskObserver = new PerformanceObserver((list: PerformanceObserverEntryList) => {
-          longTaskCount.value = list.getEntries().length;
+          longTaskCount.value += list.getEntries().length;
         });
 
         longTaskObserver.observe({ entryTypes: ["longtask"] });

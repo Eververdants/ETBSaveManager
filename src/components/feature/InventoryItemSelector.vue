@@ -85,8 +85,31 @@
                   <span class="item-name">{{ getItemName(item.id) }}</span>
                 </div>
               </TransitionGroup>
-              <div v-else class="empty-state">
-                {{ $t("inventory.searchEmpty") }}
+              <div v-else class="empty-state-wrapper">
+                <div class="empty-state">
+                  {{ $t("inventory.searchEmpty") }}
+                </div>
+                <div v-if="fuzzyResults.length" class="fuzzy-suggestions">
+                  <p class="fuzzy-label">{{ $t("inventory.didYouMean") }}</p>
+                  <div class="fuzzy-grid">
+                    <div
+                      v-for="result in fuzzyResults"
+                      :key="result.item.id"
+                      class="fuzzy-card"
+                      :title="`${getItemName(result.item.id)} (${(result.score * 100).toFixed(0)}%)`"
+                      @click="selectItem(result.item.id)"
+                    >
+                      <div class="fuzzy-image-wrapper">
+                        <LazyImage
+                          :src="`/icons/ETB_UI/${result.item.image}`"
+                          :alt="getItemName(result.item.id)"
+                          image-class="fuzzy-image"
+                        />
+                      </div>
+                      <span class="fuzzy-name">{{ getItemName(result.item.id) }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -117,8 +140,16 @@ const getItemName = (itemId) => {
 };
 
 const visibleRef = toRef(props, "visible");
-const { searchQuery, searchInputRef, availableItems, filteredItems, clearSearch, focusSearch, resetSearch } =
-  useInventoryItemSelector(getItemName);
+const {
+  searchQuery,
+  searchInputRef,
+  availableItems,
+  filteredItems,
+  fuzzyResults,
+  clearSearch,
+  focusSearch,
+  resetSearch,
+} = useInventoryItemSelector(getItemName);
 
 const selectedItemLabel = computed(() => {
   if (!props.selectedItem) return "";
@@ -441,10 +472,78 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
   border: 1px dashed var(--glass-border);
   border-radius: var(--radius-md);
   background: var(--glass-bg);
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.empty-state-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.fuzzy-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fuzzy-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  padding: 0 4px;
+}
+
+.fuzzy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
+}
+
+.fuzzy-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--glass-bg);
+}
+
+.fuzzy-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px var(--glass-shadow-light);
+  border-color: var(--accent-color);
+}
+
+.fuzzy-image-wrapper {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.fuzzy-image {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.fuzzy-name {
+  font-size: 11px;
+  text-align: center;
+  color: var(--text-primary);
+  line-height: 1.2;
+  opacity: 0.85;
 }
 
 @media (max-width: 768px) {

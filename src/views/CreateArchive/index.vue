@@ -356,7 +356,7 @@ const loadLevelsForEnding = async (endingIndex) => {
   const endingLevels = endings.value[endingIndex].levels;
   const newLevels = endingLevels.map((levelKey) => ({
     name: getLevelName(levelKey),
-    image: `/images/ETB/${levelKey}.jpg`,
+    image: `/images/ETB/${levelKey}.webp`,
     levelKey: levelKey,
   }));
   availableLevels.splice(0, availableLevels.length, ...newLevels);

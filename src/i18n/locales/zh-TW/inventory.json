@@ -5,6 +5,7 @@
   "searchEmpty": "沒有找到相符的物品",
   "resultCount": "顯示 {count} / {total}",
   "clearSearch": "清除搜尋",
+  "didYouMean": "您是不是想找：",
   "currentSelection": "目前選擇: {name}",
   "emptySlot": "空槽位",
   "items": {

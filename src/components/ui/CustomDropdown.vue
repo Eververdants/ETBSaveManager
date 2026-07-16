@@ -317,12 +317,14 @@ const selectedLabel = computed(() => {
 .dropdown-menu {
   background: var(--dropdown-bg);
   border: 1px solid var(--dropdown-border);
-  border-radius: var(--radius-dropdown);
+  border-radius: var(--radius-md);
   box-shadow: 0 4px 12px var(--dropdown-shadow);
   overflow: hidden;
   backdrop-filter: blur(20px);
   max-height: 200px;
   overflow-y: auto;
+  /* 内边距防止选项文字被圆角裁剪 */
+  padding: 4px 0;
 }
 
 .dropdown-option {

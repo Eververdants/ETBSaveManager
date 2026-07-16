@@ -1,124 +1,111 @@
 <template>
   <div class="archive-search-filter">
     <div class="search-filter-wrapper">
-      <!-- 一体化搜索筛选区域 -->
-      <transition
-        name="search-filter"
-        appear
-        :duration="{ enter: 400, leave: 300 }"
-        @before-enter="beforeEnter"
-        @enter="enter"
-        @leave="leave"
-      >
-        <div v-show="showComponent" class="unified-search-filter" v-squircle="24">
-          <!-- 搜索区域 -->
-          <div class="search-section">
-            <div class="search-input-group">
-              <font-awesome-icon icon="fa-solid fa-search" class="search-icon" />
-              <input
-                ref="searchInputRef"
-                v-model="searchQuery"
-                type="text"
-                :placeholder="$t('archiveSearch.searchPlaceholder')"
-                class="search-input"
-                v-squircle="16"
-                @focus="showSuggestions = true"
-                @blur="onSearchBlur"
-              />
-              <transition name="clear-btn" mode="out-in">
-                <button v-if="searchQuery" key="clear-btn" class="clear-btn" @click="clearSearch">
-                  <font-awesome-icon icon="fa-solid fa-times" />
-                </button>
-              </transition>
-            </div>
-
-            <!-- 搜索建议面板 -->
-            <transition name="suggestions-fade">
-              <div v-if="showSuggestions && (suggestionList.length > 0 || searchHistoryList.length > 0)" class="search-suggestions" @mousedown.prevent>
-                <!-- 搜索建议 -->
-                <div v-if="suggestionList.length > 0 && searchQuery" class="suggestions-group">
-                  <div class="suggestions-label">{{ $t("archiveSearch.suggestions") }}</div>
-                  <div
-                    v-for="suggestion in suggestionList"
-                    :key="suggestion.id"
-                    class="suggestion-item"
-                    @mousedown.prevent="selectSuggestion(suggestion.name)"
-                  >
-                    <font-awesome-icon icon="fa-solid fa-file" class="suggestion-icon" />
-                    <span class="suggestion-text">{{ suggestion.name }}</span>
-                  </div>
-                </div>
-                <!-- 搜索历史 -->
-                <div v-if="searchHistoryList.length > 0" class="suggestions-group">
-                  <div class="suggestions-label suggestions-label-row">
-                    <span>{{ $t("archiveSearch.searchHistory") }}</span>
-                    <button class="clear-history-btn" @mousedown.prevent="clearSearchHistory">
-                      {{ $t("archiveSearch.clearHistory") }}
-                    </button>
-                  </div>
-                  <div
-                    v-for="(historyItem, idx) in searchHistoryList"
-                    :key="'h-' + idx"
-                    class="suggestion-item history-item"
-                    @mousedown.prevent="selectSuggestion(historyItem)"
-                  >
-                    <font-awesome-icon icon="fa-solid fa-clock" class="suggestion-icon" />
-                    <span class="suggestion-text">{{ historyItem }}</span>
-                  </div>
-                </div>
-              </div>
+      <div class="unified-search-filter" v-squircle="44">
+        <!-- 搜索区域 -->
+        <div class="search-section">
+          <div class="search-input-group">
+            <font-awesome-icon icon="fa-solid fa-search" class="search-icon" />
+            <input
+              ref="searchInputRef"
+              v-model="searchQueryModel"
+              type="text"
+              :placeholder="$t('archiveSearch.searchPlaceholder')"
+              class="search-input"
+              v-squircle:pill
+              @focus="showSuggestions = true"
+              @blur="onSearchBlur"
+            />
+            <transition name="clear-btn" mode="out-in">
+              <button v-if="searchQueryModel" key="clear-btn" class="clear-btn" @click="clearSearch">
+                <font-awesome-icon icon="fa-solid fa-times" />
+              </button>
             </transition>
           </div>
 
-          <!-- 筛选区域 -->
-          <div class="filter-section">
-            <div class="filter-grid">
-              <div class="filter-item">
-                <label class="filter-label">{{ $t("archiveSearch.archiveDifficulty") }}</label>
-                <CustomDropdown
-                  v-model="selectedArchiveDifficulty"
-                  :options="difficultyOptions"
-                  :placeholder="$t('archiveSearch.archiveDifficulty')"
-                  @change="handleFilterChange"
-                />
+          <!-- 搜索建议面板 -->
+          <transition name="suggestions-fade">
+            <div v-if="showSuggestions && (suggestionList.length > 0 || searchHistoryList.length > 0)" class="search-suggestions" @mousedown.prevent>
+              <!-- 搜索建议 -->
+              <div v-if="suggestionList.length > 0 && searchQueryModel" class="suggestions-group">
+                <div class="suggestions-label">{{ $t("archiveSearch.suggestions") }}</div>
+                <div
+                  v-for="suggestion in suggestionList"
+                  :key="suggestion.id"
+                  class="suggestion-item"
+                  @mousedown.prevent="selectSuggestion(suggestion.name)"
+                >
+                  <font-awesome-icon icon="fa-solid fa-file" class="suggestion-icon" />
+                  <span class="suggestion-text">{{ suggestion.name }}</span>
+                </div>
               </div>
+              <!-- 搜索历史 -->
+              <div v-if="searchHistoryList.length > 0" class="suggestions-group">
+                <div class="suggestions-label suggestions-label-row">
+                  <span>{{ $t("archiveSearch.searchHistory") }}</span>
+                  <button class="clear-history-btn" @mousedown.prevent="clearSearchHistory">
+                    {{ $t("archiveSearch.clearHistory") }}
+                  </button>
+                </div>
+                <div
+                  v-for="(historyItem, idx) in searchHistoryList"
+                  :key="'h-' + idx"
+                  class="suggestion-item history-item"
+                  @mousedown.prevent="selectSuggestion(historyItem)"
+                >
+                  <font-awesome-icon icon="fa-solid fa-clock" class="suggestion-icon" />
+                  <span class="suggestion-text">{{ historyItem }}</span>
+                </div>
+              </div>
+            </div>
+          </transition>
+        </div>
 
-              <div class="filter-item">
-                <label class="filter-label">{{ $t("archiveSearch.actualDifficulty") }}</label>
-                <CustomDropdown
-                  v-model="selectedActualDifficulty"
-                  :options="difficultyOptions"
-                  :placeholder="$t('archiveSearch.actualDifficulty')"
-                  @change="handleFilterChange"
-                />
-              </div>
+        <!-- 筛选区域 -->
+        <div class="filter-section">
+          <div class="filter-grid">
+            <div class="filter-item">
+              <label class="filter-label">{{ $t("archiveSearch.archiveDifficulty") }}</label>
+              <CustomDropdown
+                :model-value="selectedArchiveDifficultyModel"
+                :options="difficultyOptions"
+                :placeholder="$t('archiveSearch.archiveDifficulty')"
+                @update:model-value="$emit('update:selectedArchiveDifficulty', $event)"
+              />
+            </div>
 
-              <div class="filter-item">
-                <label class="filter-label">{{ $t("archiveSearch.visibility") }}</label>
-                <CustomDropdown
-                  v-model="selectedVisibility"
-                  :options="visibilityOptions"
-                  :placeholder="$t('archiveSearch.visibility')"
-                  @change="handleFilterChange"
-                />
-              </div>
+            <div class="filter-item">
+              <label class="filter-label">{{ $t("archiveSearch.actualDifficulty") }}</label>
+              <CustomDropdown
+                :model-value="selectedActualDifficultyModel"
+                :options="difficultyOptions"
+                :placeholder="$t('archiveSearch.actualDifficulty')"
+                @update:model-value="$emit('update:selectedActualDifficulty', $event)"
+              />
+            </div>
+
+            <div class="filter-item">
+              <label class="filter-label">{{ $t("archiveSearch.visibility") }}</label>
+              <CustomDropdown
+                :model-value="selectedVisibilityModel"
+                :options="visibilityOptions"
+                :placeholder="$t('archiveSearch.visibility')"
+                @update:model-value="$emit('update:selectedVisibility', $event)"
+              />
             </div>
           </div>
         </div>
-      </transition>
+      </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick, toRef } from "vue";
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, type PropType } from "vue";
 import { useI18n } from "vue-i18n";
 import CustomDropdown from "../ui/CustomDropdown.vue";
-import { safeModifyBodyStyles, protectFloatingButtonPosition } from "../../utils/floatingButtonProtection.js";
+import type { ArchiveData } from "@/types";
 import {
-  useSearchState,
-  useArchiveFilter,
-  useFilterState,
   getSearchHistory,
   addSearchHistory,
   clearSearchHistory as clearHistoryStorage,
@@ -127,30 +114,47 @@ import {
 const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
-  archives: { type: Array, default: () => [] },
-  initialFilters: {
-    type: Object,
-    default: () => ({
-      searchQuery: "",
-      selectedArchiveDifficulty: "",
-      selectedActualDifficulty: "",
-      selectedVisibility: "",
-    }),
-  },
-  animationDelay: { type: Number, default: 0 },
-  visible: { type: Boolean, default: true },
+  searchQuery: { type: String, default: "" },
+  selectedArchiveDifficulty: { type: String, default: "" },
+  selectedActualDifficulty: { type: String, default: "" },
+  selectedVisibility: { type: String, default: "" },
+  searchSuggestions: { type: Array as PropType<ArchiveData[]>, default: () => [] },
 });
 
-const emit = defineEmits(["filtered", "filters-changed", "close"]);
+const emit = defineEmits([
+  "update:searchQuery",
+  "update:selectedArchiveDifficulty",
+  "update:selectedActualDifficulty",
+  "update:selectedVisibility",
+  "close",
+]);
 
 // 搜索建议与历史
-const searchInputRef = ref(null);
+const searchInputRef = ref<HTMLInputElement | null>(null);
 const showSuggestions = ref(false);
 const searchHistoryList = ref(getSearchHistory());
-const suggestionList = computed(() => searchSuggestions.value || []);
+const suggestionList = computed(() => props.searchSuggestions || []);
 
-const handleKeydown = (event) => {
-  if (event.key === "Escape" && showComponent.value) {
+// Local v-model proxies
+const searchQueryModel = computed({
+  get: () => props.searchQuery,
+  set: (val: string) => emit("update:searchQuery", val),
+});
+const selectedArchiveDifficultyModel = computed({
+  get: () => props.selectedArchiveDifficulty,
+  set: (val: string) => emit("update:selectedArchiveDifficulty", val),
+});
+const selectedActualDifficultyModel = computed({
+  get: () => props.selectedActualDifficulty,
+  set: (val: string) => emit("update:selectedActualDifficulty", val),
+});
+const selectedVisibilityModel = computed({
+  get: () => props.selectedVisibility,
+  set: (val: string) => emit("update:selectedVisibility", val),
+});
+
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === "Escape") {
     event.stopPropagation();
     emit("close");
   }
@@ -163,26 +167,6 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener("keydown", handleKeydown);
 });
-
-const archivesRef = toRef(props, "archives");
-const initialFiltersRef = toRef(props, "initialFilters");
-const visibleRef = toRef(props, "visible");
-
-const { searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility } =
-  useSearchState(initialFiltersRef);
-const { filteredArchives, searchSuggestions } = useArchiveFilter(
-  archivesRef,
-  searchQuery,
-  selectedArchiveDifficulty,
-  selectedActualDifficulty,
-  selectedVisibility,
-);
-const { hasActiveFilters } = useFilterState(
-  searchQuery,
-  selectedArchiveDifficulty,
-  selectedActualDifficulty,
-  selectedVisibility,
-);
 
 const difficultyOptions = computed(() => [
   { value: "", label: t("archiveSearch.allDifficulties") },
@@ -198,51 +182,24 @@ const visibilityOptions = computed(() => [
   { value: "hidden", label: t("archiveSearch.hidden") },
 ]);
 
-const emitFiltersChanged = () => {
-  emit("filters-changed", {
-    searchQuery: searchQuery.value,
-    selectedArchiveDifficulty: selectedArchiveDifficulty.value,
-    selectedActualDifficulty: selectedActualDifficulty.value,
-    selectedVisibility: selectedVisibility.value,
-  });
+const clearSearch = () => {
+  searchQueryModel.value = "";
+  showSuggestions.value = false;
 };
 
-const handleSearchChange = () => {
-  if (searchQuery.value) {
-    addSearchHistory(searchQuery.value);
+const onSearchBlur = () => {
+  setTimeout(() => { showSuggestions.value = false; }, 200);
+  if (props.searchQuery) {
+    addSearchHistory(props.searchQuery);
     searchHistoryList.value = getSearchHistory();
   }
-  nextTick(() => {
-    emit("filtered", filteredArchives.value);
-    emitFiltersChanged();
-  });
 };
 
-const handleFilterChange = () => {
-  emit("filtered", filteredArchives.value);
-  emitFiltersChanged();
-};
-
-const clearSearch = () => {
-  searchQuery.value = "";
-  showSuggestions.value = false;
-  emit("filtered", filteredArchives.value);
-  emitFiltersChanged();
-};
-
-// 搜索建议与历史
-const onSearchBlur = () => {
-  // 延迟关闭，让点击事件有足够时间触发
-  setTimeout(() => { showSuggestions.value = false; }, 200);
-};
-
-const selectSuggestion = (text) => {
-  searchQuery.value = text;
+const selectSuggestion = (text: string) => {
+  searchQueryModel.value = text;
   showSuggestions.value = false;
   addSearchHistory(text);
   searchHistoryList.value = getSearchHistory();
-  emit("filtered", filteredArchives.value);
-  emitFiltersChanged();
   nextTick(() => searchInputRef.value?.focus());
 };
 
@@ -251,137 +208,27 @@ const clearSearchHistory = () => {
   searchHistoryList.value = [];
 };
 
-const showComponent = ref(true);
-
-watch(
-  () => visibleRef.value,
-  (newVal) => {
-    showComponent.value = newVal;
-    const mainContent = document.querySelector(".main-content");
-    const archiveListContainer = document.querySelector(".archive-list-container");
-
-    if (newVal) {
-      // 计算滚动条宽度用于 padding-right 补偿，防止 layout shift
-      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
-
-      if (mainContent) {
-        mainContent.dataset.scrollY = mainContent.scrollTop;
-        mainContent.style.overflow = "hidden";
-      }
-      if (archiveListContainer) {
-        archiveListContainer.dataset.scrollY = archiveListContainer.scrollTop;
-        archiveListContainer.style.overflow = "hidden";
-      }
-
-      // 使用 overflow: hidden + paddingRight 补偿，替代 position: fixed
-      if (document.body.style.overflow !== "hidden") {
-        document.body.style.overflow = "hidden";
-        document.body.style.paddingRight = `${scrollBarWidth}px`;
-        document.documentElement.style.overflow = "hidden";
-        document.documentElement.style.paddingRight = `${scrollBarWidth}px`;
-      }
-    } else {
-      if (mainContent) {
-        mainContent.style.overflow = "";
-        if (mainContent.dataset.scrollY) {
-          mainContent.scrollTo({ top: parseInt(mainContent.dataset.scrollY), behavior: "smooth" });
-        }
-      }
-      if (archiveListContainer) {
-        archiveListContainer.style.overflow = "";
-        if (archiveListContainer.dataset.scrollY) {
-          archiveListContainer.scrollTo({ top: parseInt(archiveListContainer.dataset.scrollY), behavior: "smooth" });
-        }
-      }
-
-      document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
-      document.documentElement.style.overflow = "";
-      document.documentElement.style.paddingRight = "";
-      protectFloatingButtonPosition();
+// 输入防抖：150ms 后保存搜索历史
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+watch(searchQueryModel, () => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    searchDebounceTimer = null;
+    if (props.searchQuery) {
+      addSearchHistory(props.searchQuery);
+      searchHistoryList.value = getSearchHistory();
     }
-  },
-  { immediate: true },
-);
-
-const beforeEnter = (el) => {
-  el.style.willChange = "opacity, transform";
-  el.style.opacity = "0";
-  el.style.transform = "translateY(-15px)";
-};
-
-const enter = (el, done) => {
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      el.style.transition =
-        "opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)";
-      el.style.opacity = "1";
-      el.style.transform = "translateY(0)";
-      setTimeout(() => {
-        el.style.transition = "";
-        el.style.willChange = "";
-        done();
-      }, 300);
-    });
-  });
-};
-
-const leave = (el, done) => {
-  el.style.willChange = "opacity, transform";
-  el.style.transition =
-    "opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)";
-  el.style.opacity = "0";
-  el.style.transform = "translateY(-8px)";
-  setTimeout(() => {
-    el.style.transition = "";
-    el.style.willChange = "";
-    done();
-  }, 250);
-};
-
-watch(searchQuery, handleSearchChange);
-
-watch(
-  () => props.initialFilters,
-  (newFilters) => {
-    if (!newFilters) return;
-    searchQuery.value = newFilters.searchQuery || "";
-    selectedArchiveDifficulty.value = newFilters.selectedArchiveDifficulty || "";
-    selectedActualDifficulty.value = newFilters.selectedActualDifficulty || "";
-    selectedVisibility.value = newFilters.selectedVisibility || "";
-  },
-  { deep: true },
-);
-
-watch(
-  () => props.archives,
-  (newArchives) => {
-    if (newArchives && newArchives.length > 0) {
-      emit("filtered", filteredArchives.value);
-    }
-  },
-  { deep: true },
-);
-
-onMounted(() => {
-  nextTick(() => {
-    if (props.archives.length > 0) {
-      emit("filtered", filteredArchives.value);
-    }
-  });
+  }, 150);
 });
 
 onUnmounted(() => {
-  document.body.style.overflow = "";
-  document.body.style.paddingRight = "";
-  document.documentElement.style.overflow = "";
-  document.documentElement.style.paddingRight = "";
-  protectFloatingButtonPosition();
-});
-
-defineExpose({
-  searchQuery,
-  filteredArchives,
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = null;
+  }
+  if (props.searchQuery) {
+    addSearchHistory(props.searchQuery);
+  }
 });
 </script>
 
@@ -569,79 +416,6 @@ defineExpose({
   transition:
     background 0.3s ease,
     color 0.3s ease;
-}
-
-/* 搜索筛选区域过渡动画 - 首次加载优化 */
-.search-filter-enter-active {
-  will-change: opacity, transform;
-  transition:
-    opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.search-filter-leave-active {
-  will-change: opacity, transform;
-  transition:
-    opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.search-filter-enter-from {
-  opacity: 0;
-  transform: translateY(-15px);
-}
-
-.search-filter-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-/* 搜索图标动画 - 微妙效果 */
-.search-icon {
-  transition:
-    opacity 0.2s ease-out 0.1s,
-    transform 0.2s ease-out 0.1s;
-}
-
-/* 搜索输入框动画 - 微妙效果 */
-.search-input {
-  transition:
-    opacity 0.2s ease-out 0.15s,
-    transform 0.2s ease-out 0.15s;
-}
-
-/* 筛选区域动画 - 微妙效果 */
-.filter-section {
-  transition:
-    opacity 0.2s ease-out 0.2s,
-    transform 0.2s ease-out 0.2s;
-}
-
-/* 筛选项目动画 - 微妙效果 */
-.filter-item {
-  transition:
-    opacity 0.15s ease-out 0.25s,
-    transform 0.15s ease-out 0.25s;
-}
-
-.filter-item:nth-child(3) {
-  animation-delay: 0.7s;
-}
-
-.filter-item:nth-child(4) {
-  animation-delay: 0.8s;
-}
-
-@keyframes itemFadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* 搜索输入框焦点动画 */

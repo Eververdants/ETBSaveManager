@@ -3,7 +3,7 @@ import storage from "./storageService";
 import type { UpdateInfo, UpdateSourceConfig } from "../types";
 
 // Version information
-const CURRENT_VERSION = "3.1.0";
+const CURRENT_VERSION = "3.2.0";
 
 // Simplified update status
 export const UpdateStatus = {
@@ -93,7 +93,7 @@ class UpdateService {
 
       const response = await fetch(apiUrl);
       if (!response.ok) {
-        throw new Error("无法获取版本信息");
+        throw new Error(`无法获取版本信息 (HTTP ${response.status})`);
       }
 
       const data = await response.json();

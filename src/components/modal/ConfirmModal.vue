@@ -9,7 +9,7 @@
       :aria-label="title"
       @click="handleOverlayClick"
     >
-      <div class="modal-container" v-squircle="24" @click.stop>
+      <div class="modal-container" v-squircle="52" @click.stop>
         <div class="modal-header">
           <h3 class="modal-title">{{ displayTitle }}</h3>
           <button class="modal-close" :aria-label="t('common.close')" @click="handleCancel">

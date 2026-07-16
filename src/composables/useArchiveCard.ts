@@ -18,7 +18,19 @@ interface CardActions {
   handleCardClick: () => void;
 }
 
+/** Aggregated display data from archive — single computed reduces reactive dependency tracking */
+interface CardComputedData {
+  isVisible: boolean | undefined;
+  currentLevelName: string;
+  backgroundImage: string;
+  archiveDifficultyText: string;
+  actualDifficultyText: string;
+  archiveDifficultyClass: string;
+  actualDifficultyClass: string;
+}
+
 const textWidthCache = new Map<string, number>();
+const MAX_CACHE_SIZE = 100;
 
 let isInitialLoad = ref(true);
 
@@ -42,6 +54,10 @@ const getTextWidth = (() => {
     }
     const width = Math.ceil(ctx!.measureText(text).width);
     textWidthCache.set(text, width);
+    if (textWidthCache.size > MAX_CACHE_SIZE) {
+      const firstKey = textWidthCache.keys().next().value;
+      if (firstKey) textWidthCache.delete(firstKey);
+    }
     return width;
   };
 })();
@@ -147,13 +163,7 @@ export function useArchiveCard(
   hasEntered: Ref<boolean>;
   localVisible: Ref<boolean | undefined>;
   isAnimating: Ref<boolean>;
-  isVisible: ComputedRef<boolean | undefined>;
-  currentLevelName: ComputedRef<string>;
-  backgroundImage: ComputedRef<string>;
-  archiveDifficultyText: ComputedRef<string>;
-  actualDifficultyText: ComputedRef<string>;
-  archiveDifficultyClass: ComputedRef<string>;
-  actualDifficultyClass: ComputedRef<string>;
+  cardData: ComputedRef<CardComputedData | null>;
   tagStyle: (shortText: string, prefix: string) => CardTagStyle;
   toggleVisibility: () => void;
   editArchive: () => void;
@@ -165,29 +175,26 @@ export function useArchiveCard(
   const { toggleVisibility, editArchive, deleteArchive, handleCardClick } = useArchiveCardActions(archive, emit);
   const { hasEntered } = useArchiveCardEntryAnimation(index);
 
-  const isVisible = computed((): boolean | undefined => archive.value?.isVisible);
-  const currentLevelName = computed((): string => translations.getLevelName(archive.value?.currentLevel ?? ""));
-  const backgroundImage = computed((): string => `/images/ETB/${archive.value?.currentLevel}.jpg`);
-  const archiveDifficultyText = computed((): string =>
-    translations.getDifficultyText(archive.value?.archiveDifficulty ?? ""),
-  );
-  const actualDifficultyText = computed((): string =>
-    translations.getDifficultyText(archive.value?.actualDifficulty ?? ""),
-  );
-  const archiveDifficultyClass = computed((): string => `difficulty-${archive.value?.archiveDifficulty}`);
-  const actualDifficultyClass = computed((): string => `difficulty-${archive.value?.actualDifficulty}`);
+  // Aggregate computed: reads archive.value ONCE, all transformations in one pass
+  const cardData = computed((): CardComputedData | null => {
+    const a = archive.value;
+    if (!a) return null;
+    return {
+      isVisible: a.isVisible,
+      currentLevelName: translations.getLevelName(a.currentLevel ?? ""),
+      backgroundImage: `/images/ETB/${a.currentLevel}.webp`,
+      archiveDifficultyText: translations.getDifficultyText(a.archiveDifficulty ?? ""),
+      actualDifficultyText: translations.getDifficultyText(a.actualDifficulty ?? ""),
+      archiveDifficultyClass: `difficulty-${a.archiveDifficulty}`,
+      actualDifficultyClass: `difficulty-${a.actualDifficulty}`,
+    };
+  });
 
   return {
     hasEntered,
     localVisible,
     isAnimating,
-    isVisible,
-    currentLevelName,
-    backgroundImage,
-    archiveDifficultyText,
-    actualDifficultyText,
-    archiveDifficultyClass,
-    actualDifficultyClass,
+    cardData,
     tagStyle,
     toggleVisibility,
     editArchive,

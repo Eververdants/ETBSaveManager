@@ -50,6 +50,26 @@ try {
     console.log(`⏭️ Cargo.toml: 已是 ${version}`);
   }
 
+  const updateServicePath = join(rootDir, "src", "services", "updateService.ts");
+  const updateServiceSrc = readFileSync(updateServicePath, "utf-8");
+  const currentVersionRegex = /^(const CURRENT_VERSION = ")[^"]*(";)$/m;
+  const currentVersionMatch = updateServiceSrc.match(currentVersionRegex);
+
+  if (!currentVersionMatch) {
+    throw new Error("updateService.ts 未找到 CURRENT_VERSION 字段");
+  }
+
+  const oldTsVersion = currentVersionMatch[0].match(/"([^"]+)"/)?.[1] ?? null;
+
+  if (oldTsVersion !== version) {
+    const nextUpdateService = updateServiceSrc.replace(currentVersionRegex, `$1${version}$2`);
+    writeFileSync(updateServicePath, nextUpdateService, "utf-8");
+    changedCount += 1;
+    console.log(`✅ updateService.ts: ${oldTsVersion} -> ${version}`);
+  } else {
+    console.log(`⏭️ updateService.ts: 已是 ${version}`);
+  }
+
   if (changedCount === 0) {
     console.log("✨ 版本号已同步，无需写入");
   } else {

@@ -1,4 +1,4 @@
-import { ref, computed, type Ref, type ComputedRef } from "vue";
+import { ref, shallowRef, computed, type Ref, type ComputedRef } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useI18n } from "vue-i18n";
 import { useToast } from "./useToast";
@@ -56,6 +56,15 @@ export interface IncrementalLoadState {
 const BATCH_SIZE = 50;
 const IMMEDIATE_COUNT = 30; // First N archives get full details before UI shows
 
+/** Shallow array equality — returns true when elements have same IDs */
+function arraysEqualById(a: ArchiveData[], b: ArchiveData[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].id !== b[i].id) return false;
+  }
+  return true;
+}
+
 /**
  * Archive data management composable
  * Supports two-phase incremental loading for fast initial display:
@@ -81,7 +90,7 @@ export function useArchiveData(): {
   const { t } = useI18n({ useScope: "global" });
   const toast = useToast();
   const archives = ref<ArchiveData[]>([]);
-  const displayArchives = ref<ArchiveData[]>([]);
+  const displayArchives = shallowRef<ArchiveData[]>([]);
   const visibleSaves = ref(new Set<number>());
 
   const loading = ref(false);
@@ -359,7 +368,10 @@ export function useArchiveData(): {
     try {
       const merged = await loadMergedArchives();
       archives.value = merged;
-      displayArchives.value = [...merged];
+      // 只有当内容发生变化时才触发 displayArchives 更新
+      if (!arraysEqualById(displayArchives.value, merged)) {
+        displayArchives.value = [...merged];
+      }
 
       // Background for remaining (N+1 … end)
       const remaining = archives.value.filter((a) => a.currentLevel === "Level0").length;
@@ -377,7 +389,10 @@ export function useArchiveData(): {
     try {
       const merged = await loadMergedArchives();
       archives.value = merged;
-      displayArchives.value = [...merged];
+      // 只有当内容发生变化时才触发 displayArchives 更新
+      if (!arraysEqualById(displayArchives.value, merged)) {
+        displayArchives.value = [...merged];
+      }
 
       const remaining = archives.value.filter((a) => a.currentLevel === "Level0").length;
       if (remaining > 0) requestIdleCallback(() => startDetailLoading(), { timeout: 2000 });
@@ -401,7 +416,10 @@ export function useArchiveData(): {
 
     const displayIndex = displayArchives.value.findIndex((a) => a.id === archiveId);
     if (displayIndex > -1) {
-      displayArchives.value[displayIndex].isVisible = isVisible;
+      // Immutable update for shallowRef compatibility — replace the entire array
+      const updated = [...displayArchives.value];
+      updated[displayIndex] = { ...updated[displayIndex], isVisible };
+      displayArchives.value = updated;
     }
   };
 

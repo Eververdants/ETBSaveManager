@@ -1,17 +1,18 @@
 <template>
   <div class="step-content" data-step="2">
-    <div class="config-grid">
-      <!-- Archive name - full width row -->
-      <div class="config-card full-width">
-        <h3 class="form-section-title">
+    <div class="basic-sections">
+      <!-- 📋 Archive name -->
+      <div class="settings-section">
+        <h3 class="section-title">
+          <font-awesome-icon :icon="['fas', 'info-circle']" />
           {{ $t("createArchive.archiveName") }}
         </h3>
-        <div class="form-group">
-          <label class="form-label">{{ $t("createArchive.archiveName") }}</label>
+        <div class="settings-card">
+          <label class="card-label">{{ $t("createArchive.archiveName") }}</label>
           <input
             :value="archiveName"
             type="text"
-            class="form-input"
+            class="settings-input"
             :placeholder="$t('createArchive.archiveNamePlaceholder')"
             maxlength="50"
             @input="$emit('update:archiveName', $event.target.value)"
@@ -25,48 +26,48 @@
         </div>
       </div>
 
-      <!-- Archive difficulty -->
-      <div class="config-card">
-        <h3 class="form-section-title">{{ $t("createArchive.difficulty") }}</h3>
-        <div class="difficulty-grid">
-          <div
-            v-for="difficulty in difficultyLevels"
-            :key="difficulty.value"
-            class="difficulty-option"
-            :class="{
-              selected: selectedDifficulty === difficulty.value,
-              disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal',
-            }"
-            @click="$emit('select-difficulty', difficulty.value)"
-          >
-            <div class="difficulty-icon">
-              <font-awesome-icon :icon="difficulty.icon" />
-            </div>
-            <span class="difficulty-label">{{ getDifficultyText(difficulty.value) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Actual difficulty -->
-      <div class="config-card">
-        <h3 class="form-section-title">
-          {{ $t("createArchive.actualDifficulty") }}
+      <!-- 🎮 Difficulty Settings -->
+      <div class="settings-section">
+        <h3 class="section-title">
+          <font-awesome-icon :icon="['fas', 'gauge-high']" />
+          {{ $t("createArchive.difficulty") }}
         </h3>
-        <div class="difficulty-grid">
-          <div
-            v-for="difficulty in difficultyLevels"
-            :key="`actual-${difficulty.value}`"
-            class="difficulty-option"
-            :class="{
-              selected: selectedActualDifficulty === difficulty.value,
-              disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal',
-            }"
-            @click="$emit('select-actual-difficulty', difficulty.value)"
-          >
-            <div class="difficulty-icon">
-              <font-awesome-icon :icon="difficulty.icon" />
+        <div class="difficulty-row">
+          <div class="settings-card">
+            <label class="card-label">{{ $t("createArchive.difficulty") }}</label>
+            <div class="diff-grid">
+              <div
+                v-for="difficulty in difficultyLevels"
+                :key="difficulty.value"
+                class="diff-option"
+                :class="{
+                  selected: selectedDifficulty === difficulty.value,
+                  disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal',
+                }"
+                @click="$emit('select-difficulty', difficulty.value)"
+              >
+                <font-awesome-icon :icon="difficulty.icon" class="diff-icon" />
+                <span class="diff-text">{{ getDifficultyText(difficulty.value) }}</span>
+              </div>
             </div>
-            <span class="difficulty-label">{{ getDifficultyText(difficulty.value) }}</span>
+          </div>
+          <div class="settings-card">
+            <label class="card-label">{{ $t("createArchive.actualDifficulty") }}</label>
+            <div class="diff-grid">
+              <div
+                v-for="difficulty in difficultyLevels"
+                :key="`actual-${difficulty.value}`"
+                class="diff-option"
+                :class="{
+                  selected: selectedActualDifficulty === difficulty.value,
+                  disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal',
+                }"
+                @click="$emit('select-actual-difficulty', difficulty.value)"
+              >
+                <font-awesome-icon :icon="difficulty.icon" class="diff-icon" />
+                <span class="diff-text">{{ getDifficultyText(difficulty.value) }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -104,122 +105,133 @@ const getDifficultyText = (difficultyKey) => {
 </script>
 
 <style scoped>
-/* Config grid */
-.config-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+/* ==========================================
+ * 🍎 基础设置 — 同心圆角三段式布局
+ *    Card: 36px(lg) → Inner: 28px(md) → 8px 递减
+ * ========================================== */
+
+/* 外层容器 */
+.basic-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  max-width: 780px;
+  margin: 0 auto;
   padding: 4px;
 }
 
-.config-card {
-  background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-  border-radius: var(--radius-card);
-  padding: 24px;
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  position: relative;
-  transition: all 0.3s ease;
+/* ── 区域分组 ── */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.config-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 20px;
-  right: 20px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  pointer-events: none;
-}
-
-.config-card:hover {
-  box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.1),
-    0 2px 6px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.config-card.full-width {
-  grid-column: 1 / -1;
-}
-
-.form-section-title {
+/* 区域标题（带 accent 竖条装饰） */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 18px 0;
+  margin: 0;
+  padding-left: 14px;
+  position: relative;
   letter-spacing: -0.02em;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
-.form-section-title::before {
+.section-title::before {
   content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
   width: 4px;
-  height: 16px;
-  background: linear-gradient(180deg, var(--accent-color), rgba(var(--accent-color-rgb), 0.5));
+  height: 18px;
+  background: var(--accent-color);
   border-radius: var(--radius-xs);
 }
 
-.form-group {
-  margin-bottom: 16px;
+.section-title svg {
+  color: var(--accent-color);
+  font-size: 16px;
 }
 
-.form-group:last-child {
-  margin-bottom: 0;
+/* ── 设置卡片 — 36px (lg) 大圆角连续曲率 ── */
+.settings-card {
+  background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  transition: all var(--transition-normal) var(--ease-default);
 }
 
-.form-label {
+/* 顶部微光描边 */
+.settings-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  pointer-events: none;
+}
+
+.settings-card:hover {
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: var(--shadow-card-hover, 0 8px 32px rgba(0,0,0,0.12));
+}
+
+/* 卡片标签 */
+.card-label {
   display: block;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 14px;
 }
 
-.form-input {
+/* ── 输入框 — 28px (md) 同心第二层 ── */
+.settings-input {
   width: 100%;
   padding: 14px 18px;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
   background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   color: var(--text-primary);
   font-size: 14px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.form-input:hover {
-  border-color: rgba(var(--accent-color-rgb), 0.3);
-}
-
-.form-input:focus {
   outline: none;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  transition: all var(--transition-normal) var(--ease-default);
+}
+
+.settings-input:hover {
+  border-color: var(--accent-color);
+}
+
+.settings-input:focus {
   border-color: var(--accent-color);
   box-shadow:
-    0 0 0 3px rgba(var(--accent-color-rgb), 0.15),
-    inset 0 1px 2px rgba(0, 0, 0, 0.05);
-  background: var(--bg-tertiary);
+    0 0 0 3px color-mix(in srgb, var(--accent-color) 15%, transparent),
+    inset 0 1px 2px rgba(0,0,0,0.05);
 }
 
-.form-input::placeholder {
+.settings-input::placeholder {
   color: var(--text-tertiary);
   opacity: 0.7;
 }
 
-/* Error message */
+/* ── 错误消息 ── */
 .error-message {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 10px;
   padding: 8px 12px;
   background: rgba(255, 59, 48, 0.1);
   border-radius: var(--radius-xs);
@@ -238,95 +250,120 @@ const getDifficultyText = (difficultyKey) => {
   transform: translateY(-10px);
 }
 
-/* Difficulty selection */
-.difficulty-grid {
+/* ── 难度双列布局 ── */
+.difficulty-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
-.difficulty-option {
+/* ── 难度网格 4 列 ── */
+.diff-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+/* ── 难度选项 — 28px (md) 同心第二层 ── */
+.diff-option {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 18px 12px;
+  gap: 8px;
+  padding: 16px 8px;
   border-radius: var(--radius-md);
   background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-  border: 2px solid rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255,255,255,0.05);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-normal) var(--ease-default);
   position: relative;
   overflow: hidden;
+  user-select: none;
 }
 
-.difficulty-option::before {
+.diff-option::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(var(--accent-color-rgb), 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle at center, color-mix(in srgb, var(--accent-color) 10%, transparent) 0%, transparent 70%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
-.difficulty-option:hover:not(.disabled) {
+.diff-option:hover:not(.disabled) {
   transform: translateY(-2px);
-  border-color: rgba(var(--accent-color-rgb), 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.difficulty-option:hover:not(.disabled)::before {
+.diff-option:hover:not(.disabled)::before {
   opacity: 1;
 }
 
-.difficulty-option.selected {
+.diff-option.selected {
   border-color: var(--accent-color);
-  background: linear-gradient(145deg, rgba(var(--accent-color-rgb), 0.15) 0%, rgba(var(--accent-color-rgb), 0.08) 100%);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent-color) 15%, transparent) 0%, color-mix(in srgb, var(--accent-color) 8%, transparent) 100%);
   box-shadow:
-    0 0 0 2px rgba(var(--accent-color-rgb), 0.2),
-    0 4px 12px rgba(var(--accent-color-rgb), 0.15);
+    0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent),
+    0 4px 12px color-mix(in srgb, var(--accent-color) 15%, transparent);
 }
 
-.difficulty-option.disabled {
+.diff-option.disabled {
   opacity: 0.4;
   cursor: not-allowed;
   filter: grayscale(0.5);
 }
 
-.difficulty-icon {
-  font-size: 26px;
+.diff-icon {
+  font-size: 24px;
   color: var(--text-secondary);
-  transition: all 0.25s ease;
+  transition: all var(--transition-normal) var(--ease-default);
 }
 
-.difficulty-option:hover:not(.disabled) .difficulty-icon {
+.diff-option:hover:not(.disabled) .diff-icon {
   transform: scale(1.1);
 }
 
-.difficulty-option.selected .difficulty-icon {
+.diff-option.selected .diff-icon {
   color: var(--accent-color);
   transform: scale(1.1);
 }
 
-.difficulty-label {
+.diff-text {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
   letter-spacing: 0.02em;
-  transition: color 0.2s ease;
+  transition: color var(--transition-fast) var(--ease-default);
 }
 
-.difficulty-option.selected .difficulty-label {
+.diff-option.selected .diff-text {
   color: var(--accent-color);
 }
 
+/* ── 响应式 ── */
 @media (max-width: 768px) {
-  .config-grid {
+  .basic-sections {
+    max-width: 100%;
+    gap: 24px;
+  }
+
+  .difficulty-row {
     grid-template-columns: 1fr;
   }
 
-  .difficulty-grid {
+  .diff-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .diff-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .settings-card {
+    padding: 20px;
   }
 }
 </style>

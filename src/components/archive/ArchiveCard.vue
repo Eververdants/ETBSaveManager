@@ -1,7 +1,7 @@
 <template>
   <div
     class="archive-card"
-    v-squircle="20"
+    v-squircle="36"
     :class="{
       'archive-hidden': !localVisible,
       'visibility-transitioning': isAnimating,
@@ -23,7 +23,7 @@
 
     <!-- Upper background area -->
     <div class="card-background">
-      <LazyImage :src="backgroundImage" :alt="currentLevelName" image-class="background-image" />
+      <LazyImage :src="cardData?.backgroundImage ?? ''" :alt="cardData?.currentLevelName ?? ''" image-class="background-image" />
       <div class="background-overlay"></div>
 
       <!-- Hidden status badge -->
@@ -51,19 +51,19 @@
         <div class="game-mode-info">
           <span
             class="difficulty-tag"
-            :class="archiveDifficultyClass"
-            :style="tagStyle(archiveDifficultyText, t('archiveCard.archiveDifficulty'))"
+            :class="cardData?.archiveDifficultyClass ?? ''"
+            :style="archiveDifficultyTagStyle"
           >
-            <span class="tag-short">{{ archiveDifficultyText }}</span>
-            <span class="tag-full">{{ t("archiveCard.archiveDifficulty") }}：{{ archiveDifficultyText }}</span>
+            <span class="tag-short">{{ cardData?.archiveDifficultyText ?? '' }}</span>
+            <span class="tag-full">{{ t("archiveCard.archiveDifficulty") }}：{{ cardData?.archiveDifficultyText ?? '' }}</span>
           </span>
           <span
             class="difficulty-tag"
-            :class="actualDifficultyClass"
-            :style="tagStyle(actualDifficultyText, t('archiveCard.actualDifficulty'))"
+            :class="cardData?.actualDifficultyClass ?? ''"
+            :style="actualDifficultyTagStyle"
           >
-            <span class="tag-short">{{ actualDifficultyText }}</span>
-            <span class="tag-full">{{ t("archiveCard.actualDifficulty") }}：{{ actualDifficultyText }}</span>
+            <span class="tag-short">{{ cardData?.actualDifficultyText ?? '' }}</span>
+            <span class="tag-full">{{ t("archiveCard.actualDifficulty") }}：{{ cardData?.actualDifficultyText ?? '' }}</span>
           </span>
         </div>
       </div>
@@ -79,10 +79,10 @@
         <button
           class="action-btn copy"
           type="button"
-          :aria-label="isVisible ? '隐藏存档' : '显示存档'"
+          :aria-label="cardData?.isVisible ? '隐藏存档' : '显示存档'"
           @click.stop="toggleVisibility"
         >
-          <font-awesome-icon :icon="isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" aria-hidden="true" />
+          <font-awesome-icon :icon="cardData?.isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" aria-hidden="true" />
         </button>
         <button class="action-btn delete" type="button" aria-label="删除存档" @click.stop="deleteArchive">
           <font-awesome-icon icon="fa-solid fa-trash" aria-hidden="true" />
@@ -157,6 +157,8 @@ const cancelRename = () => {
 };
 
 const sanitize = (html) => {
+  // Fast return if no mark tags present (most common case)
+  if (!html || !html.includes('<mark')) return html;
   // Strip dangerous attributes from <mark> tags, keep only safe class attribute
   html = html.replace(/<(\/?)mark\b([^>]*)>/gi, (match, isClosing, attrs) => {
     if (isClosing) return "</mark>";
@@ -191,13 +193,7 @@ const {
   hasEntered,
   localVisible,
   isAnimating,
-  isVisible,
-  currentLevelName,
-  backgroundImage,
-  archiveDifficultyText,
-  actualDifficultyText,
-  archiveDifficultyClass,
-  actualDifficultyClass,
+  cardData,
   tagStyle,
   toggleVisibility,
   editArchive,
@@ -205,14 +201,22 @@ const {
   handleCardClick: baseHandleCardClick,
 } = useArchiveCard(archiveRef, indexRef, emit, translations);
 
+// Cache tagStyle results to avoid creating new style objects on every render
+const archiveDifficultyTagStyle = computed(() =>
+  tagStyle(cardData.value?.archiveDifficultyText ?? "", t("archiveCard.archiveDifficulty")),
+);
+const actualDifficultyTagStyle = computed(() =>
+  tagStyle(cardData.value?.actualDifficultyText ?? "", t("archiveCard.actualDifficulty")),
+);
+
 const highlightedName = computed(() => {
   if (!props.searchQuery) return props.archive.name;
   return highlightMatch(props.archive.name, props.searchQuery);
 });
 
 const highlightedLevel = computed(() => {
-  if (!props.searchQuery) return currentLevelName.value;
-  return highlightMatch(currentLevelName.value, props.searchQuery);
+  if (!props.searchQuery) return cardData.value?.currentLevelName ?? "";
+  return highlightMatch(cardData.value?.currentLevelName ?? "", props.searchQuery);
 });
 
 const handleCardClick = () => {
@@ -276,33 +280,8 @@ const toggleSelection = () => {
   transition: none !important;
 }
 
-/* Shine sweep effect - activated only on hover */
-.archive-card::before {
-  content: "";
-  position: absolute;
-  inset: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.03) 50%, transparent 70%);
-  transform: rotate(45deg) translate(-100%, -100%);
-  pointer-events: none;
-  z-index: 10;
-  opacity: 0;
-}
-
-.archive-card:hover::before {
-  opacity: 1;
-  animation: shine-sweep 0.6s ease-out forwards;
-}
-
-@keyframes shine-sweep {
-  to {
-    transform: rotate(45deg) translate(100%, 100%);
-  }
-}
-
 .archive-card:hover {
-  transform: translateY(-4px) scale(1.01);
+  transform: translateY(-4px);
   box-shadow: var(--card-shadow-hover);
   z-index: 2;
 }
@@ -320,9 +299,7 @@ const toggleSelection = () => {
   height: 100%;
   filter: blur(1px);
   transform: scale(1.005);
-  transition:
-    filter 0.4s ease-in-out,
-    transform 0.4s ease-in-out;
+  transition: transform 0.3s ease;
 }
 
 .archive-card:hover .card-background :deep(.lazy-image-container) {
@@ -430,10 +407,9 @@ const toggleSelection = () => {
   width: var(--w-short, auto);
   transition:
     width 0.25s ease,
-    background 0.25s ease,
-    color 0.25s ease,
-    border-color 0.25s ease,
-    box-shadow 0.25s ease;
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .tag-short,
@@ -468,33 +444,29 @@ const toggleSelection = () => {
   opacity: 1;
 }
 
-/* Difficulty colors - shown on hover */
+/* Difficulty colors on hover */
 .archive-card:hover .difficulty-easy {
   background: rgba(52, 199, 89, 0.25);
   color: #34c759;
   border-color: rgba(52, 199, 89, 0.5);
-  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
 }
 
 .archive-card:hover .difficulty-normal {
   background: rgba(255, 149, 0, 0.25);
   color: #ff9500;
   border-color: rgba(255, 149, 0, 0.5);
-  box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
 }
 
 .archive-card:hover .difficulty-hard {
   background: rgba(255, 59, 48, 0.25);
   color: #ff3b30;
   border-color: rgba(255, 59, 48, 0.5);
-  box-shadow: 0 2px 8px rgba(255, 59, 48, 0.3);
 }
 
 .archive-card:hover .difficulty-nightmare {
   background: rgba(175, 82, 222, 0.25);
   color: #af52de;
   border-color: rgba(175, 82, 222, 0.5);
-  box-shadow: 0 2px 8px rgba(175, 82, 222, 0.3);
 }
 
 /* Lower info area */
@@ -554,33 +526,6 @@ const toggleSelection = () => {
   overflow: hidden;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-}
-
-/* Button shine effect - uses @keyframes to ensure re-trigger on each hover */
-.action-btn::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.action-btn:hover::after {
-  opacity: 1;
-  animation: btn-shine 0.5s ease-out forwards;
-}
-
-@keyframes btn-shine {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 200%;
-  }
 }
 
 .action-btn:hover {
@@ -785,26 +730,9 @@ const toggleSelection = () => {
   color: rgba(255, 200, 50, 0.85);
 }
 
-/* Visibility toggle transition animation */
-.visibility-transitioning {
-  transition: opacity 0.25s ease !important;
-}
-
-.visibility-transitioning .card-background :deep(.lazy-image-container) {
-  transition: filter 0.25s ease !important;
-}
-
-.visibility-transitioning .archive-name {
-  transition: color 0.25s ease !important;
-}
-
-.visibility-transitioning .card-info {
-  transition:
-    opacity 0.25s ease,
-    background-color 0.25s ease !important;
-}
-
-.visibility-transitioning .action-btn {
+/* Visibility toggle transition — consolidated on the card element */
+.visibility-transitioning,
+.visibility-transitioning * {
   transition: opacity 0.25s ease !important;
 }
 

@@ -1,6 +1,6 @@
 /**
  * ============================================
- * 🍎 等距圆角（Squircle / Continuous Corner）
+ * 🍎 iOS 26 风格等距圆角（Squircle / Continuous Corner）
  * ============================================
  *
  * 纯 CSS 方案：使用原生 corner-shape: squircle（Chrome 139+）
@@ -8,7 +8,9 @@
  *
  * 核心特性：
  * - 连续曲率：corner-shape: squircle 使圆角过渡更自然、更平滑
- * - 同心嵌套：外层大圆角 → 内层逐层递减，视觉和谐统一
+ * - 同心等距：8px 均匀递减 (52→44→36→28→20→12)
+ * - 大圆角风格：iOS 26 风格，整体大幅提升
+ * - 胶囊风格：按钮/搜索框使用 pill (9999px)
  * - 自动降级：不支持 corner-shape 的浏览器回退为标准 border-radius
  *
  * ─── 全局注入 ──────────────────────────
@@ -16,13 +18,13 @@
  *                               的元素自动获得连续曲率圆角
  *
  * ─── 指令用法 ──────────────────────────
- *   <div v-squircle="24">   → 24px 等距连续圆角
- *   <div v-squircle>        → 预设 24px
+ *   <div v-squircle="44">   → 44px 等距连续圆角（推荐容器用）
+ *   <div v-squircle>        → 预设 44px
  *   <div v-squircle:pill>   → 胶囊圆角 (9999px)
  *   <div v-squircle:circle> → 圆形 (50%)
  *
  * ─── CSS 类名用法 ──────────────────────
- *   <div class="squircle-24">   → 24px 圆角 + corner-shape
+ *   <div class="squircle-44">   → 44px 圆角 + corner-shape
  *   <div class="squircle-pill"> → 胶囊
  *   <div class="squircle-circle"> → 圆形
  */
@@ -32,14 +34,14 @@
 const STYLE_ID = "squircle-styles";
 const GLOBAL_STYLE_ID = "squircle-global";
 
-/** 预设半径映射 */
+/** 预设半径映射（同心等距系统：52→44→36→28→20→12，8px 均匀递减） */
 const RADIUS_MAP: Record<string, string> = {
-  xs: "10px",
-  sm: "14px",
-  md: "18px",
-  lg: "22px",
-  xl: "28px",
-  "2xl": "36px",
+  xs: "12px",
+  sm: "20px",
+  md: "28px",
+  lg: "36px",
+  xl: "44px",
+  "2xl": "52px",
   pill: "9999px",
   circle: "50%",
 };
@@ -62,26 +64,23 @@ function injectStyles(): void {
     /* ── 指令模式 ── */
     [data-squircle] { corner-shape: squircle; }
 
-    /* 各尺寸圆角 */
-    [data-squircle="xs"]   { border-radius: 10px; }
-    [data-squircle="sm"]   { border-radius: 14px; }
-    [data-squircle="md"]   { border-radius: 18px; }
-    [data-squircle="lg"]   { border-radius: 22px; }
-    [data-squircle="xl"]   { border-radius: 28px; }
-    [data-squircle="2xl"]  { border-radius: 36px; }
+    /* 各尺寸圆角（同心等距系统：8px 均匀递减） */
+    [data-squircle="xs"]   { border-radius: 12px; }
+    [data-squircle="sm"]   { border-radius: 20px; }
+    [data-squircle="md"]   { border-radius: 28px; }
+    [data-squircle="lg"]   { border-radius: 36px; }
+    [data-squircle="xl"]   { border-radius: 44px; }
+    [data-squircle="2xl"]  { border-radius: 52px; }
     [data-squircle="pill"] { border-radius: 9999px; }
     [data-squircle="circle"] { border-radius: 50%; }
 
-    /* 数值型圆角 */
-    [data-squircle="14"] { border-radius: 14px; }
-    [data-squircle="16"] { border-radius: 16px; }
-    [data-squircle="18"] { border-radius: 18px; }
+    /* 数值型圆角（匹配 Token 系统） */
+    [data-squircle="12"] { border-radius: 12px; }
     [data-squircle="20"] { border-radius: 20px; }
-    [data-squircle="22"] { border-radius: 22px; }
-    [data-squircle="24"] { border-radius: 24px; }
     [data-squircle="28"] { border-radius: 28px; }
-    [data-squircle="32"] { border-radius: 32px; }
     [data-squircle="36"] { border-radius: 36px; }
+    [data-squircle="44"] { border-radius: 44px; }
+    [data-squircle="52"] { border-radius: 52px; }
   `;
   document.head.appendChild(style);
 }
@@ -97,7 +96,7 @@ function injectGlobalStyles(): void {
   style.id = GLOBAL_STYLE_ID;
   style.textContent = `
     /* ============================================
-     * 🌐 全局连续曲率圆角注入
+     * 🌐 全局连续曲率圆角注入（iOS 26 风格大圆角）
      * 对所有使用 border-radius 的元素应用 squircle
      * 只影响有 border-radius 的元素，直角元素不受影响
      * ============================================ */
@@ -119,7 +118,8 @@ function injectGlobalStyles(): void {
     .squircle-enabled .tooltip,
     .squircle-enabled .popover,
     .squircle-enabled .sidebar,
-    .squircle-enabled [class*="squircle-"] {
+    .squircle-enabled [class*="squircle-"],
+    .squircle-enabled .archive-card {
       corner-shape: squircle;
     }
 
@@ -191,8 +191,8 @@ export const vSquircle = {
       return;
     }
 
-    // 处理 v-squircle="24" / v-squircle="md" / v-squircle 多种形式
-    const val = binding.value ?? 24;
+    // 处理 v-squircle="44" / v-squircle="md" / v-squircle 多种形式
+    const val = binding.value ?? 44;
     el.setAttribute("data-squircle", String(val));
   },
   updated(el: HTMLElement, binding: { value?: number | string }) {

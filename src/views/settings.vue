@@ -1,5 +1,5 @@
 <template>
-  <div class="settings-container">
+  <div ref="settingsContainer" class="settings-container">
     <!-- Appearance and language settings group -->
     <div class="setting-group">
       <transition name="text-swift" mode="out-in">
@@ -354,10 +354,12 @@ import CustomDropdown from "../components/ui/CustomDropdown.vue";
 import ThemeSelector from "../components/theme/ThemeSelector.vue";
 import { useI18n } from "vue-i18n";
 import { invoke } from "@tauri-apps/api/core";
-import themeManager from "../styles/theme-config.js";
-import { themeStorage } from "../services/themeStorage.js";
+import { open } from "@tauri-apps/plugin-dialog";
+import { writeTextFile, readTextFile } from "@tauri-apps/plugin-fs";
+import DOMPurify from "dompurify";
 import storage from "../services/storageService";
 import { notify } from "../services/notificationService";
+import { useAppStore } from "../stores/appStore";
 import { APP_VERSION } from "../config/version";
 
 export default {
@@ -368,23 +370,24 @@ export default {
   },
   setup() {
     const { t, locale } = useI18n({ useScope: "global" });
-    return { t, locale };
+    const appStore = useAppStore();
+    return { t, locale, appStore };
   },
   data() {
     return {
       currentTheme: storage.getItem("theme", "light"),
       currentLanguage: storage.getItem("language", "zh-CN"),
-      performanceMonitorEnabled: storage.getItem("performanceMonitor", true) !== false, // Enabled by default
+      performanceMonitorEnabled: storage.getItem("performanceMonitor") ?? true,
       developerModeEnabled: storage.getItem("developerMode", false) === true, // Developer mode state
       developerOptionsEnabled: storage.getItem("developerMode", false) === true, // Whether developer options are visible
       logMenuEnabled: storage.getItem("logMenuEnabled", false) === true, // Log feature toggle state
       gpuAccelerationDisabled: storage.getItem("gpuAccelerationDisabled", false) === true, // GPU acceleration toggle state
+      testArchiveEnabled: storage.getItem("testArchiveEnabled", false) === true, // Test archive display toggle state
       checkingUpdate: false,
       appVersion: APP_VERSION,
       activeDropdown: null,
       updateInfo: null,
       updateStatus: UpdateStatus.IDLE,
-      UpdateStatus: UpdateStatus, // Expose UpdateStatus for template use
       isProcessing: false,
       // Save file tools related
       parseDragOver: false,
@@ -410,7 +413,10 @@ export default {
     }
     // Remove event listeners
     document.removeEventListener("click", this.handleClickOutside);
-    window.removeEventListener("developer-mode-changed", this.handleDeveloperModeChanged);
+    // Stop store watcher
+    if (typeof this._unwatchDeveloperMode === "function") {
+      this._unwatchDeveloperMode();
+    }
   },
   async mounted() {
     // Apply saved theme
@@ -425,8 +431,20 @@ export default {
     // Add click outside event listener to close dropdown
     document.addEventListener("click", this.handleClickOutside);
 
-    // Listen for developer mode change events
-    window.addEventListener("developer-mode-changed", this.handleDeveloperModeChanged);
+    // Watch store for developer mode changes (replaces window.dispatchEvent/EventListener)
+    this._unwatchDeveloperMode = this.$watch(
+      () => this.appStore.developerModeEnabled,
+      (enabled) => {
+        this.developerModeEnabled = enabled;
+        this.developerOptionsEnabled = enabled;
+        if (!enabled) {
+          // Sync sub-setting states from store (they were reset by store action)
+          this.logMenuEnabled = this.appStore.logMenuEnabled;
+          this.performanceMonitorEnabled = this.appStore.performanceMonitorEnabled;
+          this.testArchiveEnabled = this.appStore.testArchiveEnabled;
+        }
+      },
+    );
 
     // Initialize GPU acceleration state
     this.initializeGpuAccelerationStatus();
@@ -459,7 +477,8 @@ export default {
       // Process lists
       html = html.replace(/^\* (.*$)/gm, "<li>$1</li>");
       html = html.replace(/^- (.*$)/gm, "<li>$1</li>");
-      html = html.replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>");
+      // Wrap consecutive <li> groups in <ul> (support multiple separate lists)
+      html = html.replace(/(?:<li>[\s\S]*?<\/li>\n*)+/g, '<ul>\n$&\n</ul>');
 
       // Process bold and italic
       html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
@@ -479,7 +498,8 @@ export default {
         html = "<p>" + html + "</p>";
       }
 
-      return html;
+      // Sanitize HTML output to prevent XSS (DOMPurify strips script tags, event handlers, etc.)
+      return DOMPurify.sanitize(html);
     },
 
     handleDropdownOpen(dropdown) {
@@ -519,8 +539,8 @@ export default {
         }
         storage.setItem("language", lang);
 
-        // Dispatch custom event to notify other components
-        window.dispatchEvent(new CustomEvent("language-changed", { detail: { lang } }));
+        // Update store — components react via watchers
+        this.appStore.setLanguage(lang);
 
         // Update window title to app.name from language file
         await this.updateWindowTitle();
@@ -578,19 +598,19 @@ export default {
           });
         } else {
           this.updateStatus = UpdateStatus.NOT_AVAILABLE;
-          notify.success(this.$t("settings.latestVersion"));
+          notify.success(this.t("settings.latestVersion"));
         }
       } catch (error) {
         this.updateStatus = UpdateStatus.ERROR;
 
-        let errorText = this.$t("settings.updateFailed");
+        let errorText = this.t("settings.updateFailed");
         if (error.message?.includes("rate limit") || error.message?.includes("429")) {
-          errorText = this.$t("settings.rateLimitError");
-        } else if (error.type === this.t("settings.errorType.networkConnection")) {
-          errorText = this.$t("settings.networkError");
-        } else if (error.type === this.t("settings.errorType.resourceNotFound")) {
+          errorText = this.t("settings.rateLimitError");
+        } else if (error.type === "Network Connection") {
+          errorText = this.t("settings.networkError");
+        } else if (error.type === "Resource Not Found") {
           errorText = this.t("settings.resourceNotFound");
-        } else if (error.type === this.t("settings.errorType.accessDenied")) {
+        } else if (error.type === "Access Restricted") {
           errorText = this.t("settings.accessDenied");
         }
 
@@ -601,70 +621,32 @@ export default {
       }
     },
     handlePerformanceMonitorToggle() {
-      storage.setItem("performanceMonitor", this.performanceMonitorEnabled);
-      // Dispatch custom event to notify App.vue to update state
-      window.dispatchEvent(
-        new CustomEvent("performance-monitor-toggle", {
-          detail: { enabled: this.performanceMonitorEnabled },
-        }),
-      );
+      this.appStore.setPerformanceMonitor(this.performanceMonitorEnabled);
     },
 
     handleDeveloperModeToggle() {
-      storage.setItem("developerMode", this.developerModeEnabled);
+      this.appStore.setDeveloperMode(this.developerModeEnabled);
       this.developerOptionsEnabled = this.developerModeEnabled;
+    },
 
-      // Dispatch custom event to notify other components
-      window.dispatchEvent(
-        new CustomEvent("developer-mode-changed", {
-          detail: { enabled: this.developerModeEnabled },
-        }),
-      );
-
-      // If developer mode is turned off, also disable all related settings
-      if (!this.developerModeEnabled) {
-        // Disable logging feature
-        this.logMenuEnabled = false;
-        storage.setItem("logMenuEnabled", "false");
-        window.dispatchEvent(
-          new CustomEvent("log-menu-toggle", {
-            detail: { enabled: false },
-          }),
-        );
-
-        // Disable performance monitor
-        this.performanceMonitorEnabled = false;
-        storage.setItem("performanceMonitor", "false");
-
-        // Disable test archive display
-        this.testArchiveEnabled = false;
-        storage.setItem("testArchiveEnabled", "false");
-        window.dispatchEvent(
-          new CustomEvent("test-archive-toggle", {
-            detail: { enabled: false },
-          }),
-        );
-      }
+    /**
+     * Disable all developer sub-settings (logging, performance monitor, test archive)
+     * Now delegates to the Pinia store — watchers persist to storage automatically.
+     */
+    _disableDeveloperSubSettings() {
+      this.appStore.disableDeveloperSubSettings();
+      // Sync local state from store
+      this.logMenuEnabled = false;
+      this.performanceMonitorEnabled = false;
+      this.testArchiveEnabled = false;
     },
 
     handleLogMenuToggle() {
-      storage.setItem("logMenuEnabled", this.logMenuEnabled);
-      // Dispatch custom event to notify other components
-      window.dispatchEvent(
-        new CustomEvent("log-menu-toggle", {
-          detail: { enabled: this.logMenuEnabled },
-        }),
-      );
+      this.appStore.setLogMenu(this.logMenuEnabled);
     },
 
     handleTestArchiveToggle() {
-      storage.setItem("testArchiveEnabled", this.testArchiveEnabled);
-      // Dispatch custom event to notify sidebar to update state
-      window.dispatchEvent(
-        new CustomEvent("test-archive-toggle", {
-          detail: { enabled: this.testArchiveEnabled },
-        }),
-      );
+      this.appStore.setTestArchive(this.testArchiveEnabled);
     },
 
     handleResetTutorial() {
@@ -690,14 +672,26 @@ export default {
 
     handleParseDrop(event) {
       this.parseDragOver = false;
-      // Drag also triggers file selection dialog
-      this.parseSavFile();
+      const file = event.dataTransfer?.files?.[0];
+      if (file?.path) {
+        this.isParsing = true;
+        this.processSavFile(file.path);
+      } else {
+        // Fallback: open file dialog if no valid file path from drop
+        this.parseSavFile();
+      }
     },
 
     handlePackDrop(event) {
       this.packDragOver = false;
-      // Drag also triggers file selection dialog
-      this.packJsonFile();
+      const file = event.dataTransfer?.files?.[0];
+      if (file?.path) {
+        this.isPacking = true;
+        this.processJsonFile(file.path);
+      } else {
+        // Fallback: open file dialog if no valid file path from drop
+        this.packJsonFile();
+      }
     },
 
     handleParseFileSelect(event) {
@@ -715,7 +709,6 @@ export default {
 
       try {
         // Use Tauri dialog to select file for full path
-        const { open } = await import("@tauri-apps/plugin-dialog");
         const filePath = await open({
           multiple: false,
           filters: [{ name: "Save Files", extensions: ["sav"] }],
@@ -726,6 +719,16 @@ export default {
           return;
         }
 
+        await this.processSavFile(filePath);
+      } catch (error) {
+        console.error("Failed to open file dialog:", error);
+        notify.error(this.t("settings.parseError", { error: error.toString() }));
+        this.isParsing = false;
+      }
+    },
+
+    async processSavFile(filePath) {
+      try {
         // Call backend to parse save file
         const result = await invoke("convert_sav_to_json", {
           filePath: filePath,
@@ -739,7 +742,6 @@ export default {
           const outputPath = `${outputDir}/${outputFileName}`.replace(/\//g, "\\");
 
           // Write file using Tauri fs plugin
-          const { writeTextFile } = await import("@tauri-apps/plugin-fs");
           await writeTextFile(outputPath, result.json);
 
           notify.success(this.t("settings.parseSuccess", { filename: outputFileName }));
@@ -759,7 +761,6 @@ export default {
 
       try {
         // Use Tauri dialog to select file for full path
-        const { open } = await import("@tauri-apps/plugin-dialog");
         const filePath = await open({
           multiple: false,
           filters: [{ name: "JSON Files", extensions: ["json"] }],
@@ -770,8 +771,17 @@ export default {
           return;
         }
 
+        await this.processJsonFile(filePath);
+      } catch (error) {
+        console.error("Failed to open file dialog:", error);
+        notify.error(this.t("settings.packError", { error: error.toString() }));
+        this.isPacking = false;
+      }
+    },
+
+    async processJsonFile(filePath) {
+      try {
         // Read JSON file content
-        const { readTextFile } = await import("@tauri-apps/plugin-fs");
         const jsonContent = await readTextFile(filePath);
 
         // Generate output filename (same name -edited.sav)
@@ -865,49 +875,20 @@ export default {
 
     // Handle clicking outside to close dropdown
     handleClickOutside(event) {
-      const dropdownContainers = document.querySelectorAll(".setting-action");
+      const container = this.$refs.settingsContainer;
+      if (!container) return;
+
+      const dropdownContainers = container.querySelectorAll(".setting-action");
       let clickedInsideDropdown = false;
 
-      dropdownContainers.forEach((container) => {
-        if (container.contains(event.target)) {
+      dropdownContainers.forEach((dropdown) => {
+        if (dropdown.contains(event.target)) {
           clickedInsideDropdown = true;
         }
       });
 
       if (!clickedInsideDropdown) {
         this.activeDropdown = null;
-      }
-    },
-
-    // Handle developer mode change event
-    handleDeveloperModeChanged(event) {
-      const enabled = event.detail.enabled;
-      this.developerModeEnabled = enabled;
-      this.developerOptionsEnabled = enabled;
-
-      // If developer mode is off, reset all related settings
-      if (!enabled) {
-        // Disable logging
-        this.logMenuEnabled = false;
-        storage.setItem("logMenuEnabled", "false");
-        window.dispatchEvent(
-          new CustomEvent("log-menu-toggle", {
-            detail: { enabled: false },
-          }),
-        );
-
-        // Disable performance monitor
-        this.performanceMonitorEnabled = false;
-        storage.setItem("performanceMonitor", "false");
-
-        // Disable test archive display
-        this.testArchiveEnabled = false;
-        storage.setItem("testArchiveEnabled", "false");
-        window.dispatchEvent(
-          new CustomEvent("test-archive-toggle", {
-            detail: { enabled: false },
-          }),
-        );
       }
     },
 

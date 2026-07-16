@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted, shallowRef, computed, nextTick, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import storage from "./services/storageService";
+import { useAppStore } from "./stores/appStore";
 import PerformanceMonitor from "./components/system/PerformanceMonitor.vue";
 import GlobalSearchPanel from "./components/feature/GlobalSearchPanel.vue";
 const Sidebar = shallowRef(null);
@@ -19,10 +20,8 @@ const route = useRoute();
 const sidebarExpanded = ref(false);
 const showGlobalSearch = ref(false);
 const globalSearchRef = ref(null);
-const normalizeBool = (value) => value === true || value === "true";
-const performanceMonitorEnabled = ref(normalizeBool(storage.getItem("performanceMonitor", false)));
-const developerModeEnabled = ref(normalizeBool(storage.getItem("developerMode", false)));
-const shouldShowPerformanceMonitor = computed(() => performanceMonitorEnabled.value && developerModeEnabled.value);
+const appStore = useAppStore();
+const shouldShowPerformanceMonitor = computed(() => appStore.performanceMonitorEnabled && appStore.developerModeEnabled);
 
 const cachedComponents = ["Home", "Settings", "CreateArchive", "Log"];
 const excludedComponents = ["BatchCreateArchive", "EditArchive"];
@@ -141,17 +140,7 @@ const handleFindNextEventFromLock = (event) => {
   handleFindNavigateShortcut(!!event?.detail?.backward);
 };
 
-const handlePerformanceToggle = (event) => {
-  performanceMonitorEnabled.value = !!event.detail?.enabled;
-};
-
-const handleDeveloperModeChanged = (event) => {
-  developerModeEnabled.value = !!event.detail?.enabled;
-  if (!developerModeEnabled.value) {
-    performanceMonitorEnabled.value = false;
-  }
-};
-
+let removeAfterEach = null;
 const handleSidebarRouteChange = (event) => {
   const routeName = event.detail.route;
   if (routeName && router.hasRoute(routeName)) {
@@ -173,12 +162,9 @@ onMounted(() => {
   window.addEventListener("app-global-find", handleFindEventFromLock);
   window.addEventListener("app-global-find-next", handleFindNextEventFromLock);
 
-  window.addEventListener("performance-monitor-toggle", handlePerformanceToggle);
-  window.addEventListener("developer-mode-changed", handleDeveloperModeChanged);
-
   window.addEventListener("sidebar-route-change", handleSidebarRouteChange);
 
-  const removeAfterEach = router.afterEach((to, from) => {
+  removeAfterEach = router.afterEach((to, from) => {
     if (to.name !== from.name) {
       const mainContent = getMainContent();
       if (mainContent) {
@@ -199,10 +185,8 @@ onUnmounted(() => {
   document.removeEventListener("keydown", handleGlobalKeydown, true);
   window.removeEventListener("app-global-find", handleFindEventFromLock);
   window.removeEventListener("app-global-find-next", handleFindNextEventFromLock);
-  window.removeEventListener("performance-monitor-toggle", handlePerformanceToggle);
-  window.removeEventListener("developer-mode-changed", handleDeveloperModeChanged);
   window.removeEventListener("sidebar-route-change", handleSidebarRouteChange);
-  removeAfterEach();
+  if (removeAfterEach) removeAfterEach();
   mainContentCache = null;
 });
 

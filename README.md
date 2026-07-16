@@ -138,15 +138,19 @@ npm run tauri build
 ## ❓ Frequently Asked Questions
 
 **Q: Is this an official Fancy Games tool?**
+
 A: No. ETB Save Manager is an **independent, community-built open-source project**. It is not affiliated with, endorsed by, or connected to Fancy Games or the developers of *Escape The Backrooms*.
 
 **Q: Will editing save files corrupt my game?**
+
 A: The editor validates data where possible, but modifying save files always carries some risk. **Always back up your original save files** before editing. The app's recycle bin feature provides a safety net — deleted originals can be restored.
 
 **Q: Does this support the latest *Escape The Backrooms* update?**
+
 A: Yes. When new maps or game updates change the save data format, the tool is updated accordingly. Check the [releases page](https://github.com/Eververdants/ETBSaveManager/releases) for the latest update.
 
 **Q: How do I report a bug or request a feature?**
+
 A: Open an issue on the [GitHub issue tracker](https://github.com/Eververdants/ETBSaveManager/issues). Feature requests and bug reports are both welcome.
 
 ---

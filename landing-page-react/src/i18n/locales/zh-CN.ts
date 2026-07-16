@@ -12,6 +12,7 @@ export default {
     root: "根目录",
     archive: "档案",
     obtain: "获取",
+    screens: "截图",
     source: "源码",
     sourceAriaLabel: "GitHub 仓库",
     classificationStandard: "标准",

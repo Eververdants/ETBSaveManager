@@ -13,6 +13,7 @@ export default {
     root: "root",
     archive: "archive",
     obtain: "obtain",
+    screens: "screens",
     source: "source",
     sourceAriaLabel: "GitHub",
     classificationStandard: "Standard",

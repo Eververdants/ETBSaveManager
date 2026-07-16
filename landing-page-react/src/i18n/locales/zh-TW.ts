@@ -13,6 +13,7 @@ export default {
     root: "根目錄",
     archive: "檔案",
     obtain: "取得",
+    screens: "截圖",
     source: "原始碼",
     sourceAriaLabel: "GitHub 儲存庫",
     classificationStandard: "標準",

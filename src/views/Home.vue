@@ -41,23 +41,21 @@
     <div
       ref="scrollContainerRef"
       class="archive-list-container"
-      v-squircle="24"
+      v-squircle="44"
       :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode }"
     >
-      <!-- Use virtual scrolling when archives exist -->
+      <!-- Virtual scrolling via @tanstack/vue-virtual -->
       <template v-if="displayArchives.length > 0">
         <div
-          class="archive-grid-virtual"
           :style="{
             height: `${rowVirtualizer.getTotalSize()}px`,
             width: '100%',
             position: 'relative',
           }"
         >
-          <!-- Virtual scrolling row -->
           <div
             v-for="virtualRow in rowVirtualizer.getVirtualItems()"
-            :key="virtualRow.key"
+            :key="String(virtualRow.key)"
             class="archive-row"
             :style="{
               position: 'absolute',
@@ -68,21 +66,19 @@
               transform: `translateY(${virtualRow.start}px)`,
             }"
           >
-            <div
-            class="archive-grid"
-            >
+            <div class="archive-grid">
               <ArchiveCard
-                v-for="archive in getRowItems(virtualRow.index)"
+                v-for="(archive, colIndex) in getRowItems(virtualRow.index)"
                 :key="archive.id"
                 :data-archive-id="archive.id"
                 :archive="archive"
-                :index="archive._originalIndex"
+                :index="virtualRow.index * columnsPerRow + colIndex"
                 :class="{
                   deleting: deletingCardId === archive.id,
                 }"
                 :is-multi-select-mode="isMultiSelectMode"
                 :is-selected="selectedArchives.has(archive.id)"
-                :search-query="activeSearchQuery"
+                :search-query="searchQuery"
                 @toggle-visibility="handleToggleVisibility"
                 @edit="handleEdit"
                 @delete="deleteArchive"
@@ -98,7 +94,7 @@
       <!-- Empty state -->
       <template v-else>
         <div v-if="archives.length > 0 && hasActiveFilters" class="empty-state">
-          <div class="empty-content" v-squircle="32">
+          <div class="empty-content" v-squircle="52">
             <div class="empty-icon">🔍</div>
             <h3 class="empty-title">{{ $t("archiveSearch.noResults") }}</h3>
             <p class="empty-description">
@@ -107,19 +103,19 @@
             <p class="empty-hint">
               {{ $t("archiveSearch.adjustSearchOrClearFilters") }}
             </p>
-            <button class="empty-action" v-squircle="14" @click="clearAllFilters">
+            <button class="empty-action" v-squircle:pill @click="clearAllFilters">
               {{ $t("archiveSearch.clearFilters") }}
             </button>
           </div>
         </div>
         <div v-else-if="dataLoadComplete && archives.length === 0" class="empty-state">
-          <div class="empty-content" v-squircle="32">
+          <div class="empty-content" v-squircle="52">
             <div class="empty-icon">📁</div>
             <h3 class="empty-title">{{ $t("archiveSearch.noArchives") }}</h3>
             <p class="empty-description">
               {{ $t("archiveSearch.createNewArchive") }}
             </p>
-            <button class="empty-action" v-squircle="14" @click="createNewArchive">
+            <button class="empty-action" v-squircle:pill @click="createNewArchive">
               {{ $t("archiveSearch.createArchive") }}
             </button>
           </div>
@@ -128,21 +124,23 @@
     </div>
 
     <!-- Search panel -->
-    <Teleport to="body">
-      <transition name="search-panel" @before-enter="beforeSearchEnter" @enter="searchEnter" @leave="searchLeave">
-        <div v-show="showSearch && !loading" class="search-overlay">
-          <ArchiveSearchFilter
-            ref="archiveSearchFilter"
-            :archives="archives"
-            :initial-filters="lastSearchFilters"
-            :visible="showSearch"
-            @filtered="handleFilteredArchives"
-            @filters-changed="updateLastFilters"
-            @close="toggleSearch"
-          />
-        </div>
-      </transition>
-    </Teleport>
+    <transition name="search-panel" @before-enter="(el: Element) => beforeSearchEnter(el as HTMLElement)" @enter="(el: Element, done: () => void) => searchEnter(el as HTMLElement, done)" @leave="(el: Element, done: () => void) => searchLeave(el as HTMLElement, done)">
+      <div v-show="showSearch && !loading" class="search-inline">
+        <ArchiveSearchFilter
+          ref="archiveSearchFilter"
+          :search-query="searchQuery"
+          :selected-archive-difficulty="selectedArchiveDifficulty"
+          :selected-actual-difficulty="selectedActualDifficulty"
+          :selected-visibility="selectedVisibility"
+          :search-suggestions="searchSuggestions"
+          @update:search-query="searchQuery = $event"
+          @update:selected-archive-difficulty="selectedArchiveDifficulty = $event"
+          @update:selected-actual-difficulty="selectedActualDifficulty = $event"
+          @update:selected-visibility="selectedVisibility = $event"
+          @close="toggleSearch"
+        />
+      </div>
+    </transition>
 
     <!-- Delete confirmation -->
     <Teleport to="body">
@@ -189,7 +187,7 @@
     <Teleport to="body">
       <transition name="modal">
         <div v-if="showPerformanceSettings" class="modal-overlay" @click.self="showPerformanceSettings = false">
-          <div class="modal-container" v-squircle="24">
+          <div class="modal-container" v-squircle="52">
             <div class="modal-header">
               <h2 class="modal-title">{{ $t("performanceSettings.title") }}</h2>
               <button class="modal-close" @click="showPerformanceSettings = false">
@@ -233,9 +231,8 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, onUnmounted, onActivated, onDeactivated, nextTick, watch, computed } from "vue";
-import { useVirtualizer } from "@tanstack/vue-virtual";
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted, onActivated, onDeactivated, nextTick, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { protectFloatingButtonPosition } from "../utils/floatingButtonProtection.js";
 import ArchiveCard from "../components/archive/ArchiveCard.vue";
@@ -244,8 +241,11 @@ import FloatingActionButton from "../components/feature/FloatingActionButton.vue
 import ConfirmModal from "../components/modal/ConfirmModal.vue";
 import PerformanceSettings from "../components/system/PerformanceSettings.vue";
 import { useArchiveData } from "../composables/useArchiveData";
-import { useArchiveFilters } from "../composables/useArchiveFilters";
+import type { ArchiveData } from "@/types";
+import { useArchiveList } from "../composables/useArchiveSearchFilter";
 import { useArchiveActions } from "../composables/useArchiveActions";
+import { useVirtualScroll } from "../composables/useVirtualScroll";
+import { useMultiSelect } from "../composables/useMultiSelect";
 import { usePerformanceMonitor } from "../composables/usePerformanceMonitor";
 import { useAnimations } from "../composables/useAnimations";
 import { useFloatingButton } from "../composables/useFloatingButton";
@@ -257,19 +257,25 @@ import { markInitialLoadComplete, resetInitialLoad } from "../composables/useArc
 const archiveData = useArchiveData();
 const {
   archives,
-  displayArchives,
   loading,
   dataLoadComplete,
-  incrementalLoadState,
   initializeArchives,
   refreshArchives: refreshArchivesBase,
   refreshArchivesSilent,
 } = archiveData;
 
-const archiveFilters = useArchiveFilters();
-const { lastSearchFilters, hasActiveFilters, debouncedApplyFilters, updateFilters, resetFilters } = archiveFilters;
+const {
+  displayArchives,
+  searchQuery,
+  selectedArchiveDifficulty,
+  selectedActualDifficulty,
+  selectedVisibility,
+  searchSuggestions,
+  hasActiveFilters,
+  resetFilters,
+} = useArchiveList(archives);
 
-const archiveActions = useArchiveActions(archiveData, archiveFilters);
+const archiveActions = useArchiveActions(archiveData, {});
 const {
   showDeleteConfirm,
   archiveToDelete,
@@ -287,6 +293,39 @@ const {
   registerUndoShortcuts,
   unregisterUndoShortcuts,
 } = archiveActions;
+
+// Local state — declared before composable calls that use them
+const scrollContainerRef = ref<HTMLElement | null>(null);
+const showSearch = ref(false);
+const isPageActive = ref(false);
+const shouldResetScroll = ref(false);
+
+// ─── Virtual scrolling with @tanstack/vue-virtual ──
+const {
+  rowVirtualizer,
+  columnsPerRow,
+  getRowItems,
+  initObserver: initVirtualScrollObserver,
+  destroyObserver: destroyVirtualScrollObserver,
+} = useVirtualScroll(scrollContainerRef, displayArchives);
+
+// ─── Multi-select mode ──
+const {
+  isMultiSelectMode,
+  selectedArchives,
+  showBatchDeleteConfirm,
+  isBatchDeleting,
+  enterMultiSelectMode,
+  exitMultiSelectMode,
+  toggleArchiveSelection,
+  selectAll,
+  invertSelection,
+  confirmBatchDelete,
+  cancelBatchDelete,
+  handleShowBatchDeleteConfirm,
+} = useMultiSelect(displayArchives, archives, {
+  batchDeleteArchives,
+});
 
 const performanceMonitor = usePerformanceMonitor();
 const {
@@ -309,85 +348,8 @@ const toast = useToast();
 
 const { t } = useI18n();
 
-// Local state
-const scrollContainerRef = ref(null);
-const archiveSearchFilter = ref(null);
-const showSearch = ref(false);
-const isPageActive = ref(false);
-const columnsPerRow = ref(4);
-const shouldResetScroll = ref(false);
-const activeSearchQuery = ref("");
+// Local state (scrollContainerRef, showSearch, isPageActive, shouldResetScroll declared above)
 
-// Multi-select mode state
-const isMultiSelectMode = ref(false);
-const selectedArchives = ref(new Set());
-const showBatchDeleteConfirm = ref(false);
-const isBatchDeleting = ref(false);
-
-// Schedule a single virtualizer remeasure after DOM update
-const remeasureVirtualizer = () => {
-  nextTick(() => {
-    rowVirtualizer?.measure?.();
-  });
-};
-
-// Debounced container size update (300ms) to avoid excessive measurement
-let resizeTimer = null;
-const debouncedUpdateContainerSize = () => {
-  if (resizeTimer) clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    updateContainerSize();
-    syncVirtualList();
-    protectFloatingButtonPosition();
-    resizeTimer = null;
-  }, 300);
-};
-
-// Watch for data or column count changes, remeasure virtual scrolling
-watch(
-  [displayArchives, columnsPerRow],
-  () => {
-    if (!scrollContainerRef.value) return;
-    remeasureVirtualizer();
-  },
-  { flush: "post" },
-);
-
-// Calculate column count
-const calcColumnsPerRow = () => {
-  if (!scrollContainerRef.value) return 4;
-  const width = scrollContainerRef.value.clientWidth - 40;
-  // Minimum card width 320px + gap 20px
-  return Math.max(1, Math.floor((width + 20) / 340));
-};
-
-// Calculate row count
-const rowCount = computed(() => {
-  if (displayArchives.value.length === 0) return 0;
-  return Math.ceil(displayArchives.value.length / columnsPerRow.value);
-});
-
-// Get cards for a given row
-const getRowItems = (rowIndex) => {
-  const cols = columnsPerRow.value;
-  const startIdx = rowIndex * cols;
-  const endIdx = Math.min(startIdx + cols, displayArchives.value.length);
-  return displayArchives.value.slice(startIdx, endIdx).map((archive, i) => ({
-    ...archive,
-    _originalIndex: startIdx + i,
-  }));
-};
-
-// Virtualizer configuration
-const virtualizerOptions = computed(() => ({
-  count: rowCount.value,
-  getScrollElement: () => scrollContainerRef.value,
-  estimateSize: () => 180, // Card height 160px + gap 20px
-  overscan: 1, // Reduce overscan to lower render count
-}));
-
-// Virtualizer
-const rowVirtualizer = useVirtualizer(virtualizerOptions);
 
 // Methods
 const toggleSearch = () => {
@@ -402,7 +364,7 @@ const openArchiveSearchPanel = () => {
   nextTick(() => protectFloatingButtonPosition());
 };
 
-const handleOpenArchiveSearchEvent = (event) => {
+const handleOpenArchiveSearchEvent = (event: CustomEvent) => {
   if (!isPageActive.value) return;
 
   const mode = event?.detail?.mode || "open";
@@ -419,52 +381,29 @@ const handleOpenArchiveSearchEvent = (event) => {
   openArchiveSearchPanel();
 };
 
-const updateLastFilters = (filters) => updateFilters(filters);
-
-const handleFilteredArchives = (filteredArchives) => {
-  if (!loading.value) {
-    shouldResetScroll.value = true; // Reset scroll when filter changes
-    displayArchives.value = filteredArchives;
-    // Get current search keyword from ArchiveSearchFilter for highlighting
-    activeSearchQuery.value = archiveSearchFilter.value?.searchQuery || "";
-    nextTick(() => protectFloatingButtonPosition());
-  }
-};
-
 const clearAllFilters = () => {
-  if (archiveSearchFilter.value?.clearAllFilters) archiveSearchFilter.value.clearAllFilters();
   resetFilters();
   shouldResetScroll.value = true;
-  displayArchives.value = [...archives.value];
-  activeSearchQuery.value = "";
   protectFloatingButtonPosition();
 };
 
-const handleToggleVisibility = (archive) => {
+const handleToggleVisibility = (archive: ArchiveData) => {
   handleToggleVisibilityBase(archive, {
     onSuccess: () => protectFloatingButtonPosition(),
   });
 };
 
-const handleRenameArchive = ({ id, name }) => {
+const handleRenameArchive = ({ id, name }: { id: number; name: string }) => {
   const archive = archives.value.find((a) => a.id === id);
   if (archive) {
     archive.name = name;
   }
-  const displayArchive = displayArchives.value.find((a) => a.id === id);
-  if (displayArchive) {
-    displayArchive.name = name;
-  }
-  // Can send to backend for saving
   toast.showSuccess(t("archiveSearch.renameSuccess", "存档已重命名"));
 };
 
 const confirmDelete = () => {
   confirmDeleteBase({
     onSuccess: () => {
-      debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
-        displayArchives.value = filtered;
-      });
       protectFloatingButtonPosition();
     },
   });
@@ -472,9 +411,6 @@ const confirmDelete = () => {
 
 const refreshArchives = async () => {
   await refreshArchivesBase();
-  debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
-    displayArchives.value = filtered;
-  });
   toast.showSuccess(t("archiveSearch.refreshed"));
 };
 
@@ -487,127 +423,23 @@ const openSaveGamesFolder = () => {
   });
 };
 
-// Multi-select mode methods
-const enterMultiSelectMode = () => {
-  isMultiSelectMode.value = true;
-  selectedArchives.value = new Set();
-  // Disable page scrolling - disable both body and html
-  document.body.style.overflow = "hidden";
-  document.body.style.position = "fixed";
-  document.body.style.width = "100%";
-  document.body.style.height = "100%";
-  document.documentElement.style.overflow = "hidden";
-};
-
-const exitMultiSelectMode = () => {
-  isMultiSelectMode.value = false;
-  selectedArchives.value = new Set();
-  // Restore page scrolling
-  document.body.style.overflow = "";
-  document.body.style.position = "";
-  document.body.style.width = "";
-  document.body.style.height = "";
-  document.documentElement.style.overflow = "";
-};
-
-const toggleArchiveSelection = (archiveId) => {
-  const newSet = new Set(selectedArchives.value);
-  if (newSet.has(archiveId)) {
-    newSet.delete(archiveId);
-  } else {
-    newSet.add(archiveId);
-  }
-  selectedArchives.value = newSet;
-};
-
-const selectAll = () => {
-  selectedArchives.value = new Set(displayArchives.value.map((a) => a.id));
-};
-
-const invertSelection = () => {
-  const allIds = new Set(displayArchives.value.map((a) => a.id));
-  const newSet = new Set(selectedArchives.value);
-  allIds.forEach((id) => {
-    if (newSet.has(id)) {
-      newSet.delete(id);
-    } else {
-      newSet.add(id);
-    }
-  });
-  selectedArchives.value = newSet;
-};
-
-const handleShowBatchDeleteConfirm = () => {
-  showBatchDeleteConfirm.value = true;
-};
-
-const cancelBatchDelete = () => {
-  showBatchDeleteConfirm.value = false;
-};
-
-const confirmBatchDelete = async () => {
-  isBatchDeleting.value = true;
-  const idsToDelete = Array.from(selectedArchives.value);
-  const archivesToDelete = archives.value.filter((a) => idsToDelete.includes(a.id));
-
-  await batchDeleteArchives(archivesToDelete, {
-    onSuccess: () => {
-      isBatchDeleting.value = false;
-      showBatchDeleteConfirm.value = false;
-      exitMultiSelectMode();
-
-      debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
-        displayArchives.value = filtered;
-      });
-    },
-    onError: () => {
-      isBatchDeleting.value = false;
-      showBatchDeleteConfirm.value = false;
-      exitMultiSelectMode();
-
-      debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
-        displayArchives.value = filtered;
-      });
-    },
-  });
-};
-
-const updateContainerSize = () => {
-  columnsPerRow.value = calcColumnsPerRow();
-};
-
-// Sync virtual list state after changes (resize, route activation)
-const syncVirtualList = ({ resetScroll = false } = {}) => {
-  const container = scrollContainerRef.value;
-  if (!container) return;
-  if (!rowVirtualizer || typeof rowVirtualizer.measure !== "function") return;
-
-  if (resetScroll) {
-    container.scrollTop = 0;
-    rowVirtualizer.scrollToOffset?.(0);
-  }
-
-  rowVirtualizer.measure();
-};
-
-// Lifecycle
-let isUnmounted = false;
-let resizeObserver = null;
 
 // On keep-alive activation
 onActivated(async () => {
   isPageActive.value = true;
   resetInitialLoad();
 
-  // Reset scroll position and update container size
+  // Reset scroll position
   if (scrollContainerRef.value) {
-    scrollContainerRef.value.scrollTop = 0;
+    (scrollContainerRef.value as HTMLElement).scrollTop = 0;
   }
-  updateContainerSize();
+  initVirtualScrollObserver();
 
-  // Refresh data, then remeasure once after DOM update
+  // Refresh data, then re-measure virtual rows
   await refreshArchivesSilent();
-  nextTick(() => syncVirtualList({ resetScroll: true }));
+  nextTick(() => {
+    rowVirtualizer.value.measure();
+  });
 });
 
 // On keep-alive deactivation
@@ -616,37 +448,18 @@ onDeactivated(() => {
 });
 
 onMounted(async () => {
-  window.addEventListener("open-archive-search", handleOpenArchiveSearchEvent);
+  window.addEventListener("open-archive-search", handleOpenArchiveSearchEvent as EventListener);
 
   requestIdleCallback(() => initPerformanceMonitor(), { timeout: 1500 });
   requestIdleCallback(() => initButtonProtection(), { timeout: 2000 });
 
   await initializeArchives(true);
-  displayArchives.value = [...archives.value];
 
-  // Wait for DOM update, then initialize virtual scrolling
+  // Initialize virtual scroll ResizeObserver (handles column calculation)
   await nextTick();
-  updateContainerSize();
-  remeasureVirtualizer();
+  initVirtualScrollObserver();
 
   isPageActive.value = true;
-  window.cleanupRouteWatcher = () => {};
-
-  const handleResize = () => {
-    if (!isUnmounted) {
-      debouncedUpdateContainerSize();
-    }
-  };
-  window.addEventListener("resize", handleResize);
-
-  if (scrollContainerRef.value && "ResizeObserver" in window) {
-    resizeObserver = new ResizeObserver(() => {
-      if (!isUnmounted) {
-        debouncedUpdateContainerSize();
-      }
-    });
-    resizeObserver.observe(scrollContainerRef.value);
-  }
 
   markInitialLoadComplete();
   registerUndoShortcuts();
@@ -654,67 +467,30 @@ onMounted(async () => {
 
 onUnmounted(() => {
   unregisterUndoShortcuts();
-  window.removeEventListener("open-archive-search", handleOpenArchiveSearchEvent);
+  window.removeEventListener("open-archive-search", handleOpenArchiveSearchEvent as EventListener);
 
-  isUnmounted = true;
-  if (resizeTimer) {
-    clearTimeout(resizeTimer);
-    resizeTimer = null;
-  }
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-    resizeObserver = null;
-  }
-  cleanupPerformance();
-  cleanupFloatingButton();
-  if (window.cleanupRouteWatcher) {
-    try {
-      window.cleanupRouteWatcher();
-      delete window.cleanupRouteWatcher;
-    } catch (e) {
-      console.warn("Failed to clean up route watcher:", e);
-    }
-  }
-  window.removeEventListener("resize", () => {});
-  // Restore page scrolling on component unmount
-  document.body.style.overflow = "";
+    destroyVirtualScrollObserver();
+    cleanupPerformance();
+    cleanupFloatingButton();
+    document.body.style.overflow = "";
   document.body.style.position = "";
   document.body.style.width = "";
   document.body.style.height = "";
   document.documentElement.style.overflow = "";
 });
 
-// Shallow watch: only react to length changes (add/remove), not deep property changes.
-// Individual property updates (e.g. isVisible) are handled by direct mutation methods.
-watch(
-  () => archives.value.length,
-  () => {
-    debouncedApplyFilters(archives.value, lastSearchFilters.value, (filtered) => {
-      displayArchives.value = filtered;
-    });
-  },
-);
-
+// When displayArchives changes (filters applied), reset scroll position
 watch(
   displayArchives,
   () => {
     const needResetScroll = shouldResetScroll.value;
-    // Only reset scroll position when needed (on filter changes)
     if (needResetScroll && scrollContainerRef.value) {
-      scrollContainerRef.value.scrollTop = 0;
+      (scrollContainerRef.value as HTMLElement).scrollTop = 0;
       shouldResetScroll.value = false;
     }
-    nextTick(() => {
-      updateContainerSize();
-      syncVirtualList({ resetScroll: needResetScroll });
-    });
   },
   { deep: false },
 );
-
-watch(columnsPerRow, () => {
-  syncVirtualList();
-});
 </script>
 
 <style scoped>
@@ -748,12 +524,9 @@ watch(columnsPerRow, () => {
   height: calc(100% - 100px);
 }
 
-.archive-grid-virtual {
-  padding-bottom: 100px;
-}
-
 .archive-row {
   padding: 0;
+  contain: layout style; /* Scope layout/paint work to each row */
 }
 
 .archive-grid {
@@ -849,17 +622,10 @@ watch(columnsPerRow, () => {
   transform: translateY(-2px);
 }
 
-.search-overlay {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+.search-inline {
+  padding: 16px 20px 0;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .modal-overlay {

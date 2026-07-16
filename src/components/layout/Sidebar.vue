@@ -5,7 +5,7 @@
     :class="{ expanded: isExpanded }"
     role="navigation"
     aria-label="Main menu"
-    v-squircle="18"
+    v-squircle="44"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
     @keydown="handleKeydown"
@@ -88,6 +88,7 @@ import { useRoute } from "vue-router";
 import { topMenuItems, bottomMenuItems } from "../../config/sidebarMenu.js";
 import { gsap } from "gsap";
 import storageService from "@/services/storageService";
+import { useAppStore } from "@/stores/appStore";
 import { getAppContext } from "@/appContext.js";
 
 const emit = defineEmits(["sidebar-action", "sidebar-expand"]);
@@ -432,6 +433,7 @@ const useSidebarActions = (activeItemId, safeT) => {
   return { handleItemClick, handleKeydown };
 };
 
+const appStore = useAppStore();
 const { isExpanded, sidebarRef, activeItemId, handleMouseEnter, handleMouseLeave } = useSidebarState();
 const { t, currentLanguage, safeT } = useSidebarI18n();
 const { filteredTopMenuItems } = useSidebarMenuItems();
@@ -457,37 +459,41 @@ onMounted(() => {
 
   watch(currentLanguage, () => nextTick(() => {}));
 
+  // ─── Watch Pinia store for shared state ────────────────
+  // Replaces window.dispatchEvent/addEventListener pattern
+
+  watch(() => appStore.logMenuEnabled, (enabled) => {
+    enabled ? addLogMenuItem() : removeLogMenuItem();
+  });
+
+  watch(() => appStore.testArchiveEnabled, (enabled) => {
+    enabled ? addTestArchiveMenuItem() : removeTestArchiveMenuItem();
+  });
+
+  watch(() => appStore.developerModeEnabled, (enabled) => {
+    if (enabled && appStore.logMenuEnabled) {
+      addLogMenuItem();
+    } else if (!enabled) {
+      removeLogMenuItem();
+    }
+  });
+
+  watch(() => appStore.language, () => nextTick(() => {}));
+
   window.addEventListener("toggle-sidebar", (e) => {
     if (e.detail.collapsed && isExpanded.value) handleMouseLeave();
     else if (!e.detail.collapsed && !isExpanded.value) handleMouseEnter();
   });
 
-  window.addEventListener("log-menu-toggle", (event) => {
-    event.detail.enabled ? addLogMenuItem() : removeLogMenuItem();
-  });
-
-  window.addEventListener("developer-mode-changed", (event) => {
-    if (event.detail.enabled && storageService.getItem("logMenuEnabled") === "true") {
-      addLogMenuItem();
-    } else if (!event.detail.enabled) {
-      removeLogMenuItem();
-    }
-  });
-
   window.addEventListener("plugin-menu-added", () => nextTick(() => setActiveItemFromRoute()));
   window.addEventListener("plugin-menu-removed", () => nextTick(() => setActiveItemFromRoute()));
 
-  window.addEventListener("test-archive-toggle", (event) => {
-    event.detail.enabled ? addTestArchiveMenuItem() : removeTestArchiveMenuItem();
-  });
-
-  window.addEventListener("language-changed", () => nextTick(() => {}));
-
-  if (storageService.getItem("testArchiveEnabled") === "true") {
+  // Initialize menu items from current store state
+  if (appStore.testArchiveEnabled) {
     addTestArchiveMenuItem();
   }
 
-  if (storageService.getItem("developerMode") === "true" && storageService.getItem("logMenuEnabled") === "true") {
+  if (appStore.developerModeEnabled && appStore.logMenuEnabled) {
     addLogMenuItem();
   }
 });

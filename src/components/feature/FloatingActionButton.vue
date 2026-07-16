@@ -11,7 +11,7 @@
       <div ref="tooltip" class="function-tooltip">
         <span class="tooltip-text">{{ getCurrentTooltip }}</span>
       </div>
-      <div v-show="isMenuExpanded" ref="fabMenu" class="fab-menu" v-squircle="24">
+      <div v-show="isMenuExpanded" ref="fabMenu" class="fab-menu" v-squircle="44">
         <div
           v-for="item in menuItems"
           :key="item.index"

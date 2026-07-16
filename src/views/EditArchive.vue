@@ -35,54 +35,80 @@
     <div class="tab-content" :class="`slide-${slideDirection}`">
       <!-- Basic settings -->
       <div class="tab-panel" :class="{ 'tab-active': activeTab === 'basic' }">
-        <div class="panel-grid">
-          <div class="form-card">
-            <label class="form-label">{{ $t("editArchive.archiveName") }}</label>
-            <input
-              v-model="formData.name"
-              type="text"
-              class="form-input"
-              :placeholder="$t('editArchive.archiveNamePlaceholder')"
-              maxlength="50"
-            />
+        <div class="basic-sections">
+          <!-- 📋 Basic Info -->
+          <div class="settings-section">
+            <h3 class="section-title">
+              <font-awesome-icon :icon="['fas', 'info-circle']" />
+              {{ $t("editArchive.basicInfo") }}
+            </h3>
+            <div class="settings-card">
+              <label class="card-label">{{ $t("editArchive.archiveName") }}</label>
+              <input
+                v-model="formData.name"
+                type="text"
+                class="settings-input"
+                :placeholder="$t('editArchive.archiveNamePlaceholder')"
+                maxlength="50"
+              />
+            </div>
           </div>
-          <div class="form-card">
-            <label class="form-label">{{ $t("editArchive.difficulty") }}</label>
-            <div class="difficulty-options">
-              <div
-                v-for="d in difficultyLevels"
-                :key="d.value"
-                class="difficulty-btn"
-                :class="{ selected: formData.archiveDifficulty === d.value }"
-                @click="formData.archiveDifficulty = d.value"
-              >
-                <font-awesome-icon :icon="d.icon" />
-                <span>{{ getDifficultyText(d.value) }}</span>
+
+          <!-- 🎮 Difficulty Settings -->
+          <div class="settings-section">
+            <h3 class="section-title">
+              <font-awesome-icon :icon="['fas', 'gauge-high']" />
+              {{ $t("editArchive.difficulty") }}
+            </h3>
+            <div class="difficulty-row">
+              <div class="settings-card">
+                <label class="card-label">{{ $t("editArchive.difficulty") }}</label>
+                <div class="diff-grid">
+                  <div
+                    v-for="d in difficultyLevels"
+                    :key="d.value"
+                    class="diff-option"
+                    :class="{ selected: formData.archiveDifficulty === d.value }"
+                    @click="formData.archiveDifficulty = d.value"
+                  >
+                    <font-awesome-icon :icon="d.icon" class="diff-icon" />
+                    <span class="diff-text">{{ getDifficultyText(d.value) }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="settings-card">
+                <label class="card-label">{{ $t("editArchive.actualDifficulty") }}</label>
+                <div class="diff-grid">
+                  <div
+                    v-for="d in difficultyLevels"
+                    :key="`actual-${d.value}`"
+                    class="diff-option"
+                    :class="{ selected: formData.actualDifficulty === d.value }"
+                    @click="formData.actualDifficulty = d.value"
+                  >
+                    <font-awesome-icon :icon="d.icon" class="diff-icon" />
+                    <span class="diff-text">{{ getDifficultyText(d.value) }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <div class="form-card">
-            <label class="form-label">{{ $t("editArchive.actualDifficulty") }}</label>
-            <div class="difficulty-options">
-              <div
-                v-for="d in difficultyLevels"
-                :key="`actual-${d.value}`"
-                class="difficulty-btn"
-                :class="{ selected: formData.actualDifficulty === d.value }"
-                @click="formData.actualDifficulty = d.value"
-              >
-                <font-awesome-icon :icon="d.icon" />
-                <span>{{ getDifficultyText(d.value) }}</span>
+
+          <!-- ⚡ Quick Action -->
+          <button type="button" class="settings-card action-card" @click="unlockAllHubDoors">
+            <div class="action-card-body">
+              <div class="action-card-info">
+                <span class="action-card-title">
+                  <font-awesome-icon :icon="['fas', 'door-open']" />
+                  {{ $t("editArchive.unlockAllHubDoors") }}
+                </span>
+                <span class="action-card-desc">{{ $t("editArchive.hubDoors") }}</span>
               </div>
+              <span class="action-card-arrow">
+                <font-awesome-icon :icon="['fas', 'chevron-right']" />
+              </span>
             </div>
-          </div>
-          <div class="form-card">
-            <label class="form-label">{{ $t("editArchive.hubDoors") }}</label>
-            <button class="action-btn" @click="unlockAllHubDoors">
-              <font-awesome-icon :icon="['fas', 'door-open']" />
-              <span>{{ $t("editArchive.unlockAllHubDoors") }}</span>
-            </button>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -511,7 +537,7 @@ const loadLevels = () => {
   ];
 
   availableLevels.value = levelMappings.map((levelKey) => {
-    return { name: getLevelName(levelKey), image: `/images/ETB/${levelKey}.jpg`, levelKey };
+    return { name: getLevelName(levelKey), image: `/images/ETB/${levelKey}.webp`, levelKey };
   });
 };
 
@@ -870,100 +896,315 @@ onMounted(() => {
   pointer-events: auto;
 }
 
-/* Basic settings */
-.panel-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+/* ==========================================
+ * 🍎 基础设置 — 三段式布局
+ *    连续曲率 + 大圆角 + 同心等距
+ *    Card: 36px(lg) → Inner: 28px(md) → 8px 递减
+ * ========================================== */
+
+/* 外层容器 */
+.basic-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  max-width: 780px;
+  margin: 0 auto;
 }
 
-.form-card {
-  background: var(--card-bg);
-  border-radius: var(--radius-card);
-  padding: 20px;
+/* ── 区域分组 ── */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 区域标题（带 accent 竖条装饰） */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  padding-left: 14px;
+  position: relative;
+  letter-spacing: -0.02em;
+}
+
+.section-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 18px;
+  background: var(--accent-color);
+  border-radius: var(--radius-xs);
+}
+
+.section-title svg {
+  color: var(--accent-color);
+  font-size: 16px;
+}
+
+/* ── 设置卡片 — 36px (lg) 大圆角连续曲率 ── */
+.settings-card {
+  background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border-radius: var(--radius-lg);
+  padding: 24px;
   border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  transition: all var(--transition-normal) var(--ease-default);
 }
 
-.form-label {
+/* 顶部微光描边 */
+.settings-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  pointer-events: none;
+}
+
+.settings-card:hover {
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: var(--shadow-card-hover, 0 8px 32px rgba(0,0,0,0.12));
+}
+
+/* 卡片标签 */
+.card-label {
   display: block;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
-.form-input {
+/* ── 输入框 — 28px (md) 同心第二层 ── */
+.settings-input {
   width: 100%;
-  padding: 12px 16px;
-  font-size: 14px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-input);
-  background: var(--bg-secondary);
+  background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   color: var(--text-primary);
-  outline: none;
+  font-size: 14px;
   box-sizing: border-box;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  transition: all var(--transition-normal) var(--ease-default);
 }
 
-.form-input:focus {
-  border-color: var(--primary);
+.settings-input:hover {
+  border-color: var(--accent-color);
 }
 
-.difficulty-options {
+.settings-input:focus {
+  border-color: var(--accent-color);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent-color) 15%, transparent),
+    inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.settings-input::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.7;
+}
+
+/* ── 难度双列布局 ── */
+.difficulty-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── 难度网格 4 列 ── */
+.diff-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+/* ── 难度选项 — 28px (md) 同心第二层 ── */
+.diff-option {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.difficulty-btn {
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
-  border-radius: var(--radius-xs);
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  font-size: 13px;
+  gap: 8px;
+  padding: 16px 8px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  border: 2px solid rgba(255,255,255,0.05);
   cursor: pointer;
-  transition: all 0.2s;
-  border: 2px solid transparent;
+  transition: all var(--transition-normal) var(--ease-default);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
 }
 
-.difficulty-btn:hover {
-  background: var(--hover-bg);
+.diff-option::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, color-mix(in srgb, var(--accent-color) 10%, transparent) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.difficulty-btn.selected {
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
-  color: var(--primary);
-  border-color: var(--primary);
+.diff-option:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.action-btn {
+.diff-option:hover::before {
+  opacity: 1;
+}
+
+.diff-option.selected {
+  border-color: var(--accent-color);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent-color) 15%, transparent) 0%, color-mix(in srgb, var(--accent-color) 8%, transparent) 100%);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent),
+    0 4px 12px color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+
+.diff-icon {
+  font-size: 24px;
+  color: var(--text-secondary);
+  transition: all var(--transition-normal) var(--ease-default);
+}
+
+.diff-option:hover .diff-icon {
+  transform: scale(1.1);
+}
+
+.diff-option.selected .diff-icon {
+  color: var(--accent-color);
+  transform: scale(1.1);
+}
+
+.diff-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  transition: color var(--transition-fast) var(--ease-default);
+}
+
+.diff-option.selected .diff-text {
+  color: var(--accent-color);
+}
+
+/* ── 操作卡片 — 36px (lg) 大圆角 ── */
+.action-card {
+  cursor: pointer;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent-color) 6%, transparent) 0%, var(--bg-secondary) 100%);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 12%, transparent);
+  transition: all var(--transition-normal) var(--ease-default);
+  /* Button reset: override default <button> styles */
+  font-family: inherit;
+  font-size: inherit;
+  text-align: inherit;
+  width: 100%;
+  padding: 24px;
+  outline: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.action-card:hover {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent-color) 10%, transparent) 0%, var(--bg-tertiary) 100%);
+  border-color: color-mix(in srgb, var(--accent-color) 25%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.action-card:focus-visible {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent-color) 25%, transparent),
+    0 8px 24px rgba(0,0,0,0.1);
+}
+
+.action-card:active {
+  transform: translateY(0);
+}
+
+.action-card-body {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 12px 20px;
-  border: none;
-  border-radius: var(--radius-button);
-  background: var(--primary);
-  color: white;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.action-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.action-card-title {
   font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.action-btn:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
+.action-card-title svg {
+  color: var(--accent-color);
+  font-size: 16px;
 }
 
-.action-btn:active {
-  transform: translateY(0);
-  box-shadow: none;
+.action-card-desc {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-left: 26px;
+}
+
+.action-card-arrow {
+  color: var(--text-tertiary);
+  font-size: 14px;
+  transition: all var(--transition-normal) var(--ease-default);
+  flex-shrink: 0;
+}
+
+.action-card:hover .action-card-arrow {
+  color: var(--accent-color);
+  transform: translateX(4px);
+}
+
+/* ── 响应式 ── */
+@media (max-width: 768px) {
+  .basic-sections {
+    max-width: 100%;
+    gap: 24px;
+  }
+
+  .difficulty-row {
+    grid-template-columns: 1fr;
+  }
+
+  .diff-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .diff-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .settings-card {
+    padding: 20px;
+  }
 }
 
 /* Level selection */

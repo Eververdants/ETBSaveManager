@@ -34,6 +34,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { getAppContext } from "@/appContext.js";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { useAppStore } from "@/stores/appStore";
 
 const appName = ref("");
 const currentLanguage = ref("zh-CN");
@@ -53,6 +54,7 @@ const updateAppName = () => {
   }
 };
 
+const appStore = useAppStore();
 const appWindow = getCurrentWindow();
 const sidebarCollapsed = ref(false);
 
@@ -86,8 +88,8 @@ onMounted(() => {
     sidebarCollapsed.value = e.detail.collapsed;
   });
 
-  // 监听语言变化事件
-  window.addEventListener("language-changed", (e) => {
+  // 监听语言变化事件（通过 Pinia store，取代 window.dispatchEvent）
+  watch(() => appStore.language, () => {
     updateAppName();
   });
 

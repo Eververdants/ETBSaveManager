@@ -1,5 +1,4 @@
 export { useArchiveData } from "./useArchiveData";
-export { useArchiveFilters } from "./useArchiveFilters";
 export { useArchiveActions } from "./useArchiveActions";
 export { usePerformanceMonitor } from "./usePerformanceMonitor";
 export { useToast } from "./useToast";

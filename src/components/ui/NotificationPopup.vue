@@ -19,7 +19,7 @@
           v-for="notification in getNotificationsByPosition(position)"
           :key="notification.id"
           class="notification-item"
-          v-squircle="24"
+          v-squircle:sm
           :class="[
             `notification-${notification.type}`,
             { 'notification-hovering': notification.isHovering },
@@ -448,7 +448,8 @@ defineExpose({
   max-width: 400px;
   background: var(--card-bg, rgba(255, 255, 255, 0.95));
   backdrop-filter: blur(20px);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-sm);
+  corner-shape: squircle;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.2);
   pointer-events: auto;
@@ -471,7 +472,7 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xs);
 }
 
 .notification-icon {
@@ -524,7 +525,7 @@ defineExpose({
   margin-top: 10px;
   padding: 10px;
   background: rgba(0, 0, 0, 0.03);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xs);
   font-size: 12px;
 }
 
@@ -641,12 +642,12 @@ defineExpose({
   height: 3px;
   background: rgba(0, 0, 0, 0.06);
   overflow: hidden;
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
 }
 
 .notification-progress-bar {
   height: 100%;
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
 }
 
 .progress-success {

@@ -5,7 +5,7 @@
       v-if="isVisible"
       ref="popupRef"
       class="prompt-popup"
-      v-squircle="32"
+      v-squircle="52"
       :class="popupClass"
       :style="popupStyle"
       @mouseenter="pauseAutoClose"

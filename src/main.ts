@@ -27,6 +27,7 @@ const app = createApp(App);
 
 // Critical path: only load modules required for startup
 import router from "./router";
+import { createPinia } from "pinia";
 import "./styles/animations.css";
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
@@ -122,6 +123,7 @@ async function initApp(): Promise<typeof app> {
 
   // Phase 2: Configure Vue app
   console.log("[Startup] Configuring Vue app...");
+  app.use(createPinia());
   app.use(router);
   app.use(i18n);
   app.component("FontAwesomeIcon", FAIcon);
@@ -190,11 +192,17 @@ async function initWindowTitle(i18n: any): Promise<void> {
     const title = i18n.global.t("app.name");
     await appWindow.setTitle(title);
 
-    // Listen for language changes
-    window.addEventListener("language-changed", async () => {
-      const newTitle = i18n.global.t("app.name");
-      await appWindow.setTitle(newTitle);
-    });
+    // Watch store for language changes (replaces window event listener)
+    const { watch } = await import("vue");
+    const { useAppStore } = await import("./stores/appStore");
+    const appStore = useAppStore();
+    watch(
+      () => appStore.language,
+      async () => {
+        const newTitle = i18n.global.t("app.name");
+        await appWindow.setTitle(newTitle);
+      },
+    );
   } catch (error) {
     console.warn("[Window] Failed to set title:", error);
   }

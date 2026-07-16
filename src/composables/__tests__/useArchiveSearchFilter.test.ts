@@ -1,10 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  highlightMatch,
-  getSearchHistory,
-  addSearchHistory,
-  clearSearchHistory,
-} from "../useArchiveSearchFilter";
+import { highlightMatch, getSearchHistory, addSearchHistory, clearSearchHistory } from "../useArchiveSearchFilter";
 
 // Mock sessionStorage
 const sessionStorageMock = (() => {
@@ -96,10 +91,7 @@ describe("Search history", () => {
     it("adds a new query to history", () => {
       sessionStorageMock.getItem.mockReturnValue(JSON.stringify([]));
       addSearchHistory("new query");
-      expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
-        "archive-search-history",
-        JSON.stringify(["new query"]),
-      );
+      expect(sessionStorageMock.setItem).toHaveBeenCalledWith("archive-search-history", JSON.stringify(["new query"]));
     });
 
     it("does not add empty query", () => {
@@ -133,10 +125,7 @@ describe("Search history", () => {
     it("trims whitespace from query", () => {
       sessionStorageMock.getItem.mockReturnValue(JSON.stringify([]));
       addSearchHistory("  trimmed  ");
-      expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
-        "archive-search-history",
-        JSON.stringify(["trimmed"]),
-      );
+      expect(sessionStorageMock.setItem).toHaveBeenCalledWith("archive-search-history", JSON.stringify(["trimmed"]));
     });
   });
 
@@ -145,5 +134,130 @@ describe("Search history", () => {
       clearSearchHistory();
       expect(sessionStorageMock.removeItem).toHaveBeenCalledWith("archive-search-history");
     });
+  });
+});
+
+describe("useArchiveList", () => {
+  // Minimal reactivity setup — ref/computed from Vue work in node.
+  type ArchiveData = {
+    id: number;
+    name: string;
+    currentLevel: string;
+    gameMode: string;
+    archiveDifficulty: string;
+    actualDifficulty: string;
+    isVisible: boolean;
+    path: string;
+    date: string;
+  };
+
+  const createArchive = (overrides: Partial<ArchiveData> = {}): ArchiveData => ({
+    id: 1,
+    name: "Test",
+    currentLevel: "Level0",
+    gameMode: "multiplayer",
+    archiveDifficulty: "normal",
+    actualDifficulty: "normal",
+    isVisible: true,
+    path: "/test",
+    date: "2024-01-01T00:00:00.000Z",
+    ...overrides,
+  });
+
+  it("returns all archives when no filters are set", async () => {
+    const { ref } = await import("vue");
+    const { useArchiveList } = await import("../useArchiveSearchFilter");
+    const archives = ref([createArchive({ id: 1 }), createArchive({ id: 2 })]);
+    const { displayArchives } = useArchiveList(archives);
+    expect(displayArchives.value).toHaveLength(2);
+  });
+
+  it("filters by search query across name, level, difficulty, mode", async () => {
+    const { ref } = await import("vue");
+    const { useArchiveList } = await import("../useArchiveSearchFilter");
+    const archives = ref([createArchive({ id: 1, name: "Alpha Save" }), createArchive({ id: 2, name: "Beta Save" })]);
+    const list = useArchiveList(archives);
+    list.searchQuery.value = "alpha";
+    expect(list.displayArchives.value).toHaveLength(1);
+    expect(list.displayArchives.value[0].id).toBe(1);
+  });
+
+  it("filters by archive difficulty", async () => {
+    const { ref } = await import("vue");
+    const { useArchiveList } = await import("../useArchiveSearchFilter");
+    const archives = ref([
+      createArchive({ id: 1, archiveDifficulty: "easy" }),
+      createArchive({ id: 2, archiveDifficulty: "hard" }),
+    ]);
+    const list = useArchiveList(archives);
+    list.selectedArchiveDifficulty.value = "hard";
+    expect(list.displayArchives.value).toHaveLength(1);
+    expect(list.displayArchives.value[0].id).toBe(2);
+  });
+
+  it("filters by visibility", async () => {
+    const { ref } = await import("vue");
+    const { useArchiveList } = await import("../useArchiveSearchFilter");
+    const archives = ref([createArchive({ id: 1, isVisible: true }), createArchive({ id: 2, isVisible: false })]);
+    const list = useArchiveList(archives);
+    list.selectedVisibility.value = "hidden";
+    expect(list.displayArchives.value).toHaveLength(1);
+    expect(list.displayArchives.value[0].isVisible).toBe(false);
+  });
+
+  it("combines multiple filters", async () => {
+    const { ref } = await import("vue");
+    const { useArchiveList } = await import("../useArchiveSearchFilter");
+    const archives = ref([
+      createArchive({ id: 1, name: "Save A", archiveDifficulty: "easy", isVisible: true }),
+      createArchive({ id: 2, name: "Save B", archiveDifficulty: "hard", isVisible: true }),
+      createArchive({ id: 3, name: "Save C", archiveDifficulty: "easy", isVisible: false }),
+    ]);
+    const list = useArchiveList(archives);
+    list.selectedArchiveDifficulty.value = "easy";
+    list.selectedVisibility.value = "visible";
+    expect(list.displayArchives.value).toHaveLength(1);
+    expect(list.displayArchives.value[0].id).toBe(1);
+  });
+
+  it("resetFilters clears all filters", async () => {
+    const { ref } = await import("vue");
+    const { useArchiveList } = await import("../useArchiveSearchFilter");
+    const archives = ref([createArchive({ id: 1 })]);
+    const list = useArchiveList(archives);
+    list.searchQuery.value = "test";
+    list.selectedArchiveDifficulty.value = "hard";
+    list.resetFilters();
+    expect(list.searchQuery.value).toBe("");
+    expect(list.selectedArchiveDifficulty.value).toBe("");
+    expect(list.hasActiveFilters.value).toBe(false);
+  });
+
+  it("hasActiveFilters is false when no filters set", async () => {
+    const { ref } = await import("vue");
+    const { useArchiveList } = await import("../useArchiveSearchFilter");
+    const archives = ref([createArchive()]);
+    const list = useArchiveList(archives);
+    expect(list.hasActiveFilters.value).toBe(false);
+  });
+
+  it("hasActiveFilters is true when search query is set", async () => {
+    const { ref } = await import("vue");
+    const { useArchiveList } = await import("../useArchiveSearchFilter");
+    const archives = ref([createArchive()]);
+    const list = useArchiveList(archives);
+    list.searchQuery.value = "test";
+    expect(list.hasActiveFilters.value).toBe(true);
+  });
+
+  it("provides search suggestions", async () => {
+    const { ref } = await import("vue");
+    const { useArchiveList } = await import("../useArchiveSearchFilter");
+    const archives = ref([createArchive({ id: 1, name: "Alpha Save" }), createArchive({ id: 2, name: "Beta Save" })]);
+    const list = useArchiveList(archives);
+    expect(list.searchSuggestions.value).toHaveLength(0);
+    list.searchQuery.value = "alpha";
+    expect(list.searchSuggestions.value).toHaveLength(1);
+    expect(list.searchSuggestions.value[0].id).toBe(1);
   });
 });

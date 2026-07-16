@@ -5,6 +5,7 @@
   "searchEmpty": "No matching items",
   "resultCount": "Showing {count} / {total}",
   "clearSearch": "Clear search",
+  "didYouMean": "Did you mean:",
   "currentSelection": "Current: {name}",
   "emptySlot": "Empty Slot",
   "items": {

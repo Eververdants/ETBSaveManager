@@ -1,5 +1,5 @@
 <template>
-  <div class="lazy-image-container" :class="{ loaded: imageLoaded, error: imageError }">
+  <div ref="containerRef" class="lazy-image-container" :class="{ loaded: imageLoaded, error: imageError }">
     <!-- Initial loading placeholder: static gradient, no animation -->
     <div v-if="!imageLoaded && !imageError" class="image-placeholder"></div>
 
@@ -12,12 +12,16 @@
       </svg>
     </div>
 
-    <!-- Actual image: uses displayedSrc instead of props.src to ensure only loaded images are displayed -->
+    <!-- Actual image: uses displayedSrc instead of props.src to ensure only loaded images are displayed.
+         src starts empty — no browser request until preloaded through the queue.
+         Once loaded, the img reads from cache (instant, no white flash). -->
     <img
       :src="displayedSrc"
       :alt="alt"
       :class="imageClass"
       :style="imageStyle"
+      loading="lazy"
+      decoding="async"
       @load="handleImageLoad"
       @error="onImageError"
     />
@@ -25,16 +29,43 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 
 /**
  * Global image preload queue with concurrency limit.
  * Prevents disk I/O contention when many cards mount simultaneously.
+ * Reduced to 2 concurrent loads — disk I/O is slower than network,
+ * and fewer concurrent reads = less contention on the storage device.
  */
-const PRELOAD_QUEUE_MAX = 4;
+const PRELOAD_QUEUE_MAX = 2;
+const PRELOAD_ROOT_MARGIN = "200px";
 const preloadQueue = [];
 let preloadActive = 0;
 const loadedImages = new Set();
+
+/**
+ * Stagger: ensure image load starts are spread ~50ms apart.
+ * Prevents N simultaneous WebP decodes from blocking the main thread on initial render.
+ * During scroll, natural user pacing means this usually resolves immediately.
+ */
+let _lastLoadStartMs = 0;
+const MIN_LOAD_GAP_MS = 50;
+
+const staggerGap = () => {
+  const now = performance.now();
+  const elapsed = now - _lastLoadStartMs;
+  if (elapsed < MIN_LOAD_GAP_MS) {
+    const wait = MIN_LOAD_GAP_MS - elapsed;
+    return new Promise((resolve) =>
+      setTimeout(() => {
+        _lastLoadStartMs = performance.now();
+        resolve();
+      }, wait),
+    );
+  }
+  _lastLoadStartMs = now;
+  return Promise.resolve();
+};
 
 const processQueue = () => {
   while (preloadActive < PRELOAD_QUEUE_MAX && preloadQueue.length > 0) {
@@ -96,40 +127,105 @@ const props = defineProps({
 
 const emit = defineEmits(["load", "error"]);
 
-// Currently displayed src (only fully loaded images are assigned to this ref)
-const displayedSrc = ref(props.src);
+const containerRef = ref(null);
+
+// Whether this element is near the viewport — starts false, becomes true
+// when IntersectionObserver fires (or immediately if IO not supported).
+const isNearViewport = ref(false);
+
+// displayedSrc starts empty — no `<img src>` means no browser request.
+// Only set after the JS preload queue has finished loading the image.
+const displayedSrc = ref("");
 const imageLoaded = ref(false);
 const imageError = ref(false);
 
-/** Switch to new image: preload -> update displayedSrc on success */
-const swapToSrc = async (newSrc) => {
-  if (!newSrc || newSrc === displayedSrc.value) return;
+// Monotonic load ID: if startLoad() is called twice (e.g. props.src changes
+// while a preload is in-flight), only the latest call's result is applied.
+let currentLoadId = 0;
+let observer = null;
 
-  const ok = await enqueuePreload(newSrc);
-  // After preloading, switch src in one go (browser reads from cache, no white flash)
-  displayedSrc.value = newSrc;
+/**
+ * Load an image URL through the concurrency-limited queue.
+ * Only applies the result if `url` is still the current props.src
+ * and no newer load has been started.
+ */
+const startLoad = async (url) => {
+  if (!url) return;
+  // Already loaded this exact URL — skip
+  if (imageLoaded.value && displayedSrc.value === url) return;
+
+  const loadId = ++currentLoadId;
+
+  // Spread image load starts across frames so WebP decodes don't all
+  // hit the main thread in the same frame (causing visible stutter).
+  await staggerGap();
+  // If a newer load superseded us while we waited, discard
+  if (loadId !== currentLoadId) return;
+
+  const ok = await enqueuePreload(url);
+
+  // If a newer load superseded this one, discard stale result
+  if (loadId !== currentLoadId) return;
+  // If props.src changed to something else while we loaded, discard
+  if (url !== props.src) return;
+
+  displayedSrc.value = url;
   imageError.value = !ok;
-  // imageLoaded stays true, container won't show spinner
   imageLoaded.value = true;
 };
 
-// Preload initial src on first mount
-onMounted(async () => {
-  if (props.src) {
-    const ok = await enqueuePreload(props.src);
-    // If initial image fails to load, enter error state
-    imageError.value = !ok;
-    imageLoaded.value = true;
-    displayedSrc.value = props.src;
+onMounted(() => {
+  if (!props.src) return;
+
+  // Use IntersectionObserver to detect viewport proximity.
+  // Only start loading when the element is within PRELOAD_ROOT_MARGIN
+  // of the viewport. This prevents off-screen / overscanned cards from
+  // triggering disk I/O before the user scrolls near them.
+  if ("IntersectionObserver" in window && containerRef.value) {
+    observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          isNearViewport.value = true;
+          observer?.disconnect();
+          observer = null;
+        }
+      },
+      { rootMargin: PRELOAD_ROOT_MARGIN },
+    );
+    observer.observe(containerRef.value);
+  } else {
+    // Fallback: load immediately
+    isNearViewport.value = true;
   }
 });
 
-// When props.src changes: preload new image -> silent switch, don't reset imageLoaded
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
+});
+
+// When element enters viewport proximity, start loading
+watch(isNearViewport, async (near) => {
+  if (near && props.src) {
+    await startLoad(props.src);
+  }
+});
+
+// When props.src changes: if already near viewport, load immediately.
+// Otherwise the original IntersectionObserver is still watching and
+// will trigger startLoad() with the latest src when it fires.
 watch(
   () => props.src,
-  (newSrc) => {
+  async (newSrc) => {
     if (!newSrc) return;
-    swapToSrc(newSrc);
+    if (isNearViewport.value) {
+      await startLoad(newSrc);
+    }
+    // If not yet near viewport, do nothing — the observer will fire
+    // with isNearViewport=true and the watch on isNearViewport calls
+    // startLoad(props.src) which picks up the latest src.
   },
 );
 
@@ -153,6 +249,12 @@ const onImageError = (event) => {
   overflow: hidden;
   width: 100%;
   height: 100%;
+}
+
+/* Fade-in animation for the image */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .lazy-image-container img {
@@ -210,11 +312,12 @@ const onImageError = (event) => {
 
 .lazy-image-container img {
   opacity: 0;
-  transition: opacity 0.15s ease;
+  animation: none;
 }
 
 .lazy-image-container.loaded img {
   opacity: 1;
+  animation: fadeIn 0.25s ease-out both;
 }
 
 .lazy-image-container.loaded .image-placeholder {

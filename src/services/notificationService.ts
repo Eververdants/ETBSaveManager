@@ -1,6 +1,7 @@
 import { createApp, h, ref } from "vue";
 import NotificationPopup from "@/components/ui/NotificationPopup.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { vSquircle } from "../composables/useSquircle";
 import type { NotificationOptions } from "../types";
 
 interface NotificationPopupInstance {
@@ -25,6 +26,7 @@ const initNotification = (): Promise<NotificationPopupInstance> => {
     },
   });
   app.component("FontAwesomeIcon", FontAwesomeIcon);
+  app.directive("squircle", vSquircle);
   app.mount(mountPoint);
   return new Promise((resolve) => {
     const checkRef = () => {

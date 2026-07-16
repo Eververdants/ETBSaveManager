@@ -198,7 +198,7 @@ const toggleSelection = () => {
   height: 160px;
   border-radius: var(--radius-card);
   overflow: hidden;
-  cursor: pointer;
+  cursor: default;
   background: var(--card-bg);
   border: var(--card-border);
   box-shadow: var(--card-shadow);
@@ -307,13 +307,7 @@ const toggleSelection = () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  cursor: text;
   transition: color 0.35s ease;
-}
-
-.archive-name:hover {
-  text-decoration: underline;
-  text-decoration-color: rgba(255, 255, 255, 0.4);
 }
 
 /* Game mode info */

@@ -80,7 +80,10 @@ const toggleSelectAll = () => {
 </script>
 
 <style scoped>
-.level-check-grid { display: flex; flex-direction: column; gap: 12px; }
+.level-check-grid {
+  display: flex; flex-direction: column; gap: 12px;
+  flex: 1; min-height: 0;
+}
 .grid-header {
   display: flex; align-items: center; gap: 12px;
   padding: 8px 12px; background: var(--bg-secondary);
@@ -110,9 +113,9 @@ const toggleSelectAll = () => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px;
-  max-height: calc(100vh - 320px);
   overflow-y: auto;
   padding: 4px;
+  flex: 1;
 }
 .level-card {
   background: var(--bg-secondary); border-radius: var(--radius-md);

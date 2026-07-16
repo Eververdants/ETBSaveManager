@@ -36,7 +36,7 @@ export default {
     archive: "档案",
     statusOnline: "在线",
     buildLabel: "构建 /",
-    ***REMOVED*** "本地 · 中国",
+    comingSoon: "↳ 下一版本：v{version} · {date} —— 修复调度模块翻译缺失",
   },
 
   hero: {
@@ -113,6 +113,11 @@ export default {
     performance: {
       title: "性能监控",
       description: "内置 FPS、内存、动画质量诊断,实时调节 GPU 渲染与特效预算。",
+    },
+    scheduler: {
+      title: "智能资源调度",
+      description:
+        "自动检测操作上下文，动态分配 CPU、渲染与 I/O 预算。基于优先级的后台任务队列，配合实时 FPS/内存反馈闭环。",
     },
   },
 

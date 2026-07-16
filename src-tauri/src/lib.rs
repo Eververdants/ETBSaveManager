@@ -29,6 +29,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             save_commands::load_all_saves,
             save_commands::load_save_metadata,
+            save_commands::load_save_metadata_page,
             save_commands::load_save_details_batch,
             save_commands::delete_file,
             save_commands::soft_delete_file,
@@ -44,6 +45,7 @@ pub fn run() {
             save_commands::open_save_games_folder,
             gpu_settings::get_gpu_acceleration_status,
             gpu_settings::set_gpu_acceleration,
+            gpu_settings::set_process_priority,
             system_commands::restart_app,
             save_commands::convert_sav_to_json,
             save_commands::convert_json_to_sav,

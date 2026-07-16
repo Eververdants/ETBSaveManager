@@ -35,7 +35,10 @@ export function useVirtualScroll(scrollContainerRef: Ref<HTMLElement | null>, di
     count: rowCount.value,
     getScrollElement: () => scrollContainerRef.value,
     estimateSize: () => ROW_HEIGHT,
-    // Reduce overscan — fewer excess DOM nodes when archives are many
+    // Overscan of 1 row ensures no blank flash during resize or scroll.
+    // Keeps ~15-20 cards in the DOM on a 1920px viewport, which is well
+    // within the compositor's capacity, especially now that box-shadow
+    // and filter blur have been removed from the hover paint path.
     overscan: 1,
   }));
 

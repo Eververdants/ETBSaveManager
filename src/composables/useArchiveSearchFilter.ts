@@ -218,8 +218,14 @@ export function useArchiveList(archives: Ref<ArchiveData[]>): {
     searchSuggestions.value = applySuggestions(archives.value, searchQuery.value);
   };
 
+  // Also watch the archives ref directly so that reassigning archives.value
+  // (e.g. refreshArchives) always rebuilds displayArchives even when the
+  // serialised identity snapshot (archiveVersion) hasn't changed — i.e. when
+  // archive IDs and visibility are the same but the actual data may differ.
+  // Without this, clicking FAB "refresh" would appear to do nothing because
+  // displayArchives would never be re-derived from the new archive objects.
   watch(
-    [searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility, archiveVersion],
+    [searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility, archiveVersion, archives],
     updateFiltered,
     { immediate: true },
   );

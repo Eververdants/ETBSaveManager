@@ -98,6 +98,62 @@ pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
     Ok(results)
 }
 
+/// Paginated version of load_save_metadata — loads only `limit` items at the
+/// given `offset`, so the frontend can progressively fetch archives as the
+/// user scrolls.  Returns SaveFileMetaPage with the total count so the
+/// frontend knows when the list ends.
+#[tauri::command]
+pub async fn load_save_metadata_page(
+    offset: u32,
+    limit: u32,
+) -> AppResult<save_utils::SaveFileMetaPage> {
+    let start_time = Instant::now();
+
+    let (paths_result, visible_saves_result) = rayon::join(
+        || get_file_path::list_save_paths(),
+        || get_visible_saves_set(),
+    );
+
+    let paths = paths_result?;
+    let visible_saves = visible_saves_result?;
+    let total = paths.len() as u32;
+
+    // Clamp to valid range
+    let start = offset.min(total) as usize;
+    let end = (offset + limit).min(total) as usize;
+    let page_paths = &paths[start..end];
+
+    let mut results: Vec<SaveFileMeta> = Vec::with_capacity(page_paths.len());
+    for (rel_i, path) in page_paths.iter().enumerate() {
+        let global_idx = (start + rel_i) as u32;
+        let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+        let archive_name = extract_archive_name(file_name);
+        let date = cli_handlers::get_modified_date(path).unwrap_or_default();
+        let is_visible = visible_saves.contains(archive_name);
+
+        if let Ok(meta) = save_utils::build_save_meta(global_idx, path, date, is_visible) {
+            results.push(meta);
+        }
+    }
+
+    let elapsed = start_time.elapsed();
+    println!(
+        "load_save_metadata_page(offset={}, limit={}): {} items of {}, took {:.2}ms",
+        offset,
+        limit,
+        results.len(),
+        total,
+        elapsed.as_secs_f64() * 1000.0
+    );
+
+    Ok(save_utils::SaveFileMetaPage {
+        items: results,
+        total,
+        offset,
+        has_more: end < total as usize,
+    })
+}
+
 /// Phase 2 of incremental loading: parse specific .sav files in batch
 /// to get current_level and actual_difficulty.
 #[tauri::command]

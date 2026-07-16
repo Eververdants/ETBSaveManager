@@ -12,7 +12,7 @@
  */
 
 const preloadCache = new Map<string, Promise<boolean>>();
-const MAX_CONCURRENT = 4;
+const MAX_CONCURRENT = 2;
 let inFlight = 0;
 const pending: Array<{ url: string; resolve: (v: boolean) => void }> = [];
 

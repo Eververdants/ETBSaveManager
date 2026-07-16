@@ -193,7 +193,17 @@ const toggleSelection = () => {
 </script>
 
 <style scoped>
-/* Card container - optimized GPU acceleration */
+/* Card container - optimized GPU acceleration.
+   contain: layout style paint scopes layout/paint changes to the card
+   itself — when .difficulty-tag width changes on hover, the browser
+   recalculates layout only inside this card, without cascading to the
+   CSS Grid or sibling cards.  Without this, every frame of the width
+   transition would re-layout the entire grid row.
+
+   We deliberately avoid will-change: transform here (see note below),
+   but contain is safe because hover is user-initiated and synchronous —
+   the stale-GPU-texture issue from WebView2 only applies to async
+   content landing on compositing layers. */
 .archive-card {
   position: relative;
   width: 100%;
@@ -205,18 +215,19 @@ const toggleSelection = () => {
   background: var(--card-bg);
   border: var(--card-border);
   box-shadow: var(--card-shadow);
+  contain: layout style paint;
+  /* Promoted to own compositing layer.  Previously avoided because
+     filter: blur() on LazyImage created a THIRD nested layer that
+     WebView2 failed to invalidate during async content loads.
+     Now that filter: blur() has been removed, the nesting is only
+     two levels (row translateY → card), which WebView2 handles
+     correctly.  With its own layer, every paint operation on this
+     card (hover state changes, difficulty-tag color updates, etc.)
+     targets its own backing store — other cards aren't affected. */
+  will-change: transform;
+  /* Only transition transform — box-shadow snaps instantly. */
   transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease,
-    opacity 0.5s ease,
-    border-color 0.35s ease;
-  /* No translateZ(0) here — the virtual scroll row's translateY
-     already provides the GPU compositing layer for scrolling.
-     Adding translateZ(0) creates a SECOND compositing layer inside
-     the row's layer, which — combined with the LazyImage container's
-     filter+transform layer — creates a triple-nested GPU layer
-     hierarchy.  In WebView2 this causes layers to not invalidate
-     when async content loads, producing "blank until hover" artifacts. */
+    transform 0.15s ease;
 }
 
 /* Disable all transform-related animations during deletion to avoid GSAP conflicts */
@@ -240,6 +251,17 @@ const toggleSelection = () => {
 }
 
 .archive-card:hover {
+  /* Promote to own compositing layer — critical for parallel hovers.
+     Without this, ALL hovered cards' paint work (box-shadow, background-color,
+     border-color changes) targets the same parent layer's backing store,
+     forcing sequential re-rasterization on the main thread.  With will-change,
+     each card gets its own GPU backing store that the compositor's worker
+     threads can rasterize in parallel.
+
+     Safe during hover because user interaction guarantees every frame is
+     committed — the stale-texture issue from the earlier comment only applies
+     to async content arriving on a dormant compositing layer. */
+  will-change: transform;
   transform: translateY(-4px);
   box-shadow: var(--card-shadow-hover);
   z-index: 2;
@@ -256,15 +278,17 @@ const toggleSelection = () => {
 .card-background :deep(.lazy-image-container) {
   width: 100%;
   height: 100%;
-  filter: blur(1px);
   transform: scale(1.005);
+  /* filter: blur() removed entirely — it requires a separate GPU
+     render surface per card (8-12 simultaneous surfaces for visible
+     cards).  Images are already optimized WebP at quality 15, the
+     1px blur was perceptibly redundant and constantly consumed GPU
+     blending bandwidth even when no hover is active. */
   transition:
-    transform 0.3s ease,
-    filter 0.4s ease;
+    transform 0.2s ease;
 }
 
 .archive-card:hover .card-background :deep(.lazy-image-container) {
-  filter: blur(0);
   transform: scale(1.02);
 }
 
@@ -279,7 +303,7 @@ const toggleSelection = () => {
     rgba(0, 0, 0, 0.4) 60%,
     rgba(0, 0, 0, 0.7) 100%
   );
-  transition: opacity 0.3s ease;
+  transition: opacity 0.15s ease;
 }
 
 .archive-card:hover .background-overlay {
@@ -294,7 +318,7 @@ const toggleSelection = () => {
   right: var(--space-3);
   color: white;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  transition: transform 0.3s ease;
+  transition: transform 0.15s ease;
 }
 
 .archive-card:hover .archive-info {
@@ -308,7 +332,6 @@ const toggleSelection = () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.35s ease;
 }
 
 /* Game mode info */
@@ -337,11 +360,11 @@ const toggleSelection = () => {
   overflow: hidden;
   position: relative;
   width: var(--w-short, auto);
+  /* Only transition width — background/color/border-color are per-frame
+     paint operations that, when combined across multiple simultaneous
+     hovers, overload the paint thread.  These snap instantly. */
   transition:
-    width 0.25s ease,
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+    width 0.1s ease;
 }
 
 .tag-short,
@@ -350,7 +373,8 @@ const toggleSelection = () => {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  transition: opacity 0.2s ease;
+  /* Opacity transition stays — it's compositor-only, no paint cost */
+  transition: opacity 0.1s ease;
   white-space: nowrap;
 }
 
@@ -409,13 +433,6 @@ const toggleSelection = () => {
   align-items: center;
   background: var(--card-bg);
   border-top: 1px solid var(--border-color);
-  transition:
-    background-color 0.3s ease,
-    opacity 0.35s ease;
-}
-
-.archive-card:hover .card-info {
-  background-color: rgba(255, 255, 255, 0.02);
 }
 
 .current-level {
@@ -426,7 +443,6 @@ const toggleSelection = () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.35s ease;
 }
 
 /* Action buttons */
@@ -450,12 +466,11 @@ const toggleSelection = () => {
   background: rgba(128, 128, 128, 0.1);
   color: rgba(128, 128, 128, 0.7);
   border: 1px solid rgba(128, 128, 128, 0.2);
+  /* Only transition compositor-friendly properties; background/color/
+     border-color are paint-triggers that snap instantly. */
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
   position: relative;
   overflow: hidden;
   touch-action: manipulation;

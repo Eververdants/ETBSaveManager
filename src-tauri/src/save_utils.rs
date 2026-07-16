@@ -69,6 +69,17 @@ pub struct SaveFileMeta {
     pub file_size: u64,
 }
 
+/// Paginated response for load_save_metadata_page.
+/// Returns a slice of metadata items plus the total count so the
+/// frontend can show progress and detect the end of the list.
+#[derive(Serialize)]
+pub struct SaveFileMetaPage {
+    pub items: Vec<SaveFileMeta>,
+    pub total: u32,
+    pub offset: u32,
+    pub has_more: bool,
+}
+
 /// Detailed info that requires .sav parsing, loaded on demand.
 #[derive(Serialize)]
 pub struct SaveFileDetail {

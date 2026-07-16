@@ -65,7 +65,12 @@
     <div class="card-info">
       <span class="current-level" v-html="sanitize(highlightedLevel)"></span>
       <div class="action-buttons">
-        <button class="action-btn edit" type="button" :aria-label="$t('archiveCard.editLabel')" @click.stop="editArchive">
+        <button
+          class="action-btn edit"
+          type="button"
+          :aria-label="$t('archiveCard.editLabel')"
+          @click.stop="editArchive"
+        >
           <font-awesome-icon icon="fa-solid fa-edit" aria-hidden="true" />
         </button>
         <button
@@ -79,7 +84,12 @@
             aria-hidden="true"
           />
         </button>
-        <button class="action-btn delete" type="button" :aria-label="$t('archiveCard.deleteLabel')" @click.stop="deleteArchive">
+        <button
+          class="action-btn delete"
+          type="button"
+          :aria-label="$t('archiveCard.deleteLabel')"
+          @click.stop="deleteArchive"
+        >
           <font-awesome-icon icon="fa-solid fa-trash" aria-hidden="true" />
         </button>
       </div>

@@ -188,6 +188,7 @@ function createArchiveConfig(name: string): ArchiveConfig {
     level: null,
     difficulty: null,
     actualDifficulty: null,
+    inventoryTemplate: null,
 
     // Final resolved values (computed by resolve)
     finalLevel: null,

@@ -8,8 +8,6 @@
   "batchDeleteTitle": "Batch Delete Archives",
   "batchDeleteMessage": "Are you sure you want to delete the selected {count} archives?",
   "batchDeleteDescription": "This action will permanently delete these archive files and cannot be recovered.",
-  "confirm": "Delete",
-  "cancel": "Cancel",
   "archiveDetails": {
     "gameMode": "Game Mode",
     "currentLevel": "Current Level",

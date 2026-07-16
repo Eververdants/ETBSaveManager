@@ -152,7 +152,9 @@ const shouldRender = ref(isHomePage.value); // Controls whether DOM is rendered
 const isVisible = ref(isHomePage.value); // Controls animation state
 const displayIcon = computed(() => iconMap[icons[displayIndex.value]] || "magnifying-glass");
 const nextIcon = computed(() => iconMap[icons[nextDisplayIndex.value]] || "magnifying-glass");
-const getCurrentTooltip = computed(() => `${t(tooltipKeys[icons[currentIndex.value]] || tooltipKeys.search)} · ${t("floatingButton.scrollTooltip")}`);
+const getCurrentTooltip = computed(
+  () => `${t(tooltipKeys[icons[currentIndex.value]] || tooltipKeys.search)} · ${t("floatingButton.scrollTooltip")}`,
+);
 
 const applyContainerStyles = (container, extra = {}) => {
   if (!container) return;

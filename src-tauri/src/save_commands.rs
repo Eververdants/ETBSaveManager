@@ -297,6 +297,9 @@ pub async fn restore_file(file_path: String) -> AppResult<()> {
         // Validate restored path
         validate_save_games_path(path)?;
 
+        // Validate restored path
+        validate_save_games_path(path)?;
+
         // Add back to MAINSAVE records
         add_save_to_mainsave(extract_archive_name(filename))?;
 

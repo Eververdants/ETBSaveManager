@@ -1,11 +1,16 @@
 import { useVirtualizer } from "@tanstack/vue-virtual";
-import { ref, computed, type Ref } from "vue";
+import { ref, computed, watch, type Ref } from "vue";
 import type { ArchiveData } from "@/types";
 
 /**
  * Virtual scrolling composable using @tanstack/vue-virtual.
  * Handles column calculation via ResizeObserver and provides
  * items for the visible virtual rows.
+ *
+ * The ResizeObserver auto-initializes as soon as scrollContainerRef
+ * is set (via a watch), eliminating the fragile requirement for an
+ * explicit initObserver() call at exactly the right time.  The
+ * column count is correct before any reactive render of card data.
  */
 export function useVirtualScroll(scrollContainerRef: Ref<HTMLElement | null>, displayArchives: Ref<ArchiveData[]>) {
   const ROW_HEIGHT = 180;
@@ -30,7 +35,8 @@ export function useVirtualScroll(scrollContainerRef: Ref<HTMLElement | null>, di
     count: rowCount.value,
     getScrollElement: () => scrollContainerRef.value,
     estimateSize: () => ROW_HEIGHT,
-    overscan: 3,
+    // Reduce overscan — fewer excess DOM nodes when archives are many
+    overscan: 1,
   }));
 
   const rowVirtualizer = useVirtualizer(virtualizerOptions);
@@ -45,22 +51,8 @@ export function useVirtualScroll(scrollContainerRef: Ref<HTMLElement | null>, di
     return items.slice(start, start + cols);
   };
 
-  // ─── ResizeObserver for column recalculation ──
+  // ─── Auto-init ResizeObserver when ref becomes available ──
   let resizeObserver: ResizeObserver | null = null;
-
-  const initObserver = (): void => {
-    if (resizeObserver) return;
-    const el = scrollContainerRef.value;
-    if (!el || !("ResizeObserver" in window)) return;
-
-    // Initialize column count from current width
-    columnsPerRow.value = getColumnCount();
-
-    resizeObserver = new ResizeObserver(() => {
-      columnsPerRow.value = getColumnCount();
-    });
-    resizeObserver.observe(el);
-  };
 
   const destroyObserver = (): void => {
     if (resizeObserver) {
@@ -69,11 +61,46 @@ export function useVirtualScroll(scrollContainerRef: Ref<HTMLElement | null>, di
     }
   };
 
+  // Watch the scrollContainerRef: as soon as it's set (after mount),
+  // initialize the column count and set up the ResizeObserver.
+  // This runs synchronously before any async data loading, so
+  // columnsPerRow is correct for the first card render.
+  watch(
+    scrollContainerRef,
+    (el) => {
+      if (!el || resizeObserver || !("ResizeObserver" in window)) return;
+
+      columnsPerRow.value = getColumnCount();
+
+      resizeObserver = new ResizeObserver(() => {
+        columnsPerRow.value = getColumnCount();
+      });
+      resizeObserver.observe(el);
+    },
+    { immediate: true },
+  );
+
+  /**
+   * Recalculate column count and re-observe the container.
+   * Call this when the container's layout might have changed
+   * (e.g., after a showCards transition or visibility change).
+   */
+  const recalculateColumns = (): void => {
+    columnsPerRow.value = getColumnCount();
+    destroyObserver();
+    if (scrollContainerRef.value && "ResizeObserver" in window) {
+      resizeObserver = new ResizeObserver(() => {
+        columnsPerRow.value = getColumnCount();
+      });
+      resizeObserver.observe(scrollContainerRef.value);
+    }
+  };
+
   return {
     rowVirtualizer,
     columnsPerRow,
     getRowItems,
-    initObserver,
     destroyObserver,
+    recalculateColumns,
   };
 }

@@ -75,16 +75,15 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
     state.selectedLevelKeys = [...(ENDING_LEVELS[index] || [])];
   };
 
-  // Generated archive names
+  // Generated archive names (just level key, no difficulty suffix)
   const archiveNames = computed(() => {
     const names: string[] = [];
     for (const levelKey of state.selectedLevelKeys) {
-      const base = `${levelKey}_${formatDifficulty(state.difficulty)}`;
       if (state.copies <= 1) {
-        names.push(base);
+        names.push(levelKey);
       } else {
         for (let i = 1; i <= state.copies; i++) {
-          names.push(`${base}(${i})`);
+          names.push(`${levelKey}(${i})`);
         }
       }
     }
@@ -113,6 +112,7 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
 
   const createSingleArchive = async (
     levelKey: string,
+    copyIndex: number,
     basicArchive: Record<string, unknown>,
   ): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -122,8 +122,10 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
       const isMEGUnlocked = !MEG_LOCKED_LEVELS.includes(levelKey);
       const difficultyLabel = formatDifficulty(state.difficulty);
 
+      const archiveName = state.copies > 1 ? `${levelKey}(${copyIndex})` : levelKey;
+
       const saveData: Record<string, unknown> = {
-        archive_name: `${levelKey}_${difficultyLabel}`,
+        archive_name: archiveName,
         level: levelKey,
         game_mode: "multiplayer",
         difficulty: difficultyLabel,
@@ -165,24 +167,29 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
       errors: [],
     };
 
-    // Process all levels in parallel (no batching delay)
-    const batchResults = await Promise.allSettled(
-      levelsToCreate.map((levelKey) => createSingleArchive(levelKey, basicArchive)),
-    );
+    // Build a flat list of all archives to create (level + copy index)
+    const allArchives: Array<{ levelKey: string; copyIndex: number }> = [];
+    for (const levelKey of levelsToCreate) {
+      for (let i = 1; i <= state.copies; i++) {
+        allArchives.push({ levelKey, copyIndex: i });
+      }
+    }
 
-    for (let i = 0; i < batchResults.length; i++) {
-      const result = batchResults[i];
-      const levelKey = levelsToCreate[i];
-      if (result.status === "fulfilled" && result.value.success) {
+    // Process sequentially to avoid MAINSAVE.sav concurrent write conflicts
+    for (let i = 0; i < allArchives.length; i++) {
+      const { levelKey, copyIndex } = allArchives[i];
+      const archiveName = state.copies > 1 ? `${levelKey}(${copyIndex})` : levelKey;
+
+      const result = await createSingleArchive(levelKey, copyIndex, basicArchive);
+      if (result.success) {
         results.success++;
       } else {
         results.failed++;
-        const errorMsg =
-          result.status === "rejected"
-            ? (result.reason as Error)?.message || String(result.reason)
-            : result.value?.error || "Unknown error";
-        results.errors.push({ name: levelKey, error: errorMsg });
+        results.errors.push({ name: archiveName, error: result.error || "Unknown error" });
       }
+
+      // Update progress
+      state.creationProgress = Math.round(((i + 1) / allArchives.length) * 100);
     }
 
     state.creationProgress = 100;

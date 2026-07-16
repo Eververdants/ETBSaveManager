@@ -105,7 +105,10 @@ function applyFilters(
     filtered = filtered.filter((archive) => archive.isVisible === isVisible);
   }
 
-  return filtered;
+  // Always return a shallow copy so the computed consumer detects
+  // even in-place array mutations (critical: Phase 2 detail loading
+  // mutates individual indices rather than replacing the whole array).
+  return [...filtered];
 }
 
 function applySuggestions(archives: Ref<ArchiveData[]> | ArchiveData[], searchQuery: string): ArchiveData[] {
@@ -182,12 +185,12 @@ export function useFilterState(
  * manual event-bridge between ArchiveSearchFilter and Home.vue.
  */
 export function useArchiveList(archives: Ref<ArchiveData[]>): {
-  displayArchives: ComputedRef<ArchiveData[]>;
+  displayArchives: Ref<ArchiveData[]>;
   searchQuery: Ref<string>;
   selectedArchiveDifficulty: Ref<string>;
   selectedActualDifficulty: Ref<string>;
   selectedVisibility: Ref<string>;
-  searchSuggestions: ComputedRef<ArchiveData[]>;
+  searchSuggestions: Ref<ArchiveData[]>;
   hasActiveFilters: ComputedRef<boolean>;
   resetFilters: () => void;
 } {
@@ -196,17 +199,30 @@ export function useArchiveList(archives: Ref<ArchiveData[]>): {
   const selectedActualDifficulty = ref("");
   const selectedVisibility = ref("");
 
-  const displayArchives = computed(() =>
-    applyFilters(
+  const displayArchives = shallowRef<ArchiveData[]>([]);
+  const searchSuggestions = shallowRef<ArchiveData[]>([]);
+
+  // Watch a serialised snapshot of item identities so we only rebuild the
+  // filtered list when items are added/removed or isVisible changes — NOT
+  // when Phase 2 mutates currentLevel / actualDifficulty on existing items.
+  const archiveVersion = computed(() => archives.value.map((a) => `${a.id}:${a.isVisible}`).join("|"));
+
+  const updateFiltered = (): void => {
+    displayArchives.value = applyFilters(
       archives.value,
       searchQuery.value,
       selectedArchiveDifficulty.value,
       selectedActualDifficulty.value,
       selectedVisibility.value,
-    ),
-  );
+    );
+    searchSuggestions.value = applySuggestions(archives.value, searchQuery.value);
+  };
 
-  const searchSuggestions = computed(() => applySuggestions(archives.value, searchQuery.value));
+  watch(
+    [searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility, archiveVersion],
+    updateFiltered,
+    { immediate: true },
+  );
 
   const hasActiveFilters = computed(
     (): boolean =>

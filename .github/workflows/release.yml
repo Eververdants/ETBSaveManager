@@ -78,7 +78,6 @@ jobs:
         with:
           name: bundles-${{ matrix.label }}
           path: |
-            src-tauri/target/${{ matrix.arch }}/release/bundle/msi/*.msi
             src-tauri/target/${{ matrix.arch }}/release/bundle/nsis/*-setup.exe
             src-tauri/target/${{ matrix.arch }}/release/bundle/latest.json
             src-tauri/target/${{ matrix.arch }}/release/bundle/*.sig
@@ -108,7 +107,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            artifacts/**/*.msi
             artifacts/**/*-setup.exe
             artifacts/**/latest.json
             artifacts/**/*.sig

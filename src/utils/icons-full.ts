@@ -92,7 +92,7 @@ import {
   faUserPlus,
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
-import { faBilibili, faGithub, faTiktok, faXTwitter } from "@fortawesome/free-brands-svg-icons";
+import { faBilibili, faGithub, faRedditAlien, faTiktok, faXTwitter } from "@fortawesome/free-brands-svg-icons";
 
 export function registerIcons(): void {
   library.add(
@@ -184,6 +184,7 @@ export function registerIcons(): void {
     faUsers,
     faBilibili,
     faGithub,
+    faRedditAlien,
     faTiktok,
     faXTwitter,
   );

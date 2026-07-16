@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useI18n } from "vue-i18n";
 import { useToast } from "./useToast";
 import type { ArchiveData } from "@/types";
+import { preloadImage } from "@/utils/imagePreloader";
 
 interface RawSaveItem {
   id?: number;
@@ -54,7 +55,6 @@ export interface IncrementalLoadState {
 }
 
 const BATCH_SIZE = 50;
-const IMMEDIATE_COUNT = 30; // First N archives get full details before UI shows
 
 /** Shallow array equality — returns true when elements have same IDs */
 function arraysEqualById(a: ArchiveData[], b: ArchiveData[]): boolean {
@@ -211,8 +211,8 @@ export function useArchiveData(): {
 
   /**
    * Phase 2: Load detail data (.sav parsing) for archives that only have
-   * filename-derived metadata. Loads in batches and replaces ArchiveData
-   * objects immutably so Vue reactivity picks up every change.
+   * filename-derived metadata. Loads in batches and mutates individual
+   * indices in-place so unchanged cards skip re-render.
    */
   const startDetailLoading = async (): Promise<void> => {
     // Archives that still have the default "Level0" (not yet filled by Phase 2)
@@ -238,23 +238,35 @@ export function useArchiveData(): {
       try {
         const details = await invoke<SaveFileDetail[]>("load_save_details_batch", { paths: batch });
 
-        // Replace each matched ArchiveData with a new object so Vue detects the change
-        const updated = [...archives.value];
+        // Fire-and-forget: preload background images into browser cache
+        // BEFORE mutating card data.  LazyImage checks isImagePreloaded()
+        // before its own queue and awaits the preload promise directly, so
+        // it never sees a blank frame — the image is guaranteed to be in
+        // flight (and usually already cached when it looks) by the time
+        // the card's backgroundImage computed changes.
         for (const detail of details) {
-          const idx = updated.findIndex((a) => a.path === detail.path);
-          if (idx !== -1) {
-            updated[idx] = {
-              ...updated[idx],
-              currentLevel: detail.current_level,
-              actualDifficulty:
-                difficultyMap[detail.actual_difficulty] ||
-                detail.actual_difficulty?.toLowerCase() ||
-                updated[idx].actualDifficulty,
-            };
+          if (detail.current_level) {
+            preloadImage(`/images/ETB/${detail.current_level}.webp`);
           }
         }
-        archives.value = updated;
-        displayArchives.value = [...displayArchives.value];
+
+        // Mutate properties IN-PLACE — object reference stays the same.
+        // Cards that receive this proxy from the filtered list will update
+        // reactively via their computed dependencies (currentLevel,
+        // actualDifficulty) WITHOUT triggering a full list re-render.
+        for (const detail of details) {
+          const idx = archives.value.findIndex((a) => a.path === detail.path);
+          if (idx !== -1) {
+            const target = archives.value[idx];
+            target.currentLevel = detail.current_level;
+            if (detail.actual_difficulty) {
+              target.actualDifficulty =
+                difficultyMap[detail.actual_difficulty] ||
+                detail.actual_difficulty?.toLowerCase() ||
+                target.actualDifficulty;
+            }
+          }
+        }
 
         incrementalLoadState.value.loadedDetails += batch.length;
       } catch (error) {
@@ -290,22 +302,27 @@ export function useArchiveData(): {
     try {
       incrementalLoadState.value = { phase: "metadata", totalDetails: 0, loadedDetails: 0 };
 
-      // Load metadata + first-N details together — cards render ONCE
+      // Phase 1: metadata only (filename + filesystem, no .sav parsing).
       const merged = await loadMergedArchives();
       archives.value = merged;
-      displayArchives.value = [...merged];
+
+      // Reveal cards immediately with Phase 1 data.
+      // Cards show placeholder level backgrounds (Level0.webp) which are
+      // valid images — no blank flash.  Phase 2 runs in the background
+      // and updates each card's currentLevel/actualDifficulty reactively
+      // as .sav files are parsed, giving a progressive loading feel.
+      displayArchives.value = [...archives.value];
       dataLoadComplete.value = true;
 
-      // Release UI — cards are visible, first N have full details
       if (!silent) {
         loading.value = false;
       }
 
-      // Phase 2 — background batch details for remaining archives (N+1 … end)
-      const remaining = archives.value.filter((a) => a.currentLevel === "Level0").length;
-      if (remaining > 0) {
-        // Defer to avoid blocking first paint
-        requestIdleCallback(() => startDetailLoading(), { timeout: 2000 });
+      // Phase 2: background detail loading — don't await.
+      // Cards update in-place as each batch completes, no flash.
+      const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
+      if (pendingCount > 0) {
+        startDetailLoading();
       } else {
         incrementalLoadState.value = { phase: "complete", totalDetails: 0, loadedDetails: 0 };
       }
@@ -326,39 +343,12 @@ export function useArchiveData(): {
     }
   };
 
-  /** Shared: load metadata + details for first N, return merged ArchiveData[].
-   *  First N have real currentLevel/actualDifficulty; the rest use Level0. */
+  /** Load metadata-only — no .sav parsing, returns instantly even for
+   *  1000+ files. Detail loading happens in startDetailLoading so the
+   *  UI gets cards to render on the very first tick. */
   const loadMergedArchives = async (): Promise<ArchiveData[]> => {
     const [, metaArchives] = await Promise.all([loadVisibleSaves(), loadMetadata()]);
-    if (metaArchives.length === 0) return [];
-
-    // Load details for first N before returning
-    const firstPaths = metaArchives
-      .slice(0, IMMEDIATE_COUNT)
-      .map((a) => a.path)
-      .filter(Boolean);
-    const detailMap = new Map<string, { current_level: string; actual_difficulty: string }>();
-    if (firstPaths.length > 0) {
-      try {
-        const details = await invoke<SaveFileDetail[]>("load_save_details_batch", { paths: firstPaths });
-        for (const d of details) detailMap.set(d.path, d);
-      } catch (e) {
-        console.error("Failed to preload first-batch details:", e);
-      }
-    }
-
-    return metaArchives.map((item) => {
-      const d = detailMap.get(item.path);
-      if (d) {
-        return {
-          ...item,
-          currentLevel: d.current_level,
-          actualDifficulty:
-            difficultyMap[d.actual_difficulty] || d.actual_difficulty?.toLowerCase() || item.actualDifficulty,
-        };
-      }
-      return item;
-    });
+    return metaArchives;
   };
 
   const refreshArchives = async (): Promise<void> => {
@@ -368,14 +358,13 @@ export function useArchiveData(): {
     try {
       const merged = await loadMergedArchives();
       archives.value = merged;
-      // 只有当内容发生变化时才触发 displayArchives 更新
       if (!arraysEqualById(displayArchives.value, merged)) {
         displayArchives.value = [...merged];
       }
 
-      // Background for remaining (N+1 … end)
-      const remaining = archives.value.filter((a) => a.currentLevel === "Level0").length;
-      if (remaining > 0) startDetailLoading();
+      // Background detail loading
+      const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
+      if (pendingCount > 0) startDetailLoading();
     } catch (error) {
       console.error("Failed to refresh archives:", error);
     } finally {
@@ -389,13 +378,12 @@ export function useArchiveData(): {
     try {
       const merged = await loadMergedArchives();
       archives.value = merged;
-      // 只有当内容发生变化时才触发 displayArchives 更新
       if (!arraysEqualById(displayArchives.value, merged)) {
         displayArchives.value = [...merged];
       }
 
-      const remaining = archives.value.filter((a) => a.currentLevel === "Level0").length;
-      if (remaining > 0) requestIdleCallback(() => startDetailLoading(), { timeout: 2000 });
+      const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
+      if (pendingCount > 0) startDetailLoading();
     } catch (error) {
       console.error("Failed to refresh archives:", error);
     }

@@ -5,7 +5,6 @@
     :class="{
       'archive-hidden': !localVisible,
       'visibility-transitioning': isAnimating,
-      'archive-entering': !hasEntered,
       'multi-select-mode': isMultiSelectMode,
       'is-selected': isSelected,
     }"
@@ -82,7 +81,7 @@
 </template>
 
 <script setup>
-import { computed, toRef } from "vue";
+import { computed, toRef, ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import LazyImage from "../ui/LazyImage.vue";
 import { useArchiveCard } from "@/composables/useArchiveCard";
@@ -147,7 +146,6 @@ const archiveRef = toRef(props, "archive");
 const indexRef = computed(() => props.index);
 
 const {
-  hasEntered,
   localVisible,
   isAnimating,
   cardData,
@@ -187,6 +185,11 @@ const handleCardClick = () => {
 const toggleSelection = () => {
   emit("toggle-select", props.archive.id);
 };
+
+// ─── Entrance animation ──────────────────────────────
+// Handled by Home.vue's animateCardsEntrance() via direct DOM
+// manipulation (inline styles) — avoids Vue scoped-CSS and
+// ref-timing issues with virtual scroll.
 </script>
 
 <style scoped>
@@ -207,15 +210,13 @@ const toggleSelection = () => {
     box-shadow 0.3s ease,
     opacity 0.5s ease,
     border-color 0.35s ease;
-  transform: translateZ(0);
-}
-
-.archive-card.archive-entering {
-  opacity: 0;
-  transform: scale(0.95) translateY(10px);
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+  /* No translateZ(0) here — the virtual scroll row's translateY
+     already provides the GPU compositing layer for scrolling.
+     Adding translateZ(0) creates a SECOND compositing layer inside
+     the row's layer, which — combined with the LazyImage container's
+     filter+transform layer — creates a triple-nested GPU layer
+     hierarchy.  In WebView2 this causes layers to not invalidate
+     when async content loads, producing "blank until hover" artifacts. */
 }
 
 /* Disable all transform-related animations during deletion to avoid GSAP conflicts */
@@ -330,9 +331,8 @@ const toggleSelection = () => {
   font-size: 11px;
   font-weight: 500;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.35);
   color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(4px);
   white-space: nowrap;
   overflow: hidden;
   position: relative;
@@ -365,7 +365,6 @@ const toggleSelection = () => {
 .archive-card:hover .difficulty-tag {
   width: var(--w-full, var(--w-short, auto));
   padding: 0 12px;
-  backdrop-filter: blur(8px);
 }
 
 .archive-card:hover .tag-short {
@@ -517,7 +516,6 @@ const toggleSelection = () => {
   gap: 6px;
   padding: 4px 12px;
   background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 200, 50, 0.25);
   border-radius: var(--radius-md);
   color: rgba(255, 200, 50, 0.8);
@@ -847,5 +845,21 @@ const toggleSelection = () => {
   inset: 0;
   background: color-mix(in srgb, var(--primary) 12%, transparent);
   pointer-events: none;
+}
+</style>
+
+<!-- High animation quality: re-enable backdrop-filter for capable devices -->
+<style scoped>
+[data-animation-quality="high"] .difficulty-tag {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+}
+
+[data-animation-quality="high"] .archive-card:hover .difficulty-tag {
+  backdrop-filter: blur(8px);
+}
+
+[data-animation-quality="high"] .hidden-badge {
+  backdrop-filter: blur(4px);
 }
 </style>

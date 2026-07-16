@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
+import Home from "../views/Home.vue";
 
 interface RouteMeta {
   keepAlive: boolean;
@@ -10,8 +11,11 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/",
     name: "Home",
-    // Home page uses magic comments for optimization
-    component: () => import(/* webpackChunkName: "home" */ "../views/Home.vue"),
+    // Home page is eagerly imported so its CSS (and child component CSS)
+    // is bundled into the main CSS file loaded via <link> in index.html.
+    // This prevents Flash of Unstyled Content (FOUC) / broken styles
+    // that occurred when the CSS chunk was injected asynchronously.
+    component: Home,
     meta: { keepAlive: true, priority: 1 },
   },
   {

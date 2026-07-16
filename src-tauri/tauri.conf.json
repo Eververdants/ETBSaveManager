@@ -28,18 +28,18 @@
   "bundle": {
     "active": true,
     "targets": [
-      "nsis",
-      "msi"
+      "nsis"
     ],
     "windows": {
       "webviewInstallMode": {
         "silent": true,
         "type": "embedBootstrapper"
       },
-      "wix": {
-        "language": [
+      "nsis": {
+        "languages": [
+          "en-US",
           "zh-CN",
-          "en-US"
+          "zh-TW"
         ]
       }
     },

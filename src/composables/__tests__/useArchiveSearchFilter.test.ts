@@ -173,17 +173,18 @@ describe("useArchiveList", () => {
   });
 
   it("filters by search query across name, level, difficulty, mode", async () => {
-    const { ref } = await import("vue");
+    const { ref, nextTick } = await import("vue");
     const { useArchiveList } = await import("../useArchiveSearchFilter");
     const archives = ref([createArchive({ id: 1, name: "Alpha Save" }), createArchive({ id: 2, name: "Beta Save" })]);
     const list = useArchiveList(archives);
     list.searchQuery.value = "alpha";
+    await nextTick();
     expect(list.displayArchives.value).toHaveLength(1);
     expect(list.displayArchives.value[0].id).toBe(1);
   });
 
   it("filters by archive difficulty", async () => {
-    const { ref } = await import("vue");
+    const { ref, nextTick } = await import("vue");
     const { useArchiveList } = await import("../useArchiveSearchFilter");
     const archives = ref([
       createArchive({ id: 1, archiveDifficulty: "easy" }),
@@ -191,22 +192,24 @@ describe("useArchiveList", () => {
     ]);
     const list = useArchiveList(archives);
     list.selectedArchiveDifficulty.value = "hard";
+    await nextTick();
     expect(list.displayArchives.value).toHaveLength(1);
     expect(list.displayArchives.value[0].id).toBe(2);
   });
 
   it("filters by visibility", async () => {
-    const { ref } = await import("vue");
+    const { ref, nextTick } = await import("vue");
     const { useArchiveList } = await import("../useArchiveSearchFilter");
     const archives = ref([createArchive({ id: 1, isVisible: true }), createArchive({ id: 2, isVisible: false })]);
     const list = useArchiveList(archives);
     list.selectedVisibility.value = "hidden";
+    await nextTick();
     expect(list.displayArchives.value).toHaveLength(1);
     expect(list.displayArchives.value[0].isVisible).toBe(false);
   });
 
   it("combines multiple filters", async () => {
-    const { ref } = await import("vue");
+    const { ref, nextTick } = await import("vue");
     const { useArchiveList } = await import("../useArchiveSearchFilter");
     const archives = ref([
       createArchive({ id: 1, name: "Save A", archiveDifficulty: "easy", isVisible: true }),
@@ -216,6 +219,7 @@ describe("useArchiveList", () => {
     const list = useArchiveList(archives);
     list.selectedArchiveDifficulty.value = "easy";
     list.selectedVisibility.value = "visible";
+    await nextTick();
     expect(list.displayArchives.value).toHaveLength(1);
     expect(list.displayArchives.value[0].id).toBe(1);
   });
@@ -251,12 +255,13 @@ describe("useArchiveList", () => {
   });
 
   it("provides search suggestions", async () => {
-    const { ref } = await import("vue");
+    const { ref, nextTick } = await import("vue");
     const { useArchiveList } = await import("../useArchiveSearchFilter");
     const archives = ref([createArchive({ id: 1, name: "Alpha Save" }), createArchive({ id: 2, name: "Beta Save" })]);
     const list = useArchiveList(archives);
     expect(list.searchSuggestions.value).toHaveLength(0);
     list.searchQuery.value = "alpha";
+    await nextTick();
     expect(list.searchSuggestions.value).toHaveLength(1);
     expect(list.searchSuggestions.value[0].id).toBe(1);
   });

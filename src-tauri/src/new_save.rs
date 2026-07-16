@@ -110,12 +110,18 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     println!("  Player count: {}", save_data.players.len());
     println!("  Is main ending: {}", !save_data.main_ending);
 
-    // Validate archive_name: must not be empty, only alphanumeric, hyphens, and spaces
+    // Validate archive_name: must not be empty, only safe filename characters
     if save_data.archive_name.trim().is_empty() {
         return Err("Save name cannot be empty".to_string().into());
     }
-    if !save_data.archive_name.chars().all(|c| c.is_alphanumeric() || c == '-' || c == ' ') {
-        return Err("Save name can only contain letters, numbers, hyphens, and spaces".to_string().into());
+    if !save_data.archive_name.chars().all(|c| {
+        c.is_alphanumeric() || c == '-' || c == ' ' || c == '_' || c == '(' || c == ')'
+    }) {
+        return Err(
+            "Save name can only contain letters, numbers, hyphens, underscores, parentheses, and spaces"
+                .to_string()
+                .into(),
+        );
     }
 
     // Sanitize difficulty: only allow alphanumeric characters

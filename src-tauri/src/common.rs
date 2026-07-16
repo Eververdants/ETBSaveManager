@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::{BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock};
 use uesave::{
     Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial, PropertyType,
     Save, ValueArray, ValueVec,
@@ -119,8 +119,16 @@ pub fn get_visible_saves_set() -> AppResult<HashSet<String>> {
     Ok(HashSet::with_capacity(0))
 }
 
+/// Serialize MAINSAVE operations across threads to prevent race conditions
+static MAINSAVE_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
 /// Add save name to MAINSAVE's save list
 pub fn add_save_to_mainsave(archive_name: &str) -> AppResult<()> {
+    let _lock = MAINSAVE_LOCK
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .map_err(|e| format!("MAINSAVE lock poisoned: {}", e))?;
+
     let mut mainsave = match read_mainsave() {
         Ok(save) => save,
         Err(_) => return Ok(()), // Silently skip
@@ -159,6 +167,11 @@ pub fn add_save_to_mainsave(archive_name: &str) -> AppResult<()> {
 
 /// Remove save name from MAINSAVE's save list
 pub fn remove_save_from_mainsave(archive_name: &str) -> AppResult<bool> {
+    let _lock = MAINSAVE_LOCK
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .map_err(|e| format!("MAINSAVE lock poisoned: {}", e))?;
+
     let mut mainsave = match read_mainsave() {
         Ok(save) => save,
         Err(_) => return Ok(false),

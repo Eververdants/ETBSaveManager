@@ -10,6 +10,44 @@ type ScreenMock = {
   fig: string;
 };
 
+/** Simple SVG icons for ending tab labels */
+function renderEndingIcon(type: string): ReactNode {
+  const cls = "h-3 w-3";
+  switch (type) {
+    case "trophy":
+      return (
+        <svg className={cls} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M4 2h8v1.5a4 4 0 01-8 0V2z" />
+          <path d="M7 6v1h2V6H7z" />
+          <path d="M5.5 12l1 2h3l1-2H5.5z" />
+        </svg>
+      );
+    case "search":
+      return (
+        <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" />
+          <line x1="10.5" y1="10.5" x2="14" y2="14" />
+        </svg>
+      );
+    case "microscope":
+      return (
+        <svg className={cls} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <rect x="6.5" y="2" width="1" height="7" rx="0.5" />
+          <circle cx="7" cy="2" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
+          <path d="M5 10h4l-1 2.5H6L5 10z" />
+        </svg>
+      );
+    case "star":
+      return (
+        <svg className={cls} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <polygon points="8,1.5 10,6 15,6 11,9.5 12.5,14 8,11 3.5,14 5,9.5 1,6 6,6" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
 /**
  * 三个真实界面 mock：Home 列表、Create 3 步向导 Step1、Edit 玩家面板
  * 标题/描述由 i18n 提供；fig 编号和编号格式保持档案风不变。
@@ -323,10 +361,10 @@ function CreateMock(): React.JSX.Element {
       {/* Ending tabs（与主项目 createArchive.endings 对齐） */}
       <div className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.18em]">
         {[
-          { icon: "🏆", label: t("screens.create.ending1"), active: true },
-          { icon: "🔍", label: t("screens.create.ending2") },
-          { icon: "🔬", label: t("screens.create.ending3") },
-          { icon: "🌟", label: t("screens.create.ending4") },
+          { icon: "trophy", label: t("screens.create.ending1"), active: true },
+          { icon: "search", label: t("screens.create.ending2") },
+          { icon: "microscope", label: t("screens.create.ending3") },
+          { icon: "star", label: t("screens.create.ending4") },
         ].map((tab) => (
           <span
             key={tab.label}
@@ -336,7 +374,7 @@ function CreateMock(): React.JSX.Element {
                 : "border-[var(--color-ink)]/25 text-[var(--color-ink-2)] dark:border-[var(--color-paper-3)]/25 dark:text-[var(--color-paper-3)]/70"
             }`}
           >
-            <span aria-hidden="true">{tab.icon}</span>
+            <span aria-hidden="true">{renderEndingIcon(tab.icon)}</span>
             <span>{tab.label}</span>
           </span>
         ))}
@@ -504,7 +542,12 @@ function EditMock(): React.JSX.Element {
           <div className="border border-[var(--color-ink)]/20 px-1.5 py-1 dark:border-[var(--color-paper-3)]/20">
             <div className="mb-0.5 flex items-baseline justify-between font-mono text-[7.5px] uppercase tracking-[0.2em] text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">
               <span>{t("screens.edit.sanity")}</span>
-              <span className="text-[7.5px]">🧠</span>
+              <span className="text-[7.5px]">
+                <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
+                  <path d="M8 1C5.5 1 4 2.5 4 4.5c0 .7.2 1.3.5 1.8C3.5 7 3 8 3 9c0 1.5.8 2.5 2 3-.3.5-.5 1-.5 1.5C4.5 15 6 16 8 16s3.5-1 3.5-2.5c0-.5-.2-1-.5-1.5 1.2-.5 2-1.5 2-3 0-1-.5-2-1.5-2.7.3-.5.5-1.1.5-1.8C12 2.5 10.5 1 8 1z" />
+                  <path d="M8 14c-1 0-1.5-.5-1.5-1h3c0 .5-.5 1-1.5 1z" opacity="0.6" />
+                </svg>
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-[16px] font-bold tabular-nums leading-none" style={{ color: sanityTone(73) }}>
@@ -537,7 +580,13 @@ function EditMock(): React.JSX.Element {
           <div className="border border-[var(--color-ink)]/20 px-1.5 py-1 dark:border-[var(--color-paper-3)]/20">
             <div className="mb-1 flex items-baseline justify-between font-mono text-[7.5px] uppercase tracking-[0.2em] text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">
               <span>{t("screens.edit.inventory")}</span>
-              <span>💼</span>
+              <span>
+                <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
+                  <rect x="1.5" y="5.5" width="13" height="9" rx="1" />
+                  <path d="M5.5 5.5V4a1 1 0 011-1h3a1 1 0 011 1v1.5" />
+                  <path d="M1.5 8.5h13" stroke="currentColor" strokeWidth="0.5" fill="none" />
+                </svg>
+              </span>
             </div>
             <div className="flex gap-1">
               {/* 3 手部 slot（垂直） */}

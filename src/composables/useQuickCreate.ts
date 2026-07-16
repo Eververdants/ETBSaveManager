@@ -8,6 +8,7 @@ import {
 } from "./useConfigResolver";
 import { validate } from "./useValidator";
 import { parseName } from "@/utils/nameParser";
+import scheduler from "@/services/resourceScheduler";
 import type {
   ArchiveConfig,
   UniformConfig,
@@ -691,6 +692,12 @@ export function useQuickCreate(): QuickCreateReturn {
       return { success: 0, failed: 0, errors: [] };
     }
 
+    // Report batch-creating operation to resource scheduler
+    scheduler.beginOperation("batch-creating", {
+      totalItems: archivesToCreate.length,
+      completedItems: 0,
+    });
+
     // Load basic archive template
     const basicArchive = await loadBasicArchive();
     if (!basicArchive) {
@@ -741,6 +748,12 @@ export function useQuickCreate(): QuickCreateReturn {
       const completed = Math.min(i + BATCH_SIZE, archivesToCreate.length);
       state.creationProgress = (completed / archivesToCreate.length) * 100;
 
+      // Report progress to resource scheduler
+      scheduler.updateOperation("batch-creating", {
+        totalItems: archivesToCreate.length,
+        completedItems: completed,
+      });
+
       // Give UI time to update
       await nextTick();
 
@@ -753,6 +766,7 @@ export function useQuickCreate(): QuickCreateReturn {
     // Finish creation
     state.creationProgress = 100;
     state.isCreating = false;
+    scheduler.endOperation("batch-creating");
 
     return results;
   };

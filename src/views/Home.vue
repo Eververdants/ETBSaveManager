@@ -265,6 +265,7 @@ import { useAnimations } from "../composables/useAnimations";
 import { useFloatingButton } from "../composables/useFloatingButton";
 import { useToast } from "../composables/useToast";
 import { markInitialLoadComplete } from "../composables/useArchiveCard";
+import scheduler from "../services/resourceScheduler";
 
 
 // Composables
@@ -390,7 +391,14 @@ const { t } = useI18n();
 // Methods
 const toggleSearch = () => {
   showSearch.value = !showSearch.value;
-  if (showSearch.value) nextTick(() => protectFloatingButtonPosition());
+  if (showSearch.value) {
+    // Promote to searching priority immediately — keeps backdrop-filter
+    // visible and CPU budget high for the full duration the search is open.
+    scheduler.beginOperation("searching");
+    nextTick(() => protectFloatingButtonPosition());
+  } else {
+    scheduler.endOperation("searching");
+  }
 };
 
 const openArchiveSearchPanel = () => {
@@ -438,6 +446,13 @@ const confirmDelete = () => {
 };
 
 const refreshArchives = async () => {
+  // Predict archive loading before the operation starts,
+  // so resources are pre-allocated for the incoming I/O.
+  scheduler.predict("loading-archives", {
+    source: "refresh-button",
+    leadTime: 150,
+    confidence: 0.98,
+  });
   await refreshArchivesBase();
   toast.showSuccess(t("archiveSearch.refreshed"));
 };
@@ -655,6 +670,25 @@ watch(
   },
 );
 
+// ─── Search operation reporting ────────────────────────────
+// When the user types in the search box, report "searching" to the
+// scheduler so CPU budget is raised from 0.45 (interacting) to 0.7
+// (searching).  This prevents the filter loop from blocking input.
+// The operation auto-ends when the query is cleared or search closes.
+watch(
+  searchQuery,
+  (query) => {
+    if (query) {
+      scheduler.beginOperation("searching");
+    } else {
+      // Only end searching if search panel is also closed
+      if (!showSearch.value) {
+        scheduler.endOperation("searching");
+      }
+    }
+  },
+);
+
 </script>
 
 <style scoped>
@@ -716,10 +750,16 @@ watch(
      compositing layer lazily the first time the transform changes,
      causing a visible jank on the initial scroll frame. */
   will-change: transform;
-  /* Virtual scroll limits DOM to visible rows — content-visibility /
-     contain:layout are redundant here and in WebView2 they create GPU
-     compositing boundaries that fail to invalidate when async content
-     (images, Phase 2 data) lands, causing blank-until-hover artifacts. */
+  /* content-visibility: auto — tells the browser it can skip layout,
+     paint, and compositing for rows that are far off-screen.  Even
+     though virtual scroll keeps DOM count low, the browser still
+     spends time on style recalculation and paint preparation for
+     rows near the visible boundary.  With content-visibility, the
+     browser only does that work when a row is about to enter the
+     viewport, reducing per-frame GPU compositing overhead during
+     fast scrolling. */
+  content-visibility: auto;
+  contain-intrinsic-size: 180px;
 }
 
 

@@ -28,7 +28,7 @@
   "scanningFiles": "Scanning archive files",
   "multiSelect": {
     "selectAll": "Select All",
-    "invertSelection": "Invert Selection",
+    "deselectAll": "Deselect All",
     "exit": "Exit Multi-select",
     "selected": "{count} / {total} selected",
     "batchDelete": "Batch Delete"

@@ -1,31 +1,24 @@
 {
-  "version": "3.2.0",
-  "date": "2026-06-19",
-  "title": "Code Cleanup & Performance Optimization",
+  "version": "3.3.0",
+  "date": "2026-07-19",
+  "title": "Smart Scheduling & UI Redesign",
   "type": "major",
   "categories": {
     "newFeatures": [
-      "Full migration to TypeScript — improved type safety and code reliability",
-      "Added soft delete with undo, restore, and permanent delete capabilities",
-      "Added incremental loading for faster archive list display"
+      "Added Pinyin fuzzy search with search suggestions",
+      "Rewrote Quick Create Archive flow",
+      "Added paginated lazy loading for archive list"
     ],
     "improvements": [
-      "Removed plugin system, feedback service, and seasonal themes — leaner core",
-      "Removed redundant SkeletonLoader and PageSkeleton components for reduced bundle size",
-      "Cleaned up unused i18n translation files and JS-only implementation files",
-      "Optimized QuickCreateArchive flow — reduced bundle size by 2 KB",
-      "Improved delete undo UX — extended undo window to ~11 seconds for safer recovery",
-      "Enhanced permanent delete timing — timer now starts after toast closes"
+      "Redesigned corner radius system with continuous curvature + concentric decreasing design",
+      "Rebuilt light and dark themes"
     ],
     "bugFixes": [
-      "Fixed QuickCreateArchive crash from orphaned draft function references",
-      "Fixed missing delete animation caused by removed data-archive-id attribute",
-      "Fixed ErrorBoundary key collision across same-name routes with different query parameters"
+      "Fixed numerous bugs"
     ],
     "performance": [
-      "Reduced total JS bundle size through dead code elimination",
-      "Optimized virtual scroll rendering and animation performance",
-      "Streamlined dependency tree by removing unused packages"
+      "Added intelligent resource scheduler with dynamic CPU/memory allocation and adaptive animation quality",
+      "Optimized numerous performance issues"
     ]
   }
 }

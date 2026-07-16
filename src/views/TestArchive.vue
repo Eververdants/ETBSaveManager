@@ -75,7 +75,9 @@
             >
               {{ selectedArchives.includes(archive.id) ? "✓" : "○" }}
             </button>
-            <button class="delete-btn" @click="deleteArchive(archive.id)"><font-awesome-icon :icon="['fas', 'trash']" /></button>
+            <button class="delete-btn" @click="deleteArchive(archive.id)">
+              <font-awesome-icon :icon="['fas', 'trash']" />
+            </button>
           </div>
         </div>
 

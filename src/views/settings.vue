@@ -398,8 +398,8 @@ export default {
     languageOptions() {
       return [
         { value: "zh-CN", label: "简体中文" },
-        { value: "en-US", label: "English" },
         { value: "zh-TW", label: "繁體中文" },
+        { value: "en-US", label: "English" },
       ];
     },
   },

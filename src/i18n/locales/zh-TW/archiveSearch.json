@@ -28,7 +28,7 @@
   "refreshCooldown": "操作過於頻繁，請稍後再重新整理",
   "multiSelect": {
     "selectAll": "全選",
-    "invertSelection": "反選",
+    "deselectAll": "取消全選",
     "exit": "退出多選",
     "selected": "已選擇 {count} / {total} 個",
     "batchDelete": "批次刪除"

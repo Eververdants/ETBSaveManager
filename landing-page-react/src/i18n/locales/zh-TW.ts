@@ -37,7 +37,7 @@ export default {
     archive: "檔案",
     statusOnline: "上線",
     buildLabel: "建置 /",
-    comingSoon: "↳ 下一版本：v{version} · {date} —— 修復排程模組翻譯缺失",
+    comingSoon: "↳ 下一版本：v{version} · {date} —— 智能調度與UI重構",
   },
 
   hero: {

@@ -11,18 +11,6 @@
       <div ref="tooltip" class="function-tooltip">
         <span class="tooltip-text">{{ getCurrentTooltip }}</span>
       </div>
-      <div v-show="isMenuExpanded" ref="fabMenu" class="fab-menu" v-squircle="44">
-        <div
-          v-for="item in menuItems"
-          :key="item.index"
-          class="fab-menu-item"
-          :class="{ 'is-active': item.isActive }"
-          @click="handleMenuItemClick(item)"
-        >
-          <font-awesome-icon :icon="['fas', item.icon]" class="menu-icon" />
-          <span class="menu-label">{{ item.label }}</span>
-        </div>
-      </div>
       <div
         ref="actionButton"
         class="action-button"
@@ -60,7 +48,6 @@ const actionButton = ref(null);
 const currentIconEl = ref(null);
 const nextIconEl = ref(null);
 const tooltip = ref(null);
-const fabMenu = ref(null);
 const floatingActionContainer = ref(null);
 
 // State
@@ -70,10 +57,7 @@ const displayIndex = ref(0); // Currently displayed icon index
 const nextDisplayIndex = ref(1); // Next icon index
 const isHovered = ref(false);
 const isAnimating = ref(false);
-const isMenuExpanded = ref(false); // Whether menu is expanded
 let tooltipTimer = null;
-let menuExpandTimer = null; // Menu expand timer
-let menuCollapseTimer = null; // Menu collapse timer
 let styleObserver = null;
 
 // Scroll-hide configuration
@@ -145,16 +129,6 @@ const eventMap = {
   "multi-select-delete": "multi-select-click",
 };
 
-const menuItems = computed(() =>
-  icons.map((icon, index) => ({
-    icon: iconMap[icon],
-    label: t(tooltipKeys[icon]),
-    action: eventMap[icon],
-    index,
-    isActive: index === currentIndex.value,
-  })),
-);
-
 // Common GSAP config
 const gsapDefaults = {
   ease: "power2.out",
@@ -178,7 +152,7 @@ const shouldRender = ref(isHomePage.value); // Controls whether DOM is rendered
 const isVisible = ref(isHomePage.value); // Controls animation state
 const displayIcon = computed(() => iconMap[icons[displayIndex.value]] || "magnifying-glass");
 const nextIcon = computed(() => iconMap[icons[nextDisplayIndex.value]] || "magnifying-glass");
-const getCurrentTooltip = computed(() => t(tooltipKeys[icons[currentIndex.value]] || tooltipKeys.search));
+const getCurrentTooltip = computed(() => `${t(tooltipKeys[icons[currentIndex.value]] || tooltipKeys.search)} · ${t("floatingButton.scrollTooltip")}`);
 
 const applyContainerStyles = (container, extra = {}) => {
   if (!container) return;
@@ -254,113 +228,13 @@ const clearTooltipTimer = () => {
   }
 };
 
-const clearMenuExpandTimer = () => {
-  if (menuExpandTimer) {
-    clearTimeout(menuExpandTimer);
-    menuExpandTimer = null;
-  }
-};
-
-const clearMenuCollapseTimer = () => {
-  if (menuCollapseTimer) {
-    clearTimeout(menuCollapseTimer);
-    menuCollapseTimer = null;
-  }
-};
-
-const handleMenuMouseEnter = () => {
-  isHovered.value = true;
-  clearMenuCollapseTimer();
-};
-
-const handleMenuMouseLeave = () => {
-  isHovered.value = false;
-  clearMenuCollapseTimer();
-  menuCollapseTimer = setTimeout(() => {
-    collapseMenu();
-  }, 150);
-};
-
-const expandMenu = () => {
-  isMenuExpanded.value = true;
-
-  if (tooltip.value) {
-    gsap.killTweensOf(tooltip.value);
-    gsap.to(tooltip.value, {
-      opacity: 0,
-      y: 10,
-      duration: 0.15,
-      ...gsapDefaults,
-      onComplete: () => {
-        if (tooltip.value) tooltip.value.style.visibility = "hidden";
-      },
-    });
-  }
-
-  nextTick(() => {
-    const menuEl = fabMenu.value;
-    if (menuEl) {
-      gsap.fromTo(menuEl, { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" });
-      gsap.fromTo(
-        menuEl.querySelectorAll(".fab-menu-item"),
-        { opacity: 0, y: 8 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.2,
-          stagger: 0.04,
-          ease: "power2.out",
-          delay: 0.05,
-        },
-      );
-    }
-  });
-};
-
-const collapseMenu = () => {
-  const menuEl = fabMenu.value;
-  if (menuEl) {
-    gsap.to(menuEl, {
-      opacity: 0,
-      y: -8,
-      duration: 0.15,
-      ease: "power2.in",
-    });
-    gsap.to(menuEl.querySelectorAll(".fab-menu-item"), {
-      opacity: 0,
-      y: 8,
-      duration: 0.15,
-      ease: "power2.in",
-      onComplete: () => {
-        isMenuExpanded.value = false;
-        gsap.set(menuEl, { opacity: 1, y: 0 });
-      },
-    });
-  } else {
-    isMenuExpanded.value = false;
-  }
-};
-
-const handleMenuItemClick = (item) => {
-  currentIndex.value = item.index;
-  displayIndex.value = item.index;
-  nextDisplayIndex.value = (item.index + 1) % icons.length;
-
-  collapseMenu();
-
-  if (item.action) {
-    emit(item.action);
-  }
-};
-
 const handleContainerMouseEnter = () => {
   isHovered.value = true;
   clearTooltipTimer();
-  clearMenuCollapseTimer();
 
   gsap.killTweensOf(tooltip.value);
   tooltipTimer = setTimeout(() => {
-    if (isHovered.value && tooltip.value && !isMenuExpanded.value) {
+    if (isHovered.value && tooltip.value) {
       gsap.to(tooltip.value, {
         opacity: 1,
         y: 0,
@@ -370,52 +244,30 @@ const handleContainerMouseEnter = () => {
       });
     }
   }, 100);
-
-  if (!isMenuExpanded.value) {
-    clearMenuExpandTimer();
-    menuExpandTimer = setTimeout(() => {
-      if (isHovered.value && !isMenuExpanded.value) {
-        expandMenu();
-      }
-    }, 1500);
-  }
 };
 
 const handleContainerMouseLeave = () => {
   isHovered.value = false;
   clearTooltipTimer();
-  clearMenuExpandTimer();
-
-  if (isMenuExpanded.value) {
-    clearMenuCollapseTimer();
-    menuCollapseTimer = setTimeout(() => {
-      collapseMenu();
-    }, 200);
-  }
 
   gsap.killTweensOf(tooltip.value);
   gsap.killTweensOf(actionButton.value);
   gsap.set(actionButton.value, { clearProps: "transform" });
 
-  if (!isMenuExpanded.value) {
-    tooltipTimer = setTimeout(() => {
-      if (!isHovered.value && tooltip.value) {
-        gsap.to(tooltip.value, {
-          opacity: 0,
-          y: 10,
-          duration: 0.2,
-          ...gsapDefaults,
-          onComplete: () => {
-            if (tooltip.value) tooltip.value.style.visibility = "hidden";
-          },
-        });
-      }
-    }, 150);
-  }
+  tooltipTimer = setTimeout(() => {
+    if (!isHovered.value && tooltip.value) {
+      gsap.to(tooltip.value, {
+        opacity: 0,
+        y: 10,
+        duration: 0.2,
+        ...gsapDefaults,
+        onComplete: () => {
+          if (tooltip.value) tooltip.value.style.visibility = "hidden";
+        },
+      });
+    }
+  }, 150);
 };
-
-const handleMouseEnter = () => {};
-const handleMouseLeave = () => {};
 
 const handleWheel = (event) => {
   event.preventDefault();
@@ -495,11 +347,6 @@ const handleMouseUp = () => {
 };
 
 const handleClick = () => {
-  if (isMenuExpanded.value) {
-    collapseMenu();
-    return;
-  }
-
   applyContainerStyles(floatingActionContainer.value);
   const action = icons[currentIndex.value];
   if (eventMap[action]) emit(eventMap[action]);
@@ -579,7 +426,6 @@ onMounted(() => {
   if (currentIconEl.value) gsap.set(currentIconEl.value, { y: 0, opacity: 1 });
   if (nextIconEl.value) gsap.set(nextIconEl.value, { y: 40, opacity: 0 });
   if (tooltip.value) gsap.set(tooltip.value, { opacity: 0, y: 10, visibility: "hidden" });
-  if (fabMenu.value) gsap.set(fabMenu.value, { opacity: 0, y: -8 });
   // Delayed show animation
   if (shouldRender.value && isHomePage.value) {
     nextTick(() => setTimeout(showFloatingButton, 100));
@@ -606,8 +452,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearTooltipTimer();
-  clearMenuExpandTimer();
-  clearMenuCollapseTimer();
   if (styleObserver) {
     styleObserver.disconnect();
     styleObserver = null;
@@ -738,75 +582,6 @@ onUnmounted(() => {
   transform: translateX(0);
   border: 4px solid transparent;
   border-top-color: var(--glass-bg);
-}
-
-.fab-menu {
-  position: absolute !important;
-  top: auto !important;
-  bottom: 100% !important;
-  left: auto !important;
-  right: 0 !important;
-  margin-bottom: 12px !important;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-backdrop-filter);
-  border-radius: var(--radius-xl);
-  padding: 8px;
-  min-width: 160px;
-  max-width: calc(100vw - 80px);
-  box-shadow: var(--card-shadow);
-  border: var(--card-border);
-  z-index: 1002;
-}
-
-.fab-menu::before {
-  content: "";
-  position: absolute;
-  top: 100%;
-  right: 12px;
-  left: auto;
-  transform: translateX(0);
-  border: 6px solid transparent;
-  border-top-color: var(--glass-bg);
-}
-
-.fab-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--text-secondary);
-}
-
-.fab-menu-item:hover {
-  background: var(--sidebar-item-hover-bg, var(--bg-tertiary));
-  color: var(--text-primary);
-}
-
-.fab-menu-item.is-active {
-  background: var(--accent-color);
-  color: white;
-}
-
-.fab-menu-item.is-active .menu-icon,
-.fab-menu-item.is-active .menu-label {
-  color: white;
-}
-
-.menu-icon {
-  font-size: 16px;
-  width: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.menu-label {
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
 }
 
 .scroll-hint {

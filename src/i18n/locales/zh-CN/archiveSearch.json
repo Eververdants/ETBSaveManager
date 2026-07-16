@@ -28,7 +28,7 @@
   "scanningFiles": "正在扫描存档文件",
   "multiSelect": {
     "selectAll": "全选",
-    "invertSelection": "反选",
+    "deselectAll": "取消全选",
     "exit": "退出多选",
     "selected": "已选择 {count} / {total} 个",
     "batchDelete": "批量删除"

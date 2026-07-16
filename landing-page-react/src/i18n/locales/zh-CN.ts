@@ -36,7 +36,7 @@ export default {
     archive: "档案",
     statusOnline: "在线",
     buildLabel: "构建 /",
-    comingSoon: "↳ 下一版本：v{version} · {date} —— 修复调度模块翻译缺失",
+    comingSoon: "↳ 下一版本：v{version} · {date} —— 智能调度与UI重构",
   },
 
   hero: {

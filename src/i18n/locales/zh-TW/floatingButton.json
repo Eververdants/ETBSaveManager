@@ -3,5 +3,6 @@
   "openFolder": "開啟資料夾",
   "refreshList": "重新整理列表",
   "multiSelectDelete": "多選刪除",
-  "scrollHint": "滾動切換功能"
+  "scrollHint": "滾動切換功能",
+  "scrollTooltip": "滾輪切換"
 }

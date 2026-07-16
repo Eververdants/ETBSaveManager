@@ -32,7 +32,7 @@ tokio = { version = "1", features = ["full"] }
 rayon = "1.10"
 memmap2 = "0.9"
 rusqlite = { version = "0.31", features = ["bundled"] }
-thiserror = "1"
+thiserror = "2"
 
 # 仅在发布时启用优化，不影响开发编译速度
 [profile.release]

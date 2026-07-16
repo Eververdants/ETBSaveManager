@@ -1,4 +1,4 @@
-import { ref, computed, watch, onMounted, onActivated, type Ref, type ComputedRef } from "vue";
+import { ref, computed, watch, onMounted, type Ref, type ComputedRef } from "vue";
 import type { ArchiveData } from "@/types";
 
 interface Translations {
@@ -32,7 +32,7 @@ interface CardComputedData {
 const textWidthCache = new Map<string, number>();
 const MAX_CACHE_SIZE = 100;
 
-let isInitialLoad = ref(true);
+export const isInitialLoad = ref(true);
 
 export function markInitialLoadComplete(): void {
   isInitialLoad.value = false;
@@ -124,34 +124,10 @@ export function useArchiveCardActions(
   return { toggleVisibility, editArchive, deleteArchive, handleCardClick };
 }
 
-export function useArchiveCardEntryAnimation(index: Ref<number>): {
-  hasEntered: Ref<boolean>;
-} {
-  const hasEntered = ref(false);
-
-  const triggerAnimation = (): void => {
-    const shouldAnimate = isInitialLoad.value && index.value < 15;
-    if (shouldAnimate) {
-      const delay = Math.min(index.value * 30, 300);
-      setTimeout(() => {
-        hasEntered.value = true;
-      }, delay);
-    } else {
-      hasEntered.value = true;
-    }
-  };
-
-  onMounted(() => {
-    triggerAnimation();
-  });
-
-  onActivated(() => {
-    if (!hasEntered.value) {
-      triggerAnimation();
-    }
-  });
-
-  return { hasEntered };
+export function useArchiveCardEntryAnimation(_index: Ref<number>): void {
+  // Entrance animation is handled by Home.vue via direct DOM manipulation
+  // after the virtualizer settles. This approach avoids Vue scoped-CSS
+  // specificity issues and ref-timing problems with virtual scroll.
 }
 
 export function useArchiveCard(
@@ -160,7 +136,6 @@ export function useArchiveCard(
   emit: (event: string, ...args: unknown[]) => void,
   translations: Translations,
 ): {
-  hasEntered: Ref<boolean>;
   localVisible: Ref<boolean | undefined>;
   isAnimating: Ref<boolean>;
   cardData: ComputedRef<CardComputedData | null>;
@@ -173,7 +148,7 @@ export function useArchiveCard(
   const { tagStyle } = useArchiveCardStyle();
   const { localVisible, isAnimating } = useArchiveCardVisibility(archive);
   const { toggleVisibility, editArchive, deleteArchive, handleCardClick } = useArchiveCardActions(archive, emit);
-  const { hasEntered } = useArchiveCardEntryAnimation(index);
+  useArchiveCardEntryAnimation(index);
 
   // Aggregate computed: reads archive.value ONCE, all transformations in one pass
   const cardData = computed((): CardComputedData | null => {
@@ -191,7 +166,6 @@ export function useArchiveCard(
   });
 
   return {
-    hasEntered,
     localVisible,
     isAnimating,
     cardData,

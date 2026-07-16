@@ -44,9 +44,24 @@
       v-squircle="44"
       :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode }"
     >
-      <!-- Virtual scrolling via @tanstack/vue-virtual -->
-      <template v-if="displayArchives.length > 0">
+      <!-- Loading skeleton: shown during Phase 1 + Phase 2.
+           Cards appear once with full data (no placeholder flicker). -->
+      <div v-if="!showCards" class="loading-skeleton">
+        <div class="archive-grid">
+          <div v-for="n in 12" :key="n" class="skeleton-card" v-squircle="36">
+            <div class="skeleton-bg"></div>
+            <div class="skeleton-info">
+              <div class="skeleton-line skeleton-name-line"></div>
+              <div class="skeleton-line skeleton-level-line"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards + empty states: rendered with full data once loading completes -->
+      <template v-if="showCards">
         <div
+          class="virtual-scroll-viewport"
           :style="{
             height: `${rowVirtualizer.getTotalSize()}px`,
             width: '100%',
@@ -88,11 +103,9 @@
             </div>
           </div>
         </div>
-      </template>
 
-      <!-- Empty state -->
-      <template v-else>
-        <div v-if="archives.length > 0 && hasActiveFilters" class="empty-state">
+        <!-- Empty state: filters active, no matching archives -->
+        <div v-if="displayArchives.length === 0 && archives.length > 0 && hasActiveFilters" class="empty-state">
           <div class="empty-content" v-squircle="52">
             <div class="empty-icon">🔍</div>
             <h3 class="empty-title">{{ $t("archiveSearch.noResults") }}</h3>
@@ -107,7 +120,9 @@
             </button>
           </div>
         </div>
-        <div v-else-if="dataLoadComplete && archives.length === 0" class="empty-state">
+
+        <!-- Empty state: no archives exist yet -->
+        <div v-if="displayArchives.length === 0 && dataLoadComplete && archives.length === 0" class="empty-state">
           <div class="empty-content" v-squircle="52">
             <div class="empty-icon">📁</div>
             <h3 class="empty-title">{{ $t("archiveSearch.noArchives") }}</h3>
@@ -251,7 +266,7 @@ import { usePerformanceMonitor } from "../composables/usePerformanceMonitor";
 import { useAnimations } from "../composables/useAnimations";
 import { useFloatingButton } from "../composables/useFloatingButton";
 import { useToast } from "../composables/useToast";
-import { markInitialLoadComplete, resetInitialLoad } from "../composables/useArchiveCard";
+import { markInitialLoadComplete } from "../composables/useArchiveCard";
 
 
 // Composables
@@ -260,6 +275,7 @@ const {
   archives,
   loading,
   dataLoadComplete,
+  incrementalLoadState,
   initializeArchives,
   refreshArchives: refreshArchivesBase,
   refreshArchivesSilent,
@@ -300,13 +316,13 @@ const scrollContainerRef = ref<HTMLElement | null>(null);
 const showSearch = ref(false);
 const isPageActive = ref(false);
 const shouldResetScroll = ref(false);
+const showCards = ref(false);
 
 // ─── Virtual scrolling with @tanstack/vue-virtual ──
 const {
   rowVirtualizer,
   columnsPerRow,
   getRowItems,
-  initObserver: initVirtualScrollObserver,
   destroyObserver: destroyVirtualScrollObserver,
 } = useVirtualScroll(scrollContainerRef, displayArchives);
 
@@ -417,21 +433,104 @@ const openSaveGamesFolder = () => {
 };
 
 
+// ─── Helpers ─────────────────────────────────────
+/**
+ * Force WebView2 GPU compositing layer refresh.
+ *
+ * WebView2 can fail to invalidate compositing layers when async content
+ * (images from LazyImage) lands after the initial paint or when
+ * `v-if` replaces the skeleton with virtual-scroll cards all at once.
+ * This produces "blank-until-style-change" artifacts where GPU textures
+ * for compositing layers remain stale.
+ *
+ * The approach:
+ *   1. Read layout properties on the container to force a layout pass.
+ *   2. Iterate virtual rows and force layout on each — the row's
+ *      `translateY` compositing layer is where stale textures appear.
+ *   3. Apply a near-invisible opacity tweak (99.99%) that forces WebView2
+ *      to re-composite the entire layer tree on the next frame.  Cleared
+ *      immediately after so no persistent style is added.
+ */
+const forceCompositingRefresh = (): void => {
+  const el = scrollContainerRef.value;
+  if (!el) return;
+
+  // Pass 1: Force synchronous layout on the container
+  void el.offsetHeight;
+  el.getClientRects();
+
+  // Pass 2: Force layout on every virtual row element.
+  // In WebView2, parent compositing layers (from row translateY)
+  // don't invalidate when child content (images, card data) changes
+  // unless the child's layout is explicitly re-calculated.
+  const rows = el.querySelectorAll('.archive-row');
+  for (let i = 0; i < rows.length; i++) {
+    void (rows[i] as HTMLElement).offsetHeight;
+  }
+};
+
+// ─── Card entrance animation ──────────────────────
+// Uses direct DOM manipulation to set inline styles —
+// avoids Vue scoped-CSS specificity issues and
+// ref-timing problems with virtual scroll.
+// Only animates cards in the initial viewport; cards
+// created by virtual scroll on user scroll skip it.
+const animateCardsEntrance = async (): Promise<void> => {
+  const container = scrollContainerRef.value;
+  if (!container) return;
+
+  // Wait for virtualizer to render the initial rows
+  await new Promise((r) => setTimeout(r, 50));
+
+  const cards = container.querySelectorAll<HTMLElement>('.archive-card');
+  if (cards.length === 0) return;
+
+  // Step 1: Set all cards hidden & prepare CSS transition
+  cards.forEach((card) => {
+    card.style.setProperty('opacity', '0');
+    card.style.setProperty('transform', 'translateY(16px)');
+    card.style.setProperty('transition', 'opacity 0.4s ease, transform 0.4s ease');
+  });
+
+  // Step 2: Force layout so the initial hidden state is painted
+  void container.offsetHeight;
+
+  // Step 3: Reveal one card per animation frame
+  for (let i = 0; i < cards.length; i++) {
+    cards[i].style.setProperty('opacity', '1');
+    cards[i].style.setProperty('transform', 'translateY(0)');
+    if (i < cards.length - 1) {
+      await new Promise((r) => requestAnimationFrame(r));
+    }
+  }
+
+  // Step 4: Wait for transitions to finish, then clean up inline styles
+  // so hover effects and other CSS interact normally afterwards.
+  await new Promise((r) => setTimeout(r, 500));
+  cards.forEach((card) => {
+    card.style.removeProperty('opacity');
+    card.style.removeProperty('transform');
+    card.style.removeProperty('transition');
+  });
+};
+
 // On keep-alive activation
 onActivated(async () => {
   isPageActive.value = true;
-  resetInitialLoad();
 
   // Reset scroll position
   if (scrollContainerRef.value) {
     (scrollContainerRef.value as HTMLElement).scrollTop = 0;
   }
-  initVirtualScrollObserver();
 
   // Refresh data, then re-measure virtual rows
   await refreshArchivesSilent();
   nextTick(() => {
     rowVirtualizer.value.measure();
+    requestAnimationFrame(() => {
+      rowVirtualizer.value.measure();
+      requestAnimationFrame(forceCompositingRefresh);
+    });
   });
 });
 
@@ -443,14 +542,76 @@ onDeactivated(() => {
 onMounted(async () => {
   window.addEventListener("open-archive-search", handleOpenArchiveSearchEvent as EventListener);
 
+  // Virtual scroll ResizeObserver auto-initializes via a watch on
+  // scrollContainerRef — column count is correct before any async IPC.
   requestIdleCallback(() => initPerformanceMonitor(), { timeout: 1500 });
   requestIdleCallback(() => initButtonProtection(), { timeout: 2000 });
 
+  // Set loading BEFORE initializeArchives — shows skeleton immediately.
+  // The function runs Phase 1 (metadata) + Phase 2 (.sav details) to
+  // completion before revealing cards, so cards mount with full data
+  // and skip the placeholder→real-data flash that progressive mode
+  // introduces.  A CSS fade transition smooths the skeleton→cards swap.
+  loading.value = true;
   await initializeArchives(true);
 
-  // Initialize virtual scroll ResizeObserver (handles column calculation)
+  // All Phase 1 (metadata) loaded — reveal cards immediately with placeholder
+  // level backgrounds.  Phase 2 (.sav details) runs in background and updates
+  // each card's currentLevel/actualDifficulty reactively as batches complete,
+  // giving a progressive loading feel without flicker.
+  showCards.value = true;
+  loading.value = false;
+
+  // ─── Virtualizer measurement after cards appear ──────────────
+  // The virtual scroll <div> (with v-if="showCards") is added to
+  // the DOM for the first time here.  Three measurement passes
+  // ensure the virtualizer picks up the correct dimensions:
+  //
+  //   Pass 1 (nextTick): the DOM is committed, give the virtualizer
+  //   its initial dimensions for getVirtualItems().
+  //
+  //   Pass 2 (RAF): one frame later the ResizeObserver has fired
+  //   its initial callback and the container layout is settled.
+  //   Remeasure to correct any off-by-one rows.
+  //
+  //   Pass 3 (nested RAF): WebView2 has painted the full card grid.
+  //   Trigger GPU compositing layer rebuild with the final content.
+  //
+  // Delayed refreshes at increasing intervals catch async-loaded images
+  // that complete after the initial compositing layer was built.
   await nextTick();
-  initVirtualScrollObserver();
+  rowVirtualizer.value.measure();
+
+  requestAnimationFrame(() => {
+    rowVirtualizer.value.measure();
+
+    requestAnimationFrame(() => {
+      forceCompositingRefresh();
+      rowVirtualizer.value.measure();
+
+      // ─── Card entrance animation ─────────────────────────
+      // RequestAnimationFrame loop reveals cards one per frame.
+      // Runs after the virtualizer and compositor have settled.
+      animateCardsEntrance();
+
+      // ─── Delayed refreshes for async-loaded images ───────────
+      // WebView2 compositing layers can remain stale when images
+      // (loaded through LazyImage's concurrency-limited queue)
+      // finish after the initial compositing layer was built.
+      // Schedule a series of refreshes at increasing intervals to
+      // catch images that load progressively.
+      const scheduleRefresh = (delay: number) =>
+        setTimeout(() => {
+          forceCompositingRefresh();
+          rowVirtualizer.value.measure();
+        }, delay);
+
+      scheduleRefresh(150);
+      scheduleRefresh(600);
+      scheduleRefresh(2000);
+      scheduleRefresh(5000);
+    });
+  });
 
   isPageActive.value = true;
 
@@ -481,8 +642,27 @@ watch(
       (scrollContainerRef.value as HTMLElement).scrollTop = 0;
       shouldResetScroll.value = false;
     }
+
+    // If displayArchives grew (new items appeared), re-measure virtualizer
+    rowVirtualizer.value.measure();
   },
   { deep: false },
+);
+
+// Re-measure virtualiser when Phase 2 detail loading completes so that
+// cards updated with actual level/difficulty data are positioned correctly.
+// Uses the enhanced compositing refresh to ensure WebView2 GPU layers
+// are rebuilt with the latest card data (currentLevel, backgroundImage).
+watch(
+  () => incrementalLoadState.value.phase,
+  (phase) => {
+    if (phase === "complete") {
+      requestAnimationFrame(() => {
+        rowVirtualizer.value.measure();
+        requestAnimationFrame(forceCompositingRefresh);
+      });
+    }
+  },
 );
 </script>
 
@@ -517,10 +697,22 @@ watch(
   height: calc(100% - 100px);
 }
 
+/* ─── Card entrance animation hook ─────────────────
+ * The entrance animation lives on .archive-card in
+ * ArchiveCard.vue (opacity 0→1, translateY 0→16px).
+ * It also serves as GPU compositing wake-up. */
+.virtual-scroll-viewport {
+  /* Selector hook for card entrance animation */
+}
+
 .archive-row {
   padding: 0;
-  contain: layout style; /* Scope layout/paint work to each row */
+  /* Virtual scroll limits DOM to visible rows — content-visibility /
+     contain:layout are redundant here and in WebView2 they create GPU
+     compositing boundaries that fail to invalidate when async content
+     (images, Phase 2 data) lands, causing blank-until-hover artifacts. */
 }
+
 
 .archive-grid {
   display: grid;
@@ -548,6 +740,65 @@ watch(
 
 .archive-grid :deep(.archive-card:hover) {
   box-shadow: var(--card-shadow-hover);
+}
+
+/* ─── Loading skeleton ──────────────────────────── */
+.loading-skeleton {
+  padding: 0;
+}
+
+.skeleton-card {
+  height: 160px;
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  overflow: hidden;
+}
+
+.skeleton-bg {
+  height: 100px;
+  background: linear-gradient(
+    90deg,
+    var(--bg-secondary) 25%,
+    var(--bg-tertiary) 50%,
+    var(--bg-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-info {
+  height: 60px;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--bg-secondary) 25%,
+    var(--bg-tertiary) 50%,
+    var(--bg-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-name-line {
+  width: 75%;
+}
+
+.skeleton-level-line {
+  width: 45%;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .empty-state {
@@ -849,4 +1100,5 @@ watch(
   opacity: 1;
   transform: translateY(0);
 }
+
 </style>

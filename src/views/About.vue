@@ -130,6 +130,10 @@
             <font-awesome-icon :icon="['fab', 'tiktok']" />
             <span class="social-label">抖音</span>
           </a>
+          <a class="social-btn reddit" href="https://www.reddit.com/user/Vegetable_Web_1691/" target="_blank" rel="noopener noreferrer">
+            <font-awesome-icon :icon="['fab', 'reddit-alien']" />
+            <span class="social-label">Reddit</span>
+          </a>
         </div>
       </section>
 
@@ -456,6 +460,11 @@ const handleAppIconClick = () => {
 .social-btn.tiktok:hover {
   background: #000;
   border-color: #000;
+}
+
+.social-btn.reddit:hover {
+  background: #ff4500;
+  border-color: #ff4500;
 }
 
 /* Footer copyright */

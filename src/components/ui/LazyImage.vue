@@ -20,7 +20,6 @@
       :alt="alt"
       :class="imageClass"
       :style="imageStyle"
-      loading="lazy"
       decoding="async"
       @load="handleImageLoad"
       @error="onImageError"
@@ -29,6 +28,7 @@
 </template>
 
 <script setup>
+import { isImagePreloaded, preloadImage } from "@/utils/imagePreloader";
 import { ref, onMounted, onUnmounted, watch } from "vue";
 
 /**
@@ -90,6 +90,14 @@ const processQueue = () => {
 const enqueuePreload = (url) => {
   return new Promise((resolve) => {
     if (loadedImages.has(url)) {
+      resolve(true);
+      return;
+    }
+    // Shared preloader (imagePreloader.ts) already started loading this
+    // URL (e.g. via Phase 2's batch preload).  Resolve immediately and
+    // track in our local set so subsequent checks skip the global one.
+    if (isImagePreloaded(url)) {
+      loadedImages.add(url);
       resolve(true);
       return;
     }
@@ -209,11 +217,20 @@ onUnmounted(() => {
 // When element enters viewport proximity, start loading
 watch(isNearViewport, async (near) => {
   if (near && props.src) {
+    if (isImagePreloaded(props.src)) {
+      await preloadImage(props.src);
+      displayedSrc.value = props.src;
+      imageLoaded.value = true;
+      imageError.value = false;
+      return;
+    }
     await startLoad(props.src);
   }
 });
 
 // When props.src changes: if already near viewport, load immediately.
+// If the image was already preloaded (e.g. by Phase 2 detail loading),
+// skip the queue and set displayedSrc right away — no blank frame.
 // Otherwise the original IntersectionObserver is still watching and
 // will trigger startLoad() with the latest src when it fires.
 watch(
@@ -221,6 +238,13 @@ watch(
   async (newSrc) => {
     if (!newSrc) return;
     if (isNearViewport.value) {
+      if (isImagePreloaded(newSrc)) {
+        await preloadImage(newSrc);
+        displayedSrc.value = newSrc;
+        imageLoaded.value = true;
+        imageError.value = false;
+        return;
+      }
       await startLoad(newSrc);
     }
     // If not yet near viewport, do nothing — the observer will fire

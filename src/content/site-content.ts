@@ -23,8 +23,8 @@ export const site = {
   // 与主项目同步：版本戳 / 编译号 / 发布日（非翻译数据）
   meta: {
     version: "3.2.0",
-    build: "20260716",
-    releaseDate: "2026-07-16",
+    build: "20260619",
+    releaseDate: "2026-06-20",
     nextVersion: "3.3.0",
     nextReleaseDate: "2026-07-19",
     edition: "Archive Edition",

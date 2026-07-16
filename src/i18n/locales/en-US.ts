@@ -37,7 +37,7 @@ export default {
     archive: "Archive",
     statusOnline: "online",
     buildLabel: "build /",
-    comingSoon: "↳ next build: v{version} · {date} — scheduler i18n fix",
+    comingSoon: "↳ next build: v{version} · {date} — smart scheduling & UI refactor",
   },
 
   hero: {

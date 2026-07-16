@@ -215,17 +215,16 @@ const toggleSelection = () => {
   background: var(--card-bg);
   border: var(--card-border);
   box-shadow: var(--card-shadow);
-  contain: layout style paint;
-  /* Promoted to own compositing layer.  Previously avoided because
-     filter: blur() on LazyImage created a THIRD nested layer that
-     WebView2 failed to invalidate during async content loads.
-     Now that filter: blur() has been removed, the nesting is only
-     two levels (row translateY → card), which WebView2 handles
-     correctly.  With its own layer, every paint operation on this
-     card (hover state changes, difficulty-tag color updates, etc.)
-     targets its own backing store — other cards aren't affected. */
-  will-change: transform;
-  /* Only transition transform — box-shadow snaps instantly. */
+  /* contain: paint — limits paint invalidation to the card's own bounds.
+     Without this, a hover-triggered background/color change on this card
+     would force the browser to repaint the entire archive-grid parent.
+     With contain:paint, only this card's pixels are re-rasterized.
+
+     We deliberately skip will-change:transform here — it would promote
+     every card to its own GPU compositing layer, and with 12-16 visible
+     cards that's 12-16 GPU textures the compositor has to manage per
+     scroll frame.  Hover-only will-change is on :hover below. */
+  contain: paint;
   transition:
     transform 0.15s ease;
 }

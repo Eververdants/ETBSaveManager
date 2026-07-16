@@ -68,6 +68,10 @@ export function useVirtualScroll(scrollContainerRef: Ref<HTMLElement | null>, di
   // initialize the column count and set up the ResizeObserver.
   // This runs synchronously before any async data loading, so
   // columnsPerRow is correct for the first card render.
+  //
+  // ResizeObserver callback is RAF-debounced to avoid redundant
+  // column recalculations during window resize — the browser fires
+  // resize events at 60fps but we only need the final column count.
   watch(
     scrollContainerRef,
     (el) => {
@@ -75,8 +79,13 @@ export function useVirtualScroll(scrollContainerRef: Ref<HTMLElement | null>, di
 
       columnsPerRow.value = getColumnCount();
 
+      let rafId: number | null = null;
       resizeObserver = new ResizeObserver(() => {
-        columnsPerRow.value = getColumnCount();
+        if (rafId !== null) return;
+        rafId = requestAnimationFrame(() => {
+          columnsPerRow.value = getColumnCount();
+          rafId = null;
+        });
       });
       resizeObserver.observe(el);
     },
@@ -92,8 +101,13 @@ export function useVirtualScroll(scrollContainerRef: Ref<HTMLElement | null>, di
     columnsPerRow.value = getColumnCount();
     destroyObserver();
     if (scrollContainerRef.value && "ResizeObserver" in window) {
+      let rafId: number | null = null;
       resizeObserver = new ResizeObserver(() => {
-        columnsPerRow.value = getColumnCount();
+        if (rafId !== null) return;
+        rafId = requestAnimationFrame(() => {
+          columnsPerRow.value = getColumnCount();
+          rafId = null;
+        });
       });
       resizeObserver.observe(scrollContainerRef.value);
     }

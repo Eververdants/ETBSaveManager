@@ -224,9 +224,25 @@ export function useArchiveList(archives: Ref<ArchiveData[]>): {
   // archive IDs and visibility are the same but the actual data may differ.
   // Without this, clicking FAB "refresh" would appear to do nothing because
   // displayArchives would never be re-derived from the new archive objects.
+  //
+  // searchQuery changes are debounced by 60ms — this batches keystrokes
+  // so the filter loop (iterating 1000+ archives with string matching)
+  // doesn't block the main thread on every keypress.  60ms is imperceptible
+  // to the user but prevents per-character jank.  Other filters
+  // (difficulty, visibility) are immediate since they change infrequently.
+  let searchDebounce: ReturnType<typeof setTimeout> | null = null;
   watch(
     [searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility, archiveVersion, archives],
-    updateFiltered,
+    () => {
+      if (searchDebounce) clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(
+        () => {
+          searchDebounce = null;
+          updateFiltered();
+        },
+        searchQuery.value ? 60 : 0,
+      );
+    },
     { immediate: true },
   );
 

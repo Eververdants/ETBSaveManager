@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted, shallowRef, computed, nextTick, watch } fr
 import { useRouter, useRoute } from "vue-router";
 import storage from "./services/storageService";
 import { useAppStore } from "./stores/appStore";
+import scheduler from "./services/resourceScheduler";
 import PerformanceMonitor from "./components/system/PerformanceMonitor.vue";
 import GlobalSearchPanel from "./components/feature/GlobalSearchPanel.vue";
 const Sidebar = shallowRef(null);
@@ -26,12 +27,62 @@ const shouldShowPerformanceMonitor = computed(() => appStore.performanceMonitorE
 const cachedComponents = ["Home", "Settings", "CreateArchive", "Log"];
 const excludedComponents = ["BatchCreateArchive", "EditArchive"];
 
+// ─── Resource Scheduler ──────────────────────────────────
+// Map route names to scheduler operation types for auto-detection
+const ROUTE_OPERATION_MAP = {
+  Home: "previewing",
+  CreateArchive: "editing",
+  EditArchive: "editing",
+  QuickCreateArchive: "editing",
+  SelectCreateMode: "previewing",
+  Settings: "rendering",
+  About: "rendering",
+  Log: "rendering",
+  TestArchive: "previewing",
+};
+
+// Track last route operation for cleanup on navigation
+let lastRouteOp = null;
+
+// Report the current route as an operation when it changes
+watch(
+  () => route.name,
+  (name, oldName) => {
+    // End previous route operation
+    if (lastRouteOp && ROUTE_OPERATION_MAP[lastRouteOp]) {
+      scheduler.endOperation(ROUTE_OPERATION_MAP[lastRouteOp]);
+    }
+    // Begin new route operation
+    const opType = ROUTE_OPERATION_MAP[name];
+    if (opType) {
+      scheduler.beginOperation(opType);
+      lastRouteOp = name;
+    } else {
+      lastRouteOp = null;
+    }
+    // ── Predictive scheduling ──────────────
+    // When navigating TO Home, predict that archive loading is imminent.
+    // The route transition takes ~300ms (sidebar animation + fade);
+    // by predicting early we pre-allocate CPU/GPU resources before
+    // initializeArchives() actually fires its IPC calls.
+    if (oldName && name === "Home" && oldName !== "Home") {
+      scheduler.predict("loading-archives", {
+        source: "route-change",
+        leadTime: 400, // sidebar animation + fade before data loads
+        confidence: 0.95,
+      });
+    }
+  },
+  { immediate: true },
+);
+
 const handleSidebarExpand = (expanded) => {
   sidebarExpanded.value = expanded;
 };
 
 const closeGlobalSearch = () => {
   showGlobalSearch.value = false;
+  scheduler.endOperation("searching");
 };
 
 const openHomeSearch = (mode = "open") => {
@@ -44,6 +95,7 @@ const openHomeSearch = (mode = "open") => {
 
 const openGlobalSearch = ({ navigate = false, backward = false } = {}) => {
   showGlobalSearch.value = true;
+  scheduler.beginOperation("searching");
   nextTick(() => {
     const panel = globalSearchRef.value;
     if (!panel) return;
@@ -66,6 +118,8 @@ const openGlobalSearch = ({ navigate = false, backward = false } = {}) => {
 const handleFindShortcut = () => {
   if (route.name === "Home") {
     closeGlobalSearch();
+    // Predict that search panel will open — pre-warm resources
+    scheduler.predict("searching", { source: "keyboard-shortcut", leadTime: 100, confidence: 0.9 });
     openHomeSearch("toggle");
     return;
   }
@@ -75,6 +129,8 @@ const handleFindShortcut = () => {
     return;
   }
 
+  // Predict search opening
+  scheduler.predict("searching", { source: "keyboard-shortcut", leadTime: 50, confidence: 0.95 });
   openGlobalSearch({ navigate: false });
 };
 
@@ -164,6 +220,25 @@ onMounted(() => {
 
   window.addEventListener("sidebar-route-change", handleSidebarRouteChange);
 
+  // Listen for search open/close to report to scheduler
+  window.addEventListener("open-archive-search", () => {
+    scheduler.beginOperation("searching");
+  });
+  window.addEventListener("close-archive-search", () => {
+    scheduler.endOperation("searching");
+  });
+
+  // Listen for performance data to feed back into scheduler
+  window.addEventListener("scheduler-fps", function (e) {
+    scheduler.feedFps(e.detail);
+  });
+  window.addEventListener("scheduler-memory", function (e) {
+    scheduler.feedMemory(e.detail);
+  });
+
+  // Start the resource scheduler
+  scheduler.start();
+
   removeAfterEach = router.afterEach((to, from) => {
     if (to.name !== from.name) {
       const mainContent = getMainContent();
@@ -186,6 +261,11 @@ onUnmounted(() => {
   window.removeEventListener("app-global-find", handleFindEventFromLock);
   window.removeEventListener("app-global-find-next", handleFindNextEventFromLock);
   window.removeEventListener("sidebar-route-change", handleSidebarRouteChange);
+  window.removeEventListener("open-archive-search", () => {});
+  window.removeEventListener("close-archive-search", () => {});
+  window.removeEventListener("scheduler-fps", () => {});
+  window.removeEventListener("scheduler-memory", () => {});
+  scheduler.stop();
   if (removeAfterEach) removeAfterEach();
   mainContentCache = null;
 });

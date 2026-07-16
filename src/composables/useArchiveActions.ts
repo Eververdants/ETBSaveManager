@@ -349,30 +349,40 @@ export function useArchiveActions(
   ): Promise<DeleteResults> => {
     const { onSuccess, onError } = callbacks;
     const deleteResults: DeleteResults = { success: [], failed: [] };
-    const batchSnapshots: Array<{ index: number; snapshot: ArchiveData }> = [];
+    const batchSnapshots: ArchiveData[] = [];
+    const idsToRemove = new Set<number>();
 
+    // Phase 1: collect snapshots before any mutation
     for (const archive of archiveList) {
-      try {
-        const archiveIndex = archiveData.archives.value.findIndex((a) => a.id === archive.id);
-
-        if (archiveIndex === -1) {
-          console.warn(`[batchDelete] Archive not found: ${archive.id}`);
-          continue;
-        }
-
-        const snapshot: ArchiveData = { ...archiveData.archives.value[archiveIndex] };
-        batchSnapshots.push({ index: archiveIndex, snapshot });
-
-        if (archive.path) {
-          await invoke("soft_delete_file", { filePath: archive.path });
-        }
-
-        archiveData.archives.value.splice(archiveIndex, 1);
-        deleteResults.success.push(archive.id);
-      } catch (error) {
-        console.error(`[batchDelete] Failed to delete: ${archive.id}`, error);
-        deleteResults.failed.push({ id: archive.id, error });
+      const found = archiveData.archives.value.find((a) => a.id === archive.id);
+      if (found) {
+        batchSnapshots.push({ ...found });
+        idsToRemove.add(archive.id);
+      } else {
+        console.warn(`[batchDelete] Archive not found: ${archive.id}`);
       }
+    }
+
+    // Phase 2: fire ALL soft_delete_file calls in parallel for maximum speed
+    const fileResults = await Promise.allSettled(
+      batchSnapshots.map((snapshot) =>
+        snapshot.path ? invoke("soft_delete_file", { filePath: snapshot.path }) : Promise.resolve(),
+      ),
+    );
+
+    fileResults.forEach((result, i) => {
+      const id = batchSnapshots[i].id;
+      if (result.status === "fulfilled") {
+        deleteResults.success.push(id);
+      } else {
+        console.error(`[batchDelete] Failed to delete: ${id}`, result.reason);
+        deleteResults.failed.push({ id, error: result.reason });
+      }
+    });
+
+    // Phase 3: remove all deleted items from array in one pass (no shifting)
+    if (idsToRemove.size > 0) {
+      archiveData.archives.value = archiveData.archives.value.filter((a) => !idsToRemove.has(a.id));
     }
 
     // Register batch delete as single undo action
@@ -381,50 +391,45 @@ export function useArchiveActions(
         description: `Batch delete ${batchSnapshots.length} archives`,
         undo: async () => {
           // Cancel all pending permanent deletes for this batch
-          for (const { snapshot } of batchSnapshots) {
+          for (const snapshot of batchSnapshots) {
             const p = pendingPermanentDeletes.get(snapshot.id);
             if (p) {
               clearTimeout(p);
               pendingPermanentDeletes.delete(snapshot.id);
             }
           }
-          // Actually restore each file from trash
-          for (const { snapshot } of batchSnapshots) {
-            if (snapshot.path) {
-              try {
-                await invoke("restore_file", { filePath: snapshot.path });
-              } catch (e) {
-                console.warn("[undo batch] Failed to restore file:", e);
-              }
-            }
-          }
+          // Restore all files in parallel
+          const restores = batchSnapshots
+            .filter((s) => s.path)
+            .map((s) =>
+              invoke("restore_file", { filePath: s.path }).catch((e) =>
+                console.warn("[undo batch] Failed to restore file:", e),
+              ),
+            );
+          await Promise.allSettled(restores);
           // Restore in frontend data
-          for (const { snapshot } of batchSnapshots) {
-            archiveData.archives.value.push(snapshot);
-          }
+          archiveData.archives.value.push(...batchSnapshots);
           if (callbacks.onRefresh) await callbacks.onRefresh();
         },
         redo: async () => {
-          // Re-delete via soft-delete
-          for (const { snapshot } of batchSnapshots) {
-            if (snapshot.path) {
-              try {
-                await invoke("soft_delete_file", { filePath: snapshot.path });
-              } catch (e) {
-                console.warn("[redo batch] Failed to delete:", e);
-              }
-            }
-            const idx = archiveData.archives.value.findIndex((a) => a.id === snapshot.id);
-            if (idx !== -1) {
-              archiveData.archives.value.splice(idx, 1);
-            }
-          }
+          // Re-delete all files in parallel
+          const deletes = batchSnapshots
+            .filter((s) => s.path)
+            .map((s) =>
+              invoke("soft_delete_file", { filePath: s.path }).catch((e) =>
+                console.warn("[redo batch] Failed to delete:", e),
+              ),
+            );
+          await Promise.allSettled(deletes);
+          // Remove all in one pass
+          const redoIds = new Set(batchSnapshots.map((s) => s.id));
+          archiveData.archives.value = archiveData.archives.value.filter((a) => !redoIds.has(a.id));
         },
       });
 
       // After toast closes, schedule permanent delete for each file (5s grace)
       const scheduleBatchPermanentDelete = () => {
-        for (const { snapshot } of batchSnapshots) {
+        for (const snapshot of batchSnapshots) {
           if (!snapshot.path) continue;
           const timer = setTimeout(async () => {
             pendingPermanentDeletes.delete(snapshot.id);
@@ -444,7 +449,7 @@ export function useArchiveActions(
           {
             text: "Undo",
             onClick: async () => {
-              for (const { snapshot } of batchSnapshots) {
+              for (const snapshot of batchSnapshots) {
                 const p = pendingPermanentDeletes.get(snapshot.id);
                 if (p) {
                   clearTimeout(p);

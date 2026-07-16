@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useToast } from "./useToast";
 import type { ArchiveData } from "@/types";
 import { preloadImage } from "@/utils/imagePreloader";
+import scheduler from "@/services/resourceScheduler";
 
 interface RawSaveItem {
   id?: number;
@@ -228,6 +229,7 @@ export function useArchiveData(): {
         totalDetails: 0,
         loadedDetails: 0,
       };
+      scheduler.endOperation("loading-archives");
       return;
     }
 
@@ -263,12 +265,17 @@ export function useArchiveData(): {
         }
 
         incrementalLoadState.value.loadedDetails += batch.length;
+        scheduler.updateOperation("loading-archives", {
+          totalItems: pendingPaths.length,
+          completedItems: incrementalLoadState.value.loadedDetails,
+        });
       } catch (error) {
         console.error(`Failed to load detail batch (${i}–${i + batch.length}):`, error);
       }
     }
 
     incrementalLoadState.value.phase = "complete";
+    scheduler.endOperation("loading-archives");
     console.log(
       `Detail loading complete: ${incrementalLoadState.value.loadedDetails}/${incrementalLoadState.value.totalDetails} saves`,
     );
@@ -299,6 +306,12 @@ export function useArchiveData(): {
       dataLoadComplete.value = false;
     }
 
+    // Report loading operation to resource scheduler
+    scheduler.beginOperation("loading-archives", {
+      totalItems: 0,
+      completedItems: 0,
+    });
+
     try {
       incrementalLoadState.value = { phase: "metadata", totalDetails: 0, loadedDetails: 0 };
 
@@ -314,9 +327,14 @@ export function useArchiveData(): {
       // Phase 2: background detail loading — don't await.
       const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
       if (pendingCount > 0) {
+        scheduler.updateOperation("loading-archives", {
+          totalItems: pendingCount,
+          completedItems: 0,
+        });
         startDetailLoading();
       } else {
         incrementalLoadState.value = { phase: "complete", totalDetails: 0, loadedDetails: 0 };
+        scheduler.endOperation("loading-archives");
       }
     } catch (error) {
       console.error("Failed to initialize archives:", error);
@@ -326,6 +344,7 @@ export function useArchiveData(): {
       }
       dataLoadComplete.value = true;
       incrementalLoadState.value = { phase: "complete", totalDetails: 0, loadedDetails: 0 };
+      scheduler.endOperation("loading-archives");
     } finally {
       if (!silent) {
         setTimeout(() => {
@@ -338,6 +357,7 @@ export function useArchiveData(): {
   const refreshArchives = async (): Promise<void> => {
     loading.value = true;
     cancelDetailLoading();
+    scheduler.beginOperation("loading-archives", { totalItems: 0, completedItems: 0 });
 
     try {
       const merged = await loadMergedArchives();
@@ -348,8 +368,10 @@ export function useArchiveData(): {
 
       const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
       if (pendingCount > 0) startDetailLoading();
+      else scheduler.endOperation("loading-archives");
     } catch (error) {
       console.error("Failed to refresh archives:", error);
+      scheduler.endOperation("loading-archives");
     } finally {
       setTimeout(() => {
         loading.value = false;
@@ -358,6 +380,7 @@ export function useArchiveData(): {
   };
 
   const refreshArchivesSilent = async (): Promise<void> => {
+    scheduler.beginOperation("loading-archives", { totalItems: 0, completedItems: 0 });
     try {
       const merged = await loadMergedArchives();
       archives.value = merged;
@@ -367,8 +390,10 @@ export function useArchiveData(): {
 
       const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
       if (pendingCount > 0) startDetailLoading();
+      else scheduler.endOperation("loading-archives");
     } catch (error) {
       console.error("Failed to refresh archives silently:", error);
+      scheduler.endOperation("loading-archives");
     }
   };
 

@@ -238,6 +238,8 @@ export default {
           this.fps = Math.round((this.frameCount * 1000) / (now - this.lastFpsTime));
           this.frameCount = 0;
           this.lastFpsTime = now;
+          // Feed FPS to resource scheduler
+          window.dispatchEvent(new CustomEvent("scheduler-fps", { detail: this.fps }));
         }
 
         // CPU (事件循环延迟估算)
@@ -253,6 +255,12 @@ export default {
               usedJSHeapSize: performance.memory.usedJSHeapSize,
               totalJSHeapSize: performance.memory.totalJSHeapSize,
             };
+            // Feed memory data to resource scheduler
+            window.dispatchEvent(
+              new CustomEvent("scheduler-memory", {
+                detail: this.memory.usedJSHeapSize / 1024 / 1024,
+              }),
+            );
           }
           // 更新数据数组（最多保存 60 点）
           this.updateData();

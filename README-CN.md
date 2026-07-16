@@ -1,53 +1,29 @@
 <p align="center">
-  <img src="./src-tauri/icons/128x128.png" alt="ETB Save Manager — 《逃离后室》存档编辑与管理工具" width="128">
+  <img src="./src-tauri/icons/128x128.png" alt="E.T.B. Save Manager" width="128">
 </p>
 
 <h1 align="center">ETB Save Manager</h1>
 
 <p align="center">
-  <strong>一款功能完善的《逃离后室》（Escape The Backrooms）存档管理与编辑工具，基于 Tauri 2.0 构建，专为 Windows 平台打造。</strong>
-  <br>
-  集中浏览、编辑、创建、备份和整理您的《逃离后室》游戏存档，告别手动翻找存档目录的烦恼。
+  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/badge/版本-3.2.0-blue.svg" alt="版本"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/许可证-MIT-green.svg" alt="许可证"></a>
+  <img src="https://img.shields.io/badge/平台-Windows-0078D4.svg?logo=windows" alt="平台">
+  <img src="https://img.shields.io/badge/框架-Tauri%202.0-orange.svg" alt="框架">
 </p>
 
 <p align="center">
-  <a href="https://eververdants.github.io/ETBSaveManager/">🌐 官网与演示</a>
-  <span> · </span>
-  <a href="#">🇨🇳 简体中文</a>
-  <span> · </span>
-  <a href="./README-HANT.md">🇭🇰 繁體中文</a>
-  <span> · </span>
-  <a href="./README.md">🇬🇧 English</a>
+  <b>一款现代化、跨平台的《逃离后室》存档管理工具</b>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/v/release/Eververdants/ETBSaveManager?label=最新版本" alt="最新版本"></a>
-  <a href="https://github.com/Eververdants/ETBSaveManager/actions"><img src="https://img.shields.io/github/actions/workflow/status/Eververdants/ETBSaveManager/release.yml?label=CI%2FCD" alt="CI/CD 流水线"></a>
-  <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/downloads/Eververdants/ETBSaveManager/total?label=总下载量" alt="总下载量"></a>
-  <a href="https://github.com/Eververdants/ETBSaveManager/stargazers"><img src="https://img.shields.io/github/stars/Eververdants/ETBSaveManager?label=星标" alt="GitHub 星标"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/Eververdants/ETBSaveManager?label=许可证" alt="MIT 许可证"></a>
-  <img src="https://img.shields.io/badge/platform-Windows-blue?label=平台" alt="仅限 Windows">
+  <a href="#">简体中文</a> | <a href="./README-HANT.md">繁體中文</a> | <a href="./README.md">English</a>
 </p>
-
----
-
-## 为什么选择 ETB Save Manager？
-
-《逃离后室》（Escape The Backrooms）的存档文件散落在游戏目录中，仅凭文件名难以区分，稍不注意就会被覆盖或丢失。**ETB Save Manager** 为您提供了一个简洁而强大的桌面工具，彻底解决存档管理难题：
-
-- **集中管理**所有《逃离后室》的存档文件，一目了然
-- **编辑玩家数据** — 背包物品、理智值等 UE4 存档字段
-- **创建新存档** — 从零创建，全面控制游戏状态
-- **整理归类** — 收自定义命名、智能筛选和批量操作
-- **回收站保护** — 软删除机制，误删的存档可随时恢复
-
-无论是想保护游戏进度的休闲玩家，还是需要测试不同游戏状态的核心玩家，ETB Save Manager 都能让您完全掌控自己的存档数据。
 
 ---
 
 ## ✨ 功能特性
 
-### 📂 存档管理
+### 🗂️ 存档管理
 
 - **完整增删改查** — 创建、查看、编辑、重命名、复制、删除、隐藏/显示存档
 - **软删除与回收站** — 误删存档可从回收站恢复，支持彻底删除
@@ -65,29 +41,42 @@
 - **快速创建** — 简化流程，数秒内生成新存档文件
 - **标准创建向导** — 分步向导，提供完整的自定义选项
 
-### 🎨 用户界面与体验
+### 🎨 现代化界面
 
-- **简洁现代的设计** — 直观布局搭配 GSAP 驱动的流畅交互动画
-- **13 套内置主题** — 浅色、深色 + 11 套色彩主题（海洋、森林、日落、薰衣草、玫瑰、薄荷、蜜桃、天空等）
-- **响应式布局** — 可折叠侧边栏，自适应组件，适配任意窗口尺寸
-- **硬件加速渲染** — GPU 优化渲染管线，始终保持流畅性能
-- **全局搜索** — 任意页面按 `Ctrl+F` 即可跨页搜索
-- **通知中心** — 持久化通知系统，追踪所有应用事件与操作
-- **统一配置面板** — 集中管理所有应用设置
+- **简洁设计** — 直观的界面，搭配 GSAP 驱动的流畅动画
+- **13 套主题** — 浅色、深色及 10 套色彩主题
+- **响应式布局** — 可折叠侧边栏，自适应组件
+- **硬件加速** — GPU 优化渲染，确保流畅体验
+- **全局搜索** — 任意页面按 `Ctrl+F` 即时搜索
+- **新手引导** — 首次使用时的交互式引导覆盖层
 
-### 🌐 多语言支持
+### 🌍 多语言支持
 
-| 语言 | 语言文件 |
-|------|----------|
-| 简体中文 | `zh-CN` |
-| 繁體中文 | `zh-TW` |
-| English (英语) | `en-US` |
+内置语言：
 
-> 国际化系统采用模块化设计，欢迎社区贡献更多语言。添加新的语言文件即可扩展支持。
+- 简体中文
+- 繁體中文
+- English
+
+> 国际化系统采用模块化设计，可通过添加新的语言文件来贡献更多语言。
+
+### 🛠️ 高级功能
+
+- **多种创建模式**
+  - 快速创建 — 简化流程，快速生成存档
+  - 标准创建 — 完整的自定义选项，分步向导
+- **背包编辑器** — 可视化的玩家背包物品编辑器
+- **玩家数据编辑** — 编辑背包物品、理智值等玩家属性
+- **通知系统** — 持久化通知中心，追踪应用事件
+- **性能监控** — 内置 FPS 与内存诊断工具（开发模式）
+- **性能设置** — 调整 GPU 渲染与动画偏好
+- **统一配置面板** — 集中化的配置管理界面
 
 ---
 
-## 🖼️ 界面预览
+## 🖥️ 界面预览
+
+> 以下截图使用"海洋"主题演示
 
 <p align="center">
   <img src="./docs/存档列表-zh.jpg" alt="ETB Save Manager — 存档主列表视图，展示包含关卡名称、难度标签和玩家信息的存档卡片" width="49%">
@@ -100,7 +89,7 @@
 
 ---
 
-## 🚀 安装方式
+## 📦 安装方式
 
 ### 方式一：下载安装包（推荐）
 
@@ -135,23 +124,7 @@ npm run tauri build
 
 ---
 
-## ❓ 常见问题
-
-**问：这是 Fancy Games 的官方工具吗？**
-答：不是。ETB Save Manager 是一个**独立的、社区开发的开源项目**，与 Fancy Games 或《逃离后室》的开发者没有任何关联或背书关系。
-
-**问：编辑存档会导致游戏损坏吗？**
-答：编辑器会在可能范围内验证数据，但修改存档文件始终存在一定风险。**编辑前请务必备份原始存档**。应用内的回收站功能提供了一层安全保障 — 误删的原始存档可以恢复。
-
-**问：是否支持最新的《逃离后室》版本？**
-答：是。当游戏更新改变了存档数据格式时，工具会同步更新。请查看[发布页面](https://github.com/Eververdants/ETBSaveManager/releases)获取最新更新。
-
-**问：如何报告 Bug 或请求新功能？**
-答：请在 [GitHub Issue 追踪器](https://github.com/Eververdants/ETBSaveManager/issues) 提交 Issue。欢迎 Bug 报告和功能请求。
-
----
-
-## 🔧 技术栈
+## 🧰 技术栈
 
 ### 前端
 
@@ -211,7 +184,7 @@ ETB Save Manager 内置 **10 套主题**：
 
 ---
 
-## 📁 项目结构
+## 项目结构
 
 ```
 ETBSaveManager/
@@ -333,18 +306,63 @@ ETBSaveManager/
 
 ---
 
-## 🤝 参与贡献
+## 🎨 主题列表
 
-欢迎各种形式的贡献！这是一个个人学生项目，任何帮助 — 无论是代码、Bug 报告、翻译还是文档 — 都备受感激。
+ETB Save Manager 内置 13 套主题：
 
-- **🐛 报告 Bug** — [提交 Bug 报告](https://github.com/Eververdants/ETBSaveManager/issues)
-- **💡 功能建议** — [提交功能请求](https://github.com/Eververdants/ETBSaveManager/issues)
-- **🌐 添加翻译** — 国际化系统采用模块化设计，添加新的语言文件即可贡献新语言
-- **📧 联系邮箱** — llzgd@outlook.com
+### 基础主题
+- **Light（浅色）** — 清新的浅色主题
+- **Dark（深色）** — 舒适的深色主题
+
+### 色彩主题
+- **Ocean（海洋）** 深蓝色海洋风格
+- **Forest（森林）** 自然绿色森林风格
+- **Sunset（日落）** 温暖的橙色日落色调
+- **Lavender（薰衣草）** 柔和的紫色薰衣草
+- **Rose（玫瑰）** 优雅的粉色玫瑰
+- **Mint（薄荷）** 清新的薄荷绿
+- **Peach（蜜桃）** 柔和的蜜桃色调
+- **Sky（天空）** 明亮的天空蓝
+
+### 实用主题
+- **Custom（自定义）** — 通过主题编辑器自定义配色
 
 ---
 
-## 📄 开源许可
+## 参与贡献
+
+欢迎各种形式的贡献！这是一个个人学生项目，任何帮助 — 无论是代码、Bug 报告、翻译还是文档 — 都备受感激。
+
+- [报告 Bug](https://github.com/Eververdants/ETBSaveManager/issues)
+- [功能建议](https://github.com/Eververdants/ETBSaveManager/issues)
+- 联系邮箱：**llzgd@outlook.com**
+
+---
+
+## ⚠️ 免责声明
+
+本项目**与 Fancy Games 或《逃离后室》没有任何关联、背书或连接**。
+
+游戏素材（如关卡图标）**仅用于识别目的**，以帮助用户识别存档所属的关卡。  
+《逃离后室》及其素材的所有权利均属于其各自所有者。
+
+---
+
+## 星标历史
+
+<p align="center">
+  <a href="https://star-history.com/#Eververdants/ETBSaveManager&Date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
+    </picture>
+  </a>
+</p>
+
+---
+
+## 开源许可
 
 [MIT License](LICENSE) © 2026 Eververdants
 
@@ -372,5 +390,5 @@ ETB Save Manager 是一个开源社区项目。如果您觉得它有用，欢迎
 ---
 
 <p align="center">
-  <sub>使用 ❤️ 和 <a href="https://vuejs.org/">Vue.js</a> + <a href="https://v2.tauri.app/">Tauri</a> 构建</sub>
+  <sub>使用 Vue.js 和 Tauri 用 ❤️ 构建</sub>
 </p>

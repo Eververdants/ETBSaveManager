@@ -25,8 +25,8 @@ const appStore = useAppStore();
 
 // Compute effective margins based on sidebar/titlebar visibility
 const contentStyle = computed(() => ({
-  marginTop: appStore.titleBarVisible ? '38px' : '0',
-  marginLeft: appStore.sidebarVisible ? 'var(--sidebar-width, 70px)' : '0',
+  marginTop: appStore.titleBarVisible ? "38px" : "0",
+  marginLeft: appStore.sidebarVisible ? "var(--sidebar-width, 70px)" : "0",
 }));
 const shouldShowPerformanceMonitor = computed(
   () => appStore.performanceMonitorEnabled && appStore.developerModeEnabled,

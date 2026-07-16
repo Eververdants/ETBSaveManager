@@ -589,3 +589,4 @@ const handleAppIconClick = () => {
   background: linear-gradient(to bottom, var(--about-bg-gradient-start), var(--about-bg-gradient-end));
 }
 </style>
+

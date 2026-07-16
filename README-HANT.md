@@ -211,7 +211,7 @@ ETB Save Manager 內建 **10 套主題**：
 
 ---
 
-## 📁 專案結構
+## 專案結構
 
 ```
 ETBSaveManager/
@@ -344,9 +344,21 @@ ETBSaveManager/
 
 ---
 
-## 📄 開源授權
+## 星標歷史
 
-[MIT License](LICENSE) © 2026 Eververdants
+<p align="center">
+  <a href="https://star-history.com/#Eververdants/ETBSaveManager&Date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
+    </picture>
+  </a>
+</p>
+
+---
+
+## 開源授權
 
 ---
 
@@ -359,8 +371,6 @@ ETB Save Manager 是一個開源社群專案。如果您覺得它有用，歡迎
     <img src="https://img.shields.io/github/stars/Eververdants/ETBSaveManager?style=for-the-badge&label=在%20GitHub%20上點亮星標&logo=github" alt="在 GitHub 上點亮星標">
   </a>
 </p>
-
-> ⚠️ 此前使用的 star-history.com 圖表已被移除，因為 GitHub 限制了對本倉庫的第三方星標資料存取。上方的 shields.io 即時徽章可正常顯示目前星標數。
 
 ---
 

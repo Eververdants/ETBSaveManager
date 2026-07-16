@@ -209,7 +209,7 @@ ETB Save Manager ships with **10 built-in themes**:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ETBSaveManager/
@@ -342,7 +342,21 @@ Contributions of all kinds are welcome! This is a personal student project, and 
 
 ---
 
-## 📄 License
+## Star History
+
+<p align="center">
+  <a href="https://star-history.com/#Eververdants/ETBSaveManager&Date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
+    </picture>
+  </a>
+</p>
+
+---
+
+## License
 
 [MIT License](LICENSE) © 2026 Eververdants
 
@@ -357,8 +371,6 @@ ETB Save Manager is an open-source community project. If you find it useful, ple
     <img src="https://img.shields.io/github/stars/Eververdants/ETBSaveManager?style=for-the-badge&label=Star%20on%20GitHub&logo=github" alt="Star on GitHub">
   </a>
 </p>
-
-> ⚠️ The previously used star-history.com chart has been removed as GitHub restricted third-party star data access for this repository. The live shields.io badge above reflects the current star count.
 
 ---
 

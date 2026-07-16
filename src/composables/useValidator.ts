@@ -143,9 +143,11 @@ export function hasArchiveErrors(validationResult: ValidationResult, archiveId: 
 /**
  * Get validation statistics
  */
-export function getValidationStats(
-  validationResult: ValidationResult,
-): { errorCount: number; warningCount: number; affectedArchives: number } {
+export function getValidationStats(validationResult: ValidationResult): {
+  errorCount: number;
+  warningCount: number;
+  affectedArchives: number;
+} {
   const affectedArchiveIds = new Set([
     ...validationResult.errors.map((e) => e.archiveId),
     ...validationResult.warnings.map((w) => w.archiveId),

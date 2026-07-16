@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 
+import { useIntersection } from "@/hooks/use-intersection";
 import { site } from "@/content/site-content";
 
 /**
@@ -7,15 +8,18 @@ import { site } from "@/content/site-content";
  */
 export function FooterSection(): React.JSX.Element {
   const { t } = useTranslation();
+  const { ref: footerRef, isVisible } = useIntersection({ threshold: 0.05 });
   const year = new Date().getFullYear();
   return (
     <footer
       id="footer"
+      ref={footerRef}
+      data-visible={isVisible ? "true" : undefined}
       className="relative border-t-[1.5px] border-[var(--color-ink)] bg-[var(--color-paper-2)] px-4 pt-12 pb-8 dark:border-[var(--color-paper-3)] dark:bg-[#08070a]"
     >
       <div className="mx-auto max-w-[1400px]">
         {/* 主行 */}
-        <div className="grid grid-cols-1 gap-10 border-b border-[var(--color-ink)]/15 pb-10 sm:grid-cols-12 dark:border-[var(--color-paper-3)]/15">
+        <div className="reveal-on-scroll grid grid-cols-1 gap-10 border-b border-[var(--color-ink)]/15 pb-10 sm:grid-cols-12 dark:border-[var(--color-paper-3)]/15">
           {/* 左：巨型品牌署名 */}
           <div className="sm:col-span-7">
             <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">

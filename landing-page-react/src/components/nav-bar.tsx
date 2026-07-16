@@ -1,16 +1,32 @@
 import { useTranslation } from "react-i18next";
 
+import { useActiveSection } from "@/hooks/use-active-section";
+import { useScrollProgress } from "@/hooks/use-scroll-progress";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { site } from "@/content/site-content";
 
 /**
- * 导航条：档案柜标签 + 文件路径面包屑 + 语言/主题切换
+ * 导航条：档案柜标签 + 文件路径面包屑 + 滚动进度条 + 语言/主题切换
  */
 export function NavBar(): React.JSX.Element {
   const { t } = useTranslation();
+  const scrollProgress = useScrollProgress();
+  const activeSection = useActiveSection(["top", "features", "screens", "download"]);
+
   return (
     <header className="sticky top-0 z-30 w-full border-b-[1.5px] border-[var(--color-ink)]/90 bg-[var(--color-paper)]/90 backdrop-blur-md dark:border-[var(--color-paper-3)]/60 dark:bg-[#0a0907]/90">
+      {/* 滚动进度条 */}
+      <div
+        id="nav-progress"
+        className="h-[2px] bg-[var(--color-accent)] transition-transform duration-150"
+        style={{ transform: `scaleX(${scrollProgress})` }}
+        role="progressbar"
+        aria-valuenow={Math.round(scrollProgress * 100)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      />
+
       <div className="border-b border-[var(--color-ink)]/15 dark:border-[var(--color-paper-3)]/15">
         <nav aria-label="Main" className="mx-auto flex h-14 max-w-[1400px] items-stretch justify-between px-4">
           {/* 左：品牌 + 面包屑 */}
@@ -25,17 +41,49 @@ export function NavBar(): React.JSX.Element {
             </a>
             <nav
               aria-label="Breadcrumb"
-              className="hidden items-center gap-2 border-l border-[var(--color-ink)]/15 pl-4 text-[11px] font-mono uppercase tracking-[0.14em] text-[var(--color-ink-2)] md:flex dark:text-[var(--color-paper-3)] dark:border-[var(--color-paper-3)]/15"
+              className="hidden items-center gap-2 border-l border-[var(--color-ink)]/15 pl-4 text-[11px] font-mono uppercase tracking-[0.14em] md:flex dark:text-[var(--color-paper-3)] dark:border-[var(--color-paper-3)]/15"
             >
-              <a href="#top" className="hover:text-[var(--color-ink)] dark:hover:text-[var(--color-paper)]">
+              <a
+                href="#top"
+                className={`transition-colors ${
+                  activeSection === "top"
+                    ? "text-[var(--color-ink)] dark:text-[var(--color-paper)]"
+                    : "text-[var(--color-ink-2)] hover:text-[var(--color-ink)] dark:hover:text-[var(--color-paper)]"
+                }`}
+              >
                 {t("common.root")}
               </a>
               <span aria-hidden="true">/</span>
-              <a href="#features" className="hover:text-[var(--color-ink)] dark:hover:text-[var(--color-paper)]">
+              <a
+                href="#features"
+                className={`transition-colors ${
+                  activeSection === "features"
+                    ? "text-[var(--color-ink)] dark:text-[var(--color-paper)]"
+                    : "text-[var(--color-ink-2)] hover:text-[var(--color-ink)] dark:hover:text-[var(--color-paper)]"
+                }`}
+              >
                 {t("common.archive")}
               </a>
               <span aria-hidden="true">/</span>
-              <a href="#download" className="hover:text-[var(--color-ink)] dark:hover:text-[var(--color-paper)]">
+              <a
+                href="#screens"
+                className={`transition-colors ${
+                  activeSection === "screens"
+                    ? "text-[var(--color-ink)] dark:text-[var(--color-paper)]"
+                    : "text-[var(--color-ink-2)] hover:text-[var(--color-ink)] dark:hover:text-[var(--color-paper)]"
+                }`}
+              >
+                {t("common.screens")}
+              </a>
+              <span aria-hidden="true">/</span>
+              <a
+                href="#download"
+                className={`transition-colors ${
+                  activeSection === "download"
+                    ? "text-[var(--color-ink)] dark:text-[var(--color-paper)]"
+                    : "text-[var(--color-ink-2)] hover:text-[var(--color-ink)] dark:hover:text-[var(--color-paper)]"
+                }`}
+              >
                 {t("common.obtain")}
               </a>
             </nav>

@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 
+import { useIntersection } from "@/hooks/use-intersection";
 import { site } from "@/content/site-content";
 
 /**
@@ -8,11 +9,12 @@ import { site } from "@/content/site-content";
  */
 export function DownloadSection(): React.JSX.Element {
   const { t } = useTranslation();
+  const { ref: sectionRef, isVisible } = useIntersection({ threshold: 0.08 });
   return (
-    <section id="download" className="relative px-4 py-20 sm:py-28">
+    <section id="download" ref={sectionRef} data-visible={isVisible ? "true" : undefined} className="relative px-4 py-20 sm:py-28">
       <div className="mx-auto max-w-[1400px]">
         {/* 标题区 */}
-        <header className="mb-12 grid grid-cols-1 gap-6 border-b-[1.5px] border-[var(--color-ink)] pb-6 sm:mb-16 sm:pb-8 dark:border-[var(--color-paper-3)] lg:grid-cols-12">
+        <header className="reveal-on-scroll mb-12 grid grid-cols-1 gap-6 border-b-[1.5px] border-[var(--color-ink)] pb-6 sm:mb-16 sm:pb-8 dark:border-[var(--color-paper-3)] lg:grid-cols-12">
           <div className="lg:col-span-2">
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">
               {t("download.section.index")}
@@ -46,11 +48,11 @@ export function DownloadSection(): React.JSX.Element {
         </header>
 
         {/* 下载卡片网格 */}
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
+        <ul className="stagger-children grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
           {site.downloads.map((download, idx) => {
             const label = t(`download.labels.${download.id}`);
             return (
-              <li key={download.id} className="file-rise" style={{ animationDelay: `${idx * 70}ms` }}>
+              <li key={download.id} className="reveal-on-scroll">
                 <article className="group relative h-full border-[1.5px] border-[var(--color-ink)] bg-[var(--color-paper)] p-5 shadow-[4px_4px_0_0_var(--color-ink)] transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--color-accent-deep)] dark:border-[var(--color-paper-3)] dark:bg-[#15110d] dark:shadow-[4px_4px_0_0_var(--color-paper-3)] dark:hover:shadow-[6px_6px_0_0_var(--color-accent)]">
                   {/* 顶部：标签 + 编号 */}
                   <div className="mb-4 flex items-start justify-between">

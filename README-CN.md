@@ -138,15 +138,19 @@ npm run tauri build
 ## ❓ 常见问题
 
 **问：这是 Fancy Games 的官方工具吗？**
+
 答：不是。ETB Save Manager 是一个**独立的、社区开发的开源项目**，与 Fancy Games 或《逃离后室》的开发者没有任何关联或背书关系。
 
 **问：编辑存档会导致游戏损坏吗？**
+
 答：编辑器会在可能范围内验证数据，但修改存档文件始终存在一定风险。**编辑前请务必备份原始存档**。应用内的回收站功能提供了一层安全保障 — 误删的原始存档可以恢复。
 
 **问：是否支持最新的《逃离后室》版本？**
+
 答：是。当游戏更新改变了存档数据格式时，工具会同步更新。请查看[发布页面](https://github.com/Eververdants/ETBSaveManager/releases)获取最新更新。
 
 **问：如何报告 Bug 或请求新功能？**
+
 答：请在 [GitHub Issue 追踪器](https://github.com/Eververdants/ETBSaveManager/issues) 提交 Issue。欢迎 Bug 报告和功能请求。
 
 ---

@@ -123,6 +123,17 @@ html.dark :where(a, button, [role="button"]):focus-visible {
     "ss01" 1;
 }
 
+/* 主题切换过渡（仅通过 .theme-transitioning 类临时激活） */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color 0.35s ease !important,
+              color 0.35s ease !important,
+              border-color 0.35s ease !important,
+              box-shadow 0.35s ease !important;
+}
+
 /* ===== 动效 ===== */
 
 /* 入场：从下方淡入并向上滑 8px */
@@ -208,6 +219,108 @@ html.dark :where(a, button, [role="button"]):focus-visible {
   100% {
     transform: translateY(100%);
   }
+}
+
+/* 红色戳呼吸脉冲（叠加在原来 rotate 之上） */
+@keyframes stamp-pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: rotate(8deg) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: rotate(8deg) scale(1.04);
+  }
+}
+
+.stamp-pulse {
+  animation: stamp-pulse 2.6s ease-in-out infinite;
+}
+
+/* 亮边框呼吸（用于 screens section 的活跃卡片） */
+@keyframes glow-border {
+  0%,
+  100% {
+    border-color: var(--color-accent-deep);
+    box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 40%, transparent);
+  }
+  50% {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 60%, transparent);
+  }
+}
+
+.glow-border {
+  animation: glow-border 2.8s ease-in-out infinite;
+}
+
+/* ===== 滚动触发 Reveal（新增） ===== */
+
+/* 隐藏态 */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1),
+              transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* 可见态 — 通过 data-visible 属性触发 */
+[data-visible="true"] .reveal-on-scroll,
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 方向变体 */
+.reveal-on-scroll.from-left {
+  transform: translateX(-28px);
+}
+[data-visible="true"] .reveal-on-scroll.from-left,
+.reveal-on-scroll.from-left.revealed {
+  transform: translateX(0);
+}
+
+.reveal-on-scroll.from-right {
+  transform: translateX(28px);
+}
+[data-visible="true"] .reveal-on-scroll.from-right,
+.reveal-on-scroll.from-right.revealed {
+  transform: translateX(0);
+}
+
+.reveal-on-scroll.from-top {
+  transform: translateY(-20px);
+}
+[data-visible="true"] .reveal-on-scroll.from-top,
+.reveal-on-scroll.from-top.revealed {
+  transform: translateY(0);
+}
+
+/* stagger 子项延迟（与 .reveal-on-scroll 连用） */
+[data-visible="true"] .stagger-children > *:nth-child(1)  { transition-delay: 0ms; }
+[data-visible="true"] .stagger-children > *:nth-child(2)  { transition-delay: 60ms; }
+[data-visible="true"] .stagger-children > *:nth-child(3)  { transition-delay: 120ms; }
+[data-visible="true"] .stagger-children > *:nth-child(4)  { transition-delay: 180ms; }
+[data-visible="true"] .stagger-children > *:nth-child(5)  { transition-delay: 240ms; }
+[data-visible="true"] .stagger-children > *:nth-child(6)  { transition-delay: 300ms; }
+[data-visible="true"] .stagger-children > *:nth-child(7)  { transition-delay: 360ms; }
+[data-visible="true"] .stagger-children > *:nth-child(8)  { transition-delay: 420ms; }
+[data-visible="true"] .stagger-children > *:nth-child(9)  { transition-delay: 480ms; }
+[data-visible="true"] .stagger-children > *:nth-child(10) { transition-delay: 540ms; }
+
+/* 3D 透视倾斜（feature card 图标 hover 增强） */
+.perspective-tilt {
+  perspective: 600px;
+}
+.perspective-tilt:hover .tilt-child {
+  transform: rotateY(-5deg) rotateX(3deg) translateY(-2px);
+}
+
+/* 浏览器滚动条增强：更粗的进度指示感 */
+#nav-progress {
+  transform-origin: left center;
+  will-change: transform;
 }
 
 /* 减少动效 */

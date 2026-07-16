@@ -38,7 +38,7 @@
     "dompurify": "^3.4.12",
     "gsap": "^3.13.0",
     "markdown-it": "^14.1.0",
-    "markdown-it-attrs": "^4.3.1",
+    "markdown-it-attrs": "^5.0.0",
     "markdown-it-container": "^4.0.0",
     "markdown-it-sanitizer": "^0.4.3",
     "pinia": "^4.0.2",

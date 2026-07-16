@@ -37,7 +37,7 @@ export default {
     archive: "Archive",
     statusOnline: "online",
     buildLabel: "build /",
-    ***REMOVED*** "local · cn",
+    comingSoon: "↳ next build: v{version} · {date} — scheduler i18n fix",
   },
 
   hero: {
@@ -120,6 +120,11 @@ export default {
       title: "Performance Monitor",
       description:
         "Built-in FPS, memory, and animation-quality diagnostics. Tune GPU rendering and effect budgets in real time.",
+    },
+    scheduler: {
+      title: "Smart Resource Scheduling",
+      description:
+        "Automatically detects operation context and dynamically allocates CPU, rendering, and I/O budgets. Priority-based background task queue with real-time FPS/memory feedback loops.",
     },
   },
 

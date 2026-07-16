@@ -171,6 +171,7 @@ import { notify } from "@/services/notificationService";
 import Step1SelectLevel from "./Step1SelectLevel.vue";
 import Step2ConfigArchive from "./Step2ConfigArchive.vue";
 import Step3EditInventory from "./Step3EditInventory.vue";
+import { ENDING_LEVELS, ENDINGS_CONFIG } from "@/data/endingsData";
 
 const { t, te } = useI18n({ useScope: "global" });
 const router = useRouter();
@@ -226,28 +227,13 @@ const endingLevelsData = reactive({
 });
 
 // Ending data - use computed for language reactivity
-const endings = computed(() => [
-  {
-    id: 0,
-    label: t("createArchive.endings.main"),
-    levels: endingLevelsData[0],
-  },
-  {
-    id: 1,
-    label: t("createArchive.endings.branch1"),
-    levels: endingLevelsData[1],
-  },
-  {
-    id: 2,
-    label: t("createArchive.endings.branch2"),
-    levels: endingLevelsData[2],
-  },
-  {
-    id: 3,
-    label: t("createArchive.endings.branch3"),
-    levels: endingLevelsData[3],
-  },
-]);
+const endings = computed(() =>
+  ENDINGS_CONFIG.map((cfg) => ({
+    id: cfg.id,
+    label: t(`createArchive.endings.${cfg.labelKey}`),
+    levels: endingLevelsData[cfg.id],
+  }))
+);
 
 const gameModes = [{ value: "multiplayer", label: "multiplayer" }];
 
@@ -302,53 +288,10 @@ const goBackToQuickMode = () => {
 };
 
 const loadLevels = async () => {
-  endingLevelsData[0] = [
-    "Level0",
-    "TopFloor",
-    "MiddleFloor",
-    "GarageLevel2",
-    "BottomFloor",
-    "TheHub",
-    "Pipes1",
-    "ElectricalStation",
-    "Office",
-    "Hotel",
-    "Floor3",
-    "BoilerRoom",
-    "Pipes2",
-    "LevelFun",
-    "Poolrooms",
-    "LevelRun",
-    "TheEnd",
-    "Level94",
-    "AnimatedKingdom",
-    "LightsOut",
-    "OceanMap",
-    "CaveLevel",
-    "Level05",
-    "Level9",
-    "AbandonedBase",
-    "Level10",
-    "Level3999",
-    "Level07",
-    "Snackrooms",
-    "LevelDash",
-    "Level188_Expanded",
-    "Poolrooms_Expanded",
-    "WaterPark_Level01_P",
-    "WaterPark_Level02_P",
-    "WaterPark_Level03_P",
-    "LevelFun_Expanded",
-    "Zone1_Modified",
-    "Zone2_Modified",
-    "Zone3_Baked",
-    "Zone4",
-    "Level52",
-    "TunnelLevel",
-  ];
-  endingLevelsData[1] = ["Bunker", "GraffitiLevel", "Grassrooms_Expanded"];
-  endingLevelsData[2] = ["Bunker", "TheHub", "BottomFloor", "Level922"];
-  endingLevelsData[3] = ["Bunker", "TheHub", "OceanMap", "LightsOut", "Level974"];
+  endingLevelsData[0] = ENDING_LEVELS[0];
+  endingLevelsData[1] = ENDING_LEVELS[1];
+  endingLevelsData[2] = ENDING_LEVELS[2];
+  endingLevelsData[3] = ENDING_LEVELS[3];
   loadLevelsForEnding(0);
 };
 

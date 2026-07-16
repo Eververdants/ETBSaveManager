@@ -10,7 +10,7 @@ import storage from "@/services/storageService";
 export const useAppStore = defineStore("app", () => {
   // ─── State ────────────────────────────────────────────
   const language = ref<string>(storage.getItem("language", "zh-CN") ?? "zh-CN");
-  const performanceMonitorEnabled = ref<boolean>(storage.getItem("performanceMonitor") ?? true);
+  const performanceMonitorEnabled = ref<boolean>(storage.getItem("performanceMonitor") ?? false);
   const developerModeEnabled = ref<boolean>(!!storage.getItem("developerMode", false));
   const logMenuEnabled = ref<boolean>(!!storage.getItem("logMenuEnabled", false));
   const testArchiveEnabled = ref<boolean>(!!storage.getItem("testArchiveEnabled", false));

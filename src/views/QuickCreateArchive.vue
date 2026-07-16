@@ -60,7 +60,7 @@
             :value="state.copies"
             min="1"
             max="99"
-            @input="setCopies(Number(($event.target as HTMLInputElement).value))"
+            @input="setCopies(Number(($event.target).value))"
           />
         </div>
       </div>
@@ -128,6 +128,7 @@ import { useI18n } from "vue-i18n";
 import { ENDINGS_CONFIG } from "@/data/endingsData";
 import { useLevelUtils } from "@/utils/levelUtils";
 import { useQuickCreateSimplified } from "@/composables/useQuickCreateSimplified";
+import { notify } from "@/services/notificationService";
 import EndingSelector from "@/components/quickCreate/EndingSelector.vue";
 import LevelCheckGrid from "@/components/quickCreate/LevelCheckGrid.vue";
 import PreviewList from "@/components/quickCreate/PreviewList.vue";
@@ -165,12 +166,29 @@ const difficultyOptions = [
   { value: "nightmare", label: t("createArchive.difficultyLevels.nightmare") },
 ];
 
-const goBack = () => router.push("/");
+const goBack = () => router.push("/select-create-mode");
 
 const handleCreate = async () => {
   if (!canCreate.value) return;
-  creationResult.value = await batchCreate();
-  showResultModal.value = true;
+  try {
+    creationResult.value = await batchCreate();
+  } catch (error) {
+    creationResult.value = {
+      success: 0,
+      failed: state.selectedLevelKeys.length,
+      errors: [{ name: "all", error: String(error?.message || "Unknown error") }],
+    };
+  }
+  if (creationResult.value.success > 0 && creationResult.value.failed === 0) {
+    notify.success(t("quickCreate.result.successTitle"));
+    setTimeout(() => {
+      closeResultModal();
+      reset();
+      router.push("/");
+    }, 1500);
+  } else {
+    showResultModal.value = true;
+  }
 };
 
 const closeResultModal = () => {

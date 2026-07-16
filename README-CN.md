@@ -22,7 +22,7 @@
 
 <p align="center">
   <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/v/release/Eververdants/ETBSaveManager?label=最新版本" alt="最新版本"></a>
-  <a href="https://github.com/Eververdants/ETBSaveManager/actions"><img src="https://img.shields.io/github/actions/workflow/status/Eververdants/ETBSaveManager/release.yml?label=CI%2FCD" alt="CI/CD 流水线"></a>
+  <a href="https://github.com/Eververdants/ETBSaveManager/actions"><img src="https://img.shields.io/github/actions/workflow/status/Eververdants/ETBSaveManager/release.yml?label=CI%2FCD" alt="CI/CD 管道"></a>
   <a href="https://github.com/Eververdants/ETBSaveManager/releases"><img src="https://img.shields.io/github/downloads/Eververdants/ETBSaveManager/total?label=总下载量" alt="总下载量"></a>
   <a href="https://github.com/Eververdants/ETBSaveManager/stargazers"><img src="https://img.shields.io/github/stars/Eververdants/ETBSaveManager?label=星标" alt="GitHub 星标"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/Eververdants/ETBSaveManager?label=许可证" alt="MIT 许可证"></a>

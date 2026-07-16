@@ -70,6 +70,10 @@ function arraysEqualById(a: ArchiveData[], b: ArchiveData[]): boolean {
  * Supports two-phase incremental loading for fast initial display:
  *   Phase 1 (metadata) — filename + filesystem only, no .sav parsing
  *   Phase 2 (details)  — batch-parses .sav files to fill currentLevel & actualDifficulty
+ *
+ * Data loading uses infinite scroll: first PAGE_SIZE items are loaded on init,
+ * more items are appended on demand via loadMoreArchives().  Items are always
+ * sorted by archive name to ensure consistent ordering across pages.
  */
 export function useArchiveData(): {
   archives: Ref<ArchiveData[]>;
@@ -195,12 +199,13 @@ export function useArchiveData(): {
     }
   };
 
-  /** Phase 1: Load metadata from filenames only (no .sav parsing) */
+  /** Phase 1: Load ALL metadata from filenames only (no .sav parsing),
+   *  then sort by name for consistent ordering.  Fast even for 1000+ files. */
   const loadMetadata = async (): Promise<ArchiveData[]> => {
     try {
       const metaList = await invoke<SaveFileMeta[]>("load_save_metadata");
       if (metaList && Array.isArray(metaList)) {
-        return metaList.map(mapMetaToArchive);
+        return metaList.map(mapMetaToArchive).sort((a, b) => a.name.localeCompare(b.name));
       }
       return [];
     } catch (error) {
@@ -215,7 +220,6 @@ export function useArchiveData(): {
    * indices in-place so unchanged cards skip re-render.
    */
   const startDetailLoading = async (): Promise<void> => {
-    // Archives that still have the default "Level0" (not yet filled by Phase 2)
     const pendingPaths = archives.value.filter((a) => a.currentLevel === "Level0").map((a) => a.path);
 
     if (pendingPaths.length === 0) {
@@ -238,22 +242,12 @@ export function useArchiveData(): {
       try {
         const details = await invoke<SaveFileDetail[]>("load_save_details_batch", { paths: batch });
 
-        // Fire-and-forget: preload background images into browser cache
-        // BEFORE mutating card data.  LazyImage checks isImagePreloaded()
-        // before its own queue and awaits the preload promise directly, so
-        // it never sees a blank frame — the image is guaranteed to be in
-        // flight (and usually already cached when it looks) by the time
-        // the card's backgroundImage computed changes.
         for (const detail of details) {
           if (detail.current_level) {
             preloadImage(`/images/ETB/${detail.current_level}.webp`);
           }
         }
 
-        // Mutate properties IN-PLACE — object reference stays the same.
-        // Cards that receive this proxy from the filtered list will update
-        // reactively via their computed dependencies (currentLevel,
-        // actualDifficulty) WITHOUT triggering a full list re-render.
         for (const detail of details) {
           const idx = archives.value.findIndex((a) => a.path === detail.path);
           if (idx !== -1) {
@@ -280,13 +274,19 @@ export function useArchiveData(): {
     );
   };
 
-  /** Cancel any in-progress detail loading by resetting state */
   const cancelDetailLoading = (): void => {
     incrementalLoadState.value = {
       phase: "idle",
       totalDetails: 0,
       loadedDetails: 0,
     };
+  };
+
+  /** Load ALL metadata (instant, filename-only), load visible saves,
+   *  then kick off Phase 2 detail loading in the background. */
+  const loadMergedArchives = async (): Promise<ArchiveData[]> => {
+    const [, metaArchives] = await Promise.all([loadVisibleSaves(), loadMetadata()]);
+    return metaArchives;
   };
 
   const initializeArchives = async (silent = false): Promise<void> => {
@@ -302,24 +302,16 @@ export function useArchiveData(): {
     try {
       incrementalLoadState.value = { phase: "metadata", totalDetails: 0, loadedDetails: 0 };
 
-      // Phase 1: metadata only (filename + filesystem, no .sav parsing).
+      // Phase 1: ALL metadata (filename-only, instant).  No pagination needed —
+      // this is faster than IPC round-trips for individual pages.
       const merged = await loadMergedArchives();
       archives.value = merged;
-
-      // Reveal cards immediately with Phase 1 data.
-      // Cards show placeholder level backgrounds (Level0.webp) which are
-      // valid images — no blank flash.  Phase 2 runs in the background
-      // and updates each card's currentLevel/actualDifficulty reactively
-      // as .sav files are parsed, giving a progressive loading feel.
-      displayArchives.value = [...archives.value];
+      displayArchives.value = [...merged];
       dataLoadComplete.value = true;
 
-      if (!silent) {
-        loading.value = false;
-      }
+      if (!silent) loading.value = false;
 
       // Phase 2: background detail loading — don't await.
-      // Cards update in-place as each batch completes, no flash.
       const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
       if (pendingCount > 0) {
         startDetailLoading();
@@ -343,14 +335,6 @@ export function useArchiveData(): {
     }
   };
 
-  /** Load metadata-only — no .sav parsing, returns instantly even for
-   *  1000+ files. Detail loading happens in startDetailLoading so the
-   *  UI gets cards to render on the very first tick. */
-  const loadMergedArchives = async (): Promise<ArchiveData[]> => {
-    const [, metaArchives] = await Promise.all([loadVisibleSaves(), loadMetadata()]);
-    return metaArchives;
-  };
-
   const refreshArchives = async (): Promise<void> => {
     loading.value = true;
     cancelDetailLoading();
@@ -362,7 +346,6 @@ export function useArchiveData(): {
         displayArchives.value = [...merged];
       }
 
-      // Background detail loading
       const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
       if (pendingCount > 0) startDetailLoading();
     } catch (error) {
@@ -385,7 +368,7 @@ export function useArchiveData(): {
       const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
       if (pendingCount > 0) startDetailLoading();
     } catch (error) {
-      console.error("Failed to refresh archives:", error);
+      console.error("Failed to refresh archives silently:", error);
     }
   };
 
@@ -404,7 +387,6 @@ export function useArchiveData(): {
 
     const displayIndex = displayArchives.value.findIndex((a) => a.id === archiveId);
     if (displayIndex > -1) {
-      // Immutable update for shallowRef compatibility — replace the entire array
       const updated = [...displayArchives.value];
       updated[displayIndex] = { ...updated[displayIndex], isVisible };
       displayArchives.value = updated;

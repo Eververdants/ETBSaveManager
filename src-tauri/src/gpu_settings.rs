@@ -3,11 +3,20 @@ use crate::error::AppResult;
 use serde_json::Value;
 use std::fs;
 
-/// Browser arguments when GPU acceleration is enabled
+/// Browser arguments when GPU acceleration is enabled.
+/// --force-gpu-mem-available-mb gives the compositor more room for
+///   layer backing stores (useful for the initial card grid paint).
+/// --max-decoded-image-size-mb prevents WebView2 from refusing to
+///   decode large WebP backgrounds that would otherwise fall back
+///   to software decoding.
 const GPU_ENABLED_ARGS: &[&str] = &[
     "--disable-software-rasterizer",
     "--enable-gpu-rasterization",
     "--force-gpu-rasterization",
+    "--force-gpu-mem-available-mb=512",
+    "--max-decoded-image-size-mb=64",
+    "--enable-accelerated-2d-canvas",
+    "--num-raster-threads=4",
 ];
 
 /// Browser arguments when GPU acceleration is disabled
@@ -64,6 +73,35 @@ pub fn set_gpu_acceleration(disabled: bool) -> AppResult<bool> {
     );
 
     Ok(needs_restart)
+}
+
+/// Boost the current process priority during initial page load so the
+/// OS scheduler allocates more CPU time to this app.  Call with "high"
+/// before first render and "normal" after cards appear.
+#[tauri::command]
+pub fn set_process_priority(priority: String) -> AppResult<()> {
+    #[cfg(target_os = "windows")]
+    {
+        type HANDLE = *mut std::ffi::c_void;
+        extern "system" {
+            fn GetCurrentProcess() -> HANDLE;
+            fn SetPriorityClass(hProcess: HANDLE, dwPriorityClass: u32) -> i32;
+        }
+
+        let class = match priority.as_str() {
+            "high" => 0x00000080u32,   // HIGH_PRIORITY_CLASS
+            "normal" => 0x00000020u32,  // NORMAL_PRIORITY_CLASS
+            _ => return Err("invalid priority (high|normal)".into()),
+        };
+        let handle = unsafe { GetCurrentProcess() };
+        if unsafe { SetPriorityClass(handle, class) } == 0 {
+            return Err("SetPriorityClass failed".into());
+        }
+        println!("✅ Process priority set to {}", priority);
+    }
+    #[cfg(not(target_os = "windows"))]
+    println!("⚠️ set_process_priority is Windows-only, ignoring");
+    Ok(())
 }
 
 /// Get browser arguments for current GPU acceleration setting

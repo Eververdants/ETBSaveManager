@@ -33,23 +33,23 @@ import { ref, onMounted, onUnmounted, watch } from "vue";
 
 /**
  * Global image preload queue with concurrency limit.
- * Prevents disk I/O contention when many cards mount simultaneously.
- * Reduced to 2 concurrent loads — disk I/O is slower than network,
- * and fewer concurrent reads = less contention on the storage device.
+ * Set to 1 for strictly sequential loading — avoids disk I/O
+ * contention and main-thread WebP decode bursts that cause
+ * visible stutter when many cards mount simultaneously.
  */
-const PRELOAD_QUEUE_MAX = 2;
+const PRELOAD_QUEUE_MAX = 1;
 const PRELOAD_ROOT_MARGIN = "200px";
 const preloadQueue = [];
 let preloadActive = 0;
 const loadedImages = new Set();
 
 /**
- * Stagger: ensure image load starts are spread ~50ms apart.
+ * Stagger: ensure image load starts are spread ~20ms apart.
  * Prevents N simultaneous WebP decodes from blocking the main thread on initial render.
- * During scroll, natural user pacing means this usually resolves immediately.
+ * During scroll, the shorter gap means new in-view cards get images faster.
  */
 let _lastLoadStartMs = 0;
-const MIN_LOAD_GAP_MS = 50;
+const MIN_LOAD_GAP_MS = 20;
 
 const staggerGap = () => {
   const now = performance.now();

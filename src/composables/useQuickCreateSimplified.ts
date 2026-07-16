@@ -1,5 +1,5 @@
-import { ref, reactive, computed } from "vue";
-import type { ComputedRef, Ref } from "vue";
+import { reactive, computed } from "vue";
+import type { ComputedRef } from "vue";
 import { ENDING_LEVELS } from "@/data/endingsData";
 import type { DifficultyLevel, QuickCreateBatchResult } from "@/types";
 
@@ -111,8 +111,8 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
   };
 
   const createSingleArchive = async (
+    archiveName: string,
     levelKey: string,
-    copyIndex: number,
     basicArchive: Record<string, unknown>,
   ): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -121,8 +121,6 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
       const isSideStoryline = !MAIN_STORYLINE_LEVELS.includes(levelKey);
       const isMEGUnlocked = !MEG_LOCKED_LEVELS.includes(levelKey);
       const difficultyLabel = formatDifficulty(state.difficulty);
-
-      const archiveName = state.copies > 1 ? `${levelKey}(${copyIndex})` : levelKey;
 
       const saveData: Record<string, unknown> = {
         archive_name: archiveName,
@@ -143,6 +141,24 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
     }
   };
 
+  /**
+   * Resolve an archive name that doesn't conflict with existing/taken names.
+   * Appends a numeric suffix like "_2", "_3" as needed.
+   */
+  function resolveName(baseName: string, takenNames: Set<string>): string {
+    if (!takenNames.has(baseName)) {
+      takenNames.add(baseName);
+      return baseName;
+    }
+    let counter = 2;
+    while (takenNames.has(`${baseName}_${counter}`)) {
+      counter++;
+    }
+    const resolved = `${baseName}_${counter}`;
+    takenNames.add(resolved);
+    return resolved;
+  }
+
   const batchCreate = async (): Promise<QuickCreateBatchResult> => {
     const levelsToCreate = [...state.selectedLevelKeys];
     if (levelsToCreate.length === 0) {
@@ -158,6 +174,18 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
       };
     }
 
+    // ── Load existing archive names for duplicate protection ──
+    let existingNames = new Set<string>();
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const existingSaves = await invoke<Array<{ name: string }>>("load_all_saves");
+      for (const save of existingSaves) {
+        if (save.name) existingNames.add(save.name);
+      }
+    } catch (error) {
+      console.warn("Failed to load existing saves for dedup check, proceeding without:", error);
+    }
+
     state.isCreating = true;
     state.creationProgress = 0;
 
@@ -167,20 +195,27 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
       errors: [],
     };
 
-    // Build a flat list of all archives to create (level + copy index)
-    const allArchives: Array<{ levelKey: string; copyIndex: number }> = [];
+    // Build a flat list of all archives to create, resolving duplicate names
+    const allEntries: Array<{ levelKey: string; archiveName: string }> = [];
+    const takenNames = new Set(existingNames); // track all names used (existing + batch)
     for (const levelKey of levelsToCreate) {
-      for (let i = 1; i <= state.copies; i++) {
-        allArchives.push({ levelKey, copyIndex: i });
+      if (state.copies <= 1) {
+        const resolved = resolveName(levelKey, takenNames);
+        allEntries.push({ levelKey, archiveName: resolved });
+      } else {
+        for (let i = 1; i <= state.copies; i++) {
+          const baseName = `${levelKey}(${i})`;
+          const resolved = resolveName(baseName, takenNames);
+          allEntries.push({ levelKey, archiveName: resolved });
+        }
       }
     }
 
     // Process sequentially to avoid MAINSAVE.sav concurrent write conflicts
-    for (let i = 0; i < allArchives.length; i++) {
-      const { levelKey, copyIndex } = allArchives[i];
-      const archiveName = state.copies > 1 ? `${levelKey}(${copyIndex})` : levelKey;
+    for (let i = 0; i < allEntries.length; i++) {
+      const { levelKey, archiveName } = allEntries[i];
 
-      const result = await createSingleArchive(levelKey, copyIndex, basicArchive);
+      const result = await createSingleArchive(archiveName, levelKey, basicArchive);
       if (result.success) {
         results.success++;
       } else {
@@ -189,7 +224,7 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
       }
 
       // Update progress
-      state.creationProgress = Math.round(((i + 1) / allArchives.length) * 100);
+      state.creationProgress = Math.round(((i + 1) / allEntries.length) * 100);
     }
 
     state.creationProgress = 100;

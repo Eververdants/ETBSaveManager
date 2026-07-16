@@ -48,19 +48,19 @@
       <div class="options-row">
         <div class="option-group">
           <label class="option-label">{{ $t("quickCreate.options.difficulty") }}</label>
-          <select v-model="state.difficulty" class="option-select" @change="setDifficulty(state.difficulty)">
-            <option v-for="d in difficultyOptions" :key="d.value" :value="d.value">{{ d.label }}</option>
-          </select>
+          <CustomDropdown
+            :model-value="state.difficulty"
+            :options="difficultyOptions"
+            @update:model-value="setDifficulty"
+          />
         </div>
         <div class="option-group">
           <label class="option-label">{{ $t("quickCreate.options.copies") }}</label>
-          <input
-            type="number"
-            class="option-input"
-            :value="state.copies"
-            min="1"
-            max="99"
-            @input="setCopies(Number(($event.target).value))"
+          <NumberSelector
+            :model-value="state.copies"
+            :min="1"
+            :max="99"
+            @update:model-value="setCopies"
           />
         </div>
       </div>
@@ -132,6 +132,8 @@ import { notify } from "@/services/notificationService";
 import EndingSelector from "@/components/quickCreate/EndingSelector.vue";
 import LevelCheckGrid from "@/components/quickCreate/LevelCheckGrid.vue";
 import PreviewList from "@/components/quickCreate/PreviewList.vue";
+import CustomDropdown from "@/components/ui/CustomDropdown.vue";
+import NumberSelector from "@/components/ui/NumberSelector.vue";
 
 const router = useRouter();
 const { t } = useI18n({ useScope: "global" });
@@ -258,12 +260,7 @@ const navigateToArchives = () => {
   display: flex; align-items: center; gap: var(--space-2);
 }
 .option-label { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
-.option-select, .option-input {
-  padding: 6px 10px; border-radius: var(--radius-sm);
-  border: 1px solid var(--divider-light); background: var(--bg-secondary);
-  color: var(--text-primary); font-size: 13px;
-}
-.option-input { width: 60px; text-align: center; }
+:deep(.custom-dropdown) { min-width: 130px; }
 
 /* Result modal */
 .result-modal-overlay { /* same as existing */ position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }

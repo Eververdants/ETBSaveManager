@@ -83,9 +83,11 @@ const toggleSelectAll = () => {
 .level-check-grid {
   display: flex; flex-direction: column; gap: 12px;
   flex: 1; min-height: 0;
+  overflow-y: auto;
 }
 .grid-header {
   display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
   padding: 8px 12px; background: var(--bg-secondary);
   border-radius: var(--radius-md); border: 1px solid var(--divider-light);
 }
@@ -113,9 +115,8 @@ const toggleSelectAll = () => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px;
-  overflow-y: auto;
-  padding: 4px;
-  flex: 1;
+  padding: 4px 0;
+  align-content: start;
 }
 .level-card {
   background: var(--bg-secondary); border-radius: var(--radius-md);

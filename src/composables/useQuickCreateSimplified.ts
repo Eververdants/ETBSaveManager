@@ -36,9 +36,23 @@ function createInitialState(): SimplifiedState {
 }
 
 const MAIN_STORYLINE_LEVELS: string[] = [
-  "Level0", "TopFloor", "MiddleFloor", "GarageLevel2", "BottomFloor",
-  "TheHub", "Pipes1", "ElectricalStation", "Office", "Hotel", "Floor3",
-  "BoilerRoom", "Pipes2", "LevelFun", "Poolrooms", "LevelRun", "TheEnd",
+  "Level0",
+  "TopFloor",
+  "MiddleFloor",
+  "GarageLevel2",
+  "BottomFloor",
+  "TheHub",
+  "Pipes1",
+  "ElectricalStation",
+  "Office",
+  "Hotel",
+  "Floor3",
+  "BoilerRoom",
+  "Pipes2",
+  "LevelFun",
+  "Poolrooms",
+  "LevelRun",
+  "TheEnd",
 ];
 
 // Default difficulty levels where MEG is locked
@@ -65,7 +79,7 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
   const archiveNames = computed(() => {
     const names: string[] = [];
     for (const levelKey of state.selectedLevelKeys) {
-      const base = `${levelKey}_${state.difficulty.charAt(0).toUpperCase() + state.difficulty.slice(1)}`;
+      const base = `${levelKey}_${formatDifficulty(state.difficulty)}`;
       if (state.copies <= 1) {
         names.push(base);
       } else {
@@ -77,12 +91,14 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
     return names;
   });
 
-  const canCreate = computed(() =>
-    state.selectedLevelKeys.length > 0 && !state.isCreating
-  );
+  const canCreate = computed(() => state.selectedLevelKeys.length > 0 && !state.isCreating);
 
-  const setDifficulty = (d: DifficultyLevel) => { state.difficulty = d; };
-  const setCopies = (n: number) => { state.copies = Math.max(1, n); };
+  const setDifficulty = (d: DifficultyLevel) => {
+    state.difficulty = d;
+  };
+  const setCopies = (n: number) => {
+    state.copies = Math.max(1, n);
+  };
 
   const loadBasicArchive = async (): Promise<Record<string, unknown> | null> => {
     try {
@@ -151,7 +167,7 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
 
     // Process all levels in parallel (no batching delay)
     const batchResults = await Promise.allSettled(
-      levelsToCreate.map((levelKey) => createSingleArchive(levelKey, basicArchive))
+      levelsToCreate.map((levelKey) => createSingleArchive(levelKey, basicArchive)),
     );
 
     for (let i = 0; i < batchResults.length; i++) {

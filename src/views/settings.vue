@@ -377,7 +377,7 @@ export default {
     return {
       currentTheme: storage.getItem("theme", "light"),
       currentLanguage: storage.getItem("language", "zh-CN"),
-      performanceMonitorEnabled: storage.getItem("performanceMonitor") ?? true,
+      performanceMonitorEnabled: storage.getItem("performanceMonitor") ?? false,
       developerModeEnabled: storage.getItem("developerMode", false) === true, // Developer mode state
       developerOptionsEnabled: storage.getItem("developerMode", false) === true, // Whether developer options are visible
       logMenuEnabled: storage.getItem("logMenuEnabled", false) === true, // Log feature toggle state

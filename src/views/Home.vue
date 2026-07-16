@@ -84,7 +84,6 @@
                 @delete="deleteArchive"
                 @select="selectArchive"
                 @toggle-select="toggleArchiveSelection"
-                @rename="handleRenameArchive"
               />
             </div>
           </div>
@@ -124,23 +123,25 @@
     </div>
 
     <!-- Search panel -->
-    <transition name="search-panel" @before-enter="(el: Element) => beforeSearchEnter(el as HTMLElement)" @enter="(el: Element, done: () => void) => searchEnter(el as HTMLElement, done)" @leave="(el: Element, done: () => void) => searchLeave(el as HTMLElement, done)">
-      <div v-show="showSearch && !loading" class="search-inline">
-        <ArchiveSearchFilter
-          ref="archiveSearchFilter"
-          :search-query="searchQuery"
-          :selected-archive-difficulty="selectedArchiveDifficulty"
-          :selected-actual-difficulty="selectedActualDifficulty"
-          :selected-visibility="selectedVisibility"
-          :search-suggestions="searchSuggestions"
-          @update:search-query="searchQuery = $event"
-          @update:selected-archive-difficulty="selectedArchiveDifficulty = $event"
-          @update:selected-actual-difficulty="selectedActualDifficulty = $event"
-          @update:selected-visibility="selectedVisibility = $event"
-          @close="toggleSearch"
-        />
-      </div>
-    </transition>
+    <Teleport to="body">
+      <transition name="search-panel" @before-enter="(el: Element) => beforeSearchEnter(el as HTMLElement)" @enter="(el: Element, done: () => void) => searchEnter(el as HTMLElement, done)" @leave="(el: Element, done: () => void) => searchLeave(el as HTMLElement, done)">
+        <div v-show="showSearch && !loading" class="search-overlay" @click.self="toggleSearch">
+          <ArchiveSearchFilter
+            ref="archiveSearchFilter"
+            :search-query="searchQuery"
+            :selected-archive-difficulty="selectedArchiveDifficulty"
+            :selected-actual-difficulty="selectedActualDifficulty"
+            :selected-visibility="selectedVisibility"
+            :search-suggestions="searchSuggestions"
+            @update:search-query="searchQuery = $event"
+            @update:selected-archive-difficulty="selectedArchiveDifficulty = $event"
+            @update:selected-actual-difficulty="selectedActualDifficulty = $event"
+            @update:selected-visibility="selectedVisibility = $event"
+            @close="toggleSearch"
+          />
+        </div>
+      </transition>
+    </Teleport>
 
     <!-- Delete confirmation -->
     <Teleport to="body">
@@ -393,14 +394,6 @@ const handleToggleVisibility = (archive: ArchiveData) => {
   });
 };
 
-const handleRenameArchive = ({ id, name }: { id: number; name: string }) => {
-  const archive = archives.value.find((a) => a.id === id);
-  if (archive) {
-    archive.name = name;
-  }
-  toast.showSuccess(t("archiveSearch.renameSuccess", "存档已重命名"));
-};
-
 const confirmDelete = () => {
   confirmDeleteBase({
     onSuccess: () => {
@@ -622,10 +615,16 @@ watch(
   transform: translateY(-2px);
 }
 
-.search-inline {
-  padding: 16px 20px 0;
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--search-overlay-bg, rgba(0, 0, 0, 0.5));
+  backdrop-filter: var(--search-overlay-backdrop, blur(8px));
+  -webkit-backdrop-filter: var(--search-overlay-backdrop, blur(8px));
 }
 
 .modal-overlay {

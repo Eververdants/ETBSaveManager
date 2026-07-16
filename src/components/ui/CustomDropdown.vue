@@ -86,7 +86,7 @@ const useDropdownPosition = (dropdownRef, menuRef, isOpen, menuStyle) => {
       top: shouldOpenUp ? `${dropdownRect.top - menuHeight - 4}px` : `${dropdownRect.bottom + 4}px`,
       left: `${dropdownRect.left}px`,
       width: `${dropdownRect.width}px`,
-      zIndex: 1000,
+      zIndex: 100000,
     };
   };
 

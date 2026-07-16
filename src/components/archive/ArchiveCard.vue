@@ -27,27 +27,16 @@
       <div class="background-overlay"></div>
 
       <!-- Hidden status badge -->
-      <div v-if="!localVisible" class="hidden-badge">
-        <font-awesome-icon icon="fa-solid fa-eye-slash" />
-        <span>{{ t("archiveCard.hidden") }}</span>
-      </div>
+      <Transition name="badge">
+        <div v-if="!localVisible" class="hidden-badge">
+          <font-awesome-icon icon="fa-solid fa-eye-slash" />
+          <span>{{ t("archiveCard.hidden") }}</span>
+        </div>
+      </Transition>
 
       <!-- Archive info -->
       <div class="archive-info">
-        <!-- Inline rename -->
-        <div v-if="isRenaming" class="inline-rename" @click.stop @dblclick.stop>
-          <input
-            ref="renameInputRef"
-            v-model="renameValue"
-            class="rename-input"
-            type="text"
-            :placeholder="archive.name"
-            @keydown.enter.prevent="commitRename"
-            @keydown.esc.prevent="cancelRename"
-            @blur="commitRename"
-          />
-        </div>
-        <h3 v-else class="archive-name" v-html="sanitize(highlightedName)" @dblclick.stop="startRename"></h3>
+        <h3 class="archive-name" v-html="sanitize(highlightedName)"></h3>
         <div class="game-mode-info">
           <span
             class="difficulty-tag"
@@ -93,7 +82,7 @@
 </template>
 
 <script setup>
-import { computed, ref, toRef, nextTick } from "vue";
+import { computed, toRef } from "vue";
 import { useI18n } from "vue-i18n";
 import LazyImage from "../ui/LazyImage.vue";
 import { useArchiveCard } from "@/composables/useArchiveCard";
@@ -122,39 +111,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["toggle-visibility", "edit", "delete", "select", "toggle-select", "rename"]);
-
-// Inline rename state
-const isRenaming = ref(false);
-const renameValue = ref("");
-const renameInputRef = ref(null);
-
-const startRename = () => {
-  if (props.isMultiSelectMode) return;
-  renameValue.value = props.archive.name;
-  isRenaming.value = true;
-  nextTick(() => {
-    if (renameInputRef.value) {
-      renameInputRef.value.focus();
-      renameInputRef.value.select();
-    }
-  });
-};
-
-const commitRename = () => {
-  if (!isRenaming.value) return;
-  const trimmed = renameValue.value.trim();
-  if (trimmed && trimmed !== props.archive.name) {
-    emit("rename", { id: props.archive.id, name: trimmed });
-  }
-  isRenaming.value = false;
-  renameValue.value = "";
-};
-
-const cancelRename = () => {
-  isRenaming.value = false;
-  renameValue.value = "";
-};
+const emit = defineEmits(["toggle-visibility", "edit", "delete", "select", "toggle-select"]);
 
 const sanitize = (html) => {
   // Fast return if no mark tags present (most common case)
@@ -248,7 +205,8 @@ const toggleSelection = () => {
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease,
-    opacity 0.5s ease;
+    opacity 0.5s ease,
+    border-color 0.35s ease;
   transform: translateZ(0);
 }
 
@@ -299,7 +257,9 @@ const toggleSelection = () => {
   height: 100%;
   filter: blur(1px);
   transform: scale(1.005);
-  transition: transform 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    filter 0.4s ease;
 }
 
 .archive-card:hover .card-background :deep(.lazy-image-container) {
@@ -348,34 +308,12 @@ const toggleSelection = () => {
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: text;
+  transition: color 0.35s ease;
 }
 
 .archive-name:hover {
   text-decoration: underline;
   text-decoration-color: rgba(255, 255, 255, 0.4);
-}
-
-/* Inline rename input */
-.inline-rename {
-  margin-bottom: 4px;
-}
-
-.rename-input {
-  width: 100%;
-  padding: 4px 10px;
-  font-size: 15px;
-  font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: var(--radius-md);
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  outline: none;
-  box-sizing: border-box;
-}
-
-.rename-input:focus {
-  border-color: #fff;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
 }
 
 /* Game mode info */
@@ -478,7 +416,9 @@ const toggleSelection = () => {
   align-items: center;
   background: var(--card-bg);
   border-top: 1px solid var(--border-color);
-  transition: background-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    opacity 0.35s ease;
 }
 
 .archive-card:hover .card-info {
@@ -493,6 +433,7 @@ const toggleSelection = () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.35s ease;
 }
 
 /* Action buttons */
@@ -589,18 +530,21 @@ const toggleSelection = () => {
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.3px;
-  opacity: 0;
-  transform: translateY(-4px);
-  animation: hidden-badge-in 0.35s ease 0.15s forwards;
   pointer-events: none;
   user-select: none;
 }
 
-@keyframes hidden-badge-in {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Badge Vue Transition — enter with slight delay, leave quickly */
+.badge-enter-active {
+  transition: opacity 0.35s ease 0.05s, transform 0.35s ease 0.05s;
+}
+.badge-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.badge-enter-from,
+.badge-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 
 .archive-hidden:hover .hidden-badge {
@@ -612,23 +556,30 @@ const toggleSelection = () => {
 /* ========== Hidden mode styles ========== */
 /* Core principle: preserve content readability, use additional visual indicators for hidden state */
 
-/* Hidden state: left gold marker bar - primary status indicator */
-.archive-hidden::after {
+/* Gold left marker bar - always present, hidden by default, animated on hidden state */
+.archive-card::after {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
-  width: 4px;
+  width: 0;
   height: 100%;
   background: rgba(255, 200, 50, 0.5);
   pointer-events: none;
   z-index: 12;
+  opacity: 0;
   transition:
-    background 0.35s ease,
-    width 0.3s ease;
+    width 0.35s ease,
+    opacity 0.35s ease,
+    background 0.35s ease;
 }
 
-.archive-hidden:hover::after {
+.archive-card.archive-hidden::after {
+  width: 4px;
+  opacity: 1;
+}
+
+.archive-card.archive-hidden:hover::after {
   background: rgba(255, 200, 50, 0.75);
   width: 5px;
 }
@@ -730,10 +681,11 @@ const toggleSelection = () => {
   color: rgba(255, 200, 50, 0.85);
 }
 
-/* Visibility toggle transition — consolidated on the card element */
+/* Visibility toggle transition — override all property durations during animation window */
 .visibility-transitioning,
 .visibility-transitioning * {
-  transition: opacity 0.25s ease !important;
+  transition-duration: 0.25s !important;
+  transition-timing-function: ease !important;
 }
 
 /* Responsive */

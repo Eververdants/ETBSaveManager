@@ -1,17 +1,23 @@
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useThemeMode } from "@/hooks/use-theme-mode";
 
 /**
  * 主题切换：方形刻度按钮，匹配档案系统美学
+ * 切换时临时添加 .theme-transitioning 类使过渡平滑。
  */
 export function ThemeToggle(): React.JSX.Element {
   const { t } = useTranslation();
   const { isDark, setPreference } = useThemeMode();
 
-  const handleClick = (): void => {
+  const handleClick = useCallback((): void => {
+    // 临时激活全局 theme transition
+    const html = document.documentElement;
+    html.classList.add("theme-transitioning");
     setPreference(isDark ? "light" : "dark");
-  };
+    setTimeout(() => html.classList.remove("theme-transitioning"), 350);
+  }, [isDark, setPreference]);
 
   return (
     <button

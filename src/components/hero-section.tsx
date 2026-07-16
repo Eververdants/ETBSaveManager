@@ -1,33 +1,71 @@
 import { useTranslation } from "react-i18next";
 
+import { useCounter } from "@/hooks/use-counter";
+import { useIntersection } from "@/hooks/use-intersection";
+import { useTypewriter } from "@/hooks/use-typewriter";
 import { site } from "@/content/site-content";
 
 /**
  * 首屏：不对称布局，左侧巨型 Fraunces 标题，右侧 FILE_001.SAV 索引卡。
  * 视觉锚点：黄色荧光光晕 + 倾斜的档案卡 + 打字机风格的元数据行。
+ *
+ * 动效：
+ * - 面包屑分类文字打字机效果
+ * - version / build 数字滚动动画
+ * - ARCHIVED 戳呼吸脉冲
  */
 export function HeroSection(): React.JSX.Element {
   const { t } = useTranslation();
+
+  // 用于触发数字动画的 IntersectionObserver
+  const { ref: metaRef, isVisible: metaVisible } = useIntersection<HTMLDListElement>({ threshold: 0.3 });
+  const countVersion = useCounter(parseInt(site.meta.version.replace(/\./g, ""), 10), 1000, metaVisible);
+  const countBuild = useCounter(parseInt(site.meta.build, 10), 800, metaVisible);
+
+  // 打字机：面包屑整行
+  const typewriterText = `${t("hero.breadcrumb")}  ·  ${t("common.cat")}  ·  doc // ${site.meta.releaseDate.replace(/-/g, ".")}`;
+  const { displayed: typedBreadcrumb, isDone: typewriterDone } = useTypewriter(
+    typewriterText,
+    28,
+    true, // 始终在首屏触发
+  );
+
   return (
     <section id="top" className="relative overflow-hidden px-4 pt-10 pb-24 sm:pt-16 sm:pb-32">
       <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8">
         {/* 左：标题与 CTA（占 7 列） */}
         <div className="file-rise lg:col-span-7">
-          {/* 顶部：分类戳 + 文件路径 */}
+          {/* 顶部：分类戳 + 文件路径（打字机效果） */}
           <div className="mb-6 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-2)] sm:text-[11px] dark:text-[var(--color-paper-3)]">
             <span className="classification-stamp" style={{ color: "var(--color-alert)" }}>
-              {t("hero.breadcrumb")}
+              {typewriterDone ? (
+                t("hero.breadcrumb")
+              ) : (
+                <span aria-label={t("hero.breadcrumb")}>
+                  {typedBreadcrumb || <span className="opacity-30">█</span>}
+                </span>
+              )}
             </span>
-            <span
-              aria-hidden="true"
-              className="hidden h-px w-8 bg-[var(--color-ink-2)] sm:inline-block dark:bg-[var(--color-paper-3)]"
-            />
-            <span className="hidden sm:inline">{t("common.cat")}</span>
-            <span
-              aria-hidden="true"
-              className="hidden h-px w-8 bg-[var(--color-ink-2)] sm:inline-block dark:bg-[var(--color-paper-3)]"
-            />
-            <span className="tabular-nums">doc // {site.meta.releaseDate.replace(/-/g, ".")}</span>
+            {typewriterDone && (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="hidden h-px w-8 bg-[var(--color-ink-2)] sm:inline-block dark:bg-[var(--color-paper-3)]"
+                />
+                <span className="hidden sm:inline">{t("common.cat")}</span>
+                <span
+                  aria-hidden="true"
+                  className="hidden h-px w-8 bg-[var(--color-ink-2)] sm:inline-block dark:bg-[var(--color-paper-3)]"
+                />
+                <span className="tabular-nums hidden sm:inline">
+                  doc // {site.meta.releaseDate.replace(/-/g, ".")}
+                </span>
+              </>
+            )}
+            {/* 打字中闪烁光标 */}
+            {!typewriterDone && (
+              <span aria-hidden="true" className="inline-block h-3 w-[2px] bg-[var(--color-accent-deep)] dark:bg-[var(--color-accent)]" />
+            )}
           </div>
 
           <h1 className="archive-headline text-[clamp(3rem,8.2vw,6.25rem)] text-[var(--color-ink)] dark:text-[var(--color-paper)]">
@@ -56,20 +94,35 @@ export function HeroSection(): React.JSX.Element {
             <span className="text-[var(--color-ink-3)] dark:text-[var(--color-ink-3)]"> {t("hero.taglineSuffix")}</span>
           </p>
 
-          {/* 元数据小行 */}
-          <dl className="mt-6 grid max-w-xl grid-cols-2 gap-x-6 gap-y-2 border-y border-[var(--color-ink)]/15 py-3 font-mono text-[10.5px] uppercase tracking-[0.14em] text-[var(--color-ink-2)] sm:grid-cols-4 dark:border-[var(--color-paper-3)]/15 dark:text-[var(--color-paper-3)]">
+          {/* 元数据小行（数字动画） */}
+          <dl
+            ref={metaRef}
+            className="mt-6 grid max-w-xl grid-cols-2 gap-x-6 gap-y-2 border-y border-[var(--color-ink)]/15 py-3 font-mono text-[10.5px] uppercase tracking-[0.14em] text-[var(--color-ink-2)] sm:grid-cols-4 dark:border-[var(--color-paper-3)]/15 dark:text-[var(--color-paper-3)]"
+          >
             <div>
               <dt className="text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">
                 {t("hero.meta.version")}
               </dt>
               <dd className="tabular-nums text-[var(--color-ink)] dark:text-[var(--color-paper)]">
-                v{site.meta.version}
+                {metaVisible ? (
+                  <span aria-label={`v${site.meta.version}`}>
+                    v{countVersion}
+                  </span>
+                ) : (
+                  <span>v0</span>
+                )}
               </dd>
             </div>
             <div>
               <dt className="text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">{t("hero.meta.build")}</dt>
               <dd className="tabular-nums text-[var(--color-ink)] dark:text-[var(--color-paper)]">
-                # {site.meta.build}
+                {metaVisible ? (
+                  <span aria-label={`# ${site.meta.build}`}>
+                    # {countBuild}
+                  </span>
+                ) : (
+                  <span># 0</span>
+                )}
               </dd>
             </div>
             <div>
@@ -154,7 +207,7 @@ function SaveIndexCard(): React.JSX.Element {
 
       {/* 卡片主体 */}
       <article
-        className="relative z-10 border-[1.5px] border-[var(--color-ink)] bg-[var(--color-paper)] shadow-[8px_8px_0_0_var(--color-ink)] dark:border-[var(--color-paper-3)] dark:bg-[#15110d] dark:shadow-[8px_8px_0_0_var(--color-paper-3)]"
+        className="relative z-10 border-[1.5px] border-[var(--color-ink)] bg-[var(--color-paper)] shadow-[8px_8px_0_0_var(--color-ink)] transition-shadow hover:shadow-[10px_10px_0_0_var(--color-accent-deep)] dark:border-[var(--color-paper-3)] dark:bg-[#15110d] dark:shadow-[8px_8px_0_0_var(--color-paper-3)] dark:hover:shadow-[10px_10px_0_0_var(--color-accent)]"
         aria-label={t("hero.card.aria")}
       >
         {/* 顶部：档案编号 + 状态 */}
@@ -250,7 +303,7 @@ function SaveIndexCard(): React.JSX.Element {
               <div
                 key={i}
                 aria-hidden="true"
-                className="aspect-square border border-[var(--color-ink)]/30 bg-[var(--color-accent)]/40 dark:border-[var(--color-paper-3)]/30 dark:bg-[var(--color-accent)]/30"
+                className="aspect-square border border-[var(--color-ink)]/30 bg-[var(--color-accent)]/40 transition-colors hover:border-[var(--color-accent)] dark:border-[var(--color-paper-3)]/30 dark:bg-[var(--color-accent)]/30 dark:hover:border-[var(--color-accent-soft)]"
                 style={{ background: i === 4 ? "var(--color-accent)" : undefined }}
               />
             ))}
@@ -258,10 +311,10 @@ function SaveIndexCard(): React.JSX.Element {
         </div>
       </article>
 
-      {/* 红色 ARCHIVED 戳（旋转、虚线边） */}
+      {/* 红色 ARCHIVED 戳（旋转、虚线边、呼吸脉冲） */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-4 -right-2 z-30 select-none border-[2px] border-dashed border-[var(--color-alert)] px-2.5 py-1 font-mono text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-alert)] [transform:rotate(8deg)]"
+        className="stamp-pulse pointer-events-none absolute -bottom-4 -right-2 z-30 select-none border-[2px] border-dashed border-[var(--color-alert)] px-2.5 py-1 font-mono text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-alert)]"
       >
         {t("hero.card.stamp")}
       </div>

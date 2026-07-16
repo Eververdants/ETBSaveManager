@@ -1,17 +1,28 @@
 import { useTranslation } from "react-i18next";
 
+import { useIntersection } from "@/hooks/use-intersection";
 import { site } from "@/content/site-content";
 
 /**
  * 功能特性 section：3x2 档案柜 tab 风卡片 + 编号 + 分类戳
+ * 动效：
+ * - 滚动触发 reveal（stagger 延迟）
+ * - 图标框 3D 透视倾斜 hover
  */
 export function FeaturesSection(): React.JSX.Element {
   const { t } = useTranslation();
+  const { ref: sectionRef, isVisible } = useIntersection({ threshold: 0.08 });
+
   return (
-    <section id="features" className="relative px-4 py-20 sm:py-28">
+    <section
+      id="features"
+      ref={sectionRef}
+      data-visible={isVisible ? "true" : undefined}
+      className="relative px-4 py-20 sm:py-28"
+    >
       <div className="mx-auto max-w-[1400px]">
         {/* 标题区 */}
-        <header className="mb-12 grid grid-cols-1 gap-6 border-b-[1.5px] border-[var(--color-ink)] pb-6 sm:mb-16 sm:pb-8 dark:border-[var(--color-paper-3)] lg:grid-cols-12">
+        <header className="reveal-on-scroll mb-12 grid grid-cols-1 gap-6 border-b-[1.5px] border-[var(--color-ink)] pb-6 sm:mb-16 sm:pb-8 dark:border-[var(--color-paper-3)] lg:grid-cols-12">
           <div className="lg:col-span-2">
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">
               § 01
@@ -41,12 +52,11 @@ export function FeaturesSection(): React.JSX.Element {
         </header>
 
         {/* 卡片网格 */}
-        <ul className="grid grid-cols-1 gap-px bg-[var(--color-ink)]/15 sm:grid-cols-2 lg:grid-cols-3 dark:bg-[var(--color-paper-3)]/15">
+        <ul className="stagger-children grid grid-cols-1 gap-px bg-[var(--color-ink)]/15 sm:grid-cols-2 lg:grid-cols-3 dark:bg-[var(--color-paper-3)]/15">
           {site.features.map((feature, idx) => (
             <li
               key={feature.id}
-              className="file-rise bg-[var(--color-paper)] transition-colors hover:bg-[#f6f0de] dark:bg-[#15110d] dark:hover:bg-[#1d1813]"
-              style={{ animationDelay: `${idx * 60}ms` }}
+              className="reveal-on-scroll bg-[var(--color-paper)] transition-colors hover:bg-[#f6f0de] dark:bg-[#15110d] dark:hover:bg-[#1d1813]"
             >
               <article className="group relative h-full border border-transparent p-6 transition-colors hover:border-[var(--color-ink)]/40 dark:hover:border-[var(--color-paper-3)]/40">
                 {/* 顶部：编号 + 分类戳 */}
@@ -66,11 +76,11 @@ export function FeaturesSection(): React.JSX.Element {
                   </span>
                 </div>
 
-                {/* 图标 + 标题 */}
-                <div className="mb-4 flex items-start gap-3">
+                {/* 图标 + 标题（3D 透视倾斜） */}
+                <div className="perspective-tilt mb-4 flex items-start gap-3">
                   <div
                     aria-hidden="true"
-                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center border-[1.5px] border-[var(--color-ink)] bg-[var(--color-accent)] text-[var(--color-ink)] transition-transform group-hover:-translate-y-0.5 group-hover:rotate-[-2deg] dark:border-[var(--color-paper-3)]"
+                    className="tilt-child flex h-9 w-9 flex-shrink-0 items-center justify-center border-[1.5px] border-[var(--color-ink)] bg-[var(--color-accent)] text-[var(--color-ink)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:rotate-[-3deg] dark:border-[var(--color-paper-3)]"
                   >
                     <FeatureIcon iconKey={feature.iconKey} />
                   </div>
@@ -87,7 +97,7 @@ export function FeaturesSection(): React.JSX.Element {
                 </p>
 
                 {/* 底部：file path + 编号 */}
-                <div className="mt-6 flex items-center justify-between border-t border-dashed border-[var(--color-ink)]/20 pt-3 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[var(--color-ink-3)] dark:border-[var(--color-paper-3)]/20 dark:text-[var(--color-paper-3)]/60">
+                <div className="mt-6 flex items-center justify-between border-t border-dashed border-[var(--color-ink)]/20 pt-3 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[var(--color-ink-3)] transition-colors group-hover:text-[var(--color-accent-deep)] dark:border-[var(--color-paper-3)]/20 dark:text-[var(--color-paper-3)]/60 dark:group-hover:text-[var(--color-accent)]">
                   <span>root / features / {feature.id}</span>
                   <span className="tabular-nums">↳ {String(idx + 1).padStart(2, "0")}/07</span>
                 </div>

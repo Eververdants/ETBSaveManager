@@ -440,7 +440,7 @@ class UpdateService {
     const lastCheckTime = parseInt(lastCheck, 10);
     const hoursSinceLastCheck = (now - lastCheckTime) / (1000 * 60 * 60);
 
-    return hoursSinceLastCheck >= 12;
+    return hoursSinceLastCheck >= 24;
   }
 
   /**

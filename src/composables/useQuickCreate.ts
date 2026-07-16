@@ -80,7 +80,6 @@ interface QuickCreateState {
   isCreating: boolean;
   creationProgress: number;
   showTutorial: boolean;
-  showBatchEditModal: boolean;
   showIndividualEditModal: boolean;
   editingArchiveId: string | null;
 }
@@ -223,7 +222,6 @@ function createInitialState(): QuickCreateState {
     isCreating: false,
     creationProgress: 0,
     showTutorial: false,
-    showBatchEditModal: false,
     showIndividualEditModal: false,
     editingArchiveId: null,
   };

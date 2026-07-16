@@ -180,81 +180,8 @@ const useSidebarTheme = (sidebarRef) => {
 };
 
 const useSidebarMenuItemManager = (activeItemId, setActiveItemFromRoute) => {
-  const addLogMenuItem = () => {
-    const existingLogItem = [...topMenuItems.value, ...bottomMenuItems.value].find((item) => item.action === "openLog");
-
-    if (!existingLogItem) {
-      const allItems = [...topMenuItems.value, ...bottomMenuItems.value];
-      const maxId = Math.max(...allItems.map((item) => item.id));
-      const uniqueLogId = maxId + 1;
-
-      bottomMenuItems.value.push({
-        id: uniqueLogId,
-        textKey: "sidebar.logs",
-        icon: ["fas", "bug"],
-        action: "openLog",
-        descriptionKey: "logs.description",
-        route: "Log",
-      });
-
-      nextTick(() => setActiveItemFromRoute());
-    }
-  };
-
-  const removeLogMenuItem = () => {
-    const logItemIndex = bottomMenuItems.value.findIndex((item) => item.action === "openLog");
-
-    if (logItemIndex !== -1) {
-      const logItemId = bottomMenuItems.value[logItemIndex].id;
-      bottomMenuItems.value.splice(logItemIndex, 1);
-
-      if (activeItemId.value === logItemId) {
-        activeItemId.value = null;
-      }
-
-      nextTick(() => setActiveItemFromRoute());
-    }
-  };
-
-  const addTestArchiveMenuItem = () => {
-    const existingTestArchiveItem = [...topMenuItems.value, ...bottomMenuItems.value].find(
-      (item) => item.action === "openTestArchive",
-    );
-
-    if (!existingTestArchiveItem) {
-      const allItems = [...topMenuItems.value, ...bottomMenuItems.value];
-      const maxId = Math.max(...allItems.map((item) => item.id));
-      const uniqueTestArchiveId = maxId + 1;
-
-      topMenuItems.value.push({
-        id: uniqueTestArchiveId,
-        textKey: "sidebar.testArchive",
-        icon: ["fas", "flask"],
-        action: "openTestArchive",
-        descriptionKey: "archive.testDescription",
-        route: "TestArchive",
-      });
-
-      nextTick(() => setActiveItemFromRoute());
-    }
-  };
-
-  const removeTestArchiveMenuItem = () => {
-    const testArchiveItemIndex = topMenuItems.value.findIndex((item) => item.action === "openTestArchive");
-
-    if (testArchiveItemIndex !== -1) {
-      const testArchiveItemId = topMenuItems.value[testArchiveItemIndex].id;
-      topMenuItems.value.splice(testArchiveItemIndex, 1);
-
-      if (activeItemId.value === testArchiveItemId) {
-        activeItemId.value = null;
-      }
-
-      nextTick(() => setActiveItemFromRoute());
-    }
-  };
-
-  return { addLogMenuItem, removeLogMenuItem, addTestArchiveMenuItem, removeTestArchiveMenuItem };
+  // No dynamic menu items currently managed
+  return {};
 };
 
 const useSidebarTextMeasurement = () => {
@@ -439,8 +366,7 @@ const { t, currentLanguage, safeT } = useSidebarI18n();
 const { filteredTopMenuItems } = useSidebarMenuItems();
 const { setActiveItemFromRoute } = useSidebarRouteHandler(activeItemId);
 const { detectTheme } = useSidebarTheme(sidebarRef);
-const { addLogMenuItem, removeLogMenuItem, addTestArchiveMenuItem, removeTestArchiveMenuItem } =
-  useSidebarMenuItemManager(activeItemId, setActiveItemFromRoute);
+useSidebarMenuItemManager(activeItemId, setActiveItemFromRoute);
 const { getTextWidth, checkTextOverflow } = useSidebarTextMeasurement();
 const { handleMouseDown, handleMouseEnterItem, handleMouseLeaveItem, handleMouseUp } = useSidebarMouseInteractions(
   checkTextOverflow,
@@ -463,31 +389,6 @@ onMounted(() => {
   // Replaces window.dispatchEvent/addEventListener pattern
 
   watch(
-    () => appStore.logMenuEnabled,
-    (enabled) => {
-      enabled ? addLogMenuItem() : removeLogMenuItem();
-    },
-  );
-
-  watch(
-    () => appStore.testArchiveEnabled,
-    (enabled) => {
-      enabled ? addTestArchiveMenuItem() : removeTestArchiveMenuItem();
-    },
-  );
-
-  watch(
-    () => appStore.developerModeEnabled,
-    (enabled) => {
-      if (enabled && appStore.logMenuEnabled) {
-        addLogMenuItem();
-      } else if (!enabled) {
-        removeLogMenuItem();
-      }
-    },
-  );
-
-  watch(
     () => appStore.language,
     () => nextTick(() => {}),
   );
@@ -499,15 +400,6 @@ onMounted(() => {
 
   window.addEventListener("plugin-menu-added", () => nextTick(() => setActiveItemFromRoute()));
   window.addEventListener("plugin-menu-removed", () => nextTick(() => setActiveItemFromRoute()));
-
-  // Initialize menu items from current store state
-  if (appStore.testArchiveEnabled) {
-    addTestArchiveMenuItem();
-  }
-
-  if (appStore.developerModeEnabled && appStore.logMenuEnabled) {
-    addLogMenuItem();
-  }
 });
 </script>
 

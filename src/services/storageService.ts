@@ -20,8 +20,6 @@ const KEYS_TO_MIGRATE: readonly string[] = [
   "updateSource",
   "performanceMonitor",
   "developerMode",
-  "logMenuEnabled",
-  "testArchiveEnabled",
   "gpuAccelerationDisabled",
   "newYearThemeMode",
   "themeBeforeNewYear",

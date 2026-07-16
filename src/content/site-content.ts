@@ -25,6 +25,8 @@ export const site = {
     version: "3.2.0",
     build: "20260716",
     releaseDate: "2026-07-16",
+    nextVersion: "3.3.0",
+    nextReleaseDate: "2026-07-19",
     edition: "Archive Edition",
     status: "online",
     codename: "Smart Resource Scheduling",

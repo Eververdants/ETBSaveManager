@@ -37,7 +37,7 @@ export default {
     archive: "檔案",
     statusOnline: "上線",
     buildLabel: "建置 /",
-    ***REMOVED*** "本機 · 臺灣",
+    comingSoon: "↳ 下一版本：v{version} · {date} —— 修復排程模組翻譯缺失",
   },
 
   hero: {
@@ -114,6 +114,11 @@ export default {
     performance: {
       title: "效能監控",
       description: "內建 FPS、記憶體、動畫品質診斷,即時調節 GPU 渲染與特效預算。",
+    },
+    scheduler: {
+      title: "智慧資源排程",
+      description:
+        "自動偵測操作上下文，動態分配 CPU、渲染與 I/O 預算。基於優先權的背景任務佇列，搭配即時 FPS/記憶體反饋閉環。",
     },
   },
 

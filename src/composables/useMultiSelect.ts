@@ -1,4 +1,4 @@
-import { ref, type Ref } from "vue";
+import { ref, computed, type Ref } from "vue";
 import type { ArchiveData } from "@/types";
 
 interface DeleteResults {
@@ -28,6 +28,10 @@ export function useMultiSelect(
   const selectedArchives = ref(new Set<number>());
   const showBatchDeleteConfirm = ref(false);
   const isBatchDeleting = ref(false);
+
+  const isAllSelected = computed(() => {
+    return displayArchives.value.length > 0 && selectedArchives.value.size === displayArchives.value.length;
+  });
 
   const enterMultiSelectMode = (): void => {
     isMultiSelectMode.value = true;
@@ -61,21 +65,12 @@ export function useMultiSelect(
     selectedArchives.value = newSet;
   };
 
-  const selectAll = (): void => {
-    selectedArchives.value = new Set(displayArchives.value.map((a) => a.id));
-  };
-
-  const invertSelection = (): void => {
-    const allIds = new Set(displayArchives.value.map((a) => a.id));
-    const newSet = new Set(selectedArchives.value);
-    allIds.forEach((id) => {
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-    });
-    selectedArchives.value = newSet;
+  const toggleSelectAll = (): void => {
+    if (isAllSelected.value) {
+      selectedArchives.value = new Set();
+    } else {
+      selectedArchives.value = new Set(displayArchives.value.map((a) => a.id));
+    }
   };
 
   const handleShowBatchDeleteConfirm = (): void => {
@@ -110,11 +105,11 @@ export function useMultiSelect(
     selectedArchives,
     showBatchDeleteConfirm,
     isBatchDeleting,
+    isAllSelected,
     enterMultiSelectMode,
     exitMultiSelectMode,
     toggleArchiveSelection,
-    selectAll,
-    invertSelection,
+    toggleSelectAll,
     confirmBatchDelete,
     cancelBatchDelete,
     handleShowBatchDeleteConfirm,

@@ -33,28 +33,28 @@
 
     <div ref="logContainer" class="log-container">
       <div v-for="(log, index) in filteredLogs" :key="index" :class="['log-entry', log.type]">
-          <div class="log-time">{{ formatTime(log.date) }}</div>
-          <div class="log-level" :class="log.type">[{{ log.type.toUpperCase() }}]</div>
-          <div class="log-message">
-            <div v-if="Array.isArray(log.message)" class="log-multiline">
-              <div
-                v-for="(line, lineIndex) in log.message"
-                :key="lineIndex"
-                :class="{
-                  'log-command': lineIndex === 0,
-                  'log-result': lineIndex === 1 && log.message.length > 1,
-                }"
-              >
-                {{ line }}
-              </div>
+        <div class="log-time">{{ formatTime(log.date) }}</div>
+        <div class="log-level" :class="log.type">[{{ log.type.toUpperCase() }}]</div>
+        <div class="log-message">
+          <div v-if="Array.isArray(log.message)" class="log-multiline">
+            <div
+              v-for="(line, lineIndex) in log.message"
+              :key="lineIndex"
+              :class="{
+                'log-command': lineIndex === 0,
+                'log-result': lineIndex === 1 && log.message.length > 1,
+              }"
+            >
+              {{ line }}
             </div>
-            <div v-else>{{ log.message }}</div>
           </div>
+          <div v-else>{{ log.message }}</div>
         </div>
+      </div>
 
-        <div v-if="filteredLogs.length === 0" class="no-logs">
-          {{ t("logs.noLogs") }}
-        </div>
+      <div v-if="filteredLogs.length === 0" class="no-logs">
+        {{ t("logs.noLogs") }}
+      </div>
     </div>
   </div>
 </template>

@@ -1,4 +1,22 @@
 {
   "archiveDifficulty": "存檔難度",
-  "actualDifficulty": "實際難度"
+  "actualDifficulty": "實際難度",
+  "currentLevel": "當前層級",
+  "gameMode": "遊戲模式",
+  "singleplayer": "單人模式",
+  "multiplayer": "多人模式",
+  "easy": "簡單難度",
+  "normal": "普通難度",
+  "hard": "困難難度",
+  "nightmare": "噩夢難度",
+  "visible": "可見",
+  "hidden": "隱藏",
+  "lastModified": "最後修改",
+  "id": "存檔ID",
+  "editLabel": "編輯存檔",
+  "hideLabel": "隱藏存檔",
+  "showLabel": "顯示存檔",
+  "deleteLabel": "刪除存檔",
+  "saveDirNotFound": "請先開啟遊戲以初始化存檔目錄",
+  "loadFailed": "載入存檔失敗"
 }

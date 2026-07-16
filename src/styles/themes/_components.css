@@ -254,14 +254,14 @@
   --radio-size: 16px;
 
   /* 未选中状态 */
-  --checkbox-bg: #F2F0EB;
+  --checkbox-bg: #f2f0eb;
   --checkbox-border: rgba(26, 24, 21, 0.15);
-  --checkbox-border-hover: #8B8178;
+  --checkbox-border-hover: #8b8178;
 
   /* 选中状态 */
-  --checkbox-checked-bg: #8B8178;
-  --checkbox-checked-border: #8B8178;
-  --checkbox-checkmark-color: #FFFFFF;
+  --checkbox-checked-bg: #8b8178;
+  --checkbox-checked-border: #8b8178;
+  --checkbox-checkmark-color: #ffffff;
 
   /* 焦点状态 */
   --checkbox-focus-shadow: 0 0 0 2px rgba(139, 129, 120, 0.2);

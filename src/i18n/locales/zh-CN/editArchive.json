@@ -68,6 +68,7 @@
   "loadingUsername": "加载用户名中...",
   "saveFailed": "保存失败：",
   "parseFailed": "解析存档数据失败：",
+  "parseFailedDataInvalid": "解析存档数据失败：数据格式无效",
   "loadLevelsFailed": "加载层级数据失败：",
   "savingArchiveData": "保存存档数据：",
   "jsonEditor": "JSON编辑器",

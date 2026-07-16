@@ -4,7 +4,6 @@
 use crate::error::AppResult;
 use regex::Regex;
 use serde::Serialize;
-use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
@@ -88,19 +87,14 @@ pub struct SaveFileDetail {
     pub actual_difficulty: String,
 }
 
-/// Difficulty mapping (using match is faster than lookup)
+/// Difficulty mapping
 #[inline]
-fn map_difficulty(raw: &str) -> (Cow<'static, str>, Cow<'static, str>) {
-    if raw.eq_ignore_ascii_case("easy") {
-        (Cow::Borrowed("Easy"), Cow::Borrowed("Easy"))
-    } else if raw.eq_ignore_ascii_case("normal") {
-        (Cow::Borrowed("Normal"), Cow::Borrowed("Normal"))
-    } else if raw.eq_ignore_ascii_case("hard") {
-        (Cow::Borrowed("Hard"), Cow::Borrowed("Hard"))
-    } else if raw.eq_ignore_ascii_case("nightmare") {
-        (Cow::Borrowed("Nightmare"), Cow::Borrowed("Nightmare"))
-    } else {
-        (Cow::Borrowed("Normal"), Cow::Borrowed("Normal"))
+fn map_difficulty(raw: &str) -> (&'static str, &'static str) {
+    match raw.to_lowercase().as_str() {
+        "easy" => ("Easy", "Easy"),
+        "hard" => ("Hard", "Hard"),
+        "nightmare" => ("Nightmare", "Nightmare"),
+        _ => ("Normal", "Normal"),
     }
 }
 
@@ -142,8 +136,8 @@ pub fn build_save_info<S: Into<String>>(
     Ok(SaveFileInfo {
         id: index,
         name: name.to_string(),
-        difficulty: difficulty.into_owned(),
-        difficulty_class: difficulty_class.into_owned(),
+        difficulty: difficulty.to_string(),
+        difficulty_class: difficulty_class.to_string(),
         actual_difficulty: actual_difficulty.into(),
         mode: map_mode(mode_raw).to_string(),
         date: date.into(),
@@ -177,14 +171,12 @@ pub fn build_save_meta(
     let name = caps.get(2).ok_or("Failed to extract save name")?.as_str();
     let difficulty_raw = caps.get(3).ok_or("Failed to extract difficulty")?.as_str();
 
-    let file_size = fs::metadata(path)
-        .map(|m| m.len())
-        .unwrap_or(0);
+    let file_size = fs::metadata(path).map(|m| m.len()).unwrap_or(0);
 
     Ok(SaveFileMeta {
         id: index,
         name: name.to_string(),
-        difficulty: map_difficulty(difficulty_raw).0.into_owned(),
+        difficulty: map_difficulty(difficulty_raw).0.to_string(),
         mode: map_mode(mode_raw).to_string(),
         date,
         hidden: path.parent() != get_save_games_base_dir().map(|p| p.as_path()),

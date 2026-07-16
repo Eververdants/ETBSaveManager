@@ -68,6 +68,7 @@
   "loadingUsername": "Loading username...",
   "saveFailed": "Save failed:",
   "parseFailed": "Failed to parse archive data:",
+  "parseFailedDataInvalid": "Failed to parse archive data: invalid data format",
   "loadLevelsFailed": "Error loading level data:",
   "savingArchiveData": "Saving archive data:",
   "jsonEditor": "JSON Editor",

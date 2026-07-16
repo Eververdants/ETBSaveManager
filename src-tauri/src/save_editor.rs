@@ -9,43 +9,6 @@ use uesave::{
     Properties, Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
     PropertyType, PropertyValue, Save, StructType, StructValue, ValueArray, ValueVec,
 };
-use uuid;
-
-/// Modify CurrentLevel_0.Name field value
-pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
-    let key = PropertyKey(0, "CurrentLevel".to_string());
-
-    if let Some(current_level_prop) = save.root.properties.0.get_mut(&key) {
-        match &mut current_level_prop.inner {
-            PropertyInner::Name(ref mut name) => {
-                *name = new_level_name.clone();
-                println!("✅ CurrentLevel_0 modified to: {}", name);
-                true
-            }
-            other => {
-                eprintln!("❌ CurrentLevel_0 type error, expected Name, got {:?}", other);
-                false
-            }
-        }
-    } else {
-        println!("⚠️ CurrentLevel_0 field not found, creating a new one...");
-
-        let new_current_level = Property {
-            tag: PropertyTagPartial {
-                id: None,
-                data: PropertyTagDataPartial::Other(PropertyType::NameProperty),
-            },
-            inner: PropertyInner::Name(new_level_name.clone()),
-        };
-
-        save.root.properties.0.insert(key, new_current_level);
-        println!(
-            "✅ Created new CurrentLevel_0 field with value: {}",
-            new_level_name
-        );
-        true
-    }
-}
 
 /// Handle special logic for Pipes level
 fn process_pipes_level(save: &mut Save, level: &str) -> String {
@@ -194,15 +157,16 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
 
     println!("📂 Reading original save file: {:?}", original_path);
 
-    let file = File::open(&original_path).map_err(|e| format!("Failed to open save file: {}", e))?;
-    let mut reader = BufReader::new(file);
+    let file =
+        File::open(&original_path).map_err(|e| format!("Failed to open save file: {}", e))?;
+    let mut reader = BufReader::with_capacity(16384, file);
     let mut save = Save::read(&mut reader).map_err(|e| format!("Failed to parse save: {:?}", e))?;
 
     // Handle Pipes level
     let processed_level = process_pipes_level(&mut save, current_level);
 
     // Modify CurrentLevel
-    if modify_current_level(&mut save, processed_level.clone()) {
+    if save_shared::modify_current_level(&mut save, processed_level.clone()) {
         println!("✅ Current level name modified to: {}", processed_level);
     }
 
@@ -215,22 +179,25 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     // Write to temp file first to avoid data loss on crash
     let temp_path = output_path.with_extension("sav.tmp");
     {
-        let file = File::create(&temp_path).map_err(|e| format!("Failed to create temp file: {}", e))?;
+        let file =
+            File::create(&temp_path).map_err(|e| format!("Failed to create temp file: {}", e))?;
         let mut writer = BufWriter::new(file);
         save.write(&mut writer)
             .map_err(|e| format!("Failed to write save: {:?}", e))?;
-        writer.flush().map_err(|e| format!("Failed to flush buffer: {}", e))?;
+        writer
+            .flush()
+            .map_err(|e| format!("Failed to flush buffer: {}", e))?;
     }
+
+    // Atomically rename temp to target path
+    fs::rename(&temp_path, &output_path)
+        .map_err(|e| format!("Failed to rename temp file: {}", e))?;
 
     // Delete original save file
     if Path::new(&original_path).exists() {
         fs::remove_file(&original_path).map_err(|e| format!("Failed to delete old file: {}", e))?;
         println!("🗑️ Deleted original save file");
     }
-
-    // Atomically rename temp to target path
-    fs::rename(&temp_path, &output_path)
-        .map_err(|e| format!("Failed to rename temp file: {}", e))?;
 
     println!("💾 Save saved to: {:?}", output_path);
 
@@ -492,14 +459,16 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
     validate_save_games_path(Path::new(file_path))?;
 
     let file = File::open(file_path).map_err(|e| format!("Failed to open save file: {}", e))?;
-    let mut reader = BufReader::new(file);
+    let mut reader = BufReader::with_capacity(16384, file);
     let mut save = Save::read(&mut reader).map_err(|e| format!("Failed to parse save: {:?}", e))?;
 
     let levels_completed_key = PropertyKey(0, "LevelsCompleted".to_string());
 
     // Create default structure when LevelsCompleted_0 does not exist
     if !save.root.properties.0.contains_key(&levels_completed_key) {
-        println!("⚠️ LevelsCompleted_0 field not found, automatically creating default structure...");
+        println!(
+            "⚠️ LevelsCompleted_0 field not found, automatically creating default structure..."
+        );
         save.root.properties.0.insert(
             PropertyKey(0, "LevelsCompleted".to_string()),
             create_default_levels_completed_property(),
@@ -508,7 +477,11 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
 
     // Rebuild default structure if LevelsCompleted_0 format is invalid, preventing unlock flow interruption
     let is_valid_levels_completed = matches!(
-        save.root.properties.0.get(&levels_completed_key).map(|prop| &prop.inner),
+        save.root
+            .properties
+            .0
+            .get(&levels_completed_key)
+            .map(|prop| &prop.inner),
         Some(PropertyInner::Array(ValueArray::Struct { .. }))
     );
     if !is_valid_levels_completed {
@@ -580,11 +553,14 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
     }
 
     // Write back to file
-    let file = File::create(file_path).map_err(|e| format!("Failed to create output file: {}", e))?;
+    let file =
+        File::create(file_path).map_err(|e| format!("Failed to create output file: {}", e))?;
     let mut writer = BufWriter::new(file);
     save.write(&mut writer)
         .map_err(|e| format!("Failed to write save: {:?}", e))?;
-    writer.flush().map_err(|e| format!("Failed to flush buffer: {}", e))?;
+    writer
+        .flush()
+        .map_err(|e| format!("Failed to flush buffer: {}", e))?;
 
     println!("💾 Hub door unlocking complete, save saved");
     Ok("Hub doors unlocked successfully".to_string())

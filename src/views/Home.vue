@@ -104,7 +104,7 @@
         <!-- Empty state: filters active, no matching archives -->
         <div v-if="displayArchives.length === 0 && archives.length > 0 && hasActiveFilters" class="empty-state">
           <div class="empty-content" v-squircle="52">
-            <div class="empty-icon">🔍</div>
+            <div class="empty-icon"><font-awesome-icon :icon="['fas', 'search']" /></div>
             <h3 class="empty-title">{{ $t("archiveSearch.noResults") }}</h3>
             <p class="empty-description">
               {{ $t("archiveSearch.noMatchingArchives") }}
@@ -121,7 +121,7 @@
         <!-- Empty state: no archives exist yet -->
         <div v-if="displayArchives.length === 0 && dataLoadComplete && archives.length === 0" class="empty-state">
           <div class="empty-content" v-squircle="52">
-            <div class="empty-icon">📁</div>
+            <div class="empty-icon"><font-awesome-icon :icon="['fas', 'folder-open']" /></div>
             <h3 class="empty-title">{{ $t("archiveSearch.noArchives") }}</h3>
             <p class="empty-description">
               {{ $t("archiveSearch.createNewArchive") }}
@@ -136,7 +136,12 @@
 
     <!-- Search panel -->
     <Teleport to="body">
-      <transition name="search-panel" @before-enter="(el: Element) => beforeSearchEnter(el as HTMLElement)" @enter="(el: Element, done: () => void) => searchEnter(el as HTMLElement, done)" @leave="(el: Element, done: () => void) => searchLeave(el as HTMLElement, done)">
+      <transition
+        name="search-panel"
+        @before-enter="(el: Element) => beforeSearchEnter(el as HTMLElement)"
+        @enter="(el: Element, done: () => void) => searchEnter(el as HTMLElement, done)"
+        @leave="(el: Element, done: () => void) => searchLeave(el as HTMLElement, done)"
+      >
         <div v-show="showSearch && !loading" class="search-overlay" @click.self="toggleSearch">
           <ArchiveSearchFilter
             ref="archiveSearchFilter"
@@ -267,7 +272,6 @@ import { useToast } from "../composables/useToast";
 import { markInitialLoadComplete } from "../composables/useArchiveCard";
 import scheduler from "../services/resourceScheduler";
 
-
 // Composables
 const archiveData = useArchiveData();
 const {
@@ -317,6 +321,10 @@ const isPageActive = ref(false);
 const shouldResetScroll = ref(false);
 const showCards = ref(false);
 
+// Tracks pending compositing-refresh timeouts so they can be
+// cleared on unmount — prevents stale operations after destroy.
+const pendingRefreshTimeouts: ReturnType<typeof setTimeout>[] = [];
+
 // ─── Scroll-aware performance: disable hover animations while scrolling ──
 // Applying CSS transition changes mid-scroll (hover → transform/border-color)
 // forces the browser to re-evaluate paint layers every frame.  Adding an
@@ -329,11 +337,11 @@ const SCROLL_STOP_DELAY = 150; // ms after scroll stops before re-enabling
 const onScrollStart = (): void => {
   const el = scrollContainerRef.value;
   if (!el) return;
-  el.classList.add('is-scrolling');
+  el.classList.add("is-scrolling");
   if (scrollTimer) clearTimeout(scrollTimer);
   // Re-enable after scrolling stops for SCROLL_STOP_DELAY ms
   scrollTimer = setTimeout(() => {
-    el?.classList.remove('is-scrolling');
+    el?.classList.remove("is-scrolling");
     scrollTimer = null;
   }, SCROLL_STOP_DELAY);
 };
@@ -386,7 +394,6 @@ const toast = useToast();
 const { t } = useI18n();
 
 // Local state (scrollContainerRef, showSearch, isPageActive, shouldResetScroll declared above)
-
 
 // Methods
 const toggleSearch = () => {
@@ -445,16 +452,38 @@ const confirmDelete = () => {
   });
 };
 
-const refreshArchives = async () => {
-  // Predict archive loading before the operation starts,
-  // so resources are pre-allocated for the incoming I/O.
-  scheduler.predict("loading-archives", {
-    source: "refresh-button",
-    leadTime: 150,
-    confidence: 0.98,
-  });
-  await refreshArchivesBase();
-  toast.showSuccess(t("archiveSearch.refreshed"));
+// ─── Refresh throttle ──────────────────────────────
+let _refreshInFlight = false;
+let _refreshCooldownTimer: ReturnType<typeof setTimeout> | null = null;
+const REFRESH_COOLDOWN_MS = 3_000;
+
+const refreshArchives = async (): Promise<void> => {
+  // Throttle: ignore clicks while a refresh is in flight or within cooldown.
+  if (_refreshInFlight) return;
+  if (_refreshCooldownTimer) {
+    toast.showWarning(t("archiveSearch.refreshCooldown"));
+    return;
+  }
+
+  // Lock
+  _refreshInFlight = true;
+  try {
+    // Predict archive loading before the operation starts,
+    // so resources are pre-allocated for the incoming I/O.
+    scheduler.predict("loading-archives", {
+      source: "refresh-button",
+      leadTime: 150,
+      confidence: 0.98,
+    });
+    await refreshArchivesBase();
+    toast.showSuccess(t("archiveSearch.refreshed"));
+  } finally {
+    _refreshInFlight = false;
+    // Set cooldown timer
+    _refreshCooldownTimer = setTimeout(() => {
+      _refreshCooldownTimer = null;
+    }, REFRESH_COOLDOWN_MS);
+  }
 };
 
 const openSaveGamesFolder = () => {
@@ -465,7 +494,6 @@ const openSaveGamesFolder = () => {
     },
   });
 };
-
 
 // ─── Helpers ─────────────────────────────────────
 /**
@@ -497,7 +525,7 @@ const forceCompositingRefresh = (): void => {
   // In WebView2, parent compositing layers (from row translateY)
   // don't invalidate when child content (images, card data) changes
   // unless the child's layout is explicitly re-calculated.
-  const rows = el.querySelectorAll('.archive-row');
+  const rows = el.querySelectorAll(".archive-row");
   for (let i = 0; i < rows.length; i++) {
     void (rows[i] as HTMLElement).offsetHeight;
   }
@@ -536,13 +564,16 @@ onActivated(() => {
     let frames = 0;
     const waitAndLoad = () => {
       if (!isPageActive.value) return;
-      if (++frames < 18) { requestAnimationFrame(waitAndLoad); return; }
-      invoke("set_process_priority", { priority: "high" });
+      if (++frames < 18) {
+        requestAnimationFrame(waitAndLoad);
+        return;
+      }
+      invoke("set_process_priority", { priority: "high" }).catch(() => {});
       refreshArchivesSilent().then(() => {
         if (!isPageActive.value) return;
         showCards.value = true;
         loading.value = false;
-        invoke("set_process_priority", { priority: "normal" });
+        invoke("set_process_priority", { priority: "normal" }).catch(() => {});
         nextTick(() => {
           rowVirtualizer.value.measure();
           requestAnimationFrame(() => {
@@ -573,7 +604,7 @@ onMounted(() => {
   // Passive: true means the browser can scroll without waiting for this handler,
   // which is critical for scroll jank.  Only binds after data loads so the
   // container exists.
-  scrollContainerRef.value?.addEventListener('scroll', onScrollStart, { passive: true });
+  scrollContainerRef.value?.addEventListener("scroll", onScrollStart, { passive: true });
 
   // ─── Fast path: skeleton immediate, data async ──────────────
   // Show skeleton right away, fire off Phase 1 IPC without await.
@@ -584,12 +615,12 @@ onMounted(() => {
   // Boost process to HIGH priority during the initial load so the
   // OS scheduler allocates more CPU time to rasterisation, layout,
   // and image decoding.  Revert to NORMAL once cards are shown.
-  invoke("set_process_priority", { priority: "high" });
+  invoke("set_process_priority", { priority: "high" }).catch(() => {});
   loading.value = true;
   initializeArchives(true).then(() => {
     showCards.value = true;
     loading.value = false;
-    invoke("set_process_priority", { priority: "normal" });
+    invoke("set_process_priority", { priority: "normal" }).catch(() => {});
 
     // Virtualizer measurement — runs after cards are in the DOM.
     nextTick(() => {
@@ -600,11 +631,13 @@ onMounted(() => {
           forceCompositingRefresh();
           rowVirtualizer.value.measure();
 
-          const scheduleRefresh = (delay: number) =>
-            setTimeout(() => {
+          const scheduleRefresh = (delay: number) => {
+            const timer = setTimeout(() => {
               forceCompositingRefresh();
               rowVirtualizer.value.measure();
             }, delay);
+            pendingRefreshTimeouts.push(timer);
+          };
 
           scheduleRefresh(150);
           scheduleRefresh(600);
@@ -624,10 +657,10 @@ onUnmounted(() => {
   unregisterUndoShortcuts();
   window.removeEventListener("open-archive-search", handleOpenArchiveSearchEvent as EventListener);
 
-    destroyVirtualScrollObserver();
-    cleanupPerformance();
-    cleanupFloatingButton();
-    document.body.style.overflow = "";
+  destroyVirtualScrollObserver();
+  cleanupPerformance();
+  cleanupFloatingButton();
+  document.body.style.overflow = "";
   document.body.style.position = "";
   document.body.style.width = "";
   document.body.style.height = "";
@@ -635,7 +668,13 @@ onUnmounted(() => {
 
   // Clean up scroll timer & listener
   if (scrollTimer) clearTimeout(scrollTimer);
-  scrollContainerRef.value?.removeEventListener('scroll', onScrollStart);
+  scrollContainerRef.value?.removeEventListener("scroll", onScrollStart);
+
+  // Clear pending compositing-refresh timeouts
+  for (const timer of pendingRefreshTimeouts) {
+    clearTimeout(timer);
+  }
+  pendingRefreshTimeouts.length = 0;
 });
 
 // When displayArchives changes (filters applied), reset scroll position
@@ -675,20 +714,16 @@ watch(
 // scheduler so CPU budget is raised from 0.45 (interacting) to 0.7
 // (searching).  This prevents the filter loop from blocking input.
 // The operation auto-ends when the query is cleared or search closes.
-watch(
-  searchQuery,
-  (query) => {
-    if (query) {
-      scheduler.beginOperation("searching");
-    } else {
-      // Only end searching if search panel is also closed
-      if (!showSearch.value) {
-        scheduler.endOperation("searching");
-      }
+watch(searchQuery, (query) => {
+  if (query) {
+    scheduler.beginOperation("searching");
+  } else {
+    // Only end searching if search panel is also closed
+    if (!showSearch.value) {
+      scheduler.endOperation("searching");
     }
-  },
-);
-
+  }
+});
 </script>
 
 <style scoped>
@@ -736,8 +771,14 @@ watch(
  * card by ~700ms.  The 200ms CSS animation plays once on
  * mount and completes before the user can interact. */
 @keyframes cards-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .virtual-scroll-viewport {
   animation: cards-fade-in 0.25s ease-out both;
@@ -761,7 +802,6 @@ watch(
   content-visibility: auto;
   contain-intrinsic-size: 180px;
 }
-
 
 .archive-grid {
   display: grid;
@@ -859,7 +899,9 @@ watch(
 }
 
 @keyframes spinner-rotate {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {
@@ -1161,5 +1203,4 @@ watch(
   opacity: 1;
   transform: translateY(0);
 }
-
 </style>

@@ -29,7 +29,9 @@ pub fn parse_sav_file(path: &Path) -> AppResult<Save> {
         let mut buffer = Vec::with_capacity(file_size as usize);
         file.read_to_end(&mut buffer)
             .map_err(|e| format!("读取文件内容失败: {}", e))?;
-        return Ok(Save::read(&mut Cursor::new(&buffer)).map_err(|e| format!("解析存档失败: {:?}", e))?);
+        return Ok(
+            Save::read(&mut Cursor::new(&buffer)).map_err(|e| format!("解析存档失败: {:?}", e))?
+        );
     }
 
     // Medium files: pre-allocate buffer of exact size
@@ -38,10 +40,13 @@ pub fn parse_sav_file(path: &Path) -> AppResult<Save> {
         let mut buffer = vec![0u8; file_size as usize];
         file.read_exact(&mut buffer)
             .map_err(|e| format!("读取文件内容失败: {}", e))?;
-        return Ok(Save::read(&mut Cursor::new(&buffer)).map_err(|e| format!("解析存档失败: {:?}", e))?);
+        return Ok(
+            Save::read(&mut Cursor::new(&buffer)).map_err(|e| format!("解析存档失败: {:?}", e))?
+        );
     }
 
     // Large files: use memory mapping
+    // SAFETY: The file is not mutated during the mapping lifetime, and the returned Save owns a copy of the data via Cursor.
     let mmap = unsafe { Mmap::map(&file) }.map_err(|e| format!("内存映射失败: {}", e))?;
     Ok(Save::read(&mut Cursor::new(&mmap[..])).map_err(|e| format!("解析存档失败: {:?}", e))?)
 }
@@ -99,10 +104,11 @@ pub fn extract_current_level(save: &Save) -> String {
 /// Returns Cow to avoid allocation of static strings
 #[inline]
 pub fn extract_difficulty_label(save: &Save) -> Cow<'static, str> {
-    let difficulty_label = get_property_by_name(save, "Difficulty").and_then(|prop| match &prop.inner {
-        PropertyInner::Byte(uesave::Byte::Label(label)) => Some(label.as_str()),
-        _ => None,
-    });
+    let difficulty_label =
+        get_property_by_name(save, "Difficulty").and_then(|prop| match &prop.inner {
+            PropertyInner::Byte(uesave::Byte::Label(label)) => Some(label.as_str()),
+            _ => None,
+        });
 
     match difficulty_label {
         Some(s) if s.contains("NewEnumerator0") => Cow::Borrowed("Easy"),

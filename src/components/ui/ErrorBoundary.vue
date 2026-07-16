@@ -1,17 +1,18 @@
 <script setup>
-import { ref, onErrorCaptured, useSlots } from "vue";
+import { ref, onErrorCaptured, computed } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 
 const props = defineProps({
   /** Custom title for the error message */
   title: {
     type: String,
-    default: "页面出现异常",
+    default: undefined,
   },
   /** Custom description for the error message */
   message: {
     type: String,
-    default: "渲染时遇到了问题，但这不影响应用其他部分。",
+    default: undefined,
   },
   /** Whether to show the error detail (stack trace) */
   showDetail: {
@@ -20,13 +21,16 @@ const props = defineProps({
   },
 });
 
+const { t } = useI18n({ useScope: "global" });
 const router = useRouter();
-const slots = useSlots();
 
 const hasError = ref(false);
 const error = ref(null);
 const detailVisible = ref(false);
 const isRetrying = ref(false);
+
+const displayTitle = computed(() => props.title || t("errorBoundary.title"));
+const displayMessage = computed(() => props.message || t("errorBoundary.message"));
 
 onErrorCaptured((err, instance, info) => {
   hasError.value = true;
@@ -78,30 +82,24 @@ const toggleDetail = () => {
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
+        </div>
+        <h3 class="error-title">{{ displayTitle }}</h3>
+        <p class="error-message">{{ displayMessage }}</p>
+        <div class="error-actions">
+          <button class="error-btn error-btn-primary" :disabled="isRetrying" @click="retry">
+            <span v-if="isRetrying" class="error-btn-spinner" />
+            <template v-else>{{ $t("errorBoundary.retry") }}</template>
+          </button>
+          <button class="error-btn error-btn-secondary" @click="goHome">{{ $t("errorBoundary.goHome") }}</button>
+          <button v-if="props.showDetail && error" class="error-btn error-btn-ghost" @click="toggleDetail">
+            {{ detailVisible ? $t("errorBoundary.hideDetail") : $t("errorBoundary.showDetail") }}
+          </button>
+        </div>
+        <pre v-if="detailVisible && error" class="error-stack">{{ error.stack || error.message }}</pre>
       </div>
-      <h3 class="error-title">{{ title }}</h3>
-      <p class="error-message">{{ message }}</p>
-      <div class="error-actions">
-        <button class="error-btn error-btn-primary" :disabled="isRetrying" @click="retry">
-          <span v-if="isRetrying" class="error-btn-spinner" />
-          <template v-else>重试</template>
-        </button>
-        <button class="error-btn error-btn-secondary" @click="goHome">
-          返回首页
-        </button>
-        <button
-          v-if="props.showDetail && error"
-          class="error-btn error-btn-ghost"
-          @click="toggleDetail"
-        >
-          {{ detailVisible ? "隐藏详情" : "查看详情" }}
-        </button>
-      </div>
-      <pre v-if="detailVisible && error" class="error-stack">{{ error.stack || error.message }}</pre>
     </div>
+    <slot v-else />
   </div>
-  <slot v-else />
-</div>
 </template>
 
 <style scoped>
@@ -211,7 +209,9 @@ const toggleDetail = () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error-stack {

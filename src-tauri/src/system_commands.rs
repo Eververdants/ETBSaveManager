@@ -1,5 +1,5 @@
-use std::env;
 use crate::error::AppResult;
+use std::env;
 use tauri::Window;
 
 #[tauri::command]
@@ -14,7 +14,6 @@ pub fn restart_app(app: tauri::AppHandle) {
 
 #[tauri::command]
 pub fn set_window_title(title: String, window: Window) -> AppResult<()> {
-    window
-        .set_title(&title)?;
+    window.set_title(&title)?;
     Ok(())
 }

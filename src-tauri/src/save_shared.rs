@@ -6,7 +6,6 @@ use uesave::{
     Properties, Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
     PropertyType, Save, StructType, StructValue, ValueArray, ValueVec,
 };
-use uuid;
 
 /// Inventory slot count
 pub const INVENTORY_SLOTS: usize = 12;
@@ -149,6 +148,49 @@ pub fn create_default_world_property() -> Property {
             },
         },
         inner: PropertyInner::Struct(StructValue::Struct(world_inner_props)),
+    }
+}
+
+/// Modify CurrentLevel_0.Name field value.
+///
+/// - If the field exists and is a `Name` type, its value is updated.
+/// - If it exists but is NOT a `Name` type, an error is logged and `false` is returned.
+/// - If it does not exist, a new `CurrentLevel_0` Name property is created (recovery).
+pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
+    let key = PropertyKey(0, "CurrentLevel".to_string());
+
+    if let Some(current_level_prop) = save.root.properties.0.get_mut(&key) {
+        match &mut current_level_prop.inner {
+            PropertyInner::Name(ref mut name) => {
+                *name = new_level_name.clone();
+                println!("✅ CurrentLevel_0 modified to: {}", name);
+                true
+            }
+            other => {
+                eprintln!(
+                    "❌ CurrentLevel_0 type error, expected Name, got {:?}",
+                    other
+                );
+                false
+            }
+        }
+    } else {
+        println!("⚠️ CurrentLevel_0 field not found, creating a new one...");
+
+        let new_current_level = Property {
+            tag: PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Other(PropertyType::NameProperty),
+            },
+            inner: PropertyInner::Name(new_level_name.clone()),
+        };
+
+        save.root.properties.0.insert(key, new_current_level);
+        println!(
+            "✅ Created new CurrentLevel_0 field with value: {}",
+            new_level_name
+        );
+        true
     }
 }
 

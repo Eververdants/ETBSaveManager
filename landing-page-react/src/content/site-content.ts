@@ -18,16 +18,16 @@ export const site = {
   name: "ETB Save Manager",
   tagline: "A modern, cross-platform save management tool for Escape The Backrooms",
   description:
-    "A declassified archive manager for the Backrooms — full CRUD with soft-delete, 3-step creation wizard across 4 endings and 54 levels, 11 themes, en/zh-CN/zh-TW UI, virtual scrolling, and a built-in performance monitor. Built with Tauri 2.0 on Windows.",
+    "A declassified archive manager for the Backrooms — full CRUD with soft-delete, 3-step creation wizard across 4 endings and 54 levels, 11 themes, en/zh-CN/zh-TW UI, virtual scrolling, built-in performance monitor, and an intelligent resource scheduler. Built with Tauri 2.0 on Windows.",
 
   // 与主项目同步：版本戳 / 编译号 / 发布日（非翻译数据）
   meta: {
     version: "3.2.0",
-    build: "20260619",
-    releaseDate: "2026-06-19",
+    build: "20260716",
+    releaseDate: "2026-07-16",
     edition: "Archive Edition",
     status: "online",
-    codename: "Code Cleanup & Performance Optimization",
+    codename: "Smart Resource Scheduling",
     framework: "Tauri 2.0",
     identifier: "com.admin.etbsavemanager",
     bundle: "nsis · msi",
@@ -93,33 +93,46 @@ export const site = {
       ref: "FILE 006",
       classification: "Technical",
     },
+    {
+      id: "scheduler",
+      title: "Smart Resource Scheduling",
+      description:
+        "Automatically detects operation context and dynamically allocates CPU, rendering, and I/O budgets. Priority-based background task queue with real-time FPS/memory feedback loops.",
+      iconKey: "icon-scheduler",
+      ref: "FILE 007",
+      classification: "Technical",
+    },
   ],
 
-  // 下载项（id / arch / size / href 非翻译；label 由 i18n 提供，en-US 镜像保留用于测试）
+  // 下载项（id / arch / size / format / href 非翻译；label 由 i18n 提供，en-US 镜像保留用于测试）
   downloads: [
     {
       id: "win-x64",
       label: "Windows x64",
       href: "https://github.com/Eververdants/ETBSaveManager/releases/latest",
       arch: "x86_64",
-      size: "nsis",
+      size: "~4.7 MB",
+      format: "nsis",
     },
     {
       id: "win-x86",
       label: "Windows x86",
       href: "https://github.com/Eververdants/ETBSaveManager/releases/latest",
       arch: "i686",
-      size: "msi",
+      size: "~3.8 MB",
+      format: "msi",
     },
     {
       id: "win-arm64",
       label: "Windows ARM64",
       href: "https://github.com/Eververdants/ETBSaveManager/releases/latest",
       arch: "arm64",
-      size: "msi",
+      size: "~4.1 MB",
+      format: "msi",
     },
   ],
 
   githubUrl: "https://github.com/Eververdants/ETBSaveManager",
   releasesUrl: "https://github.com/Eververdants/ETBSaveManager/releases/latest",
+  redditUrl: "https://www.reddit.com/user/Vegetable_Web_1691/",
 } as const;

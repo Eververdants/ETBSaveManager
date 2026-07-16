@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { invoke } from "@tauri-apps/api/core";
 import { gsap } from "gsap";
 import { useToast } from "./useToast";
@@ -8,11 +9,25 @@ import type { Ref } from "vue";
 import type { Router } from "vue-router";
 import type { ArchiveData } from "@/types";
 
-// Cache of recently deleted archives for undo (max 20 entries)
-const deletedArchivesCache = new Map<number, ArchiveData>();
-const MAX_CACHE_SIZE = 20;
+// Store for edit archive data (avoids passing large JSON via route params)
+export const editArchiveDataStore = new Map<string, string>();
+
 // Pending permanent deletes: after toast closes, wait 5s then delete
 const pendingPermanentDeletes = new Map<number, ReturnType<typeof setTimeout>>();
+
+/**
+ * Insert an item into a name-sorted array at the correct position.
+ * Used by undo restore to preserve the name-sorted ordering
+ * established in useArchiveData.
+ */
+function insertSortedByName(arr: ArchiveData[], item: ArchiveData): void {
+  const insertAt = arr.findIndex((a) => a.name.localeCompare(item.name) > 0);
+  if (insertAt === -1) {
+    arr.push(item);
+  } else {
+    arr.splice(insertAt, 0, item);
+  }
+}
 
 interface ArchiveActionsCallbacks {
   onSuccess?: () => void;
@@ -68,6 +83,7 @@ export function useArchiveActions(
   _filters: Record<string, unknown>,
 ): ArchiveActionsReturn {
   const router: Router = useRouter();
+  const { t } = useI18n();
   const toast = useToast();
   const { pushAction, undo, redo, canUndo, canRedo } = useUndoRedo();
 
@@ -158,15 +174,17 @@ export function useArchiveActions(
         if (onSuccess) onSuccess();
       }
     } catch (error) {
-      toast.showError("Failed to toggle visibility: " + (error as Error).message);
+      toast.showError(t("archive.actions.toggleVisibilityFailed", { error: (error as Error).message }));
       if (onError) onError(error);
     }
   };
 
   const handleEdit = (archive: ArchiveData): void => {
+    const key = `edit_${archive.id}_${Date.now()}`;
+    editArchiveDataStore.set(key, JSON.stringify(archive));
     router.push({
       name: "EditArchive",
-      params: { archiveData: JSON.stringify(archive) },
+      params: { archiveData: key },
     });
   };
 
@@ -220,13 +238,6 @@ export function useArchiveActions(
         console.warn("[useArchiveActions] Invalid archive index during deletion:", archiveIndex);
       }
 
-      // Cache deleted archive for potential undo
-      deletedArchivesCache.set(archiveId, archiveSnapshot);
-      if (deletedArchivesCache.size > MAX_CACHE_SIZE) {
-        const firstKey = deletedArchivesCache.keys().next().value!;
-        deletedArchivesCache.delete(firstKey);
-      }
-
       // Register undo action with toast
       pushAction({
         description: `Delete "${archiveName}"`,
@@ -243,16 +254,12 @@ export function useArchiveActions(
               await invoke("restore_file", { filePath: archiveSnapshot.path });
             } catch (e) {
               console.warn("[undo] Failed to restore file:", e);
-              toast.showError("Failed to restore file");
-              return;
+              toast.showWarning(t("archive.actions.restoreFailed"));
             }
           }
-          // Restore in frontend data
-          const cached = deletedArchivesCache.get(archiveId);
-          if (cached) {
-            archiveData.archives.value.unshift(cached);
-            if (callbacks.onRefresh) await callbacks.onRefresh();
-          }
+          // Restore in frontend data, maintaining name-sorted order
+          insertSortedByName(archiveData.archives.value, archiveSnapshot);
+          if (callbacks.onRefresh) await callbacks.onRefresh();
         },
         redo: async () => {
           // Re-delete via soft-delete
@@ -272,7 +279,10 @@ export function useArchiveActions(
       });
 
       // Show undo toast; once it actually closes, wait 5s then permanently delete
+      let undoPerformed = false;
+
       const schedulePermanentDelete = () => {
+        if (undoPerformed) return;
         const timer = setTimeout(async () => {
           pendingPermanentDeletes.delete(archiveId);
           if (archiveSnapshot.path) {
@@ -286,12 +296,13 @@ export function useArchiveActions(
         pendingPermanentDeletes.set(archiveId, timer);
       };
 
-      toast.showSuccess(`${archiveName} deleted`, {
+      toast.showSuccess(t("archive.actions.deleteSuccess", { name: archiveName }), {
         duration: 6000,
         actions: [
           {
-            text: "Undo",
+            text: t("archive.actions.undo"),
             onClick: async () => {
+              undoPerformed = true;
               const p = pendingPermanentDeletes.get(archiveId);
               if (p) {
                 clearTimeout(p);
@@ -299,9 +310,9 @@ export function useArchiveActions(
               }
               try {
                 await undo();
-                toast.showInfo(`Undo delete of "${archiveName}"`, { duration: 3000 });
+                toast.showInfo(t("archive.actions.undoDeleteOf", { name: archiveName }), { duration: 3000 });
               } catch (e) {
-                toast.showError("Undo failed");
+                toast.showError(t("archive.actions.undoFailed"));
               }
             },
           },
@@ -314,7 +325,7 @@ export function useArchiveActions(
       deletingCardId.value = null;
       if (onSuccess) onSuccess();
     } catch (error) {
-      toast.showError("Delete failed: " + ((error as Error).message || error));
+      toast.showError(t("archive.actions.deleteFailed", { error: (error as Error).message || error }));
       closeDeleteModal();
       if (onError) onError(error);
     }
@@ -336,7 +347,7 @@ export function useArchiveActions(
   const openSaveGamesFolder = async (callbacks: Pick<ArchiveActionsCallbacks, "onSuccess"> = {}): Promise<void> => {
     try {
       await invoke("open_save_games_folder");
-      toast.showFolder("Save folder opened");
+      toast.showFolder(t("archive.actions.folderOpened"));
       if (callbacks.onSuccess) callbacks.onSuccess();
     } catch (error) {
       console.error("Failed to open folder:", error);
@@ -350,39 +361,36 @@ export function useArchiveActions(
     const { onSuccess, onError } = callbacks;
     const deleteResults: DeleteResults = { success: [], failed: [] };
     const batchSnapshots: ArchiveData[] = [];
-    const idsToRemove = new Set<number>();
 
     // Phase 1: collect snapshots before any mutation
     for (const archive of archiveList) {
       const found = archiveData.archives.value.find((a) => a.id === archive.id);
       if (found) {
         batchSnapshots.push({ ...found });
-        idsToRemove.add(archive.id);
       } else {
         console.warn(`[batchDelete] Archive not found: ${archive.id}`);
       }
     }
 
-    // Phase 2: fire ALL soft_delete_file calls in parallel for maximum speed
-    const fileResults = await Promise.allSettled(
-      batchSnapshots.map((snapshot) =>
-        snapshot.path ? invoke("soft_delete_file", { filePath: snapshot.path }) : Promise.resolve(),
-      ),
-    );
-
-    fileResults.forEach((result, i) => {
-      const id = batchSnapshots[i].id;
-      if (result.status === "fulfilled") {
-        deleteResults.success.push(id);
+    // Phase 2: process soft_delete_file sequentially to avoid MAINSAVE.sav concurrent write conflicts
+    for (const snapshot of batchSnapshots) {
+      if (snapshot.path) {
+        try {
+          await invoke("soft_delete_file", { filePath: snapshot.path });
+          deleteResults.success.push(snapshot.id);
+        } catch (e) {
+          console.error(`[batchDelete] Failed to delete: ${snapshot.id}`, e);
+          deleteResults.failed.push({ id: snapshot.id, error: e });
+        }
       } else {
-        console.error(`[batchDelete] Failed to delete: ${id}`, result.reason);
-        deleteResults.failed.push({ id, error: result.reason });
+        deleteResults.success.push(snapshot.id);
       }
-    });
+    }
 
-    // Phase 3: remove all deleted items from array in one pass (no shifting)
-    if (idsToRemove.size > 0) {
-      archiveData.archives.value = archiveData.archives.value.filter((a) => !idsToRemove.has(a.id));
+    // Phase 3: remove only successfully deleted items from array
+    if (deleteResults.success.length > 0) {
+      const successIds = new Set(deleteResults.success);
+      archiveData.archives.value = archiveData.archives.value.filter((a) => !successIds.has(a.id));
     }
 
     // Register batch delete as single undo action
@@ -407,8 +415,10 @@ export function useArchiveActions(
               ),
             );
           await Promise.allSettled(restores);
-          // Restore in frontend data
-          archiveData.archives.value.push(...batchSnapshots);
+          // Restore in frontend data, maintaining name-sorted order
+          for (const snapshot of batchSnapshots) {
+            insertSortedByName(archiveData.archives.value, snapshot);
+          }
           if (callbacks.onRefresh) await callbacks.onRefresh();
         },
         redo: async () => {
@@ -427,8 +437,11 @@ export function useArchiveActions(
         },
       });
 
-      // After toast closes, schedule permanent delete for each file (5s grace)
+      // Show undo toast; once it actually closes, wait 5s then permanently delete
+      let batchUndoPerformed = false;
+
       const scheduleBatchPermanentDelete = () => {
+        if (batchUndoPerformed) return;
         for (const snapshot of batchSnapshots) {
           if (!snapshot.path) continue;
           const timer = setTimeout(async () => {
@@ -443,12 +456,13 @@ export function useArchiveActions(
         }
       };
 
-      toast.showSuccess(`Deleted ${batchSnapshots.length} archives`, {
+      toast.showSuccess(t("archive.actions.batchDeleteSuccess", { count: batchSnapshots.length }), {
         duration: 6000,
         actions: [
           {
-            text: "Undo",
+            text: t("archive.actions.undo"),
             onClick: async () => {
+              batchUndoPerformed = true;
               for (const snapshot of batchSnapshots) {
                 const p = pendingPermanentDeletes.get(snapshot.id);
                 if (p) {
@@ -458,9 +472,9 @@ export function useArchiveActions(
               }
               try {
                 await undo();
-                toast.showInfo("Batch delete undone", { duration: 3000 });
+                toast.showInfo(t("archive.actions.batchDeleteUndone"), { duration: 3000 });
               } catch (e) {
-                toast.showError("Undo failed");
+                toast.showError(t("archive.actions.undoFailed"));
               }
             },
           },
@@ -471,7 +485,10 @@ export function useArchiveActions(
 
     if (deleteResults.failed.length > 0) {
       toast.showError(
-        `Batch delete complete: ${deleteResults.success.length} succeeded, ${deleteResults.failed.length} failed`,
+        t("archive.actions.batchDeleteComplete", {
+          success: deleteResults.success.length,
+          failed: deleteResults.failed.length,
+        }),
       );
       if (onError) onError(deleteResults);
     }
@@ -496,7 +513,7 @@ export function useArchiveActions(
         const tag = document.activeElement?.tagName || "";
         if (!["INPUT", "TEXTAREA", "SELECT"].includes(tag)) {
           undo().then((desc: string | null) => {
-            if (desc) toast.showInfo(`Undone: ${desc}`, { duration: 3000 });
+            if (desc) toast.showInfo(t("archive.actions.undone", { desc }), { duration: 3000 });
           });
         }
       } else if (event.key === "z" && event.shiftKey) {
@@ -504,7 +521,7 @@ export function useArchiveActions(
         const tag = document.activeElement?.tagName || "";
         if (!["INPUT", "TEXTAREA", "SELECT"].includes(tag)) {
           redo().then((desc: string | null) => {
-            if (desc) toast.showInfo(`Redone: ${desc}`, { duration: 3000 });
+            if (desc) toast.showInfo(t("archive.actions.redone", { desc }), { duration: 3000 });
           });
         }
       }

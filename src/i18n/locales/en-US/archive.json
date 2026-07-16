@@ -6,5 +6,20 @@
   "updated": "Update",
   "updateDetails": "Adjusted the style of archive cards and fixed some bugs.",
   "thanks": "Thanks to everyone who provided feedback, suggestions and support for this project",
-  "disclaimer": "This tool is for educational and communication purposes only"
+  "disclaimer": "This tool is for educational and communication purposes only",
+  "actions": {
+    "deleteSuccess": "{name} deleted",
+    "undo": "Undo",
+    "undoDeleteOf": "Undo delete of \"{name}\"",
+    "undoFailed": "Undo failed",
+    "deleteFailed": "Delete failed: {error}",
+    "folderOpened": "Save folder opened",
+    "toggleVisibilityFailed": "Failed to toggle visibility: {error}",
+    "batchDeleteSuccess": "Deleted {count} archives",
+    "batchDeleteComplete": "Batch delete complete: {success} succeeded, {failed} failed",
+    "batchDeleteUndone": "Batch delete undone",
+    "undone": "Undone: {desc}",
+    "redone": "Redone: {desc}",
+    "restoreFailed": "Failed to restore file, but archive will appear in list"
+  }
 }

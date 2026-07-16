@@ -26,5 +26,11 @@
   "loading": "載入中……",
   "unknown": "未知",
   "later": "稍後",
-  "close": "關閉"
+  "close": "關閉",
+  "versionLabel": "版本：",
+  "scrollLeft": "向左滾動",
+  "scrollRight": "向右滾動",
+  "localPlayerSuffix": "(本地)",
+  "playerNameDisplay": "玩家 {id}...",
+  "emptyBackpack": "預設空背包"
 }

@@ -35,10 +35,8 @@ pub async fn load_all_saves() -> AppResult<Vec<SaveFileInfo>> {
     let start_time = Instant::now();
 
     // Parallel fetch file list and visible saves set
-    let (paths_result, visible_saves_result) = rayon::join(
-        || get_file_path::list_save_paths(),
-        || get_visible_saves_set(),
-    );
+    let (paths_result, visible_saves_result) =
+        rayon::join(get_file_path::list_save_paths, get_visible_saves_set);
 
     let paths = paths_result?;
     let visible_saves = Arc::new(visible_saves_result?);
@@ -68,25 +66,24 @@ pub async fn load_all_saves() -> AppResult<Vec<SaveFileInfo>> {
 pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
     let start_time = Instant::now();
 
-    let (paths_result, visible_saves_result) = rayon::join(
-        || get_file_path::list_save_paths(),
-        || get_visible_saves_set(),
-    );
+    let (paths_result, visible_saves_result) =
+        rayon::join(get_file_path::list_save_paths, get_visible_saves_set);
 
     let paths = paths_result?;
-    let visible_saves = visible_saves_result?;
+    let visible_saves = Arc::new(visible_saves_result?);
 
-    let mut results: Vec<SaveFileMeta> = Vec::with_capacity(paths.len());
-    for (i, path) in paths.iter().enumerate() {
-        let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-        let archive_name = extract_archive_name(file_name);
-        let date = cli_handlers::get_modified_date(path).unwrap_or_default();
-        let is_visible = visible_saves.contains(archive_name);
+    let results: Vec<SaveFileMeta> = paths
+        .into_par_iter()
+        .enumerate()
+        .filter_map(|(i, path)| {
+            let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+            let archive_name = extract_archive_name(file_name);
+            let date = cli_handlers::get_modified_date(&path).unwrap_or_default();
+            let is_visible = visible_saves.contains(archive_name);
 
-        if let Ok(meta) = save_utils::build_save_meta(i as u32, path, date, is_visible) {
-            results.push(meta);
-        }
-    }
+            save_utils::build_save_meta(i as u32, &path, date, is_visible).ok()
+        })
+        .collect();
 
     let elapsed = start_time.elapsed();
     println!(
@@ -109,10 +106,8 @@ pub async fn load_save_metadata_page(
 ) -> AppResult<save_utils::SaveFileMetaPage> {
     let start_time = Instant::now();
 
-    let (paths_result, visible_saves_result) = rayon::join(
-        || get_file_path::list_save_paths(),
-        || get_visible_saves_set(),
-    );
+    let (paths_result, visible_saves_result) =
+        rayon::join(get_file_path::list_save_paths, get_visible_saves_set);
 
     let paths = paths_result?;
     let visible_saves = visible_saves_result?;
@@ -192,7 +187,7 @@ pub async fn load_save_details_batch(paths: Vec<String>) -> AppResult<Vec<SaveFi
 #[inline]
 fn process_save_file(
     index: usize,
-    path: &PathBuf,
+    path: &Path,
     visible_saves: &std::collections::HashSet<String>,
 ) -> Option<SaveFileInfo> {
     let save = cli_handlers::parse_sav_file(path).ok()?;
@@ -232,8 +227,7 @@ pub async fn delete_file(file_path: String) -> AppResult<()> {
 
         validate_save_games_path(path)?;
 
-        fs::remove_file(&file_path)
-            .map_err(|e| format!("Failed to delete file: {}", e))?;
+        fs::remove_file(&file_path).map_err(|e| format!("Failed to delete file: {}", e))?;
 
         // Remove from MAINSAVE records (failure does not affect main operation)
         let _ = remove_save_from_mainsave(extract_archive_name(filename));
@@ -255,7 +249,9 @@ pub async fn soft_delete_file(file_path: String) -> AppResult<()> {
             .ok_or("Invalid file path")?;
 
         if !filename.to_lowercase().ends_with(".sav") {
-            return Err("Only .sav save files can be soft-deleted".to_string().into());
+            return Err("Only .sav save files can be soft-deleted"
+                .to_string()
+                .into());
         }
 
         validate_save_games_path(path)?;
@@ -296,8 +292,7 @@ pub async fn restore_file(file_path: String) -> AppResult<()> {
             .ok_or("Invalid trash file path")?;
 
         // Restore (rename back)
-        fs::rename(&trash_path, path)
-            .map_err(|e| format!("Failed to restore file: {}", e))?;
+        fs::rename(&trash_path, path).map_err(|e| format!("Failed to restore file: {}", e))?;
 
         // Validate restored path
         validate_save_games_path(path)?;
@@ -337,9 +332,11 @@ pub async fn open_save_games_folder() -> AppResult<()> {
         let save_games_path = get_save_games_dir()?;
 
         if !save_games_path.exists() {
-            return Err(
-                format!("Save directory does not exist: {}", save_games_path.display()).into(),
-            );
+            return Err(format!(
+                "Save directory does not exist: {}",
+                save_games_path.display()
+            )
+            .into());
         }
 
         #[cfg(target_os = "windows")]
@@ -439,7 +436,7 @@ pub async fn get_player_data(file_path: String) -> AppResult<Value> {
 pub async fn unlock_all_hub_doors(file_path: String) -> AppResult<String> {
     run_blocking(move || {
         validate_save_games_path(Path::new(&file_path))?;
-        Ok(save_editor::unlock_all_hub_doors(&file_path)?)
+        save_editor::unlock_all_hub_doors(&file_path)
     })
     .await
 }
@@ -464,7 +461,7 @@ pub async fn handle_edit_save(json_input: Value) -> AppResult<String> {
             .ok_or("Missing or invalid 'jsonData' in saveData")?;
 
         let json_value = Value::Object(json_data.clone());
-        Ok(save_editor::edit_save_file(&json_value, output_dir)?)
+        save_editor::edit_save_file(&json_value, output_dir)
     })
     .await
 }
@@ -526,8 +523,8 @@ pub async fn convert_json_to_sav(json_content: String, output_path: String) -> A
             .map_err(|e| format!("Failed to rebuild Save object from JSON: {}", e))?;
 
         // Create output file (using buffered write)
-        let file =
-            fs::File::create(&output_path).map_err(|e| format!("Failed to create output file: {}", e))?;
+        let file = fs::File::create(&output_path)
+            .map_err(|e| format!("Failed to create output file: {}", e))?;
         let mut writer = BufWriter::with_capacity(16384, file);
 
         save.write(&mut writer)
@@ -561,5 +558,5 @@ pub async fn ensure_dir_exists(path: String) -> AppResult<()> {
 
 #[tauri::command]
 pub async fn handle_new_save(save_data: new_save::SaveData) -> AppResult<()> {
-    run_blocking(move || Ok(new_save::create_new_save(save_data)?)).await
+    run_blocking(move || new_save::create_new_save(save_data)).await
 }

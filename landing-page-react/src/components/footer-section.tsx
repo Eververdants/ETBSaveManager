@@ -99,6 +99,19 @@ export function FooterSection(): React.JSX.Element {
                   <span>{t("footer.issues")}</span>
                 </a>
               </li>
+              <li>
+                <a
+                  href={site.redditUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="group flex items-baseline gap-2 text-[var(--color-ink)] hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper)] dark:hover:text-[var(--color-accent)]"
+                >
+                  <span className="tabular-nums text-[10px] text-[var(--color-ink-3)] group-hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper-3)]/60 dark:group-hover:text-[var(--color-accent)]">
+                    05
+                  </span>
+                  <span>Reddit</span>
+                </a>
+              </li>
             </ul>
           </nav>
         </div>

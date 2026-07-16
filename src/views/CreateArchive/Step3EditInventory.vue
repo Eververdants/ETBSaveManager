@@ -138,7 +138,14 @@ const props = defineProps({
   playerInputMessageType: { type: String, default: "" },
 });
 
-const emit = defineEmits(["update:newSteamId", "add-steam-id", "remove-player", "select-player", "edit-slot", "update-player-sanity"]);
+const emit = defineEmits([
+  "update:newSteamId",
+  "add-steam-id",
+  "remove-player",
+  "select-player",
+  "edit-slot",
+  "update-player-sanity",
+]);
 
 const { t, te } = useI18n();
 
@@ -154,11 +161,15 @@ const getSlotLabelText = (slotIndex) => {
 const currentPlayerSanity = ref(100);
 
 /* Sync sanity when switching active player */
-watch(() => props.activePlayerIndex, (newIndex) => {
-  if (newIndex === -1) return;
-  const player = props.players?.[newIndex];
-  currentPlayerSanity.value = player?.sanity ?? 100;
-}, { immediate: true });
+watch(
+  () => props.activePlayerIndex,
+  (newIndex) => {
+    if (newIndex === -1) return;
+    const player = props.players?.[newIndex];
+    currentPlayerSanity.value = player?.sanity ?? 100;
+  },
+  { immediate: true },
+);
 
 /* Emit event when sanity changes */
 watch(currentPlayerSanity, (newVal) => {
@@ -177,8 +188,12 @@ const getSanityClass = (val) => {
   return "sanity-critical";
 };
 
-const setMinSanity = () => { currentPlayerSanity.value = 0; };
-const setMaxSanity = () => { currentPlayerSanity.value = 100; };
+const setMinSanity = () => {
+  currentPlayerSanity.value = 0;
+};
+const setMaxSanity = () => {
+  currentPlayerSanity.value = 100;
+};
 
 const getSlotContent = (playerIndex, slotIndex) => {
   if (props.players[playerIndex] && props.players[playerIndex].inventory) {

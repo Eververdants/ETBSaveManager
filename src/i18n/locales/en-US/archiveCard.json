@@ -12,5 +12,11 @@
   "visible": "Visible",
   "hidden": "Hidden",
   "lastModified": "Last Modified",
-  "id": "Archive ID"
+  "id": "Archive ID",
+  "editLabel": "Edit archive",
+  "hideLabel": "Hide archive",
+  "showLabel": "Show archive",
+  "deleteLabel": "Delete archive",
+  "saveDirNotFound": "Please open the game first to initialize the save directory",
+  "loadFailed": "Failed to load archives"
 }

@@ -25,6 +25,7 @@
   "loadingArchives": "正在載入存檔……",
   "scanningFiles": "正在掃描存檔檔案",
   "refreshed": "存檔列表已重新整理",
+  "refreshCooldown": "操作過於頻繁，請稍後再重新整理",
   "multiSelect": {
     "selectAll": "全選",
     "invertSelection": "反選",

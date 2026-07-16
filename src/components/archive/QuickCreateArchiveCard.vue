@@ -10,14 +10,14 @@
         <span class="card-name" :title="archive.name">{{ archive.name }}</span>
         <div class="status-icons">
           <span v-if="hasMissingParams" class="status-icon warning" :title="$t('quickCreate.card.missingParams')">
-            ⚠️
+            <font-awesome-icon :icon="['fas', 'exclamation-triangle']" />
           </span>
           <span
             v-if="archive.hasIndividualSettings"
             class="status-icon modified"
             :title="$t('quickCreate.card.modified')"
           >
-            🔧
+            <font-awesome-icon :icon="['fas', 'wrench']" />
           </span>
         </div>
       </div>

@@ -58,7 +58,7 @@ fn validate_save_filename(name: &str) -> bool {
         || without_ext
             .chars()
             .last()
-            .map_or(false, |c| c.is_ascii_digit());
+            .is_some_and(|c| c.is_ascii_digit());
 
     if !has_valid_difficulty {
         return false;
@@ -97,13 +97,16 @@ pub fn list_save_paths() -> AppResult<Vec<PathBuf>> {
         }
     }
 
+    // Sort entries for deterministic ordering
+    entries.sort();
+
     // Parallel validation of filename format
     let saves: Vec<PathBuf> = entries
         .into_par_iter()
         .filter(|path| {
             path.file_name()
                 .and_then(OsStr::to_str)
-                .map_or(false, validate_save_filename)
+                .is_some_and(validate_save_filename)
         })
         .collect();
 

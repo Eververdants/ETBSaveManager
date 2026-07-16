@@ -26,5 +26,11 @@
   "loading": "Loading...",
   "unknown": "Unknown",
   "later": "Later",
-  "close": "Close"
+  "close": "Close",
+  "versionLabel": "Version: ",
+  "scrollLeft": "Scroll left",
+  "scrollRight": "Scroll right",
+  "localPlayerSuffix": "(Local)",
+  "playerNameDisplay": "Player {id}...",
+  "emptyBackpack": "Empty Backpack"
 }

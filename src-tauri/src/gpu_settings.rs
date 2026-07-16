@@ -20,10 +20,7 @@ const GPU_ENABLED_ARGS: &[&str] = &[
 ];
 
 /// Browser arguments when GPU acceleration is disabled
-const GPU_DISABLED_ARGS: &[&str] = &[
-    "--disable-gpu",
-    "--disable-software-rasterizer",
-];
+const GPU_DISABLED_ARGS: &[&str] = &["--disable-gpu", "--disable-software-rasterizer"];
 
 /// Get current GPU acceleration setting status
 #[tauri::command]
@@ -34,8 +31,8 @@ pub fn get_gpu_acceleration_status() -> AppResult<bool> {
         return Ok(false);
     }
 
-    let content =
-        fs::read_to_string(&config_file).map_err(|e| format!("Failed to read GPU config: {}", e))?;
+    let content = fs::read_to_string(&config_file)
+        .map_err(|e| format!("Failed to read GPU config: {}", e))?;
 
     let config: Value =
         serde_json::from_str(&content).map_err(|e| format!("Failed to parse GPU config: {}", e))?;
@@ -54,7 +51,8 @@ pub fn set_gpu_acceleration(disabled: bool) -> AppResult<bool> {
     let config_file = config_dir.join("gpu_config.json");
 
     if !config_dir.exists() {
-        fs::create_dir_all(&config_dir).map_err(|e| format!("Failed to create config directory: {}", e))?;
+        fs::create_dir_all(&config_dir)
+            .map_err(|e| format!("Failed to create config directory: {}", e))?;
     }
 
     // Check if configuration has changed
@@ -62,8 +60,8 @@ pub fn set_gpu_acceleration(disabled: bool) -> AppResult<bool> {
     let needs_restart = current_status != disabled;
 
     let config = serde_json::json!({ "gpuAccelerationDisabled": disabled });
-    let content =
-        serde_json::to_string_pretty(&config).map_err(|e| format!("Failed to serialize config: {}", e))?;
+    let content = serde_json::to_string_pretty(&config)
+        .map_err(|e| format!("Failed to serialize config: {}", e))?;
 
     fs::write(&config_file, content).map_err(|e| format!("Failed to write GPU config: {}", e))?;
 
@@ -82,6 +80,7 @@ pub fn set_gpu_acceleration(disabled: bool) -> AppResult<bool> {
 pub fn set_process_priority(priority: String) -> AppResult<()> {
     #[cfg(target_os = "windows")]
     {
+        #[allow(clippy::upper_case_acronyms)]
         type HANDLE = *mut std::ffi::c_void;
         extern "system" {
             fn GetCurrentProcess() -> HANDLE;
@@ -90,10 +89,12 @@ pub fn set_process_priority(priority: String) -> AppResult<()> {
 
         let class = match priority.as_str() {
             "high" => 0x00000080u32,   // HIGH_PRIORITY_CLASS
-            "normal" => 0x00000020u32,  // NORMAL_PRIORITY_CLASS
+            "normal" => 0x00000020u32, // NORMAL_PRIORITY_CLASS
             _ => return Err("invalid priority (high|normal)".into()),
         };
+        // SAFETY: GetCurrentProcess returns a pseudo-handle to the current process; no ownership or cleanup is needed.
         let handle = unsafe { GetCurrentProcess() };
+        // SAFETY: SetPriorityClass is a standard Windows API call with a valid process handle obtained above. A return value of 0 indicates failure and is checked here.
         if unsafe { SetPriorityClass(handle, class) } == 0 {
             return Err("SetPriorityClass failed".into());
         }

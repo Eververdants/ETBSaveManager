@@ -12,7 +12,7 @@ export function NavBar(): React.JSX.Element {
   return (
     <header className="sticky top-0 z-30 w-full border-b-[1.5px] border-[var(--color-ink)]/90 bg-[var(--color-paper)]/90 backdrop-blur-md dark:border-[var(--color-paper-3)]/60 dark:bg-[#0a0907]/90">
       <div className="border-b border-[var(--color-ink)]/15 dark:border-[var(--color-paper-3)]/15">
-        <nav className="mx-auto flex h-14 max-w-[1400px] items-stretch justify-between px-4">
+        <nav aria-label="Main" className="mx-auto flex h-14 max-w-[1400px] items-stretch justify-between px-4">
           {/* 左：品牌 + 面包屑 */}
           <div className="flex items-stretch gap-0">
             <a

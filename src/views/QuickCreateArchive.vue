@@ -14,15 +14,8 @@
             <div class="progress-fill" :style="{ width: `${state.creationProgress}%` }" />
           </div>
         </div>
-        <button
-          class="create-btn"
-          :disabled="!canCreate"
-          @click="handleCreate"
-        >
-          <font-awesome-icon
-            :icon="state.isCreating ? ['fas', 'spinner'] : ['fas', 'plus']"
-            :spin="state.isCreating"
-          />
+        <button class="create-btn" :disabled="!canCreate" @click="handleCreate">
+          <font-awesome-icon :icon="state.isCreating ? ['fas', 'spinner'] : ['fas', 'plus']" :spin="state.isCreating" />
           {{ state.isCreating ? $t("quickCreate.creating") : $t("quickCreate.create", { count: archiveNames.length }) }}
         </button>
       </div>
@@ -30,43 +23,32 @@
 
     <!-- Main content -->
     <main class="quick-create-main">
-      <!-- Ending selector: use :model-value + @update instead of v-model to avoid
-           v-model updating state.selectedEnding before selectEnding() can re-select levels -->
-      <EndingSelector
-        :model-value="state.selectedEnding"
-        :endings="endingLabels"
-        @update:model-value="selectEnding"
-      />
-
-      <!-- Level grid -->
-      <LevelCheckGrid
-        v-model="state.selectedLevelKeys"
-        :levels="currentLevels"
-      />
-
-      <!-- Options row -->
-      <div class="options-row">
-        <div class="option-group">
-          <label class="option-label">{{ $t("quickCreate.options.difficulty") }}</label>
-          <CustomDropdown
-            :model-value="state.difficulty"
-            :options="difficultyOptions"
-            @update:model-value="setDifficulty"
-          />
-        </div>
-        <div class="option-group">
-          <label class="option-label">{{ $t("quickCreate.options.copies") }}</label>
-          <NumberSelector
-            :model-value="state.copies"
-            :min="1"
-            :max="99"
-            @update:model-value="setCopies"
-          />
-        </div>
+      <!-- Left: Level grid (7) -->
+      <div class="main-left">
+        <LevelCheckGrid v-model="state.selectedLevelKeys" :levels="currentLevels" />
       </div>
 
-      <!-- Preview -->
-      <PreviewList :archive-names="archiveNames" />
+      <!-- Right: Preview + Options (3) -->
+      <div class="main-right">
+        <!-- Options -->
+        <div class="options-panel">
+          <div class="option-group">
+            <label class="option-label">{{ $t("quickCreate.options.difficulty") }}</label>
+            <CustomDropdown
+              :model-value="state.difficulty"
+              :options="difficultyOptions"
+              @update:model-value="setDifficulty"
+            />
+          </div>
+          <div class="option-group">
+            <label class="option-label">{{ $t("quickCreate.options.copies") }}</label>
+            <NumberSelector :model-value="state.copies" :min="1" :max="99" @update:model-value="setCopies" />
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <PreviewList :archive-names="archiveNames" />
+      </div>
     </main>
 
     <!-- Result modal -->
@@ -79,7 +61,11 @@
                 :icon="creationResult?.failed > 0 ? ['fas', 'exclamation-triangle'] : ['fas', 'check-circle']"
                 :class="creationResult?.failed > 0 ? 'warning-icon' : 'success-icon'"
               />
-              {{ creationResult?.failed > 0 ? $t("quickCreate.result.partialTitle") : $t("quickCreate.result.successTitle") }}
+              {{
+                creationResult?.failed > 0
+                  ? $t("quickCreate.result.partialTitle")
+                  : $t("quickCreate.result.successTitle")
+              }}
             </h3>
             <button class="close-btn" @click="closeResultModal">
               <font-awesome-icon :icon="['fas', 'times']" />
@@ -125,11 +111,8 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { ENDINGS_CONFIG } from "@/data/endingsData";
-import { useLevelUtils } from "@/utils/levelUtils";
 import { useQuickCreateSimplified } from "@/composables/useQuickCreateSimplified";
 import { notify } from "@/services/notificationService";
-import EndingSelector from "@/components/quickCreate/EndingSelector.vue";
 import LevelCheckGrid from "@/components/quickCreate/LevelCheckGrid.vue";
 import PreviewList from "@/components/quickCreate/PreviewList.vue";
 import CustomDropdown from "@/components/ui/CustomDropdown.vue";
@@ -137,36 +120,19 @@ import NumberSelector from "@/components/ui/NumberSelector.vue";
 
 const router = useRouter();
 const { t } = useI18n({ useScope: "global" });
-const { getLevelName } = useLevelUtils();
 
-const {
-  state,
-  currentLevels,
-  archiveNames,
-  canCreate,
-  selectEnding,
-  setDifficulty,
-  setCopies,
-  batchCreate,
-  reset,
-} = useQuickCreateSimplified();
+const { state, currentLevels, archiveNames, canCreate, setDifficulty, setCopies, batchCreate, reset } =
+  useQuickCreateSimplified();
 
 const creationResult = ref(null);
 const showResultModal = ref(false);
 
-const endingLabels = computed(() =>
-  ENDINGS_CONFIG.map((e) => ({
-    id: e.id,
-    label: t(`createArchive.endings.${e.labelKey}`),
-  }))
-);
-
-const difficultyOptions = [
+const difficultyOptions = computed(() => [
   { value: "easy", label: t("createArchive.difficultyLevels.easy") },
   { value: "normal", label: t("createArchive.difficultyLevels.normal") },
   { value: "hard", label: t("createArchive.difficultyLevels.hard") },
   { value: "nightmare", label: t("createArchive.difficultyLevels.nightmare") },
-];
+]);
 
 const goBack = () => router.push("/select-create-mode");
 
@@ -208,88 +174,317 @@ const navigateToArchives = () => {
 <style scoped>
 .quick-create-container {
   height: calc(100vh - 38px);
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   background: var(--bg-primary);
   padding: var(--space-4);
   gap: var(--space-4);
   overflow: hidden;
 }
 .quick-create-header {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: var(--space-3) var(--space-4);
   background: var(--bg-secondary);
   border: 1px solid var(--divider-light);
   border-radius: var(--radius-lg);
   flex-shrink: 0;
 }
-.header-left { display: flex; align-items: center; gap: var(--space-3); }
-.back-button {
-  display: flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; padding: 0;
-  background: var(--bg-tertiary); border: 1px solid var(--divider-light);
-  border-radius: var(--radius-md); color: var(--text-primary);
-  cursor: pointer; transition: all 0.2s ease;
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
-.back-button:hover { background: var(--bg-hover); border-color: var(--accent-color); color: var(--accent-color); }
-.page-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0; }
-.header-right { display: flex; align-items: center; gap: var(--space-3); }
-.progress-section { display: flex; align-items: center; gap: var(--space-2); }
-.progress-bar { width: 80px; height: 6px; background: var(--bg-tertiary); border-radius: var(--radius-xs); overflow: hidden; }
-.progress-fill { height: 100%; background: var(--accent-color); border-radius: var(--radius-xs); transition: width 0.3s ease; }
-.create-btn {
-  display: flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  background: var(--accent-color); border: none;
-  border-radius: var(--radius-md); color: white;
-  font-size: 13px; font-weight: 600; cursor: pointer;
+.back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--divider-light);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: pointer;
   transition: all 0.2s ease;
 }
-.create-btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
-.create-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.back-button:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+.page-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.progress-section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.progress-bar {
+  width: 80px;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent-color);
+  border-radius: var(--radius-xs);
+  transition: width 0.3s ease;
+}
+.create-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent-color);
+  border: none;
+  border-radius: var(--radius-md);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.create-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+.create-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .quick-create-main {
-  flex: 1; display: flex; flex-direction: column;
-  gap: var(--space-3); overflow: hidden; min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-3);
+  overflow: hidden;
+  min-height: 0;
 }
 
-.options-row {
-  display: flex; gap: var(--space-4);
+.main-left {
+  flex: 7;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-right {
+  flex: 3;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: hidden;
+}
+
+.options-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--divider-light);
+  border-radius: var(--radius-lg);
   flex-shrink: 0;
 }
+
 .option-group {
-  display: flex; align-items: center; gap: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
 }
-.option-label { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
-:deep(.custom-dropdown) { min-width: 130px; }
+
+.option-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+:deep(.custom-dropdown) {
+  min-width: 130px;
+}
 
 /* Result modal */
-.result-modal-overlay { /* same as existing */ position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-.result-modal { background: var(--bg-secondary); border: 1px solid var(--divider-light); border-radius: var(--radius-lg); width: 90%; max-width: 480px; box-shadow: var(--shadow-lg); animation: modalSlideIn 0.3s ease-out; }
-@keyframes modalSlideIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.result-modal-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4); border-bottom: 1px solid var(--divider-light); }
-.result-modal-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px; }
-.result-modal-title .success-icon { color: var(--success-color); }
-.result-modal-title .warning-icon { color: var(--warning-color); }
-.close-btn { width: 32px; height: 32px; background: transparent; border: none; color: var(--text-tertiary); cursor: pointer; border-radius: var(--radius-sm); }
-.close-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
-.result-modal-body { padding: var(--space-4); }
-.result-summary { display: flex; gap: var(--space-4); margin-bottom: var(--space-4); }
-.result-stat { flex: 1; display: flex; flex-direction: column; align-items: center; padding: var(--space-3); background: var(--bg-tertiary); border-radius: var(--radius-md); }
-.result-stat.success .result-value { color: var(--success-color); }
-.result-stat.error .result-value { color: var(--error-color); }
-.result-value { font-size: 2rem; font-weight: 700; }
-.result-label { font-size: 12px; color: var(--text-tertiary); margin-top: var(--space-1); }
-.error-details { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--space-3); max-height: 150px; overflow-y: auto; }
-.error-details-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin: 0 0 var(--space-2); }
-.error-list { list-style: none; padding: 0; margin: 0; }
-.error-item { padding: var(--space-1) 0; border-bottom: 1px solid var(--divider-light); }
-.error-item:last-child { border-bottom: none; }
-.error-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
-.error-message { font-size: 11px; color: var(--error-color); }
-.result-modal-footer { display: flex; justify-content: flex-end; gap: var(--space-2); padding: var(--space-4); border-top: 1px solid var(--divider-light); }
-.action-btn { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
-.secondary-btn { background: var(--bg-tertiary); border-color: var(--divider-light); color: var(--text-secondary); }
-.secondary-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
-.primary-btn { background: var(--accent-color); color: white; }
-.primary-btn:hover { background: var(--accent-hover); }
+.result-modal-overlay {
+  /* same as existing */
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+.result-modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--divider-light);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 480px;
+  box-shadow: var(--shadow-lg);
+  animation: modalSlideIn 0.3s ease-out;
+}
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.result-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--divider-light);
+}
+.result-modal-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.result-modal-title .success-icon {
+  color: var(--success-color);
+}
+.result-modal-title .warning-icon {
+  color: var(--warning-color);
+}
+.close-btn {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.close-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+.result-modal-body {
+  padding: var(--space-4);
+}
+.result-summary {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.result-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-3);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+}
+.result-stat.success .result-value {
+  color: var(--success-color);
+}
+.result-stat.error .result-value {
+  color: var(--error-color);
+}
+.result-value {
+  font-size: 2rem;
+  font-weight: 700;
+}
+.result-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+}
+.error-details {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  max-height: 150px;
+  overflow-y: auto;
+}
+.error-details-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+.error-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.error-item {
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--divider-light);
+}
+.error-item:last-child {
+  border-bottom: none;
+}
+.error-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.error-message {
+  font-size: 11px;
+  color: var(--error-color);
+}
+.result-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-top: 1px solid var(--divider-light);
+}
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+.secondary-btn {
+  background: var(--bg-tertiary);
+  border-color: var(--divider-light);
+  color: var(--text-secondary);
+}
+.secondary-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.primary-btn {
+  background: var(--accent-color);
+  color: white;
+}
+.primary-btn:hover {
+  background: var(--accent-hover);
+}
 </style>

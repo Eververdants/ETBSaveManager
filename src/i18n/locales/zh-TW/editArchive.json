@@ -68,6 +68,7 @@
   "loadingUsername": "載入使用者名稱中……",
   "saveFailed": "儲存失敗：",
   "parseFailed": "解析存檔資料失敗：",
+  "parseFailedDataInvalid": "解析存檔資料失敗：資料格式無效",
   "loadLevelsFailed": "載入關卡資料失敗：",
   "savingArchiveData": "儲存存檔資料：",
   "jsonEditor": "JSON編輯器",

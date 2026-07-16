@@ -1,7 +1,15 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="visible" ref="modalRef" class="modal-overlay" role="dialog" aria-modal="true" :aria-label="$t('quickCreate.batchEdit.title')" @click.self="handleClose">
+      <div
+        v-if="visible"
+        ref="modalRef"
+        class="modal-overlay"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="$t('quickCreate.batchEdit.title')"
+        @click.self="handleClose"
+      >
         <div class="modal-container">
           <!-- 模态框头部 -->
           <div class="modal-header">
@@ -16,7 +24,7 @@
                 })
               }}
             </span>
-            <button class="close-btn" aria-label="关闭" @click="handleClose">
+            <button class="close-btn" :aria-label="$t('common.close')" @click="handleClose">
               <font-awesome-icon :icon="['fas', 'times']" aria-hidden="true" />
             </button>
           </div>

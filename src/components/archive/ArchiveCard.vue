@@ -22,7 +22,11 @@
 
     <!-- Upper background area -->
     <div class="card-background">
-      <LazyImage :src="cardData?.backgroundImage ?? ''" :alt="cardData?.currentLevelName ?? ''" image-class="background-image" />
+      <LazyImage
+        :src="cardData?.backgroundImage ?? ''"
+        :alt="cardData?.currentLevelName ?? ''"
+        image-class="background-image"
+      />
       <div class="background-overlay"></div>
 
       <!-- Hidden status badge -->
@@ -42,16 +46,16 @@
             :class="cardData?.archiveDifficultyClass ?? ''"
             :style="archiveDifficultyTagStyle"
           >
-            <span class="tag-short">{{ cardData?.archiveDifficultyText ?? '' }}</span>
-            <span class="tag-full">{{ t("archiveCard.archiveDifficulty") }}：{{ cardData?.archiveDifficultyText ?? '' }}</span>
+            <span class="tag-short">{{ cardData?.archiveDifficultyText ?? "" }}</span>
+            <span class="tag-full"
+              >{{ t("archiveCard.archiveDifficulty") }}：{{ cardData?.archiveDifficultyText ?? "" }}</span
+            >
           </span>
-          <span
-            class="difficulty-tag"
-            :class="cardData?.actualDifficultyClass ?? ''"
-            :style="actualDifficultyTagStyle"
-          >
-            <span class="tag-short">{{ cardData?.actualDifficultyText ?? '' }}</span>
-            <span class="tag-full">{{ t("archiveCard.actualDifficulty") }}：{{ cardData?.actualDifficultyText ?? '' }}</span>
+          <span class="difficulty-tag" :class="cardData?.actualDifficultyClass ?? ''" :style="actualDifficultyTagStyle">
+            <span class="tag-short">{{ cardData?.actualDifficultyText ?? "" }}</span>
+            <span class="tag-full"
+              >{{ t("archiveCard.actualDifficulty") }}：{{ cardData?.actualDifficultyText ?? "" }}</span
+            >
           </span>
         </div>
       </div>
@@ -61,18 +65,21 @@
     <div class="card-info">
       <span class="current-level" v-html="sanitize(highlightedLevel)"></span>
       <div class="action-buttons">
-        <button class="action-btn edit" type="button" aria-label="编辑存档" @click.stop="editArchive">
+        <button class="action-btn edit" type="button" :aria-label="$t('archiveCard.editLabel')" @click.stop="editArchive">
           <font-awesome-icon icon="fa-solid fa-edit" aria-hidden="true" />
         </button>
         <button
           class="action-btn copy"
           type="button"
-          :aria-label="cardData?.isVisible ? '隐藏存档' : '显示存档'"
+          :aria-label="cardData?.isVisible ? $t('archiveCard.hideLabel') : $t('archiveCard.showLabel')"
           @click.stop="toggleVisibility"
         >
-          <font-awesome-icon :icon="cardData?.isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'" aria-hidden="true" />
+          <font-awesome-icon
+            :icon="cardData?.isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"
+            aria-hidden="true"
+          />
         </button>
-        <button class="action-btn delete" type="button" aria-label="删除存档" @click.stop="deleteArchive">
+        <button class="action-btn delete" type="button" :aria-label="$t('archiveCard.deleteLabel')" @click.stop="deleteArchive">
           <font-awesome-icon icon="fa-solid fa-trash" aria-hidden="true" />
         </button>
       </div>
@@ -114,7 +121,7 @@ const emit = defineEmits(["toggle-visibility", "edit", "delete", "select", "togg
 
 const sanitize = (html) => {
   // Fast return if no mark tags present (most common case)
-  if (!html || !html.includes('<mark')) return html;
+  if (!html || !html.includes("<mark")) return html;
   // Strip dangerous attributes from <mark> tags, keep only safe class attribute
   html = html.replace(/<(\/?)mark\b([^>]*)>/gi, (match, isClosing, attrs) => {
     if (isClosing) return "</mark>";
@@ -225,8 +232,7 @@ const toggleSelection = () => {
      cards that's 12-16 GPU textures the compositor has to manage per
      scroll frame.  Hover-only will-change is on :hover below. */
   contain: paint;
-  transition:
-    transform 0.15s ease;
+  transition: transform 0.25s ease;
 }
 
 /* Disable all transform-related animations during deletion to avoid GSAP conflicts */
@@ -283,8 +289,7 @@ const toggleSelection = () => {
      cards).  Images are already optimized WebP at quality 15, the
      1px blur was perceptibly redundant and constantly consumed GPU
      blending bandwidth even when no hover is active. */
-  transition:
-    transform 0.2s ease;
+  transition: transform 0.3s ease;
 }
 
 .archive-card:hover .card-background :deep(.lazy-image-container) {
@@ -302,7 +307,7 @@ const toggleSelection = () => {
     rgba(0, 0, 0, 0.4) 60%,
     rgba(0, 0, 0, 0.7) 100%
   );
-  transition: opacity 0.15s ease;
+  transition: opacity 0.25s ease;
 }
 
 .archive-card:hover .background-overlay {
@@ -317,7 +322,7 @@ const toggleSelection = () => {
   right: var(--space-3);
   color: white;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  transition: transform 0.15s ease;
+  transition: transform 0.25s ease;
 }
 
 .archive-card:hover .archive-info {
@@ -362,8 +367,7 @@ const toggleSelection = () => {
   /* Only transition width — background/color/border-color are per-frame
      paint operations that, when combined across multiple simultaneous
      hovers, overload the paint thread.  These snap instantly. */
-  transition:
-    width 0.1s ease;
+  transition: width 0.1s ease;
 }
 
 .tag-short,
@@ -542,10 +546,14 @@ const toggleSelection = () => {
 
 /* Badge Vue Transition — enter with slight delay, leave quickly */
 .badge-enter-active {
-  transition: opacity 0.35s ease 0.05s, transform 0.35s ease 0.05s;
+  transition:
+    opacity 0.35s ease 0.05s,
+    transform 0.35s ease 0.05s;
 }
 .badge-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 .badge-enter-from,
 .badge-leave-to {

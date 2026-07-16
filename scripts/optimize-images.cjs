@@ -31,9 +31,7 @@ async function main() {
     return;
   }
 
-  const files = fs.readdirSync(IMAGE_DIR).filter(
-    (f) => f.endsWith(".webp") && !f.startsWith("."),
-  );
+  const files = fs.readdirSync(IMAGE_DIR).filter((f) => f.endsWith(".webp") && !f.startsWith("."));
 
   console.log(`找到 ${files.length} 个 WebP 文件，开始重新压缩 …`);
 
@@ -77,8 +75,7 @@ async function main() {
   }
 
   const totalSaving = originalTotal - newTotal;
-  const totalPct =
-    originalTotal > 0 ? ((totalSaving / originalTotal) * 100).toFixed(0) : "0";
+  const totalPct = originalTotal > 0 ? ((totalSaving / originalTotal) * 100).toFixed(0) : "0";
   console.log(
     `\n完成：${converted} 个文件，总 ${(originalTotal / 1024 / 1024).toFixed(1)}MB → ${(newTotal / 1024 / 1024).toFixed(1)}MB（节省 ${totalPct}%）`,
   );

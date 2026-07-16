@@ -3,27 +3,27 @@
     <h3>{{ t("performanceMonitor.title") }}</h3>
     <div class="stats">
       <div class="stat-item">
-        <span>⚡ {{ t("performanceMonitor.fps") }}: {{ fps }}</span>
+        <span><font-awesome-icon :icon="['fas', 'bolt']" /> {{ t("performanceMonitor.fps") }}: {{ fps }}</span>
         <div class="rating" :class="fpsRating.class">
-          {{ fpsRating.icon }}
+          <font-awesome-icon :icon="['fas', fpsRating.icon]" />
         </div>
       </div>
       <div class="stat-item">
         <span
-          >🧠 {{ t("performanceMonitor.memory") }}: {{ formatMemory(memory.usedJSHeapSize) }} /
+          ><font-awesome-icon :icon="['fas', 'database']" /> {{ t("performanceMonitor.memory") }}: {{ formatMemory(memory.usedJSHeapSize) }} /
           {{ formatMemory(memory.totalJSHeapSize) }}</span
         >
         <div class="rating" :class="memoryRating.class">
-          {{ memoryRating.icon }}
+          <font-awesome-icon :icon="['fas', memoryRating.icon]" />
         </div>
       </div>
       <div class="stat-item">
-        <span>🖥️ {{ t("performanceMonitor.cpu") }}: {{ cpuLoad.toFixed(1) }}%</span>
+        <span><font-awesome-icon :icon="['fas', 'microchip']" /> {{ t("performanceMonitor.cpu") }}: {{ cpuLoad.toFixed(1) }}%</span>
         <div class="rating" :class="cpuRating.class">
-          {{ cpuRating.icon }}
+          <font-awesome-icon :icon="['fas', cpuRating.icon]" />
         </div>
       </div>
-      <div>⏱️ {{ t("performanceMonitor.renderTime") }}: {{ loadTime.toFixed(2) }} ms</div>
+      <div><font-awesome-icon :icon="['fas', 'clock']" /> {{ t("performanceMonitor.renderTime") }}: {{ loadTime.toFixed(2) }} ms</div>
     </div>
 
     <div class="charts">
@@ -78,30 +78,30 @@ export default {
         // 48 FPS以上为优秀
         return {
           class: "excellent",
-          icon: "🏆",
+          icon: "star",
         };
       } else if (fpsScore >= 60) {
         // 36 FPS以上为良好
         return {
           class: "good",
-          icon: "👍",
+          icon: "thumbs-up",
         };
       } else if (fpsScore >= 40) {
         // 24 FPS以上为一般
         return {
           class: "average",
-          icon: "👌",
+          icon: "minus",
         };
       } else if (fpsScore >= 20) {
         // 12 FPS以上为较差
         return {
           class: "poor",
-          icon: "⚠️",
+          icon: "exclamation-triangle",
         };
       } else {
         return {
           class: "terrible",
-          icon: "❌",
+          icon: "times",
         };
       }
     },
@@ -118,30 +118,30 @@ export default {
         // 内存使用率15%以下为优秀
         return {
           class: "excellent",
-          icon: "🏆",
+          icon: "star",
         };
       } else if (memoryScore >= 70) {
         // 内存使用率30%以下为良好
         return {
           class: "good",
-          icon: "👍",
+          icon: "thumbs-up",
         };
       } else if (memoryScore >= 50) {
         // 内存使用率50%以下为一般
         return {
           class: "average",
-          icon: "👌",
+          icon: "minus",
         };
       } else if (memoryScore >= 30) {
         // 内存使用率70%以下为较差
         return {
           class: "poor",
-          icon: "⚠️",
+          icon: "exclamation-triangle",
         };
       } else {
         return {
           class: "terrible",
-          icon: "❌",
+          icon: "times",
         };
       }
     },
@@ -155,30 +155,30 @@ export default {
         // CPU使用率10%以下为优秀
         return {
           class: "excellent",
-          icon: "🏆",
+          icon: "star",
         };
       } else if (cpuScore >= 75) {
         // CPU使用率25%以下为良好
         return {
           class: "good",
-          icon: "👍",
+          icon: "thumbs-up",
         };
       } else if (cpuScore >= 50) {
         // CPU使用率50%以下为一般
         return {
           class: "average",
-          icon: "👌",
+          icon: "minus",
         };
       } else if (cpuScore >= 25) {
         // CPU使用率75%以下为较差
         return {
           class: "poor",
-          icon: "⚠️",
+          icon: "exclamation-triangle",
         };
       } else {
         return {
           class: "terrible",
-          icon: "❌",
+          icon: "times",
         };
       }
     },

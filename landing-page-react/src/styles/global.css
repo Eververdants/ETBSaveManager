@@ -129,10 +129,10 @@ html.theme-transitioning *,
 html.theme-transitioning *::before,
 html.theme-transitioning *::after {
   transition:
-    background-color: 0.35s ease !important,
-    color: 0.35s ease !important,
-    border-color: 0.35s ease !important,
-    box-shadow: 0.35s ease !important;
+    background-color 0.35s ease !important,
+    color 0.35s ease !important,
+    border-color 0.35s ease !important,
+    box-shadow 0.35s ease !important;
 }
 
 /* ===== 动效 ===== */

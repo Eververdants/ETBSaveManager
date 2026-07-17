@@ -1,5 +1,5 @@
 <template>
-  <div class="performance-settings" v-squircle="44">
+  <div v-squircle="44" class="performance-settings">
     <h3 class="settings-title">{{ t("performanceSettings.title") }}</h3>
 
     <div class="setting-group">
@@ -248,11 +248,11 @@ const {
   border-radius: var(--radius-circle);
 }
 
-input:checked + .toggle-slider {
+input:checked+.toggle-slider {
   background-color: var(--primary-color);
 }
 
-input:checked + .toggle-slider:before {
+input:checked+.toggle-slider:before {
   transform: translateX(26px);
 }
 

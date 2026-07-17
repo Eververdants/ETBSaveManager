@@ -7,7 +7,7 @@ export default {
     siteName: "ETB Save Manager",
     tagline: "A modern, cross-platform save management tool for Escape The Backrooms",
     description:
-      "A declassified archive manager for the Backrooms — full CRUD with soft-delete, 3-step creation wizard across 4 endings and 54 levels, 11 themes, en/zh-CN/zh-TW UI, virtual scrolling, and a built-in performance monitor. Built with Tauri 2.0 on Windows.",
+      "A declassified archive manager for the Backrooms — full CRUD with soft-delete, 3-step creation wizard across 4 endings and 54 levels, 10 themes, en/zh-CN/zh-TW UI, virtual scrolling, and a built-in performance monitor. Built with Tauri 2.0 on Windows.",
     cat: "cat. etb · save · mgr",
     catShort: "cat · save · mgr",
     root: "root",

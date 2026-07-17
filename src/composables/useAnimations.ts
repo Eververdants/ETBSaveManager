@@ -26,7 +26,7 @@ function resolveAnimationQuality(userQuality: string): "high" | "medium" | "low"
   const levels = ["high", "medium", "low", "disabled"];
   const userIdx = levels.indexOf(userQuality);
   const schedIdx = levels.indexOf(schedulerQuality);
-  return levels[Math.max(userIdx < 0 ? 1 : userIdx, schedIdx)] as any;
+  return levels[Math.max(userIdx < 0 ? 1 : userIdx, schedIdx)] as "high" | "medium" | "low" | "disabled";
 }
 
 /**

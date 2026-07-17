@@ -50,13 +50,9 @@
         </div>
         <div class="setting-action">
           <CustomDropdown
-            v-model="currentLanguage"
-            :options="languageOptions"
-            :is-open="activeDropdown === 'language'"
-            :placeholder="t('common.select')"
-            @change="handleLanguageChange"
-            @dropdown-open="handleDropdownOpen('language')"
-          />
+v-model="currentLanguage" :options="languageOptions" :is-open="activeDropdown === 'language'"
+            :placeholder="t('common.select')" @change="handleLanguageChange"
+            @dropdown-open="handleDropdownOpen('language')" />
         </div>
       </div>
     </div>
@@ -233,19 +229,13 @@
           <div class="sav-tools-container">
             <!-- Parse save file -->
             <div
-              class="drop-zone"
-              :class="{ 'drag-over': parseDragOver, processing: isParsing }"
-              @dragover.prevent="parseDragOver = true"
-              @dragleave.prevent="parseDragOver = false"
-              @drop.prevent="handleParseDrop"
-              @click="triggerParseFileInput"
-            >
+class="drop-zone" :class="{ 'drag-over': parseDragOver, processing: isParsing }"
+              @dragover.prevent="parseDragOver = true" @dragleave.prevent="parseDragOver = false"
+              @drop.prevent="handleParseDrop" @click="triggerParseFileInput">
               <div class="drop-zone-content">
                 <font-awesome-icon
-                  :icon="isParsing ? ['fas', 'spinner'] : ['fas', 'file-import']"
-                  :spin="isParsing"
-                  class="drop-icon"
-                />
+:icon="isParsing ? ['fas', 'spinner'] : ['fas', 'file-import']" :spin="isParsing"
+                  class="drop-icon" />
                 <div class="drop-title">
                   {{ isParsing ? t("settings.parsing") : t("settings.parseSavFile") }}
                 </div>
@@ -254,19 +244,13 @@
 
             <!-- Pack save file -->
             <div
-              class="drop-zone"
-              :class="{ 'drag-over': packDragOver, processing: isPacking }"
-              @dragover.prevent="packDragOver = true"
-              @dragleave.prevent="packDragOver = false"
-              @drop.prevent="handlePackDrop"
-              @click="triggerPackFileInput"
-            >
+class="drop-zone" :class="{ 'drag-over': packDragOver, processing: isPacking }"
+              @dragover.prevent="packDragOver = true" @dragleave.prevent="packDragOver = false"
+              @drop.prevent="handlePackDrop" @click="triggerPackFileInput">
               <div class="drop-zone-content">
                 <font-awesome-icon
-                  :icon="isPacking ? ['fas', 'spinner'] : ['fas', 'file-export']"
-                  :spin="isPacking"
-                  class="drop-icon"
-                />
+:icon="isPacking ? ['fas', 'spinner'] : ['fas', 'file-export']" :spin="isPacking"
+                  class="drop-icon" />
                 <div class="drop-title">
                   {{ isPacking ? t("settings.packing") : t("settings.packSavFile") }}
                 </div>
@@ -339,7 +323,7 @@ export default {
       isParsing: false,
       isPacking: false,
       // Seasonal theme control
-      _isUnmounted: false, // Guard flag for in-flight async operations
+      isUnmounted: false, // Guard flag for in-flight async operations
     };
   },
   computed: {
@@ -359,7 +343,7 @@ export default {
       this._unwatchDeveloperMode();
     }
     // Mark component as unmounted to guard in-flight async operations
-    this._isUnmounted = true;
+    this.isUnmounted = true;
   },
   async mounted() {
     // Apply saved theme
@@ -630,6 +614,9 @@ export default {
         }
       } catch (error) {
         this.updateStatus = UpdateStatus.ERROR;
+
+        // Auto-check on entering settings: silently ignore errors (no popup)
+        if (!isManual) return;
 
         let errorText = this.t("settings.updateFailed");
         if (error.type === "Rate Limit") {
@@ -923,20 +910,20 @@ export default {
         // Try to get state from Tauri backend
         try {
           const backendState = await invoke("get_gpu_acceleration_status");
-          if (this._isUnmounted) return;
+          if (this.isUnmounted) return;
           // If backend state differs from localStorage, use backend state
           if (backendState !== localStorageState) {
             this.gpuAccelerationDisabled = backendState;
             storage.setItem("gpuAccelerationDisabled", backendState);
           }
         } catch (error) {
-          if (this._isUnmounted) return;
+          if (this.isUnmounted) return;
           console.warn(this.t("settings.gpuStatusFetchFailed"), error);
           // Use localStorage state
           this.gpuAccelerationDisabled = localStorageState;
         }
       } catch (error) {
-        if (this._isUnmounted) return;
+        if (this.isUnmounted) return;
         console.error(this.t("settings.gpuStatusInitFailed"), error);
         // Enable GPU acceleration by default
         this.gpuAccelerationDisabled = false;
@@ -1125,11 +1112,11 @@ export default {
   border-radius: var(--radius-circle);
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: var(--accent-color);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(26px);
 }
 

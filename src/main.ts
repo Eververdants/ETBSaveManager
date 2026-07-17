@@ -38,6 +38,7 @@ import "@vue-flow/controls/dist/style.css";
 let i18nInstance: any = null;
 
 // Load critical icons (required for startup)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const loadCriticalIcons = async (): Promise<any> => {
   const { FontAwesomeIcon: FAIcon } = await import("@fortawesome/vue-fontawesome");
   const { registerCriticalIcons } = await import("./utils/icons-critical");

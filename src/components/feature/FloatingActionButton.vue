@@ -1,24 +1,14 @@
 <template>
   <teleport to="body">
     <div
-      v-show="shouldRender"
-      ref="floatingActionContainer"
-      class="floating-action-container"
-      :class="$attrs.class"
-      @mouseenter="handleContainerMouseEnter"
-      @mouseleave="handleContainerMouseLeave"
-    >
+v-show="shouldRender" ref="floatingActionContainer" class="floating-action-container" :class="$attrs.class"
+      @mouseenter="handleContainerMouseEnter" @mouseleave="handleContainerMouseLeave">
       <div ref="tooltip" class="function-tooltip">
         <span class="tooltip-text">{{ getCurrentTooltip }}</span>
       </div>
       <div
-        ref="actionButton"
-        class="action-button"
-        @mousedown="handleMouseDown"
-        @mouseup="handleMouseUp"
-        @wheel="handleWheel"
-        @click="handleClick"
-      >
+ref="actionButton" class="action-button" @mousedown="handleMouseDown" @mouseup="handleMouseUp"
+        @wheel="handleWheel" @click="handleClick">
         <div ref="currentIconEl" class="icon-wrapper current-icon">
           <font-awesome-icon :icon="['fas', displayIcon]" />
         </div>

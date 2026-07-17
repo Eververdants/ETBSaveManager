@@ -41,41 +41,23 @@
         <div :key="currentStep" class="step-container">
           <!-- Step 1: Select level -->
           <Step1SelectLevel
-            v-if="currentStep === 1"
-            :selected-level="selectedLevel"
-            :selected-ending="selectedEnding"
-            :available-levels="availableLevels"
-            :endings="endings"
-            @select-level="selectLevel"
-            @select-ending="selectEnding"
-          />
+v-if="currentStep === 1" :selected-level="selectedLevel" :selected-ending="selectedEnding"
+            :available-levels="availableLevels" :endings="endings" @select-level="selectLevel"
+            @select-ending="selectEnding" />
 
           <!-- Step 2: Configure archive -->
           <Step2ConfigArchive
-            v-else-if="currentStep === 2"
-            v-model:archive-name="archiveName"
-            :selected-game-mode="selectedGameMode"
-            :selected-difficulty="selectedDifficulty"
-            :selected-actual-difficulty="selectedActualDifficulty"
-            :difficulty-levels="difficultyLevels"
-            @select-difficulty="selectDifficulty"
-            @select-actual-difficulty="selectActualDifficulty"
-          />
+v-else-if="currentStep === 2" v-model:archive-name="archiveName"
+            :selected-game-mode="selectedGameMode" :selected-difficulty="selectedDifficulty"
+            :selected-actual-difficulty="selectedActualDifficulty" :difficulty-levels="difficultyLevels"
+            @select-difficulty="selectDifficulty" @select-actual-difficulty="selectActualDifficulty" />
 
           <!-- Step 3: Edit inventory -->
           <Step3EditInventory
-            v-else-if="currentStep === 3"
-            v-model:new-steam-id="newSteamId"
-            :players="players"
-            :active-player-index="activePlayerIndex"
-            :player-input-message="playerInputMessage"
-            :player-input-message-type="playerInputMessageType"
-            @add-steam-id="addSteamId"
-            @remove-player="removePlayer"
-            @select-player="selectPlayer"
-            @edit-slot="editSlot"
-            @update-player-sanity="updatePlayerSanity"
-          />
+v-else-if="currentStep === 3" v-model:new-steam-id="newSteamId" :players="players"
+            :active-player-index="activePlayerIndex" :player-input-message="playerInputMessage"
+            :player-input-message-type="playerInputMessageType" @add-steam-id="addSteamId" @remove-player="removePlayer"
+            @select-player="selectPlayer" @edit-slot="editSlot" @update-player-sanity="updatePlayerSanity" />
         </div>
       </transition>
     </div>
@@ -113,11 +95,8 @@
 
     <!-- Item selector -->
     <InventoryItemSelector
-      :visible="showItemSelector"
-      :selected-item="selectedItem"
-      @select="handleItemSelect"
-      @update:visible="showItemSelector = $event"
-    />
+:visible="showItemSelector" :selected-item="selectedItem" @select="handleItemSelect"
+      @update:visible="showItemSelector = $event" />
 
     <!-- Creation success modal -->
     <Teleport to="body">
@@ -127,12 +106,8 @@
             <div class="success-modal-icon-circle">
               <svg class="success-modal-check-mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
-                  d="M20 6L9 17L4 12"
-                  stroke="currentColor"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
+d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                  stroke-linejoin="round" />
               </svg>
             </div>
             <h2 class="success-modal-title">{{ $t("createArchive.archiveCreated") }}</h2>
@@ -170,6 +145,7 @@ import Step1SelectLevel from "./Step1SelectLevel.vue";
 import Step2ConfigArchive from "./Step2ConfigArchive.vue";
 import Step3EditInventory from "./Step3EditInventory.vue";
 import { ENDING_LEVELS, ENDINGS_CONFIG } from "@/data/endingsData";
+import { FEATURES } from "@/config/features";
 
 const { t, te } = useI18n({ useScope: "global" });
 const router = useRouter();
@@ -202,7 +178,6 @@ const selectedItem = computed(() => {
   if (!item || item === "None") return null;
   return item;
 });
-const isSwitching = ref(false);
 const isCreating = ref(false);
 const playerInputMessage = ref("");
 const playerInputMessageType = ref("");
@@ -231,8 +206,6 @@ const endings = computed(() =>
   })),
 );
 
-const gameModes = [{ value: "multiplayer", label: "multiplayer" }];
-
 const difficultyLevels = [
   { value: "easy", label: "easy", icon: ["fas", "smile"] },
   { value: "normal", label: "normal", icon: ["fas", "meh"] },
@@ -254,10 +227,13 @@ const canProceed = computed(() => {
   }
 });
 
-watch(selectedEnding, () => {});
+watch(selectedEnding, () => { });
 
 const selectDifficulty = (difficulty) => {
   selectedDifficulty.value = difficulty;
+  if (FEATURES.MERGE_DIFFICULTY) {
+    selectedActualDifficulty.value = difficulty;
+  }
 };
 const selectActualDifficulty = (difficulty) => {
   selectedActualDifficulty.value = difficulty;
@@ -485,7 +461,7 @@ const finishAndReturnToQuickMode = () => {
     name: archiveName.value.trim() || "Unnamed Archive",
     level: selectedLevelData?.levelKey || null,
     difficulty: selectedDifficulty.value,
-    actualDifficulty: selectedActualDifficulty.value,
+    actualDifficulty: FEATURES.MERGE_DIFFICULTY ? selectedDifficulty.value : selectedActualDifficulty.value,
     players: players.map((p) => ({
       steamId: p.steamId,
       inventory: [...p.inventory],
@@ -582,7 +558,8 @@ const createArchive = async () => {
       game_mode: "multiplayer",
       difficulty: selectedDifficulty.value.charAt(0).toUpperCase() + selectedDifficulty.value.slice(1) || "Normal",
       actual_difficulty:
-        selectedActualDifficulty.value.charAt(0).toUpperCase() + selectedActualDifficulty.value.slice(1) || "Normal",
+        (FEATURES.MERGE_DIFFICULTY ? selectedDifficulty.value : selectedActualDifficulty.value)
+          .charAt(0).toUpperCase() + (FEATURES.MERGE_DIFFICULTY ? selectedDifficulty.value : selectedActualDifficulty.value).slice(1) || "Normal",
       players: players.map((p) => ({
         steam_id: p.steamId || "",
         inventory: Array.isArray(p.inventory)

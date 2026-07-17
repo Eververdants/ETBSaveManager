@@ -26,7 +26,7 @@ export function useQuickCreateArchiveCard(
   translations: QuickCreateTranslations,
 ): QuickCreateArchiveCardReturn {
   const hasMissingParams = computed((): boolean => {
-    return archive.value?.validationErrors != null && archive.value?.validationErrors.length > 0;
+    return !!archive.value?.validationErrors?.length;
   });
 
   const borderStatusClass = computed((): string => {

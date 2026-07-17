@@ -1,41 +1,10 @@
-/**
- * ============================================
- * 🍎 iOS 26 风格等距圆角（Squircle / Continuous Corner）
- * ============================================
- *
- * 纯 CSS 方案：使用原生 corner-shape: squircle（Chrome 139+）
- * 配合 border-radius 降级。
- *
- * 核心特性：
- * - 连续曲率：corner-shape: squircle 使圆角过渡更自然、更平滑
- * - 同心等距：8px 均匀递减 (52→44→36→28→20→12)
- * - 大圆角风格：iOS 26 风格，整体大幅提升
- * - 胶囊风格：按钮/搜索框使用 pill (9999px)
- * - 自动降级：不支持 corner-shape 的浏览器回退为标准 border-radius
- *
- * ─── 全局注入 ──────────────────────────
- *   enableGlobalSquircle()  → 注入全局样式，所有使用设计 token
- *                               的元素自动获得连续曲率圆角
- *
- * ─── 指令用法 ──────────────────────────
- *   <div v-squircle="44">   → 44px 等距连续圆角（推荐容器用）
- *   <div v-squircle>        → 预设 44px
- *   <div v-squircle:pill>   → 胶囊圆角 (9999px)
- *   <div v-squircle:circle> → 圆形 (50%)
- *
- * ─── CSS 类名用法 ──────────────────────
- *   <div class="squircle-44">   → 44px 圆角 + corner-shape
- *   <div class="squircle-pill"> → 胶囊
- *   <div class="squircle-circle"> → 圆形
- */
-
 // ─── 常量 ──────────────────────────────────────
 
 const STYLE_ID = "squircle-styles";
 const GLOBAL_STYLE_ID = "squircle-global";
 
 /** 预设半径映射（同心等距系统：52→44→36→28→20→12，8px 均匀递减） */
-const RADIUS_MAP: Record<string, string> = {
+const _RADIUS_MAP: Record<string, string> = {
   xs: "12px",
   sm: "20px",
   md: "28px",
@@ -56,9 +25,9 @@ function injectStyles(): void {
   style.id = STYLE_ID;
   style.textContent = `
     /* ============================================
-     * 🍎 等距连续圆角 — corner-shape: squircle
-     *    (Chrome 139+ / Safari TP)
-     *    不支持时自动降级为标准 border-radius
+     * 等距连续圆角 — corner-shape: squircle
+     * (Chrome 139+ / Safari TP)
+     * 不支持时自动降级为标准 border-radius
      * ============================================ */
 
     /* ── 指令模式 ── */
@@ -175,7 +144,7 @@ export function disableGlobalSquircle(): void {
  * 获取 squircle CSS 类名
  * @param size - 半径尺寸（xs/sm/md/lg/xl/2xl/pill/circle 或数值 px）
  */
-export function squircleClass(size: keyof typeof RADIUS_MAP | string | number): string {
+export function squircleClass(size: keyof typeof _RADIUS_MAP | string | number): string {
   return `squircle-${size}`;
 }
 

@@ -4,14 +4,8 @@
       <!-- Frosted glass card -->
       <section class="glass-card app-info">
         <img
-          class="app-icon"
-          :class="{ loaded: iconLoaded }"
-          src="/app-icon.png"
-          alt="App Icon"
-          @load="handleImageLoad"
-          @error="handleImageLoad"
-          @click="handleAppIconClick"
-        />
+class="app-icon" :class="{ loaded: iconLoaded }" src="/app-icon.png" alt="App Icon" @load="handleImageLoad"
+          @error="handleImageLoad" @click="handleAppIconClick" />
         <div>
           <h2 class="app-title">{{ $t("app.name") }}</h2>
           <p class="app-version">{{ $t("about.version") }} {{ version }}</p>
@@ -19,13 +13,9 @@
         </div>
         <div v-if="showEasterEgg" class="easter-egg">
           <img
-            src="/Written_by_Máo.png"
-            alt="Easter Egg"
-            class="easter-egg-image"
-            :class="{ loaded: easterEggImageLoaded }"
-            @load="easterEggImageLoaded = true"
-            @error="easterEggImageLoaded = true"
-          />
+src="/Written_by_Máo.png" alt="Easter Egg" class="easter-egg-image"
+            :class="{ loaded: easterEggImageLoaded }" @load="easterEggImageLoaded = true"
+            @error="easterEggImageLoaded = true" />
         </div>
       </section>
 
@@ -62,10 +52,8 @@
             </template>
             <template v-if="latestRelease.categories.improvements?.length">
               <div
-                v-for="(item, idx) in latestRelease.categories.improvements"
-                :key="'imp-' + idx"
-                class="release-item"
-              >
+v-for="(item, idx) in latestRelease.categories.improvements" :key="'imp-' + idx"
+                class="release-item">
                 <span class="item-dot improve"></span>
                 <span>{{ item }}</span>
               </div>
@@ -78,10 +66,8 @@
             </template>
             <template v-if="latestRelease.categories.performance?.length">
               <div
-                v-for="(item, idx) in latestRelease.categories.performance"
-                :key="'perf-' + idx"
-                class="release-item"
-              >
+v-for="(item, idx) in latestRelease.categories.performance" :key="'perf-' + idx"
+                class="release-item">
                 <span class="item-dot perf"></span>
                 <span>{{ item }}</span>
               </div>
@@ -118,29 +104,21 @@
             <span class="social-label">X</span>
           </a>
           <a
-            class="social-btn bilibili"
-            href="https://space.bilibili.com/2019959464"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+class="social-btn bilibili" href="https://space.bilibili.com/2019959464" target="_blank"
+            rel="noopener noreferrer">
             <font-awesome-icon :icon="['fab', 'bilibili']" />
             <span class="social-label">Bilibili</span>
           </a>
           <a
-            class="social-btn tiktok"
+class="social-btn tiktok"
             href="https://www.douyin.com/user/MS4wLjABAAAA8MEFE6VVh4_nWkTLPbueZYywgSyN19xhUFkmDF-nkhlnWytZWiBZ9YWM5s3RsprJ"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+            target="_blank" rel="noopener noreferrer">
             <font-awesome-icon :icon="['fab', 'tiktok']" />
             <span class="social-label">抖音</span>
           </a>
           <a
-            class="social-btn reddit"
-            href="https://www.reddit.com/user/Vegetable_Web_1691/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+class="social-btn reddit" href="https://www.reddit.com/user/Vegetable_Web_1691/" target="_blank"
+            rel="noopener noreferrer">
             <font-awesome-icon :icon="['fab', 'reddit-alien']" />
             <span class="social-label">Reddit</span>
           </a>
@@ -589,4 +567,3 @@ const handleAppIconClick = () => {
   background: linear-gradient(to bottom, var(--about-bg-gradient-start), var(--about-bg-gradient-end));
 }
 </style>
-

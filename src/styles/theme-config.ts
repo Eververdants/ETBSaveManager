@@ -66,7 +66,7 @@ class ThemeManager {
       let activeThemeId: string | null = null;
       try {
         activeThemeId = await themeStorage.getActiveThemeId();
-      } catch (e) {
+      } catch {
         activeThemeId = storage.getItem<string>("theme");
       }
 
@@ -142,7 +142,7 @@ class ThemeManager {
 
       try {
         await themeStorage.setActiveThemeId(themeId);
-      } catch (e) {
+      } catch {
         storage.setItem("theme", themeId);
       }
 

@@ -1,15 +1,11 @@
 <template>
   <div class="ending-selector">
     <div class="ending-label">{{ $t("quickCreate.endingSelector.label") }}</div>
-    <div class="ending-group" ref="endingGroupRef">
+    <div ref="endingGroupRef" class="ending-group">
       <div class="ending-slider" :style="sliderStyle" />
       <div
-        v-for="ending in endings"
-        :key="ending.id"
-        class="ending-tab"
-        :class="{ active: modelValue === ending.id }"
-        @click="handleSelect(ending.id)"
-      >
+v-for="ending in endings" :key="ending.id" class="ending-tab" :class="{ active: modelValue === ending.id }"
+        @click="handleSelect(ending.id)">
         <span class="ending-label-text">{{ ending.label }}</span>
       </div>
     </div>
@@ -70,12 +66,14 @@ const handleSelect = (id) => {
 .ending-selector {
   margin-bottom: 16px;
 }
+
 .ending-label {
   font-size: 12px;
   font-weight: 500;
   color: var(--text-secondary);
   margin-bottom: 8px;
 }
+
 .ending-group {
   position: relative;
   display: inline-flex;
@@ -87,6 +85,7 @@ const handleSelect = (id) => {
     inset 0 1px 3px rgba(0, 0, 0, 0.1),
     0 2px 8px rgba(0, 0, 0, 0.08);
 }
+
 .ending-slider {
   position: absolute;
   top: 4px;
@@ -102,6 +101,7 @@ const handleSelect = (id) => {
     opacity 0.2s ease;
   z-index: 0;
 }
+
 .ending-tab {
   position: relative;
   z-index: 1;
@@ -111,16 +111,19 @@ const handleSelect = (id) => {
   user-select: none;
   white-space: nowrap;
 }
+
 .ending-label-text {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
   transition: color 0.25s ease;
 }
+
 .ending-tab.active .ending-label-text {
   color: #ffffff;
   font-weight: 600;
 }
+
 .ending-tab:not(.active):hover .ending-label-text {
   color: var(--text-primary);
 }

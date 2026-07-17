@@ -315,7 +315,7 @@ export const optimizeLayout = (): void => {
   // 使用 requestAnimationFrame 确保在下一帧执行
   requestAnimationFrame(() => {
     // 强制重排
-    document.body.offsetHeight;
+    void document.body.offsetHeight;
 
     // 再次使用 requestAnimationFrame 确保在下一帧应用样式
     requestAnimationFrame(() => {

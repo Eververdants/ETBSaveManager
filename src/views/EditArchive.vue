@@ -18,13 +18,8 @@
       <div class="tab-nav">
         <div class="tab-highlight" :style="highlightStyle"></div>
         <button
-          v-for="(tab, index) in tabs"
-          :key="tab.id"
-          :ref="(el) => (tabRefs[index] = el)"
-          class="tab-btn"
-          :class="{ active: activeTab === tab.id }"
-          @click="switchTab(tab.id, index)"
-        >
+v-for="(tab, index) in tabs" :key="tab.id" :ref="(el) => (tabRefs[index] = el)" class="tab-btn"
+          :class="{ active: activeTab === tab.id }" @click="switchTab(tab.id, index)">
           <font-awesome-icon :icon="tab.icon" />
           <span>{{ $t(tab.label) }}</span>
         </button>
@@ -56,12 +51,8 @@
             <div class="settings-card">
               <label class="card-label">{{ $t("editArchive.archiveName") }}</label>
               <input
-                v-model="formData.name"
-                type="text"
-                class="settings-input"
-                :placeholder="$t('editArchive.archiveNamePlaceholder')"
-                maxlength="50"
-              />
+v-model="formData.name" type="text" class="settings-input"
+                :placeholder="$t('editArchive.archiveNamePlaceholder')" maxlength="50" />
             </div>
           </div>
 
@@ -71,37 +62,36 @@
               <font-awesome-icon :icon="['fas', 'gauge-high']" />
               {{ $t("editArchive.difficulty") }}
             </h3>
-            <div class="difficulty-row">
+            <div class="difficulty-row" :class="{ 'difficulty-row--merged': FEATURES.MERGE_DIFFICULTY }">
               <div class="settings-card">
                 <label class="card-label">{{ $t("editArchive.difficulty") }}</label>
                 <div class="diff-grid">
                   <div
-                    v-for="d in difficultyLevels"
-                    :key="d.value"
-                    class="diff-option"
+v-for="d in difficultyLevels" :key="d.value" class="diff-option"
                     :class="{ selected: formData.archiveDifficulty === d.value }"
-                    @click="formData.archiveDifficulty = d.value"
-                  >
+                    @click="formData.archiveDifficulty = d.value">
                     <font-awesome-icon :icon="d.icon" class="diff-icon" />
                     <span class="diff-text">{{ getDifficultyText(d.value) }}</span>
                   </div>
                 </div>
               </div>
-              <div class="settings-card">
+              <div v-if="!FEATURES.MERGE_DIFFICULTY" class="settings-card">
                 <label class="card-label">{{ $t("editArchive.actualDifficulty") }}</label>
                 <div class="diff-grid">
                   <div
-                    v-for="d in difficultyLevels"
-                    :key="`actual-${d.value}`"
-                    class="diff-option"
+v-for="d in difficultyLevels" :key="`actual-${d.value}`" class="diff-option"
                     :class="{ selected: formData.actualDifficulty === d.value }"
-                    @click="formData.actualDifficulty = d.value"
-                  >
+                    @click="formData.actualDifficulty = d.value">
                     <font-awesome-icon :icon="d.icon" class="diff-icon" />
                     <span class="diff-text">{{ getDifficultyText(d.value) }}</span>
                   </div>
                 </div>
               </div>
+            </div>
+            <!-- Merge difficulty hint -->
+            <div v-if="FEATURES.MERGE_DIFFICULTY" class="difficulty-hint">
+              <font-awesome-icon :icon="['fas', 'info-circle']" />
+              <span>{{ t("editArchive.difficultyMergeHint") }}</span>
             </div>
           </div>
 
@@ -127,12 +117,8 @@
       <div class="tab-panel" :class="{ 'tab-active': activeTab === 'level' }">
         <div class="level-grid">
           <div
-            v-for="(level, index) in availableLevels"
-            :key="index"
-            class="level-card"
-            :class="{ selected: formData.currentLevel === level.levelKey }"
-            @click="selectLevel(level.levelKey)"
-          >
+v-for="(level, index) in availableLevels" :key="index" class="level-card"
+            :class="{ selected: formData.currentLevel === level.levelKey }" @click="selectLevel(level.levelKey)">
             <div class="level-img-wrap">
               <LazyImage :src="level.image" :alt="level.name" image-class="level-img" />
               <div v-if="formData.currentLevel === level.levelKey" class="level-check">
@@ -149,17 +135,10 @@
         <div class="players-layout">
           <!-- Player list -->
           <PlayerManager
-            :players="formData.players"
-            :active-player-index="activePlayerIndex"
-            :new-steam-id="newSteamId"
-            :player-input-message="playerInputMessage"
-            :player-input-message-type="playerInputMessageType"
-            :show-sanity="true"
-            @update:new-steam-id="(val) => (newSteamId = val)"
-            @add-steam-id="addPlayer"
-            @remove-player="removePlayer"
-            @select-player="selectPlayer"
-          />
+:players="formData.players" :active-player-index="activePlayerIndex" :new-steam-id="newSteamId"
+            :player-input-message="playerInputMessage" :player-input-message-type="playerInputMessageType"
+            :show-sanity="true" @update:new-steam-id="(val) => (newSteamId = val)" @add-steam-id="addPlayer"
+            @remove-player="removePlayer" @select-player="selectPlayer" />
 
           <!-- Player details -->
           <div v-if="activePlayerIndex !== -1 && formData.players.length > 0" class="player-detail-section">
@@ -178,15 +157,12 @@
                     {{ $t("editArchive.playerSanity") }}
                   </div>
                   <div class="sanity-display">
-                    <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)"
-                      >{{ currentPlayerSanity }}%</span
-                    >
+                    <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)">{{ currentPlayerSanity
+                    }}%</span>
                     <div class="sanity-bar">
                       <div
-                        class="sanity-fill"
-                        :style="{ width: currentPlayerSanity + '%' }"
-                        :class="getSanityClass(currentPlayerSanity)"
-                      ></div>
+class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }"
+                        :class="getSanityClass(currentPlayerSanity)"></div>
                     </div>
                   </div>
                   <div class="sanity-ctrl">
@@ -211,35 +187,27 @@
                   <div class="inventory-wrap">
                     <div class="hand-slots">
                       <div
-                        v-for="slot in 3"
-                        :key="`h-${slot}`"
-                        class="inv-slot"
+v-for="slot in 3" :key="`h-${slot}`" class="inv-slot"
                         :class="{ empty: !getSlotContent(activePlayerIndex, slot - 1) }"
-                        @click="editSlot(activePlayerIndex, slot - 1)"
-                      >
+                        @click="editSlot(activePlayerIndex, slot - 1)">
                         <span class="slot-label">{{ getSlotLabelText(slot - 1) }}</span>
                         <LazyImage
-                          v-if="getSlotContent(activePlayerIndex, slot - 1)"
+v-if="getSlotContent(activePlayerIndex, slot - 1)"
                           :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}`"
-                          image-class="slot-img"
-                        />
+                          image-class="slot-img" />
                         <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-placeholder" />
                       </div>
                     </div>
                     <div class="backpack-slots">
                       <div
-                        v-for="slot in 9"
-                        :key="`b-${slot}`"
-                        class="inv-slot"
+v-for="slot in 9" :key="`b-${slot}`" class="inv-slot"
                         :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
-                        @click="editSlot(activePlayerIndex, slot + 2)"
-                      >
+                        @click="editSlot(activePlayerIndex, slot + 2)">
                         <span class="slot-num">{{ slot }}</span>
                         <LazyImage
-                          v-if="getSlotContent(activePlayerIndex, slot + 2)"
+v-if="getSlotContent(activePlayerIndex, slot + 2)"
                           :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}`"
-                          image-class="slot-img"
-                        />
+                          image-class="slot-img" />
                         <font-awesome-icon v-else :icon="['fas', 'cube']" class="slot-placeholder" />
                       </div>
                     </div>
@@ -261,17 +229,13 @@
 
     <!-- Item selector -->
     <InventoryItemSelector
-      :visible="showItemSelector"
-      :selected-item="selectedItem"
-      @select="handleItemSelect"
-      @update:visible="showItemSelector = $event"
-    />
+:visible="showItemSelector" :selected-item="selectedItem" @select="handleItemSelect"
+      @update:visible="showItemSelector = $event" />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
-import { gsap } from "gsap";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { invoke } from "@tauri-apps/api/core";
@@ -282,6 +246,7 @@ import PlayerManager from "../components/system/PlayerManager.vue";
 import { notify } from "../services/notificationService";
 import { editArchiveDataStore } from "../composables/useArchiveActions";
 import { formatDifficulty } from "../utils/archiveCreationUtils";
+import { FEATURES } from "@/config/features";
 
 const props = defineProps({
   archiveData: { type: String, default: "" },
@@ -396,7 +361,7 @@ const handleSaveArchive = async () => {
       mode: "Multiplayer",
       currentLevel: formData.currentLevel,
       difficulty: formatDifficulty(formData.archiveDifficulty),
-      actualDifficulty: formatDifficulty(formData.actualDifficulty),
+      actualDifficulty: formatDifficulty(FEATURES.MERGE_DIFFICULTY ? formData.archiveDifficulty : formData.actualDifficulty),
       playerInventory,
       playerSanity,
     };
@@ -464,7 +429,9 @@ const initArchiveData = () => {
       formData.currentLevel = data.currentLevel || "Level0";
       formData.gameMode = "multiplayer";
       formData.archiveDifficulty = data.archiveDifficulty || "normal";
-      formData.actualDifficulty = data.actualDifficulty || "normal";
+      formData.actualDifficulty = FEATURES.MERGE_DIFFICULTY
+        ? formData.archiveDifficulty
+        : (data.actualDifficulty || "normal");
       loadPlayerData(data);
     }
   } catch (e) {
@@ -1061,6 +1028,33 @@ onMounted(() => {
   gap: 16px;
 }
 
+/* When difficulty merge is active, use single column for full-width selector */
+.difficulty-row--merged {
+  grid-template-columns: 1fr;
+  max-width: 500px;
+}
+
+/* Merge difficulty hint */
+.difficulty-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(var(--warning-color-rgb, 255, 159, 10), 0.1);
+  border: 1px solid rgba(var(--warning-color-rgb, 255, 159, 10), 0.2);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 500px;
+}
+
+.difficulty-hint svg {
+  color: #ff9f0a;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
 /* ━━ 难度网格 4 列 ━━ */
 .diff-grid {
   display: grid;
@@ -1089,11 +1083,9 @@ onMounted(() => {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    circle at center,
-    color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle at center,
+      color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
+      transparent 70%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -1110,11 +1102,9 @@ onMounted(() => {
 
 .diff-option.selected {
   border-color: var(--accent-color);
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--accent-color) 15%, transparent) 0%,
-    color-mix(in srgb, var(--accent-color) 8%, transparent) 100%
-  );
+  background: linear-gradient(145deg,
+      color-mix(in srgb, var(--accent-color) 15%, transparent) 0%,
+      color-mix(in srgb, var(--accent-color) 8%, transparent) 100%);
   box-shadow:
     0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent),
     0 4px 12px color-mix(in srgb, var(--accent-color) 15%, transparent);
@@ -1150,11 +1140,9 @@ onMounted(() => {
 /* ━━ 操作卡片 — 36px (lg) 大圆角 ━━ */
 .action-card {
   cursor: pointer;
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--accent-color) 6%, transparent) 0%,
-    var(--bg-secondary) 100%
-  );
+  background: linear-gradient(145deg,
+      color-mix(in srgb, var(--accent-color) 6%, transparent) 0%,
+      var(--bg-secondary) 100%);
   border: 1px solid color-mix(in srgb, var(--accent-color) 12%, transparent);
   transition: all var(--transition-normal) var(--ease-default);
   /* Button reset: override default <button> styles */
@@ -1169,11 +1157,9 @@ onMounted(() => {
 }
 
 .action-card:hover {
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
-    var(--bg-tertiary) 100%
-  );
+  background: linear-gradient(145deg,
+      color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
+      var(--bg-tertiary) 100%);
   border-color: color-mix(in srgb, var(--accent-color) 25%, transparent);
   transform: translateY(-1px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
@@ -1688,7 +1674,7 @@ onMounted(() => {
   gap: 12px;
 }
 
-.sanity-ctrl > :first-child {
+.sanity-ctrl> :first-child {
   flex: 1;
 }
 

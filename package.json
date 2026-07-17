@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm sync-version && vite",
-    "build": "pnpm sync-version && vue-tsc --noEmit && vite build",
+    "build": "pnpm sync-version && node scripts/optimize-images.mjs && vue-tsc --noEmit && vite build",
+    "optimize-images": "node scripts/optimize-images.mjs",
     "preview": "vite preview",
     "tauri": "tauri",
     "typecheck": "vue-tsc --noEmit",
@@ -67,6 +68,7 @@
     "sharp": "^0.35.3",
     "terser": "^5.44.1",
     "typescript": "^5.8.3",
+    "typescript-eslint": "^8.64.0",
     "vite": "^6.0.3",
     "vitest": "^4.0.17",
     "vue-eslint-parser": "^10.4.1",

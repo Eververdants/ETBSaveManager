@@ -273,10 +273,10 @@ onUnmounted(() => {
   window.removeEventListener("app-global-find", handleFindEventFromLock);
   window.removeEventListener("app-global-find-next", handleFindNextEventFromLock);
   window.removeEventListener("sidebar-route-change", handleSidebarRouteChange);
-  window.removeEventListener("open-archive-search", () => {});
-  window.removeEventListener("close-archive-search", () => {});
-  window.removeEventListener("scheduler-fps", () => {});
-  window.removeEventListener("scheduler-memory", () => {});
+  window.removeEventListener("open-archive-search", () => { });
+  window.removeEventListener("close-archive-search", () => { });
+  window.removeEventListener("scheduler-fps", () => { });
+  window.removeEventListener("scheduler-memory", () => { });
   scheduler.stop();
   if (removeAfterEach) removeAfterEach();
   mainContentCache = null;
@@ -312,18 +312,15 @@ async function initThemeSystem() {
     <div class="content-wrapper">
       <component :is="Sidebar" v-if="Sidebar && appStore.sidebarVisible" @sidebar-expand="handleSidebarExpand" />
       <main
-        class="main-content"
-        :class="{
-          'sidebar-collapsed': !sidebarExpanded,
-          'sidebar-expanded': sidebarExpanded,
-        }"
-        :style="contentStyle"
-      >
-        <router-view v-slot="{ Component, route }">
+class="main-content" :class="{
+        'sidebar-collapsed': !sidebarExpanded,
+        'sidebar-expanded': sidebarExpanded,
+      }" :style="contentStyle">
+        <router-view v-slot="{ Component, route: viewRoute }">
           <transition name="page-fade" mode="out-in">
             <keep-alive :include="cachedComponents" :exclude="excludedComponents">
-              <ErrorBoundary :key="'eb-' + route.fullPath">
-                <component :is="Component" :key="route.fullPath" />
+              <ErrorBoundary :key="'eb-' + viewRoute.fullPath">
+                <component :is="Component" :key="viewRoute.fullPath" />
               </ErrorBoundary>
             </keep-alive>
           </transition>

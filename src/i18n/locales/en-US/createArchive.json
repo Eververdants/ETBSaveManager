@@ -23,6 +23,7 @@
   },
   "singleplayerNotice": "In single player mode, only normal difficulty is available",
   "difficulty": "Difficulty",
+  "difficultyMergeHint": "Due to game version changes, actual difficulty changes may not take effect in-game. We'll look into this.",
   "actualDifficulty": "Actual Difficulty",
   "difficultyLevels": {
     "easy": "Easy",

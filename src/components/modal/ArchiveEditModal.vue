@@ -2,14 +2,8 @@
   <Teleport to="body">
     <Transition name="modal">
       <div
-        v-if="visible"
-        ref="modalRef"
-        class="modal-overlay"
-        role="dialog"
-        aria-modal="true"
-        :aria-label="$t('quickCreate.editModal.title')"
-        @click.self="handleClose"
-      >
+v-if="visible" ref="modalRef" class="modal-overlay" role="dialog" aria-modal="true"
+        :aria-label="$t('quickCreate.editModal.title')" @click.self="handleClose">
         <div class="modal-container">
           <!-- 模态框头部 -->
           <div class="modal-header">
@@ -28,55 +22,44 @@
             <div class="form-group">
               <label class="form-label">{{ $t("quickCreate.editModal.archiveName") }}</label>
               <input
-                v-model="localArchive.name"
-                type="text"
-                class="form-input"
-                :placeholder="$t('quickCreate.editModal.archiveNamePlaceholder')"
-              />
+v-model="localArchive.name" type="text" class="form-input"
+                :placeholder="$t('quickCreate.editModal.archiveNamePlaceholder')" />
             </div>
 
             <!-- 层级选择 -->
             <div class="form-group">
               <label class="form-label">{{ $t("quickCreate.editModal.level") }}</label>
               <CustomDropdown
-                :model-value="localArchive.level"
-                :options="levelDropdownOptions"
+:model-value="localArchive.level" :options="levelDropdownOptions"
                 :placeholder="$t('quickCreate.editModal.inheritFromUniform')"
-                @update:model-value="localArchive.level = $event"
-              />
+                @update:model-value="localArchive.level = $event" />
             </div>
 
             <!-- 存档难度 -->
             <div class="form-group">
               <label class="form-label">{{ $t("quickCreate.editModal.difficulty") }}</label>
               <CustomDropdown
-                :model-value="localArchive.difficulty"
-                :options="difficultyDropdownOptions"
+:model-value="localArchive.difficulty" :options="difficultyDropdownOptions"
                 :placeholder="$t('quickCreate.editModal.inheritFromUniform')"
-                @update:model-value="localArchive.difficulty = $event"
-              />
+                @update:model-value="localArchive.difficulty = $event" />
             </div>
 
             <!-- 实际难度 -->
-            <div class="form-group">
+            <div v-if="!FEATURES.MERGE_DIFFICULTY" class="form-group">
               <label class="form-label">{{ $t("quickCreate.editModal.actualDifficulty") }}</label>
               <CustomDropdown
-                :model-value="localArchive.actualDifficulty"
-                :options="difficultyDropdownOptions"
+:model-value="localArchive.actualDifficulty" :options="difficultyDropdownOptions"
                 :placeholder="$t('quickCreate.editModal.inheritFromUniform')"
-                @update:model-value="localArchive.actualDifficulty = $event"
-              />
+                @update:model-value="localArchive.actualDifficulty = $event" />
             </div>
 
             <!-- 背包模板 -->
             <div class="form-group">
               <label class="form-label">{{ $t("quickCreate.editModal.inventory") }}</label>
               <CustomDropdown
-                :model-value="localArchive.inventoryTemplate"
-                :options="inventoryDropdownOptions"
+:model-value="localArchive.inventoryTemplate" :options="inventoryDropdownOptions"
                 :placeholder="$t('quickCreate.editModal.inheritFromUniform')"
-                @update:model-value="localArchive.inventoryTemplate = $event"
-              />
+                @update:model-value="localArchive.inventoryTemplate = $event" />
             </div>
           </div>
 
@@ -100,6 +83,7 @@ import { ref, watch, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import CustomDropdown from "@/components/ui/CustomDropdown.vue";
 import { useFocusTrap } from "../../composables/useFocusTrap";
+import { FEATURES } from "@/config/features";
 
 const { t } = useI18n({ useScope: "global" });
 
@@ -202,7 +186,7 @@ const useArchiveSync = (archive, localArchive, resetArchive) => {
           name: newArchive.name || "",
           level: newArchive.level,
           difficulty: newArchive.difficulty,
-          actualDifficulty: newArchive.actualDifficulty,
+          actualDifficulty: FEATURES.MERGE_DIFFICULTY ? newArchive.difficulty : newArchive.actualDifficulty,
           inventoryTemplate: newArchive.inventoryTemplate,
         };
       } else {

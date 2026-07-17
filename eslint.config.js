@@ -2,18 +2,30 @@ import pluginVue from "eslint-plugin-vue";
 import js from "@eslint/js";
 import globals from "globals";
 import eslintConfigPrettier from "eslint-config-prettier";
+import tseslint from "typescript-eslint";
 
-export default [
+export default tseslint.config(
   // 忽略目录
-  {
-    ignores: ["dist/", "node_modules/", "src-tauri/"],
-  },
+  { ignores: ["dist/", "node_modules/", "src-tauri/"] },
 
   // JS 推荐规则
   js.configs.recommended,
 
+  // TypeScript 推荐规则
+  ...tseslint.configs.recommended,
+
   // Vue 推荐规则 (flat config)
   ...pluginVue.configs["flat/recommended"],
+
+  // Vue 文件中使用 TypeScript parser
+  {
+    files: ["src/**/*.vue"],
+    languageOptions: {
+      parserOptions: {
+        parser: tseslint.parser,
+      },
+    },
+  },
 
   // 自定义规则
   {
@@ -45,11 +57,16 @@ export default [
       // 优先使用 === 和 !==
       "eqeqeq": ["warn", "always"],
 
-      // 已定义但未使用的变量（不检查函数参数）
-      "no-unused-vars": "warn",
-
-      // 禁止未定义的变量
-      "no-undef": "error",
+      // 使用 TS 版本的 no-unused-vars（更智能，支持类型信息）
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
 
       // 禁止 var
       "no-var": "error",
@@ -75,7 +92,7 @@ export default [
         },
       ],
 
-      // Vue 组件属性每行最大数量
+      // Vue 组件属性每行最大行内属性数
       "vue/max-attributes-per-line": [
         "warn",
         {
@@ -84,7 +101,7 @@ export default [
         },
       ],
 
-      // Vue 模板中的空格
+      // Vue 模板缩进
       "vue/html-indent": ["warn", 2],
     },
   },
@@ -94,10 +111,10 @@ export default [
     files: ["src/**/*.test.ts", "src/**/*.spec.ts", "src/**/__tests__/**"],
     rules: {
       "no-console": "off",
-      "no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
     },
   },
 
   // Prettier 兼容 (必须最后)
   eslintConfigPrettier,
-];
+);

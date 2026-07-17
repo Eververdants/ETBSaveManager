@@ -16,19 +16,14 @@
           <div class="mode-cards single">
             <!-- Classic mode -->
             <div
-              class="mode-card"
-              v-squircle="44"
-              :class="{ selected: selectedMode === 'classic' }"
-              @click="goToMode('classic')"
-            >
+v-squircle="44" class="mode-card" :class="{ selected: selectedMode === 'classic' }"
+              @click="goToMode('classic')">
               <div class="mode-card-image">
                 <LazyImage :src="classicModeImage" alt="Classic Mode" :image-class="'mode-card-img'" />
                 <div class="mode-card-overlay">
                   <font-awesome-icon
-                    v-if="selectedMode === 'classic'"
-                    :icon="['fas', 'check-circle']"
-                    class="check-icon"
-                  />
+v-if="selectedMode === 'classic'" :icon="['fas', 'check-circle']"
+                    class="check-icon" />
                 </div>
               </div>
               <div class="mode-card-info">
@@ -49,19 +44,14 @@
           <div class="mode-cards multi">
             <!-- Quick mode -->
             <div
-              class="mode-card"
-              v-squircle="44"
-              :class="{ selected: selectedMode === 'quick' }"
-              @click="goToMode('quick')"
-            >
+v-squircle="44" class="mode-card" :class="{ selected: selectedMode === 'quick' }"
+              @click="goToMode('quick')">
               <div class="mode-card-image">
                 <LazyImage :src="quickModeImage" alt="Quick Mode" :image-class="'mode-card-img'" />
                 <div class="mode-card-overlay">
                   <font-awesome-icon
-                    v-if="selectedMode === 'quick'"
-                    :icon="['fas', 'check-circle']"
-                    class="check-icon"
-                  />
+v-if="selectedMode === 'quick'" :icon="['fas', 'check-circle']"
+                    class="check-icon" />
                 </div>
               </div>
               <div class="mode-card-info">
@@ -77,13 +67,8 @@
 
       <!-- Bottom back button -->
       <button
-        class="bottom-back-button"
-        :class="{ 'is-pressing': isPressing }"
-        @click="goBack"
-        @mousedown="handleMouseDown"
-        @mouseup="handleMouseUp"
-        @mouseleave="handleMouseUp"
-      >
+class="bottom-back-button" :class="{ 'is-pressing': isPressing }" @click="goBack"
+        @mousedown="handleMouseDown" @mouseup="handleMouseUp" @mouseleave="handleMouseUp">
         <div class="button-content">
           <span class="close-icon">✕</span>
           <span class="button-text">{{ $t("common.back") }}</span>
@@ -97,11 +82,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
-import { useI18n } from "vue-i18n";
 import LazyImage from "@/components/ui/LazyImage.vue";
 
 const router = useRouter();
-const { t } = useI18n({ useScope: "global" });
 const selectedMode = ref(null);
 const isPressing = ref(false);
 const currentTheme = ref("dark");

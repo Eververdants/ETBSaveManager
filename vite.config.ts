@@ -36,6 +36,16 @@ export default defineConfig(async ({ mode }) => {
       target: "esnext",
       // 启用Tree Shaking
       rollupOptions: {
+        treeshake: {
+          preset: "smallest",
+          moduleSideEffects: (id) => {
+            // 明确标记有副作用的模块（如图标注册）
+            if (id.includes("icons-critical") || id.includes("icons-full")) {
+              return true;
+            }
+            return false;
+          },
+        },
         output: {
           // 优化chunk分割策略
           manualChunks(id) {
@@ -46,6 +56,10 @@ export default defineConfig(async ({ mode }) => {
             // Vue Router - 启动必需
             if (id.includes("vue-router")) {
               return "vue-router";
+            }
+            // Pinia - 与 Vue Router 同优先级
+            if (id.includes("pinia")) {
+              return "vue-core"; // 与 Vue 核心共享 chunk
             }
             // i18n - 按需加载
             if (id.includes("vue-i18n")) {
@@ -74,6 +88,18 @@ export default defineConfig(async ({ mode }) => {
             // 虚拟滚动 - 首页需要
             if (id.includes("@tanstack/vue-virtual")) {
               return "virtual-scroll";
+            }
+            // 中文拼音库 - 较大 (~866KB)，单独 chunk
+            if (id.includes("pinyin-pro")) {
+              return "pinyin";
+            }
+            // HTML 清理库 - 较大 (~1.5MB)，单独 chunk
+            if (id.includes("dompurify")) {
+              return "dompurify";
+            }
+            // Vue Flow 图谱库 - 按需加载
+            if (id.includes("@vue-flow")) {
+              return "vue-flow";
             }
           },
           // 优化chunk文件名

@@ -1,44 +1,23 @@
 <template>
   <div
-    ref="sidebarRef"
-    class="sidebar"
-    :class="{ expanded: isExpanded }"
-    role="navigation"
-    aria-label="Main menu"
-    v-squircle="44"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
-    @keydown="handleKeydown"
-  >
+ref="sidebarRef" v-squircle="44" class="sidebar" :class="{ expanded: isExpanded }" role="navigation"
+    aria-label="Main menu" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" @keydown="handleKeydown">
     <div class="sidebar-content">
       <!-- Top section -->
       <div class="sidebar-section top-section">
         <div
-          v-for="item in filteredTopMenuItems"
-          :key="item.id"
-          class="sidebar-item"
-          :class="['sidebar-item', { active: item.id === activeItemId }]"
-          :tabindex="isExpanded ? 0 : -1"
-          role="link"
-          :aria-label="safeT(item.textKey)"
-          :aria-current="item.id === activeItemId ? 'page' : undefined"
-          :data-item-id="item.id"
-          @click="handleItemClick(item, $event)"
-          @mousedown="handleMouseDown"
-          @mouseenter="handleMouseEnterItem"
-          @mouseleave="handleMouseLeaveItem"
-          @mouseup="handleMouseUp"
-        >
+v-for="item in filteredTopMenuItems" :key="item.id" class="sidebar-item"
+          :class="['sidebar-item', { active: item.id === activeItemId }]" :tabindex="isExpanded ? 0 : -1" role="link"
+          :aria-label="safeT(item.textKey)" :aria-current="item.id === activeItemId ? 'page' : undefined"
+          :data-item-id="item.id" @click="handleItemClick(item, $event)" @mousedown="handleMouseDown"
+          @mouseenter="handleMouseEnterItem" @mouseleave="handleMouseLeaveItem" @mouseup="handleMouseUp">
           <div class="sidebar-icon-container">
             <font-awesome-icon :icon="item.icon" class="sidebar-icon" aria-hidden="true" />
           </div>
           <div class="sidebar-text-container">
             <span
-              class="sidebar-text"
-              :data-text="safeT(item.textKey)"
-              :class="{ visible: isExpanded }"
-              :data-lang="currentLanguage"
-            >
+class="sidebar-text" :data-text="safeT(item.textKey)" :class="{ visible: isExpanded }"
+              :data-lang="currentLanguage">
               {{ safeT(item.textKey) }}
             </span>
           </div>
@@ -48,31 +27,18 @@
       <!-- Bottom section -->
       <div class="sidebar-section bottom-section">
         <div
-          v-for="item in bottomMenuItems"
-          :key="item.id"
-          class="sidebar-item"
-          :class="['sidebar-item', { active: item.id === activeItemId }]"
-          :tabindex="isExpanded ? 0 : -1"
-          role="link"
-          :aria-label="safeT(item.textKey)"
-          :aria-current="item.id === activeItemId ? 'page' : undefined"
-          :data-item-id="item.id"
-          @click="handleItemClick(item, $event)"
-          @mousedown="handleMouseDown"
-          @mouseenter="handleMouseEnterItem"
-          @mouseleave="handleMouseLeaveItem"
-          @mouseup="handleMouseUp"
-        >
+v-for="item in bottomMenuItems" :key="item.id" class="sidebar-item"
+          :class="['sidebar-item', { active: item.id === activeItemId }]" :tabindex="isExpanded ? 0 : -1" role="link"
+          :aria-label="safeT(item.textKey)" :aria-current="item.id === activeItemId ? 'page' : undefined"
+          :data-item-id="item.id" @click="handleItemClick(item, $event)" @mousedown="handleMouseDown"
+          @mouseenter="handleMouseEnterItem" @mouseleave="handleMouseLeaveItem" @mouseup="handleMouseUp">
           <div class="sidebar-icon-container">
             <font-awesome-icon :icon="item.icon" class="sidebar-icon" aria-hidden="true" />
           </div>
           <div class="sidebar-text-container">
             <span
-              class="sidebar-text"
-              :data-text="safeT(item.textKey)"
-              :class="{ visible: isExpanded }"
-              :data-lang="currentLanguage"
-            >
+class="sidebar-text" :data-text="safeT(item.textKey)" :class="{ visible: isExpanded }"
+              :data-lang="currentLanguage">
               {{ safeT(item.textKey) }}
             </span>
           </div>
@@ -170,7 +136,7 @@ const useSidebarTheme = (sidebarRef) => {
     requestAnimationFrame(() => {
       if (sidebarRef.value) {
         sidebarRef.value.style.visibility = "hidden";
-        sidebarRef.value.offsetHeight;
+        void sidebarRef.value.offsetHeight;
         sidebarRef.value.style.visibility = "visible";
       }
     });
@@ -179,7 +145,7 @@ const useSidebarTheme = (sidebarRef) => {
   return { detectTheme };
 };
 
-const useSidebarMenuItemManager = (activeItemId, setActiveItemFromRoute) => {
+const useSidebarMenuItemManager = (_activeItemId, _setActiveItemFromRoute) => {
   // No dynamic menu items currently managed
   return {};
 };
@@ -263,7 +229,7 @@ const useSidebarMouseInteractions = (checkTextOverflow, getTextWidth) => {
       textElement.style.transition = "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
       textElement.style.transform = `translateX(${currentX}px)`;
 
-      textElement.offsetHeight;
+      void textElement.offsetHeight;
       textElement.style.transform = "translateX(0)";
       textElement.classList.remove("scroll-active");
 
@@ -317,7 +283,7 @@ const useSidebarActions = (activeItemId, safeT) => {
     if (flatItems.length === 0) return;
 
     const currentIndex = flatItems.findIndex((item) => item.id === activeItemId.value);
-    let targetIndex = currentIndex;
+    let targetIndex;
 
     switch (event.key) {
       case "ArrowDown":
@@ -344,7 +310,8 @@ const useSidebarActions = (activeItemId, safeT) => {
         }
         return;
       default:
-        return;
+        targetIndex = currentIndex;
+        break;
     }
 
     if (targetIndex >= 0 && targetIndex < flatItems.length) {
@@ -362,7 +329,7 @@ const useSidebarActions = (activeItemId, safeT) => {
 
 const appStore = useAppStore();
 const { isExpanded, sidebarRef, activeItemId, handleMouseEnter, handleMouseLeave } = useSidebarState();
-const { t, currentLanguage, safeT } = useSidebarI18n();
+const { currentLanguage, safeT } = useSidebarI18n();
 const { filteredTopMenuItems } = useSidebarMenuItems();
 const { setActiveItemFromRoute } = useSidebarRouteHandler(activeItemId);
 const { detectTheme } = useSidebarTheme(sidebarRef);
@@ -383,14 +350,14 @@ onMounted(() => {
     () => setActiveItemFromRoute(),
   );
 
-  watch(currentLanguage, () => nextTick(() => {}));
+  watch(currentLanguage, () => nextTick(() => { }));
 
   // ─── Watch Pinia store for shared state ────────────────
   // Replaces window.dispatchEvent/addEventListener pattern
 
   watch(
     () => appStore.language,
-    () => nextTick(() => {}),
+    () => nextTick(() => { }),
   );
 
   window.addEventListener("toggle-sidebar", (e) => {

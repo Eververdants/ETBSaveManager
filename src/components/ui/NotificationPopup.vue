@@ -1,33 +1,19 @@
 <template>
   <teleport to="body">
     <div
-      v-for="position in positions"
-      :key="position"
-      class="notification-container"
-      :class="`notification-container-${position}`"
-    >
+v-for="position in positions" :key="position" class="notification-container"
+      :class="`notification-container-${position}`">
       <TransitionGroup
-        tag="div"
-        class="notification-list"
-        :name="`notification-${position}`"
-        @before-enter="(el) => onBeforeEnter(el, position)"
-        @enter="(el, done) => onEnter(el, done, position)"
-        @before-leave="(el) => onBeforeLeave(el, position)"
-        @leave="(el, done) => onLeave(el, done, position)"
-      >
+tag="div" class="notification-list" :name="`notification-${position}`"
+        @before-enter="(el) => onBeforeEnter(el, position)" @enter="(el, done) => onEnter(el, done, position)"
+        @before-leave="(el) => onBeforeLeave(el, position)" @leave="(el, done) => onLeave(el, done, position)">
         <div
-          v-for="notification in getNotificationsByPosition(position)"
-          :key="notification.id"
-          class="notification-item"
-          v-squircle:sm
-          :class="[
+v-for="notification in getNotificationsByPosition(position)" :key="notification.id"
+          v-squircle:sm class="notification-item" :class="[
             `notification-${notification.type}`,
             { 'notification-hovering': notification.isHovering },
             { 'notification-expanded': notification.actions?.length || notification.details },
-          ]"
-          @mouseenter="pauseNotification(notification)"
-          @mouseleave="resumeNotification(notification)"
-        >
+          ]" @mouseenter="pauseNotification(notification)" @mouseleave="resumeNotification(notification)">
           <!-- 图标 -->
           <div class="notification-icon-wrapper" :class="`icon-${notification.type}`">
             <font-awesome-icon v-if="notification.icon" :icon="notification.icon" class="notification-icon" />
@@ -52,12 +38,8 @@
             <!-- 按钮区域 -->
             <div v-if="notification.actions?.length" class="notification-actions">
               <button
-                v-for="(action, idx) in notification.actions"
-                :key="idx"
-                class="notification-btn"
-                :class="[action.type || 'default', action.class]"
-                @click="handleAction(notification, action)"
-              >
+v-for="(action, idx) in notification.actions" :key="idx" class="notification-btn"
+                :class="[action.type || 'default', action.class]" @click="handleAction(notification, action)">
                 <font-awesome-icon v-if="action.icon" :icon="action.icon" class="btn-icon" />
                 {{ action.text }}
               </button>
@@ -72,10 +54,8 @@
           <!-- 进度条 -->
           <div v-if="notification.duration > 0 && !notification.actions?.length" class="notification-progress">
             <div
-              class="notification-progress-bar"
-              :class="`progress-${notification.type}`"
-              :style="{ width: `${notification.progress}%` }"
-            />
+class="notification-progress-bar" :class="`progress-${notification.type}`"
+              :style="{ width: `${notification.progress}%` }" />
           </div>
         </div>
       </TransitionGroup>
@@ -138,7 +118,7 @@ const useNotificationAnimations = (getAnimationDirection) => {
     });
   };
 
-  const onEnter = (el, done, position) => {
+  const onEnter = (el, done, _position) => {
     gsap.to(el, {
       opacity: 1,
       x: 0,
@@ -151,7 +131,7 @@ const useNotificationAnimations = (getAnimationDirection) => {
     });
   };
 
-  const onBeforeLeave = (el, position) => {
+  const onBeforeLeave = (el, _position) => {
     const rect = el.getBoundingClientRect();
     const parent = el.parentElement;
     const parentRect = parent.getBoundingClientRect();
@@ -253,7 +233,7 @@ const useNotificationTimer = () => {
   return { startTimer, pauseNotification, resumeNotification, getNotification };
 };
 
-const useNotificationActions = (getNotificationsByPosition, startTimer, getNotification) => {
+const useNotificationActions = (getNotificationsByPosition, startTimer) => {
   const addNotification = (options) => {
     const id = ++notificationId;
     const config = { ...defaultOptions, ...options };
@@ -326,11 +306,10 @@ const useNotificationActions = (getNotificationsByPosition, startTimer, getNotif
 
 const { getNotificationsByPosition, getAnimationDirection } = useNotificationPosition();
 const { onBeforeEnter, onEnter, onBeforeLeave, onLeave } = useNotificationAnimations(getAnimationDirection);
-const { startTimer, pauseNotification, resumeNotification, getNotification } = useNotificationTimer();
+const { startTimer, pauseNotification, resumeNotification } = useNotificationTimer();
 const { addNotification, handleAction, closeNotification, closeAll } = useNotificationActions(
   getNotificationsByPosition,
   startTimer,
-  getNotification,
 );
 
 onUnmounted(() => {

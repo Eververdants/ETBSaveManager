@@ -137,7 +137,7 @@ export const switchLanguage = async (newLocale: string): Promise<void> => {
   }
 
   // Ensure language pack is loaded
-  /* eslint-disable @typescript-eslint/no-explicit-any */
+   
   const msgValues = (i18nInstance.global as Composer).messages.value as Record<string, unknown>;
   if (!msgValues[newLocale]) {
     const messages = await loadLocaleMessages(newLocale);

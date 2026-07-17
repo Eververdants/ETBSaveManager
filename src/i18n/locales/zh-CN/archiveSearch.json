@@ -31,7 +31,8 @@
     "deselectAll": "取消全选",
     "exit": "退出多选",
     "selected": "已选择 {count} / {total} 个",
-    "batchDelete": "批量删除"
+    "batchDelete": "批量删除",
+    "deleting": "正在删除"
   },
   "suggestions": "搜索建议",
   "searchHistory": "搜索历史",

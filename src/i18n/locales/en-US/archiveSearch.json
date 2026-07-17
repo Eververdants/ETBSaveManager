@@ -31,7 +31,8 @@
     "deselectAll": "Deselect All",
     "exit": "Exit Multi-select",
     "selected": "{count} / {total} selected",
-    "batchDelete": "Batch Delete"
+    "batchDelete": "Batch Delete",
+    "deleting": "Deleting"
   },
   "suggestions": "Suggestions",
   "searchHistory": "Recent Searches",

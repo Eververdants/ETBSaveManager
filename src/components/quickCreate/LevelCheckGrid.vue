@@ -17,12 +17,8 @@
 
     <div class="level-grid">
       <div
-        v-for="levelKey in levels"
-        :key="levelKey"
-        class="level-card"
-        :class="{ selected: isSelected(levelKey) }"
-        @click="toggleLevel(levelKey)"
-      >
+v-for="levelKey in levels" :key="levelKey" class="level-card" :class="{ selected: isSelected(levelKey) }"
+        @click="toggleLevel(levelKey)">
         <div class="level-image-container">
           <LazyImage :src="`/images/ETB/${levelKey}.webp`" :alt="getLevelName(levelKey)" image-class="level-image" />
           <div class="level-overlay">
@@ -86,6 +82,7 @@ const toggleSelectAll = () => {
   min-height: 0;
   overflow-y: auto;
 }
+
 .grid-header {
   display: flex;
   align-items: center;
@@ -96,6 +93,7 @@ const toggleSelectAll = () => {
   border-radius: var(--radius-md);
   border: 1px solid var(--divider-light);
 }
+
 .select-all-checkbox {
   display: flex;
   align-items: center;
@@ -106,6 +104,7 @@ const toggleSelectAll = () => {
   color: var(--text-primary);
   user-select: none;
 }
+
 .checkbox-mark {
   width: 18px;
   height: 18px;
@@ -117,19 +116,23 @@ const toggleSelectAll = () => {
   justify-content: center;
   transition: all 0.2s ease;
 }
+
 .checkbox-mark.checked {
   background: var(--accent-color);
   border-color: var(--accent-color);
 }
+
 .checkbox-mark .check-icon {
   color: white;
   font-size: 10px;
 }
+
 .selection-count {
   font-size: 12px;
   color: var(--text-tertiary);
   margin-left: auto;
 }
+
 .clear-btn {
   font-size: 12px;
   color: var(--error-color);
@@ -139,6 +142,7 @@ const toggleSelectAll = () => {
   padding: 4px 8px;
   border-radius: var(--radius-xs);
 }
+
 .clear-btn:hover {
   background: rgba(var(--error-color-rgb), 0.1);
 }
@@ -150,6 +154,7 @@ const toggleSelectAll = () => {
   padding: 4px 0;
   align-content: start;
 }
+
 .level-card {
   background: var(--bg-secondary);
   border-radius: var(--radius-md);
@@ -162,24 +167,29 @@ const toggleSelectAll = () => {
     box-shadow 0.25s ease,
     border-color 0.25s ease;
 }
+
 .level-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
 }
+
 .level-card.selected {
   border-color: var(--accent-color);
   box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
 }
+
 .level-image-container {
   position: relative;
   aspect-ratio: 16/9;
   overflow: hidden;
 }
+
 .level-image-container :deep(.level-image) {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .level-overlay {
   position: absolute;
   inset: 0;
@@ -188,6 +198,7 @@ const toggleSelectAll = () => {
   align-items: center;
   justify-content: center;
 }
+
 .check-circle {
   width: 28px;
   height: 28px;
@@ -199,17 +210,21 @@ const toggleSelectAll = () => {
   justify-content: center;
   transition: all 0.2s ease;
 }
+
 .check-circle.checked {
   background: var(--accent-color);
   border-color: var(--accent-color);
 }
+
 .check-circle svg {
   color: white;
   font-size: 14px;
 }
+
 .level-info {
   padding: 10px 12px;
 }
+
 .level-name {
   font-size: 12px;
   font-weight: 600;

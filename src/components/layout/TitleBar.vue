@@ -1,11 +1,7 @@
 <template>
   <div
-    id="titlebar"
-    data-tauri-drag-region
-    class="titlebar"
-    style="padding-left: 12px"
-    :class="{ 'sidebar-collapsed': sidebarCollapsed }"
-  >
+id="titlebar" data-tauri-drag-region class="titlebar" style="padding-left: 12px"
+    :class="{ 'sidebar-collapsed': sidebarCollapsed }">
     <div class="titlebar-content" data-tauri-drag-region>
       <div class="title-section" data-tauri-drag-region>
         <transition name="text-swift" mode="out-in">
@@ -31,7 +27,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { getAppContext } from "@/appContext.js";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useAppStore } from "@/stores/appStore";
@@ -273,9 +269,11 @@ onMounted(() => {
 .text-swift-enter-active {
   transition: opacity 0.2s ease-out;
 }
+
 .text-swift-leave-active {
   transition: opacity 0.15s ease-in;
 }
+
 .text-swift-enter-from,
 .text-swift-leave-to {
   opacity: 0;

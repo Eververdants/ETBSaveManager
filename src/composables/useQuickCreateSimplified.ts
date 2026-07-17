@@ -135,7 +135,7 @@ export function useQuickCreateSimplified(): SimplifiedReturn {
         errors: [{ name: "all", error: "Failed to load archive template" }],
       };
     }
-    let existingNames = new Set<string>();
+    const existingNames = new Set<string>();
     try {
       const existingSaves = await invoke<Array<{ name: string }>>("load_all_saves");
       for (const save of existingSaves) {

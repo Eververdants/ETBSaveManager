@@ -19,6 +19,7 @@ import type {
   ResolvedConfig,
 } from "@/types";
 import { formatDifficulty, loadBasicArchive, isSideStoryline, isMEGUnlocked } from "@/utils/archiveCreationUtils";
+import { FEATURES } from "@/config/features";
 
 /**
  * Batch creation configuration
@@ -243,7 +244,7 @@ export function useQuickCreate(): QuickCreateReturn {
       const resolved: ResolvedConfig = resolve(archive, state.uniformConfig, state.smartRules);
       archive.finalLevel = resolved.level;
       archive.finalDifficulty = resolved.difficulty;
-      archive.finalActualDifficulty = resolved.actualDifficulty;
+      archive.finalActualDifficulty = FEATURES.MERGE_DIFFICULTY ? resolved.difficulty : resolved.actualDifficulty;
       archive.finalInventory = [];
       archive.hasIndividualSettings = hasIndividualSettings(archive);
     }

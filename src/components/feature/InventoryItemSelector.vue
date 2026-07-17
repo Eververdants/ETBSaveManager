@@ -9,11 +9,8 @@
               <button class="close-btn" @click="close">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path
-                    d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                  />
+d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" />
                 </svg>
               </button>
             </div>
@@ -28,26 +25,15 @@
                     </svg>
                   </span>
                   <input
-                    ref="searchInputRef"
-                    v-model="searchQuery"
-                    type="text"
-                    class="search-input"
-                    :placeholder="$t('inventory.searchPlaceholder')"
-                  />
+ref="searchInputRef" v-model="searchQuery" type="text" class="search-input"
+                    :placeholder="$t('inventory.searchPlaceholder')" />
                   <button
-                    v-if="searchQuery"
-                    class="clear-search"
-                    type="button"
-                    :aria-label="$t('inventory.clearSearch')"
-                    @click="clearSearch"
-                  >
+v-if="searchQuery" class="clear-search" type="button"
+                    :aria-label="$t('inventory.clearSearch')" @click="clearSearch">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                       <path
-                        d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                      />
+d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" />
                     </svg>
                   </button>
                 </div>
@@ -60,7 +46,7 @@
                   }}</span>
                   <span v-if="selectedItemLabel" class="selected-badge">{{
                     $t("inventory.currentSelection", { name: selectedItemLabel })
-                  }}</span>
+                    }}</span>
                   <button class="remove-btn" type="button" @click="selectItem(null)">
                     {{ $t("inventory.removeItem") }}
                   </button>
@@ -69,18 +55,12 @@
 
               <TransitionGroup v-if="filteredItems.length" name="item-appear" appear tag="div" class="items-grid">
                 <div
-                  v-for="item in filteredItems"
-                  :key="item.id"
-                  class="item-card"
-                  :class="{ selected: selectedItem === item.id }"
-                  @click="selectItem(item.id)"
-                >
+v-for="item in filteredItems" :key="item.id" class="item-card"
+                  :class="{ selected: selectedItem === item.id }" @click="selectItem(item.id)">
                   <div class="item-image-wrapper">
                     <LazyImage
-                      :src="`/icons/ETB_UI/${item.image}`"
-                      :alt="getItemName(item.id)"
-                      image-class="item-image"
-                    />
+:src="`/icons/ETB_UI/${item.image}`" :alt="getItemName(item.id)"
+                      image-class="item-image" />
                   </div>
                   <span class="item-name">{{ getItemName(item.id) }}</span>
                 </div>
@@ -93,18 +73,13 @@
                   <p class="fuzzy-label">{{ $t("inventory.didYouMean") }}</p>
                   <div class="fuzzy-grid">
                     <div
-                      v-for="result in fuzzyResults"
-                      :key="result.item.id"
-                      class="fuzzy-card"
+v-for="result in fuzzyResults" :key="result.item.id" class="fuzzy-card"
                       :title="`${getItemName(result.item.id)} (${(result.score * 100).toFixed(0)}%)`"
-                      @click="selectItem(result.item.id)"
-                    >
+                      @click="selectItem(result.item.id)">
                       <div class="fuzzy-image-wrapper">
                         <LazyImage
-                          :src="`/icons/ETB_UI/${result.item.image}`"
-                          :alt="getItemName(result.item.id)"
-                          image-class="fuzzy-image"
-                        />
+:src="`/icons/ETB_UI/${result.item.image}`" :alt="getItemName(result.item.id)"
+                          image-class="fuzzy-image" />
                       </div>
                       <span class="fuzzy-name">{{ getItemName(result.item.id) }}</span>
                     </div>

@@ -57,14 +57,15 @@ export function HeroSection(): React.JSX.Element {
                   aria-hidden="true"
                   className="hidden h-px w-8 bg-[var(--color-ink-2)] sm:inline-block dark:bg-[var(--color-paper-3)]"
                 />
-                <span className="tabular-nums hidden sm:inline">
-                  doc // {site.meta.releaseDate.replace(/-/g, ".")}
-                </span>
+                <span className="tabular-nums hidden sm:inline">doc // {site.meta.releaseDate.replace(/-/g, ".")}</span>
               </>
             )}
             {/* 打字中闪烁光标 */}
             {!typewriterDone && (
-              <span aria-hidden="true" className="inline-block h-3 w-[2px] bg-[var(--color-accent-deep)] dark:bg-[var(--color-accent)]" />
+              <span
+                aria-hidden="true"
+                className="inline-block h-3 w-[2px] bg-[var(--color-accent-deep)] dark:bg-[var(--color-accent)]"
+              />
             )}
           </div>
 
@@ -104,25 +105,13 @@ export function HeroSection(): React.JSX.Element {
                 {t("hero.meta.version")}
               </dt>
               <dd className="tabular-nums text-[var(--color-ink)] dark:text-[var(--color-paper)]">
-                {metaVisible ? (
-                  <span aria-label={`v${site.meta.version}`}>
-                    v{countVersion}
-                  </span>
-                ) : (
-                  <span>v0</span>
-                )}
+                {metaVisible ? <span aria-label={`v${site.meta.version}`}>v{countVersion}</span> : <span>v0</span>}
               </dd>
             </div>
             <div>
               <dt className="text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">{t("hero.meta.build")}</dt>
               <dd className="tabular-nums text-[var(--color-ink)] dark:text-[var(--color-paper)]">
-                {metaVisible ? (
-                  <span aria-label={`# ${site.meta.build}`}>
-                    # {countBuild}
-                  </span>
-                ) : (
-                  <span># 0</span>
-                )}
+                {metaVisible ? <span aria-label={`# ${site.meta.build}`}># {countBuild}</span> : <span># 0</span>}
               </dd>
             </div>
             <div>

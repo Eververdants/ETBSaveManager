@@ -2,11 +2,8 @@
   <div class="number-selector" :class="{ disabled }">
     <div class="number-display">
       <button
-        class="number-btn decrement"
-        :class="{ disabled: modelValue <= min }"
-        :disabled="disabled || modelValue <= min"
-        @click="decrement"
-      >
+class="number-btn decrement" :class="{ disabled: modelValue <= min }"
+        :disabled="disabled || modelValue <= min" @click="decrement">
         <font-awesome-icon :icon="['fas', 'minus']" />
       </button>
       <div class="number-value">
@@ -15,11 +12,8 @@
         </transition>
       </div>
       <button
-        class="number-btn increment"
-        :class="{ disabled: modelValue >= max }"
-        :disabled="disabled || modelValue >= max"
-        @click="increment"
-      >
+class="number-btn increment" :class="{ disabled: modelValue >= max }"
+        :disabled="disabled || modelValue >= max" @click="increment">
         <font-awesome-icon :icon="['fas', 'plus']" />
       </button>
     </div>

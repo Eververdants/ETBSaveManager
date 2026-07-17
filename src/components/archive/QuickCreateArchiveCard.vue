@@ -1,9 +1,7 @@
 <template>
   <div
-    class="quick-archive-card"
-    :class="[borderStatusClass, { selected: selected }]"
-    @click="$emit('select', archive.id)"
-  >
+class="quick-archive-card" :class="[borderStatusClass, { selected: selected }]"
+    @click="$emit('select', archive.id)">
     <!-- 卡片头部：名称和状态图标 -->
     <div class="card-header">
       <div class="card-name-wrapper">
@@ -13,10 +11,8 @@
             <font-awesome-icon :icon="['fas', 'exclamation-triangle']" />
           </span>
           <span
-            v-if="archive.hasIndividualSettings"
-            class="status-icon modified"
-            :title="$t('quickCreate.card.modified')"
-          >
+v-if="archive.hasIndividualSettings" class="status-icon modified"
+            :title="$t('quickCreate.card.modified')">
             <font-awesome-icon :icon="['fas', 'wrench']" />
           </span>
         </div>
@@ -57,7 +53,7 @@
       </div>
 
       <!-- 实际难度 -->
-      <div class="config-row">
+      <div v-if="!FEATURES.MERGE_DIFFICULTY" class="config-row">
         <span class="config-label">{{ $t("quickCreate.card.actualDifficulty") }}</span>
         <span class="config-value" :class="getSourceClass('actualDifficulty')">
           <template v-if="isInherited('actualDifficulty')">
@@ -92,10 +88,8 @@
         <font-awesome-icon :icon="['fas', 'copy']" />
       </button>
       <button
-        class="action-btn remove"
-        :title="$t('quickCreate.card.remove')"
-        @click.stop="$emit('remove', archive.id)"
-      >
+class="action-btn remove" :title="$t('quickCreate.card.remove')"
+        @click.stop="$emit('remove', archive.id)">
         <font-awesome-icon :icon="['fas', 'times']" />
       </button>
     </div>
@@ -103,9 +97,10 @@
 </template>
 
 <script setup>
-import { computed, toRef } from "vue";
+import { toRef } from "vue";
 import { useI18n } from "vue-i18n";
 import { useQuickCreateArchiveCard } from "@/composables/useQuickCreateArchiveCard";
+import { FEATURES } from "@/config/features";
 
 const props = defineProps({
   archive: {

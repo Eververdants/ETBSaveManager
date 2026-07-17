@@ -8,6 +8,7 @@
   "batchDeleteTitle": "批量删除存档",
   "batchDeleteMessage": "确定要删除选中的 {count} 个存档吗？",
   "batchDeleteDescription": "此操作将永久删除这些存档文件，无法恢复。",
+  "batchDeleteProgressTitle": "正在删除存档",
   "archiveDetails": {
     "gameMode": "游戏模式",
     "currentLevel": "当前关卡",

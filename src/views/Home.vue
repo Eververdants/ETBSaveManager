@@ -25,10 +25,8 @@
             }}
           </span>
           <button
-            class="toolbar-btn danger"
-            :disabled="selectedArchives.size === 0"
-            @click="handleShowBatchDeleteConfirm"
-          >
+class="toolbar-btn danger" :disabled="selectedArchives.size === 0"
+            @click="handleShowBatchDeleteConfirm">
             <font-awesome-icon icon="fa-solid fa-trash-alt" />
             {{ $t("archiveSearch.multiSelect.batchDelete") }}
           </button>
@@ -37,11 +35,8 @@
     </transition>
 
     <div
-      ref="scrollContainerRef"
-      class="archive-list-container"
-      v-squircle="44"
-      :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode }"
-    >
+ref="scrollContainerRef" v-squircle="44" class="archive-list-container"
+      :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode }">
       <!-- Ultra-light loading state: a single centered spinner.
            The old 12-card skeleton with v-squircle + shimmer animations
            was expensive enough to stall the first paint, making the
@@ -56,17 +51,13 @@
       <!-- Cards + empty states: rendered with full data once loading completes -->
       <template v-if="showCards">
         <div
-          class="virtual-scroll-viewport"
-          :style="{
-            height: `${rowVirtualizer.getTotalSize()}px`,
-            width: '100%',
-            position: 'relative',
-          }"
-        >
+class="virtual-scroll-viewport" :style="{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }">
           <div
-            v-for="virtualRow in rowVirtualizer.getVirtualItems()"
-            :key="String(virtualRow.key)"
-            class="archive-row"
+v-for="virtualRow in rowVirtualizer.getVirtualItems()" :key="String(virtualRow.key)" class="archive-row"
             :style="{
               position: 'absolute',
               top: 0,
@@ -74,34 +65,23 @@
               width: '100%',
               height: `${virtualRow.size}px`,
               transform: `translateY(${virtualRow.start}px)`,
-            }"
-          >
+            }">
             <div class="archive-grid">
               <ArchiveCard
-                v-for="(archive, colIndex) in getRowItems(virtualRow.index)"
-                :key="archive.id"
-                :data-archive-id="archive.id"
-                :archive="archive"
-                :index="virtualRow.index * columnsPerRow + colIndex"
+v-for="(archive, colIndex) in getRowItems(virtualRow.index)" :key="archive.id"
+                :data-archive-id="archive.id" :archive="archive" :index="virtualRow.index * columnsPerRow + colIndex"
                 :class="{
                   deleting: deletingCardId === archive.id,
-                }"
-                :is-multi-select-mode="isMultiSelectMode"
-                :is-selected="selectedArchives.has(archive.id)"
-                :search-query="searchQuery"
-                @toggle-visibility="handleToggleVisibility"
-                @edit="handleEdit"
-                @delete="deleteArchive"
-                @select="selectArchive"
-                @toggle-select="toggleArchiveSelection"
-              />
+                }" :is-multi-select-mode="isMultiSelectMode" :is-selected="selectedArchives.has(archive.id)"
+                :search-query="searchQuery" @toggle-visibility="handleToggleVisibility" @edit="handleEdit"
+                @delete="deleteArchive" @select="selectArchive" @toggle-select="toggleArchiveSelection" />
             </div>
           </div>
         </div>
 
         <!-- Empty state: filters active, no matching archives -->
         <div v-if="displayArchives.length === 0 && archives.length > 0 && hasActiveFilters" class="empty-state">
-          <div class="empty-card" v-squircle="44">
+          <div v-squircle="44" class="empty-card">
             <div class="empty-card__bg" aria-hidden="true"></div>
             <div class="empty-card__deco" aria-hidden="true">
               <div class="empty-card__deco-ring"></div>
@@ -119,7 +99,7 @@
             <p class="empty-card__hint">
               {{ $t("archiveSearch.adjustSearchOrClearFilters") }}
             </p>
-            <button class="empty-card__action" v-squircle:pill @click="clearAllFilters">
+            <button v-squircle:pill class="empty-card__action" @click="clearAllFilters">
               <font-awesome-icon :icon="['fas', 'xmark']" class="empty-card__action-icon" />
               <span>{{ $t("archiveSearch.clearFilters") }}</span>
             </button>
@@ -128,7 +108,7 @@
 
         <!-- Empty state: no archives exist yet -->
         <div v-if="displayArchives.length === 0 && dataLoadComplete && archives.length === 0" class="empty-state">
-          <div class="empty-card empty-card--welcome" v-squircle="44">
+          <div v-squircle="44" class="empty-card empty-card--welcome">
             <div class="empty-card__bg" aria-hidden="true"></div>
             <div class="empty-card__deco" aria-hidden="true">
               <div class="empty-card__deco-ring"></div>
@@ -145,7 +125,7 @@
             <p class="empty-card__desc">
               {{ $t("archiveSearch.createNewArchive") }}
             </p>
-            <button class="empty-card__action" v-squircle:pill @click="createNewArchive">
+            <button v-squircle:pill class="empty-card__action" @click="createNewArchive">
               <font-awesome-icon :icon="['fas', 'plus']" class="empty-card__action-icon" />
               <span>{{ $t("archiveSearch.createArchive") }}</span>
             </button>
@@ -157,25 +137,18 @@
     <!-- Search panel -->
     <Teleport to="body">
       <transition
-        name="search-panel"
-        @before-enter="(el: Element) => beforeSearchEnter(el as HTMLElement)"
+name="search-panel" @before-enter="(el: Element) => beforeSearchEnter(el as HTMLElement)"
         @enter="(el: Element, done: () => void) => searchEnter(el as HTMLElement, done)"
-        @leave="(el: Element, done: () => void) => searchLeave(el as HTMLElement, done)"
-      >
+        @leave="(el: Element, done: () => void) => searchLeave(el as HTMLElement, done)">
         <div v-show="showSearch && !loading" class="search-overlay" @click.self="toggleSearch">
           <ArchiveSearchFilter
-            ref="archiveSearchFilter"
-            :search-query="searchQuery"
+ref="archiveSearchFilter" :search-query="searchQuery"
             :selected-archive-difficulty="selectedArchiveDifficulty"
-            :selected-actual-difficulty="selectedActualDifficulty"
-            :selected-visibility="selectedVisibility"
-            :search-suggestions="searchSuggestions"
-            @update:search-query="searchQuery = $event"
+            :selected-actual-difficulty="selectedActualDifficulty" :selected-visibility="selectedVisibility"
+            :search-suggestions="searchSuggestions" @update:search-query="searchQuery = $event"
             @update:selected-archive-difficulty="selectedArchiveDifficulty = $event"
             @update:selected-actual-difficulty="selectedActualDifficulty = $event"
-            @update:selected-visibility="selectedVisibility = $event"
-            @close="toggleSearch"
-          />
+            @update:selected-visibility="selectedVisibility = $event" @close="toggleSearch" />
         </div>
       </transition>
     </Teleport>
@@ -183,61 +156,70 @@
     <!-- Delete confirmation -->
     <Teleport to="body">
       <ConfirmModal
-        v-model:show="showDeleteConfirm"
-        :title="$t('confirmModal.deleteArchiveTitle')"
-        :message="
-          $t('confirmModal.deleteArchiveMessage', {
-            name: archiveToDelete?.name || '',
-          })
-        "
-        :description="$t('confirmModal.deleteArchiveDescription')"
-        type="danger"
-        :confirm-text="$t('confirmModal.confirm')"
-        :cancel-text="$t('confirmModal.cancel')"
-        :loading="isDeleting"
-        :archive-details="archiveToDelete"
-        @confirm="confirmDelete"
-        @cancel="cancelDelete"
-      />
+v-model:show="showDeleteConfirm" class="single-delete-confirm"
+        :title="$t('confirmModal.deleteArchiveTitle')" :message="$t('confirmModal.deleteArchiveMessage', {
+          name: archiveToDelete?.name || '',
+        })
+          " :description="$t('confirmModal.deleteArchiveDescription')" type="danger"
+        :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isDeleting"
+        :archive-details="archiveToDelete" @confirm="confirmDelete" @cancel="cancelDelete" />
     </Teleport>
 
     <!-- Batch delete confirmation -->
     <Teleport to="body">
       <ConfirmModal
-        v-model:show="showBatchDeleteConfirm"
-        :title="$t('confirmModal.batchDeleteTitle')"
-        :message="
-          $t('confirmModal.batchDeleteMessage', {
-            count: selectedArchives.size,
-          })
-        "
-        :description="$t('confirmModal.batchDeleteDescription')"
-        type="danger"
-        :confirm-text="$t('confirmModal.confirm')"
-        :cancel-text="$t('confirmModal.cancel')"
-        :loading="isBatchDeleting"
-        @confirm="confirmBatchDelete"
-        @cancel="cancelBatchDelete"
-      />
+v-model:show="showBatchDeleteConfirm" class="batch-delete-confirm"
+        :title="$t('confirmModal.batchDeleteTitle')" :message="$t('confirmModal.batchDeleteMessage', {
+          count: selectedArchives.size,
+        })
+          " :description="$t('confirmModal.batchDeleteDescription')" type="danger"
+        :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isBatchDeleting"
+        @confirm="confirmBatchDelete" @cancel="cancelBatchDelete" />
+    </Teleport>
+
+    <!-- Batch delete progress overlay -->
+    <Teleport to="body">
+      <transition name="modal">
+        <div
+v-if="isBatchDeleting && !showBatchDeleteConfirm" class="modal-overlay batch-delete-progress-overlay"
+          @click.self="showBatchDeleteConfirm = false">
+          <div v-squircle="52" class="batch-delete-progress">
+            <div class="progress-header">
+              <font-awesome-icon icon="fa-solid fa-trash-alt" class="progress-icon" />
+              <h3 class="progress-title">{{ $t("confirmModal.batchDeleteProgressTitle") }}</h3>
+            </div>
+            <div class="progress-body">
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill" :style="{ width: batchDeleteProgressPercent + '%' }"></div>
+              </div>
+              <div class="progress-info">
+                <span class="progress-count">
+                  {{ batchDeleteProgress.current }} / {{ batchDeleteProgress.total }}
+                </span>
+                <span class="progress-percent">{{ batchDeleteProgressPercent }}%</span>
+              </div>
+              <div class="progress-current-file">
+                <font-awesome-icon icon="fa-solid fa-file" class="file-icon" />
+                <span class="file-name">{{ $t("archiveSearch.multiSelect.deleting") }}:
+                  {{ batchDeleteProgress.archiveName }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
     </Teleport>
 
     <!-- Performance settings -->
     <Teleport to="body">
       <transition name="modal">
         <div v-if="showPerformanceSettings" class="modal-overlay" @click.self="showPerformanceSettings = false">
-          <div class="modal-container" v-squircle="52">
+          <div v-squircle="52" class="modal-container">
             <div class="modal-header">
               <h2 class="modal-title">{{ $t("performanceSettings.title") }}</h2>
               <button class="modal-close" @click="showPerformanceSettings = false">
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
+xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -245,11 +227,9 @@
             </div>
             <div class="modal-body">
               <PerformanceSettings
-                v-model:performance-mode="performanceMode"
-                v-model:animation-quality="animationQuality"
-                v-model:hardware-acceleration="hardwareAcceleration"
-                v-model:virtualization-enabled="virtualizationEnabled"
-              />
+v-model:performance-mode="performanceMode"
+                v-model:animation-quality="animationQuality" v-model:hardware-acceleration="hardwareAcceleration"
+                v-model:virtualization-enabled="virtualizationEnabled" />
             </div>
           </div>
         </div>
@@ -258,19 +238,14 @@
 
     <!-- Floating action button -->
     <FloatingActionButton
-      :class="loading ? 'loading' : ''"
-      :current-index="fabCurrentIndex"
-      @update:current-index="fabCurrentIndex = $event"
-      @search-click="toggleSearch"
-      @refresh-click="refreshArchives"
-      @folder-click="openSaveGamesFolder"
-      @multi-select-click="enterMultiSelectMode"
-    />
+:class="loading ? 'loading' : ''" :current-index="fabCurrentIndex"
+      @update:current-index="fabCurrentIndex = $event" @search-click="toggleSearch" @refresh-click="refreshArchives"
+      @folder-click="openSaveGamesFolder" @multi-select-click="enterMultiSelectMode" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, onActivated, onDeactivated, nextTick, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, onActivated, onDeactivated, nextTick, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { invoke } from "@tauri-apps/api/core";
 import { protectFloatingButtonPosition } from "../utils/floatingButtonProtection.js";
@@ -380,6 +355,7 @@ const {
   selectedArchives,
   showBatchDeleteConfirm,
   isBatchDeleting,
+  batchDeleteProgress,
   isAllSelected,
   enterMultiSelectMode,
   exitMultiSelectMode,
@@ -390,6 +366,11 @@ const {
   handleShowBatchDeleteConfirm,
 } = useMultiSelect(displayArchives, archives, {
   batchDeleteArchives,
+});
+
+const batchDeleteProgressPercent = computed(() => {
+  if (batchDeleteProgress.value.total === 0) return 0;
+  return Math.round((batchDeleteProgress.value.current / batchDeleteProgress.value.total) * 100);
 });
 
 const performanceMonitor = usePerformanceMonitor();
@@ -451,6 +432,8 @@ const handleOpenArchiveSearchEvent = (event: CustomEvent) => {
 
   openArchiveSearchPanel();
 };
+
+const onArchiveSearchEvent = (e: Event) => handleOpenArchiveSearchEvent(e as CustomEvent);
 
 const clearAllFilters = () => {
   resetFilters();
@@ -588,12 +571,12 @@ onActivated(() => {
         requestAnimationFrame(waitAndLoad);
         return;
       }
-      invoke("set_process_priority", { priority: "high" }).catch(() => {});
+      invoke("set_process_priority", { priority: "high" }).catch(() => { });
       refreshArchivesSilent().then(() => {
         if (!isPageActive.value) return;
         showCards.value = true;
         loading.value = false;
-        invoke("set_process_priority", { priority: "normal" }).catch(() => {});
+        invoke("set_process_priority", { priority: "normal" }).catch(() => { });
         nextTick(() => {
           rowVirtualizer.value.measure();
           requestAnimationFrame(() => {
@@ -613,7 +596,7 @@ onDeactivated(() => {
 });
 
 onMounted(() => {
-  window.addEventListener("open-archive-search", handleOpenArchiveSearchEvent as EventListener);
+  window.addEventListener("open-archive-search", onArchiveSearchEvent);
 
   // Virtual scroll ResizeObserver auto-initializes via a watch on
   // scrollContainerRef — column count is correct before any async IPC.
@@ -635,12 +618,12 @@ onMounted(() => {
   // Boost process to HIGH priority during the initial load so the
   // OS scheduler allocates more CPU time to rasterisation, layout,
   // and image decoding.  Revert to NORMAL once cards are shown.
-  invoke("set_process_priority", { priority: "high" }).catch(() => {});
+  invoke("set_process_priority", { priority: "high" }).catch(() => { });
   loading.value = true;
   initializeArchives(true).then(() => {
     showCards.value = true;
     loading.value = false;
-    invoke("set_process_priority", { priority: "normal" }).catch(() => {});
+    invoke("set_process_priority", { priority: "normal" }).catch(() => { });
 
     // Virtualizer measurement — runs after cards are in the DOM.
     nextTick(() => {
@@ -675,7 +658,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   unregisterUndoShortcuts();
-  window.removeEventListener("open-archive-search", handleOpenArchiveSearchEvent as EventListener);
+  window.removeEventListener("open-archive-search", onArchiveSearchEvent);
 
   destroyVirtualScrollObserver();
   cleanupPerformance();
@@ -796,11 +779,13 @@ watch(searchQuery, (query) => {
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
 .virtual-scroll-viewport {
   animation: cards-fade-in 0.25s ease-out both;
 }
@@ -864,22 +849,27 @@ watch(searchQuery, (query) => {
   transform: none !important;
   box-shadow: none !important;
 }
+
 .archive-list-container.is-scrolling :deep(.archive-card:hover) .card-background :deep(.lazy-image-container) {
   filter: none !important;
   transform: none !important;
 }
+
 .archive-list-container.is-scrolling :deep(.archive-card:hover) .card-info {
   background-color: transparent !important;
 }
+
 .archive-list-container.is-scrolling :deep(.archive-card:hover) .difficulty-tag {
   width: var(--w-short, auto) !important;
   background: rgba(0, 0, 0, 0.35) !important;
   color: rgba(255, 255, 255, 0.9) !important;
   border-color: rgba(255, 255, 255, 0.25) !important;
 }
+
 .archive-list-container.is-scrolling :deep(.difficulty-tag) .tag-short {
   opacity: 1 !important;
 }
+
 .archive-list-container.is-scrolling :deep(.difficulty-tag) .tag-full {
   opacity: 0 !important;
 }
@@ -959,11 +949,9 @@ watch(searchQuery, (query) => {
 .empty-card__bg {
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    ellipse 80% 50% at 50% -10%,
-    color-mix(in srgb, var(--primary) 10%, transparent) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(ellipse 80% 50% at 50% -10%,
+      color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+      transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -1044,11 +1032,9 @@ watch(searchQuery, (query) => {
   position: absolute;
   inset: 0;
   border-radius: var(--radius-circle);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--primary) 18%, transparent) 0%,
-    color-mix(in srgb, var(--primary) 6%, transparent) 100%
-  );
+  background: linear-gradient(135deg,
+      color-mix(in srgb, var(--primary) 18%, transparent) 0%,
+      color-mix(in srgb, var(--primary) 6%, transparent) 100%);
   border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
   transition:
     transform 0.35s var(--ease-spring, ease),
@@ -1142,11 +1128,13 @@ watch(searchQuery, (query) => {
 /* ─── Keyframes ────────────────────────────── */
 
 @keyframes empty-ring-float {
+
   0%,
   100% {
     transform: translateX(-50%) scale(1);
     opacity: 1;
   }
+
   50% {
     transform: translateX(-50%) scale(1.06);
     opacity: 0.6;
@@ -1154,19 +1142,23 @@ watch(searchQuery, (query) => {
 }
 
 @keyframes empty-dot-drift {
+
   0%,
   100% {
     transform: translate(0, 0);
     opacity: 0.6;
   }
+
   25% {
     transform: translate(4px, -6px);
     opacity: 1;
   }
+
   50% {
     transform: translate(-2px, 4px);
     opacity: 0.5;
   }
+
   75% {
     transform: translate(6px, 2px);
     opacity: 0.8;
@@ -1415,4 +1407,118 @@ watch(searchQuery, (query) => {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Single delete confirmation modal overlay — covers FAB */
+.single-delete-confirm {
+  z-index: 10001 !important;
+}
+
+/* Batch delete confirmation modal overlay — covers multi-select toolbar and FAB with blur */
+.batch-delete-confirm {
+  z-index: 10001 !important;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Batch delete progress overlay — covers full viewport including multi-select toolbar */
+.batch-delete-progress-overlay {
+  z-index: 10001 !important;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.batch-delete-progress {
+  background: var(--card-bg);
+  border-radius: var(--radius-xl);
+  width: 380px;
+  max-width: 90vw;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.batch-delete-progress .progress-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.batch-delete-progress .progress-icon {
+  font-size: 20px;
+  color: #ff3b30;
+}
+
+.batch-delete-progress .progress-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.batch-delete-progress .progress-body {
+  padding: 24px;
+}
+
+.batch-delete-progress .progress-bar-track {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.batch-delete-progress .progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff3b30, #ff6b6b);
+  border-radius: var(--radius-pill);
+  transition: width 0.3s ease;
+}
+
+.batch-delete-progress .progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.batch-delete-progress .progress-count {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.batch-delete-progress .progress-percent {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.batch-delete-progress .progress-current-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+}
+
+.batch-delete-progress .progress-current-file .file-icon {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.batch-delete-progress .progress-current-file .file-name {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Progress overlay modal animation reuses existing .modal-* classes */
 </style>

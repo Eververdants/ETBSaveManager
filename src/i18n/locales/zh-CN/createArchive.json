@@ -23,6 +23,7 @@
   },
   "singleplayerNotice": "单人模式下只能选择普通难度",
   "difficulty": "难度",
+  "difficultyMergeHint": "由于新版游戏逻辑变更，实际难度修改可能无法在游戏中生效，后续将尝试攻克此问题。",
   "actualDifficulty": "实际难度",
   "difficultyLevels": {
     "easy": "简单",

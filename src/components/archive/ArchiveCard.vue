@@ -1,32 +1,23 @@
 <template>
   <div
-    class="archive-card"
-    v-squircle="36"
-    :class="{
-      'archive-hidden': !localVisible,
-      'visibility-transitioning': isAnimating,
-      'multi-select-mode': isMultiSelectMode,
-      'is-selected': isSelected,
-    }"
-    @click="handleCardClick"
-  >
+v-squircle="36" class="archive-card" :class="{
+    'archive-hidden': !localVisible,
+    'visibility-transitioning': isAnimating,
+    'multi-select-mode': isMultiSelectMode,
+    'is-selected': isSelected,
+  }" @click="handleCardClick">
     <!-- Multi-select mode checkbox -->
     <div
-      v-if="isMultiSelectMode"
-      class="multi-select-checkbox"
-      :class="{ 'is-checked': isSelected }"
-      @click.stop="toggleSelection"
-    >
+v-if="isMultiSelectMode" class="multi-select-checkbox" :class="{ 'is-checked': isSelected }"
+      @click.stop="toggleSelection">
       <font-awesome-icon :icon="isSelected ? 'fa-solid fa-check' : 'fa-regular fa-circle'" class="check-icon" />
     </div>
 
     <!-- Upper background area -->
     <div class="card-background">
       <LazyImage
-        :src="cardData?.backgroundImage ?? ''"
-        :alt="cardData?.currentLevelName ?? ''"
-        image-class="background-image"
-      />
+:src="cardData?.backgroundImage ?? ''" :alt="cardData?.currentLevelName ?? ''"
+        image-class="background-image" />
       <div class="background-overlay"></div>
 
       <!-- Hidden status badge -->
@@ -42,20 +33,18 @@
         <h3 class="archive-name" v-html="sanitize(highlightedName)"></h3>
         <div class="game-mode-info">
           <span
-            class="difficulty-tag"
-            :class="cardData?.archiveDifficultyClass ?? ''"
-            :style="archiveDifficultyTagStyle"
-          >
+class="difficulty-tag" :class="cardData?.archiveDifficultyClass ?? ''"
+            :style="archiveDifficultyTagStyle">
             <span class="tag-short">{{ cardData?.archiveDifficultyText ?? "" }}</span>
-            <span class="tag-full"
-              >{{ t("archiveCard.archiveDifficulty") }}：{{ cardData?.archiveDifficultyText ?? "" }}</span
-            >
+            <span class="tag-full">{{ t("archiveCard.archiveDifficulty") }}：{{ cardData?.archiveDifficultyText ?? ""
+            }}</span>
           </span>
-          <span class="difficulty-tag" :class="cardData?.actualDifficultyClass ?? ''" :style="actualDifficultyTagStyle">
+          <span
+v-if="!FEATURES.MERGE_DIFFICULTY" class="difficulty-tag" :class="cardData?.actualDifficultyClass ?? ''"
+            :style="actualDifficultyTagStyle">
             <span class="tag-short">{{ cardData?.actualDifficultyText ?? "" }}</span>
-            <span class="tag-full"
-              >{{ t("archiveCard.actualDifficulty") }}：{{ cardData?.actualDifficultyText ?? "" }}</span
-            >
+            <span class="tag-full">{{ t("archiveCard.actualDifficulty") }}：{{ cardData?.actualDifficultyText ?? ""
+            }}</span>
           </span>
         </div>
       </div>
@@ -66,30 +55,21 @@
       <span class="current-level" v-html="sanitize(highlightedLevel)"></span>
       <div class="action-buttons">
         <button
-          class="action-btn edit"
-          type="button"
-          :aria-label="$t('archiveCard.editLabel')"
-          @click.stop="editArchive"
-        >
+class="action-btn edit" type="button" :aria-label="$t('archiveCard.editLabel')"
+          @click.stop="editArchive">
           <font-awesome-icon icon="fa-solid fa-edit" aria-hidden="true" />
         </button>
         <button
-          class="action-btn copy"
-          type="button"
+class="action-btn copy" type="button"
           :aria-label="cardData?.isVisible ? $t('archiveCard.hideLabel') : $t('archiveCard.showLabel')"
-          @click.stop="toggleVisibility"
-        >
+          @click.stop="toggleVisibility">
           <font-awesome-icon
-            :icon="cardData?.isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"
-            aria-hidden="true"
-          />
+:icon="cardData?.isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"
+            aria-hidden="true" />
         </button>
         <button
-          class="action-btn delete"
-          type="button"
-          :aria-label="$t('archiveCard.deleteLabel')"
-          @click.stop="deleteArchive"
-        >
+class="action-btn delete" type="button" :aria-label="$t('archiveCard.deleteLabel')"
+          @click.stop="deleteArchive">
           <font-awesome-icon icon="fa-solid fa-trash" aria-hidden="true" />
         </button>
       </div>
@@ -98,11 +78,12 @@
 </template>
 
 <script setup>
-import { computed, toRef, ref, onMounted } from "vue";
+import { computed, toRef } from "vue";
 import { useI18n } from "vue-i18n";
 import LazyImage from "../ui/LazyImage.vue";
 import { useArchiveCard } from "@/composables/useArchiveCard";
 import { highlightMatch } from "@/composables/useArchiveSearchFilter";
+import { FEATURES } from "@/config/features";
 
 const props = defineProps({
   archive: {
@@ -310,13 +291,11 @@ const toggleSelection = () => {
 .background-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(0, 0, 0, 0.1) 30%,
-    rgba(0, 0, 0, 0.4) 60%,
-    rgba(0, 0, 0, 0.7) 100%
-  );
+  background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.1) 30%,
+      rgba(0, 0, 0, 0.4) 60%,
+      rgba(0, 0, 0, 0.7) 100%);
   transition: opacity 0.25s ease;
 }
 
@@ -560,11 +539,13 @@ const toggleSelection = () => {
     opacity 0.35s ease 0.05s,
     transform 0.35s ease 0.05s;
 }
+
 .badge-leave-active {
   transition:
     opacity 0.15s ease,
     transform 0.15s ease;
 }
+
 .badge-enter-from,
 .badge-leave-to {
   opacity: 0;
@@ -637,13 +618,11 @@ const toggleSelection = () => {
 
 /* Hidden state: background overlay unchanged, keeping image content visible */
 .archive-hidden .background-overlay {
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(0, 0, 0, 0.1) 30%,
-    rgba(0, 0, 0, 0.4) 60%,
-    rgba(0, 0, 0, 0.7) 100%
-  );
+  background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.1) 30%,
+      rgba(0, 0, 0, 0.4) 60%,
+      rgba(0, 0, 0, 0.7) 100%);
 }
 
 /* Hidden state: archive name slightly softened */

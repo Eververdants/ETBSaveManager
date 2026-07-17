@@ -10,13 +10,9 @@
         <div class="settings-card">
           <label class="card-label">{{ $t("createArchive.archiveName") }}</label>
           <input
-            :value="archiveName"
-            type="text"
-            class="settings-input"
-            :placeholder="$t('createArchive.archiveNamePlaceholder')"
-            maxlength="50"
-            @input="$emit('update:archiveName', $event.target.value)"
-          />
+:value="archiveName" type="text" class="settings-input"
+            :placeholder="$t('createArchive.archiveNamePlaceholder')" maxlength="50"
+            @input="$emit('update:archiveName', $event.target.value)" />
           <transition name="error-fade">
             <div v-if="archiveName.includes('_')" class="error-message">
               <font-awesome-icon :icon="['fas', 'exclamation-triangle']" />
@@ -32,43 +28,39 @@
           <font-awesome-icon :icon="['fas', 'gauge-high']" />
           {{ $t("createArchive.difficulty") }}
         </h3>
-        <div class="difficulty-row">
+        <div class="difficulty-row" :class="{ 'difficulty-row--merged': FEATURES.MERGE_DIFFICULTY }">
           <div class="settings-card">
             <label class="card-label">{{ $t("createArchive.difficulty") }}</label>
             <div class="diff-grid">
               <div
-                v-for="difficulty in difficultyLevels"
-                :key="difficulty.value"
-                class="diff-option"
-                :class="{
-                  selected: selectedDifficulty === difficulty.value,
-                  disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal',
-                }"
-                @click="$emit('select-difficulty', difficulty.value)"
-              >
+v-for="difficulty in difficultyLevels" :key="difficulty.value" class="diff-option" :class="{
+                selected: selectedDifficulty === difficulty.value,
+                disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal',
+              }" @click="$emit('select-difficulty', difficulty.value)">
                 <font-awesome-icon :icon="difficulty.icon" class="diff-icon" />
                 <span class="diff-text">{{ getDifficultyText(difficulty.value) }}</span>
               </div>
             </div>
           </div>
-          <div class="settings-card">
+          <div v-if="!FEATURES.MERGE_DIFFICULTY" class="settings-card">
             <label class="card-label">{{ $t("createArchive.actualDifficulty") }}</label>
             <div class="diff-grid">
               <div
-                v-for="difficulty in difficultyLevels"
-                :key="`actual-${difficulty.value}`"
-                class="diff-option"
+v-for="difficulty in difficultyLevels" :key="`actual-${difficulty.value}`" class="diff-option"
                 :class="{
                   selected: selectedActualDifficulty === difficulty.value,
                   disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal',
-                }"
-                @click="$emit('select-actual-difficulty', difficulty.value)"
-              >
+                }" @click="$emit('select-actual-difficulty', difficulty.value)">
                 <font-awesome-icon :icon="difficulty.icon" class="diff-icon" />
                 <span class="diff-text">{{ getDifficultyText(difficulty.value) }}</span>
               </div>
             </div>
           </div>
+        </div>
+        <!-- Merge difficulty hint -->
+        <div v-if="FEATURES.MERGE_DIFFICULTY" class="difficulty-hint">
+          <font-awesome-icon :icon="['fas', 'info-circle']" />
+          <span>{{ $t("createArchive.difficultyMergeHint") }}</span>
         </div>
       </div>
     </div>
@@ -77,6 +69,7 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
+import { FEATURES } from "@/config/features";
 
 defineProps({
   archiveName: { type: String, default: "" },
@@ -257,6 +250,33 @@ const getDifficultyText = (difficultyKey) => {
   gap: 16px;
 }
 
+/* When difficulty merge is active, use single column for full-width selector */
+.difficulty-row--merged {
+  grid-template-columns: 1fr;
+  max-width: 500px;
+}
+
+/* Merge difficulty hint */
+.difficulty-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(var(--warning-color-rgb, 255, 159, 10), 0.1);
+  border: 1px solid rgba(var(--warning-color-rgb, 255, 159, 10), 0.2);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 500px;
+}
+
+.difficulty-hint svg {
+  color: #ff9f0a;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
 /* ── 难度网格 4 列 ── */
 .diff-grid {
   display: grid;
@@ -285,11 +305,9 @@ const getDifficultyText = (difficultyKey) => {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    circle at center,
-    color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle at center,
+      color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
+      transparent 70%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -306,11 +324,9 @@ const getDifficultyText = (difficultyKey) => {
 
 .diff-option.selected {
   border-color: var(--accent-color);
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--accent-color) 15%, transparent) 0%,
-    color-mix(in srgb, var(--accent-color) 8%, transparent) 100%
-  );
+  background: linear-gradient(145deg,
+      color-mix(in srgb, var(--accent-color) 15%, transparent) 0%,
+      color-mix(in srgb, var(--accent-color) 8%, transparent) 100%);
   box-shadow:
     0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent),
     0 4px 12px color-mix(in srgb, var(--accent-color) 15%, transparent);

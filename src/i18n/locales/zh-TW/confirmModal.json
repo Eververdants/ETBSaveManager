@@ -8,6 +8,7 @@
   "batchDeleteTitle": "批次刪除存檔",
   "batchDeleteMessage": "確定要刪除選中的 {count} 個存檔嗎？",
   "batchDeleteDescription": "此操作將永久刪除這些存檔檔案，無法復原。",
+  "batchDeleteProgressTitle": "正在刪除存檔",
   "archiveDetails": {
     "gameMode": "遊戲模式",
     "currentLevel": "目前關卡",

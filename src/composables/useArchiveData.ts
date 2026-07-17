@@ -5,6 +5,7 @@ import { useToast } from "./useToast";
 import type { ArchiveData } from "@/types";
 import { preloadImage } from "@/utils/imagePreloader";
 import scheduler from "@/services/resourceScheduler";
+import { FEATURES } from "@/config/features";
 
 interface RawSaveItem {
   id?: number;
@@ -124,7 +125,9 @@ export function useArchiveData(): {
       currentLevel: item.current_level ?? "Level0",
       gameMode,
       archiveDifficulty: difficultyMap[item.difficulty!] || item.difficulty?.toLowerCase() || "normal",
-      actualDifficulty: difficultyMap[item.actual_difficulty!] || item.actual_difficulty?.toLowerCase() || "normal",
+      actualDifficulty: FEATURES.MERGE_DIFFICULTY
+        ? difficultyMap[item.difficulty!] || item.difficulty?.toLowerCase() || "normal"
+        : difficultyMap[item.actual_difficulty!] || item.actual_difficulty?.toLowerCase() || "normal",
       isVisible: item.is_visible === true,
       path: item.path ?? "",
       date: item.date ?? new Date().toISOString(),
@@ -262,6 +265,10 @@ export function useArchiveData(): {
                 difficultyMap[detail.actual_difficulty] ||
                 detail.actual_difficulty?.toLowerCase() ||
                 target.actualDifficulty;
+              // When difficulty merge is on, keep archiveDifficulty in sync
+              if (FEATURES.MERGE_DIFFICULTY) {
+                target.archiveDifficulty = target.actualDifficulty;
+              }
             }
           }
         }

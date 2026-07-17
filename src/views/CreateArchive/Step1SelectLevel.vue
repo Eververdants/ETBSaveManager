@@ -2,23 +2,17 @@
   <div class="step-content" data-step="1">
     <!-- Ending selector -->
     <div class="ending-selector">
-      <div class="ending-group" ref="endingGroupRef">
+      <div ref="endingGroupRef" class="ending-group">
         <!-- Sliding highlight indicator -->
         <div
-          class="ending-slider"
-          :style="{
-            width: `${sliderState.width}px`,
-            transform: `translateX(${sliderState.left}px)`,
-            opacity: sliderState.active ? 1 : 0,
-          }"
-        />
+class="ending-slider" :style="{
+          width: `${sliderState.width}px`,
+          transform: `translateX(${sliderState.left}px)`,
+          opacity: sliderState.active ? 1 : 0,
+        }" />
         <div
-          v-for="(ending, index) in endings"
-          :key="index"
-          class="ending-tab"
-          :class="{ active: selectedEnding === index }"
-          @click="handleEndingClick(index)"
-        >
+v-for="(ending, index) in endings" :key="index" class="ending-tab"
+          :class="{ active: selectedEnding === index }" @click="handleEndingClick(index)">
           <span class="ending-label">{{ ending.label }}</span>
         </div>
       </div>
@@ -29,12 +23,8 @@
       <Transition name="level-grid-fade" mode="out-in">
         <div :key="selectedEnding" class="level-grid">
           <div
-            v-for="(level, index) in availableLevels"
-            :key="level.levelKey"
-            class="level-card"
-            :class="{ selected: selectedLevel === index }"
-            @click="handleSelectLevel(index, $event)"
-          >
+v-for="(level, index) in availableLevels" :key="level.levelKey" class="level-card"
+            :class="{ selected: selectedLevel === index }" @click="handleSelectLevel(index, $event)">
             <div class="level-image-container">
               <LazyImage :src="level.image" :alt="level.name" image-class="level-image" />
               <div class="level-overlay">

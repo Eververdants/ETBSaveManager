@@ -47,20 +47,15 @@
       </button>
 
       <button
-        class="action-btn template-btn"
-        :disabled="isCreating || archives.length === 0"
-        @click="handleSaveTemplate"
-      >
+class="action-btn template-btn" :disabled="isCreating || archives.length === 0"
+        @click="handleSaveTemplate">
         <font-awesome-icon :icon="['fas', 'save']" />
         {{ $t("quickCreate.preview.saveTemplate") }}
       </button>
 
       <button
-        class="action-btn create-btn"
-        :disabled="!canCreate || isCreating"
-        :title="createButtonTooltip"
-        @click="handleCreate"
-      >
+class="action-btn create-btn" :disabled="!canCreate || isCreating" :title="createButtonTooltip"
+        @click="handleCreate">
         <font-awesome-icon :icon="isCreating ? ['fas', 'spinner'] : ['fas', 'plus']" :spin="isCreating" />
         {{ createButtonText }}
       </button>
@@ -78,7 +73,6 @@ const { t } = useI18n({ useScope: "global" });
 const props = defineProps({
   archives: {
     type: Array,
-    required: true,
     default: () => [],
   },
   selectedCount: {

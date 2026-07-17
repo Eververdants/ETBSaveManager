@@ -1,15 +1,9 @@
 <template>
   <transition name="modal">
     <div
-      v-if="show"
-      ref="modalOverlayRef"
-      class="modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      :aria-label="title"
-      @click="handleOverlayClick"
-    >
-      <div class="modal-container" v-squircle="52" @click.stop>
+v-if="show" ref="modalOverlayRef" class="modal-overlay" role="dialog" aria-modal="true" :aria-label="title"
+      @click="handleOverlayClick">
+      <div v-squircle="52" class="modal-container" @click.stop>
         <div class="modal-header">
           <h3 class="modal-title">{{ displayTitle }}</h3>
           <button class="modal-close" :aria-label="t('common.close')" @click="handleCancel">
@@ -70,7 +64,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted, onUnmounted } from "vue";
+import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useFocusTrap } from "../../composables/useFocusTrap";
 
@@ -164,14 +158,6 @@ const useConfirmModalIcons = () => {
 };
 
 const useArchiveDetailsFormatter = () => {
-  const getGameModeText = (mode) => {
-    const modeMap = {
-      singleplayer: t("createArchive.gameModes.singleplayer"),
-      multiplayer: t("createArchive.gameModes.multiplayer"),
-    };
-    return modeMap[mode] || mode;
-  };
-
   const getDifficultyText = (difficulty) => {
     const difficultyMap = {
       easy: t("createArchive.difficultyLevels.easy"),
@@ -192,7 +178,7 @@ const useArchiveDetailsFormatter = () => {
     }
   };
 
-  return { getGameModeText, getDifficultyText, formatDate };
+  return { getDifficultyText, formatDate };
 };
 
 const useConfirmModalActions = () => {
@@ -216,7 +202,7 @@ const useConfirmModalActions = () => {
 };
 
 const { icon } = useConfirmModalIcons();
-const { getGameModeText, getDifficultyText, formatDate } = useArchiveDetailsFormatter();
+const { getDifficultyText, formatDate } = useArchiveDetailsFormatter();
 const { handleConfirm, handleCancel, handleOverlayClick } = useConfirmModalActions();
 
 /* Display text with i18n fallback */

@@ -35,10 +35,8 @@
           <div class="option-group">
             <label class="option-label">{{ $t("quickCreate.options.difficulty") }}</label>
             <CustomDropdown
-              :model-value="state.difficulty"
-              :options="difficultyOptions"
-              @update:model-value="setDifficulty"
-            />
+:model-value="state.difficulty" :options="difficultyOptions"
+              @update:model-value="setDifficulty" />
           </div>
           <div class="option-group">
             <label class="option-label">{{ $t("quickCreate.options.copies") }}</label>
@@ -59,8 +57,7 @@
             <h3 class="result-modal-title">
               <font-awesome-icon
                 :icon="creationResult?.failed > 0 ? ['fas', 'exclamation-triangle'] : ['fas', 'check-circle']"
-                :class="creationResult?.failed > 0 ? 'warning-icon' : 'success-icon'"
-              />
+                :class="creationResult?.failed > 0 ? 'warning-icon' : 'success-icon'" />
               {{
                 creationResult?.failed > 0
                   ? $t("quickCreate.result.partialTitle")
@@ -181,6 +178,7 @@ const navigateToArchives = () => {
   gap: var(--space-4);
   overflow: hidden;
 }
+
 .quick-create-header {
   display: flex;
   align-items: center;
@@ -191,11 +189,13 @@ const navigateToArchives = () => {
   border-radius: var(--radius-lg);
   flex-shrink: 0;
 }
+
 .header-left {
   display: flex;
   align-items: center;
   gap: var(--space-3);
 }
+
 .back-button {
   display: flex;
   align-items: center;
@@ -210,27 +210,32 @@ const navigateToArchives = () => {
   cursor: pointer;
   transition: all 0.2s ease;
 }
+
 .back-button:hover {
   background: var(--bg-hover);
   border-color: var(--accent-color);
   color: var(--accent-color);
 }
+
 .page-title {
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
+
 .header-right {
   display: flex;
   align-items: center;
   gap: var(--space-3);
 }
+
 .progress-section {
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
+
 .progress-bar {
   width: 80px;
   height: 6px;
@@ -238,12 +243,14 @@ const navigateToArchives = () => {
   border-radius: var(--radius-xs);
   overflow: hidden;
 }
+
 .progress-fill {
   height: 100%;
   background: var(--accent-color);
   border-radius: var(--radius-xs);
   transition: width 0.3s ease;
 }
+
 .create-btn {
   display: flex;
   align-items: center;
@@ -258,10 +265,12 @@ const navigateToArchives = () => {
   cursor: pointer;
   transition: all 0.2s ease;
 }
+
 .create-btn:hover:not(:disabled) {
   background: var(--accent-hover);
   transform: translateY(-1px);
 }
+
 .create-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -316,6 +325,7 @@ const navigateToArchives = () => {
   color: var(--text-secondary);
   white-space: nowrap;
 }
+
 :deep(.custom-dropdown) {
   min-width: 130px;
 }
@@ -332,6 +342,7 @@ const navigateToArchives = () => {
   z-index: 1000;
   backdrop-filter: blur(4px);
 }
+
 .result-modal {
   background: var(--bg-secondary);
   border: 1px solid var(--divider-light);
@@ -341,16 +352,19 @@ const navigateToArchives = () => {
   box-shadow: var(--shadow-lg);
   animation: modalSlideIn 0.3s ease-out;
 }
+
 @keyframes modalSlideIn {
   from {
     opacity: 0;
     transform: translateY(-20px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
+
 .result-modal-header {
   display: flex;
   align-items: center;
@@ -358,6 +372,7 @@ const navigateToArchives = () => {
   padding: var(--space-4);
   border-bottom: 1px solid var(--divider-light);
 }
+
 .result-modal-title {
   font-size: 1rem;
   font-weight: 600;
@@ -367,12 +382,15 @@ const navigateToArchives = () => {
   align-items: center;
   gap: 8px;
 }
+
 .result-modal-title .success-icon {
   color: var(--success-color);
 }
+
 .result-modal-title .warning-icon {
   color: var(--warning-color);
 }
+
 .close-btn {
   width: 32px;
   height: 32px;
@@ -382,18 +400,22 @@ const navigateToArchives = () => {
   cursor: pointer;
   border-radius: var(--radius-sm);
 }
+
 .close-btn:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
 }
+
 .result-modal-body {
   padding: var(--space-4);
 }
+
 .result-summary {
   display: flex;
   gap: var(--space-4);
   margin-bottom: var(--space-4);
 }
+
 .result-stat {
   flex: 1;
   display: flex;
@@ -403,21 +425,26 @@ const navigateToArchives = () => {
   background: var(--bg-tertiary);
   border-radius: var(--radius-md);
 }
+
 .result-stat.success .result-value {
   color: var(--success-color);
 }
+
 .result-stat.error .result-value {
   color: var(--error-color);
 }
+
 .result-value {
   font-size: 2rem;
   font-weight: 700;
 }
+
 .result-label {
   font-size: 12px;
   color: var(--text-tertiary);
   margin-top: var(--space-1);
 }
+
 .error-details {
   background: var(--bg-tertiary);
   border-radius: var(--radius-md);
@@ -425,33 +452,40 @@ const navigateToArchives = () => {
   max-height: 150px;
   overflow-y: auto;
 }
+
 .error-details-title {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 var(--space-2);
 }
+
 .error-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
+
 .error-item {
   padding: var(--space-1) 0;
   border-bottom: 1px solid var(--divider-light);
 }
+
 .error-item:last-child {
   border-bottom: none;
 }
+
 .error-name {
   font-size: 12px;
   font-weight: 500;
   color: var(--text-primary);
 }
+
 .error-message {
   font-size: 11px;
   color: var(--error-color);
 }
+
 .result-modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -459,6 +493,7 @@ const navigateToArchives = () => {
   padding: var(--space-4);
   border-top: 1px solid var(--divider-light);
 }
+
 .action-btn {
   display: flex;
   align-items: center;
@@ -471,19 +506,23 @@ const navigateToArchives = () => {
   border: 1px solid transparent;
   transition: all 0.2s ease;
 }
+
 .secondary-btn {
   background: var(--bg-tertiary);
   border-color: var(--divider-light);
   color: var(--text-secondary);
 }
+
 .secondary-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
 }
+
 .primary-btn {
   background: var(--accent-color);
   color: white;
 }
+
 .primary-btn:hover {
   background: var(--accent-hover);
 }

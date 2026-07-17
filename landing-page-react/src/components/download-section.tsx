@@ -11,7 +11,12 @@ export function DownloadSection(): React.JSX.Element {
   const { t } = useTranslation();
   const { ref: sectionRef, isVisible } = useIntersection({ threshold: 0.08 });
   return (
-    <section id="download" ref={sectionRef} data-visible={isVisible ? "true" : undefined} className="relative px-4 py-20 sm:py-28">
+    <section
+      id="download"
+      ref={sectionRef}
+      data-visible={isVisible ? "true" : undefined}
+      className="relative px-4 py-20 sm:py-28"
+    >
       <div className="mx-auto max-w-[1400px]">
         {/* 标题区 */}
         <header className="reveal-on-scroll mb-12 grid grid-cols-1 gap-6 border-b-[1.5px] border-[var(--color-ink)] pb-6 sm:mb-16 sm:pb-8 dark:border-[var(--color-paper-3)] lg:grid-cols-12">

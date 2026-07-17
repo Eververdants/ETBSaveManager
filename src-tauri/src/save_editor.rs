@@ -193,9 +193,11 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     fs::rename(&temp_path, &output_path)
         .map_err(|e| format!("Failed to rename temp file: {}", e))?;
 
-    // Delete original save file
-    if Path::new(&original_path).exists() {
-        fs::remove_file(&original_path).map_err(|e| format!("Failed to delete old file: {}", e))?;
+    // Delete original save file only if it differs from output path
+    // (rename already overwrites output_path when they are the same)
+    let original_path = Path::new(&original_path);
+    if original_path != output_path && original_path.exists() {
+        fs::remove_file(original_path).map_err(|e| format!("Failed to delete old file: {}", e))?;
         println!("🗑️ Deleted original save file");
     }
 

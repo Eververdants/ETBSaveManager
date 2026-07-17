@@ -3,12 +3,8 @@
     <div class="slider-track" @click="handleTrackClick">
       <div class="slider-fill" :style="{ width: `${percentage}%` }"></div>
       <div
-        ref="thumbRef"
-        class="slider-thumb"
-        :style="{ left: `calc(${percentage}% - 12px)` }"
-        @mousedown="startDrag"
-        @touchstart="startDragTouch"
-      >
+ref="thumbRef" class="slider-thumb" :style="{ left: `calc(${percentage}% - 12px)` }" @mousedown="startDrag"
+        @touchstart="startDragTouch">
         <div class="thumb-indicator">
           <span class="thumb-value">{{ displayValue }}%</span>
         </div>
@@ -23,8 +19,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
-import { gsap } from "gsap";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 
 const props = defineProps({
   modelValue: {
@@ -67,27 +62,15 @@ const sliderStyle = computed(() => ({
   "--thumb-color": colorMap[sanityLevel.value],
 }));
 
-// GSAP 动画函数
+// 使用 CSS transition 替代 GSAP 动画
 function animateGrab() {
   if (!thumbRef.value) return;
-
-  gsap.to(thumbRef.value, {
-    scale: 1.35,
-    boxShadow: "0 6px 18px rgba(0,0,0,0.3)",
-    duration: 0.2,
-    ease: "power2.out",
-  });
+  thumbRef.value.classList.add("grabbing");
 }
 
 function animateRelease() {
   if (!thumbRef.value) return;
-
-  gsap.to(thumbRef.value, {
-    scale: 1,
-    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-    duration: 0.35,
-    ease: "elastic.out(1, 0.45)",
-  });
+  thumbRef.value.classList.remove("grabbing");
 }
 
 // 同步外部值变化
@@ -294,15 +277,23 @@ onUnmounted(() => {
   cursor: grabbing;
 }
 
-/* 移除GSAP控制的动画，避免冲突 */
-
-/* 滑块阴影效果 */
+/* CSS transition 替代 GSAP 动画 */
 .slider-thumb {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .slider-thumb:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.slider-thumb.grabbing {
+  transform: translateY(-50%) scale(1.35);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .custom-slider.dragging .slider-thumb {

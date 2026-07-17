@@ -2,15 +2,8 @@
 <template>
   <transition :css="false" @enter="enterAnimation" @leave="leaveAnimation">
     <div
-      v-if="isVisible"
-      ref="popupRef"
-      class="prompt-popup"
-      v-squircle="52"
-      :class="popupClass"
-      :style="popupStyle"
-      @mouseenter="pauseAutoClose"
-      @mouseleave="resumeAutoClose"
-    >
+v-if="isVisible" ref="popupRef" v-squircle="52" class="prompt-popup" :class="popupClass" :style="popupStyle"
+      @mouseenter="pauseAutoClose" @mouseleave="resumeAutoClose">
       <div class="popup-content">
         <div v-if="computedIcon" class="popup-icon-container">
           <div class="popup-icon-wrapper" :class="iconClass">
@@ -249,11 +242,9 @@ const resumeAutoClose = () => {
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-xl);
-  background: linear-gradient(
-    135deg,
-    var(--primary, #8b8178) 0%,
-    color-mix(in srgb, var(--primary) 95%, transparent) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--primary, #8b8178) 0%,
+      color-mix(in srgb, var(--primary) 95%, transparent) 100%);
   box-shadow:
     0 6px 16px color-mix(in srgb, var(--primary) 30%, transparent),
     0 0 0 1px rgba(255, 255, 255, 0.15) inset;
@@ -392,11 +383,9 @@ const resumeAutoClose = () => {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--primary, #8b8178) 0%,
-    color-mix(in srgb, var(--primary) 80%, transparent) 100%
-  );
+  background: linear-gradient(90deg,
+      var(--primary, #8b8178) 0%,
+      color-mix(in srgb, var(--primary) 80%, transparent) 100%);
   border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
   transition: width 0.1s ease;
   box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 50%, transparent);
@@ -563,6 +552,7 @@ const resumeAutoClose = () => {
 
 /* Subtle animations */
 @keyframes subtlePulse {
+
   0%,
   100% {
     transform: scale(1);
@@ -574,6 +564,7 @@ const resumeAutoClose = () => {
 }
 
 @keyframes subtleShake {
+
   0%,
   100% {
     transform: translateX(0);

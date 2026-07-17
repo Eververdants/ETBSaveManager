@@ -231,7 +231,7 @@ class PriorityTaskQueue {
 
     this.rafId = requestAnimationFrame(() => {
       const start = performance.now();
-      let elapsed = 0;
+      let elapsed;
 
       try {
         const result = task.fn();

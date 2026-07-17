@@ -2,20 +2,12 @@
   <div class="step-content" data-step="3">
     <div class="players-layout">
       <PlayerManager
-        :players="players"
-        :active-player-index="activePlayerIndex"
-        :new-steam-id="newSteamId"
-        :player-input-message="playerInputMessage"
-        :player-input-message-type="playerInputMessageType"
-        title-key="createArchive.playerManagement"
-        empty-hint-key="createArchive.noPlayersHint"
-        steam-id-placeholder-key="createArchive.steamIdPlaceholder"
-        :show-sanity="true"
-        @update:new-steam-id="$emit('update:newSteamId', $event)"
-        @add-steam-id="$emit('add-steam-id')"
-        @remove-player="$emit('remove-player', $event)"
-        @select-player="$emit('select-player', $event)"
-      />
+:players="players" :active-player-index="activePlayerIndex" :new-steam-id="newSteamId"
+        :player-input-message="playerInputMessage" :player-input-message-type="playerInputMessageType"
+        title-key="createArchive.playerManagement" empty-hint-key="createArchive.noPlayersHint"
+        steam-id-placeholder-key="createArchive.steamIdPlaceholder" :show-sanity="true"
+        @update:new-steam-id="$emit('update:newSteamId', $event)" @add-steam-id="$emit('add-steam-id')"
+        @remove-player="$emit('remove-player', $event)" @select-player="$emit('select-player', $event)" />
 
       <div v-if="activePlayerIndex !== -1 && players[activePlayerIndex]" class="player-detail-section">
         <div class="detail-header">
@@ -44,10 +36,8 @@
                 </span>
                 <div class="sanity-bar">
                   <div
-                    class="sanity-fill"
-                    :style="{ width: currentPlayerSanity + '%' }"
-                    :class="getSanityClass(currentPlayerSanity)"
-                  ></div>
+class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }"
+                    :class="getSanityClass(currentPlayerSanity)"></div>
                 </div>
               </div>
               <div class="sanity-ctrl">
@@ -73,38 +63,28 @@
               <div class="inventory-wrap">
                 <div class="hand-slots">
                   <div
-                    v-for="slot in 3"
-                    :key="`h-${slot}`"
-                    class="inv-slot hand-slot"
+v-for="slot in 3" :key="`h-${slot}`" class="inv-slot hand-slot"
                     :class="{ empty: !getSlotContent(activePlayerIndex, slot - 1) }"
-                    @click="$emit('edit-slot', activePlayerIndex, slot - 1)"
-                  >
+                    @click="$emit('edit-slot', activePlayerIndex, slot - 1)">
                     <span class="slot-label">{{ getSlotLabelText(slot - 1) }}</span>
                     <img
-                      v-if="getSlotContent(activePlayerIndex, slot - 1)"
+v-if="getSlotContent(activePlayerIndex, slot - 1)"
                       :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}.png`"
-                      class="slot-img"
-                      :alt="getSlotContent(activePlayerIndex, slot - 1)"
-                    />
+                      class="slot-img" :alt="getSlotContent(activePlayerIndex, slot - 1)" />
                     <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-placeholder" />
                   </div>
                 </div>
 
                 <div class="backpack-slots">
                   <div
-                    v-for="slot in 9"
-                    :key="`b-${slot}`"
-                    class="inv-slot backpack-slot"
+v-for="slot in 9" :key="`b-${slot}`" class="inv-slot backpack-slot"
                     :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
-                    @click="$emit('edit-slot', activePlayerIndex, slot + 2)"
-                  >
+                    @click="$emit('edit-slot', activePlayerIndex, slot + 2)">
                     <span class="slot-num">{{ slot }}</span>
                     <img
-                      v-if="getSlotContent(activePlayerIndex, slot + 2)"
+v-if="getSlotContent(activePlayerIndex, slot + 2)"
                       :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}.png`"
-                      class="slot-img"
-                      :alt="getSlotContent(activePlayerIndex, slot + 2)"
-                    />
+                      class="slot-img" :alt="getSlotContent(activePlayerIndex, slot + 2)" />
                     <font-awesome-icon v-else :icon="['fas', 'cube']" class="slot-placeholder" />
                   </div>
                 </div>

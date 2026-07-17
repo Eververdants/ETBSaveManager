@@ -50,6 +50,7 @@ interface BatchDeleteCallbacks {
   onSuccess?: (results: DeleteResults) => void;
   onError?: (results: DeleteResults) => void;
   onRefresh?: () => Promise<void>;
+  onProgress?: (current: number, total: number, archiveName: string) => void;
 }
 
 interface ArchiveActionsReturn {
@@ -123,6 +124,7 @@ export function useArchiveActions(
         try {
           resultObj = typeof result === "string" ? JSON.parse(result) : result;
         } catch (e) {
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
           throw new Error("Failed to parse backend response");
         }
         if (!resultObj || !resultObj.success) {
@@ -311,7 +313,7 @@ export function useArchiveActions(
               try {
                 await undo();
                 toast.showInfo(t("archive.actions.undoDeleteOf", { name: archiveName }), { duration: 3000 });
-              } catch (e) {
+              } catch {
                 toast.showError(t("archive.actions.undoFailed"));
               }
             },
@@ -373,7 +375,9 @@ export function useArchiveActions(
     }
 
     // Phase 2: process soft_delete_file sequentially to avoid MAINSAVE.sav concurrent write conflicts
-    for (const snapshot of batchSnapshots) {
+    for (let i = 0; i < batchSnapshots.length; i++) {
+      const snapshot = batchSnapshots[i];
+      callbacks.onProgress?.(i + 1, batchSnapshots.length, snapshot.name);
       if (snapshot.path) {
         try {
           await invoke("soft_delete_file", { filePath: snapshot.path });
@@ -473,7 +477,7 @@ export function useArchiveActions(
               try {
                 await undo();
                 toast.showInfo(t("archive.actions.batchDeleteUndone"), { duration: 3000 });
-              } catch (e) {
+              } catch {
                 toast.showError(t("archive.actions.undoFailed"));
               }
             },

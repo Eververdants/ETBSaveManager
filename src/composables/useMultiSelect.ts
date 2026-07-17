@@ -9,10 +9,17 @@ interface DeleteResults {
 interface BatchDeleteCallbacks {
   onSuccess?: (results: DeleteResults) => void;
   onError?: (results: DeleteResults) => void;
+  onProgress?: (current: number, total: number, archiveName: string) => void;
 }
 
 export interface MultiSelectActions {
   batchDeleteArchives: (archiveList: ArchiveData[], callbacks?: BatchDeleteCallbacks) => Promise<DeleteResults>;
+}
+
+export interface BatchDeleteProgress {
+  current: number;
+  total: number;
+  archiveName: string;
 }
 
 /**
@@ -28,6 +35,7 @@ export function useMultiSelect(
   const selectedArchives = ref(new Set<number>());
   const showBatchDeleteConfirm = ref(false);
   const isBatchDeleting = ref(false);
+  const batchDeleteProgress = ref<BatchDeleteProgress>({ current: 0, total: 0, archiveName: "" });
 
   const isAllSelected = computed(() => {
     return displayArchives.value.length > 0 && selectedArchives.value.size === displayArchives.value.length;
@@ -83,10 +91,14 @@ export function useMultiSelect(
 
   const confirmBatchDelete = async (): Promise<void> => {
     isBatchDeleting.value = true;
+    batchDeleteProgress.value = { current: 0, total: selectedArchives.value.size, archiveName: "" };
     const idsToDelete = Array.from(selectedArchives.value);
     const archivesToDelete = archives.value.filter((a) => idsToDelete.includes(a.id));
 
     await actions.batchDeleteArchives(archivesToDelete, {
+      onProgress: (current, total, archiveName) => {
+        batchDeleteProgress.value = { current, total, archiveName };
+      },
       onSuccess: () => {
         isBatchDeleting.value = false;
         showBatchDeleteConfirm.value = false;
@@ -105,6 +117,7 @@ export function useMultiSelect(
     selectedArchives,
     showBatchDeleteConfirm,
     isBatchDeleting,
+    batchDeleteProgress,
     isAllSelected,
     enterMultiSelectMode,
     exitMultiSelectMode,

@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import type { Ref } from "vue";
 import type { DifficultyLevel, UniformConfig, SmartRules, ArchiveConfig, ResolvedConfig } from "@/types";
+import { FEATURES } from "@/config/features";
 
 /**
  * Config inheritance resolver composable
@@ -163,6 +164,11 @@ function resolveActualDifficulty(
   smartRules: SmartRules,
   source: ResolvedConfig["source"],
 ): DifficultyLevel {
+  // When difficulty merge is enabled, actual difficulty always mirrors archive difficulty
+  if (FEATURES.MERGE_DIFFICULTY) {
+    return resolveDifficulty(archive, uniformConfig, smartRules, source);
+  }
+
   // 1. Individual settings take priority
   if (archive.actualDifficulty !== null && archive.actualDifficulty !== undefined) {
     source.actualDifficulty = "individual";

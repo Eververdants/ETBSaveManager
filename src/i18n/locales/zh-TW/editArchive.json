@@ -27,6 +27,7 @@
   },
   "singleplayerNotice": "單人模式下只能選擇普通難度",
   "difficulty": "難度",
+  "difficultyMergeHint": "由於新版遊戲邏輯變更，實際難度修改可能無法在遊戲中生效，後續將嘗試攻克此問題。",
   "actualDifficulty": "實際難度",
   "hubDoors": "樞紐門",
   "unlockAllHubDoors": "解鎖全部樞紐門",

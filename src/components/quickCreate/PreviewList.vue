@@ -1,5 +1,5 @@
 <template>
-  <div class="preview-list" v-if="archiveNames.length > 0">
+  <div v-if="archiveNames.length > 0" class="preview-list">
     <div class="preview-header">
       <span>{{ $t("quickCreate.preview.title", { count: archiveNames.length }) }}</span>
     </div>
@@ -25,6 +25,7 @@ defineProps({
   flex-direction: column;
   min-height: 0;
 }
+
 .preview-header {
   font-size: 12px;
   font-weight: 500;
@@ -32,6 +33,7 @@ defineProps({
   margin-bottom: 8px;
   flex-shrink: 0;
 }
+
 .preview-names {
   display: flex;
   flex-wrap: wrap;
@@ -44,6 +46,7 @@ defineProps({
   align-content: start;
   flex: 1;
 }
+
 .preview-name {
   font-size: 11px;
   font-family: monospace;
@@ -53,6 +56,7 @@ defineProps({
   color: var(--text-secondary);
   white-space: nowrap;
 }
+
 .preview-empty {
   flex: 1;
   font-size: 12px;

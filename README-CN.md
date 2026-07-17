@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://eververdants.github.io/ETBSaveManager/">🌐 官网</a>
+  <a href="https://eververdants.github.io/ETBSaveManager/">官网</a>
   <span> · </span>
   <a href="#">简体中文</a>
   <span> · </span>

@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://eververdants.github.io/ETBSaveManager/">🌐 官網</a>
+  <a href="https://eververdants.github.io/ETBSaveManager/">官網</a>
   <span> · </span>
   <a href="./README-CN.md">简体中文</a>
   <span> · </span>
@@ -348,21 +348,9 @@ ETBSaveManager/
 
 ---
 
-## 星標歷史
-
-<p align="center">
-  <a href="https://star-history.com/#Eververdants/ETBSaveManager&Date">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
-    </picture>
-  </a>
-</p>
-
----
-
 ## 開源授權
+
+[MIT License](LICENSE) © 2026 Eververdants
 
 ---
 

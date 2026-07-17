@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://eververdants.github.io/ETBSaveManager/">🌐 Landing Page</a>
+  <a href="https://eververdants.github.io/ETBSaveManager/">Landing Page</a>
   <span> · </span>
   <a href="./README-CN.md">简体中文</a>
   <span> · </span>
@@ -345,20 +345,6 @@ Contributions of all kinds are welcome! This is a personal student project, and 
 - **💡 Request features** — [Open a feature request](https://github.com/Eververdants/ETBSaveManager/issues)
 - **🌐 Add a translation** — The i18n system is modular; add new locale files to contribute a language
 - **📧 Contact** — llzgd@outlook.com
-
----
-
-## Star History
-
-<p align="center">
-  <a href="https://star-history.com/#Eververdants/ETBSaveManager&Date">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Eververdants/ETBSaveManager&type=Date" />
-    </picture>
-  </a>
-</p>
 
 ---
 

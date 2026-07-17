@@ -128,10 +128,11 @@ html.theme-transitioning,
 html.theme-transitioning *,
 html.theme-transitioning *::before,
 html.theme-transitioning *::after {
-  transition: background-color 0.35s ease !important,
-              color 0.35s ease !important,
-              border-color 0.35s ease !important,
-              box-shadow 0.35s ease !important;
+  transition:
+    background-color: 0.35s ease !important,
+    color: 0.35s ease !important,
+    border-color: 0.35s ease !important,
+    box-shadow: 0.35s ease !important;
 }
 
 /* ===== 动效 ===== */
@@ -261,8 +262,9 @@ html.theme-transitioning *::after {
 .reveal-on-scroll {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1),
-              transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition:
+    opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 /* 可见态 — 通过 data-visible 属性触发 */
@@ -298,16 +300,36 @@ html.theme-transitioning *::after {
 }
 
 /* stagger 子项延迟（与 .reveal-on-scroll 连用） */
-[data-visible="true"] .stagger-children > *:nth-child(1)  { transition-delay: 0ms; }
-[data-visible="true"] .stagger-children > *:nth-child(2)  { transition-delay: 60ms; }
-[data-visible="true"] .stagger-children > *:nth-child(3)  { transition-delay: 120ms; }
-[data-visible="true"] .stagger-children > *:nth-child(4)  { transition-delay: 180ms; }
-[data-visible="true"] .stagger-children > *:nth-child(5)  { transition-delay: 240ms; }
-[data-visible="true"] .stagger-children > *:nth-child(6)  { transition-delay: 300ms; }
-[data-visible="true"] .stagger-children > *:nth-child(7)  { transition-delay: 360ms; }
-[data-visible="true"] .stagger-children > *:nth-child(8)  { transition-delay: 420ms; }
-[data-visible="true"] .stagger-children > *:nth-child(9)  { transition-delay: 480ms; }
-[data-visible="true"] .stagger-children > *:nth-child(10) { transition-delay: 540ms; }
+[data-visible="true"] .stagger-children > *:nth-child(1) {
+  transition-delay: 0ms;
+}
+[data-visible="true"] .stagger-children > *:nth-child(2) {
+  transition-delay: 60ms;
+}
+[data-visible="true"] .stagger-children > *:nth-child(3) {
+  transition-delay: 120ms;
+}
+[data-visible="true"] .stagger-children > *:nth-child(4) {
+  transition-delay: 180ms;
+}
+[data-visible="true"] .stagger-children > *:nth-child(5) {
+  transition-delay: 240ms;
+}
+[data-visible="true"] .stagger-children > *:nth-child(6) {
+  transition-delay: 300ms;
+}
+[data-visible="true"] .stagger-children > *:nth-child(7) {
+  transition-delay: 360ms;
+}
+[data-visible="true"] .stagger-children > *:nth-child(8) {
+  transition-delay: 420ms;
+}
+[data-visible="true"] .stagger-children > *:nth-child(9) {
+  transition-delay: 480ms;
+}
+[data-visible="true"] .stagger-children > *:nth-child(10) {
+  transition-delay: 540ms;
+}
 
 /* 3D 透视倾斜（feature card 图标 hover 增强） */
 .perspective-tilt {

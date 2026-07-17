@@ -103,13 +103,10 @@ export function ScreensSection(): React.JSX.Element {
     return () => clearInterval(timer);
   }, [screens.length, isVisible]);
 
-  const goToScreen = useCallback(
-    (idx: number) => {
-      setIsAutoPlaying(false);
-      setActiveScreen(idx);
-    },
-    [],
-  );
+  const goToScreen = useCallback((idx: number) => {
+    setIsAutoPlaying(false);
+    setActiveScreen(idx);
+  }, []);
 
   const goToPrev = useCallback(() => {
     setIsAutoPlaying(false);
@@ -177,7 +174,15 @@ export function ScreensSection(): React.JSX.Element {
             aria-label="Previous screen"
             className="inline-flex h-7 w-7 items-center justify-center border border-[var(--color-ink)]/30 text-[var(--color-ink-2)] transition-colors hover:border-[var(--color-ink)] hover:text-[var(--color-ink)] dark:border-[var(--color-paper-3)]/30 dark:text-[var(--color-paper-3)]/70 dark:hover:border-[var(--color-paper-3)] dark:hover:text-[var(--color-paper)]"
           >
-            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+            <svg
+              viewBox="0 0 16 16"
+              width="12"
+              height="12"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            >
               <path d="M10 3l-5 5 5 5" />
             </svg>
           </button>
@@ -187,7 +192,15 @@ export function ScreensSection(): React.JSX.Element {
             aria-label="Next screen"
             className="inline-flex h-7 w-7 items-center justify-center border border-[var(--color-ink)]/30 text-[var(--color-ink-2)] transition-colors hover:border-[var(--color-ink)] hover:text-[var(--color-ink)] dark:border-[var(--color-paper-3)]/30 dark:text-[var(--color-paper-3)]/70 dark:hover:border-[var(--color-paper-3)] dark:hover:text-[var(--color-paper)]"
           >
-            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+            <svg
+              viewBox="0 0 16 16"
+              width="12"
+              height="12"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            >
               <path d="M6 3l5 5-5 5" />
             </svg>
           </button>
@@ -201,9 +214,7 @@ export function ScreensSection(): React.JSX.Element {
               data-testid="screen-card"
               aria-label={screen.title}
               className={`reveal-on-scroll group cursor-pointer transition-all duration-500 ${
-                idx === activeScreen
-                  ? "opacity-100"
-                  : "opacity-60 hover:opacity-90"
+                idx === activeScreen ? "opacity-100" : "opacity-60 hover:opacity-90"
               }`}
               style={{ transitionDelay: `${idx * 80}ms` }}
               onClick={() => goToScreen(idx)}

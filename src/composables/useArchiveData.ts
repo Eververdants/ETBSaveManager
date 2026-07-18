@@ -96,8 +96,8 @@ export function useArchiveData(): {
     loadedDetails: 0,
   });
 
-  // Cancellation token for Phase 2 detail loading.
-  // Set to true by cancelDetailLoading() — startDetailLoading checks this
+  // Cancellation token for detail loading.
+  // Set to true by cancelDetailLoading() — loadDetailsIntoArray checks this
   // before each batch and exits early, preventing wasted IPC and stale data
   // writes when refresh/init races with an in-flight detail load.
   let detailLoadCancelled = false;
@@ -217,8 +217,8 @@ export function useArchiveData(): {
    * Load .sav detail data (currentLevel, actualDifficulty) into the given
    * archives array by mutating items in-place.  Loads in batches with
    * cancellation support via detailLoadCancelled.
-   * Shared between startDetailLoading (progressive UI update) and
-   * refreshArchives (pre-load before atomic swap).
+   * Shared between initializeArchives and refreshArchives to pre-load
+   * real data before the atomic UI swap (no default-value flash).
    */
   const loadDetailsIntoArray = async (targetArchives: ArchiveData[]): Promise<void> => {
     const pendingPaths = targetArchives.filter((a) => a.currentLevel === "Level0").map((a) => a.path);
@@ -268,42 +268,6 @@ export function useArchiveData(): {
     }
   };
 
-  /**
-   * Phase 2: Load detail data (.sav parsing) for archives that only have
-   * filename-derived metadata. Loads in batches and mutates individual
-   * indices in-place so unchanged cards skip re-render.
-   */
-  const startDetailLoading = async (): Promise<void> => {
-    detailLoadCancelled = false;
-    const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
-
-    if (pendingCount === 0) {
-      if (detailLoadCancelled) return;
-      incrementalLoadState.value = {
-        phase: "complete",
-        totalDetails: 0,
-        loadedDetails: 0,
-      };
-      scheduler.endOperation("loading-archives");
-      return;
-    }
-
-    incrementalLoadState.value = {
-      phase: "details",
-      totalDetails: pendingCount,
-      loadedDetails: 0,
-    };
-
-    await loadDetailsIntoArray(archives.value);
-
-    if (detailLoadCancelled) return;
-    incrementalLoadState.value.phase = "complete";
-    scheduler.endOperation("loading-archives");
-    console.log(
-      `Detail loading complete: ${incrementalLoadState.value.loadedDetails}/${incrementalLoadState.value.totalDetails} saves`,
-    );
-  };
-
   const cancelDetailLoading = (): void => {
     detailLoadCancelled = true;
     incrementalLoadState.value = {
@@ -341,23 +305,24 @@ export function useArchiveData(): {
       // Phase 1: ALL metadata (filename-only, instant).  No pagination needed —
       // this is faster than IPC round-trips for individual pages.
       const merged = await loadMergedArchives();
+
+      // Pre-load all .sav details into the local copy BEFORE swapping,
+      // so the UI never sees intermediate Level0 placeholder images/text.
+      const pendingCount = merged.filter((a) => a.currentLevel === "Level0").length;
+      if (pendingCount > 0) {
+        detailLoadCancelled = false;
+        incrementalLoadState.value = { phase: "details", totalDetails: pendingCount, loadedDetails: 0 };
+        await loadDetailsIntoArray(merged);
+      }
+
+      if (detailLoadCancelled) return;
+
+      // Atomic swap: old data → new complete data in one re-render.
+      // Cards now render directly with real data — no default-value flash.
       archives.value = merged;
       dataLoadComplete.value = true;
-
-      if (!silent) loading.value = false;
-
-      // Phase 2: background detail loading — don't await.
-      const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
-      if (pendingCount > 0) {
-        scheduler.updateOperation("loading-archives", {
-          totalItems: pendingCount,
-          completedItems: 0,
-        });
-        startDetailLoading();
-      } else {
-        incrementalLoadState.value = { phase: "complete", totalDetails: 0, loadedDetails: 0 };
-        scheduler.endOperation("loading-archives");
-      }
+      incrementalLoadState.value = { phase: "complete", totalDetails: 0, loadedDetails: 0 };
+      scheduler.endOperation("loading-archives");
     } catch (error) {
       console.error("Failed to initialize archives:", error);
       if (!silent) {

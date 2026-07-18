@@ -12,6 +12,7 @@ const TitleBar = shallowRef(null);
 import SidebarComponent from "./components/layout/Sidebar.vue";
 import TitleBarComponent from "./components/layout/TitleBar.vue";
 import ErrorBoundary from "./components/ui/ErrorBoundary.vue";
+import FloatingActionButton from "./components/feature/FloatingActionButton.vue";
 
 Sidebar.value = SidebarComponent;
 TitleBar.value = TitleBarComponent;
@@ -22,6 +23,13 @@ const sidebarExpanded = ref(false);
 const showGlobalSearch = ref(false);
 const globalSearchRef = ref(null);
 const appStore = useAppStore();
+const fabCurrentIndex = ref(0);
+
+// Bridge FAB click events from App-level persistent FAB down to Home,
+// which is the page that owns the handlers (kept alive, different component branch).
+const emitFabAction = (action) => {
+  window.dispatchEvent(new CustomEvent("fab-action", { detail: { action } }));
+};
 
 // Compute effective margins based on sidebar/titlebar visibility
 const contentStyle = computed(() => ({
@@ -326,6 +334,17 @@ class="main-content" :class="{
           </transition>
         </router-view>
       </main>
+
+      <!-- Persistent FAB lives outside keep-alive so its DOM survives route
+           changes and the show/hide transition can actually play. -->
+      <FloatingActionButton
+        :current-index="fabCurrentIndex"
+        @update:current-index="fabCurrentIndex = $event"
+        @search-click="emitFabAction('search')"
+        @refresh-click="emitFabAction('refresh')"
+        @folder-click="emitFabAction('folder')"
+        @multi-select-click="emitFabAction('multi-select')"
+      />
     </div>
   </div>
 </template>
@@ -573,36 +592,6 @@ select,
   scrollbar-width: none;
   -ms-overflow-style: none;
   /* IE and Edge */
-}
-
-/* Global floating button style - ensure fixed positioning */
-.floating-action-container {
-  position: fixed !important;
-  bottom: 30px !important;
-  right: 30px !important;
-  z-index: 10000 !important;
-
-  /* Ensure viewport-relative positioning */
-  top: auto !important;
-  left: auto !important;
-
-  /* Prevent any transform interference */
-  transform: none !important;
-  transform-origin: initial !important;
-  backface-visibility: visible !important;
-  perspective: none !important;
-
-  /* Prevent animation interference - keep transform transition */
-  animation: none !important;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  will-change: auto !important;
-
-  /* Apply border radius */
-  border-radius: var(--radius-pill);
-
-  /* Ensure initial visibility */
-  visibility: visible !important;
-  opacity: 1 !important;
 }
 
 .app-container {

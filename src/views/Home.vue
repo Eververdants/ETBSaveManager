@@ -236,22 +236,17 @@ v-model:performance-mode="performanceMode"
       </transition>
     </Teleport>
 
-    <!-- Floating action button -->
-    <FloatingActionButton
-:class="loading ? 'loading' : ''" :current-index="fabCurrentIndex"
-      @update:current-index="fabCurrentIndex = $event" @search-click="toggleSearch" @refresh-click="refreshArchives"
-      @folder-click="openSaveGamesFolder" @multi-select-click="enterMultiSelectMode" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, onActivated, onDeactivated, nextTick, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { useRoute } from "vue-router";
 import { invoke } from "@tauri-apps/api/core";
 import { protectFloatingButtonPosition } from "../utils/floatingButtonProtection.js";
 import ArchiveCard from "../components/archive/ArchiveCard.vue";
 import ArchiveSearchFilter from "../components/archive/ArchiveSearchFilter.vue";
-import FloatingActionButton from "../components/feature/FloatingActionButton.vue";
 import ConfirmModal from "../components/modal/ConfirmModal.vue";
 import PerformanceSettings from "../components/system/PerformanceSettings.vue";
 import { useArchiveData } from "../composables/useArchiveData";
@@ -388,11 +383,12 @@ const animations = useAnimations(performanceMode, animationQuality);
 const { beforeSearchEnter, searchEnter, searchLeave } = animations;
 
 const floatingButton = useFloatingButton();
-const { fabCurrentIndex, initButtonProtection, cleanup: cleanupFloatingButton } = floatingButton;
+const { initButtonProtection, cleanup: cleanupFloatingButton } = floatingButton;
 
 const toast = useToast();
 
 const { t } = useI18n();
+const route = useRoute();
 
 // Local state (scrollContainerRef, showSearch, isPageActive, shouldResetScroll declared above)
 
@@ -498,6 +494,27 @@ const openSaveGamesFolder = () => {
   });
 };
 
+// Bridge FAB click events from the persistent App-level FAB down to Home's handlers.
+const isFabActionOnPage = () => isPageActive.value && route.name === "Home";
+const handleFabAction = (e: Event) => {
+  if (!isFabActionOnPage()) return;
+  const action = (e as CustomEvent<{ action: string }>).detail?.action;
+  switch (action) {
+    case "search":
+      toggleSearch();
+      break;
+    case "refresh":
+      refreshArchives();
+      break;
+    case "folder":
+      openSaveGamesFolder();
+      break;
+    case "multi-select":
+      enterMultiSelectMode();
+      break;
+  }
+};
+
 // ─── Helpers ─────────────────────────────────────
 /**
  * Force WebView2 GPU compositing layer refresh.
@@ -597,6 +614,7 @@ onDeactivated(() => {
 
 onMounted(() => {
   window.addEventListener("open-archive-search", onArchiveSearchEvent);
+  window.addEventListener("fab-action", handleFabAction);
 
   // Virtual scroll ResizeObserver auto-initializes via a watch on
   // scrollContainerRef — column count is correct before any async IPC.
@@ -659,6 +677,7 @@ onMounted(() => {
 onUnmounted(() => {
   unregisterUndoShortcuts();
   window.removeEventListener("open-archive-search", onArchiveSearchEvent);
+  window.removeEventListener("fab-action", handleFabAction);
 
   destroyVirtualScrollObserver();
   cleanupPerformance();

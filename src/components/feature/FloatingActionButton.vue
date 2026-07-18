@@ -162,6 +162,9 @@ const showFloatingButton = () => {
   }
 
   isTransitioning = true;
+  // Suspend the CSS transform transition (used for scroll-hide) so it
+  // doesn't fight GSAP's transform tweens during the show animation.
+  container.style.transition = "none";
   gsap.fromTo(
     container,
     { opacity: 0, scale: 0.8, y: 20 },
@@ -173,6 +176,8 @@ const showFloatingButton = () => {
       ease: "back.out(1.2)",
       onComplete: () => {
         isTransitioning = false;
+        // Restore the CSS transform transition for scroll-hide behavior.
+        if (container) container.style.transition = "";
       },
     },
   );
@@ -186,6 +191,7 @@ const hideFloatingButton = () => {
   }
 
   isTransitioning = true;
+  container.style.transition = "none";
   gsap.to(container, {
     opacity: 0,
     scale: 0.8,
@@ -195,6 +201,8 @@ const hideFloatingButton = () => {
     onComplete: () => {
       shouldRender.value = false; // Only remove DOM after animation completes
       isTransitioning = false;
+      // Restore the CSS transform transition for scroll-hide behavior on next show.
+      if (container) container.style.transition = "";
     },
   });
 };

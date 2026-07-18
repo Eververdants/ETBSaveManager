@@ -381,7 +381,13 @@ pub async fn handle_file(
         // Handle special request to read MAINSAVE file
         if action.as_deref() == Some("read") && file_path == "MAINSAVE.sav" {
             let visible_saves: Vec<String> = get_visible_saves_set()?.into_iter().collect();
-            return Ok(serde_json::to_string(&visible_saves)?);
+            let response = json!({
+                "success": true,
+                "data": {
+                    "SingleplayerSaves": visible_saves
+                }
+            });
+            return Ok(response.to_string());
         }
 
         let file_path = PathBuf::from(&file_path);
@@ -398,11 +404,16 @@ pub async fn handle_file(
         let archive_name = extract_archive_name(file_name);
 
         // Get current visibility state and toggle
-        let visible_saves = get_visible_saves_set().unwrap_or_default();
+        let visible_saves = get_visible_saves_set()?;
         let is_visible = visible_saves.contains(archive_name);
 
+        eprintln!("[handle_file] toggling visibility for '{}' (currently {})", archive_name, if is_visible { "visible" } else { "hidden" });
+
         if is_visible {
-            remove_save_from_mainsave(archive_name)?;
+            let removed = remove_save_from_mainsave(archive_name)?;
+            if !removed {
+                eprintln!("[handle_file] WARNING: '{}' not found in MAINSAVE SingleplayerSaves", archive_name);
+            }
         } else {
             add_save_to_mainsave(archive_name)?;
         }

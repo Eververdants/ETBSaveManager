@@ -132,7 +132,10 @@ pub fn add_save_to_mainsave(archive_name: &str) -> AppResult<()> {
 
     let mut mainsave = match read_mainsave() {
         Ok(save) => save,
-        Err(_) => return Ok(()), // Silently skip
+        Err(e) => {
+            eprintln!("[add_save_to_mainsave] Failed to read MAINSAVE: {}", e);
+            return Ok(()); // Silently skip
+        }
     };
 
     let key = PropertyKey(0, "SingleplayerSaves".to_string());
@@ -142,9 +145,12 @@ pub fn add_save_to_mainsave(archive_name: &str) -> AppResult<()> {
             &mut prop.inner
         {
             if saves.iter().any(|s| s == archive_name) {
-                return Ok(()); // Already exists, no action needed
+                // Already exists — move to front (e.g. after editing)
+                saves.retain(|s| s != archive_name);
+                saves.insert(0, archive_name.to_string());
+                return write_mainsave(&mainsave);
             }
-            saves.push(archive_name.to_string());
+            saves.insert(0, archive_name.to_string());
         } else {
             return Err("SingleplayerSaves field format incorrect"
                 .to_string()
@@ -177,7 +183,10 @@ pub fn remove_save_from_mainsave(archive_name: &str) -> AppResult<bool> {
 
     let mut mainsave = match read_mainsave() {
         Ok(save) => save,
-        Err(_) => return Ok(false),
+        Err(e) => {
+            eprintln!("[remove_save_from_mainsave] Failed to read MAINSAVE: {}", e);
+            return Ok(false);
+        }
     };
 
     let key = PropertyKey(0, "SingleplayerSaves".to_string());

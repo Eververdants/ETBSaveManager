@@ -1,4 +1,6 @@
-use crate::common::{add_save_to_mainsave, extract_archive_name, validate_save_games_path};
+use crate::common::{
+    add_save_to_mainsave, extract_archive_name, remove_save_from_mainsave, validate_save_games_path,
+};
 use crate::error::AppResult;
 use crate::save_shared;
 use serde_json::Value as JsonValue;
@@ -123,6 +125,13 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     validate_save_games_path(Path::new(&original_path))?;
     validate_save_games_path(Path::new(output_dir))?;
 
+    // Remember old archive name for MAINSAVE cleanup if name changes
+    let old_archive_name: Option<String> = Path::new(&original_path)
+        .file_name()
+        .and_then(|n| n.to_str())
+        .map(extract_archive_name)
+        .map(|s| s.to_string());
+
     // Extract required fields
     let name = json_data["name"].as_str().ok_or("Invalid name")?;
     let mode = json_data["mode"].as_str().ok_or("Invalid mode")?;
@@ -205,6 +214,14 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
 
     // Update MAINSAVE.sav
     let archive_name = extract_archive_name(&new_filename);
+
+    // Remove old MAINSAVE entry if the archive name changed (rename / difficulty change)
+    if let Some(ref old_name) = old_archive_name {
+        if old_name != archive_name {
+            let _ = remove_save_from_mainsave(old_name);
+        }
+    }
+
     add_save_to_mainsave(archive_name)?;
 
     Ok(output_path.to_str().unwrap_or("Invalid path").to_string())
@@ -214,40 +231,35 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
 fn process_player_data(save: &mut Save, json_data: &JsonValue) -> AppResult<()> {
     let player_data_key = PropertyKey(0, "PlayerData".to_string());
 
-    // Collect all Steam IDs that need processing
-    let mut steam_ids_to_process: Vec<String> = Vec::new();
-
-    // Collect from existing data
-    if let Some(player_data_prop) = save.root.properties.0.get(&player_data_key) {
-        if let PropertyInner::Map(ref map_value) = &player_data_prop.inner {
-            for entry in map_value.iter() {
-                if let PropertyValue::Str(s) = &entry.key {
-                    if !s.is_empty() {
-                        steam_ids_to_process.push(s.to_string());
-                    }
-                }
-            }
-        }
-    }
-
-    // Add new Steam IDs from frontend data
+    // Collect Steam IDs from frontend data (source of truth)
+    let mut steam_ids_from_frontend: Vec<String> = Vec::new();
     if let Some(player_inventory) = json_data["playerInventory"].as_object() {
         for steam_id in player_inventory.keys() {
-            let trimmed_id = steam_id.trim();
-            if !steam_ids_to_process
-                .iter()
-                .any(|id| id.trim() == trimmed_id)
+            let trimmed_id = steam_id.trim().to_string();
+            if !trimmed_id.is_empty()
+                && !steam_ids_from_frontend.iter().any(|id| id == &trimmed_id)
             {
-                steam_ids_to_process.push(trimmed_id.to_string());
-                println!("🆕 Found new Steam ID: '{}'", trimmed_id);
+                steam_ids_from_frontend.push(trimmed_id);
             }
         }
     }
 
-    // Process player data
     if let Some(player_data_prop) = save.root.properties.0.get_mut(&player_data_key) {
         if let PropertyInner::Map(ref mut map_value) = &mut player_data_prop.inner {
-            for steam_id in &steam_ids_to_process {
+            // Remove players that are no longer in the frontend data
+            map_value.retain(|entry| match &entry.key {
+                PropertyValue::Str(s) => {
+                    let keep = steam_ids_from_frontend.iter().any(|id| id == s.trim());
+                    if !keep {
+                        println!("🗑️ Removed deleted player: {}", s);
+                    }
+                    keep
+                }
+                _ => true,
+            });
+
+            // Update or create players from frontend data
+            for steam_id in &steam_ids_from_frontend {
                 let player_entry = map_value.iter_mut().find(|entry| {
                     matches!(&entry.key, PropertyValue::Str(s) if s.trim() == steam_id.trim())
                 });
@@ -271,9 +283,9 @@ fn process_player_data(save: &mut Save, json_data: &JsonValue) -> AppResult<()> 
                 }
             }
         }
-    } else {
+    } else if !steam_ids_from_frontend.is_empty() {
         // Create new PlayerData_0 field
-        create_player_data_field(save, &steam_ids_to_process, json_data);
+        create_player_data_field(save, &steam_ids_from_frontend, json_data);
     }
 
     Ok(())
@@ -281,20 +293,20 @@ fn process_player_data(save: &mut Save, json_data: &JsonValue) -> AppResult<()> 
 
 /// Create PlayerData field
 fn create_player_data_field(save: &mut Save, steam_ids: &[String], json_data: &JsonValue) {
+    if steam_ids.is_empty() {
+        println!("⚠️ No player data provided, skipping PlayerData_0 creation");
+        return;
+    }
+
     println!("⚠️ PlayerData_0 field not found, creating...");
 
     let mut map_value = Vec::new();
-    let ids_to_use = if steam_ids.is_empty() {
-        vec!["76561199536995340".to_string()] // Default Steam ID
-    } else {
-        steam_ids.to_vec()
-    };
 
-    for steam_id in ids_to_use {
+    for steam_id in steam_ids.iter() {
         println!("🆕 Creating new player data: {}", steam_id);
-        let new_player_struct = create_new_player_struct(&steam_id, json_data);
+        let new_player_struct = create_new_player_struct(steam_id, json_data);
         map_value.push(uesave::MapEntry {
-            key: PropertyValue::Str(steam_id),
+            key: PropertyValue::Str(steam_id.clone()),
             value: PropertyValue::Struct(StructValue::Struct(new_player_struct)),
         });
     }

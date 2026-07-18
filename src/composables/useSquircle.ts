@@ -173,39 +173,48 @@ function getSharedSvg(): SVGSVGElement {
 
 /**
  * 对元素应用 SVG clip-path squircle
+ *
+ * 关键：元素在 MutationObserver 回调触发时常未布局（宽高=0）。
+ * 此时不能静默退出，必须先挂 ResizeObserver，等尺寸就绪再应用 clip-path，
+ * 否则该元素将永远是普通圆角（build 模式的主要 bug）。
  */
 function applyClipPath(el: HTMLElement, radius: number): void {
   if (!isValidRadius(radius)) return;
+  // 防止对同一元素重复创建
+  if (hasClipPath(el)) return;
 
-  const rect = el.getBoundingClientRect();
-  if (rect.width === 0 || rect.height === 0) return;
-
-  const id = `sq-clip-${clipPathIdCounter++}`;
   const svg = getSharedSvg();
+  const id = `sq-clip-${clipPathIdCounter++}`;
 
-  // 创建 clipPath
+  // 创建 clipPath + path（路径占位，尺寸就绪后填充）
   const clipPath = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
   clipPath.id = id;
   clipPath.setAttribute("clipPathUnits", "objectBoundingBox");
-
-  const rx = radius / rect.width;
-  const ry = radius / rect.height;
   const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("d", genSquirclePath(rx, ry));
   clipPath.appendChild(path);
   svg.appendChild(clipPath);
 
-  // 应用 clip-path
-  el.style.setProperty("clip-path", `url(#${id})`, "important");
+  let applied = false;
 
-  // 监听 resize 更新路径
-  const resizeObserver = new ResizeObserver(() => {
-    const r = el.getBoundingClientRect();
-    if (r.width === 0 || r.height === 0) return;
-    const newRx = radius / r.width;
-    const newRy = radius / r.height;
+  const applyOrUpdate = (): void => {
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return; // 尚未布局，等下次回调
+    const newRx = radius / rect.width;
+    const newRy = radius / rect.height;
     path.setAttribute("d", genSquirclePath(newRx, newRy));
-  });
+    if (!applied) {
+      el.style.setProperty("clip-path", `url(#${id})`, "important");
+      applied = true;
+    }
+  };
+
+  // 首次尝试（已布局时直接生效，dev 模式走这里）
+  applyOrUpdate();
+
+  // 无论是否已应用，都挂 ResizeObserver：
+  // - 未应用时，等尺寸就绪触发 applyOrUpdate
+  // - 已应用时，跟随尺寸变化更新路径
+  const resizeObserver = new ResizeObserver(applyOrUpdate);
   resizeObserver.observe(el);
 
   clipPathCache.set(id, { el, radius, observer: resizeObserver });
@@ -459,6 +468,39 @@ export function enableGlobalSquircle(): void {
  */
 export function disableGlobalSquircle(): void {
   document.documentElement.classList.remove("squircle-enabled");
+}
+
+/**
+ * 重扫并（重新）应用 polyfill。
+ * 用于 window 显示 / 布局稳定后补捞遗漏元素：
+ * - 对仍未挂 clip-path 的有效元素调用 applyClipPath（幂等，已挂的跳过）
+ * - 对不再是 squircle 的元素清理 clip-path
+ */
+export function rescanSquircle(): void {
+  document.querySelectorAll<HTMLElement>("[data-squircle]").forEach((el) => {
+    const radius = getSquircleRadius(el);
+    if (isValidRadius(radius)) {
+      applyClipPath(el, radius);
+    } else {
+      removeClipPath(el);
+    }
+  });
+
+  if (document.documentElement.classList.contains("squircle-enabled")) {
+    for (const selector of GLOBAL_SELECTORS) {
+      try {
+        document.querySelectorAll<HTMLElement>(`.squircle-enabled ${selector}`).forEach((el) => {
+          if (hasClipPath(el)) return;
+          const radius = parseFloat(getComputedStyle(el).borderRadius);
+          if (radius > 0) {
+            applyClipPath(el, radius);
+          }
+        });
+      } catch {
+        // 安全降级
+      }
+    }
+  }
 }
 
 // ─── CSS 类名工具 ──────────────────────────────

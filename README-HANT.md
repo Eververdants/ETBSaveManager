@@ -195,12 +195,11 @@ npm run tauri build
 
 ## 🎨 主題畫廊
 
-ETB Save Manager 內建 **11 套主題**：
+ETB Save Manager 內建 **10 套主題**：
 
 ### 基礎主題
 - **Light（淺色）** — 清新的淺色日間主題
 - **Dark（深色）** — 舒適的深色夜間主題
-- **High Contrast（高對比度）** — 最高對比度的無障礙主題
 
 ### 色彩主題
 | 主題 | 描述 | 色調 |
@@ -224,15 +223,13 @@ ETBSaveManager/
 │   ├── components/
 │   │   ├── archive/                  # 存檔相關 UI 元件
 │   │   │   ├── ArchiveCard.vue
-│   │   │   ├── ArchiveCardFlow.vue
 │   │   │   ├── ArchiveSearchFilter.vue
 │   │   │   └── QuickCreateArchiveCard.vue
 │   │   ├── feature/                  # 功能元件
 │   │   │   ├── FloatingActionButton.vue
 │   │   │   ├── GlobalSearchPanel.vue
 │   │   │   ├── InventoryItemSelector.vue
-│   │   │   ├── PreviewExecuteArea.vue
-│   │   │   └── SmartInputArea.vue
+│   │   │   └── PreviewExecuteArea.vue
 │   │   ├── layout/                   # 佈局元件
 │   │   │   ├── Sidebar.vue
 │   │   │   └── TitleBar.vue
@@ -243,8 +240,7 @@ ETBSaveManager/
 │   │   ├── system/                   # 系統工具
 │   │   │   ├── PerformanceMonitor.vue
 │   │   │   ├── PerformanceSettings.vue
-│   │   │   ├── PlayerManager.vue
-│   │   │   └── UniformConfigPanel.vue
+│   │   │   └── PlayerManager.vue
 │   │   ├── theme/                    # 主題系統
 │   │   │   └── ThemeSelector.vue
 │   │   └── ui/                       # 可複用 UI 元件
@@ -258,7 +254,7 @@ ETBSaveManager/
 │   │   ├── useArchiveData.ts         # 存檔資料管理
 │   │   ├── useArchiveCard.ts         # 卡片互動
 │   │   ├── useArchiveCardFlow.ts     # 流模式邏輯
-│   │   ├── useArchiveFilters.ts      # 篩選與搜尋
+│   │   ├── useArchiveSearchFilter.ts # 篩選與搜尋
 │   │   ├── useUndoRedo.ts            # 復原/重做
 │   │   ├── useGlobalSearchPanel.ts   # 全域搜尋
 │   │   └── ...（更多組合式函式）
@@ -286,7 +282,7 @@ ETBSaveManager/
 │   │   ├── animations.css
 │   │   └── themes/                   # 主題 CSS 檔案
 │   │       ├── _colors.css / _components.css / _semantic.css
-│   │       ├── light.css / dark.css / high-contrast.css
+│   │       ├── light.css / dark.css
 │   │       ├── ocean.css / forest.css / sunset.css
 │   │       ├── lavender.css / rose.css / mint.css
 │   │       ├── peach.css / sky.css

@@ -231,7 +231,6 @@ class PriorityTaskQueue {
 
     this.rafId = requestAnimationFrame(() => {
       const start = performance.now();
-      let elapsed;
 
       try {
         const result = task.fn();
@@ -243,7 +242,7 @@ class PriorityTaskQueue {
         console.warn(`[Scheduler] Task "${task.label}" failed:`, err);
       }
 
-      elapsed = performance.now() - start;
+      const elapsed = performance.now() - start;
 
       // If task ran within budget, remove it; otherwise keep it
       if (elapsed < timeBudget * 1.5) {

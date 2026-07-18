@@ -124,8 +124,7 @@ export function useArchiveActions(
         try {
           resultObj = typeof result === "string" ? JSON.parse(result) : result;
         } catch (e) {
-          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-          throw new Error("Failed to parse backend response");
+          throw Object.assign(new Error("Failed to parse backend response"), { cause: e });
         }
         if (!resultObj || !resultObj.success) {
           // Rollback optimistic update

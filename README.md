@@ -195,12 +195,11 @@ A: Open an issue on the [GitHub issue tracker](https://github.com/Eververdants/E
 
 ## 🎨 Theme Gallery
 
-ETB Save Manager ships with **11 built-in themes**:
+ETB Save Manager ships with **10 built-in themes**:
 
 ### Base Themes
 - **Light** — Clean light theme for daytime use
 - **Dark** — Comfortable dark theme for low-light environments
-- **High Contrast** — Maximum contrast accessibility theme
 
 ### Color Themes
 | Theme | Description | Palette |
@@ -224,15 +223,13 @@ ETBSaveManager/
 │   ├── components/
 │   │   ├── archive/                  # Save file UI components
 │   │   │   ├── ArchiveCard.vue
-│   │   │   ├── ArchiveCardFlow.vue
 │   │   │   ├── ArchiveSearchFilter.vue
 │   │   │   └── QuickCreateArchiveCard.vue
 │   │   ├── feature/                  # Feature-specific components
 │   │   │   ├── FloatingActionButton.vue
 │   │   │   ├── GlobalSearchPanel.vue
 │   │   │   ├── InventoryItemSelector.vue
-│   │   │   ├── PreviewExecuteArea.vue
-│   │   │   └── SmartInputArea.vue
+│   │   │   └── PreviewExecuteArea.vue
 │   │   ├── layout/                   # Layout components
 │   │   │   ├── Sidebar.vue
 │   │   │   └── TitleBar.vue
@@ -243,8 +240,7 @@ ETBSaveManager/
 │   │   ├── system/                   # System utilities
 │   │   │   ├── PerformanceMonitor.vue
 │   │   │   ├── PerformanceSettings.vue
-│   │   │   ├── PlayerManager.vue
-│   │   │   └── UniformConfigPanel.vue
+│   │   │   └── PlayerManager.vue
 │   │   ├── theme/                    # Theme system
 │   │   │   └── ThemeSelector.vue
 │   │   └── ui/                       # Reusable UI primitives
@@ -258,7 +254,7 @@ ETBSaveManager/
 │   │   ├── useArchiveData.ts         # Save data management
 │   │   ├── useArchiveCard.ts         # Card interactions
 │   │   ├── useArchiveCardFlow.ts     # Flow mode logic
-│   │   ├── useArchiveFilters.ts      # Filter and search
+│   │   ├── useArchiveSearchFilter.ts # Filter and search
 │   │   ├── useUndoRedo.ts            # Undo / redo support
 │   │   ├── useGlobalSearchPanel.ts   # Global search
 │   │   └── ... (additional composables)
@@ -286,7 +282,7 @@ ETBSaveManager/
 │   │   ├── animations.css
 │   │   └── themes/                   # Theme CSS files
 │   │       ├── _colors.css / _components.css / _semantic.css
-│   │       ├── light.css / dark.css / high-contrast.css
+│   │       ├── light.css / dark.css
 │   │       ├── ocean.css / forest.css / sunset.css
 │   │       ├── lavender.css / rose.css / mint.css
 │   │       ├── peach.css / sky.css

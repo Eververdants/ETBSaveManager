@@ -115,17 +115,54 @@ v-for="d in difficultyLevels" :key="`actual-${d.value}`" class="diff-option"
 
       <!-- Level selection -->
       <div class="tab-panel" :class="{ 'tab-active': activeTab === 'level' }">
-        <div class="level-grid">
-          <div
-v-for="(level, index) in availableLevels" :key="index" class="level-card"
-            :class="{ selected: formData.currentLevel === level.levelKey }" @click="selectLevel(level.levelKey)">
-            <div class="level-img-wrap">
-              <LazyImage :src="level.image" :alt="level.name" image-class="level-img" />
-              <div v-if="formData.currentLevel === level.levelKey" class="level-check">
-                <font-awesome-icon :icon="['fas', 'check-circle']" />
+        <div class="level-selector">
+          <!-- Search bar -->
+          <div class="level-search">
+            <font-awesome-icon :icon="['fas', 'search']" class="level-search-icon" />
+            <input
+v-model="levelSearchQuery" v-squircle:pill type="text"
+              class="level-search-input"
+              :placeholder="t('editArchive.levelSearchPlaceholder')" />
+            <button
+v-if="levelSearchQuery" class="level-search-clear" @click="levelSearchQuery = ''">
+              <font-awesome-icon :icon="['fas', 'times']" />
+            </button>
+          </div>
+
+          <!-- Grouped level list -->
+          <div class="level-groups">
+            <div
+v-for="group in groupedLevels" :key="group.id" class="level-group"
+              :class="{ 'is-collapsed': isGroupCollapsed(group.id) }">
+              <div class="group-header" @click="toggleGroup(group.id)">
+                <span class="group-title">{{ group.label }}</span>
+                <span class="group-count">{{ group.levels.length }}</span>
+                <font-awesome-icon
+                  :icon="['fas', isGroupCollapsed(group.id) ? 'chevron-right' : 'chevron-down']"
+                  class="group-chevron" />
+              </div>
+              <div class="group-body">
+                <div class="level-grid">
+                  <div
+v-for="level in group.levels" :key="level.levelKey" class="level-card"
+                    :class="{ selected: formData.currentLevel === level.levelKey }"
+                    @click="selectLevel(level.levelKey)">
+                    <div class="level-img-wrap">
+                      <LazyImage :src="level.image" :alt="level.name" image-class="level-img" />
+                      <div v-if="formData.currentLevel === level.levelKey" class="level-check">
+                        <font-awesome-icon :icon="['fas', 'check-circle']" />
+                      </div>
+                    </div>
+                    <span class="level-name">{{ level.name }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <span class="level-name">{{ level.name }}</span>
+            <!-- Empty state -->
+            <div v-if="groupedLevels.length === 0" class="level-empty">
+              <font-awesome-icon :icon="['fas', 'search']" class="level-empty-icon" />
+              <span>{{ t('editArchive.levelSearchEmpty') }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -258,6 +295,7 @@ import { notify } from "../services/notificationService";
 import { editArchiveDataStore } from "../composables/useArchiveActions";
 import { formatDifficulty } from "../utils/archiveCreationUtils";
 import { FEATURES } from "@/config/features";
+import { ENDING_LEVELS, ENDINGS_CONFIG } from "@/data/endingsData";
 
 const props = defineProps({
   archiveData: { type: String, default: "" },
@@ -550,6 +588,80 @@ const loadLevels = () => {
   availableLevels.value = levelMappings.map((levelKey) => {
     return { name: getLevelName(levelKey), image: `/images/ETB/${levelKey}.webp`, levelKey };
   });
+};
+
+// --- Level search & grouping ---
+const levelSearchQuery = ref("");
+
+// Default-collapsed groups (main group stays expanded)
+const collapsedGroups = ref(new Set([1, 2, 3, "special"]));
+
+// Map each levelKey to exactly one group by priority:
+// main ending (0) -> its own branch (1/2/3, first match wins for shared levels) -> special
+const LEVEL_GROUP_MAP = (() => {
+  const map = {};
+  ENDING_LEVELS[0].forEach((k) => (map[k] = 0));
+  [1, 2, 3].forEach((branchId) => {
+    ENDING_LEVELS[branchId].forEach((k) => {
+      if (map[k] === undefined) map[k] = branchId;
+    });
+  });
+  return map;
+})();
+
+function getLevelGroup(levelKey) {
+  if (LEVEL_GROUP_MAP[levelKey] !== undefined) return LEVEL_GROUP_MAP[levelKey];
+  // Levels not in any ending route (e.g. LevelCheat) fall into "special"
+  return "special";
+}
+
+// Group levels by ending route; group labels recompute reactively on language change
+const levelGroups = computed(() => {
+  const groups = new Map();
+  // Prescribe order: ending config first, then special
+  ENDINGS_CONFIG.forEach((cfg) => {
+    groups.set(cfg.id, { id: cfg.id, label: t(`createArchive.endings.${cfg.labelKey}`), levels: [] });
+  });
+  groups.set("special", { id: "special", label: t("editArchive.levelGroup.special"), levels: [] });
+
+  availableLevels.value.forEach((level) => {
+    const gid = getLevelGroup(level.levelKey);
+    const group = groups.has(gid) ? groups.get(gid) : groups.get("special");
+    group.levels.push(level);
+  });
+  return [...groups.values()];
+});
+
+const groupedLevels = computed(() => {
+  const query = levelSearchQuery.value.trim().toLowerCase();
+  return levelGroups.value
+    .map((group) => {
+      const levels = query
+        ? group.levels.filter((l) => {
+            const name = l.name.toLowerCase();
+            const key = l.levelKey.toLowerCase();
+            return name.includes(query) || key.includes(query);
+          })
+        : group.levels;
+      return { ...group, levels };
+    })
+    .filter((group) => group.levels.length > 0);
+});
+
+const toggleGroup = (groupId) => {
+  const next = new Set(collapsedGroups.value);
+  if (next.has(groupId)) next.delete(groupId);
+  else next.add(groupId);
+  collapsedGroups.value = next;
+};
+
+const isGroupCollapsed = (groupId) => {
+  // Search active -> expand everything so matches stay visible
+  if (levelSearchQuery.value.trim()) return false;
+  // Group holding the current selected level -> always expanded
+  const group = levelGroups.value.find((g) => g.id === groupId);
+  if (group?.levels.some((l) => l.levelKey === formData.currentLevel)) return false;
+  return collapsedGroups.value.has(groupId);
 };
 
 const selectLevel = (levelKey) => {
@@ -1242,6 +1354,190 @@ onMounted(() => {
 .action-card:hover .action-card-arrow {
   color: var(--accent-color);
   transform: translateX(4px);
+}
+
+/* ━━ Level selector ━━ */
+/* Single scroll container is .tab-panel; search bar sits at its top in normal flow. */
+.level-selector {
+  position: relative;
+}
+
+/* Search bar */
+.level-search {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.level-search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  font-size: 14px;
+  line-height: 1;
+  pointer-events: none;
+  transition: color var(--transition-fast) var(--ease-default);
+}
+
+.level-search-input {
+  width: 100%;
+  padding: 11px 40px 11px 42px;
+  border: 1px solid var(--border-color, transparent);
+  corner-shape: squircle;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.4;
+  transition: all var(--transition-fast) var(--ease-default);
+}
+
+.level-search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.level-search-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  background: var(--card-bg);
+  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb, 99, 102, 241), 0.12);
+}
+
+.level-search:focus-within .level-search-icon,
+.level-search-input:focus + .level-search-clear {
+  color: var(--accent-color);
+}
+
+.level-search-clear {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg-tertiary, var(--bg-secondary));
+  color: var(--text-tertiary);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all var(--transition-fast) var(--ease-default);
+}
+
+.level-search-clear:hover {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+/* Groups container — plain block flow (no flex) */
+.level-groups {
+  display: block;
+}
+
+.level-group {
+  background: var(--card-bg);
+  border-radius: var(--radius-card, 12px);
+  overflow: hidden;
+  border: 1px solid transparent;
+  transition: border-color var(--transition-fast) var(--ease-default);
+  margin-bottom: 10px;
+}
+
+.level-group:last-child {
+  margin-bottom: 0;
+}
+
+.level-group:hover {
+  border-color: var(--border-color, rgba(0, 0, 0, 0.06));
+}
+
+/* Group header */
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition-fast) var(--ease-default);
+}
+
+.group-header:hover {
+  background: var(--bg-secondary);
+}
+
+.group-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.group-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 11px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.group-chevron {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  transition: transform var(--transition-normal) var(--ease-default);
+}
+
+.level-group:not(.is-collapsed) .group-chevron {
+  transform: rotate(0deg);
+}
+
+/* Collapse body — grid-template-rows 0fr→1fr animates to intrinsic height */
+.group-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.level-group.is-collapsed .group-body {
+  grid-template-rows: 0fr;
+}
+
+.group-body > .level-grid {
+  overflow: hidden;
+}
+
+/* Level grid kept from original; add padding inside group */
+.level-group .level-grid {
+  padding: 4px 12px 14px;
+  border-top: 1px solid var(--bg-secondary);
+  min-height: 0;
+}
+
+/* Empty state */
+.level-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 16px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+.level-empty-icon {
+  font-size: 32px;
+  opacity: 0.4;
 }
 
 /* ━━ 响应式 ━━ */
@@ -1953,6 +2249,14 @@ onMounted(() => {
 
   .level-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .group-header {
+    padding: 10px 12px;
+  }
+
+  .group-title {
+    font-size: 13px;
   }
 
   .detail-grid {

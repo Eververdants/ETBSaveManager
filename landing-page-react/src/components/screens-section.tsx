@@ -241,10 +241,12 @@ function ScreenMock({ id }: { id: string }): React.JSX.Element {
 
   const lang = i18n.language.startsWith("zh") ? "zh" : "en";
 
+  // public/ 目录下的资源发布到 base 根路径，需用 BASE_URL 拼接以兼容子目录部署
+  const base = import.meta.env.BASE_URL;
   const imageMap: Record<string, string> = {
-    home: `/screens/存档列表-${lang === "zh" ? "zh" : "en"}.jpg`,
-    create: `/screens/创建存档页面第一步-${lang === "zh" ? "zh" : "en"}.jpg`,
-    edit: `/screens/编辑页面-${lang === "zh" ? "zh" : "en"}.jpg`,
+    home: `${base}screens/存档列表-${lang === "zh" ? "zh" : "en"}.jpg`,
+    create: `${base}screens/创建存档页面第一步-${lang === "zh" ? "zh" : "en"}.jpg`,
+    edit: `${base}screens/编辑页面-${lang === "zh" ? "zh" : "en"}.jpg`,
   };
 
   return (

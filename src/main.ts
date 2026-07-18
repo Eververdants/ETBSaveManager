@@ -20,6 +20,9 @@ import App from "./App.vue";
 
 import { setAppContext } from "./appContext";
 import storage, { initStorage } from "./services/storageService";
+import { vSquircle, enableGlobalSquircle, rescanSquircle } from "./composables/useSquircle";
+import { initGlobalFloatingButtonProtection } from "./utils/floatingButtonProtection";
+import { useAppStore } from "./stores/appStore";
 const { createApp } = vueRuntime;
 
 // Create app instance immediately (no async wait)
@@ -132,17 +135,17 @@ async function initApp(): Promise<typeof app> {
   setAppContext({ i18n: i18n.global, router, vue: vueRuntime, storage });
 
   // Register v-squircle directive for Apple-style continuous corners
-  const { vSquircle, enableGlobalSquircle } = await import("./composables/useSquircle");
   app.directive("squircle", vSquircle);
-
-  // 全局启用连续曲率圆角（corner-shape: squircle）
-  // 所有使用 border-radius 的元素自动获得更自然的圆角过渡
-  enableGlobalSquircle();
 
   // Phase 3: Mount app (user-visible)
   console.log("[Startup] Mounting app...");
   app.mount("#app");
   console.log(`[Startup] App mounted: ${(performance.now() - startTime).toFixed(0)}ms`);
+
+  // 全局启用连续曲率圆角（corner-shape: squircle）
+  // 必须在 app.mount() 之后调用——否则 initPolyfill 在空 DOM 上扫描不到任何元素，
+  // 且 MutationObserver 回调触发时元素常处于零尺寸状态，applyClipPath 会静默跳过并无 ResizeObserver 兜底。
+  enableGlobalSquircle();
 
   // Phase 4: Show window after render completes
   // Disable transition animations to prevent theme flash on startup
@@ -162,6 +165,13 @@ async function initApp(): Promise<typeof app> {
     const appWindow = getCurrentWindow();
     await appWindow.show();
     console.log(`[Startup] Window shown: ${(performance.now() - startTime).toFixed(0)}ms`);
+
+    // 布局稳定后补扫一次：捕获挂载阶段因零尺寸被跳过的元素（build 模式 polyfill 的主要漏网场景）
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        rescanSquircle();
+      });
+    });
   } catch (error) {
     console.warn("[Startup] Failed to show window:", error instanceof Error ? error.message : error);
   }
@@ -195,7 +205,6 @@ async function initWindowTitle(i18n: any): Promise<void> {
 
     // Watch store for language changes (replaces window event listener)
     const { watch } = await import("vue");
-    const { useAppStore } = await import("./stores/appStore");
     const appStore = useAppStore();
     watch(
       () => appStore.language,
@@ -218,9 +227,7 @@ initApp().catch((error: unknown) => {
 // Floating button protection (delayed initialization)
 requestIdleCallback(
   () => {
-    import("./utils/floatingButtonProtection").then(({ initGlobalFloatingButtonProtection }) => {
-      initGlobalFloatingButtonProtection();
-    });
+    initGlobalFloatingButtonProtection();
   },
   { timeout: 3000 },
 );

@@ -214,15 +214,70 @@ export function useArchiveData(): {
   };
 
   /**
+   * Load .sav detail data (currentLevel, actualDifficulty) into the given
+   * archives array by mutating items in-place.  Loads in batches with
+   * cancellation support via detailLoadCancelled.
+   * Shared between startDetailLoading (progressive UI update) and
+   * refreshArchives (pre-load before atomic swap).
+   */
+  const loadDetailsIntoArray = async (targetArchives: ArchiveData[]): Promise<void> => {
+    const pendingPaths = targetArchives.filter((a) => a.currentLevel === "Level0").map((a) => a.path);
+    if (pendingPaths.length === 0) return;
+
+    for (let i = 0; i < pendingPaths.length; i += BATCH_SIZE) {
+      if (detailLoadCancelled) return;
+      const batch = pendingPaths.slice(i, i + BATCH_SIZE);
+      try {
+        const details = await invoke<SaveFileDetail[]>("load_save_details_batch", { paths: batch });
+        if (detailLoadCancelled) return;
+
+        for (const detail of details) {
+          if (detail.current_level) {
+            preloadImage(`/images/ETB/${detail.current_level}.webp`);
+          }
+        }
+
+        for (const detail of details) {
+          const idx = targetArchives.findIndex((a) => a.path === detail.path);
+          if (idx !== -1) {
+            const target = targetArchives[idx];
+            target.currentLevel = detail.current_level;
+            if (detail.actual_difficulty) {
+              target.actualDifficulty =
+                difficultyMap[detail.actual_difficulty] ||
+                detail.actual_difficulty?.toLowerCase() ||
+                target.actualDifficulty;
+              if (FEATURES.MERGE_DIFFICULTY) {
+                target.archiveDifficulty = target.actualDifficulty;
+              }
+            }
+          }
+        }
+
+        // Track progress only when mutating the live archives ref
+        if (targetArchives === archives.value) {
+          incrementalLoadState.value.loadedDetails += batch.length;
+          scheduler.updateOperation("loading-archives", {
+            totalItems: pendingPaths.length,
+            completedItems: incrementalLoadState.value.loadedDetails,
+          });
+        }
+      } catch (error) {
+        console.error(`Failed to load detail batch (${i}–${i + batch.length}):`, error);
+      }
+    }
+  };
+
+  /**
    * Phase 2: Load detail data (.sav parsing) for archives that only have
    * filename-derived metadata. Loads in batches and mutates individual
    * indices in-place so unchanged cards skip re-render.
    */
   const startDetailLoading = async (): Promise<void> => {
     detailLoadCancelled = false;
-    const pendingPaths = archives.value.filter((a) => a.currentLevel === "Level0").map((a) => a.path);
+    const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
 
-    if (pendingPaths.length === 0) {
+    if (pendingCount === 0) {
       if (detailLoadCancelled) return;
       incrementalLoadState.value = {
         phase: "complete",
@@ -235,53 +290,11 @@ export function useArchiveData(): {
 
     incrementalLoadState.value = {
       phase: "details",
-      totalDetails: pendingPaths.length,
+      totalDetails: pendingCount,
       loadedDetails: 0,
     };
 
-    for (let i = 0; i < pendingPaths.length; i += BATCH_SIZE) {
-      if (detailLoadCancelled) return;
-      const batch = pendingPaths.slice(i, i + BATCH_SIZE);
-      try {
-        const details = await invoke<SaveFileDetail[]>("load_save_details_batch", { paths: batch });
-
-        // Re-check cancellation after await — another init/refresh may have
-        // replaced archives.value while IPC was in flight.
-        if (detailLoadCancelled) return;
-
-        for (const detail of details) {
-          if (detail.current_level) {
-            preloadImage(`/images/ETB/${detail.current_level}.webp`);
-          }
-        }
-
-        for (const detail of details) {
-          const idx = archives.value.findIndex((a) => a.path === detail.path);
-          if (idx !== -1) {
-            const target = archives.value[idx];
-            target.currentLevel = detail.current_level;
-            if (detail.actual_difficulty) {
-              target.actualDifficulty =
-                difficultyMap[detail.actual_difficulty] ||
-                detail.actual_difficulty?.toLowerCase() ||
-                target.actualDifficulty;
-              // When difficulty merge is on, keep archiveDifficulty in sync
-              if (FEATURES.MERGE_DIFFICULTY) {
-                target.archiveDifficulty = target.actualDifficulty;
-              }
-            }
-          }
-        }
-
-        incrementalLoadState.value.loadedDetails += batch.length;
-        scheduler.updateOperation("loading-archives", {
-          totalItems: pendingPaths.length,
-          completedItems: incrementalLoadState.value.loadedDetails,
-        });
-      } catch (error) {
-        console.error(`Failed to load detail batch (${i}–${i + batch.length}):`, error);
-      }
-    }
+    await loadDetailsIntoArray(archives.value);
 
     if (detailLoadCancelled) return;
     incrementalLoadState.value.phase = "complete";
@@ -369,11 +382,18 @@ export function useArchiveData(): {
 
     try {
       const merged = await loadMergedArchives();
-      archives.value = merged;
 
-      const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
-      if (pendingCount > 0) startDetailLoading();
-      else scheduler.endOperation("loading-archives");
+      // Pre-load all .sav details into the local copy BEFORE swapping,
+      // so the UI never sees intermediate Level0 placeholder images/text.
+      const pendingCount = merged.filter((a) => a.currentLevel === "Level0").length;
+      if (pendingCount > 0) {
+        detailLoadCancelled = false;
+        await loadDetailsIntoArray(merged);
+      }
+
+      // Atomic swap: old data → new complete data in one re-render
+      archives.value = merged;
+      scheduler.endOperation("loading-archives");
     } catch (error) {
       console.error("Failed to refresh archives:", error);
       scheduler.endOperation("loading-archives");
@@ -388,11 +408,17 @@ export function useArchiveData(): {
     scheduler.beginOperation("loading-archives", { totalItems: 0, completedItems: 0 });
     try {
       const merged = await loadMergedArchives();
-      archives.value = merged;
 
-      const pendingCount = archives.value.filter((a) => a.currentLevel === "Level0").length;
-      if (pendingCount > 0) startDetailLoading();
-      else scheduler.endOperation("loading-archives");
+      // Pre-load all .sav details before swapping — same as refreshArchives
+      // to avoid Level0 placeholder flicker.
+      const pendingCount = merged.filter((a) => a.currentLevel === "Level0").length;
+      if (pendingCount > 0) {
+        detailLoadCancelled = false;
+        await loadDetailsIntoArray(merged);
+      }
+
+      archives.value = merged;
+      scheduler.endOperation("loading-archives");
     } catch (error) {
       console.error("Failed to refresh archives silently:", error);
       scheduler.endOperation("loading-archives");

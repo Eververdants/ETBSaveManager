@@ -31,6 +31,7 @@
   "scrollLeft": "Scroll left",
   "scrollRight": "Scroll right",
   "localPlayerSuffix": "(Local)",
-  "playerNameDisplay": "Player {id}...",
+  "playerNameDisplay": "Player {id}",
+  "steamId": "Steam ID",
   "emptyBackpack": "Empty Backpack"
 }

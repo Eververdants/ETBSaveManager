@@ -13,7 +13,8 @@ v-for="notification in getNotificationsByPosition(position)" :key="notification.
             `notification-${notification.type}`,
             { 'notification-hovering': notification.isHovering },
             { 'notification-expanded': notification.actions?.length || notification.details },
-          ]" @mouseenter="pauseNotification(notification)" @mouseleave="resumeNotification(notification)">
+          ]" :style="notification.maxWidth ? { maxWidth: notification.maxWidth } : undefined"
+          @mouseenter="pauseNotification(notification)" @mouseleave="resumeNotification(notification)">
           <!-- 图标 -->
           <div class="notification-icon-wrapper" :class="`icon-${notification.type}`">
             <font-awesome-icon v-if="notification.icon" :icon="notification.icon" class="notification-icon" />
@@ -82,6 +83,7 @@ const defaultOptions = {
   closable: true,
   actions: null,
   details: null,
+  maxWidth: null,
 };
 
 const typeIcons = {

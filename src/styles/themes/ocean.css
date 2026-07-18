@@ -2,55 +2,64 @@
  * ============================================
  * 🌊 海洋主题 (Ocean Theme)
  * ============================================
- * 深邃的海洋蓝色调，宁静而优雅
+ * 深邃的海蓝色深色调，沉稳而专业
+ *
+ * 色板:
+ *   黑蓝   #09142B  极暗背景   | 深夜蓝 #0B1A37  深色主背景
+ *   墨蓝   #0E2043  侧边栏底色 | 深海蓝 #11264F  卡片深色背景
+ *   灰蓝   #254176  次级卡片   | 钢蓝   #3A5D9E  信息面板
+ *   宝石蓝 #1F3A7A  特色模块   | 钴蓝   #4F79C5  次级按钮
+ *   矢车菊蓝 #6495ED 主按钮/品牌 | 电蓝 #508BF0  价格/促销
+ *   淡蓝   #8FB2F2  hover/边框 | 天蓝   #B1CAF6  分割线
+ *   冰蓝   #D0DFF9  深色正文   | 极浅蓝 #ECF2FC  标题
  */
 
 [data-theme="ocean"] {
   /* ==========================================
    * 背景层级 (Background Hierarchy)
    * ========================================== */
-  --bg: #0c1929;
-  --bg-primary: #0c1929;
-  --bg-secondary: #132337;
-  --bg-tertiary: #1a3048;
-  --bg-hover: #24405a;
-  --bg-elevated: #162d45;
+  --bg: #0B1A37;
+  --bg-primary: #0B1A37;
+  --bg-secondary: #11264F;
+  --bg-tertiary: #254176;
+  --bg-hover: #3A5D9E;
+  --bg-elevated: #1F3A7A;
 
   /* ==========================================
    * 文本层级 (Text Hierarchy)
    * ========================================== */
-  --text: #e8f4fc;
-  --text-color: #e8f4fc;
-  --text-primary: #e8f4fc;
-  --text-secondary: rgba(232, 244, 252, 0.72);
-  --text-tertiary: rgba(232, 244, 252, 0.48);
-  --text-disabled: rgba(232, 244, 252, 0.28);
-  --text-inverse: #0c1929;
+  --text: #ECF2FC;
+  --text-color: #ECF2FC;
+  --text-primary: #ECF2FC;
+  --text-secondary: rgba(236, 242, 252, 0.72);
+  --text-tertiary: rgba(236, 242, 252, 0.48);
+  --text-disabled: rgba(236, 242, 252, 0.28);
+  --text-inverse: #0B1A37;
 
   /* ==========================================
    * 表面/卡片 (Surface/Card)
    * ========================================== */
-  --surface-color: #132337;
-  --surface-hover: #1a3048;
-  --card-bg: #132337;
+  --surface-color: #11264F;
+  --surface-hover: #254176;
+  --card-bg: #11264F;
 
   /* ==========================================
    * 边框/分割线 (Border/Divider)
    * ========================================== */
-  --border-color: rgba(100, 180, 220, 0.15);
-  --border-light: rgba(100, 180, 220, 0.08);
-  --divider-color: rgba(100, 180, 220, 0.15);
-  --divider-light: rgba(100, 180, 220, 0.08);
+  --border-color: rgba(143, 178, 242, 0.15);
+  --border-light: rgba(143, 178, 242, 0.08);
+  --divider-color: rgba(143, 178, 242, 0.15);
+  --divider-light: rgba(143, 178, 242, 0.08);
 
   /* ==========================================
    * 主色调 (Primary Colors)
    * ========================================== */
-  --primary: #38bdf8;
-  --primary-hover: #7dd3fc;
-  --primary-color: #38bdf8;
-  --secondary-color: #0ea5e9;
-  --accent-color: #38bdf8;
-  --accent-hover: #7dd3fc;
+  --primary: #6495ED;
+  --primary-hover: #8FB2F2;
+  --primary-color: #6495ED;
+  --secondary-color: #4F79C5;
+  --accent-color: #6495ED;
+  --accent-hover: #8FB2F2;
 
   /* ==========================================
    * 状态颜色 (Status Colors)
@@ -58,50 +67,50 @@
   --success-color: #34d399;
   --error-color: #f87171;
   --warning-color: #fbbf24;
-  --info-color: #38bdf8;
+  --info-color: #6495ED;
 
   /* ==========================================
    * 侧边栏 (Sidebar)
    * ========================================== */
-  --bg-sidebar: rgba(12, 25, 41, 0.95);
-  --sidebar-bg: rgba(12, 25, 41, 0.95);
-  --sidebar-text-color: #e8f4fc;
-  --sidebar-border-color: rgba(100, 180, 220, 0.1);
-  --sidebar-hover-bg: rgba(56, 189, 248, 0.08);
-  --sidebar-item-hover-bg: rgba(56, 189, 248, 0.08);
-  --sidebar-active-bg: rgba(56, 189, 248, 0.15);
-  --sidebar-active-color: #38bdf8;
-  --sidebar-active-border: rgba(56, 189, 248, 0.5);
-  --sidebar-active-hover-bg: rgba(56, 189, 248, 0.2);
+  --bg-sidebar: rgba(14, 32, 67, 0.95);
+  --sidebar-bg: rgba(14, 32, 67, 0.95);
+  --sidebar-text-color: #ECF2FC;
+  --sidebar-border-color: rgba(143, 178, 242, 0.1);
+  --sidebar-hover-bg: rgba(143, 178, 242, 0.08);
+  --sidebar-item-hover-bg: rgba(143, 178, 242, 0.08);
+  --sidebar-active-bg: rgba(100, 149, 237, 0.15);
+  --sidebar-active-color: #6495ED;
+  --sidebar-active-border: rgba(100, 149, 237, 0.5);
+  --sidebar-active-hover-bg: rgba(100, 149, 237, 0.2);
 
   /* ==========================================
    * 标题栏 (Titlebar)
    * ========================================== */
-  --titlebar-bg: rgba(12, 25, 41, 0.95);
-  --titlebar-border: rgba(100, 180, 220, 0.1);
-  --titlebar-button-hover: rgba(56, 189, 248, 0.1);
+  --titlebar-bg: rgba(14, 32, 67, 0.95);
+  --titlebar-border: rgba(143, 178, 242, 0.1);
+  --titlebar-button-hover: rgba(143, 178, 242, 0.1);
 
   /* ==========================================
    * 滚动条 (Scrollbar)
    * ========================================== */
   --scrollbar-track: transparent;
-  --scrollbar-thumb: rgba(56, 189, 248, 0.25);
-  --scrollbar-thumb-hover: rgba(56, 189, 248, 0.4);
+  --scrollbar-thumb: rgba(143, 178, 242, 0.25);
+  --scrollbar-thumb-hover: rgba(143, 178, 242, 0.4);
 
   /* ==========================================
    * 下拉菜单 (Dropdown)
    * ========================================== */
-  --dropdown-bg: rgba(19, 35, 55, 0.96);
-  --dropdown-border: rgba(100, 180, 220, 0.15);
-  --dropdown-border-hover: rgba(56, 189, 248, 0.3);
-  --dropdown-text: #e8f4fc;
-  --dropdown-icon: rgba(232, 244, 252, 0.5);
+  --dropdown-bg: rgba(17, 38, 79, 0.96);
+  --dropdown-border: rgba(143, 178, 242, 0.15);
+  --dropdown-border-hover: rgba(100, 149, 237, 0.3);
+  --dropdown-text: #ECF2FC;
+  --dropdown-icon: rgba(236, 242, 252, 0.5);
   --dropdown-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --dropdown-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.5);
-  --dropdown-hover-bg: rgba(56, 189, 248, 0.08);
-  --dropdown-selected-bg: #38bdf8;
-  --dropdown-selected-text: #0c1929;
-  --dropdown-selected-border: rgba(56, 189, 248, 0.4);
+  --dropdown-hover-bg: rgba(143, 178, 242, 0.08);
+  --dropdown-selected-bg: #6495ED;
+  --dropdown-selected-text: #ffffff;
+  --dropdown-selected-border: rgba(100, 149, 237, 0.4);
 
   /* ==========================================
    * 搜索遮罩 (Search Overlay)
@@ -112,9 +121,9 @@
   /* ==========================================
    * 毛玻璃效果 (Glass Effect)
    * ========================================== */
-  --glass-bg: rgba(19, 35, 55, 0.88);
-  --glass-border: rgba(100, 180, 220, 0.1);
-  --glass-border-light: rgba(100, 180, 220, 0.06);
+  --glass-bg: rgba(17, 38, 79, 0.88);
+  --glass-border: rgba(143, 178, 242, 0.1);
+  --glass-border-light: rgba(143, 178, 242, 0.06);
   --glass-shadow-light: 0 4px 24px rgba(0, 0, 0, 0.3);
   --glass-shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.4);
   --glass-backdrop-filter: blur(24px) saturate(180%);
@@ -122,12 +131,12 @@
   /* ==========================================
    * 卡片样式 (Card Styles)
    * ========================================== */
-  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.25), 0 0 1px rgba(56, 189, 248, 0.1);
-  --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 1px rgba(56, 189, 248, 0.2);
-  --card-border: 1px solid rgba(100, 180, 220, 0.1);
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.25), 0 0 1px rgba(100, 149, 237, 0.1);
+  --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 1px rgba(100, 149, 237, 0.15);
+  --card-border: 1px solid rgba(143, 178, 242, 0.1);
   --card-padding: 16px;
-  --card-highlight: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, transparent 50%);
-  --card-active-indicator: #38bdf8;
+  --card-highlight: linear-gradient(135deg, rgba(100, 149, 237, 0.08) 0%, transparent 50%);
+  --card-active-indicator: #6495ED;
   --card-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --card-hover-transform: translateY(-2px);
 
@@ -139,8 +148,8 @@
   --Card-border-color: var(--divider-color);
   --Card-shadow-normal: var(--card-shadow);
   --Card-shadow-hover: var(--card-shadow-hover);
-  --Card-accent-primary: #38bdf8;
-  --Card-accent-secondary: #7dd3fc;
+  --Card-accent-primary: #6495ED;
+  --Card-accent-secondary: #8FB2F2;
   --Card-text-primary: var(--text-primary);
   --Card-text-secondary: var(--text-secondary);
   --Card-surface-overlay: rgba(0, 0, 0, 0.3);

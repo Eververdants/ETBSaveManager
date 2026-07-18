@@ -36,7 +36,7 @@ class="toolbar-btn danger" :disabled="selectedArchives.size === 0"
 
     <div
 ref="scrollContainerRef" v-squircle="44" class="archive-list-container"
-      :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode }">
+      :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode, 'is-refreshing': loading }">
       <!-- Ultra-light loading state: a single centered spinner.
            The old 12-card skeleton with v-squircle + shimmer animations
            was expensive enough to stall the first paint, making the
@@ -815,6 +815,20 @@ watch(searchQuery, (query) => {
   width: 100%;
   box-sizing: border-box;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  /* ─── Refresh transition ───────────────────────
+   * When the user taps the refresh button, the cards perform a
+   * "breathe" motion — fade + contract briefly, then spring back
+   * when the new data arrives.  This gives clear visual feedback
+   * that the data was reloaded rather than silently replacing. */
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Refresh animation: cards "exhale" while data reloads */
+.archive-list-container.is-refreshing .archive-grid {
+  opacity: 0.45;
+  transform: scale(0.97);
 }
 
 .archive-grid :deep(.archive-card) {
@@ -912,6 +926,21 @@ watch(searchQuery, (query) => {
 @keyframes spinner-rotate {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* ─── Reduce motion ──────────────────────────────
+ * Disable the refresh "breathe" animation for users who
+ * prefer reduced motion, while still allowing the spinner
+ * ring to animate (that one is essential feedback). */
+@media (prefers-reduced-motion: reduce) {
+  .archive-grid {
+    transition: none;
+  }
+
+  .archive-list-container.is-refreshing .archive-grid {
+    opacity: 1;
+    transform: none;
   }
 }
 

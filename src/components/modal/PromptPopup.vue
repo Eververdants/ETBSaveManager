@@ -43,6 +43,10 @@ const props = defineProps({
     default: "default",
     validator: (value) => ["default", "success", "error", "warning", "info"].includes(value),
   },
+  maxWidth: {
+    type: String,
+    default: "400px",
+  },
 });
 
 const emit = defineEmits(["close"]);
@@ -75,7 +79,9 @@ const computedIcon = computed(() => {
 
 // 图标样式类
 const iconClass = computed(() => `icon-${props.type}`);
-const popupStyle = ref({}); // Dynamic styles for positioning
+const popupStyle = computed(() => ({
+  maxWidth: props.maxWidth,
+}));
 
 onMounted(() => {
   isVisible.value = true;

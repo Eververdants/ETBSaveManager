@@ -37,7 +37,7 @@ console.log("📋 [i18n/index.js] Release notes data loaded:", Object.keys(relea
 console.log("📊 [i18n/index.js] Current version:", releaseNotesZhCN?.version || "Unknown");
 
 function getUserLocale(): string {
-  const saved = storage.getItem<string>("locale");
+  const saved = storage.getItem<string>("locale") || storage.getItem<string>("language");
   if (saved && messages[saved]) return saved;
   const lang = navigator.language || "zh-CN";
   if (["zh-TW", "zh-HK", "zh-MO"].includes(lang)) return "zh-TW";

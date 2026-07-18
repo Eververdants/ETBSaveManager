@@ -41,7 +41,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ0MkQ1MTk1NzVBN0I1MkYKUkVTVEFVVEV6bG5YdG5TN1d2VlBCWHdvb0Z3VlkwYUtZNGl5Qkl5U2xQdTVlZFlJV3pNTmVqR2hSMDJvbWJ2L2Z4Z2V3dQ==",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM5MDA1MkJENzI4QkI1NEUKUldST3RZdHl2VklBeVNBazlsNFFhc2dqMnMvUU91UU5QZCs1aEpxNHA0TGZUaHEvMW00YUpVZDIK",
       "endpoints": ["https://github.com/Eververdants/ETBSaveManager/releases/latest/download/latest.json"]
     }
   }

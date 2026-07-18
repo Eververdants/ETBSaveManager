@@ -84,5 +84,10 @@
   "selectPlayerHint": "Select a player from the left to edit",
   "inventory": "Inventory",
   "setMinSanity": "Set to minimum",
-  "setMaxSanity": "Set to maximum"
+  "setMaxSanity": "Set to maximum",
+  "levelSearchPlaceholder": "Search levels...",
+  "levelSearchEmpty": "No matching levels found",
+  "levelGroup": {
+    "special": "Special"
+  }
 }

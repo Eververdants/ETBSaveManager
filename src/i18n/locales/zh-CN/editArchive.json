@@ -84,5 +84,10 @@
   "selectPlayerHint": "请从左侧选择一个玩家来编辑",
   "inventory": "背包物品",
   "setMinSanity": "设为最低",
-  "setMaxSanity": "设为最高"
+  "setMaxSanity": "设为最高",
+  "levelSearchPlaceholder": "搜索层级...",
+  "levelSearchEmpty": "未找到匹配的层级",
+  "levelGroup": {
+    "special": "特殊"
+  }
 }

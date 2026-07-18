@@ -103,9 +103,9 @@ export default {
         "Quick Create or Standard mode — pick from 54 levels across 4 endings (Wrong Door, Empty City, The Suburbs, The Pink House), configure difficulty, edit 12-slot inventory.",
     },
     themes: {
-      title: "11 Built-in Themes",
+      title: "10 Built-in Themes",
       description:
-        "Light, Dark, and 9 vibrant palettes (forest, lavender, mint, ocean, peach, rose, sky, sunset, high-contrast).",
+        "Light, Dark, and 8 vibrant palettes (forest, lavender, mint, ocean, peach, rose, sky, sunset).",
     },
     i18n: {
       title: "Trilingual UI",

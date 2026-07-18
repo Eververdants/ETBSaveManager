@@ -21,7 +21,6 @@ interface PresetTheme {
 export const PRESET_THEMES: Record<string, PresetTheme> = {
   light: { id: "light", name: "Light", type: "preset" },
   dark: { id: "dark", name: "Dark", type: "preset" },
-  "high-contrast": { id: "high-contrast", name: "High Contrast", type: "preset" },
   ocean: { id: "ocean", name: "Ocean", type: "preset" },
   forest: { id: "forest", name: "Forest", type: "preset" },
   sunset: { id: "sunset", name: "Sunset", type: "preset" },

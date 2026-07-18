@@ -61,9 +61,9 @@ export const site = {
     },
     {
       id: "themes",
-      title: "11 Built-in Themes",
+      title: "10 Built-in Themes",
       description:
-        "Light, Dark, and 9 vibrant palettes (forest, lavender, mint, ocean, peach, rose, sky, sunset, high-contrast).",
+        "Light, Dark, and 8 vibrant palettes (forest, lavender, mint, ocean, peach, rose, sky, sunset).",
       iconKey: "icon-themes",
       ref: "FILE 003",
       classification: "Standard",

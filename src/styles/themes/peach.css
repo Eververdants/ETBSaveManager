@@ -2,55 +2,63 @@
  * ============================================
  * 🍑 蜜桃主题 (Peach Theme)
  * ============================================
- * 温柔的蜜桃粉浅色调，甜美而温馨
+ * 温暖柔和的蜜桃粉配色，甜美而不失质感
+ *
+ * 色板:
+ *   极浅粉 #FDF2EE  页面背景 | 浅粉 #FAE3DA  卡片底色
+ *   柔粉  #F7CDBC  模块底色  | 桃粉 #FAD2BA  装饰色块
+ *   裸粉  #F6D2B9  Banner底色 | 中粉 #F19BA3  次级按钮
+ *   樱粉  #EA517F  主按钮/品牌 | 珊瑚粉 #F05E70 重要提示
+ *   紫粉  #DE5294  差异化强调  | 玫粉 #C6446B  hover状态
+ *   深粉  #A33858  次级标题   | 暗粉 #802C45  主标题
  */
 
 [data-theme="peach"] {
   /* ==========================================
    * 背景层级 (Background Hierarchy)
    * ========================================== */
-  --bg: #fff5f5;
-  --bg-primary: #fff5f5;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #ffe4e6;
-  --bg-hover: #f0d0d4;
+  --bg: #FDF2EE;
+  --bg-primary: #FDF2EE;
+  --bg-secondary: #FAE3DA;
+  --bg-tertiary: #F7CDBC;
+  --bg-hover: #FAE3DA;
   --bg-elevated: #ffffff;
 
   /* ==========================================
    * 文本层级 (Text Hierarchy)
    * ========================================== */
-  --text: #881337;
-  --text-color: #881337;
-  --text-primary: #881337;
-  --text-secondary: rgba(136, 19, 55, 0.72);
-  --text-tertiary: rgba(136, 19, 55, 0.48);
-  --text-disabled: rgba(136, 19, 55, 0.28);
+  --text: #802C45;
+  --text-color: #802C45;
+  --text-primary: #802C45;
+  --text-secondary: rgba(128, 44, 69, 0.72);
+  --text-tertiary: rgba(128, 44, 69, 0.48);
+  --text-disabled: rgba(128, 44, 69, 0.28);
   --text-inverse: #ffffff;
 
   /* ==========================================
    * 表面/卡片 (Surface/Card)
    * ========================================== */
-  --surface-color: #ffffff;
-  --surface-hover: #fff5f5;
-  --card-bg: #ffffff;
+  --surface-color: #FAE3DA;
+  --surface-hover: #FDF2EE;
+  --card-bg: #FAE3DA;
 
   /* ==========================================
    * 边框/分割线 (Border/Divider)
    * ========================================== */
-  --border-color: rgba(251, 113, 133, 0.25);
-  --border-light: rgba(251, 113, 133, 0.12);
-  --divider-color: rgba(251, 113, 133, 0.25);
-  --divider-light: rgba(251, 113, 133, 0.12);
+  --border-color: rgba(234, 81, 127, 0.25);
+  --border-light: rgba(234, 81, 127, 0.12);
+  --divider-color: rgba(234, 81, 127, 0.25);
+  --divider-light: rgba(234, 81, 127, 0.12);
 
   /* ==========================================
    * 主色调 (Primary Colors)
    * ========================================== */
-  --primary: #e11d48;
-  --primary-hover: #be123c;
-  --primary-color: #e11d48;
-  --secondary-color: #f43f5e;
-  --accent-color: #e11d48;
-  --accent-hover: #be123c;
+  --primary: #EA517F;
+  --primary-hover: #C6446B;
+  --primary-color: #EA517F;
+  --secondary-color: #F19BA3;
+  --accent-color: #EA517F;
+  --accent-hover: #C6446B;
 
   /* ==========================================
    * 状态颜色 (Status Colors)
@@ -58,76 +66,76 @@
   --success-color: #16a34a;
   --error-color: #dc2626;
   --warning-color: #d97706;
-  --info-color: #e11d48;
+  --info-color: #EA517F;
 
   /* ==========================================
    * 侧边栏 (Sidebar)
    * ========================================== */
-  --bg-sidebar: rgba(255, 245, 245, 0.95);
-  --sidebar-bg: rgba(255, 245, 245, 0.95);
-  --sidebar-text-color: #881337;
-  --sidebar-border-color: rgba(251, 113, 133, 0.18);
-  --sidebar-hover-bg: rgba(251, 113, 133, 0.1);
-  --sidebar-item-hover-bg: rgba(251, 113, 133, 0.1);
-  --sidebar-active-bg: rgba(251, 113, 133, 0.15);
-  --sidebar-active-color: #be123c;
-  --sidebar-active-border: rgba(251, 113, 133, 0.5);
-  --sidebar-active-hover-bg: rgba(251, 113, 133, 0.2);
+  --bg-sidebar: rgba(253, 242, 238, 0.95);
+  --sidebar-bg: rgba(253, 242, 238, 0.95);
+  --sidebar-text-color: #802C45;
+  --sidebar-border-color: rgba(234, 81, 127, 0.18);
+  --sidebar-hover-bg: rgba(234, 81, 127, 0.1);
+  --sidebar-item-hover-bg: rgba(234, 81, 127, 0.1);
+  --sidebar-active-bg: rgba(234, 81, 127, 0.15);
+  --sidebar-active-color: #C6446B;
+  --sidebar-active-border: rgba(234, 81, 127, 0.5);
+  --sidebar-active-hover-bg: rgba(234, 81, 127, 0.2);
 
   /* ==========================================
    * 标题栏 (Titlebar)
    * ========================================== */
-  --titlebar-bg: rgba(255, 245, 245, 0.95);
-  --titlebar-border: rgba(251, 113, 133, 0.18);
-  --titlebar-button-hover: rgba(251, 113, 133, 0.1);
+  --titlebar-bg: rgba(253, 242, 238, 0.95);
+  --titlebar-border: rgba(234, 81, 127, 0.18);
+  --titlebar-button-hover: rgba(234, 81, 127, 0.1);
 
   /* ==========================================
    * 滚动条 (Scrollbar)
    * ========================================== */
   --scrollbar-track: transparent;
-  --scrollbar-thumb: rgba(251, 113, 133, 0.35);
-  --scrollbar-thumb-hover: rgba(251, 113, 133, 0.5);
+  --scrollbar-thumb: rgba(234, 81, 127, 0.35);
+  --scrollbar-thumb-hover: rgba(234, 81, 127, 0.5);
 
   /* ==========================================
    * 下拉菜单 (Dropdown)
    * ========================================== */
-  --dropdown-bg: rgba(255, 255, 255, 0.98);
-  --dropdown-border: rgba(251, 113, 133, 0.25);
-  --dropdown-border-hover: rgba(251, 113, 133, 0.4);
-  --dropdown-text: #881337;
-  --dropdown-icon: rgba(136, 19, 55, 0.5);
-  --dropdown-shadow: 0 8px 32px rgba(251, 113, 133, 0.15);
-  --dropdown-shadow-hover: 0 12px 40px rgba(251, 113, 133, 0.2);
-  --dropdown-hover-bg: rgba(251, 113, 133, 0.08);
-  --dropdown-selected-bg: #e11d48;
+  --dropdown-bg: rgba(250, 227, 218, 0.98);
+  --dropdown-border: rgba(234, 81, 127, 0.25);
+  --dropdown-border-hover: rgba(234, 81, 127, 0.4);
+  --dropdown-text: #802C45;
+  --dropdown-icon: rgba(128, 44, 69, 0.5);
+  --dropdown-shadow: 0 8px 32px rgba(234, 81, 127, 0.15);
+  --dropdown-shadow-hover: 0 12px 40px rgba(234, 81, 127, 0.2);
+  --dropdown-hover-bg: rgba(234, 81, 127, 0.08);
+  --dropdown-selected-bg: #EA517F;
   --dropdown-selected-text: #ffffff;
-  --dropdown-selected-border: rgba(251, 113, 133, 0.4);
+  --dropdown-selected-border: rgba(234, 81, 127, 0.4);
 
   /* ==========================================
    * 搜索遮罩 (Search Overlay)
    * ========================================== */
-  --search-overlay-bg: rgba(136, 19, 55, 0.4);
+  --search-overlay-bg: rgba(128, 44, 69, 0.4);
   --search-overlay-backdrop: blur(20px);
 
   /* ==========================================
    * 毛玻璃效果 (Glass Effect)
    * ========================================== */
-  --glass-bg: rgba(255, 255, 255, 0.9);
-  --glass-border: rgba(251, 113, 133, 0.18);
-  --glass-border-light: rgba(251, 113, 133, 0.1);
-  --glass-shadow-light: 0 4px 24px rgba(251, 113, 133, 0.1);
-  --glass-shadow-medium: 0 8px 32px rgba(251, 113, 133, 0.15);
+  --glass-bg: rgba(250, 227, 218, 0.9);
+  --glass-border: rgba(234, 81, 127, 0.18);
+  --glass-border-light: rgba(234, 81, 127, 0.1);
+  --glass-shadow-light: 0 4px 24px rgba(234, 81, 127, 0.1);
+  --glass-shadow-medium: 0 8px 32px rgba(234, 81, 127, 0.15);
   --glass-backdrop-filter: blur(24px) saturate(180%);
 
   /* ==========================================
    * 卡片样式 (Card Styles)
    * ========================================== */
-  --card-shadow: 0 2px 12px rgba(251, 113, 133, 0.1), 0 0 1px rgba(251, 113, 133, 0.15);
-  --card-shadow-hover: 0 8px 32px rgba(251, 113, 133, 0.15), 0 0 1px rgba(251, 113, 133, 0.2);
-  --card-border: 1px solid rgba(251, 113, 133, 0.18);
+  --card-shadow: 0 2px 12px rgba(234, 81, 127, 0.1), 0 0 1px rgba(234, 81, 127, 0.15);
+  --card-shadow-hover: 0 8px 32px rgba(234, 81, 127, 0.15), 0 0 1px rgba(234, 81, 127, 0.2);
+  --card-border: 1px solid rgba(234, 81, 127, 0.18);
   --card-padding: 16px;
-  --card-highlight: linear-gradient(135deg, rgba(251, 113, 133, 0.08) 0%, transparent 50%);
-  --card-active-indicator: #e11d48;
+  --card-highlight: linear-gradient(135deg, rgba(234, 81, 127, 0.08) 0%, transparent 50%);
+  --card-active-indicator: #EA517F;
   --card-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --card-hover-transform: translateY(-2px);
 
@@ -139,18 +147,18 @@
   --Card-border-color: var(--divider-color);
   --Card-shadow-normal: var(--card-shadow);
   --Card-shadow-hover: var(--card-shadow-hover);
-  --Card-accent-primary: #e11d48;
-  --Card-accent-secondary: #be123c;
+  --Card-accent-primary: #EA517F;
+  --Card-accent-secondary: #C6446B;
   --Card-text-primary: var(--text-primary);
   --Card-text-secondary: var(--text-secondary);
-  --Card-surface-overlay: rgba(251, 113, 133, 0.1);
+  --Card-surface-overlay: rgba(234, 81, 127, 0.1);
 
   /* ==========================================
    * About 页面 (About Page)
    * ========================================== */
   --about-glass-bg: var(--bg-secondary);
   --about-glass-border: var(--divider-color);
-  --about-glass-shadow: 0 8px 32px rgba(251, 113, 133, 0.1);
+  --about-glass-shadow: 0 8px 32px rgba(234, 81, 127, 0.1);
   --about-list-bg: var(--bg-secondary);
   --about-hover-bg: var(--bg-tertiary);
   --about-border-light: var(--divider-color);

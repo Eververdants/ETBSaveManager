@@ -138,6 +138,9 @@ export interface PopupOptions {
   type?: string;
   icon?: [string, string];
   title?: string;
+  direction?: string;
+  duration?: number;
+  maxWidth?: string;
   confirmText?: string;
   cancelText?: string;
   onConfirm?: () => void;

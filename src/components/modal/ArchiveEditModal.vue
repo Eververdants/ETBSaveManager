@@ -4,7 +4,7 @@
       <div
 v-if="visible" ref="modalRef" class="modal-overlay" role="dialog" aria-modal="true"
         :aria-label="$t('quickCreate.editModal.title')" @click.self="handleClose">
-        <div class="modal-container">
+        <div class="modal-container" :style="{ maxWidth: props.maxWidth }">
           <!-- 模态框头部 -->
           <div class="modal-header">
             <h3 class="modal-title">
@@ -99,6 +99,10 @@ const props = defineProps({
   availableLevels: {
     type: Array,
     default: () => [],
+  },
+  maxWidth: {
+    type: String,
+    default: "480px",
   },
 });
 

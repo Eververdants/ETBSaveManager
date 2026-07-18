@@ -148,6 +148,17 @@ v-for="(level, index) in availableLevels" :key="index" class="level-card"
               </Transition>
             </div>
 
+            <!-- Steam ID 编辑 -->
+            <div class="steamid-edit-row">
+              <span class="steamid-label">
+                <font-awesome-icon :icon="['fab', 'steam']" />
+                {{ $t("common.steamId") }}
+              </span>
+              <input
+v-model="currentPlayerSteamId" type="text" class="steamid-input"
+                @blur="onSteamIdBlur" @keyup.enter="onSteamIdBlur" />
+            </div>
+
             <Transition name="player-detail-grid-switch" mode="out-in">
               <div :key="activePlayerIndex" class="detail-grid">
                 <!-- Sanity -->
@@ -329,6 +340,7 @@ const selectedItem = computed(() => {
 const playerInputMessage = ref("");
 const playerInputMessageType = ref("");
 const currentPlayerSanity = ref(100);
+const currentPlayerSteamId = ref("");
 const parseError = ref(false);
 const availableLevels = ref([]);
 
@@ -613,12 +625,24 @@ const removePlayer = (index) => {
 const selectPlayer = (index) => {
   activePlayerIndex.value = index;
   currentPlayerSanity.value = formData.players[index]?.sanity ?? 100;
+  currentPlayerSteamId.value = formData.players[index]?.steamId ?? "";
+};
+
+const onSteamIdBlur = () => {
+  const player = formData.players[activePlayerIndex.value];
+  if (!player) return;
+  const val = currentPlayerSteamId.value.trim();
+  if (val && /^\d+$/.test(val)) {
+    player.steamId = val;
+  } else {
+    currentPlayerSteamId.value = player.steamId;
+  }
 };
 
 const getCurrentPlayerDisplayName = () => {
   const player = formData.players[activePlayerIndex.value];
   if (!player) return "";
-  return player.username || t("common.playerNameDisplay", { id: player.steamId.substring(0, 8) });
+  return player.username || t("common.playerNameDisplay", { id: player.steamId });
 };
 
 const getSanityClass = (val) => {
@@ -1570,6 +1594,54 @@ onMounted(() => {
 .player-detail-section.empty-detail p {
   font-size: 13px;
   margin: 0;
+}
+
+.steamid-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.steamid-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.steamid-label svg {
+  color: var(--primary);
+}
+
+.steamid-input {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-input);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  outline: none;
+  font-family: monospace;
+  letter-spacing: 0.5px;
+  transition: border-color 0.2s;
+}
+
+.steamid-input:hover {
+  border-color: var(--primary);
+}
+
+.steamid-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 15%, transparent);
 }
 
 .detail-header {

@@ -31,6 +31,7 @@
   "scrollLeft": "向左滾動",
   "scrollRight": "向右滾動",
   "localPlayerSuffix": "(本地)",
-  "playerNameDisplay": "玩家 {id}...",
+  "playerNameDisplay": "玩家 {id}",
+  "steamId": "Steam ID",
   "emptyBackpack": "預設空背包"
 }

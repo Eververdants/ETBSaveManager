@@ -3,7 +3,7 @@
     <div
 v-if="show" ref="modalOverlayRef" class="modal-overlay" role="dialog" aria-modal="true" :aria-label="title"
       @click="handleOverlayClick">
-      <div v-squircle="52" class="modal-container" @click.stop>
+      <div v-squircle="52" class="modal-container" :style="{ maxWidth: props.maxWidth }" @click.stop>
         <div class="modal-header">
           <h3 class="modal-title">{{ displayTitle }}</h3>
           <button class="modal-close" :aria-label="t('common.close')" @click="handleCancel">
@@ -111,6 +111,10 @@ const props = defineProps({
   archiveDetails: {
     type: Object,
     default: null,
+  },
+  maxWidth: {
+    type: String,
+    default: "400px",
   },
 });
 

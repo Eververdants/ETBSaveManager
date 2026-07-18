@@ -68,7 +68,7 @@ Whether you are a casual player wanting to keep your progress safe or a power us
 ### 🎨 User Interface & Experience
 
 - **Clean, Modern Design** — Intuitive layout with smooth GSAP-powered animations and transitions
-- **13 Built-in Themes** — Light, Dark, and 11 colorful themes (Ocean, Forest, Sunset, Lavender, Rose, Mint, Peach, Sky, and more)
+- **10 Built-in Themes** — Light, Dark, and 8 colorful themes (Ocean, Forest, Sunset, Lavender, Rose, Mint, Peach, Sky)
 - **Responsive Layout** — Collapsible sidebar and adaptive components that work at any window size
 - **Hardware Accelerated Rendering** — GPU-optimized rendering pipeline for consistently smooth performance
 - **Global Search** — Press `Ctrl+F` from anywhere in the app to search across pages
@@ -195,11 +195,12 @@ A: Open an issue on the [GitHub issue tracker](https://github.com/Eververdants/E
 
 ## 🎨 Theme Gallery
 
-ETB Save Manager ships with **10 built-in themes**:
+ETB Save Manager ships with **11 built-in themes**:
 
 ### Base Themes
 - **Light** — Clean light theme for daytime use
 - **Dark** — Comfortable dark theme for low-light environments
+- **High Contrast** — Maximum contrast accessibility theme
 
 ### Color Themes
 | Theme | Description | Palette |

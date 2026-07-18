@@ -22,11 +22,11 @@ export const site = {
 
   // 与主项目同步：版本戳 / 编译号 / 发布日（非翻译数据）
   meta: {
-    version: "3.2.0",
-    build: "20260619",
-    releaseDate: "2026-06-20",
-    nextVersion: "3.3.0",
-    nextReleaseDate: "2026-07-19",
+    version: "3.3.0",
+    build: "20260719",
+    releaseDate: "2026-07-19",
+    nextVersion: "3.4.0",
+    nextReleaseDate: "2026-08-15",
     edition: "Archive Edition",
     status: "online",
     codename: "Smart Resource Scheduling",

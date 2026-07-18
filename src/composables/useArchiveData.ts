@@ -40,7 +40,7 @@ interface SaveFileDetail {
 interface FileHandleResponse {
   success: boolean;
   data?: {
-    SingleplayerSaves?: number[];
+    SingleplayerSaves?: string[];
   };
 }
 
@@ -70,7 +70,7 @@ const BATCH_SIZE = 50;
  */
 export function useArchiveData(): {
   archives: Ref<ArchiveData[]>;
-  visibleSaves: Ref<Set<number>>;
+  visibleSaves: Ref<Set<string>>;
   loading: Ref<boolean>;
   dataLoadComplete: Ref<boolean>;
   archiveStats: ComputedRef<ArchiveStats>;
@@ -86,7 +86,7 @@ export function useArchiveData(): {
   const { t } = useI18n({ useScope: "global" });
   const toast = useToast();
   const archives = ref<ArchiveData[]>([]);
-  const visibleSaves = ref(new Set<number>());
+  const visibleSaves = ref(new Set<string>());
 
   const loading = ref(false);
   const dataLoadComplete = ref(false);

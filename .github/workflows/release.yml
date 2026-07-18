@@ -4,13 +4,31 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Build workflow run ID to publish (the run number from the tag push, e.g. 29652343943)"
+        required: true
+        type: number
+      tag_name:
+        description: "Tag to create the release on (e.g. v3.3.0)"
+        required: true
+        type: string
+      mark_prerelease:
+        description: "Publish as pre-release"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
 
 jobs:
+  # ── Job 1: Build installers on tag push ──────────────────────────────
   build:
     name: Build (${{ matrix.label }})
+    # Only run on tag push, not when triggered manually for publishing
+    if: github.event_name == 'push'
     strategy:
       fail-fast: false
       matrix:
@@ -84,18 +102,23 @@ jobs:
             src-tauri/target/${{ matrix.arch }}/release/bundle/latest.json
             src-tauri/target/${{ matrix.arch }}/release/bundle/*.sig
           if-no-files-found: error
-          retention-days: 7
+          # Keep artifacts long enough to publish manually later
+          retention-days: 30
 
-  release:
-    name: Create GitHub Release
-    needs: build
+  # ── Job 2: Publish release (manual, after review) ────────────────────
+  publish:
+    name: Publish GitHub Release
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Download all bundle artifacts
+      - name: Download artifacts from build run
         uses: actions/download-artifact@v5
         with:
+          # Pull artifacts from the specific build run the user entered
+          run-id: ${{ inputs.run_id }}
           path: artifacts
           merge-multiple: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: List downloaded files
         run: ls -lR artifacts
@@ -103,11 +126,12 @@ jobs:
       - name: Create release and upload assets
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
+          tag_name: ${{ inputs.tag_name }}
+          name: ${{ inputs.tag_name }}
           generate_release_notes: true
           draft: false
-          prerelease: false
+          prerelease: ${{ inputs.mark_prerelease }}
+          make_latest: true
           files: |
             artifacts/**/*-setup.exe
             artifacts/**/latest.json

@@ -24,7 +24,7 @@ serde_json = "1"
 tauri-plugin-fs = "2"
 dirs-next = "2.0.0"
 regex = "1.11.1"
-uesave = "0.6.2"
+uesave = "0.7.1"
 chrono = "0.4.41"
 walkdir = "2.5.0"
 uuid = { version = "1.17.0", features = ["v4"] }

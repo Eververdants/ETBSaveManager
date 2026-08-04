@@ -17,8 +17,8 @@ jobs:
         with:
           node-version: 22
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Setup pnpm (fixed v10)
+        run: npm install -g pnpm@10 && pnpm --version
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

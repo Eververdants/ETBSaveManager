@@ -101,7 +101,10 @@ pub fn set_process_priority(priority: String) -> AppResult<()> {
         println!("✅ Process priority set to {}", priority);
     }
     #[cfg(not(target_os = "windows"))]
-    println!("⚠️ set_process_priority is Windows-only, ignoring");
+    {
+        let _ = &priority;
+        println!("⚠️ set_process_priority is Windows-only, ignoring");
+    }
     Ok(())
 }
 

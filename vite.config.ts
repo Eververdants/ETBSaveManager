@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
 import VueI18nVitePlugin from "@intlify/unplugin-vue-i18n/vite";
@@ -204,6 +204,18 @@ export default defineConfig(async ({ mode }) => {
       headers: {
         "Cache-Control": "public, max-age=31536000",
       },
+    },
+
+    // Vitest 配置：landing-page-react 是独立子项目（有自己的 alias 与依赖），
+    // 根 vitest 不应扫描它的测试
+    test: {
+      exclude: [
+        "**/node_modules/**",
+        "**/landing-page-react/**",
+        "**/dist/**",
+        "**/cypress/**",
+        "**/.{idea,git,cache,output,temp}/**",
+      ],
     },
   };
 });

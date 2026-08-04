@@ -236,8 +236,7 @@ fn process_player_data(save: &mut Save, json_data: &JsonValue) -> AppResult<()> 
     if let Some(player_inventory) = json_data["playerInventory"].as_object() {
         for steam_id in player_inventory.keys() {
             let trimmed_id = steam_id.trim().to_string();
-            if !trimmed_id.is_empty()
-                && !steam_ids_from_frontend.iter().any(|id| id == &trimmed_id)
+            if !trimmed_id.is_empty() && !steam_ids_from_frontend.iter().any(|id| id == &trimmed_id)
             {
                 steam_ids_from_frontend.push(trimmed_id);
             }

@@ -407,12 +407,19 @@ pub async fn handle_file(
         let visible_saves = get_visible_saves_set()?;
         let is_visible = visible_saves.contains(archive_name);
 
-        eprintln!("[handle_file] toggling visibility for '{}' (currently {})", archive_name, if is_visible { "visible" } else { "hidden" });
+        eprintln!(
+            "[handle_file] toggling visibility for '{}' (currently {})",
+            archive_name,
+            if is_visible { "visible" } else { "hidden" }
+        );
 
         if is_visible {
             let removed = remove_save_from_mainsave(archive_name)?;
             if !removed {
-                eprintln!("[handle_file] WARNING: '{}' not found in MAINSAVE SingleplayerSaves", archive_name);
+                eprintln!(
+                    "[handle_file] WARNING: '{}' not found in MAINSAVE SingleplayerSaves",
+                    archive_name
+                );
             }
         } else {
             add_save_to_mainsave(archive_name)?;

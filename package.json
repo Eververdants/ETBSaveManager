@@ -73,5 +73,12 @@
     "vitest": "^4.0.17",
     "vue-eslint-parser": "^10.4.1",
     "vue-tsc": "^3.3.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "esbuild",
+      "vue-demi"
+    ]
   }
 }

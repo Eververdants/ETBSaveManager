@@ -169,7 +169,7 @@ describe("useArchiveList", () => {
     const { useArchiveList } = await import("../useArchiveSearchFilter");
     const archives = ref([createArchive({ id: 1 }), createArchive({ id: 2 })]);
     const { displayArchives } = useArchiveList(archives);
-    expect(displayArchives.value).toHaveLength(2);
+    await vi.waitFor(() => expect(displayArchives.value).toHaveLength(2));
   });
 
   it("filters by search query across name, level, difficulty, mode", async () => {
@@ -179,7 +179,7 @@ describe("useArchiveList", () => {
     const list = useArchiveList(archives);
     list.searchQuery.value = "alpha";
     await nextTick();
-    expect(list.displayArchives.value).toHaveLength(1);
+    await vi.waitFor(() => expect(list.displayArchives.value).toHaveLength(1));
     expect(list.displayArchives.value[0].id).toBe(1);
   });
 
@@ -193,7 +193,7 @@ describe("useArchiveList", () => {
     const list = useArchiveList(archives);
     list.selectedArchiveDifficulty.value = "hard";
     await nextTick();
-    expect(list.displayArchives.value).toHaveLength(1);
+    await vi.waitFor(() => expect(list.displayArchives.value).toHaveLength(1));
     expect(list.displayArchives.value[0].id).toBe(2);
   });
 
@@ -204,7 +204,7 @@ describe("useArchiveList", () => {
     const list = useArchiveList(archives);
     list.selectedVisibility.value = "hidden";
     await nextTick();
-    expect(list.displayArchives.value).toHaveLength(1);
+    await vi.waitFor(() => expect(list.displayArchives.value).toHaveLength(1));
     expect(list.displayArchives.value[0].isVisible).toBe(false);
   });
 
@@ -220,7 +220,7 @@ describe("useArchiveList", () => {
     list.selectedArchiveDifficulty.value = "easy";
     list.selectedVisibility.value = "visible";
     await nextTick();
-    expect(list.displayArchives.value).toHaveLength(1);
+    await vi.waitFor(() => expect(list.displayArchives.value).toHaveLength(1));
     expect(list.displayArchives.value[0].id).toBe(1);
   });
 
@@ -262,7 +262,7 @@ describe("useArchiveList", () => {
     expect(list.searchSuggestions.value).toHaveLength(0);
     list.searchQuery.value = "alpha";
     await nextTick();
-    expect(list.searchSuggestions.value).toHaveLength(1);
+    await vi.waitFor(() => expect(list.searchSuggestions.value).toHaveLength(1));
     expect(list.searchSuggestions.value[0].id).toBe(1);
   });
 });

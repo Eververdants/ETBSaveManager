@@ -8,6 +8,7 @@ import {
   DEFAULT_CONFIG,
 } from "../useConfigResolver";
 import type { ArchiveConfig, UniformConfig, SmartRules, DifficultyLevel } from "../../types";
+import { FEATURES } from "@/config/features";
 
 const createArchiveConfig = (overrides: Partial<ArchiveConfig> = {}): ArchiveConfig => ({
   id: "test-1",
@@ -161,23 +162,43 @@ describe("resolve", () => {
   });
 
   describe("actual difficulty resolution", () => {
-    it("uses individual actual difficulty when set", () => {
-      const archive = createArchiveConfig({ actualDifficulty: "hard" as DifficultyLevel });
-      const result = resolve(archive, defaultUniform, defaultSmart);
-      expect(result.actualDifficulty).toBe("hard");
-      expect(result.source.actualDifficulty).toBe("individual");
-    });
+    // MERGE_DIFFICULTY 开启时（见 src/config/features.ts），实际难度镜像存档难度，
+    // individual/uniform 的 actualDifficulty 设置被特性有意合并
+    if (FEATURES.MERGE_DIFFICULTY) {
+      it("mirrors archive difficulty when merge enabled", () => {
+        const archive = createArchiveConfig({ difficulty: "hard" as DifficultyLevel });
+        const result = resolve(archive, defaultUniform, defaultSmart);
+        expect(result.actualDifficulty).toBe("hard");
+      });
 
-    it("uses uniform config actual difficulty", () => {
-      const archive = createArchiveConfig();
-      const uniform: UniformConfig = {
-        ...defaultUniform,
-        actualDifficulty: { enabled: true, value: "easy" },
-      };
-      const result = resolve(archive, uniform, defaultSmart);
-      expect(result.actualDifficulty).toBe("easy");
-      expect(result.source.actualDifficulty).toBe("uniform");
-    });
+      it("mirrors uniform difficulty when merge enabled", () => {
+        const archive = createArchiveConfig();
+        const uniform: UniformConfig = {
+          ...defaultUniform,
+          difficulty: { enabled: true, value: "easy" },
+        };
+        const result = resolve(archive, uniform, defaultSmart);
+        expect(result.actualDifficulty).toBe("easy");
+      });
+    } else {
+      it("uses individual actual difficulty when set", () => {
+        const archive = createArchiveConfig({ actualDifficulty: "hard" as DifficultyLevel });
+        const result = resolve(archive, defaultUniform, defaultSmart);
+        expect(result.actualDifficulty).toBe("hard");
+        expect(result.source.actualDifficulty).toBe("individual");
+      });
+
+      it("uses uniform config actual difficulty", () => {
+        const archive = createArchiveConfig();
+        const uniform: UniformConfig = {
+          ...defaultUniform,
+          actualDifficulty: { enabled: true, value: "easy" },
+        };
+        const result = resolve(archive, uniform, defaultSmart);
+        expect(result.actualDifficulty).toBe("easy");
+        expect(result.source.actualDifficulty).toBe("uniform");
+      });
+    }
   });
 
   describe("inventory resolution", () => {

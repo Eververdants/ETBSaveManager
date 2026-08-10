@@ -59,7 +59,7 @@
     "@vue/tsconfig": "^0.9.1",
     "eslint": "^10.5.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-vue": "^10.9.2",
+    "eslint-plugin-vue": "^10.10.0",
     "fast-check": "^4.9.0",
     "globals": "^17.6.0",
     "happy-dom": "^20.11.1",

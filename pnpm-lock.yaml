@@ -81,8 +81,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3))
       pinyin-pro:
-        specifier: ^3.28.1
-        version: 3.28.1
+        specifier: ^3.28.2
+        version: 3.28.2
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -2280,8 +2280,8 @@ packages:
       typescript:
         optional: true
 
-  pinyin-pro@3.28.1:
-    resolution: {integrity: sha512-oqz8ulwRgtUXRi0vbqEfGNly19zpyCxYrjhkk5TibGcgSW6eNwS5woajCXRwqURi8Ehc2yOFTiB4uNoZ+NJOnA==}
+  pinyin-pro@3.28.2:
+    resolution: {integrity: sha512-jV38yxXHLfidirMC4hrXasLDozLCSq/4DfX88GnHcSEJ2+GpSedG6I9VOiEXJu6iQ5dbJC/RjmzyMuS5h/wH5A==}
 
   pkg-types@1.3.1:
     resolution: {integrity: sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==}
@@ -4822,7 +4822,7 @@ snapshots:
     optionalDependencies:
       typescript: 6.0.3
 
-  pinyin-pro@3.28.1: {}
+  pinyin-pro@3.28.2: {}
 
   pkg-types@1.3.1:
     dependencies:

@@ -69,8 +69,8 @@ importers:
         specifier: ^15.0.0
         version: 15.0.0
       markdown-it-attrs:
-        specifier: ^4.3.1
-        version: 4.3.1(markdown-it@15.0.0)
+        specifier: ^5.0.1
+        version: 5.0.1(markdown-it@15.0.0)
       markdown-it-container:
         specifier: ^4.0.0
         version: 4.0.0
@@ -2128,8 +2128,8 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
-  markdown-it-attrs@4.3.1:
-    resolution: {integrity: sha512-/ko6cba+H6gdZ0DOw7BbNMZtfuJTRp9g/IrGIuz8lYc/EfnmWRpaR3CFPnNbVz0LDvF8Gf1hFGPqrQqq7De0rg==}
+  markdown-it-attrs@5.0.1:
+    resolution: {integrity: sha512-dTP49/FLERwbgqmfIG5LwnC99qecIJYalKQbl3pY+7Hajk+Z+cazeEZaKwofpM9KFxvfRVF0UN9GYxKKAakfNg==}
     engines: {node: '>=6'}
     peerDependencies:
       markdown-it: '>= 9.0.0'
@@ -4692,7 +4692,7 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  markdown-it-attrs@4.3.1(markdown-it@15.0.0):
+  markdown-it-attrs@5.0.1(markdown-it@15.0.0):
     dependencies:
       markdown-it: 15.0.0
 

@@ -146,6 +146,7 @@ import Step2ConfigArchive from "./Step2ConfigArchive.vue";
 import Step3EditInventory from "./Step3EditInventory.vue";
 import { ENDING_LEVELS, ENDINGS_CONFIG } from "@/data/endingsData";
 import { FEATURES } from "@/config/features";
+import { getItemIdByName } from "@/utils/itemIdMap";
 
 const { t, te } = useI18n({ useScope: "global" });
 const router = useRouter();
@@ -365,37 +366,6 @@ const updatePlayerSanity = ({ playerIndex, sanity }) => {
   if (playerIndex < 0 || playerIndex >= players.length) return;
   const val = Number(sanity);
   players[playerIndex].sanity = Number.isFinite(val) ? Math.max(0, Math.min(100, val)) : 100;
-};
-
-const getItemIdByName = (itemName) => {
-  const itemMap = {
-    AlmondConcentrate: 1,
-    Lockpick: 2,
-    Bandage: 3,
-    Flashlight: 4,
-    StaminaPills: 5,
-    MedKit: 6,
-    NutritionBar: 7,
-    Coin: 8,
-    Batteries: 9,
-    Syringe: 10,
-    Bone: 11,
-    Key: 12,
-    Code: 13,
-    Glowstick: 14,
-    OxygenMask: 15,
-    Grapple: 16,
-    Soda: 17,
-    Beacon: 18,
-    Radio: 19,
-    Tea: 20,
-    HealingPotion: 21,
-    SpeedBoost: 22,
-    InvisibilityPotion: 23,
-    Knife: 24,
-    Toy: 25,
-  };
-  return itemMap[itemName] || 1;
 };
 
 const editSlot = (playerIndex, slotIndex) => {

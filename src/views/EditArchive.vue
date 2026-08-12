@@ -295,6 +295,7 @@ import { notify } from "../services/notificationService";
 import { editArchiveDataStore } from "../composables/useArchiveActions";
 import { formatDifficulty } from "../utils/archiveCreationUtils";
 import { stripSteamIdSuffix } from "../utils/steamIdUtils";
+import { getItemIdByName } from "../utils/itemIdMap";
 import { FEATURES } from "@/config/features";
 import { ENDING_LEVELS, ENDINGS_CONFIG } from "@/data/endingsData";
 
@@ -823,38 +824,6 @@ const handleItemSelect = (itemId) => {
     formData.players[playerIndex].inventory[slotIndex] = itemId;
   }
   showItemSelector.value = false;
-};
-
-const getItemIdByName = (itemName) => {
-  if (!itemName || itemName === "None") return -1;
-  const map = {
-    AlmondConcentrate: 1,
-    BugSpray: 2,
-    Camera: 3,
-    AlmondWater: 4,
-    Chainsaw: 5,
-    DivingHelmet: 6,
-    EnergyBar: 7,
-    Firework: 8,
-    Flaregun: 9,
-    Flashlight: 10,
-    GlowstickBlue: 11,
-    GlowStick: 12,
-    GlowstickRed: 13,
-    GlowstickYellow: 14,
-    Juice: 15,
-    LiquidPain: 16,
-    Rope: 17,
-    LiDAR: 18,
-    Thermometer: 19,
-    Ticket: 20,
-    WalkieTalkie: 21,
-    MothJelly: 22,
-    Crowbar: 23,
-    Knife: 24,
-    Toy: 25,
-  };
-  return map[itemName] || -1;
 };
 
 const closeEdit = () => router.push({ name: "Home" });

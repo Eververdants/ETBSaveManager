@@ -6,8 +6,8 @@ use serde_json::Value as JsonValue;
 use std::fs;
 use std::io::{BufWriter, Write};
 use uesave::{
-    Properties, Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
-    PropertyType, Save, StructType, StructValue, ValueArray, ValueVec,
+    FGuid, Properties, Property, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
+    PropertyType, Save, StructType, StructValue, ValueVec,
 };
 
 /// Main storyline level data: (DisplayName, LevelName)
@@ -163,6 +163,7 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     println!("📂 Target save path: {:?}", save_path);
 
     // Construct Save object from BasicArchive.json
+    // NOTE (uesave 0.7): JSON must contain "schemas" before "root" (hand-written Deserialize)
     let mut save: Save = serde_json::from_value(save_data.basic_archive.clone()).map_err(|e| {
         format!(
             "Failed to convert JSON to Save: {:?}, JSON content: {}",
@@ -196,6 +197,18 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     // Update player data
     if !save_data.players.is_empty() {
         update_player_data(&mut save, &save_data.players)?;
+    } else {
+        // No players provided: remove template PlayerData to avoid ghost player records
+        let player_data_key = PropertyKey(0, "PlayerData".to_string());
+        if save
+            .root
+            .properties
+            .0
+            .shift_remove(&player_data_key)
+            .is_some()
+        {
+            println!("🗑️ Removed template PlayerData (no players provided)");
+        }
     }
 
     // Write as .sav file
@@ -247,14 +260,18 @@ fn handle_pipes_unlocked_fun(save: &mut Save, level: &str) {
             }
         }
         "Pipes2" => {
-            let prop = Property {
-                tag: PropertyTagPartial {
+            save_shared::record_root_schema(
+                save,
+                "UnlockedFun",
+                PropertyTagPartial {
                     id: None,
                     data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
                 },
-                inner: PropertyInner::Bool(true),
-            };
-            save.root.properties.0.insert(unlocked_fun_key, prop);
+            );
+            save.root
+                .properties
+                .0
+                .insert(unlocked_fun_key, Property::Bool(true));
             println!("✅ Created UnlockedFun_0 field with value true (Pipes2)");
         }
         _ => {}
@@ -263,18 +280,18 @@ fn handle_pipes_unlocked_fun(save: &mut Save, level: &str) {
 
 /// Update boolean property
 fn update_bool_property(save: &mut Save, name: &str, value: bool) -> AppResult<()> {
-    let prop = Property {
-        tag: PropertyTagPartial {
+    save_shared::record_root_schema(
+        save,
+        name,
+        PropertyTagPartial {
             id: None,
             data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
         },
-        inner: PropertyInner::Bool(value),
-    };
-
+    );
     save.root
         .properties
         .0
-        .insert(PropertyKey(0, name.to_string()), prop);
+        .insert(PropertyKey(0, name.to_string()), Property::Bool(value));
 
     println!("✅ Set {} field to {}", name, value);
     Ok(())
@@ -295,6 +312,49 @@ fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> AppResult<()> {
     }
 
     Ok(())
+}
+
+/// Record schemas for all fields inside a LevelsCompleted struct element.
+/// In uesave 0.7 the schema path is "LevelsCompleted.<field>".
+fn record_level_struct_schemas(save: &mut Save) {
+    let parent = "LevelsCompleted";
+    save.schemas.record(
+        format!("{}.{}", parent, save_shared::DISPLAY_NAME_FIELD),
+        PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(PropertyType::StrProperty),
+        },
+    );
+    save.schemas.record(
+        format!("{}.{}", parent, save_shared::HAS_COMPLETED_FIELD),
+        PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
+        },
+    );
+    save.schemas.record(
+        format!("{}.{}", parent, save_shared::HAS_UNLOCKED_HUB_FIELD),
+        PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
+        },
+    );
+    save.schemas.record(
+        format!("{}.{}", parent, save_shared::LEVEL_NAME_FIELD),
+        PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(PropertyType::NameProperty),
+        },
+    );
+    save.schemas.record(
+        format!("{}.{}", parent, save_shared::TIME_FIELD),
+        PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
+        },
+    );
+    // World struct + nested Items/SanityLevel schemas
+    save_shared::create_default_world_property(save, parent);
 }
 
 /// Generate LevelsCompleted_0 data based on selected level
@@ -376,99 +436,64 @@ fn generate_levels_completed(
     // Get existing LevelsCompleted_0 as template
     let levels_completed_key = PropertyKey(0, "LevelsCompleted".to_string());
 
-    // Get template structure info from existing data (only need id, struct_type, type_)
-    let template_struct = if let Some(prop) = save.root.properties.0.get(&levels_completed_key) {
-        if let PropertyInner::Array(ValueArray::Struct {
-            id,
-            struct_type,
-            type_,
-            value: _,
-        }) = &prop.inner
-        {
-            Some((*id, struct_type.clone(), *type_))
-        } else {
-            None
-        }
-    } else {
-        None
-    };
+    // Get template structure info from existing schemas (0.7: struct_type/id live in schemas)
+    let template_struct = save
+        .schemas
+        .get("LevelsCompleted")
+        .and_then(|tag| match &tag.data {
+            PropertyTagDataPartial::Array(inner) => match &**inner {
+                PropertyTagDataPartial::Struct { struct_type, id } => {
+                    Some((struct_type.clone(), *id))
+                }
+                _ => None,
+            },
+            _ => None,
+        });
 
-    let (struct_id, struct_type, type_name) =
+    let (struct_type, struct_id) =
         template_struct.ok_or("Failed to get LevelsCompleted template structure")?;
 
     // Generate new level records
     let mut new_values: Vec<StructValue> = Vec::new();
 
+    // Record schemas for the struct fields (used both for new save creation and write-back)
+    record_level_struct_schemas(save);
+
     for (display_name, level_name, is_completed) in levels_to_generate {
         let mut level_props = Properties::default();
 
         // DisplayName
-        let display_name_prop = Property {
-            tag: PropertyTagPartial {
-                id: None,
-                data: PropertyTagDataPartial::Other(PropertyType::StrProperty),
-            },
-            inner: PropertyInner::Str(display_name.to_string()),
-        };
         level_props.0.insert(
             PropertyKey(0, save_shared::DISPLAY_NAME_FIELD.to_string()),
-            display_name_prop,
+            Property::Str(display_name.to_string()),
         );
 
         // HasCompleted
-        let has_completed_prop = Property {
-            tag: PropertyTagPartial {
-                id: None,
-                data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
-            },
-            inner: PropertyInner::Bool(is_completed),
-        };
         level_props.0.insert(
             PropertyKey(0, save_shared::HAS_COMPLETED_FIELD.to_string()),
-            has_completed_prop,
+            Property::Bool(is_completed),
         );
 
         // HasUnlockedHub
-        let has_unlocked_hub_prop = Property {
-            tag: PropertyTagPartial {
-                id: None,
-                data: PropertyTagDataPartial::Other(PropertyType::BoolProperty),
-            },
-            inner: PropertyInner::Bool(is_completed),
-        };
         level_props.0.insert(
             PropertyKey(0, save_shared::HAS_UNLOCKED_HUB_FIELD.to_string()),
-            has_unlocked_hub_prop,
+            Property::Bool(is_completed),
         );
 
         // LevelName
-        let level_name_prop = Property {
-            tag: PropertyTagPartial {
-                id: None,
-                data: PropertyTagDataPartial::Other(PropertyType::NameProperty),
-            },
-            inner: PropertyInner::Name(level_name.to_string()),
-        };
         level_props.0.insert(
             PropertyKey(0, save_shared::LEVEL_NAME_FIELD.to_string()),
-            level_name_prop,
+            Property::Name(level_name.to_string()),
         );
 
         // Time
-        let time_prop = Property {
-            tag: PropertyTagPartial {
-                id: None,
-                data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
-            },
-            inner: PropertyInner::Float(-1.0),
-        };
         level_props.0.insert(
             PropertyKey(0, save_shared::TIME_FIELD.to_string()),
-            time_prop,
+            Property::Float(uesave::Float(-1.0)),
         );
 
         // World - Create default World structure
-        let world_prop = save_shared::create_default_world_property();
+        let world_prop = save_shared::create_default_world_property(save, "LevelsCompleted");
         level_props.0.insert(
             PropertyKey(0, save_shared::WORLD_FIELD.to_string()),
             world_prop,
@@ -482,24 +507,18 @@ fn generate_levels_completed(
     }
 
     // Create new LevelsCompleted_0 property
-    // struct_id is Option<Uuid>, provide a default value if needed
-    let final_struct_id = struct_id.unwrap_or_else(uuid::Uuid::nil);
-
-    let new_levels_completed = Property {
-        tag: PropertyTagPartial {
+    // 0.7: struct id is FGuid (not Option<Uuid>)
+    save.schemas.record(
+        "LevelsCompleted".to_string(),
+        PropertyTagPartial {
             id: None,
             data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Struct {
                 struct_type: struct_type.clone(),
-                id: final_struct_id,
+                id: struct_id,
             })),
         },
-        inner: PropertyInner::Array(ValueArray::Struct {
-            id: struct_id,
-            struct_type,
-            type_: type_name,
-            value: new_values,
-        }),
-    };
+    );
+    let new_levels_completed = Property::Array(ValueVec::Struct(new_values));
 
     // Replace the original LevelsCompleted_0
     save.root
@@ -536,24 +555,10 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> AppResult<()> 
             let mut player_struct_properties = Properties::default();
 
             // Sanity property
-            let sanity_prop = Property {
-                tag: PropertyTagPartial {
-                    id: None,
-                    data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
-                },
-                inner: PropertyInner::Float(player.sanity.clamp(0.0, 100.0)),
-            };
+            let sanity_prop = Property::Float(uesave::Float(player.sanity.clamp(0.0, 100.0)));
 
             // Inventory property
-            let inventory_prop = Property {
-                tag: PropertyTagPartial {
-                    id: None,
-                    data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(
-                        PropertyType::NameProperty,
-                    ))),
-                },
-                inner: PropertyInner::Array(ValueArray::Base(ValueVec::Name(inventory_items))),
-            };
+            let inventory_prop = Property::Array(ValueVec::Name(inventory_items));
 
             player_struct_properties.0.insert(
                 PropertyKey(0, save_shared::SANITY_PROP_NAME.to_string()),
@@ -565,26 +570,40 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> AppResult<()> 
             );
 
             uesave::MapEntry {
-                key: uesave::PropertyValue::Str(player.steam_id.clone()),
-                value: uesave::PropertyValue::Struct(StructValue::Struct(player_struct_properties)),
+                key: Property::Str(player.steam_id.clone()),
+                value: Property::Struct(StructValue::Struct(player_struct_properties)),
             }
         })
         .collect();
 
-    // Create PlayerData_0 property
-    let player_data_prop = Property {
-        tag: PropertyTagPartial {
+    // Record schemas for PlayerData map and its nested struct fields
+    save.schemas.record(
+        "PlayerData".to_string(),
+        PropertyTagPartial {
             id: None,
             data: PropertyTagDataPartial::Map {
                 key_type: Box::new(PropertyTagDataPartial::Other(PropertyType::StrProperty)),
                 value_type: Box::new(PropertyTagDataPartial::Struct {
                     struct_type: StructType::Struct(None),
-                    id: uuid::Uuid::nil(),
+                    id: FGuid::nil(),
                 }),
             },
         },
-        inner: PropertyInner::Map(map_entries),
-    };
+    );
+    save.schemas.record(
+        format!("PlayerData.{}", save_shared::SANITY_PROP_NAME),
+        PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
+        },
+    );
+    save.schemas.record(
+        format!("PlayerData.{}", save_shared::INVENTORY_PROP_NAME),
+        save_shared::array_scalar_tag(PropertyTagDataPartial::Other(PropertyType::NameProperty)),
+    );
+
+    // Create PlayerData_0 property
+    let player_data_prop = Property::Map(map_entries);
 
     save.root
         .properties

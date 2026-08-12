@@ -294,6 +294,7 @@ import PlayerManager from "../components/system/PlayerManager.vue";
 import { notify } from "../services/notificationService";
 import { editArchiveDataStore } from "../composables/useArchiveActions";
 import { formatDifficulty } from "../utils/archiveCreationUtils";
+import { stripSteamIdSuffix } from "../utils/steamIdUtils";
 import { FEATURES } from "@/config/features";
 import { ENDING_LEVELS, ENDINGS_CONFIG } from "@/data/endingsData";
 
@@ -398,7 +399,14 @@ const handleSaveArchive = async () => {
     const playerSanity = {};
 
     formData.players.forEach((player) => {
-      const steamId = player.steamId.trim();
+      // 复用存档原始完整键（含游戏生成的 UniqueNetId 后缀）；id 被用户改过则退回纯 id
+      const originalBase = player.originalSteamId
+        ? stripSteamIdSuffix(player.originalSteamId).split("-")[0]
+        : "";
+      const steamId =
+        player.originalSteamId && originalBase === player.steamId.trim()
+          ? player.originalSteamId
+          : player.steamId.trim();
       playerInventory[steamId] = player.inventory.map((itemId) => ({
         item: { id: getItemIdByName(itemId) },
       }));
@@ -502,7 +510,7 @@ const loadPlayerData = async (archive) => {
           const formattedInventory = inventory.map((item) => item || null);
           while (formattedInventory.length < 12) formattedInventory.push(null);
 
-          let processedId = steamId;
+          let processedId;
           let isOffline = false;
           let username = null;
 
@@ -511,10 +519,17 @@ const loadPlayerData = async (archive) => {
             processedId = parts[0];
             isOffline = true;
             username = `${parts[0]}${t("common.localPlayerSuffix")}`;
+          } else {
+            // 在线玩家：剥离 UE UniqueNetId 后缀，界面只显示纯 steam id
+            processedId = stripSteamIdSuffix(steamId);
           }
 
           formData.players.push({
+            // 界面显示/编辑用纯 id
             steamId: processedId,
+            // 存档里的原始完整键（在线：`<id>_+_|<32hex>`；离线：`<id>-<15字符>`）
+            // 保存时复用，保证玩家的 UniqueNetId 不被改写（游戏生成的后缀应用无法推导）
+            originalSteamId: steamId,
             inventory: formattedInventory.slice(0, 12),
             username,
             isOfflinePlayer: isOffline,

@@ -3,8 +3,8 @@
 //! Extracted duplicated constants and functions to a single source of truth.
 
 use uesave::{
-    Properties, Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
-    PropertyType, Save, StructType, StructValue, ValueArray, ValueVec,
+    FGuid, Properties, Property, PropertyKey, PropertyTagDataPartial, PropertyTagPartial,
+    PropertyType, Save, StructType, StructValue, ValueVec,
 };
 
 /// Inventory slot count
@@ -72,65 +72,77 @@ pub fn get_property_by_name_mut<'a>(
         .map(|(_, prop)| prop)
 }
 
+/// Helper: record a schema for a top-level property (0.7 stores tags in Save.schemas)
+pub fn record_root_schema(save: &mut Save, name: &str, tag: PropertyTagPartial) {
+    save.schemas.record(name.to_string(), tag);
+}
+
+/// Helper: record a schema for a nested property path (parent.child)
+pub fn record_nested_schema(save: &mut Save, parent: &str, child: &str, tag: PropertyTagPartial) {
+    save.schemas.record(format!("{}.{}", parent, child), tag);
+}
+
 /// Create inventory property (Name array with 12 slots)
 pub fn create_inventory_property(items: Vec<String>) -> Property {
-    Property {
-        tag: PropertyTagPartial {
-            id: None,
-            data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(
-                PropertyType::NameProperty,
-            ))),
-        },
-        inner: PropertyInner::Array(ValueArray::Base(ValueVec::Name(items))),
-    }
+    Property::Array(ValueVec::Name(items))
 }
 
 /// Create sanity property (Float, clamped 0–100)
 pub fn create_sanity_property(sanity: f32) -> Property {
-    Property {
-        tag: PropertyTagPartial {
-            id: None,
-            data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
-        },
-        inner: PropertyInner::Float(sanity.clamp(0.0, 100.0)),
-    }
+    Property::Float(uesave::Float(sanity.clamp(0.0, 100.0)))
 }
 
 /// Create default World property
 ///
 /// Structure: S_WorldCommon { Items: [], SanityLevel: 100.0 }
-pub fn create_default_world_property() -> Property {
+/// Records schemas under `prefix` (e.g. "LevelsCompleted") for 0.7 write-back.
+pub fn create_default_world_property(save: &mut Save, prefix: &str) -> Property {
+    let world_key = format!("{}.{}", prefix, WORLD_FIELD);
+    let items_key = format!(
+        "{}.{}",
+        world_key, "Items_19_783746F14C74611D03643BB2DF689058"
+    );
+    let sanity_key = format!(
+        "{}.{}",
+        world_key, "SanityLevel_16_3DCC15864CC44BF25D86A09EED0B2065"
+    );
+
+    // World struct schema
+    save.schemas.record(
+        world_key.clone(),
+        struct_tag(StructType::Struct(Some("S_WorldCommon".to_string()))),
+    );
+    // Items array (empty) - array of S_DroppedItem structs
+    save.schemas.record(
+        items_key,
+        array_struct_tag(StructType::Struct(Some("S_DroppedItem".to_string()))),
+    );
+    // SanityLevel float
+    save.schemas.record(
+        sanity_key,
+        PropertyTagPartial {
+            id: None,
+            data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
+        },
+    );
+
+    create_default_world_property_no_schema()
+}
+
+/// Create default World property without recording schemas.
+/// Caller must ensure schemas are recorded separately (e.g. via create_default_world_property).
+pub fn create_default_world_property_no_schema() -> Property {
     let mut world_inner_props = Properties::default();
 
     // Items array (empty)
-    let items_prop = Property {
-        tag: PropertyTagPartial {
-            id: None,
-            data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Struct {
-                struct_type: StructType::Struct(Some("S_DroppedItem".to_string())),
-                id: uuid::Uuid::nil(),
-            })),
-        },
-        inner: PropertyInner::Array(ValueArray::Struct {
-            id: Some(uuid::Uuid::nil()),
-            struct_type: StructType::Struct(Some("S_DroppedItem".to_string())),
-            type_: PropertyType::StructProperty,
-            value: vec![],
-        }),
-    };
+    let items_prop = Property::Array(ValueVec::Struct(vec![]));
     world_inner_props.0.insert(
         PropertyKey(0, "Items_19_783746F14C74611D03643BB2DF689058".to_string()),
         items_prop,
     );
 
     // SanityLevel
-    let sanity_prop = Property {
-        tag: PropertyTagPartial {
-            id: None,
-            data: PropertyTagDataPartial::Other(PropertyType::FloatProperty),
-        },
-        inner: PropertyInner::Float(100.0),
-    };
+    let sanity_prop = Property::Float(uesave::Float(100.0));
     world_inner_props.0.insert(
         PropertyKey(
             0,
@@ -139,16 +151,7 @@ pub fn create_default_world_property() -> Property {
         sanity_prop,
     );
 
-    Property {
-        tag: PropertyTagPartial {
-            id: None,
-            data: PropertyTagDataPartial::Struct {
-                struct_type: StructType::Struct(Some("S_WorldCommon".to_string())),
-                id: uuid::Uuid::nil(),
-            },
-        },
-        inner: PropertyInner::Struct(StructValue::Struct(world_inner_props)),
-    }
+    Property::Struct(StructValue::Struct(world_inner_props))
 }
 
 /// Modify CurrentLevel_0.Name field value.
@@ -160,8 +163,8 @@ pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
     let key = PropertyKey(0, "CurrentLevel".to_string());
 
     if let Some(current_level_prop) = save.root.properties.0.get_mut(&key) {
-        match &mut current_level_prop.inner {
-            PropertyInner::Name(ref mut name) => {
+        match current_level_prop {
+            Property::Name(ref mut name) => {
                 *name = new_level_name.clone();
                 println!("✅ CurrentLevel_0 modified to: {}", name);
                 true
@@ -177,15 +180,18 @@ pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
     } else {
         println!("⚠️ CurrentLevel_0 field not found, creating a new one...");
 
-        let new_current_level = Property {
-            tag: PropertyTagPartial {
+        record_root_schema(
+            save,
+            "CurrentLevel",
+            PropertyTagPartial {
                 id: None,
                 data: PropertyTagDataPartial::Other(PropertyType::NameProperty),
             },
-            inner: PropertyInner::Name(new_level_name.clone()),
-        };
-
-        save.root.properties.0.insert(key, new_current_level);
+        );
+        save.root
+            .properties
+            .0
+            .insert(key, Property::Name(new_level_name.clone()));
         println!(
             "✅ Created new CurrentLevel_0 field with value: {}",
             new_level_name
@@ -231,20 +237,50 @@ pub fn update_difficulty(save: &mut Save, difficulty: &str) {
             }
         };
 
-        let prop = Property {
-            tag: PropertyTagPartial {
+        record_root_schema(
+            save,
+            "Difficulty",
+            PropertyTagPartial {
                 id: None,
                 data: PropertyTagDataPartial::Byte(Some("E_Difficulty".to_string())),
             },
-            inner: PropertyInner::Byte(uesave::Byte::Label(label.to_string())),
-        };
-
-        save.root
-            .properties
-            .0
-            .insert(PropertyKey(0, "Difficulty".to_string()), prop);
+        );
+        save.root.properties.0.insert(
+            PropertyKey(0, "Difficulty".to_string()),
+            Property::Byte(uesave::Byte::Label(label.to_string())),
+        );
         println!("✅ Created difficulty field: {}", label);
     } else {
         println!("➖ Skipping difficulty field creation (Normal difficulty)");
+    }
+}
+
+/// Helper: schema for a StructProperty tag
+pub fn struct_tag(struct_type: StructType) -> PropertyTagPartial {
+    PropertyTagPartial {
+        id: None,
+        data: PropertyTagDataPartial::Struct {
+            struct_type,
+            id: FGuid::nil(),
+        },
+    }
+}
+
+/// Helper: schema for an Array of structs tag
+pub fn array_struct_tag(struct_type: StructType) -> PropertyTagPartial {
+    PropertyTagPartial {
+        id: None,
+        data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Struct {
+            struct_type,
+            id: FGuid::nil(),
+        })),
+    }
+}
+
+/// Helper: schema for an Array of scalar tag
+pub fn array_scalar_tag(inner: PropertyTagDataPartial) -> PropertyTagPartial {
+    PropertyTagPartial {
+        id: None,
+        data: PropertyTagDataPartial::Array(Box::new(inner)),
     }
 }

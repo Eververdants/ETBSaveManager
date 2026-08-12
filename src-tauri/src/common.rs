@@ -7,8 +7,7 @@ use std::io::{BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 use uesave::{
-    Property, PropertyInner, PropertyKey, PropertyTagDataPartial, PropertyTagPartial, PropertyType,
-    Save, ValueArray, ValueVec,
+    Property, PropertyKey, PropertyTagDataPartial, PropertyTagPartial, PropertyType, Save, ValueVec,
 };
 
 /// Cache local app data directory path
@@ -109,12 +108,10 @@ pub fn get_visible_saves_set() -> AppResult<HashSet<String>> {
 
     let key = PropertyKey(0, "SingleplayerSaves".to_string());
 
-    if let Some(prop) = mainsave.root.properties.0.get(&key) {
-        if let PropertyInner::Array(ValueArray::Base(ValueVec::Str(ref saves))) = &prop.inner {
-            let mut set = HashSet::with_capacity(saves.len());
-            set.extend(saves.iter().cloned());
-            return Ok(set);
-        }
+    if let Some(Property::Array(ValueVec::Str(ref saves))) = mainsave.root.properties.0.get(&key) {
+        let mut set = HashSet::with_capacity(saves.len());
+        set.extend(saves.iter().cloned());
+        return Ok(set);
     }
 
     Ok(HashSet::new())
@@ -140,34 +137,28 @@ pub fn add_save_to_mainsave(archive_name: &str) -> AppResult<()> {
 
     let key = PropertyKey(0, "SingleplayerSaves".to_string());
 
-    if let Some(prop) = mainsave.root.properties.0.get_mut(&key) {
-        if let PropertyInner::Array(ValueArray::Base(ValueVec::Str(ref mut saves))) =
-            &mut prop.inner
-        {
-            if saves.iter().any(|s| s == archive_name) {
-                // Already exists — move to front (e.g. after editing)
-                saves.retain(|s| s != archive_name);
-                saves.insert(0, archive_name.to_string());
-                return write_mainsave(&mainsave);
-            }
+    if let Some(Property::Array(ValueVec::Str(ref mut saves))) =
+        mainsave.root.properties.0.get_mut(&key)
+    {
+        if saves.iter().any(|s| s == archive_name) {
+            // Already exists — move to front (e.g. after editing)
+            saves.retain(|s| s != archive_name);
             saves.insert(0, archive_name.to_string());
-        } else {
-            return Err("SingleplayerSaves field format incorrect"
-                .to_string()
-                .into());
+            return write_mainsave(&mainsave);
         }
+        saves.insert(0, archive_name.to_string());
     } else {
-        let new_prop = Property {
-            tag: PropertyTagPartial {
+        // New field: record schema (0.7 requires schemas for writing) + insert property
+        mainsave.schemas.record(
+            "SingleplayerSaves".to_string(),
+            PropertyTagPartial {
                 id: None,
                 data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(
                     PropertyType::StrProperty,
                 ))),
             },
-            inner: PropertyInner::Array(ValueArray::Base(ValueVec::Str(vec![
-                archive_name.to_string()
-            ]))),
-        };
+        );
+        let new_prop = Property::Array(ValueVec::Str(vec![archive_name.to_string()]));
         mainsave.root.properties.0.insert(key, new_prop);
     }
 
@@ -191,16 +182,14 @@ pub fn remove_save_from_mainsave(archive_name: &str) -> AppResult<bool> {
 
     let key = PropertyKey(0, "SingleplayerSaves".to_string());
 
-    if let Some(prop) = mainsave.root.properties.0.get_mut(&key) {
-        if let PropertyInner::Array(ValueArray::Base(ValueVec::Str(ref mut saves))) =
-            &mut prop.inner
-        {
-            let original_len = saves.len();
-            saves.retain(|s| s != archive_name);
-            if saves.len() < original_len {
-                write_mainsave(&mainsave)?;
-                return Ok(true);
-            }
+    if let Some(Property::Array(ValueVec::Str(ref mut saves))) =
+        mainsave.root.properties.0.get_mut(&key)
+    {
+        let original_len = saves.len();
+        saves.retain(|s| s != archive_name);
+        if saves.len() < original_len {
+            write_mainsave(&mainsave)?;
+            return Ok(true);
         }
     }
 

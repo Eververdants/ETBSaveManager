@@ -440,9 +440,8 @@ pub async fn get_player_data(file_path: String) -> AppResult<Value> {
         let path = Path::new(&file_path);
         validate_save_games_path(path)?;
         let save = cli_handlers::parse_sav_file(path)?;
-        let save_json = serde_json::to_value(&save)?;
 
-        let (ids, sanities, inventories) = player_data::extract_player_data(&save_json);
+        let (ids, sanities, inventories) = player_data::extract_player_data(&save);
 
         Ok(json!({
             "ids": ids,
@@ -497,9 +496,10 @@ pub async fn convert_sav_to_json(file_path: String) -> AppResult<Value> {
         }
 
         let save = cli_handlers::parse_sav_file(path)?;
-        let save_json =
-            serde_json::to_value(&save).map_err(|e| format!("Failed to convert to JSON: {}", e))?;
-        let json_string = serde_json::to_string_pretty(&save_json)
+        // NOTE (uesave 0.7): serialize directly to a string to preserve field order
+        // (header → schemas → root → extra); serde_json::to_value would reorder keys
+        // alphabetically (BTreeMap) and break Deserialize on the way back.
+        let json_string = serde_json::to_string_pretty(&save)
             .map_err(|e| format!("JSON formatting failed: {}", e))?;
 
         Ok(json!({
@@ -538,9 +538,16 @@ pub async fn convert_json_to_sav(json_content: String, output_path: String) -> A
         if json_value.get("root").is_none() {
             return Err("JSON data missing required root field".to_string().into());
         }
+        if json_value.get("schemas").is_none() {
+            return Err(
+                "JSON data missing required schemas field (regenerate with convert_sav_to_json)"
+                    .to_string()
+                    .into(),
+            );
+        }
 
-        // Rebuild Save object from JSON
-        let save: uesave::Save = serde_json::from_value(json_value)
+        // Rebuild Save object from JSON string (preserves field order for uesave 0.7)
+        let save: uesave::Save = serde_json::from_str(&json_content)
             .map_err(|e| format!("Failed to rebuild Save object from JSON: {}", e))?;
 
         // Create output file (using buffered write)

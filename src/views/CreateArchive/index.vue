@@ -561,6 +561,7 @@ const createArchive = async () => {
         (FEATURES.MERGE_DIFFICULTY ? selectedDifficulty.value : selectedActualDifficulty.value)
           .charAt(0).toUpperCase() + (FEATURES.MERGE_DIFFICULTY ? selectedDifficulty.value : selectedActualDifficulty.value).slice(1) || "Normal",
       players: players.map((p) => ({
+        // 纯 steam id：UniqueNetId 后缀由游戏按账号生成，应用无法推导，不能合成
         steam_id: p.steamId || "",
         inventory: Array.isArray(p.inventory)
           ? p.inventory.filter((item) => item !== null && item !== undefined).map((item) => getItemIdByName(item))

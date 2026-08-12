@@ -8,7 +8,7 @@ use std::borrow::Cow;
 use std::fs::File;
 use std::io::{Cursor, Read};
 use std::path::Path;
-use uesave::{Property, PropertyInner, Save};
+use uesave::{Property, Save};
 
 /// Small file threshold (32KB), read directly below this
 const SMALL_FILE_THRESHOLD: u64 = 32768;
@@ -77,16 +77,16 @@ fn get_property_by_name<'a>(save: &'a Save, name: &str) -> Option<&'a Property> 
 #[inline]
 pub fn extract_current_level(save: &Save) -> String {
     let current_level = get_property_by_name(save, "CurrentLevel")
-        .and_then(|prop| match &prop.inner {
-            PropertyInner::Name(level) => Some(level.as_str()),
+        .and_then(|prop| match prop {
+            Property::Name(level) => Some(level.as_str()),
             _ => None,
         })
         .unwrap_or("Level0");
 
     if current_level == "Pipes" {
         let is_unlocked = get_property_by_name(save, "UnlockedFun")
-            .and_then(|prop| match &prop.inner {
-                PropertyInner::Bool(value) => Some(*value),
+            .and_then(|prop| match prop {
+                Property::Bool(value) => Some(*value),
                 _ => None,
             })
             .unwrap_or(false);
@@ -104,11 +104,10 @@ pub fn extract_current_level(save: &Save) -> String {
 /// Returns Cow to avoid allocation of static strings
 #[inline]
 pub fn extract_difficulty_label(save: &Save) -> Cow<'static, str> {
-    let difficulty_label =
-        get_property_by_name(save, "Difficulty").and_then(|prop| match &prop.inner {
-            PropertyInner::Byte(uesave::Byte::Label(label)) => Some(label.as_str()),
-            _ => None,
-        });
+    let difficulty_label = get_property_by_name(save, "Difficulty").and_then(|prop| match prop {
+        Property::Byte(uesave::Byte::Label(label)) => Some(label.as_str()),
+        _ => None,
+    });
 
     match difficulty_label {
         Some(s) if s.contains("NewEnumerator0") => Cow::Borrowed("Easy"),

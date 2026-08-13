@@ -25,3 +25,6 @@ dist-ssr
 
 .claude
 .codegraph
+
+# Landing page lives on its own branch (landingpage)
+landing-page-react/

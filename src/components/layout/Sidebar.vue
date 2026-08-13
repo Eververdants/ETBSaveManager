@@ -1,6 +1,6 @@
 <template>
   <div
-ref="sidebarRef" v-squircle="44" class="sidebar" :class="{ expanded: isExpanded }" role="navigation"
+ref="sidebarRef" class="sidebar" :class="{ expanded: isExpanded }" role="navigation"
     aria-label="Main menu" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" @keydown="handleKeydown">
     <div class="sidebar-content">
       <!-- Top section -->
@@ -439,7 +439,6 @@ onMounted(() => {
   padding: var(--space-3) 0;
   cursor: pointer;
   transition:
-    all 0.2s ease,
     background-color 0.25s ease,
     color 0.25s ease,
     box-shadow 0.25s ease;
@@ -458,7 +457,6 @@ onMounted(() => {
   background: var(--sidebar-hover-bg);
   box-shadow: var(--shadow-md);
   transition:
-    all 0.2s ease,
     background-color 0.25s ease,
     box-shadow 0.25s ease;
 }
@@ -469,7 +467,6 @@ onMounted(() => {
   color: var(--sidebar-active-color);
   box-shadow: inset 0 0 0 2px var(--sidebar-active-border);
   transition:
-    all 0.2s ease,
     background-color 0.25s ease,
     color 0.25s ease,
     box-shadow 0.25s ease;
@@ -479,7 +476,6 @@ onMounted(() => {
 .sidebar-item.active:hover {
   background: var(--sidebar-active-hover-bg);
   transition:
-    all 0.2s ease,
     background-color 0.25s ease,
     box-shadow 0.25s ease;
 }
@@ -613,7 +609,7 @@ onMounted(() => {
   left: 7px;
   /* Center icon: 70px total width - 24px icon = 46px, 23px centered */
   z-index: 1;
-  transition: all 0.3s ease;
+  transition: left 0.3s ease;
   width: 24px;
   height: 24px;
   display: flex;
@@ -625,14 +621,14 @@ onMounted(() => {
 .sidebar-icon {
   font-size: 18px;
   color: var(--text);
-  transition: all 0.3s ease;
+  transition: color 0.25s ease;
 }
 
 /* Sidebar text container styles */
 .sidebar-text-container {
   margin-left: 55px;
   /* Unified spacing for expanded state */
-  transition: all 0.3s ease;
+  transition: margin-left 0.3s ease;
   flex: 1;
   overflow: hidden;
   padding-right: var(--space-5);
@@ -698,20 +694,24 @@ onMounted(() => {
   transition: transform 0.4s ease-out;
 }
 
-.sidebar.expanded .sidebar-item:hover .sidebar-text-container .sidebar-text.scroll-needed {
-  animation: scroll-text var(--animation-duration, 8s) linear infinite;
-  animation-delay: 0.8s;
-}
+/* Text-overflow marquee is hover-only — gate to precise pointers so
+   touch devices don't get a stuck infinite scroll on tap. */
+@media (hover: hover) and (pointer: fine) {
+  .sidebar.expanded .sidebar-item:hover .sidebar-text-container .sidebar-text.scroll-needed {
+    animation: scroll-text var(--animation-duration, 8s) linear infinite;
+    animation-delay: 0.8s;
+  }
 
-.sidebar.expanded .sidebar-item:hover .sidebar-text-container .scroll-active::after {
-  content: attr(data-text);
-  position: absolute;
-  left: 100%;
-  top: 0;
-  white-space: nowrap;
-  width: max-content;
-  margin-left: var(--space-4);
-  /* Use unified spacing variable */
+  .sidebar.expanded .sidebar-item:hover .sidebar-text-container .scroll-active::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 100%;
+    top: 0;
+    white-space: nowrap;
+    width: max-content;
+    margin-left: var(--space-4);
+    /* Use unified spacing variable */
+  }
 }
 
 /* Text scroll animation */
@@ -759,7 +759,7 @@ onMounted(() => {
   align-items: center;
   padding: var(--space-3) 0;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
   white-space: nowrap;
   border-radius: var(--radius-sidebar);
   margin: 0 var(--space-4);

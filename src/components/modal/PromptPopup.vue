@@ -2,7 +2,7 @@
 <template>
   <transition :css="false" @enter="enterAnimation" @leave="leaveAnimation">
     <div
-v-if="isVisible" ref="popupRef" v-squircle="52" class="prompt-popup" :class="popupClass" :style="popupStyle"
+v-if="isVisible" ref="popupRef" class="prompt-popup" :class="popupClass" :style="popupStyle"
       @mouseenter="pauseAutoClose" @mouseleave="resumeAutoClose">
       <div class="popup-content">
         <div v-if="computedIcon" class="popup-icon-container">
@@ -139,7 +139,7 @@ const leaveAnimation = (el, done) => {
     scale: 0.9,
     filter: "blur(4px)",
     duration: 0.25,
-    ease: "power2.in",
+    ease: "power2.out",
     onComplete: () => {
       done();
       emit("close");
@@ -155,9 +155,9 @@ const startProgress = () => {
   if (progressRef.value) {
     progressTimeline.value = gsap.fromTo(
       progressRef.value,
-      { width: "100%" },
+      { scaleX: 1, transformOrigin: "left center" },
       {
-        width: "0%",
+        scaleX: 0,
         duration: remainingTime.value / 1000,
         ease: "linear",
         onComplete: closePopup,
@@ -180,9 +180,9 @@ const resumeAutoClose = () => {
     isPaused.value = false;
     progressTimeline.value = gsap.fromTo(
       progressRef.value,
-      { width: `${(remainingTime.value / props.duration) * 100}%` },
+      { scaleX: remainingTime.value / props.duration, transformOrigin: "left center" },
       {
-        width: "0%",
+        scaleX: 0,
         duration: remainingTime.value / 1000,
         ease: "linear",
         onComplete: closePopup,
@@ -211,7 +211,6 @@ const resumeAutoClose = () => {
   backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: relative;
 }
 
@@ -393,7 +392,7 @@ const resumeAutoClose = () => {
       var(--primary, #8b8178) 0%,
       color-mix(in srgb, var(--primary) 80%, transparent) 100%);
   border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
-  transition: width 0.1s ease;
+  transform-origin: left center;
   box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 50%, transparent);
 }
 
@@ -473,25 +472,6 @@ const resumeAutoClose = () => {
   }
 }
 
-/* 动画效果增强 */
-.prompt-popup {
-  animation: popupGlow 0.6s ease-out;
-}
-
-@keyframes popupGlow {
-  0% {
-    box-shadow: 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
-  }
-
-  50% {
-    box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 20%, transparent);
-  }
-
-  100% {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  }
-}
-
 /* Type-specific styles */
 .popup-success {
   background: var(--popup-success-bg);
@@ -499,7 +479,7 @@ const resumeAutoClose = () => {
   box-shadow:
     0 20px 60px rgba(52, 199, 89, 0.12),
     0 0 0 1px rgba(52, 199, 89, 0.1) inset;
-  animation: subtlePulse 2s ease-in-out infinite;
+  animation: subtlePulse 0.6s ease-in-out;
 }
 
 .popup-success .popup-icon-wrapper {
@@ -515,7 +495,7 @@ const resumeAutoClose = () => {
   box-shadow:
     0 20px 60px rgba(255, 59, 48, 0.12),
     0 0 0 1px rgba(255, 59, 48, 0.1) inset;
-  animation: subtleShake 0.5s ease-in-out infinite;
+  animation: subtleShake 0.4s ease-in-out;
 }
 
 .popup-error .popup-icon-wrapper {
@@ -531,7 +511,6 @@ const resumeAutoClose = () => {
   box-shadow:
     0 20px 60px rgba(255, 149, 0, 0.12),
     0 0 0 1px rgba(255, 149, 0, 0.1) inset;
-  animation: subtleGlow 1.5s ease-in-out infinite alternate;
 }
 
 .popup-warning .popup-icon-wrapper {
@@ -585,17 +564,4 @@ const resumeAutoClose = () => {
   }
 }
 
-@keyframes subtleGlow {
-  0% {
-    box-shadow:
-      0 20px 60px rgba(255, 149, 0, 0.12),
-      0 0 0 1px rgba(255, 149, 0, 0.1) inset;
-  }
-
-  100% {
-    box-shadow:
-      0 20px 60px rgba(255, 149, 0, 0.18),
-      0 0 0 1px rgba(255, 149, 0, 0.15) inset;
-  }
-}
 </style>

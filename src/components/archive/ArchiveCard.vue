@@ -1,6 +1,6 @@
 <template>
   <div
-v-squircle="36" class="archive-card" :class="{
+class="archive-card" :class="{
     'archive-hidden': !localVisible,
     'visibility-transitioning': isAnimating,
     'multi-select-mode': isMultiSelectMode,

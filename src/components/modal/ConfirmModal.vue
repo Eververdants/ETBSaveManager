@@ -3,7 +3,7 @@
     <div
 v-if="show" ref="modalOverlayRef" class="modal-overlay" role="dialog" aria-modal="true" :aria-label="title"
       @click="handleOverlayClick">
-      <div v-squircle="52" class="modal-container" :style="{ maxWidth: props.maxWidth }" @click.stop>
+      <div class="modal-container" :style="{ maxWidth: props.maxWidth }" @click.stop>
         <div class="modal-header">
           <h3 class="modal-title">{{ displayTitle }}</h3>
           <button class="modal-close" :aria-label="t('common.close')" @click="handleCancel">
@@ -530,7 +530,7 @@ const displayCancelText = computed(() => props.cancelText || t("confirmModal.can
 }
 
 .modal-leave-active {
-  transition: opacity 0.25s ease-in;
+  transition: opacity 0.25s ease-out;
 }
 
 .modal-enter-from,
@@ -539,12 +539,16 @@ const displayCancelText = computed(() => props.cancelText || t("confirmModal.can
 }
 
 .modal-enter-active .modal-container {
-  transition: all 0.3s ease-out;
+  transition:
+    transform 0.3s ease-out,
+    opacity 0.3s ease-out;
   transition-delay: 0.1s;
 }
 
 .modal-leave-active .modal-container {
-  transition: all 0.25s ease-in;
+  transition:
+    transform 0.25s ease-out,
+    opacity 0.25s ease-out;
 }
 
 .modal-enter-from .modal-container {
@@ -558,7 +562,7 @@ const displayCancelText = computed(() => props.cancelText || t("confirmModal.can
 }
 
 .modal-overlay.modal-leave-active {
-  transition: opacity 0.25s ease-in;
+  transition: opacity 0.25s ease-out;
 }
 
 .modal-overlay.modal-leave-to {

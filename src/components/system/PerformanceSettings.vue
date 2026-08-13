@@ -1,5 +1,5 @@
 <template>
-  <div v-squircle="44" class="performance-settings">
+  <div class="performance-settings">
     <h3 class="settings-title">{{ t("performanceSettings.title") }}</h3>
 
     <div class="setting-group">

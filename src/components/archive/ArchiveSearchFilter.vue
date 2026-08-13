@@ -1,13 +1,13 @@
 <template>
   <div class="archive-search-filter">
     <div class="search-filter-wrapper">
-      <div v-squircle="44" class="unified-search-filter">
+      <div class="unified-search-filter">
         <!-- 搜索区域 -->
         <div class="search-section">
           <div class="search-input-group">
             <font-awesome-icon icon="fa-solid fa-search" class="search-icon" />
             <input
-ref="searchInputRef" v-model="searchQueryModel" v-squircle:pill
+ref="searchInputRef" v-model="searchQueryModel"
               type="text" :placeholder="$t('archiveSearch.searchPlaceholder')" class="search-input"
               @focus="showSuggestions = true" @blur="onSearchBlur" />
             <transition name="clear-btn" mode="out-in">

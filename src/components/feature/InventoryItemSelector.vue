@@ -210,7 +210,9 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
 /* 缩放动画 */
 .modal-scale-enter-active,
 .modal-scale-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
 }
 
 .modal-scale-enter-from {
@@ -223,24 +225,19 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
   transform: scale(0.9) translateY(20px);
 }
 
-/* 物品出现动画 */
+/* 物品出现动画 — 极短淡入淡出，避免搜索键入时整格重排 */
 .item-appear-enter-active,
 .item-appear-leave-active {
-  transition: all 0.3s ease;
+  transition: opacity 0.15s ease;
 }
 
-.item-appear-enter-from {
-  opacity: 0;
-  transform: scale(0.8) translateY(10px);
-}
-
+.item-appear-enter-from,
 .item-appear-leave-to {
   opacity: 0;
-  transform: scale(0.8) translateY(-10px);
 }
 
 .item-appear-move {
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
 .modal-header {

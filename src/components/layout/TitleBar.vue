@@ -271,7 +271,7 @@ onMounted(() => {
 }
 
 .text-swift-leave-active {
-  transition: opacity 0.15s ease-in;
+  transition: opacity 0.15s ease-out;
 }
 
 .text-swift-enter-from,

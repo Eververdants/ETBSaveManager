@@ -36,12 +36,6 @@
   --radius-tag: var(--radius-pill); /* 标签胶囊 */
   --radius-tooltip: var(--radius-pill); /* 工具提示胶囊（pill 形状）*/
   --radius-image: var(--radius-lg); /* 图片容器 36px */
-
-  /* ── 为 corner-shape: squircle 添加声明 ──
-   *   corner-shape: squircle 将标准 border-radius 转换为连续曲率圆角
-   *   支持 Chrome 139+/Safari (TP)，不支持时自动降级为 border-radius
-   */
-  /* corner-shape will be applied via .squircle-enabled class in useSquircle.ts */
 }
 
 /* ==========================================

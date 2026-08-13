@@ -6,9 +6,7 @@ v-show="shouldRender" ref="floatingActionContainer" class="floating-action-conta
       <div ref="tooltip" class="function-tooltip">
         <span class="tooltip-text">{{ getCurrentTooltip }}</span>
       </div>
-      <div
-ref="actionButton" class="action-button" @mousedown="handleMouseDown" @mouseup="handleMouseUp"
-        @wheel="handleWheel" @click="handleClick">
+      <div ref="actionButton" class="action-button" @wheel="handleWheel" @click="handleClick">
         <div ref="currentIconEl" class="icon-wrapper current-icon">
           <font-awesome-icon :icon="['fas', displayIcon]" />
         </div>
@@ -197,7 +195,7 @@ const hideFloatingButton = () => {
     scale: 0.8,
     y: 20,
     duration: 0.25,
-    ease: "power2.in",
+    ease: "power2.out",
     onComplete: () => {
       shouldRender.value = false; // Only remove DOM after animation completes
       isTransitioning = false;
@@ -323,25 +321,6 @@ const handleWheel = (event) => {
       gsap.set(currentIconEl.value, { y: 0, opacity: 1 });
       gsap.set(nextIconEl.value, { y: 40, opacity: 0 });
       isAnimating.value = false;
-    },
-  });
-};
-
-const handleMouseDown = () => {
-  gsap.to(actionButton.value, {
-    scale: 0.92,
-    duration: 0.05,
-    ease: "power2.out",
-  });
-};
-
-const handleMouseUp = () => {
-  gsap.to(actionButton.value, {
-    scale: 1,
-    duration: 0.08,
-    ease: "back.out(2)",
-    onComplete: () => {
-      gsap.set(actionButton.value, { clearProps: "transform" });
     },
   });
 };
@@ -512,17 +491,22 @@ onUnmounted(() => {
   font-size: 0 !important;
   overflow: hidden !important;
   will-change: transform, opacity;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 按压用 CSS :active + transition（标准按钮按压：transform + ~160ms）。
+     非对称：按下快(0.1s)、松手带轻微回弹(0.18s spring 曲线)，符合 FAB 活泼个性。 */
+  transition:
+    transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.2s ease,
+    box-shadow 0.3s ease;
 }
 
 .action-button:hover {
   background: var(--bg-tertiary);
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
-  transform: var(--card-hover-transform);
 }
 
 .action-button:active {
-  transform: scale(0.92);
+  transform: scale(0.94);
+  transition-duration: 0.1s;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 

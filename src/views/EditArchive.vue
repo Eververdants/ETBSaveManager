@@ -120,7 +120,7 @@ v-for="d in difficultyLevels" :key="`actual-${d.value}`" class="diff-option"
           <div class="level-search">
             <font-awesome-icon :icon="['fas', 'search']" class="level-search-icon" />
             <input
-v-model="levelSearchQuery" v-squircle:pill type="text"
+v-model="levelSearchQuery" type="text"
               class="level-search-input"
               :placeholder="t('editArchive.levelSearchPlaceholder')" />
             <button
@@ -1368,7 +1368,6 @@ onMounted(() => {
   width: 100%;
   padding: 11px 40px 11px 42px;
   border: 1px solid var(--border-color, transparent);
-  corner-shape: squircle;
   background: var(--bg-secondary);
   color: var(--text-primary);
   font-size: 14px;

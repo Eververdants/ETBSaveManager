@@ -112,15 +112,15 @@ const handleSelectLevel = (index, event) => {
   gsap
     .timeline()
     .to(card, {
-      scale: 1.06,
-      duration: 0.1,
+      scale: 0.97,
+      duration: 0.08,
       ease: "power2.out",
       overwrite: true,
     })
     .to(card, {
       scale: 1,
-      duration: 0.3,
-      ease: "elastic.out(1, 0.4)",
+      duration: 0.18,
+      ease: "power2.out",
       onComplete: () => gsap.set(card, { clearProps: "transform" }),
     });
   emit("select-level", index);
@@ -284,15 +284,19 @@ const handleSelectLevel = (index, event) => {
     border-color 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.03);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  will-change: transform;
 }
 
-.level-card:hover {
-  transform: translateY(-8px);
-  box-shadow:
-    0 18px 36px rgba(0, 0, 0, 0.14),
-    0 6px 14px rgba(0, 0, 0, 0.1);
-  border-color: rgba(var(--accent-color-rgb), 0.25);
+/* Hover motion gated to precise pointers — touch gets :active feedback
+   instead, no sticky hover. will-change only while hovered. */
+@media (hover: hover) and (pointer: fine) {
+  .level-card:hover {
+    will-change: transform;
+    transform: translateY(-8px);
+    box-shadow:
+      0 18px 36px rgba(0, 0, 0, 0.14),
+      0 6px 14px rgba(0, 0, 0, 0.1);
+    border-color: rgba(var(--accent-color-rgb), 0.25);
+  }
 }
 
 .level-card:active {
@@ -322,8 +326,10 @@ const handleSelectLevel = (index, event) => {
   transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.level-card:hover .level-image-container :deep(.level-image) {
-  transform: scale(1.1);
+@media (hover: hover) and (pointer: fine) {
+  .level-card:hover .level-image-container :deep(.level-image) {
+    transform: scale(1.1);
+  }
 }
 
 .level-overlay {
@@ -337,9 +343,11 @@ const handleSelectLevel = (index, event) => {
   transition: opacity 0.35s ease;
 }
 
-.level-card:hover .level-overlay {
-  opacity: 0.6;
-  background: rgba(var(--accent-color-rgb), 0.15);
+@media (hover: hover) and (pointer: fine) {
+  .level-card:hover .level-overlay {
+    opacity: 0.6;
+    background: rgba(var(--accent-color-rgb), 0.15);
+  }
 }
 
 .level-card.selected .level-overlay {
@@ -376,8 +384,10 @@ const handleSelectLevel = (index, event) => {
   transition: color 0.3s ease;
 }
 
-.level-card:hover .level-name {
-  color: var(--accent-color);
+@media (hover: hover) and (pointer: fine) {
+  .level-card:hover .level-name {
+    color: var(--accent-color);
+  }
 }
 
 .level-card.selected .level-name {

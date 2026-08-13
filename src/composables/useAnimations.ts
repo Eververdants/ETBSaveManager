@@ -33,12 +33,26 @@ function resolveAnimationQuality(userQuality: string): "high" | "medium" | "low"
  * Animation composable — dynamically adjusts animation params
  * based on both user preference and the resource scheduler's
  * current operation context.
+ *
+ * `skipRef` — when truthy, the panel appears/disappears instantly.
+ * Used for keyboard-initiated opens (Ctrl+F / F3): never animate
+ * an action a user triggers hundreds of times a day. The flag is
+ * cleared once the enter animation completes so a later mouse-
+ * triggered open still animates normally.
  */
-export function useAnimations(performanceMode: Ref<string>, animationQuality: Ref<string>): AnimationHandlers {
+export function useAnimations(
+  performanceMode: Ref<string>,
+  animationQuality: Ref<string>,
+  skipRef?: Ref<boolean>,
+): AnimationHandlers {
+  const shouldSkip = (): boolean => skipRef?.value === true;
+
   /**
    * Before search panel enters
    */
   const beforeSearchEnter = (el: HTMLElement): void => {
+    if (shouldSkip()) return;
+
     const effectiveQuality = resolveAnimationQuality(animationQuality.value);
     const params = getAnimationParams("search", performanceMode.value, effectiveQuality);
 
@@ -54,6 +68,12 @@ export function useAnimations(performanceMode: Ref<string>, animationQuality: Re
    * Search panel enter animation
    */
   const searchEnter = (el: HTMLElement, done: () => void): void => {
+    if (shouldSkip()) {
+      done();
+      if (skipRef) skipRef.value = false;
+      return;
+    }
+
     const effectiveQuality = resolveAnimationQuality(animationQuality.value);
     const params = getAnimationParams("search", performanceMode.value, effectiveQuality);
 
@@ -64,7 +84,10 @@ export function useAnimations(performanceMode: Ref<string>, animationQuality: Re
         duration: params.duration,
         ease: params.ease,
         force3D: params.force3D,
-        onComplete: done,
+        onComplete: () => {
+          done();
+          if (skipRef) skipRef.value = false;
+        },
       });
     });
   };
@@ -73,6 +96,11 @@ export function useAnimations(performanceMode: Ref<string>, animationQuality: Re
    * Search panel leave animation
    */
   const searchLeave = (el: HTMLElement, done: () => void): void => {
+    if (shouldSkip()) {
+      done();
+      return;
+    }
+
     const effectiveQuality = resolveAnimationQuality(animationQuality.value);
     const params = getAnimationParams("search", performanceMode.value, effectiveQuality);
 

@@ -187,7 +187,7 @@ const useDropdownAnimations = (menuRef, isAnimating) => {
       y: -10,
       scale: 0.95,
       duration: 0.2,
-      ease: "power2.in",
+      ease: "power2.out",
       onComplete: () => {
         isAnimating.value = false;
         done();

@@ -270,7 +270,7 @@ const handleAppIconClick = () => {
 }
 
 .easter-egg-image.loaded {
-  animation: fadeIn 0.3s ease-in;
+  animation: fadeIn 0.3s ease-out;
   animation-fill-mode: forwards;
 }
 
@@ -305,12 +305,12 @@ const handleAppIconClick = () => {
   padding: 8px;
   box-sizing: border-box;
   opacity: 0;
-  transition: opacity 0.2s ease-in;
+  transition: opacity 0.2s ease-out;
 }
 
 .app-icon.loaded {
   opacity: 1;
-  animation: iconFadeIn 0.2s ease-in forwards;
+  animation: iconFadeIn 0.2s ease-out forwards;
 }
 
 .app-title {

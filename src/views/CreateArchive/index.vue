@@ -627,7 +627,7 @@ const finishCreateFlow = () => {
     x: "150%",
     opacity: 0,
     duration: 0.25,
-    ease: "power1.in",
+    ease: "power1.out",
     onComplete: () => {
       resetForm();
       gsap.set(stepsWrapper, { x: "-150%", opacity: 0 });
@@ -755,7 +755,7 @@ const onStepLeave = (el, done) => {
   gsap.to(el, {
     opacity: 0,
     duration: 0.15,
-    ease: "power1.in",
+    ease: "power1.out",
     onComplete: done,
   });
 };

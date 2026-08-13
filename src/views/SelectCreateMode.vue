@@ -16,7 +16,7 @@
           <div class="mode-cards single">
             <!-- Classic mode -->
             <div
-v-squircle="44" class="mode-card" :class="{ selected: selectedMode === 'classic' }"
+class="mode-card" :class="{ selected: selectedMode === 'classic' }"
               @click="goToMode('classic')">
               <div class="mode-card-image">
                 <LazyImage :src="classicModeImage" alt="Classic Mode" :image-class="'mode-card-img'" />
@@ -44,7 +44,7 @@ v-if="selectedMode === 'classic'" :icon="['fas', 'check-circle']"
           <div class="mode-cards multi">
             <!-- Quick mode -->
             <div
-v-squircle="44" class="mode-card" :class="{ selected: selectedMode === 'quick' }"
+class="mode-card" :class="{ selected: selectedMode === 'quick' }"
               @click="goToMode('quick')">
               <div class="mode-card-image">
                 <LazyImage :src="quickModeImage" alt="Quick Mode" :image-class="'mode-card-img'" />
@@ -444,18 +444,18 @@ const goToMode = (mode) => {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 0;
-  height: 0;
+  width: 300px;
+  height: 300px;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
   border-radius: var(--radius-circle);
-  transform: translate(-50%, -50%);
-  transition: all 0.6s ease;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
+  pointer-events: none;
 }
 
 .bottom-back-button:active .button-ripple {
-  width: 300px;
-  height: 300px;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 /* Pulse animation */

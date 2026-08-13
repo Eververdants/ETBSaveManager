@@ -1475,7 +1475,7 @@ input:checked+.slider:before {
 }
 
 .text-swift-leave-active {
-  transition: opacity 0.15s ease-in;
+  transition: opacity 0.15s ease-out;
 }
 
 .text-swift-enter-from {
@@ -1496,17 +1496,19 @@ input:checked+.slider:before {
 
 /* Expand animation - clean height transition */
 .expand-enter-active {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    max-height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.2s ease-out;
   max-height: 300px;
   overflow: hidden;
-  will-change: max-height, opacity;
 }
 
 .expand-leave-active {
-  transition: all 0.25s ease-out;
+  transition:
+    max-height 0.2s ease-out,
+    opacity 0.15s ease-out;
   max-height: 300px;
   overflow: hidden;
-  will-change: max-height, opacity;
 }
 
 .expand-enter-from {

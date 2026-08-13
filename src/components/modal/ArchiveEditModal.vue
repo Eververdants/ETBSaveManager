@@ -375,12 +375,16 @@ const { handleSave } = useEditActions(emit, () => props.archive, localArchive, h
 /* 过渡动画 */
 .modal-enter-active,
 .modal-leave-active {
-  transition: all 0.3s var(--ease-default);
+  transition:
+    opacity 0.3s var(--ease-default),
+    transform 0.3s var(--ease-default);
 }
 
 .modal-enter-active .modal-container,
 .modal-leave-active .modal-container {
-  transition: all 0.3s var(--ease-default);
+  transition:
+    opacity 0.3s var(--ease-default),
+    transform 0.3s var(--ease-default);
 }
 
 .modal-enter-from,

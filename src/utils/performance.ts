@@ -100,7 +100,7 @@ export const getAnimationParams = (
       return {
         ...baseParams,
         duration: isLowPerfMode ? 0.1 : (devicePerf.isVeryLowEndDevice ? 0.15 : 0.25) * qualityMultiplier,
-        ease: "ease-in",
+        ease: "power1.out",
       };
 
     case "search":

@@ -35,10 +35,10 @@ class="toolbar-btn danger" :disabled="selectedArchives.size === 0"
     </transition>
 
     <div
-ref="scrollContainerRef" v-squircle="44" class="archive-list-container"
+ref="scrollContainerRef" class="archive-list-container"
       :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode, 'is-refreshing': loading }">
       <!-- Ultra-light loading state: a single centered spinner.
-           The old 12-card skeleton with v-squircle + shimmer animations
+           The old 12-card skeleton with shimmer animations
            was expensive enough to stall the first paint, making the
            whole UI feel frozen during the ~50ms IPC round-trip. -->
       <div v-if="!showCards" class="loading-skeleton">
@@ -81,7 +81,7 @@ v-for="(archive, colIndex) in getRowItems(virtualRow.index)" :key="archive.id"
 
         <!-- Empty state: filters active, no matching archives -->
         <div v-if="displayArchives.length === 0 && archives.length > 0 && hasActiveFilters" class="empty-state">
-          <div v-squircle="44" class="empty-card">
+          <div class="empty-card">
             <div class="empty-card__bg" aria-hidden="true"></div>
             <div class="empty-card__deco" aria-hidden="true">
               <div class="empty-card__deco-ring"></div>
@@ -99,7 +99,7 @@ v-for="(archive, colIndex) in getRowItems(virtualRow.index)" :key="archive.id"
             <p class="empty-card__hint">
               {{ $t("archiveSearch.adjustSearchOrClearFilters") }}
             </p>
-            <button v-squircle:pill class="empty-card__action" @click="clearAllFilters">
+            <button class="empty-card__action" @click="clearAllFilters">
               <font-awesome-icon :icon="['fas', 'xmark']" class="empty-card__action-icon" />
               <span>{{ $t("archiveSearch.clearFilters") }}</span>
             </button>
@@ -108,7 +108,7 @@ v-for="(archive, colIndex) in getRowItems(virtualRow.index)" :key="archive.id"
 
         <!-- Empty state: no archives exist yet -->
         <div v-if="displayArchives.length === 0 && dataLoadComplete && archives.length === 0" class="empty-state">
-          <div v-squircle="44" class="empty-card empty-card--welcome">
+          <div class="empty-card empty-card--welcome">
             <div class="empty-card__bg" aria-hidden="true"></div>
             <div class="empty-card__deco" aria-hidden="true">
               <div class="empty-card__deco-ring"></div>
@@ -125,7 +125,7 @@ v-for="(archive, colIndex) in getRowItems(virtualRow.index)" :key="archive.id"
             <p class="empty-card__desc">
               {{ $t("archiveSearch.createNewArchive") }}
             </p>
-            <button v-squircle:pill class="empty-card__action" @click="createNewArchive">
+            <button class="empty-card__action" @click="createNewArchive">
               <font-awesome-icon :icon="['fas', 'plus']" class="empty-card__action-icon" />
               <span>{{ $t("archiveSearch.createArchive") }}</span>
             </button>
@@ -183,7 +183,7 @@ v-model:show="showBatchDeleteConfirm" class="batch-delete-confirm"
         <div
 v-if="isBatchDeleting && !showBatchDeleteConfirm" class="modal-overlay batch-delete-progress-overlay"
           @click.self="showBatchDeleteConfirm = false">
-          <div v-squircle="52" class="batch-delete-progress">
+          <div class="batch-delete-progress">
             <div class="progress-header">
               <font-awesome-icon icon="fa-solid fa-trash-alt" class="progress-icon" />
               <h3 class="progress-title">{{ $t("confirmModal.batchDeleteProgressTitle") }}</h3>
@@ -213,7 +213,7 @@ v-if="isBatchDeleting && !showBatchDeleteConfirm" class="modal-overlay batch-del
     <Teleport to="body">
       <transition name="modal">
         <div v-if="showPerformanceSettings" class="modal-overlay" @click.self="showPerformanceSettings = false">
-          <div v-squircle="52" class="modal-container">
+          <div class="modal-container">
             <div class="modal-header">
               <h2 class="modal-title">{{ $t("performanceSettings.title") }}</h2>
               <button class="modal-close" @click="showPerformanceSettings = false">
@@ -307,6 +307,9 @@ const {
 // Local state — declared before composable calls that use them
 const scrollContainerRef = ref<HTMLElement | null>(null);
 const showSearch = ref(false);
+// True when the search panel was opened via keyboard (Ctrl+F / F3) —
+// keyboard-initiated opens skip the entrance animation entirely.
+const skipSearchAnimation = ref(false);
 const isPageActive = ref(false);
 const shouldResetScroll = ref(false);
 const showCards = ref(false);
@@ -379,7 +382,7 @@ const {
   cleanup: cleanupPerformance,
 } = performanceMonitor;
 
-const animations = useAnimations(performanceMode, animationQuality);
+const animations = useAnimations(performanceMode, animationQuality, skipSearchAnimation);
 const { beforeSearchEnter, searchEnter, searchLeave } = animations;
 
 const floatingButton = useFloatingButton();
@@ -415,6 +418,8 @@ const openArchiveSearchPanel = () => {
 const handleOpenArchiveSearchEvent = (event: CustomEvent) => {
   if (!isPageActive.value) return;
 
+  // Keyboard-triggered opens (Ctrl+F / F3) skip the entrance animation.
+  skipSearchAnimation.value = event?.detail?.source === "shortcut";
   const mode = event?.detail?.mode || "open";
   if (mode === "toggle") {
     toggleSearch();
@@ -960,6 +965,12 @@ watch(searchQuery, (query) => {
   .archive-list-container.is-refreshing .archive-grid {
     opacity: 1;
     transform: none;
+  }
+
+  /* Kill perpetual decorative motion on the empty state */
+  .empty-card__deco-ring,
+  .empty-card__deco-dot {
+    animation: none;
   }
 }
 

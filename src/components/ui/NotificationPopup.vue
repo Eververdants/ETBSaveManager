@@ -9,7 +9,7 @@ tag="div" class="notification-list" :name="`notification-${position}`"
         @before-leave="(el) => onBeforeLeave(el, position)" @leave="(el, done) => onLeave(el, done, position)">
         <div
 v-for="notification in getNotificationsByPosition(position)" :key="notification.id"
-          v-squircle:sm class="notification-item" :class="[
+          class="notification-item" :class="[
             `notification-${notification.type}`,
             { 'notification-hovering': notification.isHovering },
             { 'notification-expanded': notification.actions?.length || notification.details },
@@ -127,7 +127,7 @@ const useNotificationAnimations = (getAnimationDirection) => {
       y: 0,
       scale: 1,
       filter: "blur(0px)",
-      duration: 0.4,
+      duration: 0.3,
       ease: "power3.out",
       onComplete: done,
     });
@@ -175,8 +175,8 @@ const useNotificationAnimations = (getAnimationDirection) => {
       y: dir.y * 0.3,
       scale: 0.85,
       filter: "blur(4px)",
-      duration: 0.3,
-      ease: "power2.in",
+      duration: 0.25,
+      ease: "power2.out",
       onComplete: done,
     });
   };
@@ -430,7 +430,6 @@ defineExpose({
   background: var(--card-bg, rgba(255, 255, 255, 0.95));
   backdrop-filter: blur(20px);
   border-radius: var(--radius-sm);
-  corner-shape: squircle;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.2);
   pointer-events: auto;

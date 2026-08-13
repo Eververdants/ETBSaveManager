@@ -25,8 +25,6 @@ export const site = {
     version: "3.3.1",
     build: "20260814",
     releaseDate: "2026-08-14",
-    nextVersion: "3.4.0",
-    nextReleaseDate: "2026-09-15",
     edition: "Archive Edition",
     status: "online",
     codename: "Save Identity Stabilization",
@@ -62,8 +60,7 @@ export const site = {
     {
       id: "themes",
       title: "10 Built-in Themes",
-      description:
-        "Light, Dark, and 8 vibrant palettes (forest, lavender, mint, ocean, peach, rose, sky, sunset).",
+      description: "Light, Dark, and 8 vibrant palettes (forest, lavender, mint, ocean, peach, rose, sky, sunset).",
       iconKey: "icon-themes",
       ref: "FILE 003",
       classification: "Standard",

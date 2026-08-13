@@ -44,17 +44,6 @@ export function MetadataStrip(): React.JSX.Element {
           />
           <span className="hidden tabular-nums md:inline">{site.meta.releaseDate}</span>
         </div>
-
-        {/* v3.3.1 发布预告 — 存档标识稳定化 */}
-        <span className="hidden items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-alert)] sm:flex">
-          <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--color-alert)]" />
-          <span>
-            {t("meta.comingSoon", {
-              version: site.meta.nextVersion,
-              date: site.meta.nextReleaseDate,
-            })}
-          </span>
-        </span>
       </div>
     </div>
   );

@@ -38,7 +38,6 @@ export default {
     archive: "Archive",
     statusOnline: "online",
     buildLabel: "build /",
-    comingSoon: "↳ next build: v{version} · {date} — save identity & interaction polish",
   },
 
   hero: {
@@ -104,8 +103,7 @@ export default {
     },
     themes: {
       title: "10 Built-in Themes",
-      description:
-        "Light, Dark, and 8 vibrant palettes (forest, lavender, mint, ocean, peach, rose, sky, sunset).",
+      description: "Light, Dark, and 8 vibrant palettes (forest, lavender, mint, ocean, peach, rose, sky, sunset).",
     },
     i18n: {
       title: "Trilingual UI",

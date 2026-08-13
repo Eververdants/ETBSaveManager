@@ -37,6 +37,7 @@ pub fn run() {
             save_commands::permanent_delete_file,
             save_commands::handle_file,
             save_commands::get_player_data,
+            save_commands::get_player_unique_ids,
             save_commands::unlock_all_hub_doors,
             save_commands::handle_edit_save,
             system_commands::get_local_appdata,

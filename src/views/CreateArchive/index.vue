@@ -522,6 +522,18 @@ const createArchive = async () => {
     const isMEGUnlocked = !megLevels.includes(selectedLevelData.levelKey);
     const savedName = archiveName.value.trim() || "Unnamed Archive";
     createdArchiveName.value = savedName;
+    // 从已有存档查找完整 PlayerData 键（`<steam id>_+_|<EOS 账号 id>`）：
+    // EOS 后缀由 Epic 服务器按账号生成，应用无法推导，只能复用存档里已有的键
+    let uniqueIdMap = {};
+    const playerSteamIds = players.map((p) => p.steamId || "").filter(Boolean);
+    if (playerSteamIds.length > 0) {
+      try {
+        const res = await invoke("get_player_unique_ids", { steamIds: playerSteamIds });
+        uniqueIdMap = res?.map || {};
+      } catch {
+        // 查询失败时退回纯 steam id
+      }
+    }
     const saveData = {
       archive_name: savedName,
       level: selectedLevelData.levelKey || "Level0",
@@ -531,8 +543,8 @@ const createArchive = async () => {
         (FEATURES.MERGE_DIFFICULTY ? selectedDifficulty.value : selectedActualDifficulty.value)
           .charAt(0).toUpperCase() + (FEATURES.MERGE_DIFFICULTY ? selectedDifficulty.value : selectedActualDifficulty.value).slice(1) || "Normal",
       players: players.map((p) => ({
-        // 纯 steam id：UniqueNetId 后缀由游戏按账号生成，应用无法推导，不能合成
-        steam_id: p.steamId || "",
+        // 纯 steam id；若该玩家在已有存档里存在完整键（含 EOS 后缀），复用，保证数据能绑定
+        steam_id: uniqueIdMap[p.steamId] || p.steamId || "",
         inventory: Array.isArray(p.inventory)
           ? p.inventory.filter((item) => item !== null && item !== undefined).map((item) => getItemIdByName(item))
           : [],

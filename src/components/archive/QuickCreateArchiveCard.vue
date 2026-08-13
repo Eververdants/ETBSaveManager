@@ -174,7 +174,7 @@ const {
 
 .quick-archive-card:hover {
   transform: translateY(-2px);
-  filter: drop-shadow(var(--shadow-md));
+  filter: drop-shadow(var(--filter-shadow-md));
 }
 
 /* 边框状态颜色 */

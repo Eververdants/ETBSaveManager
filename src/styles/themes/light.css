@@ -130,6 +130,8 @@
    * ========================================== */
   --card-shadow: 0 2px 12px rgba(26, 24, 21, 0.04), 0 0 1px rgba(26, 24, 21, 0.05);
   --card-shadow-hover: 0 8px 32px rgba(26, 24, 21, 0.06), 0 0 1px rgba(26, 24, 21, 0.08);
+  --filter-card-shadow: 0 2px 12px rgba(26, 24, 21, 0.04);
+  --filter-card-shadow-hover: 0 8px 32px rgba(26, 24, 21, 0.06);
   --card-border: 1px solid rgba(26, 24, 21, 0.05);
   --card-padding: 16px;
   --card-highlight: linear-gradient(135deg, rgba(242, 240, 235, 0.8) 0%, transparent 50%);

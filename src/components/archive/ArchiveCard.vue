@@ -220,7 +220,7 @@ const toggleSelection = () => {
      card alone.  That preserves the intent of the contain: paint we
      removed (no full archive-grid repaint), consistent with the hover
      will-change: transform layer strategy below. */
-  filter: drop-shadow(var(--card-shadow));
+  filter: drop-shadow(var(--filter-card-shadow));
   transition: transform 0.25s ease;
 }
 
@@ -257,7 +257,7 @@ const toggleSelection = () => {
      to async content arriving on a dormant compositing layer. */
   will-change: transform;
   transform: translateY(-4px);
-  filter: drop-shadow(var(--card-shadow-hover));
+  filter: drop-shadow(var(--filter-card-shadow-hover));
   z-index: 2;
 }
 
@@ -598,7 +598,7 @@ const toggleSelection = () => {
 .archive-hidden:hover {
   border-color: rgba(255, 200, 50, 0.25);
   transform: translateY(-3px);
-  filter: drop-shadow(var(--card-shadow-hover));
+  filter: drop-shadow(var(--filter-card-shadow-hover));
 }
 
 /* Hidden state: background image slightly desaturated, preserving clarity */
@@ -843,10 +843,12 @@ const toggleSelection = () => {
 }
 
 .archive-card.is-selected {
-  /* drop-shadow() has no spread radius, so the 0 0 0 2px ring must stay
-     a box-shadow; the mask reshapes this square ring into a superellipse.
-     Outer elevation comes from the base .archive-card filter below. */
-  box-shadow: 0 0 0 2px var(--primary);
+  /* drop-shadow() has no spread radius, so the ring must stay a box-shadow.
+     An OUTER box-shadow is clipped by the card's mask (the mask follows the
+     border box); an INSET ring is painted inside the border box and the mask
+     hugs it to the superellipse. Outer elevation comes from the base
+     .archive-card filter below. */
+  box-shadow: inset 0 0 0 2px var(--primary);
 }
 
 .archive-card.is-selected .card-background::after {

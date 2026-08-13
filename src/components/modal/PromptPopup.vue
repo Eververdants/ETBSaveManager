@@ -125,7 +125,12 @@ const enterAnimation = (el, done) => {
       filter: "blur(0px)",
       duration: 0.4,
       ease: "power3.out",
-      onComplete: done,
+      onComplete: () => {
+        // GSAP 写入的内联 filter 会覆盖 .prompt-popup 样式表的
+        // drop-shadow(含各类型徽标投影);结束后清掉内联 filter 让其恢复。
+        gsap.set(el, { clearProps: "filter" });
+        done();
+      },
     },
   );
 };

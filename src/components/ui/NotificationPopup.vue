@@ -129,7 +129,12 @@ const useNotificationAnimations = (getAnimationDirection) => {
       filter: "blur(0px)",
       duration: 0.3,
       ease: "power3.out",
-      onComplete: done,
+      onComplete: () => {
+        // GSAP 写入的内联 filter 会覆盖 .notification-item 样式表的
+        // drop-shadow;结束后清掉内联 filter 让投影恢复生效。
+        gsap.set(el, { clearProps: "filter" });
+        done();
+      },
     });
   };
 

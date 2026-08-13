@@ -586,7 +586,7 @@ onUnmounted(() => {
   border-radius: var(--radius-xl);
   font-size: 14px;
   font-weight: 500;
-  filter: drop-shadow(var(--card-shadow));
+  filter: drop-shadow(var(--filter-card-shadow));
   border: var(--card-border);
 }
 

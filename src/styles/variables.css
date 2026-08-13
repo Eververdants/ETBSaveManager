@@ -92,6 +92,15 @@
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
   --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
 
+  /* drop-shadow 兼容单层变体:drop-shadow() 只接受单个阴影,
+     多阴影列表(如上)在 filter: drop-shadow() 中非法会被整体丢弃。
+     这里取每个多阴影 var 的首个(主)阴影,供 filter 使用。 */
+  --filter-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --filter-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --filter-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --filter-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+  --filter-shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
+
   /* 特殊阴影 */
   --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
   --shadow-outline: 0 0 0 3px rgba(66, 153, 225, 0.5);

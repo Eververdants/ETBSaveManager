@@ -385,7 +385,7 @@ onMounted(() => {
   background: var(--bg-sidebar);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  filter: drop-shadow(var(--shadow-lg));
+  filter: drop-shadow(var(--filter-shadow-lg));
   z-index: 1000;
   overflow: hidden;
   border-right: 1px solid var(--sidebar-border-color);
@@ -455,7 +455,7 @@ onMounted(() => {
 /* Sidebar item hover state styles */
 .sidebar-item:hover {
   background: var(--sidebar-hover-bg);
-  filter: drop-shadow(var(--shadow-md));
+  filter: drop-shadow(var(--filter-shadow-md));
   transition:
     background-color 0.25s ease,
     filter 0.25s ease;
@@ -773,7 +773,7 @@ onMounted(() => {
 /* Sidebar item hover state styles */
 .sidebar-item:hover {
   background: var(--sidebar-hover-bg);
-  filter: drop-shadow(var(--shadow-md));
+  filter: drop-shadow(var(--filter-shadow-md));
 }
 
 /* Sidebar item active state styles */

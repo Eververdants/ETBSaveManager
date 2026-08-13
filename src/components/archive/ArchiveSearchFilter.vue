@@ -252,7 +252,7 @@ onUnmounted(() => {
   border-radius: var(--radius-xl);
   padding: 24px;
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-  filter: drop-shadow(var(--shadow-xl, 0 8px 32px rgba(0, 0, 0, 0.15)));
+  filter: drop-shadow(var(--filter-shadow-xl, 0 8px 32px rgba(0, 0, 0, 0.15)));
   z-index: 100;
   width: 100%;
   max-width: 800px;
@@ -296,7 +296,7 @@ onUnmounted(() => {
 .search-input:focus {
   outline: none;
   box-shadow:
-    0 0 0 3px var(--accent-alpha, rgba(59, 130, 246, 0.2)),
+    inset 0 0 0 3px var(--accent-alpha, rgba(59, 130, 246, 0.2)),
     var(--shadow-sm, inset 0 1px 3px rgba(0, 0, 0, 0.1));
   background: var(--bg-secondary);
   transform: translateY(-1px);

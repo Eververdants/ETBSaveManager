@@ -250,7 +250,7 @@ const { handleSave } = useEditActions(emit, () => props.archive, localArchive, h
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  filter: drop-shadow(var(--shadow-lg));
+  filter: drop-shadow(var(--filter-shadow-lg));
 }
 
 /* 模态框头部 */

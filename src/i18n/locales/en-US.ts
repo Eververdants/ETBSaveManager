@@ -38,7 +38,7 @@ export default {
     archive: "Archive",
     statusOnline: "online",
     buildLabel: "build /",
-    comingSoon: "↳ next build: v{version} · {date} — smart scheduling & UI refactor",
+    comingSoon: "↳ next build: v{version} · {date} — save identity & interaction polish",
   },
 
   hero: {

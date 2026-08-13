@@ -38,7 +38,7 @@ export default {
     archive: "檔案",
     statusOnline: "上線",
     buildLabel: "建置 /",
-    comingSoon: "↳ 下一版本：v{version} · {date} —— 智能調度與UI重構",
+    comingSoon: "↳ 下一版本：v{version} · {date} —— 存檔識別穩定化與互動打磨",
   },
 
   hero: {

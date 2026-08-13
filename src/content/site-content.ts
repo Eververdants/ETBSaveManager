@@ -18,18 +18,18 @@ export const site = {
   name: "ETB Save Manager",
   tagline: "A modern, cross-platform save management tool for Escape The Backrooms",
   description:
-    "A declassified archive manager for the Backrooms — full CRUD with soft-delete, 3-step creation wizard across 4 endings and 54 levels, 11 themes, en/zh-CN/zh-TW UI, virtual scrolling, built-in performance monitor, and an intelligent resource scheduler. Built with Tauri 2.0 on Windows.",
+    "A declassified archive manager for the Backrooms — full CRUD with soft-delete, 3-step creation wizard across 4 endings and 54 levels, 10 themes, en/zh-CN/zh-TW UI, virtual scrolling, built-in performance monitor, and an intelligent resource scheduler. Built with Tauri 2.0 on Windows.",
 
   // 与主项目同步：版本戳 / 编译号 / 发布日（非翻译数据）
   meta: {
-    version: "3.3.0",
-    build: "20260719",
-    releaseDate: "2026-07-19",
+    version: "3.3.1",
+    build: "20260814",
+    releaseDate: "2026-08-14",
     nextVersion: "3.4.0",
-    nextReleaseDate: "2026-08-15",
+    nextReleaseDate: "2026-09-15",
     edition: "Archive Edition",
     status: "online",
-    codename: "Smart Resource Scheduling",
+    codename: "Save Identity Stabilization",
     framework: "Tauri 2.0",
     identifier: "com.admin.etbsavemanager",
     bundle: "nsis · msi",

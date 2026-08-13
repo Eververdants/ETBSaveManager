@@ -37,7 +37,7 @@ export default {
     archive: "档案",
     statusOnline: "在线",
     buildLabel: "构建 /",
-    comingSoon: "↳ 下一版本：v{version} · {date} —— 智能调度与UI重构",
+    comingSoon: "↳ 下一版本：v{version} · {date} —— 存档标识稳定化与交互打磨",
   },
 
   hero: {

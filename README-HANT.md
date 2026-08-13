@@ -1,13 +1,5 @@
 <p align="center">
-  <img src="./src-tauri/icons/128x128.png" alt="ETB Save Manager — 《逃離後室》存檔編輯與管理工具" width="128">
-</p>
-
-<h1 align="center">ETB Save Manager</h1>
-
-<p align="center">
-  <strong>一款功能完善的《逃離後室》（Escape The Backrooms）存檔管理與編輯工具，基於 Tauri 2.0 構建，專為 Windows 平台打造。</strong>
-  <br>
-  集中瀏覽、編輯、建立、備份和整理您的《逃離後室》遊戲存檔，告別手動翻找存檔目錄的煩惱。
+  <img src="./docs/header-light-fz.png" alt="ETB Save Manager — 《逃離後室》存檔編輯與管理工具" width="100%">
 </p>
 
 <p align="center">

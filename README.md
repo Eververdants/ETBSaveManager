@@ -1,13 +1,5 @@
 <p align="center">
-  <img src="./src-tauri/icons/128x128.png" alt="ETB Save Manager — Escape The Backrooms save file editor for Windows" width="128">
-</p>
-
-<h1 align="center">ETB Save Manager</h1>
-
-<p align="center">
-  <strong>A full-featured <em>Escape The Backrooms</em> save file manager and editor for Windows, built with Tauri 2.0.</strong>
-  <br>
-  View, edit, create, back up, and organize your <em>Escape The Backrooms</em> (ETB) save files on Windows with a polished desktop application.
+  <img src="./docs/header-light.png" alt="ETB Save Manager — Escape The Backrooms save file editor for Windows" width="100%">
 </p>
 
 <p align="center">

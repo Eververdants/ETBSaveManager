@@ -95,4 +95,8 @@
   --transition-fast: var(--transition-fast);
   --transition-normal: var(--transition-normal);
   --transition-slow: var(--transition-slow);
+
+  /* 字体栈：优先系统字体，含 Windows/中文回退（供 font-family: var(--font-sans) 使用） */
+  --font-sans: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei",
+    "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
 }

@@ -498,7 +498,7 @@ onUnmounted(() => {
   background: var(--card-bg, rgba(255, 255, 255, 0.98));
   border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
   border-radius: var(--radius-lg);
-  filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.15));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   z-index: 200;
   max-height: 300px;
   overflow-y: auto;

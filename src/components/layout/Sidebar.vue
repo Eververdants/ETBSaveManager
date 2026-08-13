@@ -385,7 +385,7 @@ onMounted(() => {
   background: var(--bg-sidebar);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  filter: drop-shadow(var(--filter-shadow-lg));
+  box-shadow: var(--shadow-lg);
   z-index: 1000;
   overflow: hidden;
   border-right: 1px solid var(--sidebar-border-color);
@@ -394,7 +394,7 @@ onMounted(() => {
   transition:
     background 0.25s ease,
     border-right 0.25s ease,
-    filter 0.25s ease,
+    box-shadow 0.25s ease,
     width 0.3s ease,
     --sidebar-width 0.3s ease;
 }

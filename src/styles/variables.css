@@ -181,12 +181,6 @@ button {
   user-select: none !important;
   -webkit-touch-callout: none !important;
   -webkit-tap-highlight-color: transparent !important;
-  outline: none !important;
-}
-
-button:focus {
-  outline: none !important;
-  box-shadow: none !important;
 }
 
 /* 针对所有可能的按钮类型 */
@@ -203,19 +197,18 @@ button,
   user-select: none !important;
   -webkit-touch-callout: none !important;
   -webkit-tap-highlight-color: transparent !important;
-  outline: none !important;
   cursor: pointer !important;
 }
 
-button:focus,
-.btn:focus,
-.btn-primary:focus,
-.btn-secondary:focus,
-.btn-outline:focus,
-[class*="btn-"]:focus,
-[class*="button"]:focus {
-  outline: none !important;
-  box-shadow: none !important;
+/* 键盘焦点指示：仅 :focus-visible 显示高对比度焦点环，鼠标点击不显示。
+   不设 outline:none/box-shadow:none，让组件级焦点环 (如 .action-card:focus-visible)
+   也能存活。 */
+button:focus-visible,
+[role="button"]:focus-visible,
+[class*="btn-"]:focus-visible,
+[class*="button"]:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
 /* 确保点击反馈仍然有效 */
@@ -228,6 +221,37 @@ button:active,
 [class*="button"]:active {
   transform: scale(0.98);
   transition: transform 0.1s ease;
+}
+
+/* ==========================================
+ * 无障碍媒体查询 (Accessibility Media Queries)
+ * ========================================== */
+
+/* 减少动效：CSS 动画/过渡退化为近乎瞬时的状态切换 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 减少透明：关闭 backdrop-filter，玻璃表面退化为近不透明面板 */
+@media (prefers-reduced-transparency: reduce) {
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* 增强对比度：弱化文本提升到次强调级，保持层级但提高可读性 */
+@media (prefers-contrast: more) {
+  :root {
+    --text-tertiary: var(--text-secondary);
+  }
 }
 
 /* Toast 通知已迁移至 NotificationPopup 组件 */

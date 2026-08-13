@@ -23,6 +23,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import { gsap } from "gsap";
+import { isReducedMotion } from "@/utils/performance";
 import storage from "../../services/storageService";
 
 defineOptions({ inheritAttrs: false });
@@ -159,6 +160,13 @@ const showFloatingButton = () => {
     return;
   }
 
+  // 减少动态：直接显示，不做回弹动画
+  if (isReducedMotion()) {
+    gsap.set(container, { opacity: 1, scale: 1, y: 0, clearProps: "transform" });
+    isTransitioning = false;
+    return;
+  }
+
   isTransitioning = true;
   // Suspend the CSS transform transition (used for scroll-hide) so it
   // doesn't fight GSAP's transform tweens during the show animation.
@@ -184,6 +192,12 @@ const showFloatingButton = () => {
 const hideFloatingButton = () => {
   const container = floatingActionContainer.value;
   if (!container) {
+    shouldRender.value = false;
+    return;
+  }
+
+  // 减少动态：立即移除 DOM
+  if (isReducedMotion()) {
     shouldRender.value = false;
     return;
   }
@@ -393,8 +407,12 @@ const initStyleObserver = (container) => {
 onMounted(() => {
   const container = floatingActionContainer.value;
   if (container) {
-    // Initial state: hidden
-    gsap.set(container, { opacity: 0, scale: 0.8, y: 20 });
+    // 初始状态：隐藏；减少动态时直接可见
+    if (isReducedMotion()) {
+      gsap.set(container, { opacity: 1, scale: 1, y: 0 });
+    } else {
+      gsap.set(container, { opacity: 0, scale: 0.8, y: 20 });
+    }
     applyContainerStyles(container, {
       "z-index": "10000",
       isolation: "isolate",
@@ -586,7 +604,7 @@ onUnmounted(() => {
   border-radius: var(--radius-xl);
   font-size: 14px;
   font-weight: 500;
-  filter: drop-shadow(var(--filter-card-shadow));
+  box-shadow: var(--card-shadow);
   border: var(--card-border);
 }
 

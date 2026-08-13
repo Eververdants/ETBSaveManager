@@ -67,6 +67,7 @@ class="notification-progress-bar" :class="`progress-${notification.type}`"
 <script setup>
 import { ref, reactive, onUnmounted, nextTick } from "vue";
 import { gsap } from "gsap";
+import { isReducedMotion } from "@/utils/performance";
 
 const MAX_NOTIFICATIONS = 5;
 const positions = ["top", "top-right", "right", "bottom-right", "bottom", "bottom-left", "left", "top-left"];
@@ -110,6 +111,10 @@ const useNotificationPosition = () => {
 
 const useNotificationAnimations = (getAnimationDirection) => {
   const onBeforeEnter = (el, position) => {
+    if (isReducedMotion()) {
+      gsap.set(el, { opacity: 0 });
+      return;
+    }
     const dir = getAnimationDirection(position);
     gsap.set(el, {
       opacity: 0,
@@ -121,6 +126,11 @@ const useNotificationAnimations = (getAnimationDirection) => {
   };
 
   const onEnter = (el, done, _position) => {
+    if (isReducedMotion()) {
+      gsap.set(el, { opacity: 1, clearProps: "transform,filter" });
+      done();
+      return;
+    }
     gsap.to(el, {
       opacity: 1,
       x: 0,
@@ -161,6 +171,12 @@ const useNotificationAnimations = (getAnimationDirection) => {
   };
 
   const onLeave = (el, done, position) => {
+    if (isReducedMotion()) {
+      if (el._placeholder) el._placeholder.remove();
+      gsap.set(el, { opacity: 0 });
+      done();
+      return;
+    }
     const dir = getAnimationDirection(position);
     const placeholder = el._placeholder;
 
@@ -435,7 +451,7 @@ defineExpose({
   background: var(--card-bg, rgba(255, 255, 255, 0.95));
   backdrop-filter: blur(20px);
   border-radius: var(--radius-sm);
-  filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.12));
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.2);
   pointer-events: auto;
   overflow: hidden;
@@ -443,7 +459,7 @@ defineExpose({
 }
 
 .notification-item:hover {
-  filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.16));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
 }
 
 .notification-expanded {
@@ -671,7 +687,7 @@ defineExpose({
   .notification-item {
     background: var(--card-bg, rgba(44, 44, 46, 0.95));
     border-color: rgba(255, 255, 255, 0.1);
-    filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.4));
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
   }
 
   .notification-close {

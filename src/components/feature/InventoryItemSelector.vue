@@ -185,7 +185,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
   -webkit-backdrop-filter: var(--glass-backdrop-filter);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.08));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   width: 90%;
   max-width: 600px;
   height: min(80vh, 680px);

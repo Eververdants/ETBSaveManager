@@ -55,6 +55,10 @@ export const detectDevicePerformance = (): DevicePerformanceInfo => {
   };
 };
 
+// 用户是否偏好减少动效（用于把 GSAP 入场退化为交叉淡入）
+export const isReducedMotion = (): boolean =>
+  typeof window !== "undefined" && !!window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 // 获取动画参数的函数
 export const getAnimationParams = (
   animationType: string = "default",

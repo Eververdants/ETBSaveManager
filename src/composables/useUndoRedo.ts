@@ -31,8 +31,9 @@ const future = ref<HistoryAction[]>([]);
 export function useUndoRedo(): {
   canUndo: ComputedRef<boolean>;
   canRedo: ComputedRef<boolean>;
-  pushAction: (action: UndoAction) => void;
+  pushAction: (action: UndoAction) => string;
   undo: () => Promise<string | null>;
+  undoById: (id: string) => Promise<string | null>;
   redo: () => Promise<string | null>;
   lastActionDescription: () => string | null;
   clear: () => void;
@@ -43,9 +44,10 @@ export function useUndoRedo(): {
   /**
    * Push an undoable action onto the stack.
    */
-  function pushAction(action: UndoAction): void {
+  function pushAction(action: UndoAction): string {
+    const id = Date.now() + "_" + Math.random().toString(36).slice(2, 6);
     past.value.push({
-      id: Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+      id,
       description: action.description,
       undo: action.undo,
       redo: action.redo || undefined,
@@ -59,6 +61,8 @@ export function useUndoRedo(): {
     if (past.value.length > MAX_HISTORY) {
       past.value.shift();
     }
+
+    return id;
   }
 
   /**
@@ -83,6 +87,34 @@ export function useUndoRedo(): {
       console.error("[useUndoRedo] Undo failed:", error);
       // Push back on failure
       past.value.push(action);
+      throw error;
+    }
+  }
+
+  /**
+   * Undo a specific action by id (e.g. a delete-toast Undo button),
+   * regardless of its position in the history stack.
+   * Returns the undone action's description, or null if the id was not found.
+   */
+  async function undoById(id: string): Promise<string | null> {
+    const index = past.value.findIndex((a) => a.id === id);
+    if (index === -1) return null;
+
+    const [action] = past.value.splice(index, 1);
+
+    try {
+      if (typeof action.undo === "function") {
+        await action.undo();
+      }
+      // Push to redo stack (only if it has a redo function)
+      if (typeof action.redo === "function") {
+        future.value.push(action);
+      }
+      return action.description;
+    } catch (error) {
+      console.error("[useUndoRedo] Undo failed:", error);
+      // Push back on failure
+      past.value.splice(index, 0, action);
       throw error;
     }
   }
@@ -130,6 +162,7 @@ export function useUndoRedo(): {
     canRedo,
     pushAction,
     undo,
+    undoById,
     redo,
     lastActionDescription,
     clear,

@@ -137,6 +137,7 @@ d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, onActivated, nextTick, watch } from "vue";
 import { gsap } from "gsap";
+import { isReducedMotion } from "@/utils/performance";
 import { useI18n } from "vue-i18n";
 import { useRouter, useRoute } from "vue-router";
 import InventoryItemSelector from "@/components/feature/InventoryItemSelector.vue";
@@ -622,6 +623,13 @@ const finishCreateFlow = () => {
     return;
   }
 
+  if (isReducedMotion()) {
+    resetForm();
+    gsap.set(stepsWrapper, { x: "0%", opacity: 1 });
+    isCreating.value = false;
+    return;
+  }
+
   gsap.killTweensOf(stepsWrapper);
   gsap.to(stepsWrapper, {
     x: "150%",
@@ -735,6 +743,11 @@ onUnmounted(() => {
 });
 
 const onStepEnter = (el, done) => {
+  if (isReducedMotion()) {
+    gsap.set(el, { opacity: 1, clearProps: "transform" });
+    done();
+    return;
+  }
   // Enter from right when forward, from left when backward
   const fromX = stepDirection.value === 1 ? 30 : -30;
   gsap.fromTo(

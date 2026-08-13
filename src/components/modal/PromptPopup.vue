@@ -27,6 +27,7 @@ v-if="isVisible" ref="popupRef" class="prompt-popup" :class="popupClass" :style=
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { gsap } from "gsap";
+import { isReducedMotion } from "@/utils/performance";
 
 const props = defineProps({
   message: { type: String, required: true },
@@ -112,6 +113,11 @@ const getStartPosition = () => {
 
 // GSAP enter animation - elegant and smooth
 const enterAnimation = (el, done) => {
+  if (isReducedMotion()) {
+    gsap.set(el, { opacity: 1, clearProps: "transform,filter" });
+    done();
+    return;
+  }
   const startPos = getStartPosition();
   gsap.fromTo(
     el,
@@ -137,6 +143,12 @@ const enterAnimation = (el, done) => {
 
 // GSAP leave animation - elegant and smooth
 const leaveAnimation = (el, done) => {
+  if (isReducedMotion()) {
+    gsap.set(el, { opacity: 0 });
+    done();
+    emit("close");
+    return;
+  }
   const endPos = getStartPosition();
   gsap.to(el, {
     opacity: 0,
@@ -204,9 +216,9 @@ const resumeAutoClose = () => {
   padding: 20px 24px;
   border-radius: var(--radius-2xl);
   box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(255, 255, 255, 0.1) inset,
     0 0 0 1px rgba(0, 0, 0, 0.05) inset;
-  filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.15));
   background: var(--card-bg, #ffffff);
   color: var(--text, #1c1c1e);
   font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
@@ -404,8 +416,7 @@ const resumeAutoClose = () => {
   .prompt-popup {
     background: var(--card-bg, #1c1c1e);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-    filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.6));
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
   }
 
   .prompt-popup::before {
@@ -478,8 +489,7 @@ const resumeAutoClose = () => {
 .popup-success {
   background: var(--popup-success-bg);
   border: 1px solid var(--color-success-border);
-  box-shadow: 0 0 0 1px rgba(52, 199, 89, 0.1) inset;
-  filter: drop-shadow(0 20px 60px rgba(52, 199, 89, 0.12));
+  box-shadow: 0 20px 60px rgba(52, 199, 89, 0.12), 0 0 0 1px rgba(52, 199, 89, 0.1) inset;
   animation: subtlePulse 0.6s ease-in-out;
 }
 
@@ -492,8 +502,7 @@ const resumeAutoClose = () => {
 .popup-error {
   background: var(--popup-error-bg);
   border: 1px solid var(--color-error-border);
-  box-shadow: 0 0 0 1px rgba(255, 59, 48, 0.1) inset;
-  filter: drop-shadow(0 20px 60px rgba(255, 59, 48, 0.12));
+  box-shadow: 0 20px 60px rgba(255, 59, 48, 0.12), 0 0 0 1px rgba(255, 59, 48, 0.1) inset;
   animation: subtleShake 0.4s ease-in-out;
 }
 
@@ -506,8 +515,7 @@ const resumeAutoClose = () => {
 .popup-warning {
   background: var(--popup-warning-bg);
   border: 1px solid var(--color-warning-border);
-  box-shadow: 0 0 0 1px rgba(255, 149, 0, 0.1) inset;
-  filter: drop-shadow(0 20px 60px rgba(255, 149, 0, 0.12));
+  box-shadow: 0 20px 60px rgba(255, 149, 0, 0.12), 0 0 0 1px rgba(255, 149, 0, 0.1) inset;
 }
 
 .popup-warning .popup-icon-wrapper {
@@ -519,8 +527,8 @@ const resumeAutoClose = () => {
 .popup-info {
   background: var(--popup-info-bg);
   border: 1px solid var(--color-info-border);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 10%, transparent) inset;
-  filter: drop-shadow(0 20px 60px var(--popup-info-shadow, color-mix(in srgb, var(--accent-color) 12%, transparent)));
+  box-shadow: 0 20px 60px var(--popup-info-shadow, color-mix(in srgb, var(--accent-color) 12%, transparent)),
+    0 0 0 1px color-mix(in srgb, var(--accent-color) 10%, transparent) inset;
 }
 
 .popup-info .popup-icon-wrapper {

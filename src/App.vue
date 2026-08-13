@@ -417,9 +417,14 @@ class="main-content" :class="{
   box-sizing: border-box;
 }
 
+/* 根字号基准：rem 依据此缩放 */
+html {
+  font-size: 16px;
+}
+
 /* Global border radius */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
   background: var(--app-bg, var(--bg));
   color: var(--text);
   transition:

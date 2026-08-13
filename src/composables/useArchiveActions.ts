@@ -86,7 +86,7 @@ export function useArchiveActions(
   const router: Router = useRouter();
   const { t } = useI18n();
   const toast = useToast();
-  const { pushAction, undo, redo, canUndo, canRedo } = useUndoRedo();
+  const { pushAction, undo, redo, canUndo, canRedo, undoById } = useUndoRedo();
 
   const showDeleteConfirm = ref(false);
   const archiveToDelete = ref<ArchiveData | null>(null);
@@ -240,7 +240,7 @@ export function useArchiveActions(
       }
 
       // Register undo action with toast
-      pushAction({
+      const deleteActionId = pushAction({
         description: `Delete "${archiveName}"`,
         undo: async () => {
           // Cancel pending permanent delete (safety)
@@ -310,7 +310,7 @@ export function useArchiveActions(
                 pendingPermanentDeletes.delete(archiveId);
               }
               try {
-                await undo();
+                await undoById(deleteActionId);
                 toast.showInfo(t("archive.actions.undoDeleteOf", { name: archiveName }), { duration: 3000 });
               } catch {
                 toast.showError(t("archive.actions.undoFailed"));
@@ -397,12 +397,13 @@ export function useArchiveActions(
     }
 
     // Register batch delete as single undo action
-    if (batchSnapshots.length > 0) {
-      pushAction({
-        description: `Batch delete ${batchSnapshots.length} archives`,
+    if (deleteResults.success.length > 0) {
+      const successSnapshots = batchSnapshots.filter((s) => deleteResults.success.includes(s.id));
+      const batchActionId = pushAction({
+        description: `Batch delete ${successSnapshots.length} archives`,
         undo: async () => {
           // Cancel all pending permanent deletes for this batch
-          for (const snapshot of batchSnapshots) {
+          for (const snapshot of successSnapshots) {
             const p = pendingPermanentDeletes.get(snapshot.id);
             if (p) {
               clearTimeout(p);
@@ -410,7 +411,7 @@ export function useArchiveActions(
             }
           }
           // Restore all files in parallel
-          const restores = batchSnapshots
+          const restores = successSnapshots
             .filter((s) => s.path)
             .map((s) =>
               invoke("restore_file", { filePath: s.path }).catch((e) =>
@@ -419,14 +420,14 @@ export function useArchiveActions(
             );
           await Promise.allSettled(restores);
           // Restore in frontend data, maintaining name-sorted order
-          for (const snapshot of batchSnapshots) {
+          for (const snapshot of successSnapshots) {
             insertSortedByName(archiveData.archives.value, snapshot);
           }
           if (callbacks.onRefresh) await callbacks.onRefresh();
         },
         redo: async () => {
           // Re-delete all files in parallel
-          const deletes = batchSnapshots
+          const deletes = successSnapshots
             .filter((s) => s.path)
             .map((s) =>
               invoke("soft_delete_file", { filePath: s.path }).catch((e) =>
@@ -435,7 +436,7 @@ export function useArchiveActions(
             );
           await Promise.allSettled(deletes);
           // Remove all in one pass
-          const redoIds = new Set(batchSnapshots.map((s) => s.id));
+          const redoIds = new Set(successSnapshots.map((s) => s.id));
           archiveData.archives.value = archiveData.archives.value.filter((a) => !redoIds.has(a.id));
         },
       });
@@ -445,7 +446,7 @@ export function useArchiveActions(
 
       const scheduleBatchPermanentDelete = () => {
         if (batchUndoPerformed) return;
-        for (const snapshot of batchSnapshots) {
+        for (const snapshot of successSnapshots) {
           if (!snapshot.path) continue;
           const timer = setTimeout(async () => {
             pendingPermanentDeletes.delete(snapshot.id);
@@ -459,14 +460,14 @@ export function useArchiveActions(
         }
       };
 
-      toast.showSuccess(t("archive.actions.batchDeleteSuccess", { count: batchSnapshots.length }), {
+      toast.showSuccess(t("archive.actions.batchDeleteSuccess", { count: successSnapshots.length }), {
         duration: 6000,
         actions: [
           {
             text: t("archive.actions.undo"),
             onClick: async () => {
               batchUndoPerformed = true;
-              for (const snapshot of batchSnapshots) {
+              for (const snapshot of successSnapshots) {
                 const p = pendingPermanentDeletes.get(snapshot.id);
                 if (p) {
                   clearTimeout(p);
@@ -474,7 +475,7 @@ export function useArchiveActions(
                 }
               }
               try {
-                await undo();
+                await undoById(batchActionId);
                 toast.showInfo(t("archive.actions.batchDeleteUndone"), { duration: 3000 });
               } catch {
                 toast.showError(t("archive.actions.undoFailed"));

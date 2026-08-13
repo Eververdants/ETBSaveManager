@@ -1,7 +1,7 @@
 {
   "name": "etbsavemanager",
   "private": true,
-  "version": "3.3.0",
+  "version": "3.3.1",
   "type": "module",
   "scripts": {
     "dev": "pnpm sync-version && vite",
@@ -27,7 +27,7 @@
     "@intlify/unplugin-vue-i18n": "^11.2.4",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/vue-virtual": "^3.13.32",
-    "@tauri-apps/api": "^2",
+    "@tauri-apps/api": "^2.11.1",
     "@tauri-apps/plugin-dialog": "^2.7.2",
     "@tauri-apps/plugin-fs": "^2.5.1",
     "@tauri-apps/plugin-opener": "^2",
@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@tauri-apps/cli": "^2",
+    "@tauri-apps/cli": "^2.11.4",
     "@types/dompurify": "^3.2.0",
     "@types/markdown-it": "^14.1.2",
     "@vitejs/plugin-vue": "^6.0.8",

@@ -4,7 +4,7 @@ import type { UpdateInfo, UpdateSourceConfig } from "../types";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
 // Version information
-const CURRENT_VERSION = "3.3.0";
+const CURRENT_VERSION = "3.3.1";
 
 // Simplified update status
 export const UpdateStatus = {

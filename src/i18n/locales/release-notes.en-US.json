@@ -1,24 +1,33 @@
 {
-  "version": "3.3.0",
-  "date": "2026-07-19",
-  "title": "Smart Scheduling & UI Redesign",
-  "type": "major",
+  "version": "3.3.1",
+  "date": "2026-08-14",
+  "title": "Save ID Stability & Interaction Polish",
+  "type": "patch",
   "categories": {
     "newFeatures": [
-      "Added Pinyin fuzzy search with search suggestions",
-      "Rewrote Quick Create Archive flow",
-      "Added paginated lazy loading for archive list"
+      "Reuse existing player UniqueNetId when creating archives, with local Steam ID to EOS PUID mapping",
+      "Auto-merge duplicate player data entries when editing, intelligently merging both backpacks",
+      "Block adding online players without a reusable EOS key"
     ],
     "improvements": [
-      "Redesigned corner radius system with continuous curvature + concentric decreasing design",
-      "Rebuilt light and dark themes"
+      "Upgraded archive parsing engine (uesave 0.7), preserving player UniqueNetId",
+      "Sanity and backpack settings on the same row; rounded-rectangle item slots",
+      "Keep filter conditions and center the edited archive's card when returning to the list",
+      "Delete-success notification shows an exit countdown; bolder batch-delete button",
+      "Keyboard shortcuts enabled, dev-tools shortcuts still blocked",
+      "Crossfade page transitions to eliminate switching flashes; land at page top",
+      "Show a hint when sanity is set to 0 (auto-restores to 100 in game)",
+      "Removed the throttle interval between auto and manual refresh"
     ],
     "bugFixes": [
-      "Fixed numerous bugs"
+      "Fixed 'command not found' error when adding a Steam ID",
+      "Fixed EOS PUID mapping occasionally not applying on creation (real EOS suffix only)",
+      "Fixed the floating button occasionally disappearing during search/filter",
+      "Fixed archive visibility toggle occasionally not taking effect",
+      "Fixed batch-created archives not entering the MAINSAVE list"
     ],
     "performance": [
-      "Added intelligent resource scheduler with dynamic CPU/memory allocation and adaptive animation quality",
-      "Optimized numerous performance issues"
+      "Preload the edit page for faster entry"
     ]
   }
 }

@@ -1,0 +1,92 @@
+/* ==========================================
+ * 连续曲率圆角系统 (Superellipse Corner System)
+ * n=5, mask 值来自 variables.css --corner-*
+ * 仅在 mask 支持环境生效;不支持则保留原 border-radius 圆形
+ * 分档规则与冲突决策见计划 Task 2
+ * ========================================== */
+@supports (mask-image: url("data:image/svg+xml")) {
+  /* 逃生舱:个别元素不用连续曲率,恢复圆形 */
+  [data-corner="none"] {
+    -webkit-mask: none !important;
+    mask: none !important;
+    border-radius: var(--radius-md, 8px) !important;
+  }
+
+  /* 2xl:模态/大弹窗 */
+  .modal, .dialog, .popup,
+  .modal-window, .dialog-box, .alert-box, .prompt-box,
+  .modal-container, .prompt-popup, .success-modal-card {
+    border-radius: 0 !important;
+    -webkit-mask: var(--corner-2xl) center / 100% 100% no-repeat;
+    mask: var(--corner-2xl) center / 100% 100% no-repeat;
+  }
+
+  /* right:侧栏面板(右圆左方) */
+  .sidebar {
+    border-radius: 0 !important;
+    -webkit-mask: var(--corner-right) center / 100% 100% no-repeat;
+    mask: var(--corner-right) center / 100% 100% no-repeat;
+  }
+
+  /* xl:大面板/侧栏项/搜索面板/模式卡 */
+  .sidebar-panel, .nav-panel, .sidebar-item,
+  .unified-search-filter, .search-input, .scroll-hint-content,
+  .archive-details-card, .popup-icon-wrapper,
+  .archive-list-container, .empty-card, .batch-delete-progress,
+  .slider, .mode-card, .bottom-back-button, .bottom-actions {
+    border-radius: 0 !important;
+    -webkit-mask: var(--corner-xl) center / 100% 100% no-repeat;
+    mask: var(--corner-xl) center / 100% 100% no-repeat;
+  }
+
+  /* lg:卡片/分区/面板 */
+  .card, .archive-card, .modal-card, .dropdown-content, .level-card,
+  .section, .panel, .settings-section, .config-panel,
+  .performance-monitor, .search-suggestions, .preview-execute-area,
+  .ending-group, .section-card, .glass-card, .setting-group,
+  .update-message, .theme-editor-container, .settings-card,
+  .level-group, .player-list-section, .player-detail-section,
+  .quick-create-header, .options-panel, .result-modal, .step,
+  .item-card, .fuzzy-card {
+    border-radius: 0 !important;
+    -webkit-mask: var(--corner-lg) center / 100% 100% no-repeat;
+    mask: var(--corner-lg) center / 100% 100% no-repeat;
+  }
+
+  /* md:列表项/表单组/中尺寸容器 */
+  .list-item, .menu-item, .dropdown-item, .select-option,
+  .hidden-badge, .clear-btn, .filter-item, .action-btn,
+  .global-search-panel, .selector-modal, .empty-state,
+  .form-input, .dropdown-menu, .dropdown-option, .quick-archive-card,
+  .preview-names, .preview-empty, .grid-header, .ending-slider, .ending-tab,
+  .app-icon, .list-section, .settings-input, .difficulty-hint, .diff-option,
+  .cache-info, .back-button, .create-btn, .result-stat, .error-details,
+  .mode-select-button, .back-to-quick-mode-btn, .step-info,
+  .drop-zone, .reset-tutorial-btn, .detail-block,
+  .inv-slot, .inv-slot.backpack-slot {
+    border-radius: 0 !important;
+    -webkit-mask: var(--corner-md) center / 100% 100% no-repeat;
+    mask: var(--corner-md) center / 100% 100% no-repeat;
+  }
+
+  /* sm:内层小卡片/按钮/图标容器 */
+  .multi-select-checkbox, .mode-badge, .difficulty-badge, .close-btn,
+  .setting-icon, .check-update-btn, .update-btn, .api-key-input,
+  .save-api-key-btn, .cache-count, .view-cache-btn, .clear-cache-btn,
+  .tab-nav, .player-item, .steamid-edit-row, .estimated-time, .stat-item,
+  .notification-item, .qbtn {
+    border-radius: 0 !important;
+    -webkit-mask: var(--corner-sm) center / 100% 100% no-repeat;
+    mask: var(--corner-sm) center / 100% 100% no-repeat;
+  }
+
+  /* xs:标签/徽章/小指示器 */
+  .filter-label, .clear-history-btn,
+  .notification-icon-wrapper, .notification-details, .preview-name,
+  .tab-btn, .version-tag, .update-source-hint, .error-message,
+  .msg-tip, .del-btn, .sidebar-toggle {
+    border-radius: 0 !important;
+    -webkit-mask: var(--corner-xs) center / 100% 100% no-repeat;
+    mask: var(--corner-xs) center / 100% 100% no-repeat;
+  }
+}

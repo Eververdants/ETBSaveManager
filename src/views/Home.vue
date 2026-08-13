@@ -444,6 +444,9 @@ const clearAllFilters = () => {
 
 const handleToggleVisibility = (archive: ArchiveData) => {
   handleToggleVisibilityBase(archive, {
+    // Re-sync from the backend (MAINSAVE is the source of truth) so the toggle
+    // always lands — regardless of archive id shifts after a refresh.
+    onRefresh: () => refreshArchivesSilent(),
     onSuccess: () => protectFloatingButtonPosition(),
   });
 };
@@ -456,18 +459,14 @@ const confirmDelete = () => {
   });
 };
 
-// ─── Refresh throttle ──────────────────────────────
+// ─── Refresh guard ──────────────────────────────
+// Only prevents two refreshes from overlapping. There is deliberately no cooldown
+// interval between auto-refresh (on activation) and a manual refresh — the user can
+// refresh again as soon as the previous run finishes.
 let _refreshInFlight = false;
-let _refreshCooldownTimer: ReturnType<typeof setTimeout> | null = null;
-const REFRESH_COOLDOWN_MS = 3_000;
 
 const refreshArchives = async (): Promise<void> => {
-  // Throttle: ignore clicks while a refresh is in flight or within cooldown.
   if (_refreshInFlight) return;
-  if (_refreshCooldownTimer) {
-    toast.showWarning(t("archiveSearch.refreshCooldown"));
-    return;
-  }
 
   // Lock
   _refreshInFlight = true;
@@ -483,10 +482,6 @@ const refreshArchives = async (): Promise<void> => {
     toast.showSuccess(t("archiveSearch.refreshed"));
   } finally {
     _refreshInFlight = false;
-    // Set cooldown timer
-    _refreshCooldownTimer = setTimeout(() => {
-      _refreshCooldownTimer = null;
-    }, REFRESH_COOLDOWN_MS);
   }
 };
 
@@ -556,6 +551,31 @@ const forceCompositingRefresh = (): void => {
   }
 };
 
+// After returning from the edit page, scroll the edited archive's card to the
+// vertical center of the list so the user doesn't have to hunt for it.
+const centerEditedArchive = (): void => {
+  let name = "";
+  try {
+    name = sessionStorage.getItem("lastEditedArchiveName") || "";
+  } catch {
+    /* ignore */
+  }
+  if (!name) return;
+  try {
+    sessionStorage.removeItem("lastEditedArchiveName");
+  } catch {
+    /* ignore */
+  }
+
+  const idx = displayArchives.value.findIndex((a) => a.name === name);
+  if (idx === -1) return;
+  const cols = columnsPerRow.value || 1;
+  const row = Math.floor(idx / cols);
+  nextTick(() => {
+    rowVirtualizer.value.scrollToIndex(row, { align: "center" });
+  });
+};
+
 // ─── Card entrance animation ──────────────────────
 // Replaced by the CSS .cards-enter animation on the virtual-scroll-viewport.
 // The old per-card RAF reveal loop added ~700ms of delay (12 cards × 1 frame
@@ -601,6 +621,7 @@ onActivated(() => {
         invoke("set_process_priority", { priority: "normal" }).catch(() => { });
         nextTick(() => {
           rowVirtualizer.value.measure();
+          centerEditedArchive();
           requestAnimationFrame(() => {
             rowVirtualizer.value.measure();
             requestAnimationFrame(forceCompositingRefresh);
@@ -1404,20 +1425,28 @@ watch(searchQuery, (query) => {
 }
 
 .multi-select-toolbar .toolbar-btn.danger {
-  background: var(--btn-danger-bg);
-  border-color: var(--btn-danger-bg);
-  color: var(--btn-danger-text);
+  background: linear-gradient(135deg, #ff3b30, #ff453a);
+  border-color: #ff3b30;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 59, 48, 0.35);
 }
 
 .multi-select-toolbar .toolbar-btn.danger:hover:not(:disabled) {
-  background: var(--btn-danger-bg-hover);
-  border-color: var(--btn-danger-bg-hover);
-  color: var(--btn-danger-text);
-  box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, #ff453a, #ff6b5e);
+  border-color: #ff453a;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255, 59, 48, 0.45);
 }
 
 .multi-select-toolbar .toolbar-btn.danger:active:not(:disabled) {
   transform: scale(0.97);
+}
+
+.multi-select-toolbar .toolbar-btn.danger:disabled {
+  background: rgba(255, 59, 48, 0.35);
+  border-color: rgba(255, 59, 48, 0.4);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .multi-select-toolbar .selection-count {

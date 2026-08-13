@@ -4,7 +4,8 @@
  */
 
 export function disableInteractions(): void {
-  // 禁用所有快捷键（但允许在输入框中使用）
+  // 键盘快捷键：应用内快捷键已开放（如 Ctrl+Z 撤销、Tab 导航等）。
+  // 仅仍拦截两件事：WebView2 原生的查找转发到应用内搜索，以及打开开发者工具的快捷键。
   document.addEventListener(
     "keydown",
     (e: KeyboardEvent) => {
@@ -35,62 +36,20 @@ export function disableInteractions(): void {
         return false;
       }
 
-      // 如果当前焦点在输入框、文本域或内容可编辑元素上，允许正常输入
-      const target = e.target as HTMLElement;
-      const isInputElement =
-        target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.contentEditable === "true";
+      // 始终禁止打开开发者工具的快捷键
+      const isDevtoolsShortcut =
+        e.key === "F12" ||
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && ["KeyI", "KeyJ", "KeyC"].includes(e.code)) ||
+        ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.code === "KeyU");
 
-      if (isInputElement) {
-        // 在输入框中，只允许基本的编辑操作，仍然阻止快捷键组合
-        if (e.ctrlKey || e.altKey || e.metaKey) {
-          // 允许复制粘贴等基本操作
-          const allowedShortcuts = ["KeyC", "KeyV", "KeyX", "KeyA", "KeyZ", "KeyY"];
-          if (!allowedShortcuts.includes(e.code)) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-          }
-        }
-        return; // 允许其他输入操作
-      }
-
-      // 禁用所有Ctrl、Alt、Shift组合键（非输入框）
-      if (e.ctrlKey || e.altKey || e.shiftKey || e.metaKey) {
+      if (isDevtoolsShortcut) {
         e.preventDefault();
         e.stopPropagation();
         return false;
       }
 
-      // 禁用F1-F12功能键
-      if (e.key.startsWith("F") && e.key.length > 1) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-
-      // 禁用其他特殊按键（非输入框）
-      const blockedKeys = [
-        "Tab",
-        "Escape",
-        "Enter",
-        "Backspace",
-        "Delete",
-        "Insert",
-        "Home",
-        "End",
-        "PageUp",
-        "PageDown",
-        "ArrowUp",
-        "ArrowDown",
-        "ArrowLeft",
-        "ArrowRight",
-      ];
-
-      if (blockedKeys.includes(e.key)) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
+      // 其余按键与快捷键一律放行（包括输入框内外的所有组合键）。
+      return;
     },
     true,
   );

@@ -194,10 +194,40 @@ export function useArchiveList(archives: Ref<ArchiveData[]>): {
   hasActiveFilters: ComputedRef<boolean>;
   resetFilters: () => void;
 } {
-  const searchQuery = ref("");
-  const selectedArchiveDifficulty = ref("");
-  const selectedActualDifficulty = ref("");
-  const selectedVisibility = ref("");
+  // Persist filter conditions across navigation. Home is keep-alive'd, but a full
+  // app restart or an unmount/remount (key changes) would otherwise clear the
+  // user's filter — restore them from sessionStorage so returning from the edit
+  // page keeps showing the filtered list instead of all archives.
+  const FILTER_STORAGE_KEY = "archive-list-filters";
+  let savedFilters: InitialFilters = {};
+  try {
+    const raw = sessionStorage.getItem(FILTER_STORAGE_KEY);
+    if (raw) savedFilters = JSON.parse(raw) as InitialFilters;
+  } catch {
+    /* ignore corrupt storage */
+  }
+
+  const searchQuery = ref(savedFilters.searchQuery || "");
+  const selectedArchiveDifficulty = ref(savedFilters.selectedArchiveDifficulty || "");
+  const selectedActualDifficulty = ref(savedFilters.selectedActualDifficulty || "");
+  const selectedVisibility = ref(savedFilters.selectedVisibility || "");
+
+  // Persist on every change.
+  watch([searchQuery, selectedArchiveDifficulty, selectedActualDifficulty, selectedVisibility], () => {
+    try {
+      sessionStorage.setItem(
+        FILTER_STORAGE_KEY,
+        JSON.stringify({
+          searchQuery: searchQuery.value,
+          selectedArchiveDifficulty: selectedArchiveDifficulty.value,
+          selectedActualDifficulty: selectedActualDifficulty.value,
+          selectedVisibility: selectedVisibility.value,
+        }),
+      );
+    } catch {
+      /* ignore storage errors */
+    }
+  });
 
   const displayArchives = shallowRef<ArchiveData[]>([]);
   const searchSuggestions = shallowRef<ArchiveData[]>([]);
@@ -261,6 +291,11 @@ export function useArchiveList(archives: Ref<ArchiveData[]>): {
     selectedArchiveDifficulty.value = "";
     selectedActualDifficulty.value = "";
     selectedVisibility.value = "";
+    try {
+      sessionStorage.removeItem(FILTER_STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
   };
 
   return {

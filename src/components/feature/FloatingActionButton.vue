@@ -82,6 +82,14 @@ const updateFabPosition = () => {
   const container = floatingActionContainer.value;
   if (!container) return;
 
+  // While the archive search/filter overlay is open, never scroll-hide the FAB —
+  // the filtered list shrinks and can report a near-bottom scroll position, which
+  // used to make the FAB slide off-screen (its exit animation) mid-search.
+  if (document.querySelector(".search-overlay")) {
+    container.classList.remove("fab-scroll-hidden");
+    return;
+  }
+
   const config = getScrollHideConfig();
   const { scrollBottom, canScroll } = getArchiveScrollBottom();
 
@@ -222,7 +230,13 @@ const hideFloatingButton = () => {
 watch(isHomePage, (newVal, oldVal) => {
   if (newVal === oldVal) return;
   if (newVal) {
-    // Entering Home page: render DOM first, then play show animation
+    // Entering Home page: reset to the default "search" action so the FAB always
+    // shows the search icon when returning from another page, then render + show.
+    currentIndex.value = 0;
+    displayIndex.value = 0;
+    nextDisplayIndex.value = 1;
+    if (currentIconEl.value) gsap.set(currentIconEl.value, { y: 0, opacity: 1 });
+    if (nextIconEl.value) gsap.set(nextIconEl.value, { y: 40, opacity: 0 });
     shouldRender.value = true;
     isVisible.value = true;
     nextTick(() => setTimeout(showFloatingButton, 100));

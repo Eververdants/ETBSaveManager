@@ -397,20 +397,25 @@ export function useArchiveData(): {
     }
   };
 
-  const updateArchiveVisibility = (archiveId: number, isVisible: boolean): void => {
-    const archiveIndex = archives.value.findIndex((a) => a.id === archiveId);
+  const updateArchiveVisibility = (archiveId: number, isVisible: boolean, path?: string): void => {
+    let archiveIndex = archives.value.findIndex((a) => a.id === archiveId);
+    // Archive ids are enumeration indices that shift after a refresh adds/removes
+    // a save. Fall back to the stable file path so the optimistic update (and the
+    // rollback) still hits the right card — otherwise toggling can appear to do
+    // nothing on the wrong archive.
+    if (archiveIndex === -1 && path) {
+      archiveIndex = archives.value.findIndex((a) => a.path === path);
+    }
     if (archiveIndex > -1) {
       archives.value[archiveIndex].isVisible = isVisible;
     }
   };
 
-  const archiveStats = computed(
-    (): ArchiveStats => ({
-      total: archives.value.length,
-      visible: archives.value.filter((a) => a.isVisible).length,
-      hidden: archives.value.filter((a) => !a.isVisible).length,
-    }),
-  );
+  const archiveStats = computed((): ArchiveStats => ({
+    total: archives.value.length,
+    visible: archives.value.filter((a) => a.isVisible).length,
+    hidden: archives.value.filter((a) => !a.isVisible).length,
+  }));
 
   return {
     archives,

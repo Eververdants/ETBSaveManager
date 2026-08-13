@@ -325,7 +325,7 @@ class="main-content" :class="{
         'sidebar-expanded': sidebarExpanded,
       }" :style="contentStyle">
         <router-view v-slot="{ Component, route: viewRoute }">
-          <transition name="page-fade" mode="out-in">
+          <transition name="page-fade">
             <keep-alive :include="cachedComponents" :exclude="excludedComponents">
               <ErrorBoundary :key="'eb-' + viewRoute.fullPath">
                 <component :is="Component" :key="viewRoute.fullPath" />
@@ -399,10 +399,17 @@ class="main-content" :class="{
 }
 </style>
 <style>
-/* Page transition animation - unified fade effect */
+/* Page transition — smooth crossfade. Old and new pages fade simultaneously and
+   overlap (absolute), so there is never a blank gap like the previous out-in fade
+   produced (leave fades out → background → enter fades in). Both opacity fades
+   happen over the same content area → no flashing when jumping to the edit page. */
 .page-fade-enter-active,
 .page-fade-leave-active {
   transition: opacity 0.2s ease !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
 }
 
 .page-fade-enter-from,
@@ -615,7 +622,11 @@ select,
   flex: 1;
   overflow-y: auto;
   height: 100vh;
-  scroll-behavior: smooth;
+  /* No smooth scrolling here: route changes must land at the top instantly,
+     without a visible scroll-to-top animation. */
+  scroll-behavior: auto;
+  /* Anchors the crossfading (absolutely positioned) pages during transitions. */
+  position: relative;
 }
 
 /* When titlebar is hidden, adjust sidebar position */

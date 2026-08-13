@@ -224,6 +224,10 @@ class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }"
                       </button>
                     </div>
                   </div>
+                  <div v-if="currentPlayerSanity === 0" class="sanity-hint">
+                    <font-awesome-icon :icon="['fas', 'info-circle']" />
+                    {{ $t("editArchive.sanityZeroHint") }}
+                  </div>
                 </div>
 
                 <!-- Inventory -->
@@ -2028,6 +2032,24 @@ onMounted(() => {
   flex: 1;
 }
 
+.sanity-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-xs);
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error-color, #ef4444);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.sanity-hint svg {
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
 .quick-btns {
   display: flex;
   gap: 6px;
@@ -2085,7 +2107,7 @@ onMounted(() => {
   position: relative;
   width: 56px;
   height: 56px;
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   background: var(--card-bg);
   border: 2px solid var(--border-color);
   cursor: pointer;

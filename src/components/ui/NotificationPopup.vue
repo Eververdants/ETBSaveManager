@@ -52,8 +52,8 @@ v-for="(action, idx) in notification.actions" :key="idx" class="notification-btn
             <font-awesome-icon :icon="['fas', 'times']" />
           </button>
 
-          <!-- 进度条 -->
-          <div v-if="notification.duration > 0 && !notification.actions?.length" class="notification-progress">
+          <!-- 进度条（退出倒计时） -->
+          <div v-if="notification.duration > 0" class="notification-progress">
             <div
 class="notification-progress-bar" :class="`progress-${notification.type}`"
               :style="{ width: `${notification.progress}%` }" />

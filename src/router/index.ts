@@ -53,7 +53,7 @@ const routes: RouteRecordRaw[] = [
     name: "EditArchive",
     component: () => import("../views/EditArchive.vue"),
     props: true,
-    meta: { keepAlive: false },
+    meta: { keepAlive: false, priority: 2 },
   },
 ];
 

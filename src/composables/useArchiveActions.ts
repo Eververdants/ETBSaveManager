@@ -76,7 +76,7 @@ interface ArchiveActionsReturn {
 
 interface ArchiveDataMethods {
   archives: Ref<ArchiveData[]>;
-  updateArchiveVisibility?: (id: number, visible: boolean) => void;
+  updateArchiveVisibility?: (id: number, visible: boolean, path?: string) => void;
 }
 
 export function useArchiveActions(
@@ -111,7 +111,7 @@ export function useArchiveActions(
 
       // Optimistic update
       if (archiveData.updateArchiveVisibility) {
-        archiveData.updateArchiveVisibility(updatedArchive.id, newVisibility);
+        archiveData.updateArchiveVisibility(updatedArchive.id, newVisibility, updatedArchive.path);
       }
 
       if (updatedArchive.path) {
@@ -129,7 +129,7 @@ export function useArchiveActions(
         if (!resultObj || !resultObj.success) {
           // Rollback optimistic update
           if (archiveData.updateArchiveVisibility) {
-            archiveData.updateArchiveVisibility(updatedArchive.id, originalVisibility);
+            archiveData.updateArchiveVisibility(updatedArchive.id, originalVisibility, updatedArchive.path);
           }
           throw new Error(resultObj?.error || "Operation failed");
         }
@@ -142,7 +142,7 @@ export function useArchiveActions(
           undo: async () => {
             // Restore original visibility
             if (archiveData.updateArchiveVisibility) {
-              archiveData.updateArchiveVisibility(archiveId, originalVisibility);
+              archiveData.updateArchiveVisibility(archiveId, originalVisibility, archiveSnapshot.path);
             }
             try {
               await invoke("handle_file", {
@@ -157,7 +157,7 @@ export function useArchiveActions(
           redo: async () => {
             // Re-apply new visibility (same as original action)
             if (archiveData.updateArchiveVisibility) {
-              archiveData.updateArchiveVisibility(archiveId, newVisibility);
+              archiveData.updateArchiveVisibility(archiveId, newVisibility, archiveSnapshot.path);
             }
             try {
               await invoke("handle_file", {
@@ -183,6 +183,12 @@ export function useArchiveActions(
   const handleEdit = (archive: ArchiveData): void => {
     const key = `edit_${archive.id}_${Date.now()}`;
     editArchiveDataStore.set(key, JSON.stringify(archive));
+    // Remember which archive was edited so Home can center its card on return.
+    try {
+      sessionStorage.setItem("lastEditedArchiveName", archive.name || "");
+    } catch {
+      /* ignore */
+    }
     router.push({
       name: "EditArchive",
       params: { archiveData: key },

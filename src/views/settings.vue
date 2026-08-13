@@ -949,12 +949,12 @@ export default {
   margin-bottom: var(--space-6);
   overflow: hidden;
   /* Unified shadow effect */
-  box-shadow: var(--shadow-sm);
+  filter: drop-shadow(var(--filter-shadow-sm));
   /* Add frosted glass effect */
   backdrop-filter: blur(20px);
   transition:
     background-color 0.25s ease,
-    box-shadow 0.25s ease;
+    filter 0.25s ease;
 }
 
 .section-header {
@@ -1053,19 +1053,19 @@ export default {
   justify-content: center;
   gap: var(--space-1-5);
   /* Add subtle shadow */
-  box-shadow: var(--shadow-sm);
+  filter: drop-shadow(var(--filter-shadow-sm));
 }
 
 .check-update-btn:hover:not(:disabled) {
   background-color: var(--accent-hover);
   transform: translateY(-1px);
   /* Enhance hover shadow */
-  box-shadow: var(--shadow-md);
+  filter: drop-shadow(var(--filter-shadow-md));
 }
 
 .check-update-btn:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: var(--shadow-sm);
+  filter: drop-shadow(var(--filter-shadow-sm));
 }
 
 .check-update-btn:disabled {
@@ -1217,7 +1217,7 @@ input:checked+.slider:before {
 /* Dark theme adaptation */
 [data-theme="dark"] {
   .setting-group {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
   }
 
   .section-header {
@@ -1249,7 +1249,7 @@ input:checked+.slider:before {
   right: var(--space-5);
   padding: 1rem 1.5rem;
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-lg);
+  filter: drop-shadow(var(--filter-shadow-lg));
   z-index: 10000;
   /* Increase z-index to ensure on top */
   display: flex;
@@ -1264,7 +1264,7 @@ input:checked+.slider:before {
 }
 
 .update-message:hover {
-  box-shadow: var(--shadow-xl);
+  filter: drop-shadow(var(--filter-shadow-xl));
 }
 
 .update-message svg,
@@ -1594,7 +1594,7 @@ input:checked+.slider:before {
   background: var(--dropdown-bg);
   border: 1px solid var(--dropdown-border);
   border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
+  filter: drop-shadow(var(--filter-shadow-md));
   overflow: hidden;
   z-index: 1001;
   backdrop-filter: blur(20px);
@@ -1673,7 +1673,7 @@ input:checked+.slider:before {
 .api-key-input:focus {
   outline: none;
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent);
 }
 
 .toggle-visibility-btn {
@@ -1728,7 +1728,7 @@ input:checked+.slider:before {
   background: var(--bg-tertiary);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  filter: drop-shadow(var(--filter-shadow-sm));
 }
 
 .cache-count {
@@ -1761,7 +1761,7 @@ input:checked+.slider:before {
   justify-content: center;
   gap: var(--space-1);
   white-space: nowrap;
-  box-shadow: 0 2px 4px color-mix(in srgb, var(--accent-color) 15%, transparent);
+  filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--accent-color) 15%, transparent));
   position: relative;
   overflow: hidden;
 }
@@ -1788,13 +1788,13 @@ input:checked+.slider:before {
   background-color: var(--accent-hover);
   border-color: var(--accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px color-mix(in srgb, var(--accent-color) 25%, transparent);
+  filter: drop-shadow(0 4px 8px color-mix(in srgb, var(--accent-color) 25%, transparent));
 }
 
 .clear-cache-btn {
   background-color: var(--error-color);
   border-color: var(--error-color);
-  box-shadow: 0 2px 4px rgba(255, 59, 48, 0.15);
+  filter: drop-shadow(0 2px 4px rgba(255, 59, 48, 0.15));
 }
 
 .clear-cache-btn::before {
@@ -1804,7 +1804,7 @@ input:checked+.slider:before {
 .clear-cache-btn:hover {
   background-color: var(--error-hover, #e53e3e);
   border-color: var(--error-hover, #e53e3e);
-  box-shadow: 0 4px 8px rgba(255, 59, 48, 0.25);
+  filter: drop-shadow(0 4px 8px rgba(255, 59, 48, 0.25));
 }
 
 /* Reset tutorial button */
@@ -1843,7 +1843,7 @@ input:checked+.slider:before {
 .reset-tutorial-btn:hover {
   background-color: var(--color-warning-hover, #e58600);
   border-color: var(--color-warning-hover, #e58600);
-  box-shadow: 0 4px 8px rgba(255, 149, 0, 0.25);
+  filter: drop-shadow(0 4px 8px rgba(255, 149, 0, 0.25));
   transform: translateY(-1px);
 }
 
@@ -1982,7 +1982,7 @@ input:checked+.slider:before {
 .theme-editor-container {
   background: var(--bg-secondary);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-xl);
+  filter: drop-shadow(var(--filter-shadow-xl));
   max-width: 800px;
   width: 100%;
   max-height: 90vh;

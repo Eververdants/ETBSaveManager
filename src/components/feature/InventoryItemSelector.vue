@@ -185,7 +185,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
   -webkit-backdrop-filter: var(--glass-backdrop-filter);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  box-shadow: 0 8px 32px var(--glass-shadow-light);
+  filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.08));
   width: 90%;
   max-width: 600px;
   height: min(80vh, 680px);
@@ -406,7 +406,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
 
 .item-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px var(--glass-shadow-light);
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.08));
 }
 
 .item-card.selected {
@@ -490,7 +490,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
 
 .fuzzy-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px var(--glass-shadow-light);
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.08));
   border-color: var(--accent-color);
 }
 

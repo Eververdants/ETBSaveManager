@@ -162,8 +162,9 @@
 :root[data-performance-mode="low"] * {
   mask: none !important;
   -webkit-mask: none !important;
+  /* 低性能模式:同时关闭 elevation drop-shadow 等 filter 图层 */
+  filter: none !important;
 }
-
 
 /* 低性能模式：禁用卡片伪元素动画（shine-sweep / 金色边条动画） */
 :root[data-performance-mode="low"] .archive-card::before,

@@ -144,9 +144,8 @@ const handleSelectLevel = (index, event) => {
   border-radius: var(--radius-lg);
   padding: 4px;
   gap: 2px;
-  box-shadow:
-    inset 0 1px 3px rgba(0, 0, 0, 0.1),
-    0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
 }
 
 /* Sliding highlight pill */
@@ -157,9 +156,7 @@ const handleSelectLevel = (index, event) => {
   height: calc(100% - 8px);
   background: var(--accent-color);
   border-radius: var(--radius-md);
-  box-shadow:
-    0 2px 8px rgba(var(--accent-color-rgb), 0.35),
-    0 1px 3px rgba(var(--accent-color-rgb), 0.2);
+  filter: drop-shadow(0 2px 8px rgba(var(--accent-color-rgb), 0.35)) drop-shadow(0 1px 3px rgba(var(--accent-color-rgb), 0.2));
   pointer-events: none;
   transition:
     transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -211,10 +208,8 @@ const handleSelectLevel = (index, event) => {
   border-radius: var(--radius-card);
   padding: 24px;
   margin-bottom: 16px;
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.08)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.05));
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   height: calc(100vh - 280px);
@@ -280,10 +275,10 @@ const handleSelectLevel = (index, event) => {
   cursor: pointer;
   transition:
     transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.35s ease,
+    filter 0.35s ease,
     border-color 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.03);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
 }
 
 /* Hover motion gated to precise pointers — touch gets :active feedback
@@ -292,9 +287,7 @@ const handleSelectLevel = (index, event) => {
   .level-card:hover {
     will-change: transform;
     transform: translateY(-8px);
-    box-shadow:
-      0 18px 36px rgba(0, 0, 0, 0.14),
-      0 6px 14px rgba(0, 0, 0, 0.1);
+    filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.14)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.1));
     border-color: rgba(var(--accent-color-rgb), 0.25);
   }
 }
@@ -307,9 +300,8 @@ const handleSelectLevel = (index, event) => {
 .level-card.selected {
   border-color: var(--accent-color);
   border-width: 1.5px;
-  box-shadow:
-    0 0 0 3px rgba(var(--accent-color-rgb), 0.2),
-    0 8px 20px rgba(var(--accent-color-rgb), 0.15);
+  box-shadow: inset 0 0 0 3px rgba(var(--accent-color-rgb), 0.2);
+  filter: drop-shadow(0 8px 20px rgba(var(--accent-color-rgb), 0.15));
   transform: translateY(-2px);
 }
 

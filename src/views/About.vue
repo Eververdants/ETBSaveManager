@@ -248,7 +248,7 @@ const handleAppIconClick = () => {
   gap: 1rem;
   align-items: center;
   margin-bottom: 1.5rem;
-  box-shadow: 0 8px 20px var(--about-glass-shadow);
+  filter: drop-shadow(var(--about-glass-shadow));
   position: relative;
 }
 

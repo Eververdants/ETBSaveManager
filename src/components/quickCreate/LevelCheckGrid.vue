@@ -161,21 +161,21 @@ const toggleSelectAll = () => {
   overflow: hidden;
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.03);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
   transition:
     transform 0.25s ease,
-    box-shadow 0.25s ease,
+    filter 0.25s ease,
     border-color 0.25s ease;
 }
 
 .level-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.12));
 }
 
 .level-card.selected {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
+  box-shadow: inset 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
 }
 
 .level-image-container {

@@ -858,9 +858,7 @@ watch(searchQuery, (query) => {
 .archive-grid :deep(.archive-card) {
   width: 100%;
   min-width: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition:
-    box-shadow 0.2s ease,
     transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform-origin: center center;
 }
@@ -869,10 +867,6 @@ watch(searchQuery, (query) => {
   pointer-events: none;
   transition: opacity 0.2s linear !important;
   transform: none !important;
-}
-
-.archive-grid :deep(.archive-card:hover) {
-  box-shadow: var(--card-shadow-hover);
 }
 
 /* ─── Scroll-aware hover disable ────────────────────
@@ -1494,7 +1488,7 @@ watch(searchQuery, (query) => {
   width: 380px;
   max-width: 90vw;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.3));
 }
 
 .batch-delete-progress .progress-header {

@@ -4,183 +4,184 @@
  * 仅在 mask 支持环境生效;不支持则保留原 border-radius 圆形
  * 分档规则与冲突决策见计划 Task 2
  *
- * 低性能模式 (html[data-performance-mode="low"]) 下整组不匹配:
- * 否则 mask 虽被 variables.css 关掉,但本文件的 border-radius: 0 !important
- * 仍生效,会把低性能档变成方角。加 html:not([data-performance-mode="low"])
- * 前缀让低性能档回落到组件自身的 var(--radius-*) 圆形。
+ * 选择器同时带两组排除:
+ *  1. html:not([data-performance-mode="low"]) — 低性能模式整组不匹配,
+ *     否则 mask 被 variables.css 关掉后, border-radius: 0 !important 仍生效
+ *     会把低性能档变成方角,而无法回落组件自身的 var(--radius-*) 圆形。
+ *  2. :not([data-corner="none"]) — 逃生舱元素不匹配本组,否则组规则的
+ *     border-radius: 0 !important(高优先级 + !important)会压过逃生舱,
+ *     使逃生舱元素保持方角(见 Critical 1)。
  * ========================================== */
 @supports (mask-image: url("data:image/svg+xml")) {
   /* 2xl:模态/大弹窗 */
-  html:not([data-performance-mode="low"]) .modal,
-  html:not([data-performance-mode="low"]) .dialog,
-  html:not([data-performance-mode="low"]) .popup,
-  html:not([data-performance-mode="low"]) .modal-window,
-  html:not([data-performance-mode="low"]) .dialog-box,
-  html:not([data-performance-mode="low"]) .alert-box,
-  html:not([data-performance-mode="low"]) .prompt-box,
-  html:not([data-performance-mode="low"]) .modal-container,
-  html:not([data-performance-mode="low"]) .prompt-popup,
-  html:not([data-performance-mode="low"]) .success-modal-card {
+  html:not([data-performance-mode="low"]) .modal:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .dialog:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .popup:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .modal-window:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .dialog-box:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .alert-box:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .prompt-box:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .modal-container:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .prompt-popup:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .success-modal-card:not([data-corner="none"]) {
     border-radius: 0 !important;
     -webkit-mask: var(--corner-2xl) center / 100% 100% no-repeat;
     mask: var(--corner-2xl) center / 100% 100% no-repeat;
   }
 
   /* right:侧栏面板(右圆左方) */
-  html:not([data-performance-mode="low"]) .sidebar {
+  html:not([data-performance-mode="low"]) .sidebar:not([data-corner="none"]) {
     border-radius: 0 !important;
     -webkit-mask: var(--corner-right) center / 100% 100% no-repeat;
     mask: var(--corner-right) center / 100% 100% no-repeat;
   }
 
-  /* xl:大面板/侧栏项/搜索面板/模式卡 */
-  html:not([data-performance-mode="low"]) .sidebar-panel,
-  html:not([data-performance-mode="low"]) .nav-panel,
-  html:not([data-performance-mode="low"]) .sidebar-item,
-  html:not([data-performance-mode="low"]) .unified-search-filter,
-  html:not([data-performance-mode="low"]) .search-input,
-  html:not([data-performance-mode="low"]) .scroll-hint-content,
-  html:not([data-performance-mode="low"]) .archive-details-card,
-  html:not([data-performance-mode="low"]) .popup-icon-wrapper,
-  html:not([data-performance-mode="low"]) .archive-list-container,
-  html:not([data-performance-mode="low"]) .empty-card,
-  html:not([data-performance-mode="low"]) .batch-delete-progress,
-  html:not([data-performance-mode="low"]) .slider,
-  html:not([data-performance-mode="low"]) .mode-card,
-  html:not([data-performance-mode="low"]) .bottom-back-button,
-  html:not([data-performance-mode="low"]) .bottom-actions {
+  /* xl:大面板/侧栏项/模式卡(不含 .search-input,见 Important 4) */
+  html:not([data-performance-mode="low"]) .sidebar-panel:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .nav-panel:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .sidebar-item:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .unified-search-filter:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .scroll-hint-content:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .archive-details-card:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .popup-icon-wrapper:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .archive-list-container:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .empty-card:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .batch-delete-progress:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .slider:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .mode-card:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .bottom-back-button:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .bottom-actions:not([data-corner="none"]) {
     border-radius: 0 !important;
     -webkit-mask: var(--corner-xl) center / 100% 100% no-repeat;
     mask: var(--corner-xl) center / 100% 100% no-repeat;
   }
 
   /* lg:卡片/分区/面板 */
-  html:not([data-performance-mode="low"]) .card,
-  html:not([data-performance-mode="low"]) .archive-card,
-  html:not([data-performance-mode="low"]) .modal-card,
-  html:not([data-performance-mode="low"]) .dropdown-content,
-  html:not([data-performance-mode="low"]) .level-card,
-  html:not([data-performance-mode="low"]) .section,
-  html:not([data-performance-mode="low"]) .panel,
-  html:not([data-performance-mode="low"]) .settings-section,
-  html:not([data-performance-mode="low"]) .config-panel,
-  html:not([data-performance-mode="low"]) .performance-monitor,
-  html:not([data-performance-mode="low"]) .search-suggestions,
-  html:not([data-performance-mode="low"]) .preview-execute-area,
-  html:not([data-performance-mode="low"]) .ending-group,
-  html:not([data-performance-mode="low"]) .section-card,
-  html:not([data-performance-mode="low"]) .glass-card,
-  html:not([data-performance-mode="low"]) .setting-group,
-  html:not([data-performance-mode="low"]) .update-message,
-  html:not([data-performance-mode="low"]) .theme-editor-container,
-  html:not([data-performance-mode="low"]) .settings-card,
-  html:not([data-performance-mode="low"]) .level-group,
-  html:not([data-performance-mode="low"]) .player-list-section,
-  html:not([data-performance-mode="low"]) .player-detail-section,
-  html:not([data-performance-mode="low"]) .quick-create-header,
-  html:not([data-performance-mode="low"]) .options-panel,
-  html:not([data-performance-mode="low"]) .result-modal,
-  html:not([data-performance-mode="low"]) .step,
-  html:not([data-performance-mode="low"]) .item-card,
-  html:not([data-performance-mode="low"]) .fuzzy-card {
+  html:not([data-performance-mode="low"]) .card:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .archive-card:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .modal-card:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .dropdown-content:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .level-card:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .section:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .panel:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .settings-section:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .config-panel:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .performance-monitor:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .search-suggestions:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .preview-execute-area:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .ending-group:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .section-card:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .glass-card:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .setting-group:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .update-message:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .theme-editor-container:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .settings-card:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .level-group:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .player-list-section:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .player-detail-section:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .quick-create-header:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .options-panel:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .result-modal:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .step:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .item-card:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .fuzzy-card:not([data-corner="none"]) {
     border-radius: 0 !important;
     -webkit-mask: var(--corner-lg) center / 100% 100% no-repeat;
     mask: var(--corner-lg) center / 100% 100% no-repeat;
   }
 
   /* md:列表项/表单组/中尺寸容器 */
-  html:not([data-performance-mode="low"]) .list-item,
-  html:not([data-performance-mode="low"]) .menu-item,
-  html:not([data-performance-mode="low"]) .dropdown-item,
-  html:not([data-performance-mode="low"]) .select-option,
-  html:not([data-performance-mode="low"]) .hidden-badge,
-  html:not([data-performance-mode="low"]) .clear-btn,
-  html:not([data-performance-mode="low"]) .filter-item,
-  html:not([data-performance-mode="low"]) .action-btn,
-  html:not([data-performance-mode="low"]) .global-search-panel,
-  html:not([data-performance-mode="low"]) .selector-modal,
-  html:not([data-performance-mode="low"]) .empty-state,
-  html:not([data-performance-mode="low"]) .dropdown-menu,
-  html:not([data-performance-mode="low"]) .dropdown-option,
-  html:not([data-performance-mode="low"]) .quick-archive-card,
-  html:not([data-performance-mode="low"]) .preview-names,
-  html:not([data-performance-mode="low"]) .preview-empty,
-  html:not([data-performance-mode="low"]) .grid-header,
-  html:not([data-performance-mode="low"]) .ending-slider,
-  html:not([data-performance-mode="low"]) .ending-tab,
-  html:not([data-performance-mode="low"]) .app-icon,
-  html:not([data-performance-mode="low"]) .list-section,
-  html:not([data-performance-mode="low"]) .settings-input,
-  html:not([data-performance-mode="low"]) .difficulty-hint,
-  html:not([data-performance-mode="low"]) .diff-option,
-  html:not([data-performance-mode="low"]) .cache-info,
-  html:not([data-performance-mode="low"]) .back-button,
-  html:not([data-performance-mode="low"]) .create-btn,
-  html:not([data-performance-mode="low"]) .result-stat,
-  html:not([data-performance-mode="low"]) .error-details,
-  html:not([data-performance-mode="low"]) .mode-select-button,
-  html:not([data-performance-mode="low"]) .back-to-quick-mode-btn,
-  html:not([data-performance-mode="low"]) .step-info,
-  html:not([data-performance-mode="low"]) .drop-zone,
-  html:not([data-performance-mode="low"]) .reset-tutorial-btn,
-  html:not([data-performance-mode="low"]) .detail-block,
-  html:not([data-performance-mode="low"]) .inv-slot,
-  html:not([data-performance-mode="low"]) .inv-slot.backpack-slot {
+  html:not([data-performance-mode="low"]) .list-item:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .menu-item:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .dropdown-item:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .select-option:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .hidden-badge:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .clear-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .filter-item:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .action-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .global-search-panel:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .selector-modal:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .empty-state:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .dropdown-menu:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .dropdown-option:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .quick-archive-card:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .preview-names:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .preview-empty:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .grid-header:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .ending-slider:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .ending-tab:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .app-icon:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .list-section:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .settings-input:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .difficulty-hint:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .diff-option:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .cache-info:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .back-button:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .create-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .result-stat:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .error-details:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .mode-select-button:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .back-to-quick-mode-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .step-info:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .drop-zone:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .reset-tutorial-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .detail-block:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .inv-slot:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .inv-slot.backpack-slot:not([data-corner="none"]) {
     border-radius: 0 !important;
     -webkit-mask: var(--corner-md) center / 100% 100% no-repeat;
     mask: var(--corner-md) center / 100% 100% no-repeat;
   }
 
   /* sm:内层小卡片/按钮/图标容器 */
-  html:not([data-performance-mode="low"]) .multi-select-checkbox,
-  html:not([data-performance-mode="low"]) .mode-badge,
-  html:not([data-performance-mode="low"]) .difficulty-badge,
-  html:not([data-performance-mode="low"]) .close-btn,
-  html:not([data-performance-mode="low"]) .setting-icon,
-  html:not([data-performance-mode="low"]) .check-update-btn,
-  html:not([data-performance-mode="low"]) .update-btn,
-  html:not([data-performance-mode="low"]) .api-key-input,
-  html:not([data-performance-mode="low"]) .save-api-key-btn,
-  html:not([data-performance-mode="low"]) .cache-count,
-  html:not([data-performance-mode="low"]) .view-cache-btn,
-  html:not([data-performance-mode="low"]) .clear-cache-btn,
-  html:not([data-performance-mode="low"]) .tab-nav,
-  html:not([data-performance-mode="low"]) .player-item,
-  html:not([data-performance-mode="low"]) .steamid-edit-row,
-  html:not([data-performance-mode="low"]) .estimated-time,
-  html:not([data-performance-mode="low"]) .stat-item,
-  html:not([data-performance-mode="low"]) .notification-item,
-  html:not([data-performance-mode="low"]) .qbtn {
+  html:not([data-performance-mode="low"]) .multi-select-checkbox:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .mode-badge:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .difficulty-badge:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .close-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .setting-icon:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .check-update-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .update-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .api-key-input:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .save-api-key-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .cache-count:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .view-cache-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .clear-cache-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .tab-nav:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .player-item:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .steamid-edit-row:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .estimated-time:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .stat-item:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .notification-item:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .qbtn:not([data-corner="none"]) {
     border-radius: 0 !important;
     -webkit-mask: var(--corner-sm) center / 100% 100% no-repeat;
     mask: var(--corner-sm) center / 100% 100% no-repeat;
   }
 
   /* xs:标签/徽章/小指示器 */
-  html:not([data-performance-mode="low"]) .filter-label,
-  html:not([data-performance-mode="low"]) .clear-history-btn,
-  html:not([data-performance-mode="low"]) .notification-icon-wrapper,
-  html:not([data-performance-mode="low"]) .notification-details,
-  html:not([data-performance-mode="low"]) .preview-name,
-  html:not([data-performance-mode="low"]) .tab-btn,
-  html:not([data-performance-mode="low"]) .version-tag,
-  html:not([data-performance-mode="low"]) .update-source-hint,
-  html:not([data-performance-mode="low"]) .error-message,
-  html:not([data-performance-mode="low"]) .msg-tip,
-  html:not([data-performance-mode="low"]) .del-btn,
-  html:not([data-performance-mode="low"]) .sidebar-toggle {
+  html:not([data-performance-mode="low"]) .filter-label:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .clear-history-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .notification-icon-wrapper:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .notification-details:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .preview-name:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .tab-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .version-tag:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .update-source-hint:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .error-message:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .msg-tip:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .del-btn:not([data-corner="none"]),
+  html:not([data-performance-mode="low"]) .sidebar-toggle:not([data-corner="none"]) {
     border-radius: 0 !important;
     -webkit-mask: var(--corner-xs) center / 100% 100% no-repeat;
     mask: var(--corner-xs) center / 100% 100% no-repeat;
   }
 
   /* 逃生舱:个别元素不用连续曲率,恢复圆形。
-     必须放在组规则之后:组规则的 border-radius: 0 !important 与逃生舱的
-     border-radius: var(--radius-md) !important 同源顺序才能赢,
-     否则 mask 关闭后圆角仍是 0(方角)。 */
+     组规则已带 :not([data-corner="none"]),逃生舱元素不会命中组规则,
+     因此组件自身的 border-radius(如 .action-btn 的 pill)会重新生效;
+     这里只需兜底关掉 mask。 */
   [data-corner="none"] {
     -webkit-mask: none !important;
     mask: none !important;
-    border-radius: var(--radius-md, 8px) !important;
   }
 }

@@ -309,7 +309,7 @@ const placeholderText = computed(() => props.placeholder ?? t("common.select"));
   background: var(--dropdown-bg);
   border: 1px solid var(--dropdown-border);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 12px var(--dropdown-shadow);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
   overflow: hidden;
   backdrop-filter: blur(20px);
   max-height: 200px;

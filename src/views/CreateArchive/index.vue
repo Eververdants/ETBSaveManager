@@ -858,7 +858,7 @@ const onStepLeave = (el, done) => {
   padding: 12px 20px;
   border-radius: var(--radius-lg);
   background: var(--bg-secondary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
   transition: all 0.3s ease;
 }
 
@@ -942,7 +942,7 @@ const onStepLeave = (el, done) => {
   transform: translateX(-50%);
   width: calc(100% - 88px);
   max-width: 1200px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.15));
   backdrop-filter: blur(12px);
   z-index: 100;
   transition: left 0.3s ease;
@@ -1047,7 +1047,7 @@ const onStepLeave = (el, done) => {
   border-radius: var(--radius-modal);
   padding: 32px 28px;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.28));
 }
 
 .success-modal-icon-circle {

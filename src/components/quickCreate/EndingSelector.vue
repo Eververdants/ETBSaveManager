@@ -81,9 +81,8 @@ const handleSelect = (id) => {
   border-radius: var(--radius-lg);
   padding: 4px;
   gap: 2px;
-  box-shadow:
-    inset 0 1px 3px rgba(0, 0, 0, 0.1),
-    0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
 }
 
 .ending-slider {
@@ -93,7 +92,7 @@ const handleSelect = (id) => {
   height: calc(100% - 8px);
   background: var(--accent-color);
   border-radius: var(--radius-md);
-  box-shadow: 0 2px 8px rgba(var(--accent-color-rgb), 0.35);
+  filter: drop-shadow(0 2px 8px rgba(var(--accent-color-rgb), 0.35));
   pointer-events: none;
   transition:
     transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),

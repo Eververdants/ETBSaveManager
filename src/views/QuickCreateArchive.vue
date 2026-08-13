@@ -349,7 +349,7 @@ const navigateToArchives = () => {
   border-radius: var(--radius-lg);
   width: 90%;
   max-width: 480px;
-  box-shadow: var(--shadow-lg);
+  filter: drop-shadow(var(--filter-shadow-lg));
   animation: modalSlideIn 0.3s ease-out;
 }
 

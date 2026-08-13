@@ -1079,7 +1079,7 @@ onMounted(() => {
   border-radius: var(--radius-lg);
   padding: 24px;
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-card);
+  filter: drop-shadow(var(--filter-card-shadow));
   position: relative;
   transition: all var(--transition-normal) var(--ease-default);
 }
@@ -1098,7 +1098,7 @@ onMounted(() => {
 
 .settings-card:hover {
   border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: var(--shadow-card-hover, 0 8px 32px rgba(0, 0, 0, 0.12));
+  filter: drop-shadow(var(--filter-card-shadow-hover, 0 8px 32px rgba(0, 0, 0, 0.12)));
 }
 
 /* 卡片标签 */
@@ -1132,7 +1132,7 @@ onMounted(() => {
 .settings-input:focus {
   border-color: var(--accent-color);
   box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--accent-color) 15%, transparent),
+    inset 0 0 0 3px color-mix(in srgb, var(--accent-color) 15%, transparent),
     inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -1213,7 +1213,7 @@ onMounted(() => {
 .diff-option:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
 .diff-option:hover::before {
@@ -1225,9 +1225,8 @@ onMounted(() => {
   background: linear-gradient(145deg,
       color-mix(in srgb, var(--accent-color) 15%, transparent) 0%,
       color-mix(in srgb, var(--accent-color) 8%, transparent) 100%);
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent),
-    0 4px 12px color-mix(in srgb, var(--accent-color) 15%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent);
+  filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--accent-color) 15%, transparent));
 }
 
 .diff-icon {
@@ -1567,7 +1566,7 @@ onMounted(() => {
 
 .level-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12));
 }
 
 .level-card.selected {

@@ -244,13 +244,13 @@ const goToMode = (mode) => {
 
 .mode-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  filter: drop-shadow(var(--filter-shadow-lg));
   border-color: var(--accent-color);
 }
 
 .mode-card.selected {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.2);
+  box-shadow: inset 0 0 0 3px rgba(var(--accent-color-rgb), 0.2);
 }
 
 .mode-card-image {
@@ -382,17 +382,15 @@ const goToMode = (mode) => {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 10;
   overflow: hidden;
-  box-shadow:
-    0 8px 32px rgba(239, 68, 68, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  filter: drop-shadow(0 8px 32px rgba(239, 68, 68, 0.3));
 }
 
 .bottom-back-button:hover {
   background: rgba(220, 38, 38, 0.95);
   transform: translateY(-2px) scale(1.02);
-  box-shadow:
-    0 12px 40px rgba(239, 68, 68, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  filter: drop-shadow(0 12px 40px rgba(239, 68, 68, 0.4));
   border-color: rgba(239, 68, 68, 0.5);
 }
 
@@ -461,23 +459,18 @@ const goToMode = (mode) => {
 /* Pulse animation */
 @keyframes pulse {
   0% {
-    box-shadow:
-      0 8px 32px rgba(239, 68, 68, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    filter: drop-shadow(0 8px 32px rgba(239, 68, 68, 0.3));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 
   50% {
-    box-shadow:
-      0 8px 32px rgba(239, 68, 68, 0.5),
-      0 0 0 0 rgba(239, 68, 68, 0.7),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    filter: drop-shadow(0 8px 32px rgba(239, 68, 68, 0.5));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
   100% {
-    box-shadow:
-      0 8px 32px rgba(239, 68, 68, 0.3),
-      0 0 0 20px rgba(239, 68, 68, 0),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    filter: drop-shadow(0 8px 32px rgba(239, 68, 68, 0.3));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 }
 

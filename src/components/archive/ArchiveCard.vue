@@ -843,9 +843,10 @@ const toggleSelection = () => {
 }
 
 .archive-card.is-selected {
-  filter:
-    drop-shadow(0 0 0 2px var(--primary))
-    drop-shadow(var(--card-shadow));
+  /* drop-shadow() has no spread radius, so the 0 0 0 2px ring must stay
+     a box-shadow; the mask reshapes this square ring into a superellipse.
+     Outer elevation comes from the base .archive-card filter below. */
+  box-shadow: 0 0 0 2px var(--primary);
 }
 
 .archive-card.is-selected .card-background::after {

@@ -289,14 +289,15 @@ onUnmounted(() => {
   box-shadow: var(--shadow-sm, inset 0 1px 3px rgba(0, 0, 0, 0.1));
   transition:
     background 0.3s ease,
-    filter 0.3s ease,
+    box-shadow 0.3s ease,
     transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .search-input:focus {
   outline: none;
-  box-shadow: var(--shadow-sm, inset 0 1px 3px rgba(0, 0, 0, 0.1));
-  filter: drop-shadow(0 0 0 3px var(--accent-alpha, rgba(59, 130, 246, 0.2)));
+  box-shadow:
+    0 0 0 3px var(--accent-alpha, rgba(59, 130, 246, 0.2)),
+    var(--shadow-sm, inset 0 1px 3px rgba(0, 0, 0, 0.1));
   background: var(--bg-secondary);
   transform: translateY(-1px);
 }

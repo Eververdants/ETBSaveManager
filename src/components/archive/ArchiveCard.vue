@@ -55,12 +55,12 @@ v-if="!FEATURES.MERGE_DIFFICULTY" class="difficulty-tag" :class="cardData?.actua
       <span class="current-level" v-html="sanitize(highlightedLevel)"></span>
       <div class="action-buttons">
         <button
-class="action-btn edit" data-corner="none" type="button" :aria-label="$t('archiveCard.editLabel')"
+class="action-btn edit" type="button" :aria-label="$t('archiveCard.editLabel')"
           @click.stop="editArchive">
           <font-awesome-icon icon="fa-solid fa-edit" aria-hidden="true" />
         </button>
         <button
-class="action-btn copy" data-corner="none" type="button"
+class="action-btn copy" type="button"
           :aria-label="cardData?.isVisible ? $t('archiveCard.hideLabel') : $t('archiveCard.showLabel')"
           @click.stop="toggleVisibility">
           <font-awesome-icon
@@ -68,7 +68,7 @@ class="action-btn copy" data-corner="none" type="button"
             aria-hidden="true" />
         </button>
         <button
-class="action-btn delete" data-corner="none" type="button" :aria-label="$t('archiveCard.deleteLabel')"
+class="action-btn delete" type="button" :aria-label="$t('archiveCard.deleteLabel')"
           @click.stop="deleteArchive">
           <font-awesome-icon icon="fa-solid fa-trash" aria-hidden="true" />
         </button>
@@ -212,14 +212,10 @@ const toggleSelection = () => {
   cursor: default;
   background: var(--card-bg);
   border: var(--card-border);
-  /* corners.css masks this surface to a superellipse, which clips the
-     element's own box-shadow at the border box — so the elevation shadow
-     becomes filter: drop-shadow(), which follows the masked silhouette.
-     drop-shadow() promotes the card to its own composited layer, so a
-     hover-triggered background/color change is re-rasterized for this
-     card alone.  That preserves the intent of the contain: paint we
-     removed (no full archive-grid repaint), consistent with the hover
-     will-change: transform layer strategy below. */
+  /* Elevation via filter: drop-shadow() — follows the card silhouette and
+     promotes the card to its own composited layer, so a hover-triggered
+     background/color change re-rasterizes this card alone (no full
+     archive-grid repaint), consistent with the will-change layer strategy. */
   filter: drop-shadow(var(--filter-card-shadow));
   transition: transform 0.25s ease;
 }

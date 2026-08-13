@@ -1,7 +1,8 @@
-// 生成 n=5 superellipse 圆角矩形 mask 路径(viewBox 0 0 100 100)与 CSS 变量行
-// 用法: node scripts/gen-superellipse.mjs  输出 --corner-* 行,粘贴进 variables.css
-const N = 5, k = 2 / N;
-const SEG = 16;
+// 生成 n=5 superellipse 圆角 clipPath 定义(0..1 归一化,objectBoundingBox 自适应)
+// 用法: node scripts/gen-superellipse.mjs  输出 <clipPath> 块,粘贴进 index.html 全局 SVG defs
+// fraction: xs 0.38 / sm 0.31 / md 0.23 / lg 0.14 / xl 0.13 / 2xl 0.11 / right 0.13
+
+const N = 5, k = 2 / N, SEG = 16;
 const r3 = (x) => Math.round(x * 1000) / 1000;
 function arcPts(cx, cy, r, f, reverse = false) {
   const pts = [];
@@ -31,12 +32,20 @@ function genPath(r) {
   parts.push("Z");
   return parts.join(" ");
 }
-function enc(svg) {
-  return svg.replace(/</g, "%3C").replace(/>/g, "%3E").replace(/#/g, "%23").replace(/ /g, "%20").replace(/"/g, "'");
+function genRightPath(r) {
+  const parts = [`M 0,0`, `L ${r3(1 - r)},0`];
+  const tr = arcPts(1 - r, r, 0, (sx, sy) => [r * sx, -r * sy], true);
+  for (const p of tr.slice(1)) parts.push(`L ${r3(p[0])},${r3(p[1])}`);
+  parts.push(`L 1,${r3(1 - r)}`);
+  const br = arcPts(1 - r, 1 - r, 0, (sx, sy) => [r * sx, r * sy]);
+  for (const p of br.slice(1)) parts.push(`L ${r3(p[0])},${r3(p[1])}`);
+  parts.push(`L 0,1`, `Z`);
+  return parts.join(" ");
 }
 const T = { xs: 0.38, sm: 0.31, md: 0.23, lg: 0.14, xl: 0.13, "2xl": 0.11 };
+console.log('<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>');
 for (const [name, r] of Object.entries(T)) {
-  const d = genPath(r);
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'><path fill='white' d='${d}'/></svg>`;
-  console.log(`--corner-${name}: url("data:image/svg+xml,${enc(svg)}");`);
+  console.log(`  <clipPath id="sq-${name}" clipPathUnits="objectBoundingBox"><path d="${genPath(r)}"/></clipPath>`);
 }
+console.log(`  <clipPath id="sq-right" clipPathUnits="objectBoundingBox"><path d="${genRightPath(0.13)}"/></clipPath>`);
+console.log('</defs></svg>');

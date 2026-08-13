@@ -1,7 +1,7 @@
 /* ==========================================
  * 连续曲率圆角系统 (Superellipse Corner System)
- * n=5, mask 值来自 variables.css --corner-*
- * 仅在 mask 支持环境生效;不支持则保留原 border-radius 圆形
+ * n=5, clipPath 引用 index.html 全局 SVG defs(sq-xs..sq-2xl/sq-right)
+ * 仅在 clip-path url 支持环境生效;不支持则保留原 border-radius 圆形
  * 分档规则与冲突决策见计划 Task 2
  *
  * 选择器同时带两组排除:
@@ -12,7 +12,7 @@
  *     border-radius: 0 !important(高优先级 + !important)会压过逃生舱,
  *     使逃生舱元素保持方角(见 Critical 1)。
  * ========================================== */
-@supports (mask-image: url("data:image/svg+xml")) {
+@supports (clip-path: url("#sq-lg")) {
   /* 2xl:模态/大弹窗 */
   html:not([data-performance-mode="low"]) .modal:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .dialog:not([data-corner="none"]),
@@ -24,16 +24,12 @@
   html:not([data-performance-mode="low"]) .modal-container:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .prompt-popup:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .success-modal-card:not([data-corner="none"]) {
-    border-radius: 0 !important;
-    -webkit-mask: var(--corner-2xl) center / 100% 100% no-repeat;
-    mask: var(--corner-2xl) center / 100% 100% no-repeat;
+    clip-path: url(#sq-2xl);
   }
 
   /* right:侧栏面板(右圆左方) */
   html:not([data-performance-mode="low"]) .sidebar:not([data-corner="none"]) {
-    border-radius: 0 !important;
-    -webkit-mask: var(--corner-right) center / 100% 100% no-repeat;
-    mask: var(--corner-right) center / 100% 100% no-repeat;
+    clip-path: url(#sq-right);
   }
 
   /* xl:大面板/侧栏项/模式卡(不含 .search-input,见 Important 4) */
@@ -51,9 +47,7 @@
   html:not([data-performance-mode="low"]) .mode-card:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .bottom-back-button:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .bottom-actions:not([data-corner="none"]) {
-    border-radius: 0 !important;
-    -webkit-mask: var(--corner-xl) center / 100% 100% no-repeat;
-    mask: var(--corner-xl) center / 100% 100% no-repeat;
+    clip-path: url(#sq-xl);
   }
 
   /* lg:卡片/分区/面板 */
@@ -85,9 +79,7 @@
   html:not([data-performance-mode="low"]) .step:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .item-card:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .fuzzy-card:not([data-corner="none"]) {
-    border-radius: 0 !important;
-    -webkit-mask: var(--corner-lg) center / 100% 100% no-repeat;
-    mask: var(--corner-lg) center / 100% 100% no-repeat;
+    clip-path: url(#sq-lg);
   }
 
   /* md:列表项/表单组/中尺寸容器 */
@@ -128,9 +120,7 @@
   html:not([data-performance-mode="low"]) .detail-block:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .inv-slot:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .inv-slot.backpack-slot:not([data-corner="none"]) {
-    border-radius: 0 !important;
-    -webkit-mask: var(--corner-md) center / 100% 100% no-repeat;
-    mask: var(--corner-md) center / 100% 100% no-repeat;
+    clip-path: url(#sq-md);
   }
 
   /* sm:内层小卡片/按钮/图标容器 */
@@ -153,9 +143,7 @@
   html:not([data-performance-mode="low"]) .stat-item:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .notification-item:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .qbtn:not([data-corner="none"]) {
-    border-radius: 0 !important;
-    -webkit-mask: var(--corner-sm) center / 100% 100% no-repeat;
-    mask: var(--corner-sm) center / 100% 100% no-repeat;
+    clip-path: url(#sq-sm);
   }
 
   /* xs:标签/徽章/小指示器 */
@@ -171,9 +159,7 @@
   html:not([data-performance-mode="low"]) .msg-tip:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .del-btn:not([data-corner="none"]),
   html:not([data-performance-mode="low"]) .sidebar-toggle:not([data-corner="none"]) {
-    border-radius: 0 !important;
-    -webkit-mask: var(--corner-xs) center / 100% 100% no-repeat;
-    mask: var(--corner-xs) center / 100% 100% no-repeat;
+    clip-path: url(#sq-xs);
   }
 
   /* 逃生舱:个别元素不用连续曲率,恢复圆形。
@@ -181,7 +167,6 @@
      因此组件自身的 border-radius(如 .action-btn 的 pill)会重新生效;
      这里只需兜底关掉 mask。 */
   [data-corner="none"] {
-    -webkit-mask: none !important;
-    mask: none !important;
+    clip-path: none !important;
   }
 }

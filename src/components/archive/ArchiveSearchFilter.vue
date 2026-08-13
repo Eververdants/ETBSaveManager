@@ -252,7 +252,7 @@ onUnmounted(() => {
   border-radius: var(--radius-xl);
   padding: 24px;
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-  box-shadow: var(--shadow-xl, 0 8px 32px rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(var(--shadow-xl, 0 8px 32px rgba(0, 0, 0, 0.15)));
   z-index: 100;
   width: 100%;
   max-width: 800px;
@@ -289,15 +289,14 @@ onUnmounted(() => {
   box-shadow: var(--shadow-sm, inset 0 1px 3px rgba(0, 0, 0, 0.1));
   transition:
     background 0.3s ease,
-    box-shadow 0.3s ease,
+    filter 0.3s ease,
     transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .search-input:focus {
   outline: none;
-  box-shadow:
-    0 0 0 3px var(--accent-alpha, rgba(59, 130, 246, 0.2)),
-    var(--shadow-sm, inset 0 1px 3px rgba(0, 0, 0, 0.1));
+  box-shadow: var(--shadow-sm, inset 0 1px 3px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0 0 0 3px var(--accent-alpha, rgba(59, 130, 246, 0.2)));
   background: var(--bg-secondary);
   transform: translateY(-1px);
 }
@@ -473,14 +472,14 @@ onUnmounted(() => {
 .filter-item {
   transition:
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.2s ease;
+    filter 0.2s ease;
   border-radius: var(--radius-md);
   padding: 4px;
 }
 
 .filter-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
 }
 
 .filter-item:active {
@@ -496,7 +495,7 @@ onUnmounted(() => {
   background: var(--card-bg, rgba(255, 255, 255, 0.98));
   border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
   border-radius: var(--radius-lg);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.15));
   z-index: 200;
   max-height: 300px;
   overflow-y: auto;

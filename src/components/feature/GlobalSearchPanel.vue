@@ -203,7 +203,7 @@ defineExpose({ focusInput: exposeFocusInput, findNext, findPrevious });
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  filter: drop-shadow(var(--shadow-lg));
   padding: 10px;
   display: flex;
   flex-direction: column;

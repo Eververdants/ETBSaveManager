@@ -298,7 +298,7 @@ const handleSaveTemplate = () => emit("save-template");
 .create-btn:hover:not(:disabled) {
   background: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  filter: drop-shadow(var(--shadow-md));
 }
 
 /* 响应式布局 */

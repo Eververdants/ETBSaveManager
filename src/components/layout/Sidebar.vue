@@ -385,7 +385,7 @@ onMounted(() => {
   background: var(--bg-sidebar);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-lg);
+  filter: drop-shadow(var(--shadow-lg));
   z-index: 1000;
   overflow: hidden;
   border-right: 1px solid var(--sidebar-border-color);
@@ -394,7 +394,7 @@ onMounted(() => {
   transition:
     background 0.25s ease,
     border-right 0.25s ease,
-    box-shadow 0.25s ease,
+    filter 0.25s ease,
     width 0.3s ease,
     --sidebar-width 0.3s ease;
 }
@@ -441,7 +441,7 @@ onMounted(() => {
   transition:
     background-color 0.25s ease,
     color 0.25s ease,
-    box-shadow 0.25s ease;
+    filter 0.25s ease;
   white-space: nowrap;
   border-radius: var(--radius-sidebar);
   margin: 0 var(--space-4);
@@ -455,10 +455,10 @@ onMounted(() => {
 /* Sidebar item hover state styles */
 .sidebar-item:hover {
   background: var(--sidebar-hover-bg);
-  box-shadow: var(--shadow-md);
+  filter: drop-shadow(var(--shadow-md));
   transition:
     background-color 0.25s ease,
-    box-shadow 0.25s ease;
+    filter 0.25s ease;
 }
 
 /* Sidebar item active state styles */
@@ -477,7 +477,7 @@ onMounted(() => {
   background: var(--sidebar-active-hover-bg);
   transition:
     background-color 0.25s ease,
-    box-shadow 0.25s ease;
+    filter 0.25s ease;
 }
 
 /* Sidebar content area styles */
@@ -759,7 +759,7 @@ onMounted(() => {
   align-items: center;
   padding: var(--space-3) 0;
   cursor: pointer;
-  transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+  transition: background-color 0.25s ease, color 0.25s ease, filter 0.25s ease;
   white-space: nowrap;
   border-radius: var(--radius-sidebar);
   margin: 0 var(--space-4);
@@ -773,7 +773,7 @@ onMounted(() => {
 /* Sidebar item hover state styles */
 .sidebar-item:hover {
   background: var(--sidebar-hover-bg);
-  box-shadow: var(--shadow-md);
+  filter: drop-shadow(var(--shadow-md));
 }
 
 /* Sidebar item active state styles */

@@ -199,9 +199,9 @@ const resumeAutoClose = () => {
   padding: 20px 24px;
   border-radius: var(--radius-2xl);
   box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(255, 255, 255, 0.1) inset,
     0 0 0 1px rgba(0, 0, 0, 0.05) inset;
+  filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.15));
   background: var(--card-bg, #ffffff);
   color: var(--text, #1c1c1e);
   font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", sans-serif;
@@ -250,17 +250,15 @@ const resumeAutoClose = () => {
   background: linear-gradient(135deg,
       var(--primary, #8b8178) 0%,
       color-mix(in srgb, var(--primary) 95%, transparent) 100%);
-  box-shadow:
-    0 6px 16px color-mix(in srgb, var(--primary) 30%, transparent),
-    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  filter: drop-shadow(0 6px 16px color-mix(in srgb, var(--primary) 30%, transparent));
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .popup-icon-wrapper:hover {
   transform: scale(1.08) rotate(2deg);
-  box-shadow:
-    0 8px 20px color-mix(in srgb, var(--primary) 40%, transparent),
-    0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  filter: drop-shadow(0 8px 20px color-mix(in srgb, var(--primary) 40%, transparent));
 }
 
 .popup-icon {
@@ -401,9 +399,8 @@ const resumeAutoClose = () => {
   .prompt-popup {
     background: var(--card-bg, #1c1c1e);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow:
-      0 20px 60px rgba(0, 0, 0, 0.6),
-      0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+    filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.6));
   }
 
   .prompt-popup::before {
@@ -476,63 +473,55 @@ const resumeAutoClose = () => {
 .popup-success {
   background: var(--popup-success-bg);
   border: 1px solid var(--color-success-border);
-  box-shadow:
-    0 20px 60px rgba(52, 199, 89, 0.12),
-    0 0 0 1px rgba(52, 199, 89, 0.1) inset;
+  box-shadow: 0 0 0 1px rgba(52, 199, 89, 0.1) inset;
+  filter: drop-shadow(0 20px 60px rgba(52, 199, 89, 0.12));
   animation: subtlePulse 0.6s ease-in-out;
 }
 
 .popup-success .popup-icon-wrapper {
   background: var(--popup-success-icon-bg);
-  box-shadow:
-    0 6px 16px var(--popup-success-shadow),
-    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  filter: drop-shadow(0 6px 16px var(--popup-success-shadow));
 }
 
 .popup-error {
   background: var(--popup-error-bg);
   border: 1px solid var(--color-error-border);
-  box-shadow:
-    0 20px 60px rgba(255, 59, 48, 0.12),
-    0 0 0 1px rgba(255, 59, 48, 0.1) inset;
+  box-shadow: 0 0 0 1px rgba(255, 59, 48, 0.1) inset;
+  filter: drop-shadow(0 20px 60px rgba(255, 59, 48, 0.12));
   animation: subtleShake 0.4s ease-in-out;
 }
 
 .popup-error .popup-icon-wrapper {
   background: var(--popup-error-icon-bg);
-  box-shadow:
-    0 6px 16px var(--popup-error-shadow),
-    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  filter: drop-shadow(0 6px 16px var(--popup-error-shadow));
 }
 
 .popup-warning {
   background: var(--popup-warning-bg);
   border: 1px solid var(--color-warning-border);
-  box-shadow:
-    0 20px 60px rgba(255, 149, 0, 0.12),
-    0 0 0 1px rgba(255, 149, 0, 0.1) inset;
+  box-shadow: 0 0 0 1px rgba(255, 149, 0, 0.1) inset;
+  filter: drop-shadow(0 20px 60px rgba(255, 149, 0, 0.12));
 }
 
 .popup-warning .popup-icon-wrapper {
   background: var(--popup-warning-icon-bg);
-  box-shadow:
-    0 6px 16px var(--popup-warning-shadow),
-    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  filter: drop-shadow(0 6px 16px var(--popup-warning-shadow));
 }
 
 .popup-info {
   background: var(--popup-info-bg);
   border: 1px solid var(--color-info-border);
-  box-shadow:
-    0 20px 60px var(--popup-info-shadow, color-mix(in srgb, var(--accent-color) 12%, transparent)),
-    0 0 0 1px color-mix(in srgb, var(--accent-color) 10%, transparent) inset;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 10%, transparent) inset;
+  filter: drop-shadow(0 20px 60px var(--popup-info-shadow, color-mix(in srgb, var(--accent-color) 12%, transparent)));
 }
 
 .popup-info .popup-icon-wrapper {
   background: var(--popup-info-icon-bg);
-  box-shadow:
-    0 6px 16px var(--popup-info-shadow),
-    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  filter: drop-shadow(0 6px 16px var(--popup-info-shadow));
 }
 
 /* Subtle animations */

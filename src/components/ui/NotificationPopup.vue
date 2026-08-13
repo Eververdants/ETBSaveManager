@@ -430,7 +430,7 @@ defineExpose({
   background: var(--card-bg, rgba(255, 255, 255, 0.95));
   backdrop-filter: blur(20px);
   border-radius: var(--radius-sm);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.12));
   border: 1px solid rgba(255, 255, 255, 0.2);
   pointer-events: auto;
   overflow: hidden;
@@ -438,7 +438,7 @@ defineExpose({
 }
 
 .notification-item:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
+  filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.16));
 }
 
 .notification-expanded {
@@ -462,22 +462,22 @@ defineExpose({
 
 .icon-success {
   background: linear-gradient(135deg, #34c759, #30d158);
-  box-shadow: 0 3px 10px rgba(52, 199, 89, 0.35);
+  filter: drop-shadow(0 3px 10px rgba(52, 199, 89, 0.35));
 }
 
 .icon-error {
   background: linear-gradient(135deg, #ff3b30, #ff453a);
-  box-shadow: 0 3px 10px rgba(255, 59, 48, 0.35);
+  filter: drop-shadow(0 3px 10px rgba(255, 59, 48, 0.35));
 }
 
 .icon-warning {
   background: linear-gradient(135deg, #ff9500, #ffcc00);
-  box-shadow: 0 3px 10px rgba(255, 149, 0, 0.35);
+  filter: drop-shadow(0 3px 10px rgba(255, 149, 0, 0.35));
 }
 
 .icon-info {
   background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 75%, #ffffff));
-  box-shadow: 0 3px 10px color-mix(in srgb, var(--accent-color) 35%, transparent);
+  filter: drop-shadow(0 3px 10px color-mix(in srgb, var(--accent-color) 35%, transparent));
 }
 
 .notification-content {
@@ -666,7 +666,7 @@ defineExpose({
   .notification-item {
     background: var(--card-bg, rgba(44, 44, 46, 0.95));
     border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+    filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.4));
   }
 
   .notification-close {

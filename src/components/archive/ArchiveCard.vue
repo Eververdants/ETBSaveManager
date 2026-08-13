@@ -192,16 +192,16 @@ const toggleSelection = () => {
 
 <style scoped>
 /* Card container - optimized GPU acceleration.
-   contain: layout style paint scopes layout/paint changes to the card
-   itself — when .difficulty-tag width changes on hover, the browser
-   recalculates layout only inside this card, without cascading to the
-   CSS Grid or sibling cards.  Without this, every frame of the width
-   transition would re-layout the entire grid row.
+   filter: drop-shadow() (below) promotes the card to its own composited
+   layer, so layout/paint changes inside this card (e.g. .difficulty-tag
+   width on hover) are scoped to the card itself and do not cascade to
+   the CSS Grid or sibling cards — the same isolation contain used to
+   provide, now handled by the drop-shadow layer.
 
-   We deliberately avoid will-change: transform here (see note below),
-   but contain is safe because hover is user-initiated and synchronous —
-   the stale-GPU-texture issue from WebView2 only applies to async
-   content landing on compositing layers. */
+   We deliberately avoid will-change: transform here (see note below);
+   hover is user-initiated and synchronous, so the stale-GPU-texture
+   issue from WebView2 only applies to async content landing on
+   compositing layers. */
 .archive-card {
   position: relative;
   width: 100%;
@@ -212,17 +212,15 @@ const toggleSelection = () => {
   cursor: default;
   background: var(--card-bg);
   border: var(--card-border);
-  box-shadow: var(--card-shadow);
-  /* contain: paint — limits paint invalidation to the card's own bounds.
-     Without this, a hover-triggered background/color change on this card
-     would force the browser to repaint the entire archive-grid parent.
-     With contain:paint, only this card's pixels are re-rasterized.
-
-     We deliberately skip will-change:transform here — it would promote
-     every card to its own GPU compositing layer, and with 12-16 visible
-     cards that's 12-16 GPU textures the compositor has to manage per
-     scroll frame.  Hover-only will-change is on :hover below. */
-  contain: paint;
+  /* corners.css masks this surface to a superellipse, which clips the
+     element's own box-shadow at the border box — so the elevation shadow
+     becomes filter: drop-shadow(), which follows the masked silhouette.
+     drop-shadow() promotes the card to its own composited layer, so a
+     hover-triggered background/color change is re-rasterized for this
+     card alone.  That preserves the intent of the contain: paint we
+     removed (no full archive-grid repaint), consistent with the hover
+     will-change: transform layer strategy below. */
+  filter: drop-shadow(var(--card-shadow));
   transition: transform 0.25s ease;
 }
 
@@ -259,7 +257,7 @@ const toggleSelection = () => {
      to async content arriving on a dormant compositing layer. */
   will-change: transform;
   transform: translateY(-4px);
-  box-shadow: var(--card-shadow-hover);
+  filter: drop-shadow(var(--card-shadow-hover));
   z-index: 2;
 }
 
@@ -600,7 +598,7 @@ const toggleSelection = () => {
 .archive-hidden:hover {
   border-color: rgba(255, 200, 50, 0.25);
   transform: translateY(-3px);
-  box-shadow: var(--card-shadow-hover);
+  filter: drop-shadow(var(--card-shadow-hover));
 }
 
 /* Hidden state: background image slightly desaturated, preserving clarity */
@@ -845,9 +843,9 @@ const toggleSelection = () => {
 }
 
 .archive-card.is-selected {
-  box-shadow:
-    0 0 0 2px var(--primary),
-    var(--card-shadow);
+  filter:
+    drop-shadow(0 0 0 2px var(--primary))
+    drop-shadow(var(--card-shadow));
 }
 
 .archive-card.is-selected .card-background::after {

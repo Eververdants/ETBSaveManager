@@ -235,7 +235,7 @@ const displayCancelText = computed(() => props.cancelText || t("confirmModal.can
 .modal-container {
   background: var(--bg-primary);
   border-radius: var(--radius-modal);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.3));
   max-width: 400px;
   width: 100%;
   border: 1px solid var(--divider-color);

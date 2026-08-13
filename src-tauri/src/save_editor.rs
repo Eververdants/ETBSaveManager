@@ -280,10 +280,10 @@ fn entry_has_real_data(value: &Property) -> bool {
                         return true;
                     }
                 }
-                Property::Array(ValueVec::Name(names)) => {
-                    if names.iter().any(|n| n.as_str() != "None") {
-                        return true;
-                    }
+                Property::Array(ValueVec::Name(names))
+                    if names.iter().any(|n| n.as_str() != "None") =>
+                {
+                    return true;
                 }
                 _ => {}
             }

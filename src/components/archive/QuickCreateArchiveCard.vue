@@ -200,7 +200,17 @@ const {
 .quick-archive-card.selected {
   border-color: var(--accent-color);
   background: rgba(var(--accent-color-rgb), 0.1);
-  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
+}
+
+/* 选中内圈:外 box-shadow 会被父 mask 裁掉,改用全出血 ::after 内圈,
+   由父 mask 裁成超椭圆环(比 border-radius 更贴合曲率)。 */
+.quick-archive-card.selected::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(var(--accent-color-rgb), 0.2);
+  border-radius: 0; /* 父 mask 负责圆角 */
+  pointer-events: none;
 }
 
 /* 卡片头部 */

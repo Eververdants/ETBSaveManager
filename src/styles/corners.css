@@ -5,13 +5,6 @@
  * 分档规则与冲突决策见计划 Task 2
  * ========================================== */
 @supports (mask-image: url("data:image/svg+xml")) {
-  /* 逃生舱:个别元素不用连续曲率,恢复圆形 */
-  [data-corner="none"] {
-    -webkit-mask: none !important;
-    mask: none !important;
-    border-radius: var(--radius-md, 8px) !important;
-  }
-
   /* 2xl:模态/大弹窗 */
   .modal, .dialog, .popup,
   .modal-window, .dialog-box, .alert-box, .prompt-box,
@@ -88,5 +81,15 @@
     border-radius: 0 !important;
     -webkit-mask: var(--corner-xs) center / 100% 100% no-repeat;
     mask: var(--corner-xs) center / 100% 100% no-repeat;
+  }
+
+  /* 逃生舱:个别元素不用连续曲率,恢复圆形。
+     必须放在组规则之后:组规则的 border-radius: 0 !important 与逃生舱的
+     border-radius: var(--radius-md) !important 同源顺序才能赢,
+     否则 mask 关闭后圆角仍是 0(方角)。 */
+  [data-corner="none"] {
+    -webkit-mask: none !important;
+    mask: none !important;
+    border-radius: var(--radius-md, 8px) !important;
   }
 }

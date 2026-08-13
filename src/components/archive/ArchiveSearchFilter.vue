@@ -345,7 +345,7 @@ onUnmounted(() => {
     background 0.3s ease,
     color 0.3s ease,
     transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s ease;
+    filter 0.3s ease;
   z-index: 1;
   display: flex;
   align-items: center;
@@ -355,7 +355,9 @@ onUnmounted(() => {
   margin-top: -15px;
   box-sizing: border-box;
   overflow: hidden;
-  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
+  /* 外 box-shadow 会被 md mask 裁掉,改用 drop-shadow 跟随超椭圆剪影。
+     用单层字面阴影,不能引用 --shadow-sm(双层 shadow 列表,drop-shadow 不接受)。 */
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1));
 }
 
 .clear-btn:hover {
@@ -363,7 +365,7 @@ onUnmounted(() => {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.3);
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+  filter: drop-shadow(0 4px 12px rgba(239, 68, 68, 0.25));
 }
 
 .clear-btn:active {

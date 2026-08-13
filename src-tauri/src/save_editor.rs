@@ -331,9 +331,17 @@ fn merge_player_data(save: &mut Save) -> usize {
         }
         // Score: real data dominates, real EOS key breaks ties
         let score = |i: &usize| {
-            let data = if entry_has_real_data(&entries[*i].value) { 10 } else { 0 };
+            let data = if entry_has_real_data(&entries[*i].value) {
+                10
+            } else {
+                0
+            };
             let eos = if let Property::Str(k) = &entries[*i].key {
-                if is_real_eos_key(k) { 1 } else { 0 }
+                if is_real_eos_key(k) {
+                    1
+                } else {
+                    0
+                }
             } else {
                 0
             };

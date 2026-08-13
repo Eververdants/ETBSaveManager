@@ -37,6 +37,6 @@ function enc(svg) {
 const T = { xs: 0.38, sm: 0.31, md: 0.23, lg: 0.14, xl: 0.13, "2xl": 0.11 };
 for (const [name, r] of Object.entries(T)) {
   const d = genPath(r);
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path fill='white' d='${d}'/></svg>`;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'><path fill='white' d='${d}'/></svg>`;
   console.log(`--corner-${name}: url("data:image/svg+xml,${enc(svg)}");`);
 }

@@ -4,6 +4,7 @@ use crate::common::{
 use crate::error::AppResult;
 use crate::save_shared;
 use serde_json::Value as JsonValue;
+use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::{BufReader, BufWriter, Write};
 use std::path::Path;
@@ -194,6 +195,14 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     let mut reader = BufReader::with_capacity(16384, file);
     let mut save = Save::read(&mut reader).map_err(|e| format!("Failed to parse save: {:?}", e))?;
 
+    // Auto-merge duplicate PlayerData entries for the same player
+    // (bare id + EOS-suffixed key + all-zeros key from older app versions coexist;
+    // the game never consolidates them, so we clean up before processing)
+    let merged = merge_player_data(&mut save);
+    if merged > 0 {
+        println!("🧹 Auto-merged {} duplicate player entry(ies)", merged);
+    }
+
     // Handle Pipes level
     let processed_level = process_pipes_level(&mut save, current_level);
 
@@ -248,6 +257,101 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     add_save_to_mainsave(archive_name)?;
 
     Ok(output_path.to_str().unwrap_or("Invalid path").to_string())
+}
+
+/// Pure player id: strip the `_+_|<suffix>` (online) or `-<15 chars>` (offline) part.
+fn pure_player_id(key: &str) -> String {
+    if let Some(idx) = key.find("_+_|") {
+        key[..idx].to_string()
+    } else if let Some(idx) = key.find('-') {
+        key[..idx].to_string()
+    } else {
+        key.to_string()
+    }
+}
+
+/// A player entry carries real data when sanity != default 100 or any inventory slot is filled.
+fn entry_has_real_data(value: &Property) -> bool {
+    if let Property::Struct(StructValue::Struct(props)) = value {
+        for (_, prop) in props.0.iter() {
+            match prop {
+                Property::Float(f) => {
+                    if (f.0 - 100.0).abs() > 0.001 {
+                        return true;
+                    }
+                }
+                Property::Array(ValueVec::Name(names)) => {
+                    if names.iter().any(|n| n.as_str() != "None") {
+                        return true;
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+    false
+}
+
+/// Whether the key carries a real EOS account id suffix (32 hex, not the all-zeros
+/// placeholder an earlier app version wrote).
+fn is_real_eos_key(key: &str) -> bool {
+    if let Some(idx) = key.find("_+_|") {
+        let suffix = &key[idx + 4..];
+        suffix.len() == 32 && suffix != "00000000000000000000000000000000"
+    } else {
+        false
+    }
+}
+
+/// Merge duplicate PlayerData entries for the same player.
+///
+/// A player can appear under several keys in a save: a bare steam id, the correct
+/// EOS-suffixed key, and — from an earlier app version — an all-zeros suffix key.
+/// The game never consolidates these. Keep the single entry with real data
+/// (non-default inventory/sanity); on a tie prefer the real EOS-suffixed key.
+/// Remove the rest. Returns how many entries were dropped.
+fn merge_player_data(save: &mut Save) -> usize {
+    let player_data_key = PropertyKey(0, "PlayerData".to_string());
+    let Some(Property::Map(entries)) = save.root.properties.0.get_mut(&player_data_key) else {
+        return 0;
+    };
+
+    // Group entry indices by pure player id
+    let mut groups: HashMap<String, Vec<usize>> = HashMap::new();
+    for (i, entry) in entries.iter().enumerate() {
+        if let Property::Str(key) = &entry.key {
+            groups.entry(pure_player_id(key)).or_default().push(i);
+        }
+    }
+
+    let mut remove: Vec<usize> = Vec::new();
+    for indices in groups.values() {
+        if indices.len() < 2 {
+            continue;
+        }
+        // Score: real data dominates, real EOS key breaks ties
+        let score = |i: &usize| {
+            let data = if entry_has_real_data(&entries[*i].value) { 10 } else { 0 };
+            let eos = if let Property::Str(k) = &entries[*i].key {
+                if is_real_eos_key(k) { 1 } else { 0 }
+            } else {
+                0
+            };
+            data + eos
+        };
+        let best = *indices.iter().max_by_key(|&i| score(i)).unwrap();
+        for &i in indices {
+            if i != best {
+                remove.push(i);
+            }
+        }
+    }
+
+    remove.sort_unstable();
+    for &i in remove.iter().rev() {
+        entries.remove(i);
+    }
+    remove.len()
 }
 
 /// Process player data

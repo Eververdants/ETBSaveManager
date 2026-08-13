@@ -52,6 +52,7 @@
   "editInventory": "編輯背包",
   "playerSanity": "玩家理智",
   "customSanity": "自訂理智",
+  "sanityZeroHint": "提示：若將理智值設定為 0%，進入遊戲後理智值將會自動恢復至 100%。",
   "selectPlayerMessage": "請先選擇一個Steam ID玩家來編輯背包",
   "mainHand": "主手",
   "offHand1": "副手1",

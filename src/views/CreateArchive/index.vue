@@ -479,38 +479,12 @@ const previousStep = () => {
   }
 };
 
+// Steam usernames are not resolvable by this app (no backend Steam Web API
+// integration), so we don't invoke any command here. Online players simply
+// keep a null username and the UI falls back to showing the steam id. This
+// also avoids the "get_steam_usernames_command not found" invoke rejection.
 const fetchSteamUsernames = async () => {
-  try {
-    const { invoke } = await import("@tauri-apps/api/core");
-    const steamIds = players
-      .filter((p) => !p.isOfflinePlayer && p.steamId?.length === 17 && /^\d+$/.test(p.steamId))
-      .map((p) => p.steamId);
-    if (steamIds.length === 0) return;
-    const usernames = await invoke("get_steam_usernames_command", {
-      steamIds,
-    });
-    players.forEach((player) => {
-      if (!player.isOfflinePlayer && usernames[player.steamId]) {
-        player.username = usernames[player.steamId];
-      }
-    });
-  } catch (error) {
-    console.error("Failed to fetch Steam usernames:", error);
-    let errorMessage = error.toString();
-    let userFriendlyMessage;
-    if (errorMessage.includes("403") || errorMessage.includes("Forbidden")) {
-      userFriendlyMessage = t("createArchive.steamApiKeyInvalid");
-    } else if (errorMessage.includes("429") || errorMessage.includes("Too Many Requests")) {
-      userFriendlyMessage = t("createArchive.steamApiRateLimit");
-    } else if (errorMessage.includes("Steam API密钥未配置")) {
-      userFriendlyMessage = t("createArchive.steamApiKeyNotConfigured");
-    } else {
-      userFriendlyMessage = t("createArchive.steamIdValidationError", {
-        error: errorMessage,
-      });
-    }
-    notify.error(userFriendlyMessage);
-  }
+  return;
 };
 
 const loadJsonFile = async (filename) => {

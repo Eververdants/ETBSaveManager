@@ -52,6 +52,7 @@
   "editInventory": "Edit Inventory",
   "playerSanity": "Player Sanity",
   "customSanity": "Custom Sanity",
+  "sanityZeroHint": "Note: if sanity is set to 0%, it will automatically restore to 100% after entering the game.",
   "selectPlayerMessage": "Please select a Steam ID player to edit inventory",
   "mainHand": "Main Hand",
   "offHand1": "Off-hand 1",

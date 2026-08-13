@@ -53,6 +53,10 @@ class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }"
                   </button>
                 </div>
               </div>
+              <div v-if="currentPlayerSanity === 0" class="sanity-hint">
+                <font-awesome-icon :icon="['fas', 'info-circle']" />
+                {{ $t("editArchive.sanityZeroHint") }}
+              </div>
             </div>
 
             <div class="detail-block">
@@ -327,7 +331,7 @@ const getItemImageFile = (itemName) => {
 
 .detail-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -398,6 +402,24 @@ const getItemImageFile = (itemName) => {
 .quick-btns {
   display: flex;
   gap: 8px;
+}
+
+.sanity-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-xs);
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error-color, #ef4444);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.sanity-hint svg {
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
 .qbtn {
@@ -471,7 +493,7 @@ const getItemImageFile = (itemName) => {
   aspect-ratio: 1;
   min-width: 56px;
   min-height: 56px;
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   border: 2px solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   display: flex;
@@ -487,7 +509,7 @@ const getItemImageFile = (itemName) => {
   min-width: 56px;
   min-height: 56px;
   aspect-ratio: auto;
-  border-radius: var(--radius-md);
+  border-radius: 10px;
 }
 
 .inv-slot:hover {
@@ -540,6 +562,10 @@ const getItemImageFile = (itemName) => {
 
 @media (max-width: 768px) {
   .players-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-grid {
     grid-template-columns: 1fr;
   }
 

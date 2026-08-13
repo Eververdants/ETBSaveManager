@@ -12,7 +12,7 @@
     "improvements": [
       "Upgraded archive parsing engine (uesave 0.7), preserving player UniqueNetId",
       "Sanity and backpack settings on the same row; rounded-rectangle item slots",
-      "Keep filter conditions and center the edited archive's card when returning to the list",
+      "Keep filter conditions when returning to the list",
       "Delete-success notification shows an exit countdown; bolder batch-delete button",
       "Keyboard shortcuts enabled, dev-tools shortcuts still blocked",
       "Crossfade page transitions to eliminate switching flashes; land at page top",

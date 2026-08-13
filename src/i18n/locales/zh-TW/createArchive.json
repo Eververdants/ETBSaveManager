@@ -40,6 +40,7 @@
   "steamIdValidationError": "Steam ID驗證失敗: {error}",
   "steamIdLengthError": "Steam ID必須是17位數字",
   "steamApiKeyInvalid": "Steam API金鑰無效或已過期。請在設定中更新您的Steam API金鑰。",
+  "playerMissingEosKey": "Steam ID {steamId} 在現有存檔中找不到 EOS 帳號標識，遊戲無法識別該玩家，分配的資料不會生效。請新增玩過存檔的玩家。",
   "steamApiRateLimit": "Steam API呼叫頻率超限，請稍後再試。",
   "steamApiKeyNotConfigured": "未設定Steam API金鑰。請在設定中新增您的Steam API金鑰。",
   "offlinePlayer": "離線玩家",

@@ -340,6 +340,28 @@ const addSteamId = async () => {
     );
     return;
   }
+  // 在线玩家必须有可复用的 EOS 账号标识：游戏只认 `<steam id>_+_|<EOS id>` 键，
+  // 纯 steam id 的新玩家游戏不会识别，只会新建一条空的 PlayerData，分配的数据不生效
+  if (!validation.isOfflinePlayer) {
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const res = await invoke("get_player_unique_ids", {
+        steamIds: [validation.processedSteamId],
+      });
+      const foundKey = res?.map?.[validation.processedSteamId];
+      if (!foundKey || !foundKey.includes("_+_|")) {
+        showPlayerMessage(
+          t("createArchive.playerMissingEosKey", {
+            steamId: validation.processedSteamId,
+          }),
+          "error",
+        );
+        return;
+      }
+    } catch {
+      // 查询失败时不阻止，退回原逻辑
+    }
+  }
   const newPlayer = {
     steamId: validation.processedSteamId,
     inventory: Array(12).fill(null),

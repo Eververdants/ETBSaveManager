@@ -40,6 +40,7 @@
   "steamIdValidationError": "Steam ID validation failed: {error}",
   "steamIdLengthError": "Steam ID must be 17 digits",
   "steamApiKeyInvalid": "Steam API key is invalid or expired. Please update your Steam API key in settings.",
+  "playerMissingEosKey": "Steam ID {steamId} has no save with an EOS account id, so the game won't recognize this player and assigned data won't apply in-game. Add a player who has played before.",
   "steamApiRateLimit": "Steam API rate limit exceeded. Please try again later.",
   "steamApiKeyNotConfigured": "Steam API key not configured. Please add your Steam API key in settings.",
   "offlinePlayer": "Offline Player",

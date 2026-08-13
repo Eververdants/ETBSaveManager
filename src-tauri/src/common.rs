@@ -127,11 +127,35 @@ pub fn add_save_to_mainsave(archive_name: &str) -> AppResult<()> {
         .lock()
         .map_err(|e| format!("MAINSAVE lock poisoned: {}", e))?;
 
+    // During a batch create the game itself may be rewriting MAINSAVE concurrently,
+    // which makes a single read fail transiently. Retry a couple of times before
+    // giving up so newly created saves actually register as visible instead of
+    // silently staying hidden.
     let mut mainsave = match read_mainsave() {
         Ok(save) => save,
-        Err(e) => {
-            eprintln!("[add_save_to_mainsave] Failed to read MAINSAVE: {}", e);
-            return Ok(()); // Silently skip
+        Err(_) => {
+            let mut result = None;
+            let mut last_err = String::new();
+            for _ in 0..3 {
+                std::thread::sleep(std::time::Duration::from_millis(60));
+                match read_mainsave() {
+                    Ok(save) => {
+                        result = Some(save);
+                        break;
+                    }
+                    Err(e) => last_err = e.to_string(),
+                }
+            }
+            match result {
+                Some(save) => save,
+                None => {
+                    eprintln!(
+                        "[add_save_to_mainsave] Failed to read MAINSAVE after retries: {}",
+                        last_err
+                    );
+                    return Ok(()); // Silently skip (missing/corrupt — game rebuilds it on next launch)
+                }
+            }
         }
     };
 

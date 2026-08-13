@@ -117,7 +117,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
 <style scoped>
 .player-list-section {
   background: var(--card-bg);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-card);
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -148,7 +148,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
   background: var(--primary);
   color: white;
   padding: 2px 10px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-tag);
   font-size: 12px;
 }
 
@@ -239,7 +239,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
 .del-btn {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-button);
+  border-radius: var(--radius-xs);
   border: none;
   background: rgba(239, 68, 68, 0.12);
   color: var(--error-color);
@@ -297,7 +297,7 @@ const { title, emptyHint, steamIdPlaceholder, getSanityClass } = usePlayerManage
 .msg-tip {
   padding: 10px 16px;
   margin: 0 16px 16px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
   font-size: 13px;
 }
 

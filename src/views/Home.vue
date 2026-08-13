@@ -932,7 +932,7 @@ watch(searchQuery, (query) => {
   height: 36px;
   border: 3px solid var(--border-color);
   border-top-color: var(--primary);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   animation: spinner-rotate 0.8s linear infinite;
 }
 
@@ -1242,7 +1242,7 @@ watch(searchQuery, (query) => {
 
 .modal-container {
   background: var(--card-bg);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   max-width: 500px;
   width: 90%;
   max-height: 80vh;

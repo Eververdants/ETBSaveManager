@@ -301,7 +301,7 @@ const resumeAutoClose = () => {
   border: none;
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;

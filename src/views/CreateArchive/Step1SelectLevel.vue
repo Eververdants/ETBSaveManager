@@ -270,7 +270,7 @@ const handleSelectLevel = (index, event) => {
 
 .level-card {
   background: linear-gradient(160deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: pointer;
   transition:

@@ -260,7 +260,7 @@ const {
   justify-content: center;
   width: 18px;
   height: 18px;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
   border: 2px solid var(--checkbox-border, var(--divider-medium));
   background: var(--checkbox-bg, var(--bg-secondary));
   transition: all 0.2s var(--ease-default);
@@ -388,7 +388,7 @@ const {
   padding: 0;
   background: var(--bg-secondary);
   border: 1px solid var(--divider-light);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   color: var(--text-tertiary);
   font-size: 12px;
   cursor: pointer;

@@ -279,7 +279,7 @@ onUnmounted(() => {
   width: 100%;
   padding: 12px 48px 12px 44px;
   border: none;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-input);
   background: var(--bg-secondary, rgba(0, 0, 0, 0.05));
   color: var(--text-primary);
   font-size: 15px;

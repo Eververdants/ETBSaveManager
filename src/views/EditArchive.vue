@@ -1401,7 +1401,7 @@ onMounted(() => {
   width: 22px;
   height: 22px;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: var(--bg-tertiary, var(--bg-secondary));
   color: var(--text-tertiary);
   font-size: 11px;
@@ -1421,7 +1421,7 @@ onMounted(() => {
 
 .level-group {
   background: var(--card-bg);
-  border-radius: var(--radius-card, 12px);
+  border-radius: var(--radius-card);
   overflow: hidden;
   border: 1px solid transparent;
   transition: border-color var(--transition-fast) var(--ease-default);
@@ -1465,7 +1465,7 @@ onMounted(() => {
   min-width: 22px;
   height: 22px;
   padding: 0 7px;
-  border-radius: 11px;
+  border-radius: var(--radius-pill);
   background: var(--bg-secondary);
   color: var(--text-secondary);
   font-size: 12px;
@@ -1939,7 +1939,7 @@ onMounted(() => {
 
 .detail-block {
   background: var(--bg-secondary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   padding: 16px;
 }
 
@@ -2037,7 +2037,7 @@ onMounted(() => {
   width: 32px;
   height: 32px;
   border: none;
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -2085,7 +2085,7 @@ onMounted(() => {
   position: relative;
   width: 56px;
   height: 56px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: var(--card-bg);
   border: 2px solid var(--border-color);
   cursor: pointer;

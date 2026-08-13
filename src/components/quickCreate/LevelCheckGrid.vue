@@ -140,7 +140,7 @@ const toggleSelectAll = () => {
   border: none;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-md);
 }
 
 .clear-btn:hover {
@@ -157,7 +157,7 @@ const toggleSelectAll = () => {
 
 .level-card {
   background: var(--bg-secondary);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.03);

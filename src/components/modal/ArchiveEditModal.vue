@@ -244,7 +244,7 @@ const { handleSave } = useEditActions(emit, () => props.archive, localArchive, h
 .modal-container {
   background: var(--bg-secondary);
   border: 1px solid var(--divider-light);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-modal);
   width: 90%;
   max-width: 480px;
   max-height: 90vh;
@@ -320,7 +320,7 @@ const { handleSave } = useEditActions(emit, () => props.archive, localArchive, h
   padding: var(--space-2) var(--space-3);
   background: var(--bg-tertiary);
   border: 1px solid var(--divider-light);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-input);
   color: var(--text-primary);
   font-size: 14px;
   transition: all 0.2s var(--ease-default);
@@ -343,7 +343,7 @@ const { handleSave } = useEditActions(emit, () => props.archive, localArchive, h
 
 .btn {
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-button);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;

@@ -1568,7 +1568,7 @@ input:checked+.slider:before {
 .setting-action .dropdown-display {
   padding: var(--space-2) var(--space-3);
   font-size: 14px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-dropdown);
   background: var(--dropdown-bg);
   border: 1px solid var(--dropdown-border);
   color: var(--dropdown-text);
@@ -1593,7 +1593,7 @@ input:checked+.slider:before {
   width: 100%;
   background: var(--dropdown-bg);
   border: 1px solid var(--dropdown-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   filter: drop-shadow(var(--filter-shadow-md));
   overflow: hidden;
   z-index: 1001;

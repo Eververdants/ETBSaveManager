@@ -1,33 +1,16 @@
 {
-  "version": "3.3.1",
+  "version": "3.3.2",
   "date": "2026-08-14",
-  "title": "Save ID Stability & Interaction Polish",
+  "title": "Save Data Binding Fix & Performance",
   "type": "patch",
   "categories": {
-    "newFeatures": [
-      "Reuse existing player UniqueNetId when creating archives, with local Steam ID to EOS PUID mapping",
-      "Auto-merge duplicate player data entries when editing, intelligently merging both backpacks",
-      "Block adding online players without a reusable EOS key"
-    ],
-    "improvements": [
-      "Upgraded archive parsing engine (uesave 0.7), preserving player UniqueNetId",
-      "Sanity and backpack settings on the same row; rounded-rectangle item slots",
-      "Keep filter conditions when returning to the list",
-      "Delete-success notification shows an exit countdown; bolder batch-delete button",
-      "Keyboard shortcuts enabled, dev-tools shortcuts still blocked",
-      "Crossfade page transitions to eliminate switching flashes; land at page top",
-      "Show a hint when sanity is set to 0 (auto-restores to 100 in game)",
-      "Removed the throttle interval between auto and manual refresh"
-    ],
+    "newFeatures": [],
+    "improvements": [],
     "bugFixes": [
-      "Fixed 'command not found' error when adding a Steam ID",
-      "Fixed EOS PUID mapping occasionally not applying on creation (real EOS suffix only)",
-      "Fixed the floating button occasionally disappearing during search/filter",
-      "Fixed archive visibility toggle occasionally not taking effect",
-      "Fixed batch-created archives not entering the MAINSAVE list"
+      "Fixed save data not binding when creating an archive with a bare Steam ID (empty backpack, sanity reset)"
     ],
     "performance": [
-      "Preload the edit page for faster entry"
+      "Slimmed down the bundle for faster startup"
     ]
   }
 }

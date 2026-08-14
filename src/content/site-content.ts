@@ -22,12 +22,12 @@ export const site = {
 
   // 与主项目同步：版本戳 / 编译号 / 发布日（非翻译数据）
   meta: {
-    version: "3.3.1",
+    version: "3.3.2",
     build: "20260814",
     releaseDate: "2026-08-14",
     edition: "Archive Edition",
     status: "online",
-    codename: "Save Identity Stabilization",
+    codename: "Player Data Binding",
     framework: "Tauri 2.0",
     identifier: "com.admin.etbsavemanager",
     bundle: "nsis · msi",

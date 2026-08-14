@@ -1,11 +1,15 @@
 /**
  * 图片构建优化脚本
- * 压缩 public/ 中的大尺寸PNG文件，减小构建产物体积。
+ * 压缩 public/ 中的大尺寸PNG文件,减小构建产物体积。
+ *
+ * 增量缓存: 用源图 sha256 记录在 .cache/image-optimize.json,
+ * 未变化的图片跳过重编码,避免每次构建都做完整压缩。
  *
  * 用法: node scripts/optimize-images.mjs
  */
 
-import { readdirSync, statSync, existsSync } from "fs";
+import { readdirSync, statSync, existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
+import { createHash } from "crypto";
 import { join, extname } from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -14,20 +18,31 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, "..");
 
+// 增量缓存: filePath → { hash, after }
+const CACHE_FILE = join(rootDir, ".cache", "image-optimize.json");
+let cache = {};
+try {
+  cache = JSON.parse(readFileSync(CACHE_FILE, "utf-8"));
+} catch {
+  cache = {};
+}
+
+function fileHash(filePath) {
+  return createHash("sha256").update(readFileSync(filePath)).digest("hex");
+}
+
 // 使用 sharp 进行图片压缩
 async function optimizeImages() {
   let sharp;
   try {
     sharp = (await import("sharp")).default;
   } catch {
-    console.error(
-      "❌ sharp 未安装。请运行: pnpm add -D sharp"
-    );
+    console.error("❌ sharp 未安装。请运行: pnpm add -D sharp");
     process.exit(1);
   }
 
   const publicDir = join(rootDir, "public");
-  const results = { before: 0, after: 0, saved: 0, files: [] };
+  const results = { before: 0, after: 0, saved: 0, cached: 0, files: [] };
 
   // 收集需要优化的图片: public/icons/ETB_UI/ + public/*.png
   const imageFiles = [];
@@ -58,6 +73,15 @@ async function optimizeImages() {
     // 跳过已经是小尺寸的图片 (< 5KB)
     if (origSize < 5 * 1024) {
       console.log(`  ⏭️  ${fileName} — 已很小 (${(origSize / 1024).toFixed(1)}KB)`);
+      continue;
+    }
+
+    // 增量缓存:源图未变化则跳过重编码
+    const hash = fileHash(filePath);
+    if (cache[fileName]?.hash === hash) {
+      results.cached += 1;
+      results.files.push({ name: fileName, before: origSize, after: cache[fileName].after ?? origSize, pct: "-" });
+      console.log(`  ⏭️  ${fileName} — 未变化,跳过`);
       continue;
     }
 
@@ -123,18 +147,28 @@ async function optimizeImages() {
         );
       } else {
         results.files.push({ name: fileName, before: origSize, after: origSize, pct: "0.0" });
-        console.log(`  ⏭️  ${fileName} — 压缩后未减小，跳过`);
+        console.log(`  ⏭️  ${fileName} — 压缩后未减小,跳过`);
       }
+
+      // 记录缓存(无论是否重写,源图已确认处理过)
+      cache[fileName] = { hash, after: newSize < origSize ? newSize : origSize };
     } catch (err) {
       console.error(`  ❌ ${fileName}: ${err.message}`);
     }
   }
+
+  // 持久化缓存
+  mkdirSync(join(rootDir, ".cache"), { recursive: true });
+  writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2));
 
   console.log("\n" + "=".repeat(50));
   console.log(`📊 优化总结:`);
   console.log(`   优化前: ${(results.before / 1024 / 1024).toFixed(2)} MB`);
   console.log(`   优化后: ${(results.after / 1024 / 1024).toFixed(2)} MB`);
   console.log(`   节省:   ${(results.saved / 1024 / 1024).toFixed(2)} MB (${((results.saved / results.before) * 100).toFixed(1)}%)`);
+  if (results.cached > 0) {
+    console.log(`   跳过(已缓存): ${results.cached} 个`);
+  }
 }
 
 optimizeImages().catch(console.error);

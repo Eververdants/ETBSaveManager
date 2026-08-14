@@ -17,8 +17,6 @@ export default defineConfig(async ({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "src"),
-        // 使用包含编译器的 Vue 版本以支持运行时模板编译
-        vue: "vue/dist/vue.esm-bundler.js",
       },
     },
 
@@ -81,10 +79,6 @@ export default defineConfig(async ({ mode }) => {
             if (id.includes("gsap")) {
               return "animations";
             }
-            // Markdown - 按需加载
-            if (id.includes("markdown-it")) {
-              return "markdown";
-            }
             // 虚拟滚动 - 首页需要
             if (id.includes("@tanstack/vue-virtual")) {
               return "virtual-scroll";
@@ -119,26 +113,8 @@ export default defineConfig(async ({ mode }) => {
       reportCompressedSize: false,
       // 优化chunk大小警告阈值
       chunkSizeWarningLimit: 500,
-      // 启用压缩
-      minify: "terser",
-      terserOptions: {
-        compress: {
-          drop_debugger: true,
-          dead_code: true,
-          conditionals: true,
-          collapse_vars: true,
-          unused: true,
-          passes: 1,
-          // 生产环境去除低价值日志，保留 warn/error 便于排障
-          pure_funcs: isProd ? ["console.log", "console.info", "console.debug"] : [],
-        },
-        mangle: {
-          safari10: true,
-        },
-        format: {
-          comments: false,
-        },
-      },
+      // 启用压缩 (esbuild 比 terser 快 ~30%，产物体积相当)
+      minify: "esbuild",
       // 启用模块预加载
       modulePreload: {
         polyfill: false, // 现代浏览器不需要polyfill
@@ -165,6 +141,8 @@ export default defineConfig(async ({ mode }) => {
     esbuild: {
       // 生产环境移除 debugger
       drop: isProd ? ["debugger"] : [],
+      // 生产环境去除低价值日志，保留 warn/error 便于排障
+      pure: isProd ? ["console.log", "console.info", "console.debug"] : [],
       // 启用tree shaking
       treeShaking: true,
     },

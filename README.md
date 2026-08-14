@@ -154,7 +154,7 @@ A: Open an issue on the [GitHub issue tracker](https://github.com/Eververdants/E
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | [Vue 3](https://vuejs.org/) + Composition API | 3.x | Reactive UI framework |
-| [TypeScript](https://www.typescriptlang.org/) | 5.x | Type-safe development |
+| [TypeScript](https://www.typescriptlang.org/) | 6.x | Type-safe development |
 | [Vite](https://vite.dev/) | 6 | Build tool and dev server |
 | [Tailwind CSS](https://tailwindcss.com/) | 4 | Utility-first CSS framework |
 | CSS Custom Properties | — | Dynamic theme system |
@@ -172,7 +172,7 @@ A: Open an issue on the [GitHub issue tracker](https://github.com/Eververdants/E
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | [Tauri](https://v2.tauri.app/) | 2.0 | Desktop application framework (Rust + WebView) |
-| [uesave](https://crates.io/crates/uesave) | 0.6.2 | UE4 save file parsing and serialization |
+| [uesave](https://crates.io/crates/uesave) | 0.7.1 | UE4 save file parsing and serialization |
 | [serde](https://serde.rs/) + serde_json | — | Data serialization / deserialization |
 | [rusqlite](https://github.com/rusqlite/rusqlite) | — | Local SQLite database for app state |
 | [tokio](https://tokio.rs/) + [reqwest](https://docs.rs/reqwest/) | — | Async HTTP client (update checks) |

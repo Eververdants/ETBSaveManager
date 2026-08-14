@@ -569,8 +569,16 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> AppResult<()> 
                 inventory_prop,
             );
 
+            // PlayerData map key: the game only binds player data to
+            // `<steam id>_+_|<EOS PUID>` keys. A bare steam id yields an entry the
+            // game ignores (empty backpack, sanity reset to 100), so resolve the real
+            // EOS-suffixed key from the cache or an existing save; keep the raw id
+            // only when no reusable PUID exists anywhere.
+            let resolved_key = crate::save_commands::resolve_player_full_key(&player.steam_id)
+                .unwrap_or_else(|| player.steam_id.clone());
+
             uesave::MapEntry {
-                key: Property::Str(player.steam_id.clone()),
+                key: Property::Str(resolved_key),
                 value: Property::Struct(StructValue::Struct(player_struct_properties)),
             }
         })

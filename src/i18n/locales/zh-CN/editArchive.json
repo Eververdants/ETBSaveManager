@@ -39,6 +39,12 @@
     "hard": "困难",
     "nightmare": "噩梦"
   },
+  "difficultyHints": {
+    "easy": "轻松游戏体验",
+    "normal": "平衡的游戏挑战",
+    "hard": "适合资深玩家",
+    "nightmare": "极限挑战"
+  },
   "playerManagement": "玩家管理",
   "steamIdInfo": "此步骤为可选，不添加Steam ID也可以直接创建存档",
   "steamIdPlaceholder": "请输入Steam ID",
@@ -61,7 +67,14 @@
   "archiveSaved": "存档保存成功！",
   "archiveSavedMessage": "您的存档已保存完成",
   "saveSuccess": "存档保存成功",
+  "saving": "保存中...",
   "saveError": "保存失败：{error}",
+  "saveConfirm": {
+    "title": "保存存档",
+    "message": "确定要保存对此存档的修改吗？",
+    "confirm": "保存",
+    "cancel": "取消"
+  },
   "saveErrorAccessDenied": "保存失败：无法访问存档文件。请检查游戏是否正在运行，或尝试以管理员身份运行本程序。",
   "saveErrorFileInUse": "保存失败：存档文件正在被其他程序使用。请关闭游戏后重试。",
   "canProceed": "可以继续",

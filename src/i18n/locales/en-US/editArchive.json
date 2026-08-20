@@ -39,6 +39,12 @@
     "hard": "Hard",
     "nightmare": "Nightmare"
   },
+  "difficultyHints": {
+    "easy": "Relaxed gameplay",
+    "normal": "Balanced challenge",
+    "hard": "For experienced players",
+    "nightmare": "Ultimate challenge"
+  },
   "playerManagement": "Player Management",
   "steamIdInfo": "This step is optional, you can save an archive without adding Steam ID",
   "steamIdPlaceholder": "Enter Steam ID",
@@ -61,6 +67,7 @@
   "archiveSaved": "Archive Saved Successfully!",
   "archiveSavedMessage": "Your archive has been saved",
   "saveSuccess": "Archive saved successfully",
+  "saving": "Saving...",
   "saveError": "Save failed: {error}",
   "saveErrorAccessDenied": "Save failed: Cannot access save file. Please check if the game is running, or try running this program as administrator.",
   "saveErrorFileInUse": "Save failed: Save file is being used by another program. Please close the game and try again.",

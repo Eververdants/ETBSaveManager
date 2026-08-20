@@ -30,9 +30,10 @@ v-for="(tab, index) in tabs" :key="tab.id" :ref="(el) => (tabRefs[index] = el)" 
           <font-awesome-icon :icon="['fas', 'times']" />
           {{ $t("common.cancel") }}
         </button>
-        <button class="btn-primary" @click="handleSaveArchive">
-          <font-awesome-icon :icon="['fas', 'save']" />
-          {{ $t("common.save") }}
+        <button class="btn-primary" :disabled="isSaving" @click="handleSaveArchive">
+          <font-awesome-icon v-if="!isSaving" :icon="['fas', 'save']" />
+          <span v-else class="save-spinner"></span>
+          {{ isSaving ? $t("editArchive.saving") : $t("common.save") }}
         </button>
       </div>
     </div>
@@ -69,6 +70,7 @@ v-model="formData.name" type="text" class="settings-input"
                   <div
 v-for="d in difficultyLevels" :key="d.value" class="diff-option"
                     :class="{ selected: formData.archiveDifficulty === d.value }"
+                    :data-hint="getDifficultyHint(d.value)"
                     @click="formData.archiveDifficulty = d.value">
                     <font-awesome-icon :icon="d.icon" class="diff-icon" />
                     <span class="diff-text">{{ getDifficultyText(d.value) }}</span>
@@ -81,6 +83,7 @@ v-for="d in difficultyLevels" :key="d.value" class="diff-option"
                   <div
 v-for="d in difficultyLevels" :key="`actual-${d.value}`" class="diff-option"
                     :class="{ selected: formData.actualDifficulty === d.value }"
+                    :data-hint="getDifficultyHint(d.value)"
                     @click="formData.actualDifficulty = d.value">
                     <font-awesome-icon :icon="d.icon" class="diff-icon" />
                     <span class="diff-text">{{ getDifficultyText(d.value) }}</span>
@@ -283,6 +286,20 @@ v-if="getSlotContent(activePlayerIndex, slot + 2)"
     <InventoryItemSelector
 :visible="showItemSelector" :selected-item="selectedItem" @select="handleItemSelect"
       @update:visible="showItemSelector = $event" />
+
+    <!-- Save confirmation dialog -->
+    <ConfirmModal
+      :show="showSaveConfirm"
+      :title="$t('editArchive.saveConfirm.title')"
+      :message="$t('editArchive.saveConfirm.message')"
+      :type="'info'"
+      :confirm-text="$t('editArchive.saveConfirm.confirm')"
+      :cancel-text="$t('editArchive.saveConfirm.cancel')"
+      :loading="isSaving"
+      @confirm="confirmSaveArchive"
+      @cancel="showSaveConfirm = false"
+      @update:show="showSaveConfirm = $event"
+    />
   </div>
 </template>
 
@@ -295,6 +312,7 @@ import InventoryItemSelector from "../components/feature/InventoryItemSelector.v
 import LazyImage from "../components/ui/LazyImage.vue";
 import CustomSlider from "../components/ui/CustomSlider.vue";
 import PlayerManager from "../components/system/PlayerManager.vue";
+import ConfirmModal from "../components/modal/ConfirmModal.vue";
 import { notify } from "../services/notificationService";
 import { editArchiveDataStore } from "../composables/useArchiveActions";
 import { formatDifficulty } from "../utils/archiveCreationUtils";
@@ -318,6 +336,11 @@ const getLevelName = (levelKey) => {
 const getDifficultyText = (difficultyKey) => {
   const translationKey = `editArchive.difficultyLevels.${difficultyKey}`;
   return te(translationKey) ? t(translationKey) : difficultyKey;
+};
+
+const getDifficultyHint = (difficultyKey) => {
+  const hintKey = `editArchive.difficultyHints.${difficultyKey}`;
+  return te(hintKey) ? t(hintKey) : "";
 };
 
 // Tab configuration
@@ -387,6 +410,8 @@ const currentPlayerSanity = ref(100);
 const currentPlayerSteamId = ref("");
 const parseError = ref(false);
 const availableLevels = ref([]);
+const showSaveConfirm = ref(false);
+const isSaving = ref(false);
 
 const difficultyLevels = [
   { value: "easy", icon: ["fas", "smile"] },
@@ -395,9 +420,16 @@ const difficultyLevels = [
   { value: "nightmare", icon: ["fas", "skull"] },
 ];
 
-// Save archive
-const handleSaveArchive = async () => {
+// Show save confirmation dialog
+const handleSaveArchive = () => {
+  showSaveConfirm.value = true;
+};
+
+// Confirm and execute save
+const confirmSaveArchive = async () => {
   try {
+    isSaving.value = true;
+    
     if (!originalArchive.value) return;
 
     const playerInventory = {};
@@ -447,6 +479,9 @@ const handleSaveArchive = async () => {
     } else {
       notify.error(t("editArchive.saveError", { error: errorMsg }));
     }
+  } finally {
+    isSaving.value = false;
+    showSaveConfirm.value = false;
   }
 };
 
@@ -918,10 +953,20 @@ onMounted(() => {
 .btn-primary {
   background: var(--primary);
   color: white;
+  position: relative;
+  overflow: hidden;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-secondary {
@@ -932,6 +977,28 @@ onMounted(() => {
 
 .btn-secondary:hover {
   background: var(--hover-bg);
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* Save button loading spinner */
+.save-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-circle);
+  border-top-color: white;
+  animation: save-spin 0.8s linear infinite;
+  margin-right: 2px;
+}
+
+@keyframes save-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Tab navigation - floating style */
@@ -1183,16 +1250,16 @@ onMounted(() => {
 .diff-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
-/* ━━ 难度选项 — 28px (md) 同心第二层 ━━ */
+/* ━━ 难度选项 — 28px (md) 同心第二层,增强交互 ━━ */
 .diff-option {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px 8px;
+  gap: 10px;
+  padding: 18px 10px;
   border-radius: var(--radius-md);
   background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   border: 2px solid rgba(255, 255, 255, 0.05);
@@ -1208,56 +1275,100 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at center,
-      color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
+      color-mix(in srgb, var(--accent-color) 12%, transparent) 0%,
       transparent 70%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
+.diff-option::after {
+  content: attr(data-hint);
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-default);
+  pointer-events: none;
+}
+
 .diff-option:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent-color) 35%, transparent);
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.12));
 }
 
 .diff-option:hover::before {
   opacity: 1;
 }
 
+.diff-option:hover::after {
+  opacity: 0.7;
+}
+
 .diff-option.selected {
   border-color: var(--accent-color);
   background: linear-gradient(145deg,
-      color-mix(in srgb, var(--accent-color) 15%, transparent) 0%,
-      color-mix(in srgb, var(--accent-color) 8%, transparent) 100%);
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent);
-  filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--accent-color) 15%, transparent));
+      color-mix(in srgb, var(--accent-color) 18%, transparent) 0%,
+      color-mix(in srgb, var(--accent-color) 10%, transparent) 100%);
+  box-shadow: 
+    inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 25%, transparent),
+    0 0 20px color-mix(in srgb, var(--accent-color) 20%, transparent);
+  transform: translateY(-2px);
+}
+
+.diff-option.selected::after {
+  opacity: 1;
 }
 
 .diff-icon {
-  font-size: 24px;
+  font-size: 28px;
   color: var(--text-secondary);
   transition: all var(--transition-normal) var(--ease-default);
+  position: relative;
+  z-index: 1;
 }
 
 .diff-option:hover .diff-icon {
-  transform: scale(1.1);
+  transform: scale(1.15);
+  color: var(--accent-color);
 }
 
 .diff-option.selected .diff-icon {
   color: var(--accent-color);
-  transform: scale(1.1);
+  transform: scale(1.2);
+  filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--accent-color) 40%, transparent));
 }
 
 .diff-text {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text-secondary);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   transition: color var(--transition-fast) var(--ease-default);
+  position: relative;
+  z-index: 1;
 }
 
 .diff-option.selected .diff-text {
   color: var(--accent-color);
+}
+
+/* Difficulty option pulse animation when selected */
+.diff-option.selected::before {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 /* ━━ 操作卡片 — 36px (lg) 大圆角 ━━ */
@@ -1343,16 +1454,16 @@ onMounted(() => {
   transform: translateX(4px);
 }
 
-/* ━━ Level selector ━━ */
+/* ━━ Level selector - Enhanced with better visual feedback ━━ */
 /* Single scroll container is .tab-panel; search bar sits at its top in normal flow. */
 .level-selector {
   position: relative;
 }
 
-/* Search bar */
+/* Search bar with enhanced styling */
 .level-search {
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .level-search-icon {
@@ -1361,36 +1472,43 @@ onMounted(() => {
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-tertiary);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
   pointer-events: none;
-  transition: color var(--transition-fast) var(--ease-default);
+  transition: color var(--transition-normal) var(--ease-default);
 }
 
 .level-search-input {
   width: 100%;
-  padding: 11px 40px 11px 42px;
-  border: 1px solid var(--border-color, transparent);
-  background: var(--bg-secondary);
+  padding: 12px 42px 12px 44px;
+  border: 1px solid var(--border-color);
+  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
   color: var(--text-primary);
   font-size: 14px;
-  line-height: 1.4;
-  transition: all var(--transition-fast) var(--ease-default);
+  line-height: 1.5;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal) var(--ease-default);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .level-search-input::placeholder {
   color: var(--text-tertiary);
 }
 
+.level-search-input:hover {
+  border-color: var(--accent-color);
+}
+
 .level-search-input:focus {
   outline: none;
   border-color: var(--accent-color);
   background: var(--card-bg);
-  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb, 99, 102, 241), 0.12);
+  box-shadow: 
+    0 0 0 3px color-mix(in srgb, var(--accent-color) 12%, transparent),
+    inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.level-search:focus-within .level-search-icon,
-.level-search-input:focus + .level-search-clear {
+.level-search:focus-within .level-search-icon {
   color: var(--accent-color);
 }
 
@@ -1402,96 +1520,123 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border: none;
   border-radius: var(--radius-circle);
-  background: var(--bg-tertiary, var(--bg-secondary));
+  background: var(--bg-tertiary);
   color: var(--text-tertiary);
   font-size: 11px;
   cursor: pointer;
-  transition: all var(--transition-fast) var(--ease-default);
+  transition: all var(--transition-normal) var(--ease-default);
 }
 
 .level-search-clear:hover {
   background: var(--accent-color);
   color: #fff;
+  transform: translateY(-50%) scale(1.1);
 }
 
-/* Groups container — plain block flow (no flex) */
+/* Groups container with better spacing */
 .level-groups {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .level-group {
-  background: var(--card-bg);
+  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
   border-radius: var(--radius-card);
   overflow: hidden;
   border: 1px solid transparent;
-  transition: border-color var(--transition-fast) var(--ease-default);
-  margin-bottom: 10px;
-}
-
-.level-group:last-child {
-  margin-bottom: 0;
+  transition: all var(--transition-normal) var(--ease-default);
+  box-shadow: var(--shadow-card);
 }
 
 .level-group:hover {
-  border-color: var(--border-color, rgba(0, 0, 0, 0.06));
+  border-color: color-mix(in srgb, var(--primary) 15%, transparent);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Group header */
+/* Group header with enhanced interaction */
 .group-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
+  gap: 12px;
+  padding: 14px 18px;
   cursor: pointer;
   user-select: none;
-  transition: background var(--transition-fast) var(--ease-default);
+  transition: all var(--transition-normal) var(--ease-default);
+  position: relative;
+}
+
+.group-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at left, rgba(var(--primary-rgb, 99, 102, 241), 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-default);
 }
 
 .group-header:hover {
-  background: var(--bg-secondary);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 6%, var(--bg-secondary)) 0%, var(--bg-secondary) 100%);
+}
+
+.group-header:hover::before {
+  opacity: 1;
 }
 
 .group-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text-primary);
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .group-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 7px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 10px;
   border-radius: var(--radius-pill);
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  color: white;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent);
+  transition: all var(--transition-normal) var(--ease-default);
+  position: relative;
+  z-index: 1;
+}
+
+.group-header:hover .group-count {
+  transform: scale(1.05);
 }
 
 .group-chevron {
   color: var(--text-tertiary);
-  font-size: 12px;
-  transition: transform var(--transition-normal) var(--ease-default);
+  font-size: 13px;
+  transition: all var(--transition-normal) var(--ease-default);
+  position: relative;
+  z-index: 1;
 }
 
 .level-group:not(.is-collapsed) .group-chevron {
   transform: rotate(0deg);
+  color: var(--primary);
 }
 
-/* Collapse body — grid-template-rows 0fr→1fr animates to intrinsic height */
+/* Collapse body with smooth animation */
 .group-body {
   display: grid;
   grid-template-rows: 1fr;
-  transition: grid-template-rows 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .level-group.is-collapsed .group-body {
@@ -1502,28 +1647,29 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* Level grid kept from original; add padding inside group */
+/* Level grid with enhanced styling */
 .level-group .level-grid {
-  padding: 4px 12px 14px;
-  border-top: 1px solid var(--bg-secondary);
+  padding: 8px 14px 18px;
+  border-top: 1px solid var(--border-color);
   min-height: 0;
 }
 
-/* Empty state */
+/* Empty state with better styling */
 .level-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 48px 16px;
+  gap: 14px;
+  padding: 56px 16px;
   color: var(--text-tertiary);
   font-size: 14px;
 }
 
 .level-empty-icon {
-  font-size: 32px;
-  opacity: 0.4;
+  font-size: 40px;
+  opacity: 0.35;
+  color: var(--primary);
 }
 
 /* ━━ 响应式 ━━ */
@@ -1552,10 +1698,10 @@ onMounted(() => {
   }
 }
 
-/* Level selection */
+/* Level cards with enhanced hover and selection states */
 .level-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
   gap: 16px;
 }
 
@@ -1563,71 +1709,153 @@ onMounted(() => {
   border-radius: var(--radius-card);
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.2s;
-  background: var(--card-bg);
+  transition: all var(--transition-normal) var(--ease-default);
+  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
   border: 2px solid transparent;
+  position: relative;
+}
+
+.level-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(var(--primary-rgb, 99, 102, 241), 0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-default);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .level-card:hover {
-  transform: translateY(-4px);
-  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12));
+  transform: translateY(-6px) scale(1.02);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.level-card:hover::before {
+  opacity: 1;
 }
 
 .level-card.selected {
   border-color: var(--primary);
+  box-shadow: 
+    0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent),
+    0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.level-card.selected::before {
+  opacity: 1;
 }
 
 .level-img-wrap {
   position: relative;
   aspect-ratio: 16/9;
+  overflow: hidden;
 }
 
 .level-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform var(--transition-slow) var(--ease-default);
+}
+
+.level-card:hover .level-img {
+  transform: scale(1.08);
 }
 
 .level-check {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
   color: var(--primary);
-  font-size: 22px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  font-size: 24px;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+  z-index: 2;
+  animation: check-appear 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes check-appear {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .level-name {
   display: block;
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  background: linear-gradient(to bottom, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border-top: 1px solid var(--border-color);
 }
 
-/* Player management */
+/* Player management - Enhanced layout with better visual hierarchy */
 .players-layout {
   display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 24px;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
   height: 100%;
   min-height: 0;
   max-height: 100%;
+  position: relative;
 }
 
-.player-list-section,
-.player-detail-section {
-  background: var(--card-bg);
+/* Left panel - Player list with sticky positioning */
+.player-list-section {
+  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
   border-radius: var(--radius-card);
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-normal) var(--ease-default);
+}
+
+.player-list-section:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Right panel - Player details with visual emphasis */
+.player-detail-section {
+  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+/* Add subtle gradient overlay for active state */
+.player-detail-section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--accent-color));
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-default);
+}
+
+.player-detail-section:not(.empty-detail)::after {
+  opacity: 1;
 }
 
 .player-name-switch-enter-active,
@@ -1697,36 +1925,69 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
+  padding: 14px;
   border-radius: var(--radius-sm);
-  background: var(--bg-secondary);
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  border: 2px solid transparent;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--transition-normal) var(--ease-default);
+  position: relative;
+  overflow: hidden;
+}
+
+.player-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at left, rgba(var(--primary-rgb, 99, 102, 241), 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-default);
 }
 
 .player-item:hover {
-  background: var(--hover-bg);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 8%, var(--bg-tertiary)) 0%, var(--bg-secondary) 100%);
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.player-item:hover::before {
+  opacity: 1;
 }
 
 .player-item.active {
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
-  outline: 2px solid var(--primary);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 12%, var(--bg-tertiary)) 0%, color-mix(in srgb, var(--primary) 6%, var(--bg-secondary)) 100%);
+  border-color: var(--primary);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.player-item.active::before {
+  opacity: 1;
 }
 
 .player-avatar {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-xs);
-  background: var(--bg-tertiary);
+  background: linear-gradient(135deg, var(--bg-quaternary, var(--bg-tertiary)) 0%, var(--bg-tertiary) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-tertiary);
+  font-size: 16px;
+  transition: all var(--transition-normal) var(--ease-default);
+  flex-shrink: 0;
+}
+
+.player-item:hover .player-avatar {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 15%, var(--bg-tertiary)) 0%, var(--bg-secondary) 100%);
+  color: var(--primary);
 }
 
 .player-item.active .player-avatar {
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
   color: white;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 .player-info {
@@ -1781,7 +2042,10 @@ onMounted(() => {
   cursor: pointer;
   padding: 8px;
   border-radius: var(--radius-xs);
-  transition: all 0.15s;
+  transition: all var(--transition-normal) var(--ease-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .player-item:hover .del-btn {
@@ -1789,8 +2053,13 @@ onMounted(() => {
 }
 
 .del-btn:hover {
-  background: rgba(255, 59, 48, 0.1);
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.15) 0%, rgba(255, 59, 48, 0.08) 100%);
   color: #ff3b30;
+  transform: scale(1.1);
+}
+
+.del-btn:active {
+  transform: scale(0.95);
 }
 
 .empty-hint {
@@ -1852,9 +2121,9 @@ onMounted(() => {
   color: #34c759;
 }
 
-/* Player details */
+/* Player details - Enhanced visual hierarchy */
 .player-detail-section {
-  padding: 16px;
+  padding: 20px;
   overflow-y: auto;
   flex: 1;
 }
@@ -1865,33 +2134,44 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   color: var(--text-tertiary);
+  padding: 40px 20px;
 }
 
 .player-detail-section.empty-detail svg {
-  font-size: 40px;
-  margin-bottom: 12px;
-  opacity: 0.4;
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.35;
+  color: var(--primary);
 }
 
 .player-detail-section.empty-detail p {
-  font-size: 13px;
+  font-size: 14px;
   margin: 0;
+  text-align: center;
+  line-height: 1.6;
 }
 
 .steamid-edit-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  margin-bottom: 14px;
-  background: var(--bg-secondary);
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal) var(--ease-default);
+}
+
+.steamid-edit-row:hover {
+  border-color: color-mix(in srgb, var(--primary) 15%, transparent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .steamid-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
@@ -1901,38 +2181,53 @@ onMounted(() => {
 
 .steamid-label svg {
   color: var(--primary);
+  font-size: 16px;
 }
 
 .steamid-input {
   flex: 1;
-  padding: 8px 12px;
+  padding: 10px 14px;
   font-size: 13px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-input);
   background: var(--card-bg);
   color: var(--text-primary);
   outline: none;
-  font-family: monospace;
+  font-family: "SF Mono", "Consolas", monospace;
   letter-spacing: 0.5px;
-  transition: border-color 0.2s;
+  transition: all var(--transition-normal) var(--ease-default);
 }
 
 .steamid-input:hover {
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 8%, transparent);
 }
 
 .steamid-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 15%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+  background: linear-gradient(135deg, var(--card-bg) 0%, color-mix(in srgb, var(--primary) 3%, var(--card-bg)) 100%);
 }
 
 .detail-header {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--text-primary);
-  padding-bottom: 12px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  border-bottom: 2px solid var(--border-color);
+  position: relative;
+}
+
+.detail-header::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--accent-color));
+  border-radius: var(--radius-pill);
 }
 
 .detail-grid {
@@ -1942,9 +2237,16 @@ onMounted(() => {
 }
 
 .detail-block {
-  background: var(--bg-secondary);
+  background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   border-radius: var(--radius-md);
-  padding: 16px;
+  padding: 18px;
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal) var(--ease-default);
+}
+
+.detail-block:hover {
+  border-color: color-mix(in srgb, var(--primary) 15%, transparent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 .block-title {
@@ -1961,49 +2263,80 @@ onMounted(() => {
   color: var(--primary);
 }
 
+/* Sanity editor enhancements */
 .sanity-display {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
 .sanity-num {
-  font-size: 24px;
-  font-weight: 700;
-  min-width: 60px;
+  font-size: 28px;
+  font-weight: 800;
+  min-width: 70px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .sanity-num.sanity-high {
   color: #10b981;
+  text-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
 }
 
 .sanity-num.sanity-medium {
   color: #f59e0b;
+  text-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
 }
 
 .sanity-num.sanity-low {
   color: #ef4444;
+  text-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
 }
 
 .sanity-num.sanity-critical {
   color: #dc2626;
+  text-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+  animation: pulse-critical 2s ease-in-out infinite;
+}
+
+@keyframes pulse-critical {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .sanity-bar {
   flex: 1;
-  height: 8px;
+  height: 10px;
   background: var(--bg-tertiary);
   border-radius: var(--radius-pill);
   overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .sanity-fill {
   height: 100%;
   border-radius: var(--radius-pill);
   transition:
-    width 0.3s,
-    background 0.4s;
+    width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sanity-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+  border-radius: var(--radius-pill) var(--radius-pill) 0 0;
 }
 
 .sanity-fill.sanity-high {
@@ -2025,7 +2358,7 @@ onMounted(() => {
 .sanity-ctrl {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .sanity-ctrl> :first-child {
@@ -2035,127 +2368,182 @@ onMounted(() => {
 .sanity-hint {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 10px;
-  padding: 8px 10px;
-  border-radius: var(--radius-xs);
-  background: rgba(239, 68, 68, 0.1);
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.06) 100%);
   color: var(--error-color, #ef4444);
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.5;
+  border: 1px solid rgba(239, 68, 68, 0.15);
 }
 
 .sanity-hint svg {
-  font-size: 12px;
+  font-size: 13px;
   flex-shrink: 0;
 }
 
 .quick-btns {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .qbtn {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s;
+  transition: all var(--transition-normal) var(--ease-default);
+  font-size: 16px;
 }
 
 .qbtn.danger {
-  background: rgba(255, 59, 48, 0.1);
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.12) 0%, rgba(255, 59, 48, 0.06) 100%);
   color: #ff3b30;
+  border: 1px solid rgba(255, 59, 48, 0.2);
 }
 
 .qbtn.danger:hover {
-  background: rgba(255, 59, 48, 0.2);
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.2) 0%, rgba(255, 59, 48, 0.12) 100%);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2);
+}
+
+.qbtn.danger:active {
+  transform: scale(0.95);
 }
 
 .qbtn.success {
-  background: rgba(52, 199, 89, 0.1);
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.12) 0%, rgba(52, 199, 89, 0.06) 100%);
   color: #34c759;
+  border: 1px solid rgba(52, 199, 89, 0.2);
 }
 
 .qbtn.success:hover {
-  background: rgba(52, 199, 89, 0.2);
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.2) 0%, rgba(52, 199, 89, 0.12) 100%);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(52, 199, 89, 0.2);
 }
 
-/* Inventory */
+.qbtn.success:active {
+  transform: scale(0.95);
+}
+
+/* Inventory slots - Enhanced visual feedback */
 .inventory-wrap {
   display: flex;
-  gap: 16px;
+  gap: 18px;
 }
 
 .hand-slots {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .backpack-slots {
   display: grid;
-  grid-template-columns: repeat(3, 56px);
-  gap: 8px;
+  grid-template-columns: repeat(3, 58px);
+  gap: 10px;
 }
 
 .inv-slot {
   position: relative;
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  background: var(--card-bg);
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
   border: 2px solid var(--border-color);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s;
+  transition: all var(--transition-normal) var(--ease-default);
+  overflow: hidden;
+}
+
+.inv-slot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(var(--primary-rgb, 99, 102, 241), 0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-default);
 }
 
 .inv-slot:hover {
   border-color: var(--primary);
-  transform: scale(1.05);
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.inv-slot:hover::before {
+  opacity: 1;
 }
 
 .inv-slot.empty {
   border-style: dashed;
+  border-color: color-mix(in srgb, var(--border-color) 70%, transparent);
+}
+
+.inv-slot.empty:hover {
+  border-color: var(--primary);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--primary) 8%, var(--card-bg)) 0%, var(--bg-secondary) 100%);
+}
+
+.inv-slot.empty .slot-placeholder {
+  transition: all var(--transition-normal) var(--ease-default);
+}
+
+.inv-slot.empty:hover .slot-placeholder {
+  color: var(--primary);
+  transform: scale(1.1);
+  opacity: 0.6;
 }
 
 .slot-label {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  font-size: 8px;
+  top: 4px;
+  left: 4px;
+  font-size: 9px;
+  font-weight: 600;
   color: var(--text-tertiary);
-  background: var(--bg-secondary);
-  padding: 1px 4px;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  padding: 2px 6px;
   border-radius: var(--radius-xs);
+  letter-spacing: 0.02em;
 }
 
 .slot-num {
   position: absolute;
-  top: 3px;
-  right: 4px;
-  font-size: 10px;
-  font-weight: 600;
+  top: 4px;
+  right: 5px;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
 }
 
 .slot-img {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   object-fit: contain;
+  transition: transform var(--transition-normal) var(--ease-default);
+}
+
+.inv-slot:hover .slot-img {
+  transform: scale(1.1);
 }
 
 .slot-placeholder {
-  font-size: 18px;
+  font-size: 20px;
   color: var(--text-tertiary);
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
 /* Error state */
@@ -2206,14 +2594,16 @@ onMounted(() => {
 @media (max-width: 900px) {
   .players-layout {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .player-list-section {
-    max-height: 300px;
+    max-height: 280px;
   }
 
   .detail-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
 
   .page-header {
@@ -2225,6 +2615,20 @@ onMounted(() => {
     order: 3;
     width: 100%;
     justify-content: center;
+  }
+  
+  .inventory-wrap {
+    flex-direction: column;
+    gap: 14px;
+  }
+  
+  .backpack-slots {
+    grid-template-columns: repeat(3, 54px);
+  }
+  
+  .inv-slot {
+    width: 54px;
+    height: 54px;
   }
 }
 
@@ -2265,10 +2669,26 @@ onMounted(() => {
 
   .detail-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .detail-block {
+    padding: 14px;
   }
 
   .inventory-wrap {
     flex-direction: column;
+    gap: 12px;
+  }
+  
+  .hand-slots,
+  .backpack-slots {
+    gap: 8px;
+  }
+
+  .inv-slot {
+    width: 52px;
+    height: 52px;
   }
 
   .btn-primary span,
@@ -2279,6 +2699,25 @@ onMounted(() => {
   .btn-primary,
   .btn-secondary {
     padding: 8px 12px;
+  }
+  
+  .sanity-num {
+    font-size: 24px;
+    min-width: 60px;
+  }
+  
+  .sanity-bar {
+    height: 8px;
+  }
+  
+  .quick-btns {
+    gap: 6px;
+  }
+  
+  .qbtn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
   }
 }
 </style>

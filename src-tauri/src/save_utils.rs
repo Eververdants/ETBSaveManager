@@ -1,4 +1,4 @@
-//! Save utilities module - Save file info building
+﻿//! Save utilities module - Save file info building
 //! Optimized version: Using phf perfect hash, Cow to reduce allocation
 
 use crate::error::AppResult;
@@ -53,7 +53,7 @@ pub struct SaveFileInfo {
     pub is_visible: Option<bool>,
 }
 
-/// Lightweight save file metadata — derived from filename + filesystem only,
+/// Lightweight save file metadata - derived from filename + filesystem only,
 /// no .sav parsing. Used for fast incremental loading.
 #[derive(Serialize)]
 pub struct SaveFileMeta {
@@ -110,6 +110,7 @@ fn map_mode(raw: &str) -> &'static str {
     }
 }
 
+#[allow(dead_code)]
 pub fn build_save_info<S: Into<String>>(
     index: u32,
     path: &Path,
@@ -149,7 +150,7 @@ pub fn build_save_info<S: Into<String>>(
 }
 
 /// Build lightweight save metadata from filename + filesystem only.
-/// No .sav file opening — very fast even for 1000+ files.
+/// No .sav file opening - very fast even for 1000+ files.
 pub fn build_save_meta(
     index: u32,
     path: &Path,
@@ -183,5 +184,47 @@ pub fn build_save_meta(
         path: path.to_str().unwrap_or_default().to_string(),
         is_visible: Some(is_visible),
         file_size,
+    })
+}
+
+/// Build SaveFileInfo with optional current_level and actual_difficulty.
+/// Used by save_loader for incremental loading where level/difficulty may not be parsed yet.
+pub fn build_save_file_info(
+    index: u32,
+    path: &Path,
+    _archive_name: &str,
+    date: String,
+    current_level: Option<String>,
+    actual_difficulty: Option<String>,
+    is_visible: bool,
+) -> AppResult<SaveFileInfo> {
+    let file_name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .ok_or("Invalid filename")?;
+
+    let caps = get_save_file_regex()
+        .captures(file_name)
+        .ok_or_else(|| format!("Filename format mismatch: {}", file_name))?;
+
+    let mode_raw = caps.get(1).ok_or("Failed to extract game mode")?.as_str();
+    let name = caps.get(2).ok_or("Failed to extract save name")?.as_str();
+    let difficulty_raw = caps.get(3).ok_or("Failed to extract difficulty")?.as_str();
+
+    let (difficulty, difficulty_class) = map_difficulty(difficulty_raw);
+    let hidden = path.parent() != get_save_games_base_dir().map(|p| p.as_path());
+
+    Ok(SaveFileInfo {
+        id: index,
+        name: name.to_string(),
+        difficulty: difficulty.to_string(),
+        difficulty_class: difficulty_class.to_string(),
+        actual_difficulty: actual_difficulty.unwrap_or_else(|| difficulty.to_string()),
+        mode: map_mode(mode_raw).to_string(),
+        date,
+        current_level: current_level.unwrap_or_default(),
+        hidden,
+        path: path.to_str().unwrap_or_default().to_string(),
+        is_visible: Some(is_visible),
     })
 }

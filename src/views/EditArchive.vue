@@ -457,7 +457,7 @@ const initArchiveData = () => {
       let data;
 
       // Try lookup from editArchiveDataStore first (key-based)
-      const stored = editArchiveDataStore.get(props.archiveData);
+      const stored = editArchiveDataStore.get("current");
       if (stored) {
         try {
           data = JSON.parse(stored);
@@ -465,7 +465,7 @@ const initArchiveData = () => {
           console.error("解析存档数据失败:", e);
         }
         // Clean up store entry
-        editArchiveDataStore.delete(props.archiveData);
+        editArchiveDataStore.delete("current");
       }
 
       // If store lookup failed, try direct JSON parse (backward compatibility)
@@ -858,7 +858,7 @@ watch(currentPlayerSanity, (val) => {
 
 onUnmounted(() => {
   if (props.archiveData) {
-    editArchiveDataStore.delete(props.archiveData);
+    editArchiveDataStore.delete("current");
   }
 });
 
@@ -2282,3 +2282,5 @@ onMounted(() => {
   }
 }
 </style>
+
+

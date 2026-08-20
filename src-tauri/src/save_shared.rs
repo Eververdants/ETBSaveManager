@@ -170,10 +170,7 @@ pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
                 true
             }
             other => {
-                tracing::error!(
-                    "CurrentLevel_0 type error, expected Name, got {:?}",
-                    other
-                );
+                tracing::error!("CurrentLevel_0 type error, expected Name, got {:?}", other);
                 false
             }
         }
@@ -229,10 +226,7 @@ pub fn update_difficulty(save: &mut Save, difficulty: &str) {
             "Hard" => "E_Difficulty::NewEnumerator1",
             "Nightmare" => "E_Difficulty::NewEnumerator2",
             _ => {
-                tracing::warn!(
-                    "Unknown difficulty value '{}', using default",
-                    difficulty
-                );
+                tracing::warn!("Unknown difficulty value '{}', using default", difficulty);
                 "E_Difficulty::NewEnumerator0"
             }
         };

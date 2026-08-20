@@ -371,7 +371,8 @@ fn generate_levels_completed(
 ) -> AppResult<()> {
     tracing::info!(
         "Generating LevelsCompleted_0 data, target level: {}, side storyline: {}",
-        level, is_side_storyline
+        level,
+        is_side_storyline
     );
 
     let levels_to_generate: Vec<(&str, &str, bool)>; // (display_name, level_name, is_completed)
@@ -428,10 +429,7 @@ fn generate_levels_completed(
         }
     }
 
-    tracing::info!(
-        "Will generate {} level records",
-        levels_to_generate.len()
-    );
+    tracing::info!("Will generate {} level records", levels_to_generate.len());
 
     // Get existing LevelsCompleted_0 as template
     let levels_completed_key = PropertyKey(0, "LevelsCompleted".to_string());
@@ -502,7 +500,9 @@ fn generate_levels_completed(
         new_values.push(StructValue::Struct(level_props));
         tracing::info!(
             "Added level: {} ({}) - Completed: {}",
-            display_name, level_name, is_completed
+            display_name,
+            level_name,
+            is_completed
         );
     }
 

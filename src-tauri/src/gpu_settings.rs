@@ -67,7 +67,8 @@ pub fn set_gpu_acceleration(disabled: bool) -> AppResult<bool> {
 
     tracing::info!(
         "GPU acceleration settings updated: disabled={}, needs_restart={}",
-        disabled, needs_restart
+        disabled,
+        needs_restart
     );
 
     Ok(needs_restart)

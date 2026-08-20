@@ -305,8 +305,11 @@ fn is_real_eos_key(key: &str) -> bool {
 
 /// Read the save's current level name (e.g. "Level5"), or "" when absent.
 fn save_current_level(save: &Save) -> String {
-    if let Some(Property::Name(name)) =
-        save.root.properties.0.get(&PropertyKey(0, "CurrentLevel".to_string()))
+    if let Some(Property::Name(name)) = save
+        .root
+        .properties
+        .0
+        .get(&PropertyKey(0, "CurrentLevel".to_string()))
     {
         name.clone()
     } else {
@@ -497,7 +500,12 @@ fn trim_inventory_over_12(mut pool: Vec<String>, level: &str, difficulty: &str) 
         let is_easy = difficulty == "E_Difficulty::NewEnumerator0";
         if is_easy {
             // Easy: delete (prefer almond water, then anything) until ≤12.
-            pool = drop_by_priority(pool, save_shared::INVENTORY_SLOTS, &["AlmondWater", "*"], &[]);
+            pool = drop_by_priority(
+                pool,
+                save_shared::INVENTORY_SLOTS,
+                &["AlmondWater", "*"],
+                &[],
+            );
         } else {
             // Juice present → almond water : juice = 3:1, combined total ≤ 8.
             let has_juice = pool.iter().any(|i| i.as_str() == "Juice");
@@ -539,7 +547,12 @@ fn trim_inventory_over_12(mut pool: Vec<String>, level: &str, difficulty: &str) 
                     }
                     _ => {
                         // No matching rule: trim almond water first, then anything.
-                        pool = drop_by_priority(pool, save_shared::INVENTORY_SLOTS, &["AlmondWater", "*"], &[]);
+                        pool = drop_by_priority(
+                            pool,
+                            save_shared::INVENTORY_SLOTS,
+                            &["AlmondWater", "*"],
+                            &[],
+                        );
                     }
                 }
             }
@@ -649,23 +662,24 @@ fn merge_player_data(save: &mut Save) -> usize {
                 None => *indices
                     .iter()
                     .max_by_key(|&&i| {
-                        (if entry_has_real_data(&entries[i].value) { 10 } else { 0 })
-                            + (if matches!(&entries[i].key, Property::Str(k) if k.contains("_+_|"))
-                            {
-                                1
-                            } else {
-                                0
-                            })
+                        (if entry_has_real_data(&entries[i].value) {
+                            10
+                        } else {
+                            0
+                        }) + (if matches!(&entries[i].key, Property::Str(k) if k.contains("_+_|")) {
+                            1
+                        } else {
+                            0
+                        })
                     })
                     .unwrap(),
             };
 
             // Write the merged inventory into the survivor entry.
             if let Property::Struct(StructValue::Struct(props)) = &mut entries[survivor].value {
-                if let Some(Property::Array(ValueVec::Name(names))) = save_shared::get_property_by_name_mut(
-                    props,
-                    save_shared::INVENTORY_PROP_NAME,
-                ) {
+                if let Some(Property::Array(ValueVec::Name(names))) =
+                    save_shared::get_property_by_name_mut(props, save_shared::INVENTORY_PROP_NAME)
+                {
                     *names = merged;
                 } else {
                     props.0.insert(
@@ -977,7 +991,9 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
 
     // Create default structure when LevelsCompleted_0 does not exist
     if !save.root.properties.0.contains_key(&levels_completed_key) {
-        tracing::warn!("LevelsCompleted_0 field not found, automatically creating default structure...");
+        tracing::warn!(
+            "LevelsCompleted_0 field not found, automatically creating default structure..."
+        );
         let default_prop = create_default_levels_completed_property(&mut save);
         save.root
             .properties

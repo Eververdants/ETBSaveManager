@@ -194,20 +194,18 @@ fn process_save_file(
     }
 
     // Parse .sav file for visible saves
-    cli_handlers::parse_sav_file(path)
+    cli_handlers::parse_sav_file(path).ok().and_then(|save| {
+        let current_level = cli_handlers::extract_current_level(&save);
+        let actual_difficulty = cli_handlers::extract_difficulty_label(&save).into_owned();
+        save_utils::build_save_file_info(
+            index as u32,
+            path,
+            archive_name,
+            date,
+            Some(current_level),
+            Some(actual_difficulty),
+            is_visible,
+        )
         .ok()
-        .and_then(|save| {
-            let current_level = cli_handlers::extract_current_level(&save);
-            let actual_difficulty = cli_handlers::extract_difficulty_label(&save).into_owned();
-            save_utils::build_save_file_info(
-                index as u32,
-                path,
-                archive_name,
-                date,
-                Some(current_level),
-                Some(actual_difficulty),
-                is_visible,
-            )
-            .ok()
-        })
+    })
 }

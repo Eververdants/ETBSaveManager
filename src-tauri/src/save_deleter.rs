@@ -226,10 +226,7 @@ pub async fn handle_file(
         if is_visible {
             let removed = remove_save_from_mainsave(archive_name)?;
             if !removed {
-                tracing::warn!(
-                    "'{}' not found in MAINSAVE SingleplayerSaves",
-                    archive_name
-                );
+                tracing::warn!("'{}' not found in MAINSAVE SingleplayerSaves", archive_name);
             }
         } else {
             add_save_to_mainsave(archive_name)?;

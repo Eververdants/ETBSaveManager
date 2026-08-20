@@ -1,4 +1,4 @@
-import { ref } from "vue";
+﻿import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useToast } from "./useToast";
@@ -150,7 +150,7 @@ export function useArchiveActions(
 
   const handleEdit = (archive: ArchiveData): void => {
     editArchiveDataStore.set("current", JSON.stringify(archive));
-    router.push({ name: "EditArchive", params: { id: archive.id.toString() } });
+    router.push({ name: "EditArchive", params: { archiveData: archive.id.toString() } });
   };
 
   const deleteArchive = (archive: ArchiveData): void => {
@@ -335,3 +335,4 @@ export function useArchiveActions(
     canRedo,
   };
 }
+

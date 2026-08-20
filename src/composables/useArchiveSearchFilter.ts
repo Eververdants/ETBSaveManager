@@ -34,14 +34,40 @@ export function clearSearchHistory(): void {
 }
 
 /**
+ * Escapes HTML special characters to their entity equivalents.
+ * This prevents XSS attacks when user input is rendered via v-html.
+ *
+ * @param text - The text to escape
+ * @returns The text with HTML special characters converted to entities
+ */
+function escapeHtml(text: string): string {
+  const htmlEscapeMap: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  };
+  return text.replace(/[&<>"']/g, (char) => htmlEscapeMap[char]);
+}
+
+/**
  * Highlight matching text with <mark> tags.
+ * Escapes HTML entities in both text and query to prevent XSS attacks.
  */
 export function highlightMatch(text: string, query: string): string {
   if (!query || !text) return text;
   try {
-    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const regex = new RegExp(`(${escaped})`, "gi");
-    return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+    // Escape both text and query to prevent XSS
+    const escapedText = escapeHtml(text);
+    const escapedQuery = escapeHtml(query);
+
+    // Escape regex special characters in the query
+    const escapedPattern = escapedQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const safeRegex = new RegExp(`(${escapedPattern})`, "gi");
+
+    // Wrap matches in <mark> tags
+    return escapedText.replace(safeRegex, '<mark class="search-highlight">$1</mark>');
   } catch {
     return text;
   }

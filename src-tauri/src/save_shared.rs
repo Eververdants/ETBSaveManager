@@ -166,19 +166,19 @@ pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
         match current_level_prop {
             Property::Name(ref mut name) => {
                 *name = new_level_name.clone();
-                println!("✅ CurrentLevel_0 modified to: {}", name);
+                tracing::info!("CurrentLevel_0 modified to: {}", name);
                 true
             }
             other => {
-                eprintln!(
-                    "❌ CurrentLevel_0 type error, expected Name, got {:?}",
+                tracing::error!(
+                    "CurrentLevel_0 type error, expected Name, got {:?}",
                     other
                 );
                 false
             }
         }
     } else {
-        println!("⚠️ CurrentLevel_0 field not found, creating a new one...");
+        tracing::warn!("CurrentLevel_0 field not found, creating a new one...");
 
         record_root_schema(
             save,
@@ -192,8 +192,8 @@ pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
             .properties
             .0
             .insert(key, Property::Name(new_level_name.clone()));
-        println!(
-            "✅ Created new CurrentLevel_0 field with value: {}",
+        tracing::info!(
+            "Created new CurrentLevel_0 field with value: {}",
             new_level_name
         );
         true
@@ -205,7 +205,7 @@ pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
 /// Removes all existing Difficulty fields, then creates a new one
 /// if the difficulty is not "Normal".
 pub fn update_difficulty(save: &mut Save, difficulty: &str) {
-    println!("⚙️ Processing difficulty settings: {}", difficulty);
+    tracing::info!("Processing difficulty settings: {}", difficulty);
 
     // Delete all difficulty fields
     let difficulty_keys: Vec<(u32, String)> = save
@@ -218,7 +218,7 @@ pub fn update_difficulty(save: &mut Save, difficulty: &str) {
         .collect();
 
     for (id, name) in difficulty_keys {
-        println!("🗑️ Removing difficulty field: {}", name);
+        tracing::info!("Removing difficulty field: {}", name);
         save.root.properties.0.shift_remove(&PropertyKey(id, name));
     }
 
@@ -229,8 +229,8 @@ pub fn update_difficulty(save: &mut Save, difficulty: &str) {
             "Hard" => "E_Difficulty::NewEnumerator1",
             "Nightmare" => "E_Difficulty::NewEnumerator2",
             _ => {
-                println!(
-                    "⚠️ Unknown difficulty value '{}', using default",
+                tracing::warn!(
+                    "Unknown difficulty value '{}', using default",
                     difficulty
                 );
                 "E_Difficulty::NewEnumerator0"
@@ -249,9 +249,9 @@ pub fn update_difficulty(save: &mut Save, difficulty: &str) {
             PropertyKey(0, "Difficulty".to_string()),
             Property::Byte(uesave::Byte::Label(label.to_string())),
         );
-        println!("✅ Created difficulty field: {}", label);
+        tracing::info!("Created difficulty field: {}", label);
     } else {
-        println!("➖ Skipping difficulty field creation (Normal difficulty)");
+        tracing::debug!("Skipping difficulty field creation (Normal difficulty)");
     }
 }
 

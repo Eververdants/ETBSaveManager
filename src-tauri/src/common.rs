@@ -149,8 +149,8 @@ pub fn add_save_to_mainsave(archive_name: &str) -> AppResult<()> {
             match result {
                 Some(save) => save,
                 None => {
-                    eprintln!(
-                        "[add_save_to_mainsave] Failed to read MAINSAVE after retries: {}",
+                    tracing::error!(
+                        "Failed to read MAINSAVE after retries: {}",
                         last_err
                     );
                     return Ok(()); // Silently skip (missing/corrupt — game rebuilds it on next launch)
@@ -199,7 +199,7 @@ pub fn remove_save_from_mainsave(archive_name: &str) -> AppResult<bool> {
     let mut mainsave = match read_mainsave() {
         Ok(save) => save,
         Err(e) => {
-            eprintln!("[remove_save_from_mainsave] Failed to read MAINSAVE: {}", e);
+            tracing::error!("Failed to read MAINSAVE: {}", e);
             return Ok(false);
         }
     };

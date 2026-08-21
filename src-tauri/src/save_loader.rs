@@ -2,6 +2,137 @@
 //! Extracted from save_commands.rs for better modularity
 
 use crate::cli_handlers;
+use std::fs;
+
+/// Result of a SINGLEPLAYER_ to MULTIPLAYER_ archive conversion
+#[derive(Debug, Clone)]
+pub struct ConversionResult {
+    /// Original filename (e.g., "SINGLEPLAYER_ArchiveName_Normal.sav")
+    pub original: String,
+    /// Converted filename (e.g., "MULTIPLAYER_ArchiveName_Normal.sav")
+    pub converted: String,
+    /// Whether the conversion was successful
+    pub success: bool,
+}
+
+/// Convert SINGLEPLAYER_ prefixed filename to MULTIPLAYER_ prefix.
+/// Preserves the archive name and difficulty suffix.
+///
+/// # Examples
+/// ```
+/// convert_filename("SINGLEPLAYER_ArchiveName_Normal.sav")
+/// // Returns: Some("MULTIPLAYER_ArchiveName_Normal.sav")
+/// ```
+fn convert_filename(original: &str) -> Option<String> {
+    if original.starts_with("SINGLEPLAYER_") {
+        Some(original.replace("SINGLEPLAYER_", "MULTIPLAYER_"))
+    } else {
+        None
+    }
+}
+
+/// Scan SaveGames directory and convert any SINGLEPLAYER_ prefixed files
+/// to MULTIPLAYER_ prefix. Returns the list of conversion results.
+///
+/// This function is called at the start of `load_save_metadata` to ensure
+/// all archives are unified under the MULTIPLAYER_ prefix.
+///
+/// # Arguments
+/// * `save_dir` - Path to the SaveGames directory
+///
+/// # Returns
+/// A vector of `ConversionResult` indicating the outcome of each conversion attempt.
+///
+/// # Error Handling
+/// - Individual file conversion errors are logged but do NOT block processing of other files
+/// - The function continues processing even if some conversions fail
+///
+/// # Requirements
+/// - Requirements 3.1, 3.2, 3.4, 3.5
+pub fn convert_singleplayer_archives(save_dir: &Path) -> Vec<ConversionResult> {
+    let mut conversions = Vec::new();
+
+    // Read all entries in the SaveGames directory
+    let entries = match fs::read_dir(save_dir) {
+        Ok(entries) => entries,
+        Err(e) => {
+            tracing::error!("Failed to read SaveGames directory: {}", e);
+            return conversions;
+        }
+    };
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+
+        // Only process .sav files
+        if path.extension().and_then(|ext| ext.to_str()) != Some("sav") {
+            continue;
+        }
+
+        // Get the filename as string
+        let filename = match path.file_name().and_then(|n| n.to_str()) {
+            Some(name) => name,
+            None => continue,
+        };
+
+        // Filter files starting with "SINGLEPLAYER_"
+        if !filename.starts_with("SINGLEPLAYER_") {
+            continue;
+        }
+
+        // Convert the filename
+        let new_filename = match convert_filename(filename) {
+            Some(name) => name,
+            None => {
+                // This shouldn't happen since we already checked the prefix,
+                // but handle it gracefully
+                tracing::warn!("convert_filename returned None for: {}", filename);
+                continue;
+            }
+        };
+
+        let new_path = save_dir.join(&new_filename);
+
+        // Perform the rename operation
+        match fs::rename(&path, &new_path) {
+            Ok(()) => {
+                tracing::info!(
+                    "Converted archive: {} -> {}",
+                    filename,
+                    new_filename
+                );
+                
+                // Update MAINSAVE.sav's SingleplayerSaves list
+                if let Err(e) = crate::common::update_mainsave_archive_name(filename, &new_filename)
+                {
+                    tracing::error!("Failed to update MAINSAVE for {}: {}", filename, e);
+                }
+                
+                conversions.push(ConversionResult {
+                    original: filename.to_string(),
+                    converted: new_filename,
+                    success: true,
+                });
+            }
+            Err(e) => {
+                tracing::error!(
+                    "Failed to convert {}: {}",
+                    filename,
+                    e
+                );
+                conversions.push(ConversionResult {
+                    original: filename.to_string(),
+                    converted: new_filename,
+                    success: false,
+                });
+                // Continue processing other files (Requirement 3.4)
+            }
+        }
+    }
+
+    conversions
+}
+
 use crate::common::{extract_archive_name, get_visible_saves_set};
 use crate::error::AppResult;
 use crate::get_file_path;
@@ -49,6 +180,13 @@ pub async fn load_all_saves() -> AppResult<Vec<SaveFileInfo>> {
 #[tauri::command]
 pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
     let start_time = Instant::now();
+
+    // Phase 0: Convert any SINGLEPLAYER_ archives to MULTIPLAYER_
+    let save_dir = crate::common::get_save_games_dir()?;
+    let conversions = convert_singleplayer_archives(&save_dir);
+    if !conversions.is_empty() {
+        tracing::info!("Converted {} singleplayer archives", conversions.len());
+    }
 
     let (paths_result, visible_saves_result) =
         rayon::join(get_file_path::list_save_paths, get_visible_saves_set);

@@ -111,13 +111,16 @@ export function useArchiveData(): {
   };
 
   // Map Chinese mode names from game save files to normalized keys
+  // All modes now map to "multiplayer" for unified archive handling
   const modeMap: Record<string, string> = {
-    单人模式: "singleplayer",
+    单人模式: "multiplayer",
     多人模式: "multiplayer",
   };
 
   const mapArchive = (item: RawSaveItem): ArchiveData => {
-    const gameMode = modeMap[item.mode!] || item.mode?.toLowerCase() || "singleplayer";
+    // Always resolve to "multiplayer" for unified archive handling
+    // Requirements 2.2: All modes map to "multiplayer"
+    const gameMode = modeMap[item.mode!] || "multiplayer";
 
     return {
       id: item.id ?? 0,
@@ -138,7 +141,9 @@ export function useArchiveData(): {
    *  Uses "Level0" as safe default for currentLevel so the background
    *  image URL is valid from the start. Phase 2 will overwrite it. */
   const mapMetaToArchive = (meta: SaveFileMeta): ArchiveData => {
-    const gameMode = modeMap[meta.mode] || meta.mode?.toLowerCase() || "singleplayer";
+    // Always resolve to "multiplayer" for unified archive handling
+    // Requirements 2.2: All modes map to "multiplayer"
+    const gameMode = modeMap[meta.mode] || "multiplayer";
     const diff = difficultyMap[meta.difficulty] || meta.difficulty?.toLowerCase() || "normal";
     return {
       id: meta.id,

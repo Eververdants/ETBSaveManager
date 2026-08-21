@@ -42,7 +42,6 @@
                 class="diff-option"
                 :class="{
                   selected: selectedDifficulty === difficulty.value,
-                  disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal',
                 }"
                 @click="$emit('select-difficulty', difficulty.value)"
               >
@@ -60,7 +59,6 @@
                 class="diff-option"
                 :class="{
                   selected: selectedActualDifficulty === difficulty.value,
-                  disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal',
                 }"
                 @click="$emit('select-actual-difficulty', difficulty.value)"
               >
@@ -86,7 +84,6 @@ import { FEATURES } from "@/config/features";
 
 defineProps({
   archiveName: { type: String, default: "" },
-  selectedGameMode: { type: String, default: "multiplayer" },
   selectedDifficulty: { type: String, default: "normal" },
   selectedActualDifficulty: { type: String, default: "normal" },
   difficultyLevels: {

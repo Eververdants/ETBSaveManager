@@ -220,6 +220,40 @@ pub fn remove_save_from_mainsave(archive_name: &str) -> AppResult<bool> {
     Ok(false)
 }
 
+/// Update archive name in MAINSAVE's SingleplayerSaves list after conversion.
+/// Used when renaming SINGLEPLAYER_ archives to MULTIPLAYER_ prefix.
+pub fn update_mainsave_archive_name(old_name: &str, new_name: &str) -> AppResult<()> {
+    let _lock = MAINSAVE_LOCK
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .map_err(|e| format!("MAINSAVE lock poisoned: {}", e))?;
+
+    let mut mainsave = match read_mainsave() {
+        Ok(save) => save,
+        Err(e) => {
+            tracing::error!("Failed to read MAINSAVE: {}", e);
+            return Err(e);
+        }
+    };
+
+    let key = PropertyKey(0, "SingleplayerSaves".to_string());
+
+    if let Some(Property::Array(ValueVec::Str(ref mut saves))) =
+        mainsave.root.properties.0.get_mut(&key)
+    {
+        // Find and replace the old archive name with the new one
+        for save in saves.iter_mut() {
+            if save == old_name {
+                *save = new_name.to_string();
+                break;
+            }
+        }
+        write_mainsave(&mainsave)?;
+    }
+
+    Ok(())
+}
+
 /// Extract archive name from filename (remove .sav suffix)
 #[inline(always)]
 pub fn extract_archive_name(filename: &str) -> &str {

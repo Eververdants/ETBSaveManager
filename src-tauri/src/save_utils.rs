@@ -98,16 +98,14 @@ fn map_difficulty(raw: &str) -> (&'static str, &'static str) {
     }
 }
 
-/// Game mode mapping
+/// Map mode to always return "Multiplayer" for unified mode handling.
+/// Accepts both SINGLEPLAYER and MULTIPLAYER prefixes for backward compatibility
+/// during parsing, but normalizes all modes to "Multiplayer".
 #[inline]
-fn map_mode(raw: &str) -> &'static str {
-    if raw.eq_ignore_ascii_case("MULTIPLAYER") {
-        "Multiplayer"
-    } else if raw.eq_ignore_ascii_case("SINGLEPLAYER") {
-        "Singleplayer"
-    } else {
-        "Unknown"
-    }
+fn map_mode(_raw: &str) -> &'static str {
+    // Unified mode: always return "Multiplayer"
+    // Input validation ensures only valid prefixes reach here
+    "Multiplayer"
 }
 
 #[allow(dead_code)]

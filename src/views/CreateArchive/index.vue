@@ -54,7 +54,6 @@
           <Step2ConfigArchive
             v-else-if="currentStep === 2"
             v-model:archive-name="archiveName"
-            :selected-game-mode="selectedGameMode"
             :selected-difficulty="selectedDifficulty"
             :selected-actual-difficulty="selectedActualDifficulty"
             :difficulty-levels="difficultyLevels"
@@ -190,7 +189,6 @@ const previousStepValue = ref(1);
 const selectedLevel = ref(-1);
 const selectedEnding = ref(0);
 const archiveName = ref("");
-const selectedGameMode = ref("multiplayer");
 const selectedDifficulty = ref("normal");
 const selectedActualDifficulty = ref("normal");
 const newSteamId = ref("");
@@ -439,7 +437,6 @@ const resetForm = () => {
   selectedLevel.value = -1;
   selectedEnding.value = 0;
   archiveName.value = "";
-  selectedGameMode.value = "multiplayer";
   selectedDifficulty.value = "normal";
   selectedActualDifficulty.value = "normal";
   newSteamId.value = "";

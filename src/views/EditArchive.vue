@@ -1,4 +1,4 @@
-ï»¿<template>
+<template>
   <div v-if="parseError" class="edit-archive-container">
     <div class="error-state">
       <font-awesome-icon :icon="['fas', 'exclamation-triangle']" class="error-icon" />
@@ -18,8 +18,13 @@
       <div class="tab-nav">
         <div class="tab-highlight" :style="highlightStyle"></div>
         <button
-v-for="(tab, index) in tabs" :key="tab.id" :ref="(el) => (tabRefs[index] = el)" class="tab-btn"
-          :class="{ active: activeTab === tab.id }" @click="switchTab(tab.id, index)">
+          v-for="(tab, index) in tabs"
+          :key="tab.id"
+          :ref="(el) => (tabRefs[index] = el)"
+          class="tab-btn"
+          :class="{ active: activeTab === tab.id }"
+          @click="switchTab(tab.id, index)"
+        >
           <font-awesome-icon :icon="tab.icon" />
           <span>{{ $t(tab.label) }}</span>
         </button>
@@ -52,8 +57,12 @@ v-for="(tab, index) in tabs" :key="tab.id" :ref="(el) => (tabRefs[index] = el)" 
             <div class="settings-card">
               <label class="card-label">{{ $t("editArchive.archiveName") }}</label>
               <input
-v-model="formData.name" type="text" class="settings-input"
-                :placeholder="$t('editArchive.archiveNamePlaceholder')" maxlength="50" />
+                v-model="formData.name"
+                type="text"
+                class="settings-input"
+                :placeholder="$t('editArchive.archiveNamePlaceholder')"
+                maxlength="50"
+              />
             </div>
           </div>
 
@@ -68,10 +77,13 @@ v-model="formData.name" type="text" class="settings-input"
                 <label class="card-label">{{ $t("editArchive.difficulty") }}</label>
                 <div class="diff-grid">
                   <div
-v-for="d in difficultyLevels" :key="d.value" class="diff-option"
+                    v-for="d in difficultyLevels"
+                    :key="d.value"
+                    class="diff-option"
                     :class="{ selected: formData.archiveDifficulty === d.value }"
                     :data-hint="getDifficultyHint(d.value)"
-                    @click="formData.archiveDifficulty = d.value">
+                    @click="formData.archiveDifficulty = d.value"
+                  >
                     <font-awesome-icon :icon="d.icon" class="diff-icon" />
                     <span class="diff-text">{{ getDifficultyText(d.value) }}</span>
                   </div>
@@ -81,10 +93,13 @@ v-for="d in difficultyLevels" :key="d.value" class="diff-option"
                 <label class="card-label">{{ $t("editArchive.actualDifficulty") }}</label>
                 <div class="diff-grid">
                   <div
-v-for="d in difficultyLevels" :key="`actual-${d.value}`" class="diff-option"
+                    v-for="d in difficultyLevels"
+                    :key="`actual-${d.value}`"
+                    class="diff-option"
                     :class="{ selected: formData.actualDifficulty === d.value }"
                     :data-hint="getDifficultyHint(d.value)"
-                    @click="formData.actualDifficulty = d.value">
+                    @click="formData.actualDifficulty = d.value"
+                  >
                     <font-awesome-icon :icon="d.icon" class="diff-icon" />
                     <span class="diff-text">{{ getDifficultyText(d.value) }}</span>
                   </div>
@@ -123,11 +138,12 @@ v-for="d in difficultyLevels" :key="`actual-${d.value}`" class="diff-option"
           <div class="level-search">
             <font-awesome-icon :icon="['fas', 'search']" class="level-search-icon" />
             <input
-v-model="levelSearchQuery" type="text"
+              v-model="levelSearchQuery"
+              type="text"
               class="level-search-input"
-              :placeholder="t('editArchive.levelSearchPlaceholder')" />
-            <button
-v-if="levelSearchQuery" class="level-search-clear" @click="levelSearchQuery = ''">
+              :placeholder="t('editArchive.levelSearchPlaceholder')"
+            />
+            <button v-if="levelSearchQuery" class="level-search-clear" @click="levelSearchQuery = ''">
               <font-awesome-icon :icon="['fas', 'times']" />
             </button>
           </div>
@@ -135,21 +151,28 @@ v-if="levelSearchQuery" class="level-search-clear" @click="levelSearchQuery = ''
           <!-- Grouped level list -->
           <div class="level-groups">
             <div
-v-for="group in groupedLevels" :key="group.id" class="level-group"
-              :class="{ 'is-collapsed': isGroupCollapsed(group.id) }">
+              v-for="group in groupedLevels"
+              :key="group.id"
+              class="level-group"
+              :class="{ 'is-collapsed': isGroupCollapsed(group.id) }"
+            >
               <div class="group-header" @click="toggleGroup(group.id)">
                 <span class="group-title">{{ group.label }}</span>
                 <span class="group-count">{{ group.levels.length }}</span>
                 <font-awesome-icon
                   :icon="['fas', isGroupCollapsed(group.id) ? 'chevron-right' : 'chevron-down']"
-                  class="group-chevron" />
+                  class="group-chevron"
+                />
               </div>
               <div class="group-body">
                 <div class="level-grid">
                   <div
-v-for="level in group.levels" :key="level.levelKey" class="level-card"
+                    v-for="level in group.levels"
+                    :key="level.levelKey"
+                    class="level-card"
                     :class="{ selected: formData.currentLevel === level.levelKey }"
-                    @click="selectLevel(level.levelKey)">
+                    @click="selectLevel(level.levelKey)"
+                  >
                     <div class="level-img-wrap">
                       <LazyImage :src="level.image" :alt="level.name" image-class="level-img" />
                       <div v-if="formData.currentLevel === level.levelKey" class="level-check">
@@ -164,7 +187,7 @@ v-for="level in group.levels" :key="level.levelKey" class="level-card"
             <!-- Empty state -->
             <div v-if="groupedLevels.length === 0" class="level-empty">
               <font-awesome-icon :icon="['fas', 'search']" class="level-empty-icon" />
-              <span>{{ t('editArchive.levelSearchEmpty') }}</span>
+              <span>{{ t("editArchive.levelSearchEmpty") }}</span>
             </div>
           </div>
         </div>
@@ -175,10 +198,17 @@ v-for="level in group.levels" :key="level.levelKey" class="level-card"
         <div class="players-layout">
           <!-- Player list -->
           <PlayerManager
-:players="formData.players" :active-player-index="activePlayerIndex" :new-steam-id="newSteamId"
-            :player-input-message="playerInputMessage" :player-input-message-type="playerInputMessageType"
-            :show-sanity="true" @update:new-steam-id="(val) => (newSteamId = val)" @add-steam-id="addPlayer"
-            @remove-player="removePlayer" @select-player="selectPlayer" />
+            :players="formData.players"
+            :active-player-index="activePlayerIndex"
+            :new-steam-id="newSteamId"
+            :player-input-message="playerInputMessage"
+            :player-input-message-type="playerInputMessageType"
+            :show-sanity="true"
+            @update:new-steam-id="(val) => (newSteamId = val)"
+            @add-steam-id="addPlayer"
+            @remove-player="removePlayer"
+            @select-player="selectPlayer"
+          />
 
           <!-- Player details -->
           <div v-if="activePlayerIndex !== -1 && formData.players.length > 0" class="player-detail-section">
@@ -188,15 +218,19 @@ v-for="level in group.levels" :key="level.levelKey" class="level-card"
               </Transition>
             </div>
 
-            <!-- Steam ID ç¼–è¾‘ -->
+            <!-- Steam ID ±à¼­ -->
             <div class="steamid-edit-row">
               <span class="steamid-label">
                 <font-awesome-icon :icon="['fab', 'steam']" />
                 {{ $t("common.steamId") }}
               </span>
               <input
-v-model="currentPlayerSteamId" type="text" class="steamid-input"
-                @blur="onSteamIdBlur" @keyup.enter="onSteamIdBlur" />
+                v-model="currentPlayerSteamId"
+                type="text"
+                class="steamid-input"
+                @blur="onSteamIdBlur"
+                @keyup.enter="onSteamIdBlur"
+              />
             </div>
 
             <Transition name="player-detail-grid-switch" mode="out-in">
@@ -208,12 +242,15 @@ v-model="currentPlayerSteamId" type="text" class="steamid-input"
                     {{ $t("editArchive.playerSanity") }}
                   </div>
                   <div class="sanity-display">
-                    <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)">{{ currentPlayerSanity
-                    }}%</span>
+                    <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)"
+                      >{{ currentPlayerSanity }}%</span
+                    >
                     <div class="sanity-bar">
                       <div
-class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }"
-                        :class="getSanityClass(currentPlayerSanity)"></div>
+                        class="sanity-fill"
+                        :style="{ width: currentPlayerSanity + '%' }"
+                        :class="getSanityClass(currentPlayerSanity)"
+                      ></div>
                     </div>
                   </div>
                   <div class="sanity-ctrl">
@@ -242,27 +279,35 @@ class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }"
                   <div class="inventory-wrap">
                     <div class="hand-slots">
                       <div
-v-for="slot in 3" :key="`h-${slot}`" class="inv-slot"
+                        v-for="slot in 3"
+                        :key="`h-${slot}`"
+                        class="inv-slot"
                         :class="{ empty: !getSlotContent(activePlayerIndex, slot - 1) }"
-                        @click="editSlot(activePlayerIndex, slot - 1)">
+                        @click="editSlot(activePlayerIndex, slot - 1)"
+                      >
                         <span class="slot-label">{{ getSlotLabelText(slot - 1) }}</span>
                         <LazyImage
-v-if="getSlotContent(activePlayerIndex, slot - 1)"
+                          v-if="getSlotContent(activePlayerIndex, slot - 1)"
                           :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}`"
-                          image-class="slot-img" />
+                          image-class="slot-img"
+                        />
                         <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-placeholder" />
                       </div>
                     </div>
                     <div class="backpack-slots">
                       <div
-v-for="slot in 9" :key="`b-${slot}`" class="inv-slot"
+                        v-for="slot in 9"
+                        :key="`b-${slot}`"
+                        class="inv-slot"
                         :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
-                        @click="editSlot(activePlayerIndex, slot + 2)">
+                        @click="editSlot(activePlayerIndex, slot + 2)"
+                      >
                         <span class="slot-num">{{ slot }}</span>
                         <LazyImage
-v-if="getSlotContent(activePlayerIndex, slot + 2)"
+                          v-if="getSlotContent(activePlayerIndex, slot + 2)"
                           :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}`"
-                          image-class="slot-img" />
+                          image-class="slot-img"
+                        />
                         <font-awesome-icon v-else :icon="['fas', 'cube']" class="slot-placeholder" />
                       </div>
                     </div>
@@ -284,8 +329,11 @@ v-if="getSlotContent(activePlayerIndex, slot + 2)"
 
     <!-- Item selector -->
     <InventoryItemSelector
-:visible="showItemSelector" :selected-item="selectedItem" @select="handleItemSelect"
-      @update:visible="showItemSelector = $event" />
+      :visible="showItemSelector"
+      :selected-item="selectedItem"
+      @select="handleItemSelect"
+      @update:visible="showItemSelector = $event"
+    />
 
     <!-- Save confirmation dialog -->
     <ConfirmModal
@@ -429,17 +477,15 @@ const handleSaveArchive = () => {
 const confirmSaveArchive = async () => {
   try {
     isSaving.value = true;
-    
+
     if (!originalArchive.value) return;
 
     const playerInventory = {};
     const playerSanity = {};
 
     formData.players.forEach((player) => {
-      // å¤ç”¨å­˜æ¡£åŸå§‹å®Œæ•´é”®ï¼ˆå«æ¸¸æˆç”Ÿæˆçš„ UniqueNetId åç¼€ï¼‰ï¼›id è¢«ç”¨æˆ·æ”¹è¿‡åˆ™é€€å›çº¯ id
-      const originalBase = player.originalSteamId
-        ? stripSteamIdSuffix(player.originalSteamId).split("-")[0]
-        : "";
+      // ¸´ÓÃ´æµµÔ­Ê¼ÍêÕû¼ü£¨º¬ÓÎÏ·Éú³ÉµÄ UniqueNetId ºó×º£©£»id ±»ÓÃ»§¸Ä¹ıÔòÍË»Ø´¿ id
+      const originalBase = player.originalSteamId ? stripSteamIdSuffix(player.originalSteamId).split("-")[0] : "";
       const steamId =
         player.originalSteamId && originalBase === player.steamId.trim()
           ? player.originalSteamId
@@ -456,7 +502,9 @@ const confirmSaveArchive = async () => {
       mode: "Multiplayer",
       currentLevel: formData.currentLevel,
       difficulty: formatDifficulty(formData.archiveDifficulty),
-      actualDifficulty: formatDifficulty(FEATURES.MERGE_DIFFICULTY ? formData.archiveDifficulty : formData.actualDifficulty),
+      actualDifficulty: formatDifficulty(
+        FEATURES.MERGE_DIFFICULTY ? formData.archiveDifficulty : formData.actualDifficulty,
+      ),
       playerInventory,
       playerSanity,
     };
@@ -472,9 +520,9 @@ const confirmSaveArchive = async () => {
     const errorMsg = error?.message || String(error);
     console.error("Save failed:", error);
 
-    if (errorMsg.includes("æ‹’ç»è®¿é—®") || errorMsg.includes("Access is denied") || errorMsg.includes("os error 5")) {
+    if (errorMsg.includes("¾Ü¾ø·ÃÎÊ") || errorMsg.includes("Access is denied") || errorMsg.includes("os error 5")) {
       notify.error(t("editArchive.saveErrorAccessDenied"));
-    } else if (errorMsg.includes("æ­£åœ¨ä½¿ç”¨") || errorMsg.includes("being used")) {
+    } else if (errorMsg.includes("ÕıÔÚÊ¹ÓÃ") || errorMsg.includes("being used")) {
       notify.error(t("editArchive.saveErrorFileInUse"));
     } else {
       notify.error(t("editArchive.saveError", { error: errorMsg }));
@@ -497,7 +545,7 @@ const initArchiveData = () => {
         try {
           data = JSON.parse(stored);
         } catch (e) {
-          console.error("è§£æå­˜æ¡£æ•°æ®å¤±è´¥:", e);
+          console.error("½âÎö´æµµÊı¾İÊ§°Ü:", e);
         }
         // Clean up store entry
         editArchiveDataStore.delete("current");
@@ -508,7 +556,7 @@ const initArchiveData = () => {
         try {
           data = JSON.parse(props.archiveData);
         } catch (parseErr) {
-          console.error("å­˜æ¡£æ•°æ®è§£æå¤±è´¥:", parseErr);
+          console.error("´æµµÊı¾İ½âÎöÊ§°Ü:", parseErr);
           notify.error(t("editArchive.parseFailed") + " " + parseErr.message);
           parseError.value = true;
           return;
@@ -516,7 +564,7 @@ const initArchiveData = () => {
       }
 
       if (!data || typeof data !== "object") {
-        console.error("å­˜æ¡£æ•°æ®æ ¼å¼æ— æ•ˆ");
+        console.error("´æµµÊı¾İ¸ñÊ½ÎŞĞ§");
         notify.error(t("editArchive.parseFailedDataInvalid"));
         parseError.value = true;
         return;
@@ -529,11 +577,11 @@ const initArchiveData = () => {
       formData.archiveDifficulty = data.archiveDifficulty || "normal";
       formData.actualDifficulty = FEATURES.MERGE_DIFFICULTY
         ? formData.archiveDifficulty
-        : (data.actualDifficulty || "normal");
+        : data.actualDifficulty || "normal";
       loadPlayerData(data);
     }
   } catch (e) {
-    console.error("åˆå§‹åŒ–å­˜æ¡£æ•°æ®å¤±è´¥:", e);
+    console.error("³õÊ¼»¯´æµµÊı¾İÊ§°Ü:", e);
     notify.error(t("editArchive.parseFailed") + " " + (e.message || e));
     parseError.value = true;
   }
@@ -560,15 +608,15 @@ const loadPlayerData = async (archive) => {
             isOffline = true;
             username = `${parts[0]}${t("common.localPlayerSuffix")}`;
           } else {
-            // åœ¨çº¿ç©å®¶ï¼šå‰¥ç¦» UE UniqueNetId åç¼€ï¼Œç•Œé¢åªæ˜¾ç¤ºçº¯ steam id
+            // ÔÚÏßÍæ¼Ò£º°şÀë UE UniqueNetId ºó×º£¬½çÃæÖ»ÏÔÊ¾´¿ steam id
             processedId = stripSteamIdSuffix(steamId);
           }
 
           formData.players.push({
-            // ç•Œé¢æ˜¾ç¤º/ç¼–è¾‘ç”¨çº¯ id
+            // ½çÃæÏÔÊ¾/±à¼­ÓÃ´¿ id
             steamId: processedId,
-            // å­˜æ¡£é‡Œçš„åŸå§‹å®Œæ•´é”®ï¼ˆåœ¨çº¿ï¼š`<id>_+_|<32hex>`ï¼›ç¦»çº¿ï¼š`<id>-<15å­—ç¬¦>`ï¼‰
-            // ä¿å­˜æ—¶å¤ç”¨ï¼Œä¿è¯ç©å®¶çš„ UniqueNetId ä¸è¢«æ”¹å†™ï¼ˆæ¸¸æˆç”Ÿæˆçš„åç¼€åº”ç”¨æ— æ³•æ¨å¯¼ï¼‰
+            // ´æµµÀïµÄÔ­Ê¼ÍêÕû¼ü£¨ÔÚÏß£º`<id>_+_|<32hex>`£»ÀëÏß£º`<id>-<15×Ö·û>`£©
+            // ±£´æÊ±¸´ÓÃ£¬±£Ö¤Íæ¼ÒµÄ UniqueNetId ²»±»¸ÄĞ´£¨ÓÎÏ·Éú³ÉµÄºó×ºÓ¦ÓÃÎŞ·¨ÍÆµ¼£©
             originalSteamId: steamId,
             inventory: formattedInventory.slice(0, 12),
             username,
@@ -589,58 +637,26 @@ const loadPlayerData = async (archive) => {
 
 // Level related
 const loadLevels = () => {
-  const levelMappings = [
-    "Level0",
-    "TopFloor",
-    "MiddleFloor",
-    "GarageLevel2",
-    "BottomFloor",
-    "TheHub",
-    "Pipes1",
-    "ElectricalStation",
-    "Office",
-    "Hotel",
-    "Floor3",
-    "BoilerRoom",
-    "Pipes2",
-    "LevelFun",
-    "Poolrooms",
-    "LevelRun",
-    "TheEnd",
-    "Level922",
-    "Level94",
-    "AnimatedKingdom",
-    "LightsOut",
-    "OceanMap",
-    "CaveLevel",
-    "Level05",
-    "Level9",
-    "AbandonedBase",
-    "Level10",
-    "Level3999",
-    "Level07",
-    "Snackrooms",
-    "LevelDash",
-    "Level188_Expanded",
-    "Poolrooms_Expanded",
-    "WaterPark_Level01_P",
-    "WaterPark_Level02_P",
-    "WaterPark_Level03_P",
-    "LevelFun_Expanded",
-    "Zone1_Modified",
-    "Zone2_Modified",
-    "Zone3_Baked",
-    "Zone4",
-    "Level52",
-    "TunnelLevel",
-    "Bunker",
-    "GraffitiLevel",
-    "Grassrooms_Expanded",
-    "Level974",
-    "LevelCheat",
-  ];
+  // Get all unique levels from ENDING_LEVELS (0, 1, 2, 3) preserving order
+  const seen = new Set();
+  const allLevels = [];
+  for (const key of [0, 1, 2, 3]) {
+    for (const level of ENDING_LEVELS[key] || []) {
+      if (!seen.has(level)) {
+        seen.add(level);
+        allLevels.push(level);
+      }
+    }
+  }
+  // Add special levels not in any ending
+  const specialLevels = ["LevelCheat"];
+  for (const level of specialLevels) {
+    if (!seen.has(level)) {
+      allLevels.push(level);
+    }
+  }
 
-  availableLevels.value = levelMappings.map((levelKey) => {
+  availableLevels.value = allLevels.map((levelKey) => {
     return { name: getLevelName(levelKey), image: `/images/ETB/${levelKey}.webp`, levelKey };
   });
 };
@@ -878,7 +894,7 @@ const unlockAllHubDoors = async () => {
     await invoke("unlock_all_hub_doors", { filePath: originalArchive.value.path });
     notify.success(t("editArchive.hubDoorsUnlocked"));
   } catch (error) {
-    console.error("è§£é”æ¢çº½é—¨å¤±è´¥:", error);
+    console.error("½âËøÊàÅ¦ÃÅÊ§°Ü:", error);
     notify.error(String(error));
   }
 };
@@ -1092,12 +1108,12 @@ onMounted(() => {
 }
 
 /* ==========================================
- * åŸºç¡€è®¾ç½® â€” ä¸‰æ®µå¼å¸ƒå±€
- *     è¿ç»­æ›²ç‡ + å¤§åœ†è§’ + åŒå¿ƒç­‰è·
- *    Card: 36px(lg) â†’ Inner: 28px(md) â†’ 8px é€’å‡
+ * »ù´¡ÉèÖÃ ¡ª Èı¶ÎÊ½²¼¾Ö
+ *     Á¬ĞøÇúÂÊ + ´óÔ²½Ç + Í¬ĞÄµÈ¾à
+ *    Card: 36px(lg) ¡ú Inner: 28px(md) ¡ú 8px µİ¼õ
  * ========================================== */
 
-/* å¤–å±‚å®¹å™¨ */
+/* Íâ²ãÈİÆ÷ */
 .basic-sections {
   display: flex;
   flex-direction: column;
@@ -1106,14 +1122,14 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-/* â”â” åŒºåŸŸåˆ†ç»„ â”â” */
+/* ©¥©¥ ÇøÓò·Ö×é ©¥©¥ */
 .settings-section {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-/* åŒºåŸŸæ ‡é¢˜ï¼ˆå¸¦ accent ç«–æ¡è£…é¥°ï¼‰*/
+/* ÇøÓò±êÌâ£¨´ø accent ÊúÌõ×°ÊÎ£©*/
 .section-title {
   display: flex;
   align-items: center;
@@ -1144,7 +1160,7 @@ onMounted(() => {
   font-size: 16px;
 }
 
-/* â”â” è®¾ç½®å¡ç‰‡ â€” 36px (lg) å¤§åœ†è§’è¿ç»­æ›²çº¿ â”â” */
+/* ©¥©¥ ÉèÖÃ¿¨Æ¬ ¡ª 36px (lg) ´óÔ²½ÇÁ¬ĞøÇúÏß ©¥©¥ */
 .settings-card {
   background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border-radius: var(--radius-lg);
@@ -1155,7 +1171,7 @@ onMounted(() => {
   transition: all var(--transition-normal) var(--ease-default);
 }
 
-/* é¡¶éƒ¨å¾®å…‰æè¾¹ */
+/* ¶¥²¿Î¢¹âÃè±ß */
 .settings-card::before {
   content: "";
   position: absolute;
@@ -1172,7 +1188,7 @@ onMounted(() => {
   filter: drop-shadow(var(--filter-card-shadow-hover, 0 8px 32px rgba(0, 0, 0, 0.12)));
 }
 
-/* å¡ç‰‡æ ‡ç­¾ */
+/* ¿¨Æ¬±êÇ© */
 .card-label {
   display: block;
   font-size: 13px;
@@ -1181,7 +1197,7 @@ onMounted(() => {
   margin-bottom: 14px;
 }
 
-/* â”â” è¾“å…¥æ¡† â€” 28px (md) åŒå¿ƒç¬¬äºŒå±‚ â”â” */
+/* ©¥©¥ ÊäÈë¿ò ¡ª 28px (md) Í¬ĞÄµÚ¶ş²ã ©¥©¥ */
 .settings-input {
   width: 100%;
   padding: 14px 18px;
@@ -1212,7 +1228,7 @@ onMounted(() => {
   opacity: 0.7;
 }
 
-/* â”â” éš¾åº¦åŒåˆ—å¸ƒå±€ â”â” */
+/* ©¥©¥ ÄÑ¶ÈË«ÁĞ²¼¾Ö ©¥©¥ */
 .difficulty-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1246,14 +1262,14 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-/* â”â” éš¾åº¦ç½‘æ ¼ 4 åˆ— â”â” */
+/* ©¥©¥ ÄÑ¶ÈÍø¸ñ 4 ÁĞ ©¥©¥ */
 .diff-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
 
-/* â”â” éš¾åº¦é€‰é¡¹ â€” 28px (md) åŒå¿ƒç¬¬äºŒå±‚,å¢å¼ºäº¤äº’ â”â” */
+/* ©¥©¥ ÄÑ¶ÈÑ¡Ïî ¡ª 28px (md) Í¬ĞÄµÚ¶ş²ã,ÔöÇ¿½»»¥ ©¥©¥ */
 .diff-option {
   display: flex;
   flex-direction: column;
@@ -1274,9 +1290,11 @@ onMounted(() => {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center,
-      color-mix(in srgb, var(--accent-color) 12%, transparent) 0%,
-      transparent 70%);
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--accent-color) 12%, transparent) 0%,
+    transparent 70%
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -1311,10 +1329,12 @@ onMounted(() => {
 
 .diff-option.selected {
   border-color: var(--accent-color);
-  background: linear-gradient(145deg,
-      color-mix(in srgb, var(--accent-color) 18%, transparent) 0%,
-      color-mix(in srgb, var(--accent-color) 10%, transparent) 100%);
-  box-shadow: 
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-color) 18%, transparent) 0%,
+    color-mix(in srgb, var(--accent-color) 10%, transparent) 100%
+  );
+  box-shadow:
     inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 25%, transparent),
     0 0 20px color-mix(in srgb, var(--accent-color) 20%, transparent);
   transform: translateY(-2px);
@@ -1363,7 +1383,8 @@ onMounted(() => {
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -1371,12 +1392,14 @@ onMounted(() => {
   }
 }
 
-/* â”â” æ“ä½œå¡ç‰‡ â€” 36px (lg) å¤§åœ†è§’ â”â” */
+/* ©¥©¥ ²Ù×÷¿¨Æ¬ ¡ª 36px (lg) ´óÔ²½Ç ©¥©¥ */
 .action-card {
   cursor: pointer;
-  background: linear-gradient(145deg,
-      color-mix(in srgb, var(--accent-color) 6%, transparent) 0%,
-      var(--bg-secondary) 100%);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-color) 6%, transparent) 0%,
+    var(--bg-secondary) 100%
+  );
   border: 1px solid color-mix(in srgb, var(--accent-color) 12%, transparent);
   transition: all var(--transition-normal) var(--ease-default);
   /* Button reset: override default <button> styles */
@@ -1391,9 +1414,11 @@ onMounted(() => {
 }
 
 .action-card:hover {
-  background: linear-gradient(145deg,
-      color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
-      var(--bg-tertiary) 100%);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
+    var(--bg-tertiary) 100%
+  );
   border-color: color-mix(in srgb, var(--accent-color) 25%, transparent);
   transform: translateY(-1px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
@@ -1454,7 +1479,7 @@ onMounted(() => {
   transform: translateX(4px);
 }
 
-/* â”â” Level selector - Enhanced with better visual feedback â”â” */
+/* ©¥©¥ Level selector - Enhanced with better visual feedback ©¥©¥ */
 /* Single scroll container is .tab-panel; search bar sits at its top in normal flow. */
 .level-selector {
   position: relative;
@@ -1503,7 +1528,7 @@ onMounted(() => {
   outline: none;
   border-color: var(--accent-color);
   background: var(--card-bg);
-  box-shadow: 
+  box-shadow:
     0 0 0 3px color-mix(in srgb, var(--accent-color) 12%, transparent),
     inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -1580,7 +1605,11 @@ onMounted(() => {
 }
 
 .group-header:hover {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 6%, var(--bg-secondary)) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--primary) 6%, var(--bg-secondary)) 0%,
+    var(--bg-secondary) 100%
+  );
 }
 
 .group-header:hover::before {
@@ -1672,7 +1701,7 @@ onMounted(() => {
   color: var(--primary);
 }
 
-/* â”â” å“åº”å¼ â”â” */
+/* ©¥©¥ ÏìÓ¦Ê½ ©¥©¥ */
 @media (max-width: 768px) {
   .basic-sections {
     max-width: 100%;
@@ -1738,7 +1767,7 @@ onMounted(() => {
 
 .level-card.selected {
   border-color: var(--primary);
-  box-shadow: 
+  box-shadow:
     0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent),
     0 8px 24px rgba(0, 0, 0, 0.12);
 }
@@ -1945,7 +1974,11 @@ onMounted(() => {
 }
 
 .player-item:hover {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 8%, var(--bg-tertiary)) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 8%, var(--bg-tertiary)) 0%,
+    var(--bg-secondary) 100%
+  );
   border-color: color-mix(in srgb, var(--primary) 20%, transparent);
   transform: translateX(4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -1956,7 +1989,11 @@ onMounted(() => {
 }
 
 .player-item.active {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 12%, var(--bg-tertiary)) 0%, color-mix(in srgb, var(--primary) 6%, var(--bg-secondary)) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 12%, var(--bg-tertiary)) 0%,
+    color-mix(in srgb, var(--primary) 6%, var(--bg-secondary)) 100%
+  );
   border-color: var(--primary);
   box-shadow: 0 4px 16px color-mix(in srgb, var(--primary) 20%, transparent);
 }
@@ -1980,7 +2017,11 @@ onMounted(() => {
 }
 
 .player-item:hover .player-avatar {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 15%, var(--bg-tertiary)) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 15%, var(--bg-tertiary)) 0%,
+    var(--bg-secondary) 100%
+  );
   color: var(--primary);
 }
 
@@ -2301,7 +2342,8 @@ onMounted(() => {
 }
 
 @keyframes pulse-critical {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -2361,7 +2403,7 @@ onMounted(() => {
   gap: 14px;
 }
 
-.sanity-ctrl> :first-child {
+.sanity-ctrl > :first-child {
   flex: 1;
 }
 
@@ -2493,7 +2535,11 @@ onMounted(() => {
 
 .inv-slot.empty:hover {
   border-color: var(--primary);
-  background: linear-gradient(145deg, color-mix(in srgb, var(--primary) 8%, var(--card-bg)) 0%, var(--bg-secondary) 100%);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--primary) 8%, var(--card-bg)) 0%,
+    var(--bg-secondary) 100%
+  );
 }
 
 .inv-slot.empty .slot-placeholder {
@@ -2616,16 +2662,16 @@ onMounted(() => {
     width: 100%;
     justify-content: center;
   }
-  
+
   .inventory-wrap {
     flex-direction: column;
     gap: 14px;
   }
-  
+
   .backpack-slots {
     grid-template-columns: repeat(3, 54px);
   }
-  
+
   .inv-slot {
     width: 54px;
     height: 54px;
@@ -2671,7 +2717,7 @@ onMounted(() => {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .detail-block {
     padding: 14px;
   }
@@ -2680,7 +2726,7 @@ onMounted(() => {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .hand-slots,
   .backpack-slots {
     gap: 8px;
@@ -2700,20 +2746,20 @@ onMounted(() => {
   .btn-secondary {
     padding: 8px 12px;
   }
-  
+
   .sanity-num {
     font-size: 24px;
     min-width: 60px;
   }
-  
+
   .sanity-bar {
     height: 8px;
   }
-  
+
   .quick-btns {
     gap: 6px;
   }
-  
+
   .qbtn {
     width: 32px;
     height: 32px;
@@ -2721,5 +2767,3 @@ onMounted(() => {
   }
 }
 </style>
-
-

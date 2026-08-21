@@ -9,8 +9,11 @@
               <button class="close-btn" @click="close">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path
-d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5"
-                    stroke-linecap="round" />
+                    d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
                 </svg>
               </button>
             </div>
@@ -25,15 +28,26 @@ d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5
                     </svg>
                   </span>
                   <input
-ref="searchInputRef" v-model="searchQuery" type="text" class="search-input"
-                    :placeholder="$t('inventory.searchPlaceholder')" />
+                    ref="searchInputRef"
+                    v-model="searchQuery"
+                    type="text"
+                    class="search-input"
+                    :placeholder="$t('inventory.searchPlaceholder')"
+                  />
                   <button
-v-if="searchQuery" class="clear-search" type="button"
-                    :aria-label="$t('inventory.clearSearch')" @click="clearSearch">
+                    v-if="searchQuery"
+                    class="clear-search"
+                    type="button"
+                    :aria-label="$t('inventory.clearSearch')"
+                    @click="clearSearch"
+                  >
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                       <path
-d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5"
-                        stroke-linecap="round" />
+                        d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -46,7 +60,7 @@ d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5
                   }}</span>
                   <span v-if="selectedItemLabel" class="selected-badge">{{
                     $t("inventory.currentSelection", { name: selectedItemLabel })
-                    }}</span>
+                  }}</span>
                   <button class="remove-btn" type="button" @click="selectItem(null)">
                     {{ $t("inventory.removeItem") }}
                   </button>
@@ -55,12 +69,18 @@ d="M12.5 3.5L3.5 12.5M3.5 3.5L12.5 12.5" stroke="currentColor" stroke-width="1.5
 
               <TransitionGroup v-if="filteredItems.length" name="item-appear" appear tag="div" class="items-grid">
                 <div
-v-for="item in filteredItems" :key="item.id" class="item-card"
-                  :class="{ selected: selectedItem === item.id }" @click="selectItem(item.id)">
+                  v-for="item in filteredItems"
+                  :key="item.id"
+                  class="item-card"
+                  :class="{ selected: selectedItem === item.id }"
+                  @click="selectItem(item.id)"
+                >
                   <div class="item-image-wrapper">
                     <LazyImage
-:src="`/icons/ETB_UI/${item.image}`" :alt="getItemName(item.id)"
-                      image-class="item-image" />
+                      :src="`/icons/ETB_UI/${item.image}`"
+                      :alt="getItemName(item.id)"
+                      image-class="item-image"
+                    />
                   </div>
                   <span class="item-name">{{ getItemName(item.id) }}</span>
                 </div>
@@ -73,13 +93,18 @@ v-for="item in filteredItems" :key="item.id" class="item-card"
                   <p class="fuzzy-label">{{ $t("inventory.didYouMean") }}</p>
                   <div class="fuzzy-grid">
                     <div
-v-for="result in fuzzyResults" :key="result.item.id" class="fuzzy-card"
+                      v-for="result in fuzzyResults"
+                      :key="result.item.id"
+                      class="fuzzy-card"
                       :title="`${getItemName(result.item.id)} (${(result.score * 100).toFixed(0)}%)`"
-                      @click="selectItem(result.item.id)">
+                      @click="selectItem(result.item.id)"
+                    >
                       <div class="fuzzy-image-wrapper">
                         <LazyImage
-:src="`/icons/ETB_UI/${result.item.image}`" :alt="getItemName(result.item.id)"
-                          image-class="fuzzy-image" />
+                          :src="`/icons/ETB_UI/${result.item.image}`"
+                          :alt="getItemName(result.item.id)"
+                          image-class="fuzzy-image"
+                        />
                       </div>
                       <span class="fuzzy-name">{{ getItemName(result.item.id) }}</span>
                     </div>
@@ -185,7 +210,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
   -webkit-backdrop-filter: var(--glass-backdrop-filter);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-modal);
-  box-shadow: 
+  box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   width: 90%;
@@ -372,7 +397,11 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
   font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 12%, var(--bg-secondary)) 0%, color-mix(in srgb, var(--primary) 8%, var(--bg-tertiary)) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 12%, var(--bg-secondary)) 0%,
+    color-mix(in srgb, var(--primary) 8%, var(--bg-tertiary)) 100%
+  );
   border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
   padding: 5px 10px;
   border-radius: var(--radius-tag);
@@ -446,8 +475,12 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
 
 .item-card.selected {
   border-color: var(--accent-color);
-  background: linear-gradient(145deg, color-mix(in srgb, var(--primary) 12%, var(--card-bg)) 0%, color-mix(in srgb, var(--primary) 6%, var(--glass-bg)) 100%);
-  box-shadow: 
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--primary) 12%, var(--card-bg)) 0%,
+    color-mix(in srgb, var(--primary) 6%, var(--glass-bg)) 100%
+  );
+  box-shadow:
     0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent),
     0 8px 24px rgba(0, 0, 0, 0.1);
 }
@@ -578,11 +611,11 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
     margin: 16px;
     border-radius: var(--radius-xl);
   }
-  
+
   .modal-header {
     padding: 18px 20px;
   }
-  
+
   .modal-header h3 {
     font-size: 17px;
   }
@@ -595,7 +628,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
   .search-input-wrap {
     min-width: 100%;
   }
-  
+
   .toolbar-meta {
     width: 100%;
     justify-content: space-between;
@@ -605,7 +638,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
     grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
     gap: 12px;
   }
-  
+
   .item-card {
     padding: 12px;
   }
@@ -619,7 +652,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
     width: 44px;
     height: 44px;
   }
-  
+
   .fuzzy-grid {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   }

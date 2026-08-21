@@ -353,10 +353,10 @@ const {
   unregisterUndoShortcuts,
 } = archiveActions;
 
-// Local state �?declared before composable calls that use them
+// Local state �?declared before composable calls that use them
 const scrollContainerRef = ref<HTMLElement | null>(null);
 const showSearch = ref(false);
-// True when the search panel was opened via keyboard (Ctrl+F / F3) �?
+// True when the search panel was opened via keyboard (Ctrl+F / F3) �?
 // keyboard-initiated opens skip the entrance animation entirely.
 const skipSearchAnimation = ref(false);
 const isPageActive = ref(false);
@@ -364,11 +364,11 @@ const shouldResetScroll = ref(false);
 const showCards = ref(false);
 
 // Tracks pending compositing-refresh timeouts so they can be
-// cleared on unmount �?prevents stale operations after destroy.
+// cleared on unmount �?prevents stale operations after destroy.
 const pendingRefreshTimeouts: ReturnType<typeof setTimeout>[] = [];
 
 // ─── Scroll-aware performance: disable hover animations while scrolling ──
-// Applying CSS transition changes mid-scroll (hover �?transform/border-color)
+// Applying CSS transition changes mid-scroll (hover �?transform/border-color)
 // forces the browser to re-evaluate paint layers every frame.  Adding an
 // 'is-scrolling' class on scroll start (and removing it after scroll stops)
 // lets us disable expensive hover-triggered transitions via CSS, keeping the
@@ -448,7 +448,7 @@ const route = useRoute();
 const toggleSearch = () => {
   showSearch.value = !showSearch.value;
   if (showSearch.value) {
-    // Promote to searching priority immediately �?keeps backdrop-filter
+    // Promote to searching priority immediately �?keeps backdrop-filter
     // visible and CPU budget high for the full duration the search is open.
     scheduler.beginOperation("searching");
     nextTick(() => protectFloatingButtonPosition());
@@ -494,7 +494,7 @@ const clearAllFilters = () => {
 const handleToggleVisibility = (archive: ArchiveData) => {
   handleToggleVisibilityBase(archive, {
     // Re-sync from the backend (MAINSAVE is the source of truth) so the toggle
-    // always lands �?regardless of archive id shifts after a refresh.
+    // always lands �?regardless of archive id shifts after a refresh.
     onRefresh: () => refreshArchivesSilent(),
     onSuccess: () => protectFloatingButtonPosition(),
   });
@@ -510,7 +510,7 @@ const confirmDelete = () => {
 
 // ─── Refresh guard ──────────────────────────────
 // Only prevents two refreshes from overlapping. There is deliberately no cooldown
-// interval between auto-refresh (on activation) and a manual refresh �?the user can
+// interval between auto-refresh (on activation) and a manual refresh �?the user can
 // refresh again as soon as the previous run finishes.
 let _refreshInFlight = false;
 
@@ -576,7 +576,7 @@ const handleFabAction = (e: Event) => {
  *
  * The approach:
  *   1. Read layout properties on the container to force a layout pass.
- *   2. Iterate virtual rows and force layout on each �?the row's
+ *   2. Iterate virtual rows and force layout on each �?the row's
  *      `translateY` compositing layer is where stale textures appear.
  *   3. Apply a near-invisible opacity tweak (99.99%) that forces WebView2
  *      to re-composite the entire layer tree on the next frame.  Cleared
@@ -628,20 +628,20 @@ const centerEditedArchive = (): void => {
 // ─── Card entrance animation ──────────────────────
 // Replaced by the CSS .cards-enter animation on the virtual-scroll-viewport.
 // The old per-card RAF reveal loop added ~700ms of delay (12 cards × 1 frame
-// each + 500ms wait) with no benefit �?cards were hidden (opacity: 0) during
+// each + 500ms wait) with no benefit �?cards were hidden (opacity: 0) during
 // most of that time.  Now all cards appear with a single container fade-in
 // that completes in 200ms and doesn't block the initial render.
 //
 // Only animates cards in the initial viewport; cards created by virtual
 // scroll on user scroll skip the entrance animation entirely.
 
-// On keep-alive activation �?yield to the browser first so the
+// On keep-alive activation �?yield to the browser first so the
 // sidebar's 300ms margin-left transition gets a clean first paint
 // frame before we touch any Vue state.  Steps:
 //   1. isPageActive + scrollTop (synchronous, trivial).
-//   2. setTimeout(0) defers the rest to the NEXT macrotask �?by
+//   2. setTimeout(0) defers the rest to the NEXT macrotask �?by
 //      then the sidebar has its first compositor frame scheduled.
-//   3. showCards=false �?spinner replaces the card grid.
+//   3. showCards=false �?spinner replaces the card grid.
 //   4. 18 RAF frames (~300ms) let the sidebar animation finish.
 //   5. Boost priority, refresh data, flip showCards=true.
 onActivated(() => {
@@ -692,7 +692,7 @@ onMounted(() => {
   window.addEventListener("fab-action", handleFabAction);
 
   // Virtual scroll ResizeObserver auto-initializes via a watch on
-  // scrollContainerRef �?column count is correct before any async IPC.
+  // scrollContainerRef �?column count is correct before any async IPC.
   requestIdleCallback(() => initPerformanceMonitor(), { timeout: 1500 });
   requestIdleCallback(() => initButtonProtection(), { timeout: 2000 });
 
@@ -718,7 +718,7 @@ onMounted(() => {
     loading.value = false;
     invoke("set_process_priority", { priority: "normal" }).catch(() => {});
 
-    // Virtualizer measurement �?runs after cards are in the DOM.
+    // Virtualizer measurement �?runs after cards are in the DOM.
     nextTick(() => {
       rowVirtualizer.value.measure();
       requestAnimationFrame(() => {
@@ -844,7 +844,7 @@ watch(searchQuery, (query) => {
      Keeps the container's backing store on the GPU across scroll
      frames, avoiding a re-paint on every scroll event. */
   will-change: scroll-position;
-  /* contain: paint �?tells the browser the container's painted
+  /* contain: paint �?tells the browser the container's painted
      content never affects anything outside its bounds.  Limits
      paint overflow calculation to the container itself. */
   contain: paint;
@@ -886,12 +886,12 @@ watch(searchQuery, (query) => {
 
 .archive-row {
   padding: 0;
-  /* Explicit will-change hint �?the row is translated on every scroll
+  /* Explicit will-change hint �?the row is translated on every scroll
      via inline translateY().  Without this hint WebView2 promotes the
      compositing layer lazily the first time the transform changes,
      causing a visible jank on the initial scroll frame. */
   will-change: transform;
-  /* content-visibility: auto �?tells the browser it can skip layout,
+  /* content-visibility: auto �?tells the browser it can skip layout,
      paint, and compositing for rows that are far off-screen.  Even
      though virtual scroll keeps DOM count low, the browser still
      spends time on style recalculation and paint preparation for
@@ -911,7 +911,7 @@ watch(searchQuery, (query) => {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   /* ─── Refresh transition ───────────────────────
    * When the user taps the refresh button, the cards perform a
-   * "breathe" motion �?fade + contract briefly, then spring back
+   * "breathe" motion �?fade + contract briefly, then spring back
    * when the new data arrives.  This gives clear visual feedback
    * that the data was reloaded rather than silently replacing. */
   transition:
@@ -1046,7 +1046,7 @@ watch(searchQuery, (query) => {
   width: 100%;
 }
 
-/* ─── Empty Card �?redesigned ──────────────── */
+/* ─── Empty Card �?redesigned ──────────────── */
 
 .empty-card {
   position: relative;
@@ -1540,12 +1540,12 @@ watch(searchQuery, (query) => {
   transform: translateY(0);
 }
 
-/* Single delete confirmation modal overlay �?covers FAB */
+/* Single delete confirmation modal overlay �?covers FAB */
 .single-delete-confirm {
   z-index: 10001 !important;
 }
 
-/* Batch delete confirmation modal overlay �?covers multi-select toolbar and FAB with blur */
+/* Batch delete confirmation modal overlay �?covers multi-select toolbar and FAB with blur */
 .batch-delete-confirm {
   z-index: 10001 !important;
   background: rgba(0, 0, 0, 0.45);
@@ -1553,7 +1553,7 @@ watch(searchQuery, (query) => {
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* Batch delete progress overlay �?covers full viewport including multi-select toolbar */
+/* Batch delete progress overlay �?covers full viewport including multi-select toolbar */
 .batch-delete-progress-overlay {
   z-index: 10001 !important;
   background: rgba(0, 0, 0, 0.45);

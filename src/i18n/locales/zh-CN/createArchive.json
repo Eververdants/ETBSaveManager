@@ -79,5 +79,7 @@
   "draftFoundTitle": "发现未完成的存档",
   "draftFoundMessage": "检测到未完成的存档创建（上次在步骤 {step}），是否恢复？",
   "restoreDraft": "恢复草稿",
-  "discardDraft": "重新开始"
+  "discardDraft": "重新开始",
+  "levelSearchPlaceholder": "搜索层级名称",
+  "levelSearchEmpty": "未找到匹配的层级"
 }

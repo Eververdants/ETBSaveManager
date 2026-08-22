@@ -79,5 +79,7 @@
   "draftFoundTitle": "Draft Found",
   "draftFoundMessage": "An incomplete archive creation was found (step {step}). Would you like to restore it?",
   "restoreDraft": "Restore Draft",
-  "discardDraft": "Start Over"
+  "discardDraft": "Start Over",
+  "levelSearchPlaceholder": "Search level name",
+  "levelSearchEmpty": "No matching levels found"
 }

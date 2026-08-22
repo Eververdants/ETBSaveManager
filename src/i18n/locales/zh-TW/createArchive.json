@@ -79,5 +79,7 @@
   "draftFoundTitle": "發現未完成的存檔",
   "draftFoundMessage": "檢測到未完成的存檔建立（上次在步驟 {step}），是否恢復？",
   "restoreDraft": "恢復草稿",
-  "discardDraft": "重新開始"
+  "discardDraft": "重新開始",
+  "levelSearchPlaceholder": "搜尋關卡名稱",
+  "levelSearchEmpty": "未找到匹配的關卡"
 }

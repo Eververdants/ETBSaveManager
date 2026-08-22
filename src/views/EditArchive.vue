@@ -1,4 +1,4 @@
-<template>
+ï»¿<template>
   <div v-if="parseError" class="edit-archive-container">
     <div class="error-state">
       <font-awesome-icon :icon="['fas', 'exclamation-triangle']" class="error-icon" />
@@ -134,6 +134,30 @@
       <!-- Level selection -->
       <div class="tab-panel" :class="{ 'tab-active': activeTab === 'level' }">
         <div class="level-selector">
+          <!-- Ending selector (capsule style) -->
+          <div class="ending-selector">
+            <div ref="endingGroupRef" class="ending-group">
+              <!-- Sliding highlight indicator -->
+              <div
+                class="ending-slider"
+                :style="{
+                  width: `${sliderState.width}px`,
+                  transform: `translateX(${sliderState.left}px)`,
+                  opacity: sliderState.active ? 1 : 0,
+                }"
+              />
+              <div
+                v-for="(group, index) in levelGroups"
+                :key="group.id"
+                class="ending-tab"
+                :class="{ active: selectedLevelGroup === index }"
+                @click="handleLevelGroupClick(index)"
+              >
+                <span class="ending-label">{{ group.label }}</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Search bar -->
           <div class="level-search">
             <font-awesome-icon :icon="['fas', 'search']" class="level-search-icon" />
@@ -148,44 +172,29 @@
             </button>
           </div>
 
-          <!-- Grouped level list -->
-          <div class="level-groups">
-            <div
-              v-for="group in groupedLevels"
-              :key="group.id"
-              class="level-group"
-              :class="{ 'is-collapsed': isGroupCollapsed(group.id) }"
-            >
-              <div class="group-header" @click="toggleGroup(group.id)">
-                <span class="group-title">{{ group.label }}</span>
-                <span class="group-count">{{ group.levels.length }}</span>
-                <font-awesome-icon
-                  :icon="['fas', isGroupCollapsed(group.id) ? 'chevron-right' : 'chevron-down']"
-                  class="group-chevron"
-                />
-              </div>
-              <div class="group-body">
-                <div class="level-grid">
-                  <div
-                    v-for="level in group.levels"
-                    :key="level.levelKey"
-                    class="level-card"
-                    :class="{ selected: formData.currentLevel === level.levelKey }"
-                    @click="selectLevel(level.levelKey)"
-                  >
-                    <div class="level-img-wrap">
-                      <LazyImage :src="level.image" :alt="level.name" image-class="level-img" />
-                      <div v-if="formData.currentLevel === level.levelKey" class="level-check">
-                        <font-awesome-icon :icon="['fas', 'check-circle']" />
-                      </div>
+          <!-- Level grid with transition -->
+          <div class="section-card">
+            <Transition name="level-grid-fade" mode="out-in">
+              <div :key="displayKey" class="level-grid">
+                <div
+                  v-for="level in displayedLevels"
+                  :key="level.levelKey"
+                  class="level-card"
+                  :class="{ selected: formData.currentLevel === level.levelKey }"
+                  @click="selectLevel(level.levelKey)"
+                >
+                  <div class="level-img-wrap">
+                    <LazyImage :src="level.image" :alt="level.name" image-class="level-img" />
+                    <div v-if="formData.currentLevel === level.levelKey" class="level-check">
+                      <font-awesome-icon :icon="['fas', 'check-circle']" />
                     </div>
-                    <span class="level-name">{{ level.name }}</span>
                   </div>
+                  <span class="level-name">{{ level.name }}</span>
                 </div>
               </div>
-            </div>
+            </Transition>
             <!-- Empty state -->
-            <div v-if="groupedLevels.length === 0" class="level-empty">
+            <div v-if="displayedLevels.length === 0" class="level-empty">
               <font-awesome-icon :icon="['fas', 'search']" class="level-empty-icon" />
               <span>{{ t("editArchive.levelSearchEmpty") }}</span>
             </div>
@@ -218,7 +227,7 @@
               </Transition>
             </div>
 
-            <!-- Steam ID ±à¼­ -->
+            <!-- Steam ID é”Ÿæ´è¾‘ -->
             <div class="steamid-edit-row">
               <span class="steamid-label">
                 <font-awesome-icon :icon="['fab', 'steam']" />
@@ -484,7 +493,7 @@ const confirmSaveArchive = async () => {
     const playerSanity = {};
 
     formData.players.forEach((player) => {
-      // ¸´ÓÃ´æµµÔ­Ê¼ÍêÕû¼ü£¨º¬ÓÎÏ·Éú³ÉµÄ UniqueNetId ºó×º£©£»id ±»ÓÃ»§¸Ä¹ıÔòÍË»Ø´¿ id
+      // é”Ÿæ–¤æ‹·é”ŸçŸ«å­˜æ¡£åŸå§‹é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·æˆé”Ÿæ–¤æ‹·é”Ÿç¼´ç¢‰æ‹· UniqueNetId é”Ÿæ–¤æ‹·ç¼€é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·id é”Ÿæ–¤æ‹·é”ŸçŸ«ä¼™æ‹·é”Ÿä¾¥ç™¸æ‹·é”Ÿæ–¤æ‹·é”Ÿå‰¿å›è¾¾æ‹· id
       const originalBase = player.originalSteamId ? stripSteamIdSuffix(player.originalSteamId).split("-")[0] : "";
       const steamId =
         player.originalSteamId && originalBase === player.steamId.trim()
@@ -520,9 +529,9 @@ const confirmSaveArchive = async () => {
     const errorMsg = error?.message || String(error);
     console.error("Save failed:", error);
 
-    if (errorMsg.includes("¾Ü¾ø·ÃÎÊ") || errorMsg.includes("Access is denied") || errorMsg.includes("os error 5")) {
+    if (errorMsg.includes("é”Ÿæ°æ’…æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·") || errorMsg.includes("Access is denied") || errorMsg.includes("os error 5")) {
       notify.error(t("editArchive.saveErrorAccessDenied"));
-    } else if (errorMsg.includes("ÕıÔÚÊ¹ÓÃ") || errorMsg.includes("being used")) {
+    } else if (errorMsg.includes("é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·ä½¿é”Ÿæ–¤æ‹·") || errorMsg.includes("being used")) {
       notify.error(t("editArchive.saveErrorFileInUse"));
     } else {
       notify.error(t("editArchive.saveError", { error: errorMsg }));
@@ -545,7 +554,7 @@ const initArchiveData = () => {
         try {
           data = JSON.parse(stored);
         } catch (e) {
-          console.error("½âÎö´æµµÊı¾İÊ§°Ü:", e);
+          console.error("é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”ŸèŠ¥æ¡£é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·å¤±é”Ÿæ–¤æ‹·:", e);
         }
         // Clean up store entry
         editArchiveDataStore.delete("current");
@@ -556,7 +565,7 @@ const initArchiveData = () => {
         try {
           data = JSON.parse(props.archiveData);
         } catch (parseErr) {
-          console.error("´æµµÊı¾İ½âÎöÊ§°Ü:", parseErr);
+          console.error("é”ŸèŠ¥æ¡£é”Ÿæ–¤æ‹·é”Ÿæ·æ–¤æ‹·é”Ÿæ–¤æ‹·å¤±é”Ÿæ–¤æ‹·:", parseErr);
           notify.error(t("editArchive.parseFailed") + " " + parseErr.message);
           parseError.value = true;
           return;
@@ -564,7 +573,7 @@ const initArchiveData = () => {
       }
 
       if (!data || typeof data !== "object") {
-        console.error("´æµµÊı¾İ¸ñÊ½ÎŞĞ§");
+        console.error("é”ŸèŠ¥æ¡£é”Ÿæ–¤æ‹·é”Ÿæ·é©æ‹·å¼é”Ÿæ–¤æ‹·æ•ˆ");
         notify.error(t("editArchive.parseFailedDataInvalid"));
         parseError.value = true;
         return;
@@ -581,7 +590,7 @@ const initArchiveData = () => {
       loadPlayerData(data);
     }
   } catch (e) {
-    console.error("³õÊ¼»¯´æµµÊı¾İÊ§°Ü:", e);
+    console.error("é”Ÿæ–¤æ‹·å§‹é”Ÿæ–¤æ‹·é”ŸèŠ¥æ¡£é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·å¤±é”Ÿæ–¤æ‹·:", e);
     notify.error(t("editArchive.parseFailed") + " " + (e.message || e));
     parseError.value = true;
   }
@@ -608,15 +617,15 @@ const loadPlayerData = async (archive) => {
             isOffline = true;
             username = `${parts[0]}${t("common.localPlayerSuffix")}`;
           } else {
-            // ÔÚÏßÍæ¼Ò£º°şÀë UE UniqueNetId ºó×º£¬½çÃæÖ»ÏÔÊ¾´¿ steam id
+            // é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é¥é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿ?UE UniqueNetId é”Ÿæ–¤æ‹·ç¼€é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·åªé”Ÿæ–¤æ‹·ç¤ºé”Ÿæ–¤æ‹· steam id
             processedId = stripSteamIdSuffix(steamId);
           }
 
           formData.players.push({
-            // ½çÃæÏÔÊ¾/±à¼­ÓÃ´¿ id
+            // é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·ç¤º/é”Ÿæ´è¾‘é”ŸçŸ«è¾¾æ‹· id
             steamId: processedId,
-            // ´æµµÀïµÄÔ­Ê¼ÍêÕû¼ü£¨ÔÚÏß£º`<id>_+_|<32hex>`£»ÀëÏß£º`<id>-<15×Ö·û>`£©
-            // ±£´æÊ±¸´ÓÃ£¬±£Ö¤Íæ¼ÒµÄ UniqueNetId ²»±»¸ÄĞ´£¨ÓÎÏ·Éú³ÉµÄºó×ºÓ¦ÓÃÎŞ·¨ÍÆµ¼£©
+            // é”ŸèŠ¥æ¡£é”Ÿæ–¤æ‹·é”Ÿçš†î…ƒç¡·æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·æ’¸é”Ÿçµ—<id>_+_|<32hex>`é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿç«­ï½æ‹·`<id>-<15é”Ÿè¡—å‡¤æ‹·>`é”Ÿæ–¤æ‹·
+            // é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·æ—¶é”Ÿæ–¤æ‹·é”ŸçŸ«ï½æ‹·é”Ÿæ–¤æ‹·è¯é”Ÿæ–¤æ‹·ä¸šé”Ÿ?UniqueNetId é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·å†™é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·æˆé”Ÿæ–¤æ‹·é”Ÿç¼´çš„çŒ´æ‹·ç¼€åº”é”Ÿæ–¤æ‹·é”Ÿç«å‡¤æ‹·é”Ÿç‹¡ç¢‰æ‹·é”Ÿæ–¤æ‹·
             originalSteamId: steamId,
             inventory: formattedInventory.slice(0, 12),
             username,
@@ -664,8 +673,14 @@ const loadLevels = () => {
 // --- Level search & grouping ---
 const levelSearchQuery = ref("");
 
-// Default-collapsed groups (main group stays expanded)
-const collapsedGroups = ref(new Set([1, 2, 3, "special"]));
+// Capsule selector state
+const selectedLevelGroup = ref(0);
+const endingGroupRef = ref(null);
+const sliderState = reactive({
+  width: 0,
+  left: 0,
+  active: false,
+});
 
 // Map each levelKey to exactly one group by priority:
 // main ending (0) -> its own branch (1/2/3, first match wins for shared levels) -> special
@@ -703,37 +718,50 @@ const levelGroups = computed(() => {
   return [...groups.values()];
 });
 
-const groupedLevels = computed(() => {
+// Update slider indicator position
+const updateSlider = () => {
+  if (!endingGroupRef.value) return;
+  const container = endingGroupRef.value;
+  const activeTab = container.querySelector(".ending-tab.active");
+  if (!activeTab) return;
+
+  const containerRect = container.getBoundingClientRect();
+  const tabRect = activeTab.getBoundingClientRect();
+
+  sliderState.width = tabRect.width;
+  sliderState.left = tabRect.left - containerRect.left;
+  sliderState.active = true;
+};
+
+// Handle group tab click
+const handleLevelGroupClick = (index) => {
+  if (selectedLevelGroup.value === index) return;
+  selectedLevelGroup.value = index;
+  nextTick(() => updateSlider());
+};
+
+// Displayed levels (supports cross-group search)
+const displayedLevels = computed(() => {
   const query = levelSearchQuery.value.trim().toLowerCase();
-  return levelGroups.value
-    .map((group) => {
-      const levels = query
-        ? group.levels.filter((l) => {
-            const name = l.name.toLowerCase();
-            const key = l.levelKey.toLowerCase();
-            return name.includes(query) || key.includes(query);
-          })
-        : group.levels;
-      return { ...group, levels };
-    })
-    .filter((group) => group.levels.length > 0);
+  // When searching, show all matching levels across groups
+  if (query) {
+    return availableLevels.value.filter((level) => {
+      const name = level.name.toLowerCase();
+      const key = level.levelKey.toLowerCase();
+      return name.includes(query) || key.includes(query);
+    });
+  }
+  // Otherwise show levels for the selected group
+  return levelGroups.value[selectedLevelGroup.value]?.levels || [];
 });
 
-const toggleGroup = (groupId) => {
-  const next = new Set(collapsedGroups.value);
-  if (next.has(groupId)) next.delete(groupId);
-  else next.add(groupId);
-  collapsedGroups.value = next;
-};
-
-const isGroupCollapsed = (groupId) => {
-  // Search active -> expand everything so matches stay visible
-  if (levelSearchQuery.value.trim()) return false;
-  // Group holding the current selected level -> always expanded
-  const group = levelGroups.value.find((g) => g.id === groupId);
-  if (group?.levels.some((l) => l.levelKey === formData.currentLevel)) return false;
-  return collapsedGroups.value.has(groupId);
-};
+// Transition key for animation
+const displayKey = computed(() => {
+  const query = levelSearchQuery.value.trim();
+  // When searching, use a stable key
+  if (query) return "search";
+  return selectedLevelGroup.value;
+});
 
 const selectLevel = (levelKey) => {
   formData.currentLevel = levelKey;
@@ -894,7 +922,7 @@ const unlockAllHubDoors = async () => {
     await invoke("unlock_all_hub_doors", { filePath: originalArchive.value.path });
     notify.success(t("editArchive.hubDoorsUnlocked"));
   } catch (error) {
-    console.error("½âËøÊàÅ¦ÃÅÊ§°Ü:", error);
+    console.error("é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·çº½é”Ÿæ–¤æ‹·å¤±é”Ÿæ–¤æ‹·:", error);
     notify.error(String(error));
   }
 };
@@ -917,10 +945,181 @@ onMounted(() => {
   loadLevels();
   initArchiveData();
   nextTick(() => initHighlight());
+  // Initialize slider indicator after DOM is painted
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        updateSlider();
+      });
+    });
+  });
+  window.addEventListener("resize", updateSlider);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", updateSlider);
 });
 </script>
 
 <style scoped>
+/* Ending selector styles (capsule) */
+.ending-selector {
+  margin-bottom: 20px;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
+}
+
+.ending-group {
+  position: relative;
+  display: inline-flex;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  gap: 2px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
+}
+
+.ending-slider {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  height: calc(100% - 8px);
+  background: var(--accent-color);
+  border-radius: var(--radius-md);
+  filter: drop-shadow(0 2px 8px rgba(var(--accent-color-rgb), 0.35)) drop-shadow(0 1px 3px rgba(var(--accent-color-rgb), 0.2));
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+  z-index: 0;
+}
+
+.ending-tab {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  user-select: none;
+  transition: none;
+  white-space: nowrap;
+}
+
+.ending-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color 0.25s ease;
+  white-space: nowrap;
+}
+
+.ending-tab.active .ending-label {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.ending-tab:not(.active):hover .ending-label {
+  color: var(--text-primary);
+}
+
+.ending-tab:active {
+  transform: scale(0.96);
+}
+
+/* Level grid fade transition */
+.level-grid-fade-enter-active,
+.level-grid-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+
+.level-grid-fade-enter-from,
+.level-grid-fade-leave-to {
+  opacity: 0;
+}
+
+/* Section card for level grid */
+.section-card {
+  background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  height: calc(100vh - 200px); max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.section-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
+}
+
+.section-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.section-card::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+
+.section-card::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-color-rgb), 0.3);
+  border-radius: var(--radius-xs);
+  transition: background 0.2s ease;
+}
+
+.section-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--accent-color-rgb), 0.5);
+}
+
+/* Responsive for ending selector */
+@media (max-width: 768px) {
+  .ending-group {
+    width: 100%;
+  }
+
+  .ending-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+
+  .ending-label {
+    font-size: 12px;
+  }
+
+  .section-card {
+    height: calc(100vh - 200px); max-height: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .ending-tab {
+    padding: 6px 10px;
+  }
+
+  .ending-label {
+    font-size: 11px;
+  }
+}
+
+
 .edit-archive-container {
   height: calc(100vh - 38px);
   display: flex;
@@ -1108,12 +1307,12 @@ onMounted(() => {
 }
 
 /* ==========================================
- * »ù´¡ÉèÖÃ ¡ª Èı¶ÎÊ½²¼¾Ö
- *     Á¬ĞøÇúÂÊ + ´óÔ²½Ç + Í¬ĞÄµÈ¾à
- *    Card: 36px(lg) ¡ú Inner: 28px(md) ¡ú 8px µİ¼õ
+ * é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·å¼é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·
+ *     é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· + é”Ÿæ–¤æ‹·åœ†é”Ÿæ–¤æ‹· + åŒé”Ÿä¾¥ç­‰æ’…æ‹·
+ *    Card: 36px(lg) é”Ÿæ–¤æ‹· Inner: 28px(md) é”Ÿæ–¤æ‹· 8px é”Ÿæ·ç¡·æ‹·
  * ========================================== */
 
-/* Íâ²ãÈİÆ÷ */
+/* é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿ?*/
 .basic-sections {
   display: flex;
   flex-direction: column;
@@ -1122,14 +1321,14 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-/* ©¥©¥ ÇøÓò·Ö×é ©¥©¥ */
+/* é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿ?é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· */
 .settings-section {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-/* ÇøÓò±êÌâ£¨´ø accent ÊúÌõ×°ÊÎ£©*/
+/* é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·çŒ“îŸ’æ‹·é”Ÿ?accent é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·è£…é”Ÿè½¿ï½æ‹·*/
 .section-title {
   display: flex;
   align-items: center;
@@ -1160,7 +1359,7 @@ onMounted(() => {
   font-size: 16px;
 }
 
-/* ©¥©¥ ÉèÖÃ¿¨Æ¬ ¡ª 36px (lg) ´óÔ²½ÇÁ¬ĞøÇúÏß ©¥©¥ */
+/* é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹·é”ŸçŸ«åŒ¡æ‹·ç‰‡ é”Ÿæ–¤æ‹· 36px (lg) é”Ÿæ–¤æ‹·åœ†é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· */
 .settings-card {
   background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border-radius: var(--radius-lg);
@@ -1171,7 +1370,7 @@ onMounted(() => {
   transition: all var(--transition-normal) var(--ease-default);
 }
 
-/* ¶¥²¿Î¢¹âÃè±ß */
+/* é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·å¾®é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿ?*/
 .settings-card::before {
   content: "";
   position: absolute;
@@ -1188,7 +1387,7 @@ onMounted(() => {
   filter: drop-shadow(var(--filter-card-shadow-hover, 0 8px 32px rgba(0, 0, 0, 0.12)));
 }
 
-/* ¿¨Æ¬±êÇ© */
+/* é”Ÿæ–¤æ‹·ç‰‡é”Ÿæ–¤æ‹·ç­¾ */
 .card-label {
   display: block;
   font-size: 13px;
@@ -1197,7 +1396,7 @@ onMounted(() => {
   margin-bottom: 14px;
 }
 
-/* ©¥©¥ ÊäÈë¿ò ¡ª 28px (md) Í¬ĞÄµÚ¶ş²ã ©¥©¥ */
+/* é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿ?é”Ÿæ–¤æ‹· 28px (md) åŒé”Ÿä¾¥ç¬¬è®¹æ‹·é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· */
 .settings-input {
   width: 100%;
   padding: 14px 18px;
@@ -1228,7 +1427,7 @@ onMounted(() => {
   opacity: 0.7;
 }
 
-/* ©¥©¥ ÄÑ¶ÈË«ÁĞ²¼¾Ö ©¥©¥ */
+/* é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· é”Ÿçª–è®¹æ‹·åŒé”Ÿå«è¯§æ‹·é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· */
 .difficulty-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1262,14 +1461,14 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-/* ©¥©¥ ÄÑ¶ÈÍø¸ñ 4 ÁĞ ©¥©¥ */
+/* é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· é”Ÿçª–è®¹æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· 4 é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· */
 .diff-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
 
-/* ©¥©¥ ÄÑ¶ÈÑ¡Ïî ¡ª 28px (md) Í¬ĞÄµÚ¶ş²ã,ÔöÇ¿½»»¥ ©¥©¥ */
+/* é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· é”Ÿçª–è®¹æ‹·é€‰é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹· 28px (md) åŒé”Ÿä¾¥ç¬¬è®¹æ‹·é”Ÿæ–¤æ‹·,é”Ÿæ–¤æ‹·å¼ºé”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· */
 .diff-option {
   display: flex;
   flex-direction: column;
@@ -1392,7 +1591,7 @@ onMounted(() => {
   }
 }
 
-/* ©¥©¥ ²Ù×÷¿¨Æ¬ ¡ª 36px (lg) ´óÔ²½Ç ©¥©¥ */
+/* é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·ç‰‡ é”Ÿæ–¤æ‹· 36px (lg) é”Ÿæ–¤æ‹·åœ†é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· */
 .action-card {
   cursor: pointer;
   background: linear-gradient(
@@ -1479,10 +1678,14 @@ onMounted(() => {
   transform: translateX(4px);
 }
 
-/* ©¥©¥ Level selector - Enhanced with better visual feedback ©¥©¥ */
+/* é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· Level selector - Enhanced with better visual feedback é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· */
 /* Single scroll container is .tab-panel; search bar sits at its top in normal flow. */
 .level-selector {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Search bar with enhanced styling */
@@ -1562,125 +1765,137 @@ onMounted(() => {
   transform: translateY(-50%) scale(1.1);
 }
 
-/* Groups container with better spacing */
-.level-groups {
+/* Ending selector styles (capsule style) */
+.ending-selector {
+  margin-bottom: 16px;
+  overflow: visible;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  justify-content: center;
 }
 
-.level-group {
-  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
-  border-radius: var(--radius-card);
-  overflow: hidden;
-  border: 1px solid transparent;
-  transition: all var(--transition-normal) var(--ease-default);
-  box-shadow: var(--shadow-card);
+/* Segmented control group */
+.ending-group {
+  position: relative;
+  display: inline-flex;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  gap: 2px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
 }
 
-.level-group:hover {
-  border-color: color-mix(in srgb, var(--primary) 15%, transparent);
-  box-shadow: var(--shadow-lg);
+/* Sliding highlight pill */
+.ending-slider {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  height: calc(100% - 8px);
+  background: var(--accent-color);
+  border-radius: var(--radius-md);
+  filter: drop-shadow(0 2px 8px rgba(var(--accent-color-rgb), 0.35))
+    drop-shadow(0 1px 3px rgba(var(--accent-color-rgb), 0.2));
+  pointer-events: none;
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.2s ease;
+  z-index: 0;
 }
 
-/* Group header with enhanced interaction */
-.group-header {
+.ending-tab {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
   cursor: pointer;
+  background: transparent;
+  border: none;
   user-select: none;
-  transition: all var(--transition-normal) var(--ease-default);
+  transition: none;
+  white-space: nowrap;
+}
+
+.ending-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color 0.25s ease;
+  white-space: nowrap;
+}
+
+.ending-tab.active .ending-label {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.ending-tab:not(.active):hover .ending-label {
+  color: var(--text-primary);
+}
+
+.ending-tab:active {
+  transform: scale(0.96);
+}
+
+/* Section card for level grid */
+.section-card {
+  background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  height: calc(100vh - 200px);
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
 }
 
-.group-header::before {
+/* Top highlight effect */
+.section-card::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at left, rgba(var(--primary-rgb, 99, 102, 241), 0.1) 0%, transparent 70%);
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
+}
+
+/* Custom scrollbar */
+.section-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.section-card::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+
+.section-card::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-color-rgb), 0.3);
+  border-radius: var(--radius-xs);
+  transition: background 0.2s ease;
+}
+
+.section-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--accent-color-rgb), 0.5);
+}
+
+/* Transition animations */
+.level-grid-fade-enter-active,
+.level-grid-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+
+.level-grid-fade-enter-from,
+.level-grid-fade-leave-to {
   opacity: 0;
-  transition: opacity var(--transition-normal) var(--ease-default);
-}
-
-.group-header:hover {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--primary) 6%, var(--bg-secondary)) 0%,
-    var(--bg-secondary) 100%
-  );
-}
-
-.group-header:hover::before {
-  opacity: 1;
-}
-
-.group-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-  flex: 1;
-  position: relative;
-  z-index: 1;
-}
-
-.group-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 26px;
-  height: 26px;
-  padding: 0 10px;
-  border-radius: var(--radius-pill);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-  color: white;
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent);
-  transition: all var(--transition-normal) var(--ease-default);
-  position: relative;
-  z-index: 1;
-}
-
-.group-header:hover .group-count {
-  transform: scale(1.05);
-}
-
-.group-chevron {
-  color: var(--text-tertiary);
-  font-size: 13px;
-  transition: all var(--transition-normal) var(--ease-default);
-  position: relative;
-  z-index: 1;
-}
-
-.level-group:not(.is-collapsed) .group-chevron {
-  transform: rotate(0deg);
-  color: var(--primary);
-}
-
-/* Collapse body with smooth animation */
-.group-body {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.level-group.is-collapsed .group-body {
-  grid-template-rows: 0fr;
-}
-
-.group-body > .level-grid {
-  overflow: hidden;
-}
-
-/* Level grid with enhanced styling */
-.level-group .level-grid {
-  padding: 8px 14px 18px;
-  border-top: 1px solid var(--border-color);
-  min-height: 0;
 }
 
 /* Empty state with better styling */
@@ -1701,7 +1916,7 @@ onMounted(() => {
   color: var(--primary);
 }
 
-/* ©¥©¥ ÏìÓ¦Ê½ ©¥©¥ */
+/* é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· é”Ÿæ–¤æ‹·åº”å¼ é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹· */
 @media (max-width: 768px) {
   .basic-sections {
     max-width: 100%;
@@ -1715,6 +1930,25 @@ onMounted(() => {
   .diff-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+
+  .ending-group {
+    width: 100%;
+  }
+
+  .ending-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+
+  .ending-label {
+    font-size: 12px;
+  }
+
+  .section-card {
+    padding: 16px;
+    height: calc(100vh - 280px);
+  }
 }
 
 @media (max-width: 480px) {
@@ -1724,6 +1958,18 @@ onMounted(() => {
 
   .settings-card {
     padding: 20px;
+  }
+
+  .ending-tab {
+    padding: 6px 10px;
+  }
+
+  .ending-label {
+    font-size: 11px;
+  }
+
+  .section-card {
+    padding: 12px;
   }
 }
 
@@ -2766,4 +3012,193 @@ onMounted(() => {
     font-size: 14px;
   }
 }
+
+/* Level selector container */
+.level-selector {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Level search bar */
+.level-search {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.level-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.level-search-input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.level-search-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.1);
+}
+
+.level-search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.level-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.level-search-clear:hover {
+  color: var(--text-primary);
+}
+
+/* Level grid */
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 18px;
+  padding: 4px;
+}
+
+/* Level card */
+.level-card {
+  background: linear-gradient(160deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 0.35s ease,
+    border-color 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .level-card:hover {
+    will-change: transform;
+    transform: translateY(-8px);
+    filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.14)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.1));
+    border-color: rgba(var(--accent-color-rgb), 0.25);
+  }
+}
+
+.level-card:active {
+  transform: translateY(-3px) scale(0.98);
+  transition-duration: 0.1s;
+}
+
+.level-card.selected {
+  border-color: var(--accent-color);
+  border-width: 1.5px;
+  box-shadow: inset 0 0 0 3px rgba(var(--accent-color-rgb), 0.2);
+  filter: drop-shadow(0 8px 20px rgba(var(--accent-color-rgb), 0.15));
+  transform: translateY(-2px);
+}
+
+.level-img-wrap {
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+}
+
+.level-img-wrap :deep(.level-img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .level-card:hover .level-img-wrap :deep(.level-img) {
+    transform: scale(1.1);
+  }
+}
+
+.level-check {
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--accent-color-rgb), 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 32px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
+
+.level-name {
+  display: block;
+  padding: 14px 12px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .level-card:hover .level-name {
+    color: var(--accent-color);
+  }
+}
+
+.level-card.selected .level-name {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+/* Level empty state */
+.level-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--text-tertiary);
+}
+
+.level-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.level-empty span {
+  font-size: 14px;
+}
+
 </style>

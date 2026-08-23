@@ -1,7 +1,11 @@
 <template>
   <div
-id="titlebar" data-tauri-drag-region class="titlebar" style="padding-left: 12px"
-    :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+    id="titlebar"
+    data-tauri-drag-region
+    class="titlebar"
+    style="padding-left: 12px"
+    :class="{ 'sidebar-collapsed': sidebarCollapsed }"
+  >
     <div class="titlebar-content" data-tauri-drag-region>
       <div class="title-section" data-tauri-drag-region>
         <transition name="text-swift" mode="out-in">
@@ -56,21 +60,21 @@ const sidebarCollapsed = ref(false);
 
 // Vue方法定义
 const handleMinimize = () => {
-  console.log("最小化按钮被点击");
+  console.info("最小化按钮被点击");
   appWindow.minimize().catch((err) => {
     console.error("最小化失败:", err);
   });
 };
 
 const handleMaximize = () => {
-  console.log("最大化按钮被点击");
+  console.info("最大化按钮被点击");
   appWindow.toggleMaximize().catch((err) => {
     console.error("最大化失败:", err);
   });
 };
 
 const handleClose = () => {
-  console.log("关闭按钮被点击");
+  console.info("关闭按钮被点击");
   appWindow.close().catch((err) => {
     console.error("关闭失败:", err);
   });
@@ -99,16 +103,16 @@ onMounted(() => {
       // 检查点击的是否是按钮区域
       const isButtonClick = e.target.closest(".titlebar-button");
       if (isButtonClick) {
-        console.log("点击的是按钮区域，不触发拖拽");
+        console.info("点击的是按钮区域，不触发拖拽");
         return;
       }
 
       if (e.buttons === 1) {
         if (e.detail === 2) {
-          console.log("双击最大化");
+          console.info("双击最大化");
           appWindow.toggleMaximize();
         } else {
-          console.log("开始拖拽");
+          console.info("开始拖拽");
           appWindow.startDragging();
         }
       }

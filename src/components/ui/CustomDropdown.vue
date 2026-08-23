@@ -4,7 +4,7 @@
       <transition name="text-swift" mode="out-in">
         <span :key="(selectedLabel || placeholderText) + '-' + $i18n.locale" class="dropdown-text">{{
           selectedLabel || placeholderText
-          }}</span>
+        }}</span>
       </transition>
       <span class="dropdown-icon">▼</span>
     </div>
@@ -13,8 +13,12 @@
       <transition name="dropdown" @enter="handleMenuEnter" @leave="handleMenuLeave">
         <div v-if="isOpen" ref="menuRef" class="dropdown-menu" :style="menuStyle">
           <div
-v-for="option in options" :key="option.value + '-' + $i18n.locale" class="dropdown-option"
-            :class="{ selected: option.value === modelValue }" @click="selectOption(option)">
+            v-for="option in options"
+            :key="option.value + '-' + $i18n.locale"
+            class="dropdown-option"
+            :class="{ selected: option.value === modelValue }"
+            @click="selectOption(option)"
+          >
             <transition name="text-swift" mode="out-in">
               <span :key="option.label + '-' + $i18n.locale">{{ option.label }}</span>
             </transition>
@@ -224,12 +228,7 @@ const { updateMenuPosition } = useDropdownPosition(dropdownRef, menuRef, isOpen,
 
 const { handleMenuEnter, handleMenuLeave } = useDropdownAnimations(menuRef, isAnimating);
 
-const { toggleDropdown, selectOption } = useDropdownActions(
-  props,
-  emit,
-  isOpen,
-  isAnimating,
-);
+const { toggleDropdown, selectOption } = useDropdownActions(props, emit, isOpen, isAnimating);
 
 const handleClickOutside = (event) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {

@@ -1,23 +1,31 @@
 <template>
   <div
-class="archive-card" :class="{
-    'archive-hidden': !localVisible,
-    'visibility-transitioning': isAnimating,
-    'multi-select-mode': isMultiSelectMode,
-    'is-selected': isSelected,
-  }" @click="handleCardClick">
+    class="archive-card"
+    :class="{
+      'archive-hidden': !localVisible,
+      'visibility-transitioning': isAnimating,
+      'multi-select-mode': isMultiSelectMode,
+      'is-selected': isSelected,
+    }"
+    @click="handleCardClick"
+  >
     <!-- Multi-select mode checkbox -->
     <div
-v-if="isMultiSelectMode" class="multi-select-checkbox" :class="{ 'is-checked': isSelected }"
-      @click.stop="toggleSelection">
+      v-if="isMultiSelectMode"
+      class="multi-select-checkbox"
+      :class="{ 'is-checked': isSelected }"
+      @click.stop="toggleSelection"
+    >
       <font-awesome-icon :icon="isSelected ? 'fa-solid fa-check' : 'fa-regular fa-circle'" class="check-icon" />
     </div>
 
     <!-- Upper background area -->
     <div class="card-background">
       <LazyImage
-:src="cardData?.backgroundImage ?? ''" :alt="cardData?.currentLevelName ?? ''"
-        image-class="background-image" />
+        :src="cardData?.backgroundImage ?? ''"
+        :alt="cardData?.currentLevelName ?? ''"
+        image-class="background-image"
+      />
       <div class="background-overlay"></div>
 
       <!-- Hidden status badge -->
@@ -33,18 +41,25 @@ v-if="isMultiSelectMode" class="multi-select-checkbox" :class="{ 'is-checked': i
         <h3 class="archive-name" v-html="sanitize(highlightedName)"></h3>
         <div class="game-mode-info">
           <span
-class="difficulty-tag" :class="cardData?.archiveDifficultyClass ?? ''"
-            :style="archiveDifficultyTagStyle">
+            class="difficulty-tag"
+            :class="cardData?.archiveDifficultyClass ?? ''"
+            :style="archiveDifficultyTagStyle"
+          >
             <span class="tag-short">{{ cardData?.archiveDifficultyText ?? "" }}</span>
-            <span class="tag-full">{{ t("archiveCard.archiveDifficulty") }}：{{ cardData?.archiveDifficultyText ?? ""
-            }}</span>
+            <span class="tag-full"
+              >{{ t("archiveCard.archiveDifficulty") }}：{{ cardData?.archiveDifficultyText ?? "" }}</span
+            >
           </span>
           <span
-v-if="!FEATURES.MERGE_DIFFICULTY" class="difficulty-tag" :class="cardData?.actualDifficultyClass ?? ''"
-            :style="actualDifficultyTagStyle">
+            v-if="!FEATURES.MERGE_DIFFICULTY"
+            class="difficulty-tag"
+            :class="cardData?.actualDifficultyClass ?? ''"
+            :style="actualDifficultyTagStyle"
+          >
             <span class="tag-short">{{ cardData?.actualDifficultyText ?? "" }}</span>
-            <span class="tag-full">{{ t("archiveCard.actualDifficulty") }}：{{ cardData?.actualDifficultyText ?? ""
-            }}</span>
+            <span class="tag-full"
+              >{{ t("archiveCard.actualDifficulty") }}：{{ cardData?.actualDifficultyText ?? "" }}</span
+            >
           </span>
         </div>
       </div>
@@ -55,21 +70,30 @@ v-if="!FEATURES.MERGE_DIFFICULTY" class="difficulty-tag" :class="cardData?.actua
       <span class="current-level" v-html="sanitize(highlightedLevel)"></span>
       <div class="action-buttons">
         <button
-class="action-btn edit" type="button" :aria-label="$t('archiveCard.editLabel')"
-          @click.stop="editArchive">
+          class="action-btn edit"
+          type="button"
+          :aria-label="$t('archiveCard.editLabel')"
+          @click.stop="editArchive"
+        >
           <font-awesome-icon icon="fa-solid fa-edit" aria-hidden="true" />
         </button>
         <button
-class="action-btn copy" type="button"
+          class="action-btn copy"
+          type="button"
           :aria-label="cardData?.isVisible ? $t('archiveCard.hideLabel') : $t('archiveCard.showLabel')"
-          @click.stop="toggleVisibility">
+          @click.stop="toggleVisibility"
+        >
           <font-awesome-icon
-:icon="cardData?.isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"
-            aria-hidden="true" />
+            :icon="cardData?.isVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"
+            aria-hidden="true"
+          />
         </button>
         <button
-class="action-btn delete" type="button" :aria-label="$t('archiveCard.deleteLabel')"
-          @click.stop="deleteArchive">
+          class="action-btn delete"
+          type="button"
+          :aria-label="$t('archiveCard.deleteLabel')"
+          @click.stop="deleteArchive"
+        >
           <font-awesome-icon icon="fa-solid fa-trash" aria-hidden="true" />
         </button>
       </div>
@@ -162,9 +186,23 @@ const actualDifficultyTagStyle = computed(() =>
   tagStyle(cardData.value?.actualDifficultyText ?? "", t("archiveCard.actualDifficulty")),
 );
 
+/** What the game shows in its lobby: the MAINSAVE display-name mapping when
+ *  present, otherwise the filename-derived name. */
+const resolvedName = computed(() => {
+  const dn = props.archive.displayName?.trim();
+  return dn ? dn : props.archive.name;
+});
+
 const highlightedName = computed(() => {
-  if (!props.searchQuery) return props.archive.name;
-  return highlightMatch(props.archive.name, props.searchQuery);
+  if (!props.searchQuery) return resolvedName.value;
+  // Match against BOTH names so searching "GENSAVE25" still finds an archive
+  // displayed as its custom name (and vice versa).
+  const hitResolved = highlightMatch(resolvedName.value, props.searchQuery);
+  const other =
+    props.archive.name !== resolvedName.value ? props.archive.name : props.archive.displayName ?? "";
+  if (hitResolved.includes("<mark")) return hitResolved;
+  const hitOther = other ? highlightMatch(other, props.searchQuery) : "";
+  return hitOther.includes("<mark") ? hitOther : hitResolved;
 });
 
 const highlightedLevel = computed(() => {
@@ -285,11 +323,13 @@ const toggleSelection = () => {
 .background-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.1) 30%,
-      rgba(0, 0, 0, 0.4) 60%,
-      rgba(0, 0, 0, 0.7) 100%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 30%,
+    rgba(0, 0, 0, 0.4) 60%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
   transition: opacity 0.25s ease;
 }
 
@@ -612,11 +652,13 @@ const toggleSelection = () => {
 
 /* Hidden state: background overlay unchanged, keeping image content visible */
 .archive-hidden .background-overlay {
-  background: linear-gradient(180deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.1) 30%,
-      rgba(0, 0, 0, 0.4) 60%,
-      rgba(0, 0, 0, 0.7) 100%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 30%,
+    rgba(0, 0, 0, 0.4) 60%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
 }
 
 /* Hidden state: archive name slightly softened */

@@ -248,11 +248,11 @@ const {
   border-radius: var(--radius-circle);
 }
 
-input:checked+.toggle-slider {
+input:checked + .toggle-slider {
   background-color: var(--primary-color);
 }
 
-input:checked+.toggle-slider:before {
+input:checked + .toggle-slider:before {
   transform: translateX(26px);
 }
 

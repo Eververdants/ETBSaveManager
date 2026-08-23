@@ -1,0 +1,72 @@
+{
+  "description": "安装和管理游戏模组（UE4SS 与 Nightmare Save Unlocker）",
+  "gamePath": {
+    "title": "游戏路径",
+    "notSet": "尚未设置游戏根目录",
+    "choose": "选择游戏文件夹",
+    "openFolder": "打开模组目录",
+    "valid": "已识别为 Escape The Backrooms 游戏目录",
+    "invalidPathNotFound": "该文件夹不存在",
+    "invalidNotGameRoot": "未找到有效的游戏结构（需要 EscapeTheBackrooms/Binaries/Win64）",
+    "saved": "游戏路径已保存",
+    "detected": "已自动检测到游戏安装路径",
+    "validShort": "有效",
+    "invalidShort": "无效"
+  },
+  "progress": {
+    "installing": "正在处理",
+    "resolve": "获取版本信息",
+    "download": "下载中",
+    "extract": "解压安装",
+    "done": "完成"
+  },
+  "common": {
+    "uninstall": "卸载"
+  },
+  "status": {
+        "label": "状态",
+    "notInstalled": "未安装",
+    "installed": "已安装",
+    "installedDisabled": "已安装（未启用）",
+    "detectedUnmanaged": "检测到已存在（非本工具安装）"
+  },
+  "ue4ss": {
+    "author": "作者：EscapeTheBackroomsCommunity",
+    "desc": "UE4SS 是 Unreal Engine 的 Lua 脚本注入框架，是运行各类 UE 模组的必备前置。推荐版本经过社区验证，最新版包含最新的修复与特性。",
+    "installRecommended": "安装推荐版 (1.3.0)",
+    "installLatest": "安装最新版",
+    "channelRecommended": "推荐版",
+    "channelLatest": "最新版",
+    "uninstallTitle": "卸载 UE4SS？",
+    "uninstallMessage": "将先删除所有依赖 UE4SS 的第三方模组，然后删除 UE4SS 本体。此操作不可撤销。",
+    "uninstallNoDependents": "未检测到依赖 UE4SS 的第三方模组。",
+    "uninstallDependentsPrefix": "以下第三方模组将被一并删除："
+  },
+  "nsu": {
+    "name": "Nightmare Save Unlocker",
+    "author": "作者：Eververdants",
+    "desc": "解锁噩梦难度的存档功能。安装后会在 ue4ss/Mods 中注册并自动启用，可通过开关随时启停。",
+    "install": "安装",
+    "enabled": "启用",
+    "enableDesc": "启用或禁用此模组（修改 mods.txt）",
+    "requiresUe4ss": "需要先安装 UE4SS",
+    "uninstallTitle": "卸载 Nightmare Save Unlocker？",
+    "uninstallMessage": "将从 ue4ss/Mods 中移除此模组，并清理 mods.txt 条目。UE4SS 本体不受影响。"
+  },
+  "toast": {
+    "ue4ssInstalled": "UE4SS v{version} 安装成功",
+    "nsuInstalled": "Nightmare Save Unlocker v{version} 安装成功",
+    "ue4ssUninstalled": "UE4SS 已卸载",
+    "ue4ssUninstalledWithDeps": "UE4SS 及依赖它的模组（{mods}）已卸载",
+    "nsuUninstalled": "Nightmare Save Unlocker 已卸载",
+    "nsuEnabledOn": "Nightmare Save Unlocker 已启用",
+    "nsuEnabledOff": "Nightmare Save Unlocker 已禁用"
+  },
+  "errors": {
+    "ue4ssNotInstalled": "请先安装 UE4SS 再执行此操作",
+    "nsuNotInstalled": "Nightmare Save Unlocker 尚未安装",
+    "invalidGameRoot": "游戏路径无效，请重新选择",
+    "permissionDenied": "文件被占用或权限不足——请确认游戏已关闭后重试",
+    "network": "网络错误：{error}"
+  }
+}

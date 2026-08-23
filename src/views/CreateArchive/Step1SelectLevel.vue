@@ -5,14 +5,20 @@
       <div ref="endingGroupRef" class="ending-group">
         <!-- Sliding highlight indicator -->
         <div
-class="ending-slider" :style="{
-          width: `${sliderState.width}px`,
-          transform: `translateX(${sliderState.left}px)`,
-          opacity: sliderState.active ? 1 : 0,
-        }" />
+          class="ending-slider"
+          :style="{
+            width: `${sliderState.width}px`,
+            transform: `translateX(${sliderState.left}px)`,
+            opacity: sliderState.active ? 1 : 0,
+          }"
+        />
         <div
-v-for="(ending, index) in endings" :key="index" class="ending-tab"
-          :class="{ active: selectedEnding === index }" @click="handleEndingClick(index)">
+          v-for="(ending, index) in endings"
+          :key="index"
+          class="ending-tab"
+          :class="{ active: selectedEnding === index }"
+          @click="handleEndingClick(index)"
+        >
           <span class="ending-label">{{ ending.label }}</span>
         </div>
       </div>
@@ -23,8 +29,12 @@ v-for="(ending, index) in endings" :key="index" class="ending-tab"
       <Transition name="level-grid-fade" mode="out-in">
         <div :key="selectedEnding" class="level-grid">
           <div
-v-for="(level, index) in availableLevels" :key="level.levelKey" class="level-card"
-            :class="{ selected: selectedLevel === index }" @click="handleSelectLevel(index, $event)">
+            v-for="(level, index) in availableLevels"
+            :key="level.levelKey"
+            class="level-card"
+            :class="{ selected: selectedLevel === index }"
+            @click="handleSelectLevel(index, $event)"
+          >
             <div class="level-image-container">
               <LazyImage :src="level.image" :alt="level.name" image-class="level-image" />
               <div class="level-overlay">
@@ -156,7 +166,8 @@ const handleSelectLevel = (index, event) => {
   height: calc(100% - 8px);
   background: var(--accent-color);
   border-radius: var(--radius-md);
-  filter: drop-shadow(0 2px 8px rgba(var(--accent-color-rgb), 0.35)) drop-shadow(0 1px 3px rgba(var(--accent-color-rgb), 0.2));
+  filter: drop-shadow(0 2px 8px rgba(var(--accent-color-rgb), 0.35))
+    drop-shadow(0 1px 3px rgba(var(--accent-color-rgb), 0.2));
   pointer-events: none;
   transition:
     transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),

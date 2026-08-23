@@ -18,19 +18,19 @@
   /* ==========================================
    * 背景层级 (Background Hierarchy)
    * ========================================== */
-  --bg: #FAFAFB;
-  --bg-primary: #FAFAFB;
-  --bg-secondary: #F2F2F3;
-  --bg-tertiary: #E3E3E5;
-  --bg-hover: #D3DEF0;
+  --bg: #fafafb;
+  --bg-primary: #fafafb;
+  --bg-secondary: #f2f2f3;
+  --bg-tertiary: #e3e3e5;
+  --bg-hover: #d3def0;
   --bg-elevated: #ffffff;
 
   /* ==========================================
    * 文本层级 (Text Hierarchy)
    * ========================================== */
-  --text: #3D5170;
-  --text-color: #3D5170;
-  --text-primary: #3D5170;
+  --text: #3d5170;
+  --text-color: #3d5170;
+  --text-primary: #3d5170;
   --text-secondary: rgba(61, 81, 112, 0.72);
   --text-tertiary: rgba(61, 81, 112, 0.48);
   --text-disabled: rgba(61, 81, 112, 0.28);
@@ -39,9 +39,9 @@
   /* ==========================================
    * 表面/卡片 (Surface/Card)
    * ========================================== */
-  --surface-color: #F2F2F3;
-  --surface-hover: #FAFAFB;
-  --card-bg: #F2F2F3;
+  --surface-color: #f2f2f3;
+  --surface-hover: #fafafb;
+  --card-bg: #f2f2f3;
 
   /* ==========================================
    * 边框/分割线 (Border/Divider)
@@ -54,12 +54,12 @@
   /* ==========================================
    * 主色调 (Primary Colors)
    * ========================================== */
-  --primary: #6F94CD;
-  --primary-hover: #5E7DAE;
-  --primary-color: #6F94CD;
-  --secondary-color: #97AFD5;
-  --accent-color: #6F94CD;
-  --accent-hover: #5E7DAE;
+  --primary: #6f94cd;
+  --primary-hover: #5e7dae;
+  --primary-color: #6f94cd;
+  --secondary-color: #97afd5;
+  --accent-color: #6f94cd;
+  --accent-hover: #5e7dae;
 
   /* ==========================================
    * 状态颜色 (Status Colors)
@@ -67,19 +67,19 @@
   --success-color: #16a34a;
   --error-color: #dc2626;
   --warning-color: #d97706;
-  --info-color: #6F94CD;
+  --info-color: #6f94cd;
 
   /* ==========================================
    * 侧边栏 (Sidebar)
    * ========================================== */
   --bg-sidebar: rgba(250, 250, 251, 0.95);
   --sidebar-bg: rgba(250, 250, 251, 0.95);
-  --sidebar-text-color: #3D5170;
+  --sidebar-text-color: #3d5170;
   --sidebar-border-color: rgba(111, 148, 205, 0.18);
   --sidebar-hover-bg: rgba(111, 148, 205, 0.1);
   --sidebar-item-hover-bg: rgba(111, 148, 205, 0.1);
   --sidebar-active-bg: rgba(111, 148, 205, 0.15);
-  --sidebar-active-color: #5E7DAE;
+  --sidebar-active-color: #5e7dae;
   --sidebar-active-border: rgba(111, 148, 205, 0.5);
   --sidebar-active-hover-bg: rgba(111, 148, 205, 0.2);
 
@@ -103,12 +103,12 @@
   --dropdown-bg: rgba(242, 242, 243, 0.98);
   --dropdown-border: rgba(111, 148, 205, 0.25);
   --dropdown-border-hover: rgba(111, 148, 205, 0.4);
-  --dropdown-text: #3D5170;
+  --dropdown-text: #3d5170;
   --dropdown-icon: rgba(61, 81, 112, 0.5);
   --dropdown-shadow: 0 8px 32px rgba(111, 148, 205, 0.15);
   --dropdown-shadow-hover: 0 12px 40px rgba(111, 148, 205, 0.2);
   --dropdown-hover-bg: rgba(111, 148, 205, 0.08);
-  --dropdown-selected-bg: #6F94CD;
+  --dropdown-selected-bg: #6f94cd;
   --dropdown-selected-text: #ffffff;
   --dropdown-selected-border: rgba(111, 148, 205, 0.4);
 
@@ -138,7 +138,7 @@
   --card-border: 1px solid rgba(111, 148, 205, 0.18);
   --card-padding: 16px;
   --card-highlight: linear-gradient(135deg, rgba(111, 148, 205, 0.08) 0%, transparent 50%);
-  --card-active-indicator: #6F94CD;
+  --card-active-indicator: #6f94cd;
   --card-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --card-hover-transform: translateY(-2px);
 
@@ -150,8 +150,8 @@
   --Card-border-color: var(--divider-color);
   --Card-shadow-normal: var(--card-shadow);
   --Card-shadow-hover: var(--card-shadow-hover);
-  --Card-accent-primary: #6F94CD;
-  --Card-accent-secondary: #5E7DAE;
+  --Card-accent-primary: #6f94cd;
+  --Card-accent-secondary: #5e7dae;
   --Card-text-primary: var(--text-primary);
   --Card-text-secondary: var(--text-secondary);
   --Card-surface-overlay: rgba(111, 148, 205, 0.1);

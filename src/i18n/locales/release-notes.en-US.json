@@ -9,8 +9,6 @@
     "bugFixes": [
       "Fixed save data not binding when creating an archive with a bare Steam ID (empty backpack, sanity reset)"
     ],
-    "performance": [
-      "Slimmed down the bundle for faster startup"
-    ]
+    "performance": ["Slimmed down the bundle for faster startup"]
   }
 }

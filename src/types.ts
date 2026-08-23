@@ -107,6 +107,8 @@ export interface ValidationResult {
 export interface ArchiveData {
   id: number;
   name: string;
+  /** Display name from MAINSAVE's SaveDisplayNamesLookup (what the game shows). */
+  displayName?: string | null;
   currentLevel: string;
   gameMode: string;
   archiveDifficulty: string;

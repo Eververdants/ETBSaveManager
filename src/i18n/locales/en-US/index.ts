@@ -26,6 +26,7 @@ import k_performanceMonitor from "./performanceMonitor.json";
 import k_createMode from "./createMode.json";
 import k_quickCreate from "./quickCreate.json";
 import k_errorBoundary from "./errorBoundary.json";
+import k_mods from "./mods.json";
 
 export default {
   sidebar: k_sidebar,
@@ -56,4 +57,5 @@ export default {
   createMode: k_createMode,
   quickCreate: k_quickCreate,
   errorBoundary: k_errorBoundary,
+  mods: k_mods,
 };

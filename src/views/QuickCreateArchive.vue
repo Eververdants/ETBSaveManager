@@ -9,14 +9,21 @@
         <h1 class="page-title">{{ $t("quickCreate.title") }}</h1>
       </div>
       <div class="header-right">
-        <div v-if="state.isCreating" class="progress-section">
+        <div v-if="quickCreateState.isCreating" class="progress-section">
           <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: `${state.creationProgress}%` }" />
+            <div class="progress-fill" :style="{ width: `${quickCreateState.creationProgress}%` }" />
           </div>
         </div>
         <button class="create-btn" :disabled="!canCreate" @click="handleCreate">
-          <font-awesome-icon :icon="state.isCreating ? ['fas', 'spinner'] : ['fas', 'plus']" :spin="state.isCreating" />
-          {{ state.isCreating ? $t("quickCreate.creating") : $t("quickCreate.create", { count: archiveNames.length }) }}
+          <font-awesome-icon
+            :icon="quickCreateState.isCreating ? ['fas', 'spinner'] : ['fas', 'plus']"
+            :spin="quickCreateState.isCreating"
+          />
+          {{
+            quickCreateState.isCreating
+              ? $t("quickCreate.creating")
+              : $t("quickCreate.create", { count: archiveNames.length })
+          }}
         </button>
       </div>
     </header>
@@ -25,7 +32,7 @@
     <main class="quick-create-main">
       <!-- Left: Level grid (7) -->
       <div class="main-left">
-        <LevelCheckGrid v-model="state.selectedLevelKeys" :levels="currentLevels" />
+        <LevelCheckGrid v-model="simplifiedState.selectedLevelKeys" :levels="currentLevels" />
       </div>
 
       <!-- Right: Preview + Options (3) -->
@@ -35,12 +42,14 @@
           <div class="option-group">
             <label class="option-label">{{ $t("quickCreate.options.difficulty") }}</label>
             <CustomDropdown
-:model-value="state.difficulty" :options="difficultyOptions"
-              @update:model-value="setDifficulty" />
+              :model-value="simplifiedState.difficulty"
+              :options="difficultyOptions"
+              @update:model-value="setDifficulty"
+            />
           </div>
           <div class="option-group">
             <label class="option-label">{{ $t("quickCreate.options.copies") }}</label>
-            <NumberSelector :model-value="state.copies" :min="1" :max="99" @update:model-value="setCopies" />
+            <NumberSelector :model-value="simplifiedState.copies" :min="1" :max="99" @update:model-value="setCopies" />
           </div>
         </div>
 
@@ -56,10 +65,11 @@
           <div class="result-modal-header">
             <h3 class="result-modal-title">
               <font-awesome-icon
-                :icon="creationResult?.failed > 0 ? ['fas', 'exclamation-triangle'] : ['fas', 'check-circle']"
-                :class="creationResult?.failed > 0 ? 'warning-icon' : 'success-icon'" />
+                :icon="(creationResult?.failed ?? 0) > 0 ? ['fas', 'exclamation-triangle'] : ['fas', 'check-circle']"
+                :class="(creationResult?.failed ?? 0) > 0 ? 'warning-icon' : 'success-icon'"
+              />
               {{
-                creationResult?.failed > 0
+                (creationResult?.failed ?? 0) > 0
                   ? $t("quickCreate.result.partialTitle")
                   : $t("quickCreate.result.successTitle")
               }}
@@ -74,12 +84,12 @@
                 <span class="result-value">{{ creationResult?.success || 0 }}</span>
                 <span class="result-label">{{ $t("quickCreate.result.successCount") }}</span>
               </div>
-              <div v-if="creationResult?.failed > 0" class="result-stat error">
+              <div v-if="(creationResult?.failed ?? 0) > 0" class="result-stat error">
                 <span class="result-value">{{ creationResult?.failed || 0 }}</span>
                 <span class="result-label">{{ $t("quickCreate.result.failedCount") }}</span>
               </div>
             </div>
-            <div v-if="creationResult?.errors?.length > 0" class="error-details">
+            <div v-if="creationResult?.errors && creationResult.errors.length > 0" class="error-details">
               <h4 class="error-details-title">{{ $t("quickCreate.result.errorDetails") }}</h4>
               <ul class="error-list">
                 <li v-for="(err, idx) in creationResult.errors" :key="idx" class="error-item">
@@ -104,12 +114,14 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { useQuickCreateSimplified } from "@/composables/useQuickCreateSimplified";
+import type { DifficultyLevel, QuickCreateBatchResult } from "@/types";
+import { useQuickCreate } from "@/composables/useQuickCreate";
 import { notify } from "@/services/notificationService";
+import { ENDING_LEVELS } from "@/data/endingsData";
 import LevelCheckGrid from "@/components/quickCreate/LevelCheckGrid.vue";
 import PreviewList from "@/components/quickCreate/PreviewList.vue";
 import CustomDropdown from "@/components/ui/CustomDropdown.vue";
@@ -118,10 +130,22 @@ import NumberSelector from "@/components/ui/NumberSelector.vue";
 const router = useRouter();
 const { t } = useI18n({ useScope: "global" });
 
-const { state, currentLevels, archiveNames, canCreate, setDifficulty, setCopies, batchCreate, reset } =
-  useQuickCreateSimplified();
+// Simplified mode: use basic level selection and creation
+const simplifiedState = ref({
+  selectedLevelKeys: [] as string[],
+  difficulty: "normal" as DifficultyLevel,
+  copies: 1,
+});
 
-const creationResult = ref(null);
+const {
+  state: quickCreateState,
+  batchCreateArchives: quickCreateBatchCreate,
+  addArchive,
+  updateUniformConfig,
+  resetState,
+} = useQuickCreate();
+
+const creationResult = ref<QuickCreateBatchResult | null>(null);
 const showResultModal = ref(false);
 
 const difficultyOptions = computed(() => [
@@ -131,24 +155,76 @@ const difficultyOptions = computed(() => [
   { value: "nightmare", label: t("createArchive.difficultyLevels.nightmare") },
 ]);
 
+// Computed properties for simplified mode
+const currentLevels = computed(() => {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const key of [0, 1, 2, 3] as const) {
+    for (const level of ENDING_LEVELS[key] || []) {
+      if (!seen.has(level)) {
+        seen.add(level);
+        result.push(level);
+      }
+    }
+  }
+  return result;
+});
+
+const archiveNames = computed(() => {
+  const names: string[] = [];
+  for (const levelKey of simplifiedState.value.selectedLevelKeys) {
+    if (simplifiedState.value.copies <= 1) {
+      names.push(levelKey);
+    } else {
+      for (let i = 1; i <= simplifiedState.value.copies; i++) {
+        names.push(`${levelKey}(${i})`);
+      }
+    }
+  }
+  return names;
+});
+
+const canCreate = computed(() => simplifiedState.value.selectedLevelKeys.length > 0 && !quickCreateState.isCreating);
+
+const setDifficulty = (d: string) => {
+  simplifiedState.value.difficulty = d as DifficultyLevel;
+};
+
+const setCopies = (n: number) => {
+  simplifiedState.value.copies = Math.max(1, n);
+};
+
 const goBack = () => router.push("/select-create-mode");
 
 const handleCreate = async () => {
   if (!canCreate.value) return;
   try {
-    creationResult.value = await batchCreate();
+    // Add archives to quick create state
+    for (const levelKey of simplifiedState.value.selectedLevelKeys) {
+      const copies = simplifiedState.value.copies;
+      for (let i = 1; i <= copies; i++) {
+        const name = copies > 1 ? `${levelKey}(${i})` : levelKey;
+        addArchive(name);
+      }
+    }
+    // Set uniform config
+    updateUniformConfig("difficulty", { enabled: true, value: simplifiedState.value.difficulty });
+    // Create archives
+    creationResult.value = await quickCreateBatchCreate();
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     creationResult.value = {
       success: 0,
-      failed: state.selectedLevelKeys.length,
-      errors: [{ name: "all", error: String(error?.message || "Unknown error") }],
+      failed: simplifiedState.value.selectedLevelKeys.length,
+      errors: [{ name: "all", error: errorMessage }],
     };
   }
-  if (creationResult.value.success > 0 && creationResult.value.failed === 0) {
+  if (creationResult.value && creationResult.value.success > 0 && creationResult.value.failed === 0) {
     notify.success(t("quickCreate.result.successTitle"));
     setTimeout(() => {
       closeResultModal();
-      reset();
+      resetState();
+      simplifiedState.value.selectedLevelKeys = [];
       router.push("/");
     }, 1500);
   } else {
@@ -163,7 +239,8 @@ const closeResultModal = () => {
 
 const navigateToArchives = () => {
   closeResultModal();
-  reset();
+  resetState();
+  simplifiedState.value.selectedLevelKeys = [];
   router.push("/");
 };
 </script>

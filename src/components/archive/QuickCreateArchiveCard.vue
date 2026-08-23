@@ -1,7 +1,9 @@
 <template>
   <div
-class="quick-archive-card" :class="[borderStatusClass, { selected: selected }]"
-    @click="$emit('select', archive.id)">
+    class="quick-archive-card"
+    :class="[borderStatusClass, { selected: selected }]"
+    @click="$emit('select', archive.id)"
+  >
     <!-- 卡片头部：名称和状态图标 -->
     <div class="card-header">
       <div class="card-name-wrapper">
@@ -11,8 +13,10 @@ class="quick-archive-card" :class="[borderStatusClass, { selected: selected }]"
             <font-awesome-icon :icon="['fas', 'exclamation-triangle']" />
           </span>
           <span
-v-if="archive.hasIndividualSettings" class="status-icon modified"
-            :title="$t('quickCreate.card.modified')">
+            v-if="archive.hasIndividualSettings"
+            class="status-icon modified"
+            :title="$t('quickCreate.card.modified')"
+          >
             <font-awesome-icon :icon="['fas', 'wrench']" />
           </span>
         </div>
@@ -88,8 +92,10 @@ v-if="archive.hasIndividualSettings" class="status-icon modified"
         <font-awesome-icon :icon="['fas', 'copy']" />
       </button>
       <button
-class="action-btn remove" :title="$t('quickCreate.card.remove')"
-        @click.stop="$emit('remove', archive.id)">
+        class="action-btn remove"
+        :title="$t('quickCreate.card.remove')"
+        @click.stop="$emit('remove', archive.id)"
+      >
         <font-awesome-icon :icon="['fas', 'times']" />
       </button>
     </div>

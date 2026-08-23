@@ -18,8 +18,13 @@
       <div class="tab-nav">
         <div class="tab-highlight" :style="highlightStyle"></div>
         <button
-v-for="(tab, index) in tabs" :key="tab.id" :ref="(el) => (tabRefs[index] = el)" class="tab-btn"
-          :class="{ active: activeTab === tab.id }" @click="switchTab(tab.id, index)">
+          v-for="(tab, index) in tabs"
+          :key="tab.id"
+          :ref="(el) => (tabRefs[index] = el)"
+          class="tab-btn"
+          :class="{ active: activeTab === tab.id }"
+          @click="switchTab(tab.id, index)"
+        >
           <font-awesome-icon :icon="tab.icon" />
           <span>{{ $t(tab.label) }}</span>
         </button>
@@ -30,9 +35,10 @@ v-for="(tab, index) in tabs" :key="tab.id" :ref="(el) => (tabRefs[index] = el)" 
           <font-awesome-icon :icon="['fas', 'times']" />
           {{ $t("common.cancel") }}
         </button>
-        <button class="btn-primary" @click="handleSaveArchive">
-          <font-awesome-icon :icon="['fas', 'save']" />
-          {{ $t("common.save") }}
+        <button class="btn-primary" :disabled="isSaving" @click="handleSaveArchive">
+          <font-awesome-icon v-if="!isSaving" :icon="['fas', 'save']" />
+          <span v-else class="save-spinner"></span>
+          {{ isSaving ? $t("editArchive.saving") : $t("common.save") }}
         </button>
       </div>
     </div>
@@ -51,8 +57,12 @@ v-for="(tab, index) in tabs" :key="tab.id" :ref="(el) => (tabRefs[index] = el)" 
             <div class="settings-card">
               <label class="card-label">{{ $t("editArchive.archiveName") }}</label>
               <input
-v-model="formData.name" type="text" class="settings-input"
-                :placeholder="$t('editArchive.archiveNamePlaceholder')" maxlength="50" />
+                v-model="formData.name"
+                type="text"
+                class="settings-input"
+                :placeholder="$t('editArchive.archiveNamePlaceholder')"
+                maxlength="50"
+              />
             </div>
           </div>
 
@@ -67,9 +77,12 @@ v-model="formData.name" type="text" class="settings-input"
                 <label class="card-label">{{ $t("editArchive.difficulty") }}</label>
                 <div class="diff-grid">
                   <div
-v-for="d in difficultyLevels" :key="d.value" class="diff-option"
+                    v-for="d in difficultyLevels"
+                    :key="d.value"
+                    class="diff-option"
                     :class="{ selected: formData.archiveDifficulty === d.value }"
-                    @click="formData.archiveDifficulty = d.value">
+                    @click="formData.archiveDifficulty = d.value"
+                  >
                     <font-awesome-icon :icon="d.icon" class="diff-icon" />
                     <span class="diff-text">{{ getDifficultyText(d.value) }}</span>
                   </div>
@@ -79,17 +92,20 @@ v-for="d in difficultyLevels" :key="d.value" class="diff-option"
                 <label class="card-label">{{ $t("editArchive.actualDifficulty") }}</label>
                 <div class="diff-grid">
                   <div
-v-for="d in difficultyLevels" :key="`actual-${d.value}`" class="diff-option"
+                    v-for="d in difficultyLevels"
+                    :key="`actual-${d.value}`"
+                    class="diff-option"
                     :class="{ selected: formData.actualDifficulty === d.value }"
-                    @click="formData.actualDifficulty = d.value">
+                    @click="formData.actualDifficulty = d.value"
+                  >
                     <font-awesome-icon :icon="d.icon" class="diff-icon" />
                     <span class="diff-text">{{ getDifficultyText(d.value) }}</span>
                   </div>
                 </div>
               </div>
             </div>
-            <!-- Merge difficulty hint -->
-            <div v-if="FEATURES.MERGE_DIFFICULTY" class="difficulty-hint">
+            <!-- 难度提示：NSU 模组已安装并启用时隐藏；探测完成前也不显示 -->
+            <div v-if="FEATURES.MERGE_DIFFICULTY && nsuProbed && !nsuActive" class="difficulty-hint">
               <font-awesome-icon :icon="['fas', 'info-circle']" />
               <span>{{ t("editArchive.difficultyMergeHint") }}</span>
             </div>
@@ -116,52 +132,69 @@ v-for="d in difficultyLevels" :key="`actual-${d.value}`" class="diff-option"
       <!-- Level selection -->
       <div class="tab-panel" :class="{ 'tab-active': activeTab === 'level' }">
         <div class="level-selector">
+          <!-- Ending selector (capsule style) -->
+          <div class="ending-selector">
+            <div ref="endingGroupRef" class="ending-group">
+              <!-- Sliding highlight indicator -->
+              <div
+                class="ending-slider"
+                :style="{
+                  width: `${sliderState.width}px`,
+                  transform: `translateX(${sliderState.left}px)`,
+                  opacity: sliderState.active ? 1 : 0,
+                }"
+              />
+              <div
+                v-for="(group, index) in levelGroups"
+                :key="group.id"
+                class="ending-tab"
+                :class="{ active: selectedLevelGroup === index }"
+                @click="handleLevelGroupClick(index)"
+              >
+                <span class="ending-label">{{ group.label }}</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Search bar -->
           <div class="level-search">
             <font-awesome-icon :icon="['fas', 'search']" class="level-search-icon" />
             <input
-v-model="levelSearchQuery" type="text"
+              v-model="levelSearchQuery"
+              type="text"
               class="level-search-input"
-              :placeholder="t('editArchive.levelSearchPlaceholder')" />
-            <button
-v-if="levelSearchQuery" class="level-search-clear" @click="levelSearchQuery = ''">
+              :placeholder="t('editArchive.levelSearchPlaceholder')"
+            />
+            <button v-if="levelSearchQuery" class="level-search-clear" @click="levelSearchQuery = ''">
               <font-awesome-icon :icon="['fas', 'times']" />
             </button>
           </div>
 
-          <!-- Grouped level list -->
-          <div class="level-groups">
-            <div
-v-for="group in groupedLevels" :key="group.id" class="level-group"
-              :class="{ 'is-collapsed': isGroupCollapsed(group.id) }">
-              <div class="group-header" @click="toggleGroup(group.id)">
-                <span class="group-title">{{ group.label }}</span>
-                <span class="group-count">{{ group.levels.length }}</span>
-                <font-awesome-icon
-                  :icon="['fas', isGroupCollapsed(group.id) ? 'chevron-right' : 'chevron-down']"
-                  class="group-chevron" />
-              </div>
-              <div class="group-body">
-                <div class="level-grid">
-                  <div
-v-for="level in group.levels" :key="level.levelKey" class="level-card"
-                    :class="{ selected: formData.currentLevel === level.levelKey }"
-                    @click="selectLevel(level.levelKey)">
-                    <div class="level-img-wrap">
-                      <LazyImage :src="level.image" :alt="level.name" image-class="level-img" />
-                      <div v-if="formData.currentLevel === level.levelKey" class="level-check">
-                        <font-awesome-icon :icon="['fas', 'check-circle']" />
-                      </div>
+          <!-- Level grid with transition -->
+          <div class="section-card">
+            <Transition name="level-grid-fade" mode="out-in">
+              <div :key="displayKey" class="level-grid">
+                <div
+                  v-for="level in displayedLevels"
+                  :key="level.levelKey"
+                  class="level-card"
+                  :class="{ selected: formData.currentLevel === level.levelKey }"
+                  @click="selectLevel(level.levelKey)"
+                >
+                  <div class="level-img-wrap">
+                    <LazyImage :src="level.image" :alt="level.name" image-class="level-img" />
+                    <div v-if="formData.currentLevel === level.levelKey" class="level-check">
+                      <font-awesome-icon :icon="['fas', 'check-circle']" />
                     </div>
-                    <span class="level-name">{{ level.name }}</span>
                   </div>
+                  <span class="level-name">{{ level.name }}</span>
                 </div>
               </div>
-            </div>
+            </Transition>
             <!-- Empty state -->
-            <div v-if="groupedLevels.length === 0" class="level-empty">
+            <div v-if="displayedLevels.length === 0" class="level-empty">
               <font-awesome-icon :icon="['fas', 'search']" class="level-empty-icon" />
-              <span>{{ t('editArchive.levelSearchEmpty') }}</span>
+              <span>{{ t("editArchive.levelSearchEmpty") }}</span>
             </div>
           </div>
         </div>
@@ -172,10 +205,17 @@ v-for="level in group.levels" :key="level.levelKey" class="level-card"
         <div class="players-layout">
           <!-- Player list -->
           <PlayerManager
-:players="formData.players" :active-player-index="activePlayerIndex" :new-steam-id="newSteamId"
-            :player-input-message="playerInputMessage" :player-input-message-type="playerInputMessageType"
-            :show-sanity="true" @update:new-steam-id="(val) => (newSteamId = val)" @add-steam-id="addPlayer"
-            @remove-player="removePlayer" @select-player="selectPlayer" />
+            :players="formData.players"
+            :active-player-index="activePlayerIndex"
+            :new-steam-id="newSteamId"
+            :player-input-message="playerInputMessage"
+            :player-input-message-type="playerInputMessageType"
+            :show-sanity="true"
+            @update:new-steam-id="(val) => (newSteamId = val)"
+            @add-steam-id="addPlayer"
+            @remove-player="removePlayer"
+            @select-player="selectPlayer"
+          />
 
           <!-- Player details -->
           <div v-if="activePlayerIndex !== -1 && formData.players.length > 0" class="player-detail-section">
@@ -185,15 +225,19 @@ v-for="level in group.levels" :key="level.levelKey" class="level-card"
               </Transition>
             </div>
 
-            <!-- Steam ID 编辑 -->
+            <!-- Steam ID 锟洁辑 -->
             <div class="steamid-edit-row">
               <span class="steamid-label">
                 <font-awesome-icon :icon="['fab', 'steam']" />
                 {{ $t("common.steamId") }}
               </span>
               <input
-v-model="currentPlayerSteamId" type="text" class="steamid-input"
-                @blur="onSteamIdBlur" @keyup.enter="onSteamIdBlur" />
+                v-model="currentPlayerSteamId"
+                type="text"
+                class="steamid-input"
+                @blur="onSteamIdBlur"
+                @keyup.enter="onSteamIdBlur"
+              />
             </div>
 
             <Transition name="player-detail-grid-switch" mode="out-in">
@@ -205,12 +249,15 @@ v-model="currentPlayerSteamId" type="text" class="steamid-input"
                     {{ $t("editArchive.playerSanity") }}
                   </div>
                   <div class="sanity-display">
-                    <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)">{{ currentPlayerSanity
-                    }}%</span>
+                    <span class="sanity-num" :class="getSanityClass(currentPlayerSanity)"
+                      >{{ currentPlayerSanity }}%</span
+                    >
                     <div class="sanity-bar">
                       <div
-class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }"
-                        :class="getSanityClass(currentPlayerSanity)"></div>
+                        class="sanity-fill"
+                        :style="{ width: currentPlayerSanity + '%' }"
+                        :class="getSanityClass(currentPlayerSanity)"
+                      ></div>
                     </div>
                   </div>
                   <div class="sanity-ctrl">
@@ -239,27 +286,35 @@ class="sanity-fill" :style="{ width: currentPlayerSanity + '%' }"
                   <div class="inventory-wrap">
                     <div class="hand-slots">
                       <div
-v-for="slot in 3" :key="`h-${slot}`" class="inv-slot"
+                        v-for="slot in 3"
+                        :key="`h-${slot}`"
+                        class="inv-slot"
                         :class="{ empty: !getSlotContent(activePlayerIndex, slot - 1) }"
-                        @click="editSlot(activePlayerIndex, slot - 1)">
+                        @click="editSlot(activePlayerIndex, slot - 1)"
+                      >
                         <span class="slot-label">{{ getSlotLabelText(slot - 1) }}</span>
                         <LazyImage
-v-if="getSlotContent(activePlayerIndex, slot - 1)"
+                          v-if="getSlotContent(activePlayerIndex, slot - 1)"
                           :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot - 1))}`"
-                          image-class="slot-img" />
+                          image-class="slot-img"
+                        />
                         <font-awesome-icon v-else :icon="['fas', 'hand-paper']" class="slot-placeholder" />
                       </div>
                     </div>
                     <div class="backpack-slots">
                       <div
-v-for="slot in 9" :key="`b-${slot}`" class="inv-slot"
+                        v-for="slot in 9"
+                        :key="`b-${slot}`"
+                        class="inv-slot"
                         :class="{ empty: !getSlotContent(activePlayerIndex, slot + 2) }"
-                        @click="editSlot(activePlayerIndex, slot + 2)">
+                        @click="editSlot(activePlayerIndex, slot + 2)"
+                      >
                         <span class="slot-num">{{ slot }}</span>
                         <LazyImage
-v-if="getSlotContent(activePlayerIndex, slot + 2)"
+                          v-if="getSlotContent(activePlayerIndex, slot + 2)"
                           :src="`/icons/ETB_UI/${getItemImageFile(getSlotContent(activePlayerIndex, slot + 2))}`"
-                          image-class="slot-img" />
+                          image-class="slot-img"
+                        />
                         <font-awesome-icon v-else :icon="['fas', 'cube']" class="slot-placeholder" />
                       </div>
                     </div>
@@ -281,8 +336,25 @@ v-if="getSlotContent(activePlayerIndex, slot + 2)"
 
     <!-- Item selector -->
     <InventoryItemSelector
-:visible="showItemSelector" :selected-item="selectedItem" @select="handleItemSelect"
-      @update:visible="showItemSelector = $event" />
+      :visible="showItemSelector"
+      :selected-item="selectedItem"
+      @select="handleItemSelect"
+      @update:visible="showItemSelector = $event"
+    />
+
+    <!-- Save confirmation dialog -->
+    <ConfirmModal
+      :show="showSaveConfirm"
+      :title="$t('editArchive.saveConfirm.title')"
+      :message="$t('editArchive.saveConfirm.message')"
+      :type="'info'"
+      :confirm-text="$t('editArchive.saveConfirm.confirm')"
+      :cancel-text="$t('editArchive.saveConfirm.cancel')"
+      :loading="isSaving"
+      @confirm="confirmSaveArchive"
+      @cancel="showSaveConfirm = false"
+      @update:show="showSaveConfirm = $event"
+    />
   </div>
 </template>
 
@@ -295,8 +367,10 @@ import InventoryItemSelector from "../components/feature/InventoryItemSelector.v
 import LazyImage from "../components/ui/LazyImage.vue";
 import CustomSlider from "../components/ui/CustomSlider.vue";
 import PlayerManager from "../components/system/PlayerManager.vue";
+import ConfirmModal from "../components/modal/ConfirmModal.vue";
 import { notify } from "../services/notificationService";
 import { editArchiveDataStore } from "../composables/useArchiveActions";
+import { useNsuStatus } from "../composables/useNsuStatus";
 import { formatDifficulty } from "../utils/archiveCreationUtils";
 import { stripSteamIdSuffix } from "../utils/steamIdUtils";
 import { getItemIdByName } from "../utils/itemIdMap";
@@ -387,6 +461,11 @@ const currentPlayerSanity = ref(100);
 const currentPlayerSteamId = ref("");
 const parseError = ref(false);
 const availableLevels = ref([]);
+const showSaveConfirm = ref(false);
+const isSaving = ref(false);
+
+// NSU 模组状态：未安装并启用时，难度修改无法被游戏识别
+const { nsuActive, nsuProbed, refreshNsuStatus } = useNsuStatus();
 
 const difficultyLevels = [
   { value: "easy", icon: ["fas", "smile"] },
@@ -395,19 +474,24 @@ const difficultyLevels = [
   { value: "nightmare", icon: ["fas", "skull"] },
 ];
 
-// Save archive
-const handleSaveArchive = async () => {
+// Show save confirmation dialog
+const handleSaveArchive = () => {
+  showSaveConfirm.value = true;
+};
+
+// Confirm and execute save
+const confirmSaveArchive = async () => {
   try {
+    isSaving.value = true;
+
     if (!originalArchive.value) return;
 
     const playerInventory = {};
     const playerSanity = {};
 
     formData.players.forEach((player) => {
-      // 复用存档原始完整键（含游戏生成的 UniqueNetId 后缀）；id 被用户改过则退回纯 id
-      const originalBase = player.originalSteamId
-        ? stripSteamIdSuffix(player.originalSteamId).split("-")[0]
-        : "";
+      // 锟斤拷锟矫存档原始锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷戏锟斤拷锟缴碉拷 UniqueNetId 锟斤拷缀锟斤拷锟斤拷id 锟斤拷锟矫伙拷锟侥癸拷锟斤拷锟剿回达拷 id
+      const originalBase = player.originalSteamId ? stripSteamIdSuffix(player.originalSteamId).split("-")[0] : "";
       const steamId =
         player.originalSteamId && originalBase === player.steamId.trim()
           ? player.originalSteamId
@@ -424,7 +508,9 @@ const handleSaveArchive = async () => {
       mode: "Multiplayer",
       currentLevel: formData.currentLevel,
       difficulty: formatDifficulty(formData.archiveDifficulty),
-      actualDifficulty: formatDifficulty(FEATURES.MERGE_DIFFICULTY ? formData.archiveDifficulty : formData.actualDifficulty),
+      actualDifficulty: formatDifficulty(
+        FEATURES.MERGE_DIFFICULTY ? formData.archiveDifficulty : formData.actualDifficulty,
+      ),
       playerInventory,
       playerSanity,
     };
@@ -440,13 +526,16 @@ const handleSaveArchive = async () => {
     const errorMsg = error?.message || String(error);
     console.error("Save failed:", error);
 
-    if (errorMsg.includes("拒绝访问") || errorMsg.includes("Access is denied") || errorMsg.includes("os error 5")) {
+    if (errorMsg.includes("锟杰撅拷锟斤拷锟斤拷") || errorMsg.includes("Access is denied") || errorMsg.includes("os error 5")) {
       notify.error(t("editArchive.saveErrorAccessDenied"));
-    } else if (errorMsg.includes("正在使用") || errorMsg.includes("being used")) {
+    } else if (errorMsg.includes("锟斤拷锟斤拷使锟斤拷") || errorMsg.includes("being used")) {
       notify.error(t("editArchive.saveErrorFileInUse"));
     } else {
       notify.error(t("editArchive.saveError", { error: errorMsg }));
     }
+  } finally {
+    isSaving.value = false;
+    showSaveConfirm.value = false;
   }
 };
 
@@ -457,15 +546,15 @@ const initArchiveData = () => {
       let data;
 
       // Try lookup from editArchiveDataStore first (key-based)
-      const stored = editArchiveDataStore.get(props.archiveData);
+      const stored = editArchiveDataStore.get("current");
       if (stored) {
         try {
           data = JSON.parse(stored);
         } catch (e) {
-          console.error("解析存档数据失败:", e);
+          console.error("锟斤拷锟斤拷锟芥档锟斤拷锟斤拷失锟斤拷:", e);
         }
         // Clean up store entry
-        editArchiveDataStore.delete(props.archiveData);
+        editArchiveDataStore.delete("current");
       }
 
       // If store lookup failed, try direct JSON parse (backward compatibility)
@@ -473,7 +562,7 @@ const initArchiveData = () => {
         try {
           data = JSON.parse(props.archiveData);
         } catch (parseErr) {
-          console.error("存档数据解析失败:", parseErr);
+          console.error("锟芥档锟斤拷锟捷斤拷锟斤拷失锟斤拷:", parseErr);
           notify.error(t("editArchive.parseFailed") + " " + parseErr.message);
           parseError.value = true;
           return;
@@ -481,7 +570,7 @@ const initArchiveData = () => {
       }
 
       if (!data || typeof data !== "object") {
-        console.error("存档数据格式无效");
+        console.error("锟芥档锟斤拷锟捷革拷式锟斤拷效");
         notify.error(t("editArchive.parseFailedDataInvalid"));
         parseError.value = true;
         return;
@@ -494,11 +583,11 @@ const initArchiveData = () => {
       formData.archiveDifficulty = data.archiveDifficulty || "normal";
       formData.actualDifficulty = FEATURES.MERGE_DIFFICULTY
         ? formData.archiveDifficulty
-        : (data.actualDifficulty || "normal");
+        : data.actualDifficulty || "normal";
       loadPlayerData(data);
     }
   } catch (e) {
-    console.error("初始化存档数据失败:", e);
+    console.error("锟斤拷始锟斤拷锟芥档锟斤拷锟斤拷失锟斤拷:", e);
     notify.error(t("editArchive.parseFailed") + " " + (e.message || e));
     parseError.value = true;
   }
@@ -525,15 +614,15 @@ const loadPlayerData = async (archive) => {
             isOffline = true;
             username = `${parts[0]}${t("common.localPlayerSuffix")}`;
           } else {
-            // 在线玩家：剥离 UE UniqueNetId 后缀，界面只显示纯 steam id
+            // 锟斤拷锟斤拷锟斤拷遥锟斤拷锟斤拷锟?UE UniqueNetId 锟斤拷缀锟斤拷锟斤拷锟斤拷只锟斤拷示锟斤拷 steam id
             processedId = stripSteamIdSuffix(steamId);
           }
 
           formData.players.push({
-            // 界面显示/编辑用纯 id
+            // 锟斤拷锟斤拷锟斤拷示/锟洁辑锟矫达拷 id
             steamId: processedId,
-            // 存档里的原始完整键（在线：`<id>_+_|<32hex>`；离线：`<id>-<15字符>`）
-            // 保存时复用，保证玩家的 UniqueNetId 不被改写（游戏生成的后缀应用无法推导）
+            // 锟芥档锟斤拷锟皆硷拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷撸锟絗<id>_+_|<32hex>`锟斤拷锟斤拷锟竭ｏ拷`<id>-<15锟街凤拷>`锟斤拷
+            // 锟斤拷锟斤拷时锟斤拷锟矫ｏ拷锟斤拷证锟斤拷业锟?UniqueNetId 锟斤拷锟斤拷锟斤拷写锟斤拷锟斤拷戏锟斤拷锟缴的猴拷缀应锟斤拷锟睫凤拷锟狡碉拷锟斤拷
             originalSteamId: steamId,
             inventory: formattedInventory.slice(0, 12),
             username,
@@ -554,58 +643,26 @@ const loadPlayerData = async (archive) => {
 
 // Level related
 const loadLevels = () => {
-  const levelMappings = [
-    "Level0",
-    "TopFloor",
-    "MiddleFloor",
-    "GarageLevel2",
-    "BottomFloor",
-    "TheHub",
-    "Pipes1",
-    "ElectricalStation",
-    "Office",
-    "Hotel",
-    "Floor3",
-    "BoilerRoom",
-    "Pipes2",
-    "LevelFun",
-    "Poolrooms",
-    "LevelRun",
-    "TheEnd",
-    "Level922",
-    "Level94",
-    "AnimatedKingdom",
-    "LightsOut",
-    "OceanMap",
-    "CaveLevel",
-    "Level05",
-    "Level9",
-    "AbandonedBase",
-    "Level10",
-    "Level3999",
-    "Level07",
-    "Snackrooms",
-    "LevelDash",
-    "Level188_Expanded",
-    "Poolrooms_Expanded",
-    "WaterPark_Level01_P",
-    "WaterPark_Level02_P",
-    "WaterPark_Level03_P",
-    "LevelFun_Expanded",
-    "Zone1_Modified",
-    "Zone2_Modified",
-    "Zone3_Baked",
-    "Zone4",
-    "Level52",
-    "TunnelLevel",
-    "Bunker",
-    "GraffitiLevel",
-    "Grassrooms_Expanded",
-    "Level974",
-    "LevelCheat",
-  ];
+  // Get all unique levels from ENDING_LEVELS (0, 1, 2, 3) preserving order
+  const seen = new Set();
+  const allLevels = [];
+  for (const key of [0, 1, 2, 3]) {
+    for (const level of ENDING_LEVELS[key] || []) {
+      if (!seen.has(level)) {
+        seen.add(level);
+        allLevels.push(level);
+      }
+    }
+  }
+  // Add special levels not in any ending
+  const specialLevels = ["LevelCheat"];
+  for (const level of specialLevels) {
+    if (!seen.has(level)) {
+      allLevels.push(level);
+    }
+  }
 
-  availableLevels.value = levelMappings.map((levelKey) => {
+  availableLevels.value = allLevels.map((levelKey) => {
     return { name: getLevelName(levelKey), image: `/images/ETB/${levelKey}.webp`, levelKey };
   });
 };
@@ -613,8 +670,14 @@ const loadLevels = () => {
 // --- Level search & grouping ---
 const levelSearchQuery = ref("");
 
-// Default-collapsed groups (main group stays expanded)
-const collapsedGroups = ref(new Set([1, 2, 3, "special"]));
+// Capsule selector state
+const selectedLevelGroup = ref(0);
+const endingGroupRef = ref(null);
+const sliderState = reactive({
+  width: 0,
+  left: 0,
+  active: false,
+});
 
 // Map each levelKey to exactly one group by priority:
 // main ending (0) -> its own branch (1/2/3, first match wins for shared levels) -> special
@@ -652,37 +715,50 @@ const levelGroups = computed(() => {
   return [...groups.values()];
 });
 
-const groupedLevels = computed(() => {
+// Update slider indicator position
+const updateSlider = () => {
+  if (!endingGroupRef.value) return;
+  const container = endingGroupRef.value;
+  const activeTab = container.querySelector(".ending-tab.active");
+  if (!activeTab) return;
+
+  const containerRect = container.getBoundingClientRect();
+  const tabRect = activeTab.getBoundingClientRect();
+
+  sliderState.width = tabRect.width;
+  sliderState.left = tabRect.left - containerRect.left;
+  sliderState.active = true;
+};
+
+// Handle group tab click
+const handleLevelGroupClick = (index) => {
+  if (selectedLevelGroup.value === index) return;
+  selectedLevelGroup.value = index;
+  nextTick(() => updateSlider());
+};
+
+// Displayed levels (supports cross-group search)
+const displayedLevels = computed(() => {
   const query = levelSearchQuery.value.trim().toLowerCase();
-  return levelGroups.value
-    .map((group) => {
-      const levels = query
-        ? group.levels.filter((l) => {
-            const name = l.name.toLowerCase();
-            const key = l.levelKey.toLowerCase();
-            return name.includes(query) || key.includes(query);
-          })
-        : group.levels;
-      return { ...group, levels };
-    })
-    .filter((group) => group.levels.length > 0);
+  // When searching, show all matching levels across groups
+  if (query) {
+    return availableLevels.value.filter((level) => {
+      const name = level.name.toLowerCase();
+      const key = level.levelKey.toLowerCase();
+      return name.includes(query) || key.includes(query);
+    });
+  }
+  // Otherwise show levels for the selected group
+  return levelGroups.value[selectedLevelGroup.value]?.levels || [];
 });
 
-const toggleGroup = (groupId) => {
-  const next = new Set(collapsedGroups.value);
-  if (next.has(groupId)) next.delete(groupId);
-  else next.add(groupId);
-  collapsedGroups.value = next;
-};
-
-const isGroupCollapsed = (groupId) => {
-  // Search active -> expand everything so matches stay visible
-  if (levelSearchQuery.value.trim()) return false;
-  // Group holding the current selected level -> always expanded
-  const group = levelGroups.value.find((g) => g.id === groupId);
-  if (group?.levels.some((l) => l.levelKey === formData.currentLevel)) return false;
-  return collapsedGroups.value.has(groupId);
-};
+// Transition key for animation
+const displayKey = computed(() => {
+  const query = levelSearchQuery.value.trim();
+  // When searching, use a stable key
+  if (query) return "search";
+  return selectedLevelGroup.value;
+});
 
 const selectLevel = (levelKey) => {
   formData.currentLevel = levelKey;
@@ -843,7 +919,7 @@ const unlockAllHubDoors = async () => {
     await invoke("unlock_all_hub_doors", { filePath: originalArchive.value.path });
     notify.success(t("editArchive.hubDoorsUnlocked"));
   } catch (error) {
-    console.error("解锁枢纽门失败:", error);
+    console.error("锟斤拷锟斤拷锟斤拷纽锟斤拷失锟斤拷:", error);
     notify.error(String(error));
   }
 };
@@ -858,18 +934,190 @@ watch(currentPlayerSanity, (val) => {
 
 onUnmounted(() => {
   if (props.archiveData) {
-    editArchiveDataStore.delete(props.archiveData);
+    editArchiveDataStore.delete("current");
   }
 });
 
 onMounted(() => {
   loadLevels();
   initArchiveData();
+  refreshNsuStatus();
   nextTick(() => initHighlight());
+  // Initialize slider indicator after DOM is painted
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        updateSlider();
+      });
+    });
+  });
+  window.addEventListener("resize", updateSlider);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", updateSlider);
 });
 </script>
 
 <style scoped>
+/* Ending selector styles (capsule) */
+.ending-selector {
+  margin-bottom: 20px;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
+}
+
+.ending-group {
+  position: relative;
+  display: inline-flex;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  gap: 2px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
+}
+
+.ending-slider {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  height: calc(100% - 8px);
+  background: var(--accent-color);
+  border-radius: var(--radius-md);
+  filter: drop-shadow(0 2px 8px rgba(var(--accent-color-rgb), 0.35)) drop-shadow(0 1px 3px rgba(var(--accent-color-rgb), 0.2));
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+  z-index: 0;
+}
+
+.ending-tab {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  user-select: none;
+  transition: none;
+  white-space: nowrap;
+}
+
+.ending-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color 0.25s ease;
+  white-space: nowrap;
+}
+
+.ending-tab.active .ending-label {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.ending-tab:not(.active):hover .ending-label {
+  color: var(--text-primary);
+}
+
+.ending-tab:active {
+  transform: scale(0.96);
+}
+
+/* Level grid fade transition */
+.level-grid-fade-enter-active,
+.level-grid-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+
+.level-grid-fade-enter-from,
+.level-grid-fade-leave-to {
+  opacity: 0;
+}
+
+/* Section card for level grid */
+.section-card {
+  background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  height: calc(100vh - 200px); max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.section-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
+}
+
+.section-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.section-card::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+
+.section-card::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-color-rgb), 0.3);
+  border-radius: var(--radius-xs);
+  transition: background 0.2s ease;
+}
+
+.section-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--accent-color-rgb), 0.5);
+}
+
+/* Responsive for ending selector */
+@media (max-width: 768px) {
+  .ending-group {
+    width: 100%;
+  }
+
+  .ending-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+
+  .ending-label {
+    font-size: 12px;
+  }
+
+  .section-card {
+    height: calc(100vh - 200px); max-height: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .ending-tab {
+    padding: 6px 10px;
+  }
+
+  .ending-label {
+    font-size: 11px;
+  }
+}
+
+
 .edit-archive-container {
   height: calc(100vh - 38px);
   display: flex;
@@ -918,10 +1166,20 @@ onMounted(() => {
 .btn-primary {
   background: var(--primary);
   color: white;
+  position: relative;
+  overflow: hidden;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-secondary {
@@ -932,6 +1190,28 @@ onMounted(() => {
 
 .btn-secondary:hover {
   background: var(--hover-bg);
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* Save button loading spinner */
+.save-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-circle);
+  border-top-color: white;
+  animation: save-spin 0.8s linear infinite;
+  margin-right: 2px;
+}
+
+@keyframes save-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Tab navigation - floating style */
@@ -1025,12 +1305,12 @@ onMounted(() => {
 }
 
 /* ==========================================
- * 基础设置 — 三段式布局
- *     连续曲率 + 大圆角 + 同心等距
- *    Card: 36px(lg) → Inner: 28px(md) → 8px 递减
+ * 锟斤拷锟斤拷锟斤拷锟斤拷 锟斤拷 锟斤拷锟斤拷式锟斤拷锟斤拷
+ *     锟斤拷锟斤拷锟斤拷锟斤拷 + 锟斤拷圆锟斤拷 + 同锟侥等撅拷
+ *    Card: 36px(lg) 锟斤拷 Inner: 28px(md) 锟斤拷 8px 锟捷硷拷
  * ========================================== */
 
-/* 外层容器 */
+/* 锟斤拷锟斤拷锟斤拷锟?*/
 .basic-sections {
   display: flex;
   flex-direction: column;
@@ -1039,14 +1319,14 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-/* ━━ 区域分组 ━━ */
+/* 锟斤拷锟斤拷 锟斤拷锟斤拷锟斤拷锟?锟斤拷锟斤拷 */
 .settings-section {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-/* 区域标题（带 accent 竖条装饰）*/
+/* 锟斤拷锟斤拷锟斤拷猓拷锟?accent 锟斤拷锟斤拷装锟轿ｏ拷*/
 .section-title {
   display: flex;
   align-items: center;
@@ -1077,7 +1357,7 @@ onMounted(() => {
   font-size: 16px;
 }
 
-/* ━━ 设置卡片 — 36px (lg) 大圆角连续曲线 ━━ */
+/* 锟斤拷锟斤拷 锟斤拷锟矫匡拷片 锟斤拷 36px (lg) 锟斤拷圆锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷 锟斤拷锟斤拷 */
 .settings-card {
   background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border-radius: var(--radius-lg);
@@ -1088,7 +1368,7 @@ onMounted(() => {
   transition: all var(--transition-normal) var(--ease-default);
 }
 
-/* 顶部微光描边 */
+/* 锟斤拷锟斤拷微锟斤拷锟斤拷锟?*/
 .settings-card::before {
   content: "";
   position: absolute;
@@ -1105,7 +1385,7 @@ onMounted(() => {
   filter: drop-shadow(var(--filter-card-shadow-hover, 0 8px 32px rgba(0, 0, 0, 0.12)));
 }
 
-/* 卡片标签 */
+/* 锟斤拷片锟斤拷签 */
 .card-label {
   display: block;
   font-size: 13px;
@@ -1114,7 +1394,7 @@ onMounted(() => {
   margin-bottom: 14px;
 }
 
-/* ━━ 输入框 — 28px (md) 同心第二层 ━━ */
+/* 锟斤拷锟斤拷 锟斤拷锟斤拷锟?锟斤拷 28px (md) 同锟侥第讹拷锟斤拷 锟斤拷锟斤拷 */
 .settings-input {
   width: 100%;
   padding: 14px 18px;
@@ -1145,7 +1425,7 @@ onMounted(() => {
   opacity: 0.7;
 }
 
-/* ━━ 难度双列布局 ━━ */
+/* 锟斤拷锟斤拷 锟窖讹拷双锟叫诧拷锟斤拷 锟斤拷锟斤拷 */
 .difficulty-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1179,20 +1459,20 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-/* ━━ 难度网格 4 列 ━━ */
+/* 锟斤拷锟斤拷 锟窖讹拷锟斤拷锟斤拷 4 锟斤拷 锟斤拷锟斤拷 */
 .diff-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
-/* ━━ 难度选项 — 28px (md) 同心第二层 ━━ */
+/* 锟斤拷锟斤拷 锟窖讹拷选锟斤拷 锟斤拷 28px (md) 同锟侥第讹拷锟斤拷,锟斤拷强锟斤拷锟斤拷 锟斤拷锟斤拷 */
 .diff-option {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px 8px;
+  gap: 10px;
+  padding: 18px 10px;
   border-radius: var(--radius-md);
   background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   border: 2px solid rgba(255, 255, 255, 0.05);
@@ -1207,17 +1487,19 @@ onMounted(() => {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center,
-      color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
-      transparent 70%);
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--accent-color) 12%, transparent) 0%,
+    transparent 70%
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .diff-option:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent-color) 35%, transparent);
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.12));
 }
 
 .diff-option:hover::before {
@@ -1226,46 +1508,73 @@ onMounted(() => {
 
 .diff-option.selected {
   border-color: var(--accent-color);
-  background: linear-gradient(145deg,
-      color-mix(in srgb, var(--accent-color) 15%, transparent) 0%,
-      color-mix(in srgb, var(--accent-color) 8%, transparent) 100%);
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent);
-  filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--accent-color) 15%, transparent));
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-color) 18%, transparent) 0%,
+    color-mix(in srgb, var(--accent-color) 10%, transparent) 100%
+  );
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 25%, transparent),
+    0 0 20px color-mix(in srgb, var(--accent-color) 20%, transparent);
+  transform: translateY(-2px);
 }
 
 .diff-icon {
-  font-size: 24px;
+  font-size: 28px;
   color: var(--text-secondary);
   transition: all var(--transition-normal) var(--ease-default);
+  position: relative;
+  z-index: 1;
 }
 
 .diff-option:hover .diff-icon {
-  transform: scale(1.1);
+  transform: scale(1.15);
+  color: var(--accent-color);
 }
 
 .diff-option.selected .diff-icon {
   color: var(--accent-color);
-  transform: scale(1.1);
+  transform: scale(1.2);
+  filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--accent-color) 40%, transparent));
 }
 
 .diff-text {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text-secondary);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   transition: color var(--transition-fast) var(--ease-default);
+  position: relative;
+  z-index: 1;
 }
 
 .diff-option.selected .diff-text {
   color: var(--accent-color);
 }
 
-/* ━━ 操作卡片 — 36px (lg) 大圆角 ━━ */
+/* Difficulty option pulse animation when selected */
+.diff-option.selected::before {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* 锟斤拷锟斤拷 锟斤拷锟斤拷锟斤拷片 锟斤拷 36px (lg) 锟斤拷圆锟斤拷 锟斤拷锟斤拷 */
 .action-card {
   cursor: pointer;
-  background: linear-gradient(145deg,
-      color-mix(in srgb, var(--accent-color) 6%, transparent) 0%,
-      var(--bg-secondary) 100%);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-color) 6%, transparent) 0%,
+    var(--bg-secondary) 100%
+  );
   border: 1px solid color-mix(in srgb, var(--accent-color) 12%, transparent);
   transition: all var(--transition-normal) var(--ease-default);
   /* Button reset: override default <button> styles */
@@ -1280,9 +1589,11 @@ onMounted(() => {
 }
 
 .action-card:hover {
-  background: linear-gradient(145deg,
-      color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
-      var(--bg-tertiary) 100%);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
+    var(--bg-tertiary) 100%
+  );
   border-color: color-mix(in srgb, var(--accent-color) 25%, transparent);
   transform: translateY(-1px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
@@ -1343,16 +1654,20 @@ onMounted(() => {
   transform: translateX(4px);
 }
 
-/* ━━ Level selector ━━ */
+/* 锟斤拷锟斤拷 Level selector - Enhanced with better visual feedback 锟斤拷锟斤拷 */
 /* Single scroll container is .tab-panel; search bar sits at its top in normal flow. */
 .level-selector {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
-/* Search bar */
+/* Search bar with enhanced styling */
 .level-search {
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .level-search-icon {
@@ -1361,36 +1676,43 @@ onMounted(() => {
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-tertiary);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
   pointer-events: none;
-  transition: color var(--transition-fast) var(--ease-default);
+  transition: color var(--transition-normal) var(--ease-default);
 }
 
 .level-search-input {
   width: 100%;
-  padding: 11px 40px 11px 42px;
-  border: 1px solid var(--border-color, transparent);
-  background: var(--bg-secondary);
+  padding: 12px 42px 12px 44px;
+  border: 1px solid var(--border-color);
+  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
   color: var(--text-primary);
   font-size: 14px;
-  line-height: 1.4;
-  transition: all var(--transition-fast) var(--ease-default);
+  line-height: 1.5;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal) var(--ease-default);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .level-search-input::placeholder {
   color: var(--text-tertiary);
 }
 
+.level-search-input:hover {
+  border-color: var(--accent-color);
+}
+
 .level-search-input:focus {
   outline: none;
   border-color: var(--accent-color);
   background: var(--card-bg);
-  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb, 99, 102, 241), 0.12);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent-color) 12%, transparent),
+    inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.level-search:focus-within .level-search-icon,
-.level-search-input:focus + .level-search-clear {
+.level-search:focus-within .level-search-icon {
   color: var(--accent-color);
 }
 
@@ -1402,131 +1724,175 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border: none;
   border-radius: var(--radius-circle);
-  background: var(--bg-tertiary, var(--bg-secondary));
+  background: var(--bg-tertiary);
   color: var(--text-tertiary);
   font-size: 11px;
   cursor: pointer;
-  transition: all var(--transition-fast) var(--ease-default);
+  transition: all var(--transition-normal) var(--ease-default);
 }
 
 .level-search-clear:hover {
   background: var(--accent-color);
   color: #fff;
+  transform: translateY(-50%) scale(1.1);
 }
 
-/* Groups container — plain block flow (no flex) */
-.level-groups {
-  display: block;
+/* Ending selector styles (capsule style) */
+.ending-selector {
+  margin-bottom: 16px;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
 }
 
-.level-group {
-  background: var(--card-bg);
-  border-radius: var(--radius-card);
-  overflow: hidden;
-  border: 1px solid transparent;
-  transition: border-color var(--transition-fast) var(--ease-default);
-  margin-bottom: 10px;
+/* Segmented control group */
+.ending-group {
+  position: relative;
+  display: inline-flex;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  gap: 2px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
 }
 
-.level-group:last-child {
-  margin-bottom: 0;
+/* Sliding highlight pill */
+.ending-slider {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  height: calc(100% - 8px);
+  background: var(--accent-color);
+  border-radius: var(--radius-md);
+  filter: drop-shadow(0 2px 8px rgba(var(--accent-color-rgb), 0.35))
+    drop-shadow(0 1px 3px rgba(var(--accent-color-rgb), 0.2));
+  pointer-events: none;
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.2s ease;
+  z-index: 0;
 }
 
-.level-group:hover {
-  border-color: var(--border-color, rgba(0, 0, 0, 0.06));
-}
-
-/* Group header */
-.group-header {
+.ending-tab {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
   cursor: pointer;
+  background: transparent;
+  border: none;
   user-select: none;
-  transition: background var(--transition-fast) var(--ease-default);
+  transition: none;
+  white-space: nowrap;
 }
 
-.group-header:hover {
-  background: var(--bg-secondary);
-}
-
-.group-title {
+.ending-label {
   font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  flex: 1;
-}
-
-.group-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 7px;
-  border-radius: var(--radius-pill);
-  background: var(--bg-secondary);
+  font-weight: 500;
   color: var(--text-secondary);
-  font-size: 12px;
+  transition: color 0.25s ease;
+  white-space: nowrap;
+}
+
+.ending-tab.active .ending-label {
+  color: #ffffff;
   font-weight: 600;
-  font-variant-numeric: tabular-nums;
 }
 
-.group-chevron {
-  color: var(--text-tertiary);
-  font-size: 12px;
-  transition: transform var(--transition-normal) var(--ease-default);
+.ending-tab:not(.active):hover .ending-label {
+  color: var(--text-primary);
 }
 
-.level-group:not(.is-collapsed) .group-chevron {
-  transform: rotate(0deg);
+.ending-tab:active {
+  transform: scale(0.96);
 }
 
-/* Collapse body — grid-template-rows 0fr→1fr animates to intrinsic height */
-.group-body {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition: grid-template-rows 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+/* Section card for level grid */
+.section-card {
+  background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  height: calc(100vh - 200px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
 }
 
-.level-group.is-collapsed .group-body {
-  grid-template-rows: 0fr;
+/* Top highlight effect */
+.section-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
 }
 
-.group-body > .level-grid {
-  overflow: hidden;
+/* Custom scrollbar */
+.section-card::-webkit-scrollbar {
+  width: 6px;
 }
 
-/* Level grid kept from original; add padding inside group */
-.level-group .level-grid {
-  padding: 4px 12px 14px;
-  border-top: 1px solid var(--bg-secondary);
-  min-height: 0;
+.section-card::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
 }
 
-/* Empty state */
+.section-card::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-color-rgb), 0.3);
+  border-radius: var(--radius-xs);
+  transition: background 0.2s ease;
+}
+
+.section-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--accent-color-rgb), 0.5);
+}
+
+/* Transition animations */
+.level-grid-fade-enter-active,
+.level-grid-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+
+.level-grid-fade-enter-from,
+.level-grid-fade-leave-to {
+  opacity: 0;
+}
+
+/* Empty state with better styling */
 .level-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 48px 16px;
+  gap: 14px;
+  padding: 56px 16px;
   color: var(--text-tertiary);
   font-size: 14px;
 }
 
 .level-empty-icon {
-  font-size: 32px;
-  opacity: 0.4;
+  font-size: 40px;
+  opacity: 0.35;
+  color: var(--primary);
 }
 
-/* ━━ 响应式 ━━ */
+/* 锟斤拷锟斤拷 锟斤拷应式 锟斤拷锟斤拷 */
 @media (max-width: 768px) {
   .basic-sections {
     max-width: 100%;
@@ -1540,6 +1906,25 @@ onMounted(() => {
   .diff-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+
+  .ending-group {
+    width: 100%;
+  }
+
+  .ending-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+
+  .ending-label {
+    font-size: 12px;
+  }
+
+  .section-card {
+    padding: 16px;
+    height: calc(100vh - 280px);
+  }
 }
 
 @media (max-width: 480px) {
@@ -1550,12 +1935,24 @@ onMounted(() => {
   .settings-card {
     padding: 20px;
   }
+
+  .ending-tab {
+    padding: 6px 10px;
+  }
+
+  .ending-label {
+    font-size: 11px;
+  }
+
+  .section-card {
+    padding: 12px;
+  }
 }
 
-/* Level selection */
+/* Level cards with enhanced hover and selection states */
 .level-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
   gap: 16px;
 }
 
@@ -1563,71 +1960,153 @@ onMounted(() => {
   border-radius: var(--radius-card);
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.2s;
-  background: var(--card-bg);
+  transition: all var(--transition-normal) var(--ease-default);
+  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
   border: 2px solid transparent;
+  position: relative;
+}
+
+.level-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(var(--primary-rgb, 99, 102, 241), 0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-default);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .level-card:hover {
-  transform: translateY(-4px);
-  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12));
+  transform: translateY(-6px) scale(1.02);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.level-card:hover::before {
+  opacity: 1;
 }
 
 .level-card.selected {
   border-color: var(--primary);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent),
+    0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.level-card.selected::before {
+  opacity: 1;
 }
 
 .level-img-wrap {
   position: relative;
   aspect-ratio: 16/9;
+  overflow: hidden;
 }
 
 .level-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform var(--transition-slow) var(--ease-default);
+}
+
+.level-card:hover .level-img {
+  transform: scale(1.08);
 }
 
 .level-check {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
   color: var(--primary);
-  font-size: 22px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  font-size: 24px;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+  z-index: 2;
+  animation: check-appear 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes check-appear {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .level-name {
   display: block;
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  background: linear-gradient(to bottom, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border-top: 1px solid var(--border-color);
 }
 
-/* Player management */
+/* Player management - Enhanced layout with better visual hierarchy */
 .players-layout {
   display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 24px;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
   height: 100%;
   min-height: 0;
   max-height: 100%;
+  position: relative;
 }
 
-.player-list-section,
-.player-detail-section {
-  background: var(--card-bg);
+/* Left panel - Player list with sticky positioning */
+.player-list-section {
+  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
   border-radius: var(--radius-card);
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-normal) var(--ease-default);
+}
+
+.player-list-section:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Right panel - Player details with visual emphasis */
+.player-detail-section {
+  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+/* Add subtle gradient overlay for active state */
+.player-detail-section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--accent-color));
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-default);
+}
+
+.player-detail-section:not(.empty-detail)::after {
+  opacity: 1;
 }
 
 .player-name-switch-enter-active,
@@ -1697,36 +2176,81 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
+  padding: 14px;
   border-radius: var(--radius-sm);
-  background: var(--bg-secondary);
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  border: 2px solid transparent;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--transition-normal) var(--ease-default);
+  position: relative;
+  overflow: hidden;
+}
+
+.player-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at left, rgba(var(--primary-rgb, 99, 102, 241), 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-default);
 }
 
 .player-item:hover {
-  background: var(--hover-bg);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 8%, var(--bg-tertiary)) 0%,
+    var(--bg-secondary) 100%
+  );
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.player-item:hover::before {
+  opacity: 1;
 }
 
 .player-item.active {
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
-  outline: 2px solid var(--primary);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 12%, var(--bg-tertiary)) 0%,
+    color-mix(in srgb, var(--primary) 6%, var(--bg-secondary)) 100%
+  );
+  border-color: var(--primary);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.player-item.active::before {
+  opacity: 1;
 }
 
 .player-avatar {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-xs);
-  background: var(--bg-tertiary);
+  background: linear-gradient(135deg, var(--bg-quaternary, var(--bg-tertiary)) 0%, var(--bg-tertiary) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-tertiary);
+  font-size: 16px;
+  transition: all var(--transition-normal) var(--ease-default);
+  flex-shrink: 0;
+}
+
+.player-item:hover .player-avatar {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 15%, var(--bg-tertiary)) 0%,
+    var(--bg-secondary) 100%
+  );
+  color: var(--primary);
 }
 
 .player-item.active .player-avatar {
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
   color: white;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 .player-info {
@@ -1781,7 +2305,10 @@ onMounted(() => {
   cursor: pointer;
   padding: 8px;
   border-radius: var(--radius-xs);
-  transition: all 0.15s;
+  transition: all var(--transition-normal) var(--ease-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .player-item:hover .del-btn {
@@ -1789,8 +2316,13 @@ onMounted(() => {
 }
 
 .del-btn:hover {
-  background: rgba(255, 59, 48, 0.1);
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.15) 0%, rgba(255, 59, 48, 0.08) 100%);
   color: #ff3b30;
+  transform: scale(1.1);
+}
+
+.del-btn:active {
+  transform: scale(0.95);
 }
 
 .empty-hint {
@@ -1852,9 +2384,9 @@ onMounted(() => {
   color: #34c759;
 }
 
-/* Player details */
+/* Player details - Enhanced visual hierarchy */
 .player-detail-section {
-  padding: 16px;
+  padding: 20px;
   overflow-y: auto;
   flex: 1;
 }
@@ -1865,33 +2397,44 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   color: var(--text-tertiary);
+  padding: 40px 20px;
 }
 
 .player-detail-section.empty-detail svg {
-  font-size: 40px;
-  margin-bottom: 12px;
-  opacity: 0.4;
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.35;
+  color: var(--primary);
 }
 
 .player-detail-section.empty-detail p {
-  font-size: 13px;
+  font-size: 14px;
   margin: 0;
+  text-align: center;
+  line-height: 1.6;
 }
 
 .steamid-edit-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  margin-bottom: 14px;
-  background: var(--bg-secondary);
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal) var(--ease-default);
+}
+
+.steamid-edit-row:hover {
+  border-color: color-mix(in srgb, var(--primary) 15%, transparent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .steamid-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
@@ -1901,38 +2444,53 @@ onMounted(() => {
 
 .steamid-label svg {
   color: var(--primary);
+  font-size: 16px;
 }
 
 .steamid-input {
   flex: 1;
-  padding: 8px 12px;
+  padding: 10px 14px;
   font-size: 13px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-input);
   background: var(--card-bg);
   color: var(--text-primary);
   outline: none;
-  font-family: monospace;
+  font-family: "SF Mono", "Consolas", monospace;
   letter-spacing: 0.5px;
-  transition: border-color 0.2s;
+  transition: all var(--transition-normal) var(--ease-default);
 }
 
 .steamid-input:hover {
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 8%, transparent);
 }
 
 .steamid-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 15%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+  background: linear-gradient(135deg, var(--card-bg) 0%, color-mix(in srgb, var(--primary) 3%, var(--card-bg)) 100%);
 }
 
 .detail-header {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--text-primary);
-  padding-bottom: 12px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  border-bottom: 2px solid var(--border-color);
+  position: relative;
+}
+
+.detail-header::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--accent-color));
+  border-radius: var(--radius-pill);
 }
 
 .detail-grid {
@@ -1942,9 +2500,16 @@ onMounted(() => {
 }
 
 .detail-block {
-  background: var(--bg-secondary);
+  background: linear-gradient(145deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   border-radius: var(--radius-md);
-  padding: 16px;
+  padding: 18px;
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal) var(--ease-default);
+}
+
+.detail-block:hover {
+  border-color: color-mix(in srgb, var(--primary) 15%, transparent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 .block-title {
@@ -1961,49 +2526,81 @@ onMounted(() => {
   color: var(--primary);
 }
 
+/* Sanity editor enhancements */
 .sanity-display {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
 .sanity-num {
-  font-size: 24px;
-  font-weight: 700;
-  min-width: 60px;
+  font-size: 28px;
+  font-weight: 800;
+  min-width: 70px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .sanity-num.sanity-high {
   color: #10b981;
+  text-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
 }
 
 .sanity-num.sanity-medium {
   color: #f59e0b;
+  text-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
 }
 
 .sanity-num.sanity-low {
   color: #ef4444;
+  text-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
 }
 
 .sanity-num.sanity-critical {
   color: #dc2626;
+  text-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+  animation: pulse-critical 2s ease-in-out infinite;
+}
+
+@keyframes pulse-critical {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .sanity-bar {
   flex: 1;
-  height: 8px;
+  height: 10px;
   background: var(--bg-tertiary);
   border-radius: var(--radius-pill);
   overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .sanity-fill {
   height: 100%;
   border-radius: var(--radius-pill);
   transition:
-    width 0.3s,
-    background 0.4s;
+    width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sanity-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+  border-radius: var(--radius-pill) var(--radius-pill) 0 0;
 }
 
 .sanity-fill.sanity-high {
@@ -2025,137 +2622,196 @@ onMounted(() => {
 .sanity-ctrl {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
-.sanity-ctrl> :first-child {
+.sanity-ctrl > :first-child {
   flex: 1;
 }
 
 .sanity-hint {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 10px;
-  padding: 8px 10px;
-  border-radius: var(--radius-xs);
-  background: rgba(239, 68, 68, 0.1);
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.06) 100%);
   color: var(--error-color, #ef4444);
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.5;
+  border: 1px solid rgba(239, 68, 68, 0.15);
 }
 
 .sanity-hint svg {
-  font-size: 12px;
+  font-size: 13px;
   flex-shrink: 0;
 }
 
 .quick-btns {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .qbtn {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s;
+  transition: all var(--transition-normal) var(--ease-default);
+  font-size: 16px;
 }
 
 .qbtn.danger {
-  background: rgba(255, 59, 48, 0.1);
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.12) 0%, rgba(255, 59, 48, 0.06) 100%);
   color: #ff3b30;
+  border: 1px solid rgba(255, 59, 48, 0.2);
 }
 
 .qbtn.danger:hover {
-  background: rgba(255, 59, 48, 0.2);
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.2) 0%, rgba(255, 59, 48, 0.12) 100%);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2);
+}
+
+.qbtn.danger:active {
+  transform: scale(0.95);
 }
 
 .qbtn.success {
-  background: rgba(52, 199, 89, 0.1);
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.12) 0%, rgba(52, 199, 89, 0.06) 100%);
   color: #34c759;
+  border: 1px solid rgba(52, 199, 89, 0.2);
 }
 
 .qbtn.success:hover {
-  background: rgba(52, 199, 89, 0.2);
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.2) 0%, rgba(52, 199, 89, 0.12) 100%);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(52, 199, 89, 0.2);
 }
 
-/* Inventory */
+.qbtn.success:active {
+  transform: scale(0.95);
+}
+
+/* Inventory slots - Enhanced visual feedback */
 .inventory-wrap {
   display: flex;
-  gap: 16px;
+  gap: 18px;
 }
 
 .hand-slots {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .backpack-slots {
   display: grid;
-  grid-template-columns: repeat(3, 56px);
-  gap: 8px;
+  grid-template-columns: repeat(3, 58px);
+  gap: 10px;
 }
 
 .inv-slot {
   position: relative;
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  background: var(--card-bg);
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
   border: 2px solid var(--border-color);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s;
+  transition: all var(--transition-normal) var(--ease-default);
+  overflow: hidden;
+}
+
+.inv-slot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(var(--primary-rgb, 99, 102, 241), 0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-default);
 }
 
 .inv-slot:hover {
   border-color: var(--primary);
-  transform: scale(1.05);
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.inv-slot:hover::before {
+  opacity: 1;
 }
 
 .inv-slot.empty {
   border-style: dashed;
+  border-color: color-mix(in srgb, var(--border-color) 70%, transparent);
+}
+
+.inv-slot.empty:hover {
+  border-color: var(--primary);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--primary) 8%, var(--card-bg)) 0%,
+    var(--bg-secondary) 100%
+  );
+}
+
+.inv-slot.empty .slot-placeholder {
+  transition: all var(--transition-normal) var(--ease-default);
+}
+
+.inv-slot.empty:hover .slot-placeholder {
+  color: var(--primary);
+  transform: scale(1.1);
+  opacity: 0.6;
 }
 
 .slot-label {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  font-size: 8px;
+  top: 4px;
+  left: 4px;
+  font-size: 9px;
+  font-weight: 600;
   color: var(--text-tertiary);
-  background: var(--bg-secondary);
-  padding: 1px 4px;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  padding: 2px 6px;
   border-radius: var(--radius-xs);
+  letter-spacing: 0.02em;
 }
 
 .slot-num {
   position: absolute;
-  top: 3px;
-  right: 4px;
-  font-size: 10px;
-  font-weight: 600;
+  top: 4px;
+  right: 5px;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
 }
 
 .slot-img {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   object-fit: contain;
+  transition: transform var(--transition-normal) var(--ease-default);
+}
+
+.inv-slot:hover .slot-img {
+  transform: scale(1.1);
 }
 
 .slot-placeholder {
-  font-size: 18px;
+  font-size: 20px;
   color: var(--text-tertiary);
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
 /* Error state */
@@ -2206,14 +2862,16 @@ onMounted(() => {
 @media (max-width: 900px) {
   .players-layout {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .player-list-section {
-    max-height: 300px;
+    max-height: 280px;
   }
 
   .detail-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
 
   .page-header {
@@ -2225,6 +2883,20 @@ onMounted(() => {
     order: 3;
     width: 100%;
     justify-content: center;
+  }
+
+  .inventory-wrap {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .backpack-slots {
+    grid-template-columns: repeat(3, 54px);
+  }
+
+  .inv-slot {
+    width: 54px;
+    height: 54px;
   }
 }
 
@@ -2265,10 +2937,26 @@ onMounted(() => {
 
   .detail-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .detail-block {
+    padding: 14px;
   }
 
   .inventory-wrap {
     flex-direction: column;
+    gap: 12px;
+  }
+
+  .hand-slots,
+  .backpack-slots {
+    gap: 8px;
+  }
+
+  .inv-slot {
+    width: 52px;
+    height: 52px;
   }
 
   .btn-primary span,
@@ -2280,5 +2968,213 @@ onMounted(() => {
   .btn-secondary {
     padding: 8px 12px;
   }
+
+  .sanity-num {
+    font-size: 24px;
+    min-width: 60px;
+  }
+
+  .sanity-bar {
+    height: 8px;
+  }
+
+  .quick-btns {
+    gap: 6px;
+  }
+
+  .qbtn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
 }
+
+/* Level selector container */
+.level-selector {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Level search bar */
+.level-search {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.level-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.level-search-input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.level-search-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.1);
+}
+
+.level-search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.level-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.level-search-clear:hover {
+  color: var(--text-primary);
+}
+
+/* Level grid */
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 18px;
+  padding: 4px;
+}
+
+/* Level card */
+.level-card {
+  background: linear-gradient(160deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 0.35s ease,
+    border-color 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .level-card:hover {
+    will-change: transform;
+    transform: translateY(-8px);
+    filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.14)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.1));
+    border-color: rgba(var(--accent-color-rgb), 0.25);
+  }
+}
+
+.level-card:active {
+  transform: translateY(-3px) scale(0.98);
+  transition-duration: 0.1s;
+}
+
+.level-card.selected {
+  border-color: var(--accent-color);
+  border-width: 1.5px;
+  box-shadow: inset 0 0 0 3px rgba(var(--accent-color-rgb), 0.2);
+  filter: drop-shadow(0 8px 20px rgba(var(--accent-color-rgb), 0.15));
+  transform: translateY(-2px);
+}
+
+.level-img-wrap {
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+}
+
+.level-img-wrap :deep(.level-img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .level-card:hover .level-img-wrap :deep(.level-img) {
+    transform: scale(1.1);
+  }
+}
+
+.level-check {
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--accent-color-rgb), 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 32px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
+
+.level-name {
+  display: block;
+  padding: 14px 12px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .level-card:hover .level-name {
+    color: var(--accent-color);
+  }
+}
+
+.level-card.selected .level-name {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+/* Level empty state */
+.level-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--text-tertiary);
+}
+
+.level-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.level-empty span {
+  font-size: 14px;
+}
+
 </style>

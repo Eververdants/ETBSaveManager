@@ -23,7 +23,7 @@
   },
   "singleplayerNotice": "單人模式下只能選擇普通難度",
   "difficulty": "難度",
-  "difficultyMergeHint": "由於新版遊戲邏輯變更，實際難度修改可能無法在遊戲中生效，後續將嘗試攻克此問題。",
+  "difficultyMergeHint": "如需遊玩噩夢難度，請先在「模組」頁面安裝 Nightmare Save Unlocker（NSU）模組，否則遊戲無法識別所設定的難度。",
   "actualDifficulty": "實際難度",
   "difficultyLevels": {
     "easy": "簡單",

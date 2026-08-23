@@ -27,7 +27,7 @@
   },
   "singleplayerNotice": "單人模式下只能選擇普通難度",
   "difficulty": "難度",
-  "difficultyMergeHint": "由於新版遊戲邏輯變更，實際難度修改可能無法在遊戲中生效，後續將嘗試攻克此問題。",
+  "difficultyMergeHint": "如需遊玩噩夢難度，請先在「模組」頁面安裝 Nightmare Save Unlocker（NSU）模組，否則遊戲無法識別所設定的難度。",
   "actualDifficulty": "實際難度",
   "hubDoors": "樞紐門",
   "unlockAllHubDoors": "解鎖全部樞紐門",
@@ -38,12 +38,6 @@
     "normal": "普通",
     "hard": "困難",
     "nightmare": "噩夢"
-  },
-  "difficultyHints": {
-    "easy": "輕鬆遊戲體驗",
-    "normal": "平衡的遊戲挑戰",
-    "hard": "適合資深玩家",
-    "nightmare": "極限挑戰"
   },
   "playerManagement": "玩家管理",
   "steamIdInfo": "此步驟為可選，不新增Steam ID也可以直接建立存檔",

@@ -33,6 +33,14 @@ export const topMenuItems = ref<MenuConfig[]>([
     descriptionKey: "archive.createDescription",
     route: "CreateArchive",
   },
+  {
+    id: 7,
+    textKey: "sidebar.mods",
+    icon: ["fas", "puzzle-piece"],
+    action: "openMods",
+    descriptionKey: "mods.description",
+    route: "Mods",
+  },
 ]);
 
 /**

@@ -3,6 +3,7 @@ pub mod common;
 mod error;
 mod get_file_path;
 mod gpu_settings;
+pub mod mods;
 pub mod new_save;
 pub mod player_data;
 mod save_batch;
@@ -64,7 +65,16 @@ pub fn run() {
             save_converter::convert_json_to_sav,
             system_commands::set_window_title,
             theme_commands::get_theme_config,
-            theme_commands::set_active_theme
+            theme_commands::set_active_theme,
+            mods::validate_game_path,
+            mods::get_mods_status,
+            mods::detect_game_path,
+            mods::install_ue4ss,
+            mods::install_nsu,
+            mods::set_nsu_enabled,
+            mods::uninstall_nsu,
+            mods::uninstall_ue4ss,
+            mods::open_mods_folder
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

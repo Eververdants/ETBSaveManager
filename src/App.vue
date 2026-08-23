@@ -52,6 +52,7 @@ const ROUTE_OPERATION_MAP = {
   QuickCreateArchive: "editing",
   SelectCreateMode: "previewing",
   Settings: "rendering",
+  Mods: "rendering",
   About: "rendering",
 };
 

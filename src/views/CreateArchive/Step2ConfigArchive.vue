@@ -68,8 +68,8 @@
             </div>
           </div>
         </div>
-        <!-- Merge difficulty hint -->
-        <div v-if="FEATURES.MERGE_DIFFICULTY" class="difficulty-hint">
+        <!-- 难度提示：NSU 模组已安装并启用时隐藏；探测完成前也不显示 -->
+        <div v-if="FEATURES.MERGE_DIFFICULTY && nsuProbed && !nsuActive" class="difficulty-hint">
           <font-awesome-icon :icon="['fas', 'info-circle']" />
           <span>{{ $t("createArchive.difficultyMergeHint") }}</span>
         </div>
@@ -79,8 +79,10 @@
 </template>
 
 <script setup>
+import { onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { FEATURES } from "@/config/features";
+import { useNsuStatus } from "@/composables/useNsuStatus";
 
 defineProps({
   archiveName: { type: String, default: "" },
@@ -105,6 +107,14 @@ const getDifficultyText = (difficultyKey) => {
   const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
   return te(translationKey) ? t(translationKey) : difficultyKey;
 };
+
+// NSU 模组状态：未安装并启用时，难度修改无法被游戏识别。
+// 本组件随步骤切换重新挂载，每次进入第二步都会重新探测。
+const { nsuActive, nsuProbed, refreshNsuStatus } = useNsuStatus();
+
+onMounted(() => {
+  refreshNsuStatus();
+});
 </script>
 
 <style scoped>

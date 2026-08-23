@@ -81,7 +81,6 @@
                     :key="d.value"
                     class="diff-option"
                     :class="{ selected: formData.archiveDifficulty === d.value }"
-                    :data-hint="getDifficultyHint(d.value)"
                     @click="formData.archiveDifficulty = d.value"
                   >
                     <font-awesome-icon :icon="d.icon" class="diff-icon" />
@@ -97,7 +96,6 @@
                     :key="`actual-${d.value}`"
                     class="diff-option"
                     :class="{ selected: formData.actualDifficulty === d.value }"
-                    :data-hint="getDifficultyHint(d.value)"
                     @click="formData.actualDifficulty = d.value"
                   >
                     <font-awesome-icon :icon="d.icon" class="diff-icon" />
@@ -106,8 +104,8 @@
                 </div>
               </div>
             </div>
-            <!-- Merge difficulty hint -->
-            <div v-if="FEATURES.MERGE_DIFFICULTY" class="difficulty-hint">
+            <!-- 难度提示：NSU 模组已安装并启用时隐藏；探测完成前也不显示 -->
+            <div v-if="FEATURES.MERGE_DIFFICULTY && nsuProbed && !nsuActive" class="difficulty-hint">
               <font-awesome-icon :icon="['fas', 'info-circle']" />
               <span>{{ t("editArchive.difficultyMergeHint") }}</span>
             </div>
@@ -372,6 +370,7 @@ import PlayerManager from "../components/system/PlayerManager.vue";
 import ConfirmModal from "../components/modal/ConfirmModal.vue";
 import { notify } from "../services/notificationService";
 import { editArchiveDataStore } from "../composables/useArchiveActions";
+import { useNsuStatus } from "../composables/useNsuStatus";
 import { formatDifficulty } from "../utils/archiveCreationUtils";
 import { stripSteamIdSuffix } from "../utils/steamIdUtils";
 import { getItemIdByName } from "../utils/itemIdMap";
@@ -393,11 +392,6 @@ const getLevelName = (levelKey) => {
 const getDifficultyText = (difficultyKey) => {
   const translationKey = `editArchive.difficultyLevels.${difficultyKey}`;
   return te(translationKey) ? t(translationKey) : difficultyKey;
-};
-
-const getDifficultyHint = (difficultyKey) => {
-  const hintKey = `editArchive.difficultyHints.${difficultyKey}`;
-  return te(hintKey) ? t(hintKey) : "";
 };
 
 // Tab configuration
@@ -469,6 +463,9 @@ const parseError = ref(false);
 const availableLevels = ref([]);
 const showSaveConfirm = ref(false);
 const isSaving = ref(false);
+
+// NSU 模组状态：未安装并启用时，难度修改无法被游戏识别
+const { nsuActive, nsuProbed, refreshNsuStatus } = useNsuStatus();
 
 const difficultyLevels = [
   { value: "easy", icon: ["fas", "smile"] },
@@ -944,6 +941,7 @@ onUnmounted(() => {
 onMounted(() => {
   loadLevels();
   initArchiveData();
+  refreshNsuStatus();
   nextTick(() => initHighlight());
   // Initialize slider indicator after DOM is painted
   nextTick(() => {
@@ -1498,20 +1496,6 @@ onUnmounted(() => {
   transition: opacity 0.3s ease;
 }
 
-.diff-option::after {
-  content: attr(data-hint);
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px;
-  color: var(--text-tertiary);
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity var(--transition-normal) var(--ease-default);
-  pointer-events: none;
-}
-
 .diff-option:hover {
   transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--accent-color) 35%, transparent);
@@ -1520,10 +1504,6 @@ onUnmounted(() => {
 
 .diff-option:hover::before {
   opacity: 1;
-}
-
-.diff-option:hover::after {
-  opacity: 0.7;
 }
 
 .diff-option.selected {
@@ -1537,10 +1517,6 @@ onUnmounted(() => {
     inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 25%, transparent),
     0 0 20px color-mix(in srgb, var(--accent-color) 20%, transparent);
   transform: translateY(-2px);
-}
-
-.diff-option.selected::after {
-  opacity: 1;
 }
 
 .diff-icon {

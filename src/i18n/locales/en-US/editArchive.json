@@ -27,7 +27,7 @@
   },
   "singleplayerNotice": "In single player mode, only normal difficulty is available",
   "difficulty": "Difficulty",
-  "difficultyMergeHint": "Due to game version changes, actual difficulty changes may not take effect in-game. We'll look into this.",
+  "difficultyMergeHint": "To play Nightmare difficulty, install the Nightmare Save Unlocker (NSU) mod from the Mods page first, otherwise the game will not recognize the selected difficulty.",
   "actualDifficulty": "Actual Difficulty",
   "hubDoors": "Hub Doors",
   "unlockAllHubDoors": "Unlock All Hub Doors",
@@ -38,12 +38,6 @@
     "normal": "Normal",
     "hard": "Hard",
     "nightmare": "Nightmare"
-  },
-  "difficultyHints": {
-    "easy": "Relaxed gameplay",
-    "normal": "Balanced challenge",
-    "hard": "For experienced players",
-    "nightmare": "Ultimate challenge"
   },
   "playerManagement": "Player Management",
   "steamIdInfo": "This step is optional, you can save an archive without adding Steam ID",

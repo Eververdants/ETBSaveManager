@@ -1,4 +1,6 @@
-use crate::common::{add_save_to_mainsave, extract_archive_name, get_local_appdata_dir, get_mainsave_path};
+use crate::common::{
+    add_save_to_mainsave, extract_archive_name, get_local_appdata_dir, get_mainsave_path,
+};
 use crate::error::AppResult;
 use crate::save_shared;
 use serde::{Deserialize, Serialize};

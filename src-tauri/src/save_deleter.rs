@@ -2,8 +2,8 @@
 //! Extracted from save_commands.rs for better modularity
 
 use crate::common::{
-    add_save_to_mainsave, extract_archive_name, extract_archive_name_from_trash, get_save_games_dir,
-    get_visible_saves_set, remove_save_from_mainsave, set_save_visibility,
+    add_save_to_mainsave, extract_archive_name, extract_archive_name_from_trash,
+    get_save_games_dir, get_visible_saves_set, remove_save_from_mainsave, set_save_visibility,
     validate_save_games_path,
 };
 use crate::error::AppResult;

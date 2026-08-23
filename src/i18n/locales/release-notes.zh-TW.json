@@ -1,12 +1,20 @@
 {
-  "version": "3.3.2",
-  "date": "2026-08-14",
-  "title": "存檔資料綁定修復與效能最佳化",
-  "type": "patch",
+  "version": "3.4.0",
+  "date": "2026-08-27",
+  "title": "模組管理與新層級支援",
+  "type": "minor",
   "categories": {
-    "newFeatures": [],
-    "improvements": [],
-    "bugFixes": ["修復建立存檔時使用裸 Steam ID 導致存檔資料未正確綁定（背包為空、理智值重置）的問題"],
-    "performance": ["精簡打包體積，加快啟動載入"]
+    "newFeatures": [
+      "新增模組頁面，支援安裝 UE4SS 以及 NSU 模組",
+      "搜尋輸入框加入自動聚焦功能",
+      "新增 Level 421 塑料馬里亞納 (Plastic Mariana) 層級支援"
+    ],
+    "improvements": [
+      "最佳化編輯頁面層級選擇部分的 UI",
+      "最佳化玩家管理的 UI",
+      "適配遊戲新機制"
+    ],
+    "bugFixes": [],
+    "performance": []
   }
 }

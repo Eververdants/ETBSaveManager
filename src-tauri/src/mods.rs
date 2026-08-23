@@ -73,7 +73,10 @@ fn validation(reason: &str) -> AppError {
 
 /// `<game_root>/EscapeTheBackrooms/Binaries/Win64`
 fn win64_dir(game_root: &Path) -> PathBuf {
-    game_root.join("EscapeTheBackrooms").join("Binaries").join("Win64")
+    game_root
+        .join("EscapeTheBackrooms")
+        .join("Binaries")
+        .join("Win64")
 }
 
 /// `<win64>/ue4ss/Mods`
@@ -216,13 +219,14 @@ fn steam_library_paths(steam_root: &Path) -> Vec<PathBuf> {
         return result;
     };
     for line in text.lines() {
-        let Some(pos) = line.find("\"path\"") else { continue };
+        let Some(pos) = line.find("\"path\"") else {
+            continue;
+        };
         let rest = line[pos + "\"path\"".len()..].trim();
         // rest looks like `"D:\\Applications\\Steam"` possibly with trailing comments
-        if rest.starts_with('"') {
-            if let Some(end) = rest[1..].find('"') {
-                let raw = &rest[1..1 + end];
-                let unescaped = raw.replace("\\\\", "\\");
+        if let Some(raw) = rest.strip_prefix('"') {
+            if let Some(end) = raw.find('"') {
+                let unescaped = raw[..end].replace("\\\\", "\\");
                 result.push(PathBuf::from(unescaped));
             }
         }
@@ -244,7 +248,11 @@ fn steam_roots() -> Vec<PathBuf> {
         r"HKCU\Software\Valve\Steam",
         r"HKLM\SOFTWARE\WOW6432Node\Valve\Steam",
     ] {
-        let name = if location.starts_with("HKCU") { "SteamPath" } else { "InstallPath" };
+        let name = if location.starts_with("HKCU") {
+            "SteamPath"
+        } else {
+            "InstallPath"
+        };
         if let Some(v) = read_registry_value(location, name) {
             push_unique(PathBuf::from(v));
         }
@@ -262,7 +270,10 @@ fn probe_steam_libraries() -> Option<String> {
             .into_iter()
             .chain(std::iter::once(root.clone()))
         {
-            let candidate = lib.join("steamapps").join("common").join("EscapeTheBackrooms");
+            let candidate = lib
+                .join("steamapps")
+                .join("common")
+                .join("EscapeTheBackrooms");
             if is_valid_game_root(&candidate) {
                 return Some(path_to_string(&candidate));
             }
@@ -328,13 +339,13 @@ pub async fn get_mods_status(game_root: String) -> AppResult<ModsStatus> {
 
         let ue4ss_core = win64.join("UE4SS.dll").is_file() || win64.join("dwmapi.dll").is_file();
         let ue4ss_installed = ue4ss_core || win64.join("ue4ss").is_dir();
-        let ue4ss_manifest =
-            read_manifest(&win64.join("ue4ss").join(MANIFEST_FILE));
+        let ue4ss_manifest = read_manifest(&win64.join("ue4ss").join(MANIFEST_FILE));
 
         let nsu_dir = mods_dir.join(NSU_MOD_NAME);
         let nsu_installed = nsu_dir.join("Scripts").join("main.lua").is_file();
         let nsu_manifest = read_manifest(&nsu_dir.join(MANIFEST_FILE));
-        let nsu_enabled = nsu_installed && read_mods_txt_value(&mods_dir, NSU_MOD_NAME).unwrap_or(0) == 1;
+        let nsu_enabled =
+            nsu_installed && read_mods_txt_value(&mods_dir, NSU_MOD_NAME).unwrap_or(0) == 1;
 
         Ok(ModsStatus {
             ue4ss_installed,
@@ -413,7 +424,11 @@ fn update_mods_txt(mods_dir: &Path, mod_name: &str, value: Option<bool>) -> AppR
         String::new()
     };
 
-    let newline = if original.contains("\r\n") { "\r\n" } else { "\n" };
+    let newline = if original.contains("\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
     let mut replaced = false;
     let mut out_lines: Vec<String> = Vec::new();
 
@@ -436,7 +451,11 @@ fn update_mods_txt(mods_dir: &Path, mod_name: &str, value: Option<bool>) -> AppR
     if !replaced {
         if let Some(enabled) = value {
             // Trim trailing empty lines before appending so we don't stack blanks
-            while out_lines.last().map(|l| l.trim().is_empty()).unwrap_or(false) {
+            while out_lines
+                .last()
+                .map(|l| l.trim().is_empty())
+                .unwrap_or(false)
+            {
                 out_lines.pop();
             }
             out_lines.push(format!("{} : {}", mod_name, if enabled { 1 } else { 0 }));
@@ -473,12 +492,12 @@ struct GhRelease {
 }
 
 fn github_client() -> AppResult<reqwest::blocking::Client> {
-    Ok(reqwest::blocking::Client::builder()
+    reqwest::blocking::Client::builder()
         .user_agent(USER_AGENT)
         .connect_timeout(Duration::from_secs(15))
         .timeout(Duration::from_secs(600))
         .build()
-        .map_err(|e| AppError::General(format!("Failed to build HTTP client: {}", e)))?)
+        .map_err(|e| AppError::General(format!("Failed to build HTTP client: {}", e)))
 }
 
 /// Resolve a release (fixed tag or latest stable) and pick the matching zip
@@ -518,7 +537,12 @@ fn resolve_release(
                 && a.name.ends_with(".zip")
                 && !a.name.starts_with("zDEV-")
         })
-        .ok_or_else(|| format!("No suitable zip asset found in release {}", release.tag_name))?;
+        .ok_or_else(|| {
+            format!(
+                "No suitable zip asset found in release {}",
+                release.tag_name
+            )
+        })?;
 
     Ok((
         release.tag_name.trim_start_matches('v').to_string(),
@@ -538,7 +562,11 @@ struct InstallProgress<'a> {
 fn emit_progress(app: &AppHandle, mod_name: &str, phase: &str, percent: u8) {
     let _ = app.emit(
         PROGRESS_EVENT,
-        InstallProgress { mod_name, phase, percent },
+        InstallProgress {
+            mod_name,
+            phase,
+            percent,
+        },
     );
 }
 
@@ -582,7 +610,11 @@ fn download_file(app: &AppHandle, urls: &[String], dest: &Path, mod_name: &str) 
     for url in urls {
         for attempt in 0..3 {
             if attempt > 0 {
-                tracing::warn!("Download attempt {} failed ({}), retrying", attempt, last_err);
+                tracing::warn!(
+                    "Download attempt {} failed ({}), retrying",
+                    attempt,
+                    last_err
+                );
                 emit_progress(app, mod_name, "download", 0);
                 std::thread::sleep(Duration::from_secs(2));
             } else {
@@ -598,29 +630,29 @@ fn download_file(app: &AppHandle, urls: &[String], dest: &Path, mod_name: &str) 
                     .error_for_status()
                     .map_err(|e| format!("Download rejected: {}", e))?;
 
-            let total = resp.content_length().unwrap_or(0);
-            let mut reader = ProgressReader {
-                inner: resp,
-                read_so_far: 0,
-                total,
-                last_percent: 0,
-                app: app.clone(),
-                mod_name: mod_name.to_string(),
-            };
+                let total = resp.content_length().unwrap_or(0);
+                let mut reader = ProgressReader {
+                    inner: resp,
+                    read_so_far: 0,
+                    total,
+                    last_percent: 0,
+                    app: app.clone(),
+                    mod_name: mod_name.to_string(),
+                };
 
-            let mut file = fs::File::create(&part_path)?;
-            std::io::copy(&mut reader, &mut file)
-                .map_err(|e| format!("Download interrupted: {}", e))?;
-            file.sync_all().ok();
-            drop(file);
+                let mut file = fs::File::create(&part_path)?;
+                std::io::copy(&mut reader, &mut file)
+                    .map_err(|e| format!("Download interrupted: {}", e))?;
+                file.sync_all().ok();
+                drop(file);
 
-            // Sanity check: zip magic "PK"
-            let mut magic = [0u8; 2];
-            let mut check = fs::File::open(&part_path)?;
-            check.read_exact(&mut magic)?;
-            if &magic != b"PK" {
-                return Err("Downloaded file is not a valid zip archive".into());
-            }
+                // Sanity check: zip magic "PK"
+                let mut magic = [0u8; 2];
+                let mut check = fs::File::open(&part_path)?;
+                check.read_exact(&mut magic)?;
+                if &magic != b"PK" {
+                    return Err("Downloaded file is not a valid zip archive".into());
+                }
 
                 fs::rename(&part_path, dest)?;
                 emit_progress(app, mod_name, "download", 100);
@@ -646,8 +678,8 @@ fn download_file(app: &AppHandle, urls: &[String], dest: &Path, mod_name: &str) 
 /// absolute paths and `..` traversal; normalize backslashes).
 fn extract_zip(zip_path: &Path, staging: &Path) -> AppResult<usize> {
     let file = fs::File::open(zip_path)?;
-    let mut archive = zip::ZipArchive::new(file)
-        .map_err(|e| format!("Failed to open archive: {}", e))?;
+    let mut archive =
+        zip::ZipArchive::new(file).map_err(|e| format!("Failed to open archive: {}", e))?;
 
     let count = archive.len();
     for i in 0..count {
@@ -659,7 +691,10 @@ fn extract_zip(zip_path: &Path, staging: &Path) -> AppResult<usize> {
             continue; // absolute path, skip
         }
         let rel = PathBuf::from(&raw_name);
-        if rel.components().any(|c| matches!(c, std::path::Component::ParentDir)) {
+        if rel
+            .components()
+            .any(|c| matches!(c, std::path::Component::ParentDir))
+        {
             tracing::warn!("Skipping unsafe zip entry: {}", raw_name);
             continue;
         }
@@ -708,7 +743,11 @@ fn find_ue4ss_base(staging: &Path) -> Option<PathBuf> {
 
 /// Recursively copy `src` into `dst`, collecting copied relative paths.
 fn copy_tree(src: &Path, dst: &Path, collected: &mut Vec<String>) -> AppResult<()> {
-    for entry in WalkDir::new(src).min_depth(1).into_iter().filter_map(|e| e.ok()) {
+    for entry in WalkDir::new(src)
+        .min_depth(1)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
         let rel = match entry.path().strip_prefix(src) {
             Ok(r) => r,
             Err(_) => continue,
@@ -757,7 +796,11 @@ pub async fn install_ue4ss(
     run_blocking(move || {
         let root = ensure_game_root(&game_root)?;
         let win64 = win64_dir(&root);
-        let resolved_channel = if channel == "recommended" { "recommended" } else { "latest" };
+        let resolved_channel = if channel == "recommended" {
+            "recommended"
+        } else {
+            "latest"
+        };
 
         emit_progress(&app, "ue4ss", "resolve", 0);
         let client = github_client()?;
@@ -769,9 +812,17 @@ pub async fn install_ue4ss(
         let (version, url, asset_id) = resolve_release(&client, UE4SS_REPO, tag, "UE4SS_")?;
         let urls = vec![
             url.clone(),
-            format!("{}/repos/{}/releases/assets/{}", GITHUB_API, UE4SS_REPO, asset_id),
+            format!(
+                "{}/repos/{}/releases/assets/{}",
+                GITHUB_API, UE4SS_REPO, asset_id
+            ),
         ];
-        tracing::info!("Installing UE4SS {} ({}) from {}", version, resolved_channel, url);
+        tracing::info!(
+            "Installing UE4SS {} ({}) from {}",
+            version,
+            resolved_channel,
+            url
+        );
 
         // Stage in temp, then move into place
         let staging = std::env::temp_dir().join(format!("etb-sm-ue4ss-{}", uuid::Uuid::new_v4()));
@@ -808,7 +859,10 @@ pub async fn install_ue4ss(
             )?;
 
             emit_progress(&app, "ue4ss", "done", 100);
-            Ok(InstallResult { version, channel: Some(resolved_channel.to_string()) })
+            Ok(InstallResult {
+                version,
+                channel: Some(resolved_channel.to_string()),
+            })
         })();
 
         fs::remove_dir_all(&staging).ok();
@@ -827,7 +881,9 @@ pub async fn install_nsu(app: AppHandle, game_root: String) -> AppResult<Install
         let mods_dir = ue4ss_mods_dir(&win64);
 
         // NSU is a UE4SS lua mod — it cannot run without UE4SS
-        if !win64.join("ue4ss").is_dir() && !win64.join("UE4SS.dll").is_file() && !win64.join("dwmapi.dll").is_file()
+        if !win64.join("ue4ss").is_dir()
+            && !win64.join("UE4SS.dll").is_file()
+            && !win64.join("dwmapi.dll").is_file()
         {
             return Err(validation("ue4ss-not-installed"));
         }
@@ -838,7 +894,10 @@ pub async fn install_nsu(app: AppHandle, game_root: String) -> AppResult<Install
             resolve_release(&client, NSU_REPO, "latest", "NightmareSaveUnlocker-")?;
         let urls = vec![
             url.clone(),
-            format!("{}/repos/{}/releases/assets/{}", GITHUB_API, NSU_REPO, asset_id),
+            format!(
+                "{}/repos/{}/releases/assets/{}",
+                GITHUB_API, NSU_REPO, asset_id
+            ),
         ];
         tracing::info!("Installing NSU {} from {}", version, url);
 
@@ -874,13 +933,19 @@ pub async fn install_nsu(app: AppHandle, game_root: String) -> AppResult<Install
                 channel: None,
                 files,
             };
-            fs::write(target.join(MANIFEST_FILE), serde_json::to_vec_pretty(&manifest)?)?;
+            fs::write(
+                target.join(MANIFEST_FILE),
+                serde_json::to_vec_pretty(&manifest)?,
+            )?;
 
             // Enable in mods.txt
             update_mods_txt(&mods_dir, NSU_MOD_NAME, Some(true))?;
 
             emit_progress(&app, "nsu", "done", 100);
-            Ok(InstallResult { version, channel: None })
+            Ok(InstallResult {
+                version,
+                channel: None,
+            })
         })();
 
         fs::remove_dir_all(&staging).ok();
@@ -924,12 +989,8 @@ fn io_err(context: &str, e: std::io::Error) -> AppError {
 /// Delete a directory tree if it exists.
 fn remove_dir_if_exists(path: &Path) -> AppResult<bool> {
     if path.exists() {
-        fs::remove_dir_all(path).map_err(|e| {
-            io_err(
-                &format!("Failed to remove {}", path.display()),
-                e,
-            )
-        })?;
+        fs::remove_dir_all(path)
+            .map_err(|e| io_err(&format!("Failed to remove {}", path.display()), e))?;
         return Ok(true);
     }
     Ok(false)
@@ -969,8 +1030,9 @@ pub async fn uninstall_ue4ss(game_root: String) -> AppResult<UninstallReport> {
         let ue4ss_dir = win64.join("ue4ss");
         let mods_dir = ue4ss_mods_dir(&win64);
 
-        let installed =
-            ue4ss_dir.is_dir() || win64.join("UE4SS.dll").is_file() || win64.join("dwmapi.dll").is_file();
+        let installed = ue4ss_dir.is_dir()
+            || win64.join("UE4SS.dll").is_file()
+            || win64.join("dwmapi.dll").is_file();
         if !installed {
             return Err(validation("ue4ss-not-installed"));
         }
@@ -1009,9 +1071,8 @@ pub async fn uninstall_ue4ss(game_root: String) -> AppResult<UninstallReport> {
                 for dll in KNOWN_LOADER_DLLS {
                     let p = win64.join(dll);
                     if p.is_file() {
-                        fs::remove_file(&p).map_err(|e| {
-                            io_err(&format!("Failed to remove {}", p.display()), e)
-                        })?;
+                        fs::remove_file(&p)
+                            .map_err(|e| io_err(&format!("Failed to remove {}", p.display()), e))?;
                     }
                 }
             }
@@ -1020,11 +1081,10 @@ pub async fn uninstall_ue4ss(game_root: String) -> AppResult<UninstallReport> {
         // 3. Remove the whole ue4ss directory (settings, cache, Mods leftovers)
         remove_dir_if_exists(&ue4ss_dir)?;
 
-        tracing::info!(
-            "UE4SS uninstalled; dependent mods removed: {:?}",
-            dependent
-        );
-        Ok(UninstallReport { removed_dependent_mods: dependent })
+        tracing::info!("UE4SS uninstalled; dependent mods removed: {:?}", dependent);
+        Ok(UninstallReport {
+            removed_dependent_mods: dependent,
+        })
     })
     .await
 }
@@ -1078,24 +1138,32 @@ mod tests {
     fn temp_mods_dir(tag: &str) -> PathBuf {
         static COUNTER: AtomicU32 = AtomicU32::new(0);
         let n = COUNTER.fetch_add(1, Ordering::Relaxed);
-        let dir = std::env::temp_dir().join(format!(
-            "etb-sm-test-{}-{}-{}",
-            tag,
-            std::process::id(),
-            n
-        ));
+        let dir =
+            std::env::temp_dir().join(format!("etb-sm-test-{}-{}-{}", tag, std::process::id(), n));
         fs::create_dir_all(&dir).unwrap();
         dir
     }
 
     #[test]
     fn parse_line_reads_value() {
-        assert_eq!(parse_mods_line("NightmareSaveUnlocker : 1\n", "NightmareSaveUnlocker"), Some(1));
-        assert_eq!(parse_mods_line("NightmareSaveUnlocker : 0\r\n", "NightmareSaveUnlocker"), Some(0));
+        assert_eq!(
+            parse_mods_line("NightmareSaveUnlocker : 1\n", "NightmareSaveUnlocker"),
+            Some(1)
+        );
+        assert_eq!(
+            parse_mods_line("NightmareSaveUnlocker : 0\r\n", "NightmareSaveUnlocker"),
+            Some(0)
+        );
         // Case-insensitive mod-name match, arbitrary spacing
-        assert_eq!(parse_mods_line("nightmaresaveunlocker:1", NSU_MOD_NAME), Some(1));
+        assert_eq!(
+            parse_mods_line("nightmaresaveunlocker:1", NSU_MOD_NAME),
+            Some(1)
+        );
         assert_eq!(parse_mods_line("OtherMod : 1\n", NSU_MOD_NAME), None);
-        assert_eq!(parse_mods_line("NightmareSaveUnlocker :\n", NSU_MOD_NAME), None);
+        assert_eq!(
+            parse_mods_line("NightmareSaveUnlocker :\n", NSU_MOD_NAME),
+            None
+        );
         assert_eq!(parse_mods_line("", NSU_MOD_NAME), None);
     }
 
@@ -1126,7 +1194,14 @@ mod tests {
         update_mods_txt(&dir, NSU_MOD_NAME, Some(true)).unwrap();
         let text = fs::read_to_string(&path).unwrap();
 
-        assert_eq!(text.lines().filter(|l| l.to_lowercase().contains(NSU_MOD_NAME.to_lowercase().as_str())).count(), 1);
+        assert_eq!(
+            text.lines()
+                .filter(|l| l
+                    .to_lowercase()
+                    .contains(NSU_MOD_NAME.to_lowercase().as_str()))
+                .count(),
+            1
+        );
         assert!(text.contains("NightmareSaveUnlocker : 1"));
         assert!(text.starts_with("A : 1"));
         assert!(text.ends_with("B : 1") || text.ends_with("B : 1\n"));
@@ -1169,7 +1244,13 @@ mod tests {
         assert_eq!(text.trim_end(), "NightmareSaveUnlocker : 1");
 
         update_mods_txt(&dir, NSU_MOD_NAME, None).unwrap();
-        assert!(!dir.join(MODS_TXT).exists() || fs::read_to_string(dir.join(MODS_TXT)).unwrap().trim().is_empty());
+        assert!(
+            !dir.join(MODS_TXT).exists()
+                || fs::read_to_string(dir.join(MODS_TXT))
+                    .unwrap()
+                    .trim()
+                    .is_empty()
+        );
         fs::remove_dir_all(&dir).ok();
     }
 

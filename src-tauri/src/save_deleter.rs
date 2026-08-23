@@ -2,8 +2,9 @@
 //! Extracted from save_commands.rs for better modularity
 
 use crate::common::{
-    add_save_to_mainsave, extract_archive_name, get_save_games_dir, get_visible_saves_set,
-    remove_save_from_mainsave, validate_save_games_path,
+    add_save_to_mainsave, extract_archive_name, extract_archive_name_from_trash,
+    get_save_games_dir, get_visible_saves_set, remove_save_from_mainsave, set_save_visibility,
+    validate_save_games_path,
 };
 use crate::error::AppResult;
 use serde_json::json;
@@ -42,8 +43,12 @@ pub async fn delete_file(file_path: String) -> AppResult<()> {
 
         fs::remove_file(&file_path).map_err(|e| format!("Failed to delete file: {}", e))?;
 
-        // Remove from MAINSAVE records (failure does not affect main operation)
-        let _ = remove_save_from_mainsave(extract_archive_name(filename));
+        // Remove from MAINSAVE records (best-effort: the file removal above is what
+        // actually deletes the archive — listings are directory-driven, so a stale
+        // entry is harmless. Failing here would report failure after the fact.)
+        if let Err(e) = remove_save_from_mainsave(extract_archive_name(filename)) {
+            tracing::warn!("Failed to clean '{}' from MAINSAVE: {}", filename, e);
+        }
 
         Ok(())
     })
@@ -75,8 +80,16 @@ pub async fn soft_delete_file(file_path: String) -> AppResult<()> {
         fs::rename(path, &trash_path)
             .map_err(|e| format!("Failed to move file to trash: {}", e))?;
 
-        // Remove from MAINSAVE records
-        remove_save_from_mainsave(extract_archive_name(filename))?;
+        // Remove from MAINSAVE records (best-effort — see delete_file. Failing
+        // here AFTER the rename would report failure while the archive IS
+        // trashed, and would skip registering the undo action on the frontend.)
+        if let Err(e) = remove_save_from_mainsave(extract_archive_name(filename)) {
+            tracing::warn!(
+                "Failed to clean '{}' from MAINSAVE after trash: {}",
+                filename,
+                e
+            );
+        }
 
         Ok(())
     })
@@ -110,8 +123,14 @@ pub async fn restore_file(file_path: String) -> AppResult<()> {
         // Validate restored path
         validate_save_games_path(path)?;
 
-        // Add back to MAINSAVE records
-        add_save_to_mainsave(extract_archive_name(filename))?;
+        // Add back to MAINSAVE records. The trash filename ends in ".sav.trash",
+        // so the plain ".sav" stripper would register the archive under a name
+        // that never matches a listing — leaving restored archives hidden.
+        // Best-effort (mirrors soft_delete_file): the rename above already put
+        // the .sav back, and failing here would report failure after the fact.
+        if let Err(e) = add_save_to_mainsave(extract_archive_name_from_trash(filename)) {
+            tracing::warn!("Failed to re-register '{}' in MAINSAVE: {}", filename, e);
+        }
 
         Ok(())
     })
@@ -180,12 +199,17 @@ pub async fn open_save_games_folder() -> AppResult<()> {
     .await
 }
 
-/// Handle file operations: toggle visibility, read MAINSAVE.
+/// Handle file operations: toggle/set visibility, read MAINSAVE.
+///
+/// The visibility mutation is atomic and returns the VERIFIED end state
+/// (`isVisible`) so the frontend can reconcile its UI against what is actually
+/// on disk instead of trusting an optimistic flip.
 #[tauri::command]
 pub async fn handle_file(
     file_path: String,
     action: Option<String>,
     _archive_name: Option<String>,
+    visible: Option<bool>,
 ) -> AppResult<String> {
     run_blocking(move || {
         // Handle special request to read MAINSAVE file
@@ -207,36 +231,31 @@ pub async fn handle_file(
 
         validate_save_games_path(&file_path)?;
 
-        let file_name = file_path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .ok_or("Invalid filename")?;
-        let archive_name = extract_archive_name(file_name);
+        match action.as_deref() {
+            Some("toggle_visibility") => {
+                let file_name = file_path
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .ok_or("Invalid filename")?;
+                let archive_name = extract_archive_name(file_name);
 
-        // Get current visibility state and toggle
-        let visible_saves = get_visible_saves_set()?;
-        let is_visible = visible_saves.contains(archive_name);
+                // `visible` pins the desired state (idempotent, race-free);
+                // None falls back to a relative flip.
+                let is_visible = set_save_visibility(archive_name, visible)?;
 
-        tracing::info!(
-            "toggling visibility for '{}' (currently {})",
-            archive_name,
-            if is_visible { "visible" } else { "hidden" }
-        );
+                tracing::info!(
+                    "visibility for '{}' is now {}",
+                    archive_name,
+                    if is_visible { "visible" } else { "hidden" }
+                );
 
-        if is_visible {
-            let removed = remove_save_from_mainsave(archive_name)?;
-            if !removed {
-                tracing::warn!("'{}' not found in MAINSAVE SingleplayerSaves", archive_name);
+                Ok(json!({"success": true, "isVisible": is_visible}).to_string())
             }
-        } else {
-            add_save_to_mainsave(archive_name)?;
+            // Unknown/no action: return the resolved path without mutating
+            // anything. (Previously ANY unrecognized action fell through into
+            // a visibility toggle.)
+            _ => Ok(file_path.to_str().unwrap_or_default().to_string()),
         }
-
-        if action.as_deref() == Some("toggle_visibility") {
-            return Ok(json!({"success": true}).to_string());
-        }
-
-        Ok(file_path.to_str().unwrap_or_default().to_string())
     })
     .await
 }

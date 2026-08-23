@@ -1,4 +1,6 @@
-use crate::common::{add_save_to_mainsave, extract_archive_name, get_local_appdata_dir};
+use crate::common::{
+    add_save_to_mainsave, extract_archive_name, get_local_appdata_dir, get_mainsave_path,
+};
 use crate::error::AppResult;
 use crate::save_shared;
 use serde::{Deserialize, Serialize};
@@ -209,6 +211,12 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
         {
             tracing::info!("Removed template PlayerData (no players provided)");
         }
+    }
+
+    // Refuse early when there is no MAINSAVE registry: creating the .sav without
+    // being able to register it would leave an invisible orphan file on disk.
+    if !get_mainsave_path()?.exists() {
+        return Err("MAINSAVE.sav not found — start the game once so it can be created".into());
     }
 
     // Write as .sav file

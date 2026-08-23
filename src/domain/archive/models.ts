@@ -6,6 +6,8 @@
 export interface Archive {
   id: number;
   name: string;
+  /** Display name from MAINSAVE's SaveDisplayNamesLookup (what the game shows). */
+  displayName?: string | null;
   difficulty: string;
   actualDifficulty: string;
   mode: string;
@@ -19,6 +21,8 @@ export interface Archive {
 export interface ArchiveMetadata {
   id: number;
   name: string;
+  /** Display name from MAINSAVE's SaveDisplayNamesLookup (what the game shows). */
+  displayName?: string | null;
   difficulty: string;
   mode: string;
   date: string;

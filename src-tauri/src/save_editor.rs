@@ -230,6 +230,38 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
             .map_err(|e| format!("Failed to flush buffer: {}", e))?;
     }
 
+    // Update MAINSAVE BEFORE any destructive filesystem step. Registration is
+    // fallible (MAINSAVE may be missing or locked by the game); failing here
+    // must leave the original .sav untouched so the user can simply retry —
+    // never a half-applied edit that reports failure after the fact.
+    let archive_name = extract_archive_name(&new_filename);
+
+    // Rename flow: when the archive name changed (rename / difficulty change),
+    // MOVE the registry entry and its display-name mapping old -> new so any
+    // custom in-game name survives. Only when the old entry is not registered
+    // (e.g. the archive was hidden) do we fall back to a best-effort cleanup
+    // of the old name; the new registration below then inserts a fresh entry.
+    if let Some(ref old_name) = old_archive_name {
+        if old_name != archive_name {
+            match crate::common::update_mainsave_archive_name(old_name, archive_name) {
+                Ok(true) => {}
+                Ok(false) => {
+                    if let Err(e) = remove_save_from_mainsave(old_name) {
+                        tracing::warn!("Failed to remove old MAINSAVE entry '{}': {}", old_name, e);
+                    }
+                }
+                Err(e) => {
+                    tracing::warn!("Failed to move old MAINSAVE entry '{}': {}", old_name, e);
+                }
+            }
+        }
+    }
+
+    if let Err(e) = add_save_to_mainsave(archive_name) {
+        let _ = fs::remove_file(&temp_path);
+        return Err(e);
+    }
+
     // Atomically rename temp to target path
     fs::rename(&temp_path, &output_path)
         .map_err(|e| format!("Failed to rename temp file: {}", e))?;
@@ -243,18 +275,6 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     }
 
     tracing::info!("Save saved to: {:?}", output_path);
-
-    // Update MAINSAVE.sav
-    let archive_name = extract_archive_name(&new_filename);
-
-    // Remove old MAINSAVE entry if the archive name changed (rename / difficulty change)
-    if let Some(ref old_name) = old_archive_name {
-        if old_name != archive_name {
-            let _ = remove_save_from_mainsave(old_name);
-        }
-    }
-
-    add_save_to_mainsave(archive_name)?;
 
     Ok(output_path.to_str().unwrap_or("Invalid path").to_string())
 }
@@ -580,17 +600,16 @@ fn arrange_inventory_over_12(pool: Vec<String>) -> Vec<String> {
             others.push(item);
         }
     }
-    let mut idx = if placed_main { 1 } else { 0 };
-    for item in others {
+    let start_idx = if placed_main { 1 } else { 0 };
+    for (offset, item) in others.into_iter().enumerate() {
+        let idx = start_idx + offset;
         if idx >= save_shared::INVENTORY_SLOTS {
             break;
         }
         result[idx] = item;
-        idx += 1;
     }
     result
 }
-
 /// Merge duplicate PlayerData entries for the same player.
 ///
 /// A player can appear under several keys in a save: a bare steam id, the correct

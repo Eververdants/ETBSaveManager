@@ -4,8 +4,13 @@
 use crate::cli_handlers;
 use std::fs;
 
-/// Result of a SINGLEPLAYER_ to MULTIPLAYER_ archive conversion
+/// Result of a SINGLEPLAYER_ to MULTIPLAYER_ archive conversion.
+///
+/// Only the count is consumed today (load_save_metadata logs it), but the
+/// struct is kept public with its fields for diagnostics and future callers;
+/// silence the dead-code lint explicitly rather than deleting context.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct ConversionResult {
     /// Original filename (e.g., "SINGLEPLAYER_ArchiveName_Normal.sav")
     pub original: String,
@@ -19,7 +24,8 @@ pub struct ConversionResult {
 /// Preserves the archive name and difficulty suffix.
 ///
 /// # Examples
-/// ```
+///
+/// ```text
 /// convert_filename("SINGLEPLAYER_ArchiveName_Normal.sav")
 /// // Returns: Some("MULTIPLAYER_ArchiveName_Normal.sav")
 /// ```
@@ -96,30 +102,63 @@ pub fn convert_singleplayer_archives(save_dir: &Path) -> Vec<ConversionResult> {
         // Perform the rename operation
         match fs::rename(&path, &new_path) {
             Ok(()) => {
-                tracing::info!(
-                    "Converted archive: {} -> {}",
-                    filename,
-                    new_filename
+                // Update MAINSAVE.sav's SingleplayerSaves list. The registry
+                // stores bare stems (no ".sav"), and a missed/failed update
+                // would leave the renamed file permanently unregistered (listed
+                // hidden forever) — so treat both as failure and REVERT the file
+                // rename, keeping disk and registry consistent. The conversion
+                // is retried on the next load.
+                let registry_result = crate::common::update_mainsave_archive_name(
+                    crate::common::extract_archive_name(filename),
+                    crate::common::extract_archive_name(&new_filename),
                 );
-                
-                // Update MAINSAVE.sav's SingleplayerSaves list
-                if let Err(e) = crate::common::update_mainsave_archive_name(filename, &new_filename)
-                {
-                    tracing::error!("Failed to update MAINSAVE for {}: {}", filename, e);
+
+                match registry_result {
+                    Ok(true) => {
+                        tracing::info!("Converted archive: {} -> {}", filename, new_filename);
+                        conversions.push(ConversionResult {
+                            original: filename.to_string(),
+                            converted: new_filename,
+                            success: true,
+                        });
+                    }
+                    Ok(false) => {
+                        tracing::error!(
+                            "MAINSAVE has no entry for '{}' — reverting rename",
+                            filename
+                        );
+                        if let Err(revert_err) = fs::rename(&new_path, &path) {
+                            tracing::error!(
+                                "Failed to revert rename of {}: {}",
+                                filename,
+                                revert_err
+                            );
+                        }
+                        conversions.push(ConversionResult {
+                            original: filename.to_string(),
+                            converted: new_filename,
+                            success: false,
+                        });
+                    }
+                    Err(e) => {
+                        tracing::error!("Failed to update MAINSAVE for {}: {}", filename, e);
+                        if let Err(revert_err) = fs::rename(&new_path, &path) {
+                            tracing::error!(
+                                "Failed to revert rename of {}: {}",
+                                filename,
+                                revert_err
+                            );
+                        }
+                        conversions.push(ConversionResult {
+                            original: filename.to_string(),
+                            converted: new_filename,
+                            success: false,
+                        });
+                    }
                 }
-                
-                conversions.push(ConversionResult {
-                    original: filename.to_string(),
-                    converted: new_filename,
-                    success: true,
-                });
             }
             Err(e) => {
-                tracing::error!(
-                    "Failed to convert {}: {}",
-                    filename,
-                    e
-                );
+                tracing::error!("Failed to convert {}: {}", filename, e);
                 conversions.push(ConversionResult {
                     original: filename.to_string(),
                     converted: new_filename,
@@ -133,7 +172,7 @@ pub fn convert_singleplayer_archives(save_dir: &Path) -> Vec<ConversionResult> {
     conversions
 }
 
-use crate::common::{extract_archive_name, get_visible_saves_set};
+use crate::common::extract_archive_name;
 use crate::error::AppResult;
 use crate::get_file_path;
 use crate::save_utils;
@@ -149,19 +188,23 @@ use std::time::Instant;
 pub async fn load_all_saves() -> AppResult<Vec<SaveFileInfo>> {
     let start_time = Instant::now();
 
-    // Parallel fetch file list and visible saves set
-    let (paths_result, visible_saves_result) =
-        rayon::join(get_file_path::list_save_paths, get_visible_saves_set);
+    // Parallel fetch file list and visible saves set (+ display names;
+    // this also backfills missing SaveDisplayNamesLookup entries).
+    let (paths_result, visible_saves_result) = rayon::join(
+        get_file_path::list_save_paths,
+        crate::common::get_visible_saves_with_display_names,
+    );
 
     let paths = paths_result?;
-    let visible_saves = Arc::new(visible_saves_result?);
+    let (visible_set, display_names) = visible_saves_result?;
+    let visible_saves = Arc::new(visible_set);
     let path_count = paths.len();
 
     // Use rayon to process all save files in parallel
     let results: Vec<SaveFileInfo> = paths
         .into_par_iter()
         .enumerate()
-        .filter_map(|(i, path)| process_save_file(i, &path, &visible_saves))
+        .filter_map(|(i, path)| process_save_file(i, &path, &visible_saves, Some(&display_names)))
         .collect();
 
     let elapsed = start_time.elapsed();
@@ -188,11 +231,13 @@ pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
         tracing::info!("Converted {} singleplayer archives", conversions.len());
     }
 
-    let (paths_result, visible_saves_result) =
-        rayon::join(get_file_path::list_save_paths, get_visible_saves_set);
+    let (paths_result, visible_saves_result) = rayon::join(
+        get_file_path::list_save_paths,
+        crate::common::get_visible_saves_with_display_names,
+    );
 
     let paths = paths_result?;
-    let visible_saves = Arc::new(visible_saves_result?);
+    let (visible_set, display_names) = visible_saves_result?;
 
     let results: Vec<SaveFileMeta> = paths
         .into_par_iter()
@@ -201,9 +246,16 @@ pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
             let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
             let archive_name = extract_archive_name(file_name);
             let date = cli_handlers::get_modified_date(&path).unwrap_or_default();
-            let is_visible = visible_saves.contains(archive_name);
+            let is_visible = visible_set.contains(archive_name);
 
-            save_utils::build_save_meta(i as u32, &path, date, is_visible).ok()
+            save_utils::build_save_meta(
+                i as u32,
+                &path,
+                date,
+                is_visible,
+                display_names.get(archive_name).cloned(),
+            )
+            .ok()
         })
         .collect();
 
@@ -228,11 +280,13 @@ pub async fn load_save_metadata_page(
 ) -> AppResult<save_utils::SaveFileMetaPage> {
     let start_time = Instant::now();
 
-    let (paths_result, visible_saves_result) =
-        rayon::join(get_file_path::list_save_paths, get_visible_saves_set);
+    let (paths_result, visible_saves_result) = rayon::join(
+        get_file_path::list_save_paths,
+        crate::common::get_visible_saves_with_display_names,
+    );
 
     let paths = paths_result?;
-    let visible_saves = visible_saves_result?;
+    let (visible_set, display_names) = visible_saves_result?;
     let total = paths.len() as u32;
 
     // Clamp to valid range
@@ -246,9 +300,15 @@ pub async fn load_save_metadata_page(
         let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
         let archive_name = extract_archive_name(file_name);
         let date = cli_handlers::get_modified_date(path).unwrap_or_default();
-        let is_visible = visible_saves.contains(archive_name);
+        let is_visible = visible_set.contains(archive_name);
 
-        if let Ok(meta) = save_utils::build_save_meta(global_idx, path, date, is_visible) {
+        if let Ok(meta) = save_utils::build_save_meta(
+            global_idx,
+            path,
+            date,
+            is_visible,
+            display_names.get(archive_name).cloned(),
+        ) {
             results.push(meta);
         }
     }
@@ -311,22 +371,24 @@ fn process_save_file(
     index: usize,
     path: &Path,
     visible_saves: &Arc<HashSet<String>>,
+    display_names: Option<&std::collections::HashMap<String, String>>,
 ) -> Option<SaveFileInfo> {
     let file_name = path.file_name().and_then(|n| n.to_str())?;
     let archive_name = extract_archive_name(file_name);
     let date = cli_handlers::get_modified_date(path).unwrap_or_default();
     let is_visible = visible_saves.contains(archive_name);
+    let display_name = display_names.and_then(|m| m.get(archive_name).cloned());
 
     // Skip parsing .sav if not visible (performance optimization)
     if !is_visible {
         return save_utils::build_save_file_info(
             index as u32,
             path,
-            archive_name,
             date,
             None,
             None,
             is_visible,
+            display_name,
         )
         .ok();
     }
@@ -338,11 +400,11 @@ fn process_save_file(
         save_utils::build_save_file_info(
             index as u32,
             path,
-            archive_name,
             date,
             Some(current_level),
             Some(actual_difficulty),
             is_visible,
+            display_name,
         )
         .ok()
     })

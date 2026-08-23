@@ -8,6 +8,26 @@ import type { Archive, ArchiveMetadata, ArchiveDetail, CreateArchiveOptions } fr
 import type { ArchiveServiceResult } from "@/domain/archive/service";
 
 /**
+ * Extract a readable message from a Tauri invoke rejection.
+ * Rust `AppError` serializes as a plain `{type, message}` object, so
+ * `String(error)` would only yield "[object Object]".
+ */
+function normalizeInvokeError(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error !== null) {
+    const e = error as { message?: unknown; msg?: unknown };
+    if (typeof e.message === "string") return e.message;
+    if (typeof e.msg === "string") return e.msg;
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error);
+    }
+  }
+  return String(error);
+}
+
+/**
  * Archive adapter for Tauri backend
  */
 export class TauriArchiveAdapter {
@@ -21,7 +41,7 @@ export class TauriArchiveAdapter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: normalizeInvokeError(error),
       };
     }
   }
@@ -36,7 +56,7 @@ export class TauriArchiveAdapter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: normalizeInvokeError(error),
       };
     }
   }
@@ -57,7 +77,7 @@ export class TauriArchiveAdapter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: normalizeInvokeError(error),
       };
     }
   }
@@ -72,7 +92,7 @@ export class TauriArchiveAdapter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: normalizeInvokeError(error),
       };
     }
   }
@@ -87,7 +107,7 @@ export class TauriArchiveAdapter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: normalizeInvokeError(error),
       };
     }
   }
@@ -102,7 +122,7 @@ export class TauriArchiveAdapter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: normalizeInvokeError(error),
       };
     }
   }
@@ -117,7 +137,7 @@ export class TauriArchiveAdapter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: normalizeInvokeError(error),
       };
     }
   }
@@ -132,27 +152,45 @@ export class TauriArchiveAdapter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: normalizeInvokeError(error),
       };
     }
   }
 
   /**
-   * Toggle archive visibility
+   * Toggle archive visibility.
+   * Pass `visible` to pin the desired state (idempotent, race-free);
+   * omit it to flip relative to the current state.
+   * Returns the VERIFIED end state reported by the backend so callers can
+   * reconcile their UI against what is actually on disk.
    */
-  async toggleArchiveVisibility(filePath: string, archiveName: string): Promise<ArchiveServiceResult<void>> {
+  async toggleArchiveVisibility(
+    filePath: string,
+    archiveName: string,
+    visible?: boolean,
+  ): Promise<ArchiveServiceResult<{ isVisible: boolean }>> {
     try {
-      await invoke("handle_file", {
+      const raw = await invoke<string>("handle_file", {
         filePath,
         action: "toggle_visibility",
         archiveName,
+        visible: visible ?? null,
       });
-      return { success: true };
+
+      // The backend answers with a JSON string: {success, isVisible}.
+      // "Invoke resolved" alone proves nothing — inspect the payload.
+      let parsed: { success?: boolean; isVisible?: boolean } = {};
+      try {
+        parsed = JSON.parse(raw) as { success?: boolean; isVisible?: boolean };
+      } catch {
+        return { success: false, error: "Malformed response from backend" };
+      }
+      if (parsed.success === false) {
+        return { success: false, error: "Backend reported toggle failure" };
+      }
+      return { success: true, data: { isVisible: parsed.isVisible === true } };
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      };
+      return { success: false, error: normalizeInvokeError(error) };
     }
   }
 
@@ -166,7 +204,7 @@ export class TauriArchiveAdapter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: normalizeInvokeError(error),
       };
     }
   }
@@ -183,7 +221,7 @@ export class TauriArchiveAdapter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: normalizeInvokeError(error),
       };
     }
   }
@@ -198,7 +236,7 @@ export class TauriArchiveAdapter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: normalizeInvokeError(error),
       };
     }
   }
@@ -213,7 +251,7 @@ export class TauriArchiveAdapter {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: normalizeInvokeError(error),
       };
     }
   }

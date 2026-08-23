@@ -1,5 +1,6 @@
 ﻿pub mod cli_handlers;
 pub mod common;
+pub mod display_name;
 mod error;
 mod get_file_path;
 mod gpu_settings;

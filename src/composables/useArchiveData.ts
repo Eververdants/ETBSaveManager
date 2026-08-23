@@ -10,6 +10,7 @@ import { FEATURES } from "@/config/features";
 interface RawSaveItem {
   id?: number;
   name?: string;
+  display_name?: string | null;
   current_level?: string;
   mode?: string;
   difficulty?: string;
@@ -22,6 +23,7 @@ interface RawSaveItem {
 interface SaveFileMeta {
   id: number;
   name: string;
+  display_name?: string | null;
   difficulty: string;
   mode: string;
   date: string;
@@ -125,6 +127,7 @@ export function useArchiveData(): {
     return {
       id: item.id ?? 0,
       name: item.name ?? t("archiveCard.untitled", "Untitled Archive"),
+      displayName: item.display_name ?? null,
       currentLevel: item.current_level ?? "Level0",
       gameMode,
       archiveDifficulty: difficultyMap[item.difficulty!] || item.difficulty?.toLowerCase() || "normal",
@@ -148,6 +151,7 @@ export function useArchiveData(): {
     return {
       id: meta.id,
       name: meta.name,
+      displayName: meta.display_name ?? null,
       currentLevel: "Level0",
       gameMode,
       archiveDifficulty: diff,
@@ -204,18 +208,15 @@ export function useArchiveData(): {
   };
 
   /** Phase 1: Load ALL metadata from filenames only (no .sav parsing),
-   *  then sort by name for consistent ordering.  Fast even for 1000+ files. */
+   *  then sort by name for consistent ordering.  Fast even for 1000+ files.
+   *  Errors propagate: a transient backend failure must NEVER surface as an
+   *  empty list — callers keep their current data when this rejects. */
   const loadMetadata = async (): Promise<ArchiveData[]> => {
-    try {
-      const metaList = await invoke<SaveFileMeta[]>("load_save_metadata");
-      if (metaList && Array.isArray(metaList)) {
-        return metaList.map(mapMetaToArchive).sort((a, b) => a.name.localeCompare(b.name));
-      }
-      return [];
-    } catch (error) {
-      console.error("Failed to load archive metadata:", error);
-      return [];
+    const metaList = await invoke<SaveFileMeta[]>("load_save_metadata");
+    if (metaList && Array.isArray(metaList)) {
+      return metaList.map(mapMetaToArchive).sort((a, b) => a.name.localeCompare(b.name));
     }
+    return [];
   };
 
   /**
@@ -289,8 +290,14 @@ export function useArchiveData(): {
     return metaArchives;
   };
 
+  // Monotonic token identifying the newest archive load. An older refresh that
+  // snapshotted PRE-operation disk state must never finish last and overwrite
+  // newer data (that resurrected deleted archives and reverted toggles).
+  let refreshGeneration = 0;
+
   const initializeArchives = async (silent = false): Promise<void> => {
     cancelDetailLoading();
+    const loadGeneration = ++refreshGeneration;
 
     if (!silent) {
       loading.value = true;
@@ -320,7 +327,11 @@ export function useArchiveData(): {
         await loadDetailsIntoArray(merged);
       }
 
-      if (detailLoadCancelled) return;
+      if (detailLoadCancelled || loadGeneration !== refreshGeneration) {
+        // A newer load superseded this one — never swap stale data in.
+        scheduler.endOperation("loading-archives");
+        return;
+      }
 
       // Atomic swap: old data → new complete data in one re-render.
       // Cards now render directly with real data — no default-value flash.
@@ -332,6 +343,10 @@ export function useArchiveData(): {
       console.error("Failed to initialize archives:", error);
       if (!silent) {
         archives.value = [];
+        // Surface the failure — an empty list must never masquerade as
+        // "no archives exist".
+        const errorMessage = (error as { message?: string })?.message || String(error);
+        toast.showError(t("archiveCard.loadFailed", "Failed to load archives") + ": " + errorMessage);
       }
       dataLoadComplete.value = true;
       incrementalLoadState.value = { phase: "complete", totalDetails: 0, loadedDetails: 0 };
@@ -348,6 +363,7 @@ export function useArchiveData(): {
   const refreshArchives = async (): Promise<void> => {
     loading.value = true;
     cancelDetailLoading();
+    const loadGeneration = ++refreshGeneration;
     scheduler.beginOperation("loading-archives", { totalItems: 0, completedItems: 0 });
 
     try {
@@ -359,6 +375,12 @@ export function useArchiveData(): {
       if (pendingCount > 0) {
         detailLoadCancelled = false;
         await loadDetailsIntoArray(merged);
+      }
+
+      if (loadGeneration !== refreshGeneration) {
+        // A newer load superseded this one — never swap stale data in.
+        scheduler.endOperation("loading-archives");
+        return;
       }
 
       // Atomic swap: old data → new complete data in one re-render
@@ -375,6 +397,7 @@ export function useArchiveData(): {
   };
 
   const refreshArchivesSilent = async (): Promise<void> => {
+    const loadGeneration = ++refreshGeneration;
     scheduler.beginOperation("loading-archives", { totalItems: 0, completedItems: 0 });
     try {
       const merged = await loadMergedArchives();
@@ -385,6 +408,12 @@ export function useArchiveData(): {
       if (pendingCount > 0) {
         detailLoadCancelled = false;
         await loadDetailsIntoArray(merged);
+      }
+
+      if (loadGeneration !== refreshGeneration) {
+        // A newer load superseded this one — never swap stale data in.
+        scheduler.endOperation("loading-archives");
+        return;
       }
 
       archives.value = merged;
@@ -403,13 +432,16 @@ export function useArchiveData(): {
   };
 
   const updateArchiveVisibility = (archiveId: number, isVisible: boolean, path?: string): void => {
-    let archiveIndex = archives.value.findIndex((a) => a.id === archiveId);
-    // Archive ids are enumeration indices that shift after a refresh adds/removes
-    // a save. Fall back to the stable file path so the optimistic update (and the
-    // rollback) still hits the right card — otherwise toggling can appear to do
-    // nothing on the wrong archive.
-    if (archiveIndex === -1 && path) {
-      archiveIndex = archives.value.findIndex((a) => a.path === path);
+    // The stable file path is checked FIRST: ids are enumeration indices that
+    // shift after a refresh and can collide with an unrelated archive — an
+    // id-first match could flip visibility on the wrong card.
+    let archiveIndex = -1;
+    if (path) {
+      const normalized = path.toLowerCase();
+      archiveIndex = archives.value.findIndex((a) => a.path && a.path.toLowerCase() === normalized);
+    }
+    if (archiveIndex === -1) {
+      archiveIndex = archives.value.findIndex((a) => a.id === archiveId);
     }
     if (archiveIndex > -1) {
       archives.value[archiveIndex].isVisible = isVisible;

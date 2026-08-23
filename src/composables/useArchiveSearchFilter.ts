@@ -109,7 +109,11 @@ function applyFilters(
   if (searchQuery) {
     const query = searchQuery.toLowerCase();
     filtered = filtered.filter((archive) => {
-      const nameMatch = archive.name.toLowerCase().includes(query);
+      // Match the filename-derived name AND the MAINSAVE display name so a
+      // custom-named archive is findable by either name.
+      const nameMatch =
+        archive.name.toLowerCase().includes(query) ||
+        (archive.displayName?.toLowerCase().includes(query) ?? false);
       const levelMatch = archive.currentLevel?.toLowerCase().includes(query) ?? false;
       const diffMatch = archive.archiveDifficulty?.toLowerCase().includes(query) ?? false;
       const actualDiffMatch = archive.actualDifficulty?.toLowerCase().includes(query) ?? false;
@@ -145,7 +149,9 @@ function applySuggestions(archives: Ref<ArchiveData[]> | ArchiveData[], searchQu
 
   return archivesArray
     .filter((a) => {
-      const nameMatch = a.name.toLowerCase().includes(query);
+      const nameMatch =
+        a.name.toLowerCase().includes(query) ||
+        (a.displayName?.toLowerCase().includes(query) ?? false);
       const levelMatch = a.currentLevel?.toLowerCase().includes(query) ?? false;
       return nameMatch || levelMatch;
     })

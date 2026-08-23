@@ -73,6 +73,21 @@ interface ArchiveDataMethods {
   updateArchiveVisibility?: (id: number, visible: boolean, path?: string) => void;
 }
 
+/**
+ * Find an archive in the list by its file path, falling back to its id.
+ * Ids are per-load enumeration indices and SHIFT whenever a refresh adds or
+ * removes saves — and a shifted id can COLLIDE with an unrelated archive, so
+ * the stable file path must be checked first.
+ */
+function findArchiveIndex(archives: ArchiveData[], archive: ArchiveData): number {
+  if (archive.path) {
+    const normalized = archive.path.toLowerCase();
+    const byPath = archives.findIndex((a) => a.path && a.path.toLowerCase() === normalized);
+    if (byPath !== -1) return byPath;
+  }
+  return archives.findIndex((a) => a.id === archive.id);
+}
+
 export function useArchiveActions(
   archiveData: ArchiveDataMethods,
   _filters: Record<string, unknown>,
@@ -86,65 +101,114 @@ export function useArchiveActions(
   const archiveToDelete = ref<ArchiveData | null>(null);
   const isDeleting = ref(false);
 
+  // Archives with a toggle currently in flight, keyed by file path. Guards
+  // against double-clicks firing two overlapping toggles that would cancel
+  // each other out on the backend.
+  const togglingArchives = new Set<string>();
+
+  /**
+   * Apply an explicit visibility state on disk AND reconcile the UI against
+   * the backend-verified end state. Used by toggle, undo and redo so the UI
+   * can never drift from what MAINSAVE actually contains.
+   */
+  const applyVerifiedVisibility = async (
+    archive: Pick<ArchiveData, "id" | "name" | "path">,
+    target: boolean,
+  ): Promise<boolean> => {
+    if (!archive.path) return target;
+    // Remember the live state so a failed call rolls the card back to what the
+    // disk last reported — NEVER to the unverified desired state.
+    const priorIndex = findArchiveIndex(archiveData.archives.value, archive as ArchiveData);
+    const priorState = priorIndex !== -1 ? archiveData.archives.value[priorIndex].isVisible : undefined;
+    const result = await tauriArchiveAdapter.toggleArchiveVisibility(archive.path, archive.name, target);
+    const verified = result.success ? result.data?.isVisible : undefined;
+    // Always reconcile the UI with what the backend reports — even on failure,
+    // so the card never keeps claiming a state the disk disagrees with.
+    archiveData.updateArchiveVisibility?.(archive.id, verified ?? priorState ?? target, archive.path);
+    if (verified !== target) {
+      throw new Error(result.error || "Visibility change was not applied");
+    }
+    return verified;
+  };
+
   const handleToggleVisibility = async (
     updatedArchive: ArchiveData,
     callbacks: ToggleVisibilityCallbacks = {},
   ): Promise<void> => {
     const { onSuccess, onError, onRefresh } = callbacks;
+    const archivePath = updatedArchive.path;
+
     try {
-      const newVisibility = updatedArchive.isVisible;
-      const originalVisibility = !newVisibility;
+      if (!archivePath) {
+        throw new Error("Archive has no file path");
+      }
+
+      // Single-flight guard: drop further clicks on the same archive while a
+      // toggle is still in flight.
+      if (togglingArchives.has(archivePath)) return;
+      togglingArchives.add(archivePath);
+
+      const desiredVisibility = updatedArchive.isVisible;
+      // Capture the ACTUAL prior state from the live array — never derive it
+      // from `!updatedArchive.isVisible`.
+      const liveIndex = findArchiveIndex(archiveData.archives.value, updatedArchive);
+      const originalVisibility =
+        liveIndex !== -1 ? archiveData.archives.value[liveIndex].isVisible : !desiredVisibility;
 
       // Optimistic update
-      if (archiveData.updateArchiveVisibility) {
-        archiveData.updateArchiveVisibility(updatedArchive.id, newVisibility, updatedArchive.path);
+      archiveData.updateArchiveVisibility?.(updatedArchive.id, desiredVisibility, archivePath);
+
+      // Send the DESIRED state (not a relative flip) and verify the backend's
+      // reported end state. Retry once — transient MAINSAVE contention (the
+      // game rewriting MAINSAVE.sav) can make the first attempt fail.
+      let result = await tauriArchiveAdapter.toggleArchiveVisibility(
+        archivePath,
+        updatedArchive.name,
+        desiredVisibility,
+      );
+      if (!result.success || result.data?.isVisible !== desiredVisibility) {
+        console.warn("[toggle] Verification failed, retrying once:", result.error);
+        result = await tauriArchiveAdapter.toggleArchiveVisibility(archivePath, updatedArchive.name, desiredVisibility);
       }
 
-      if (updatedArchive.path) {
-        const result = await tauriArchiveAdapter.toggleArchiveVisibility(updatedArchive.path, updatedArchive.name);
-        if (!result.success) {
-          // Rollback optimistic update
-          if (archiveData.updateArchiveVisibility) {
-            archiveData.updateArchiveVisibility(updatedArchive.id, originalVisibility, updatedArchive.path);
+      const verified = result.success ? result.data?.isVisible : undefined;
+      if (verified !== desiredVisibility) {
+        // Roll the UI back to what the backend actually reports (or the prior
+        // state when it could not be read at all).
+        archiveData.updateArchiveVisibility?.(updatedArchive.id, verified ?? originalVisibility, archivePath);
+        throw new Error(result.error || "Toggle verification failed");
+      }
+
+      // Register undo/redo with EXPLICIT target states — never relative flips,
+      // so a stale snapshot cannot re-apply the wrong direction.
+      const archiveSnapshot: ArchiveData = { ...updatedArchive, isVisible: originalVisibility };
+      pushAction({
+        description: `Toggle visibility of "${updatedArchive.name}"`,
+        undo: async () => {
+          try {
+            await applyVerifiedVisibility(archiveSnapshot, originalVisibility);
+          } catch (e) {
+            console.warn("[undo] Failed to toggle visibility:", e);
+            toast.showError(t("archiveCard.toggleVisibilityFailed"));
           }
-          throw new Error(result.error || "Operation failed");
-        }
-
-        // Register undo action
-        const archiveId = updatedArchive.id;
-        const archiveSnapshot: ArchiveData = { ...updatedArchive, isVisible: originalVisibility };
-        pushAction({
-          description: `Toggle visibility of "${updatedArchive.name}"`,
-          undo: async () => {
-            // Restore original visibility
-            if (archiveData.updateArchiveVisibility) {
-              archiveData.updateArchiveVisibility(archiveId, originalVisibility, archiveSnapshot.path);
-            }
-            try {
-              await tauriArchiveAdapter.toggleArchiveVisibility(archiveSnapshot.path, archiveSnapshot.name);
-            } catch (e) {
-              console.warn("[undo] Failed to toggle visibility:", e);
-            }
-          },
-          redo: async () => {
-            // Re-apply new visibility (same as original action)
-            if (archiveData.updateArchiveVisibility) {
-              archiveData.updateArchiveVisibility(archiveId, newVisibility, archiveSnapshot.path);
-            }
-            try {
-              await tauriArchiveAdapter.toggleArchiveVisibility(archiveSnapshot.path, archiveSnapshot.name);
-            } catch (e) {
-              console.warn("[redo] Failed to toggle visibility:", e);
-            }
-          },
-        });
-      }
+        },
+        redo: async () => {
+          try {
+            await applyVerifiedVisibility(archiveSnapshot, desiredVisibility);
+          } catch (e) {
+            console.warn("[redo] Failed to toggle visibility:", e);
+            toast.showError(t("archiveCard.toggleVisibilityFailed"));
+          }
+        },
+      });
 
       onSuccess?.();
       await onRefresh?.();
     } catch (_error) {
       onError?.(_error);
       toast.showError(t("archiveCard.toggleVisibilityFailed"));
+    } finally {
+      if (archivePath) togglingArchives.delete(archivePath);
     }
   };
 
@@ -165,15 +229,19 @@ export function useArchiveActions(
 
     isDeleting.value = true;
     try {
-      if (archive.path) {
-        const result = await tauriArchiveAdapter.softDeleteArchive(archive.path);
-        if (!result.success) {
-          throw new Error(result.error || "Failed to delete archive");
-        }
+      if (!archive.path) {
+        // No path = nothing on disk to delete. Faking success here would leave
+        // disk and list permanently out of sync.
+        throw new Error("Archive has no file path");
+      }
+      const result = await tauriArchiveAdapter.softDeleteArchive(archive.path);
+      if (!result.success) {
+        throw new Error(result.error || "Failed to delete archive");
       }
 
-      // Remove from local array
-      const index = archiveData.archives.value.findIndex((a) => a.id === archive.id);
+      // Remove from local array. Look up by stable file path too — ids shift
+      // whenever a refresh re-enumerates saves.
+      const index = findArchiveIndex(archiveData.archives.value, archive);
       if (index !== -1) {
         const removed = archiveData.archives.value.splice(index, 1)[0];
 
@@ -187,6 +255,7 @@ export function useArchiveActions(
                 insertSortedByName(archiveData.archives.value, removed);
               } catch (e) {
                 console.warn("[undo] Failed to restore archive:", e);
+                toast.showError(t("archiveCard.deleteFailed"));
               }
             }
           },
@@ -194,7 +263,7 @@ export function useArchiveActions(
             if (archive.path) {
               try {
                 await tauriArchiveAdapter.softDeleteArchive(archive.path);
-                const idx = archiveData.archives.value.findIndex((a) => a.id === archive.id);
+                const idx = findArchiveIndex(archiveData.archives.value, removed);
                 if (idx !== -1) {
                   archiveData.archives.value.splice(idx, 1);
                 }
@@ -258,16 +327,19 @@ export function useArchiveActions(
       onProgress?.(i + 1, archiveList.length, archive.name);
 
       try {
-        if (archive.path) {
-          const result = await tauriArchiveAdapter.softDeleteArchive(archive.path);
-          if (!result.success) {
-            throw new Error(result.error || "Failed to delete archive");
-          }
+        if (!archive.path) {
+          // No path = nothing on disk to delete — count it as failed instead of
+          // silently "succeeding" with only a UI change.
+          throw new Error("Archive has no file path");
+        }
+        const result = await tauriArchiveAdapter.softDeleteArchive(archive.path);
+        if (!result.success) {
+          throw new Error(result.error || "Failed to delete archive");
         }
         results.success.push(archive.id);
 
-        // Remove from local array
-        const index = archiveData.archives.value.findIndex((a) => a.id === archive.id);
+        // Remove from local array (path fallback — see findArchiveIndex)
+        const index = findArchiveIndex(archiveData.archives.value, archive);
         if (index !== -1) {
           archiveData.archives.value.splice(index, 1);
         }

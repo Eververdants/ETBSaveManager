@@ -96,23 +96,52 @@ pub fn convert_singleplayer_archives(save_dir: &Path) -> Vec<ConversionResult> {
         // Perform the rename operation
         match fs::rename(&path, &new_path) {
             Ok(()) => {
-                tracing::info!(
-                    "Converted archive: {} -> {}",
-                    filename,
-                    new_filename
+                // Update MAINSAVE.sav's SingleplayerSaves list. The registry
+                // stores bare stems (no ".sav"), and a missed/failed update
+                // would leave the renamed file permanently unregistered (listed
+                // hidden forever) — so treat both as failure and REVERT the file
+                // rename, keeping disk and registry consistent. The conversion
+                // is retried on the next load.
+                let registry_result = crate::common::update_mainsave_archive_name(
+                    crate::common::extract_archive_name(filename),
+                    crate::common::extract_archive_name(&new_filename),
                 );
-                
-                // Update MAINSAVE.sav's SingleplayerSaves list
-                if let Err(e) = crate::common::update_mainsave_archive_name(filename, &new_filename)
-                {
-                    tracing::error!("Failed to update MAINSAVE for {}: {}", filename, e);
+
+                match registry_result {
+                    Ok(true) => {
+                        tracing::info!("Converted archive: {} -> {}", filename, new_filename);
+                        conversions.push(ConversionResult {
+                            original: filename.to_string(),
+                            converted: new_filename,
+                            success: true,
+                        });
+                    }
+                    Ok(false) => {
+                        tracing::error!(
+                            "MAINSAVE has no entry for '{}' — reverting rename",
+                            filename
+                        );
+                        if let Err(revert_err) = fs::rename(&new_path, &path) {
+                            tracing::error!("Failed to revert rename of {}: {}", filename, revert_err);
+                        }
+                        conversions.push(ConversionResult {
+                            original: filename.to_string(),
+                            converted: new_filename,
+                            success: false,
+                        });
+                    }
+                    Err(e) => {
+                        tracing::error!("Failed to update MAINSAVE for {}: {}", filename, e);
+                        if let Err(revert_err) = fs::rename(&new_path, &path) {
+                            tracing::error!("Failed to revert rename of {}: {}", filename, revert_err);
+                        }
+                        conversions.push(ConversionResult {
+                            original: filename.to_string(),
+                            converted: new_filename,
+                            success: false,
+                        });
+                    }
                 }
-                
-                conversions.push(ConversionResult {
-                    original: filename.to_string(),
-                    converted: new_filename,
-                    success: true,
-                });
             }
             Err(e) => {
                 tracing::error!(

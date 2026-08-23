@@ -230,6 +230,28 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
             .map_err(|e| format!("Failed to flush buffer: {}", e))?;
     }
 
+    // Update MAINSAVE BEFORE any destructive filesystem step. Registration is
+    // fallible (MAINSAVE may be missing or locked by the game); failing here
+    // must leave the original .sav untouched so the user can simply retry —
+    // never a half-applied edit that reports failure after the fact.
+    let archive_name = extract_archive_name(&new_filename);
+
+    // Remove old MAINSAVE entry if the archive name changed (rename / difficulty change).
+    // Best-effort: the new registration below is what matters, but a leftover
+    // ghost entry must at least be logged so it can be diagnosed.
+    if let Some(ref old_name) = old_archive_name {
+        if old_name != archive_name {
+            if let Err(e) = remove_save_from_mainsave(old_name) {
+                tracing::warn!("Failed to remove old MAINSAVE entry '{}': {}", old_name, e);
+            }
+        }
+    }
+
+    if let Err(e) = add_save_to_mainsave(archive_name) {
+        let _ = fs::remove_file(&temp_path);
+        return Err(e);
+    }
+
     // Atomically rename temp to target path
     fs::rename(&temp_path, &output_path)
         .map_err(|e| format!("Failed to rename temp file: {}", e))?;
@@ -243,18 +265,6 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     }
 
     tracing::info!("Save saved to: {:?}", output_path);
-
-    // Update MAINSAVE.sav
-    let archive_name = extract_archive_name(&new_filename);
-
-    // Remove old MAINSAVE entry if the archive name changed (rename / difficulty change)
-    if let Some(ref old_name) = old_archive_name {
-        if old_name != archive_name {
-            let _ = remove_save_from_mainsave(old_name);
-        }
-    }
-
-    add_save_to_mainsave(archive_name)?;
 
     Ok(output_path.to_str().unwrap_or("Invalid path").to_string())
 }

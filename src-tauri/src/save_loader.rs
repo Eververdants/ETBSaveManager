@@ -24,7 +24,8 @@ pub struct ConversionResult {
 /// Preserves the archive name and difficulty suffix.
 ///
 /// # Examples
-/// ```
+///
+/// ```text
 /// convert_filename("SINGLEPLAYER_ArchiveName_Normal.sav")
 /// // Returns: Some("MULTIPLAYER_ArchiveName_Normal.sav")
 /// ```

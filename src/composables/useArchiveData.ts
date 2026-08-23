@@ -10,6 +10,7 @@ import { FEATURES } from "@/config/features";
 interface RawSaveItem {
   id?: number;
   name?: string;
+  display_name?: string | null;
   current_level?: string;
   mode?: string;
   difficulty?: string;
@@ -22,6 +23,7 @@ interface RawSaveItem {
 interface SaveFileMeta {
   id: number;
   name: string;
+  display_name?: string | null;
   difficulty: string;
   mode: string;
   date: string;
@@ -125,6 +127,7 @@ export function useArchiveData(): {
     return {
       id: item.id ?? 0,
       name: item.name ?? t("archiveCard.untitled", "Untitled Archive"),
+      displayName: item.display_name ?? null,
       currentLevel: item.current_level ?? "Level0",
       gameMode,
       archiveDifficulty: difficultyMap[item.difficulty!] || item.difficulty?.toLowerCase() || "normal",
@@ -148,6 +151,7 @@ export function useArchiveData(): {
     return {
       id: meta.id,
       name: meta.name,
+      displayName: meta.display_name ?? null,
       currentLevel: "Level0",
       gameMode,
       archiveDifficulty: diff,

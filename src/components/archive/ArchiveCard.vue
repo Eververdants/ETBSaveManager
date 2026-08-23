@@ -186,9 +186,23 @@ const actualDifficultyTagStyle = computed(() =>
   tagStyle(cardData.value?.actualDifficultyText ?? "", t("archiveCard.actualDifficulty")),
 );
 
+/** What the game shows in its lobby: the MAINSAVE display-name mapping when
+ *  present, otherwise the filename-derived name. */
+const resolvedName = computed(() => {
+  const dn = props.archive.displayName?.trim();
+  return dn ? dn : props.archive.name;
+});
+
 const highlightedName = computed(() => {
-  if (!props.searchQuery) return props.archive.name;
-  return highlightMatch(props.archive.name, props.searchQuery);
+  if (!props.searchQuery) return resolvedName.value;
+  // Match against BOTH names so searching "GENSAVE25" still finds an archive
+  // displayed as its custom name (and vice versa).
+  const hitResolved = highlightMatch(resolvedName.value, props.searchQuery);
+  const other =
+    props.archive.name !== resolvedName.value ? props.archive.name : props.archive.displayName ?? "";
+  if (hitResolved.includes("<mark")) return hitResolved;
+  const hitOther = other ? highlightMatch(other, props.searchQuery) : "";
+  return hitOther.includes("<mark") ? hitOther : hitResolved;
 });
 
 const highlightedLevel = computed(() => {

@@ -236,13 +236,23 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     // never a half-applied edit that reports failure after the fact.
     let archive_name = extract_archive_name(&new_filename);
 
-    // Remove old MAINSAVE entry if the archive name changed (rename / difficulty change).
-    // Best-effort: the new registration below is what matters, but a leftover
-    // ghost entry must at least be logged so it can be diagnosed.
+    // Rename flow: when the archive name changed (rename / difficulty change),
+    // MOVE the registry entry and its display-name mapping old -> new so any
+    // custom in-game name survives. Only when the old entry is not registered
+    // (e.g. the archive was hidden) do we fall back to a best-effort cleanup
+    // of the old name; the new registration below then inserts a fresh entry.
     if let Some(ref old_name) = old_archive_name {
         if old_name != archive_name {
-            if let Err(e) = remove_save_from_mainsave(old_name) {
-                tracing::warn!("Failed to remove old MAINSAVE entry '{}': {}", old_name, e);
+            match crate::common::update_mainsave_archive_name(old_name, archive_name) {
+                Ok(true) => {}
+                Ok(false) => {
+                    if let Err(e) = remove_save_from_mainsave(old_name) {
+                        tracing::warn!("Failed to remove old MAINSAVE entry '{}': {}", old_name, e);
+                    }
+                }
+                Err(e) => {
+                    tracing::warn!("Failed to move old MAINSAVE entry '{}': {}", old_name, e);
+                }
             }
         }
     }

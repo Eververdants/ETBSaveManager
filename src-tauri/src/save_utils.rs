@@ -42,6 +42,9 @@ fn get_save_games_base_dir() -> Option<&'static PathBuf> {
 pub struct SaveFileInfo {
     pub id: u32,
     pub name: String,
+    /// Display name from MAINSAVE's SaveDisplayNamesLookup (what the game
+    /// shows in its lobby list). Falls back to the filename-derived name.
+    pub display_name: Option<String>,
     pub difficulty: String,
     pub difficulty_class: String,
     pub actual_difficulty: String,
@@ -59,6 +62,9 @@ pub struct SaveFileInfo {
 pub struct SaveFileMeta {
     pub id: u32,
     pub name: String,
+    /// Display name from MAINSAVE's SaveDisplayNamesLookup (what the game
+    /// shows in its lobby list). Falls back to the filename-derived name.
+    pub display_name: Option<String>,
     pub difficulty: String,
     pub mode: String,
     pub date: String,
@@ -135,6 +141,7 @@ pub fn build_save_info<S: Into<String>>(
     Ok(SaveFileInfo {
         id: index,
         name: name.to_string(),
+        display_name: None,
         difficulty: difficulty.to_string(),
         difficulty_class: difficulty_class.to_string(),
         actual_difficulty: actual_difficulty.into(),
@@ -149,11 +156,14 @@ pub fn build_save_info<S: Into<String>>(
 
 /// Build lightweight save metadata from filename + filesystem only.
 /// No .sav file opening - very fast even for 1000+ files.
+/// `display_name` comes from MAINSAVE's SaveDisplayNamesLookup (already
+/// resolved by the caller; None when no mapping exists).
 pub fn build_save_meta(
     index: u32,
     path: &Path,
     date: String,
     is_visible: bool,
+    display_name: Option<String>,
 ) -> AppResult<SaveFileMeta> {
     use std::fs;
 
@@ -175,6 +185,7 @@ pub fn build_save_meta(
     Ok(SaveFileMeta {
         id: index,
         name: name.to_string(),
+        display_name,
         difficulty: map_difficulty(difficulty_raw).0.to_string(),
         mode: map_mode(mode_raw).to_string(),
         date,
@@ -190,11 +201,11 @@ pub fn build_save_meta(
 pub fn build_save_file_info(
     index: u32,
     path: &Path,
-    _archive_name: &str,
     date: String,
     current_level: Option<String>,
     actual_difficulty: Option<String>,
     is_visible: bool,
+    display_name: Option<String>,
 ) -> AppResult<SaveFileInfo> {
     let file_name = path
         .file_name()
@@ -215,6 +226,7 @@ pub fn build_save_file_info(
     Ok(SaveFileInfo {
         id: index,
         name: name.to_string(),
+        display_name,
         difficulty: difficulty.to_string(),
         difficulty_class: difficulty_class.to_string(),
         actual_difficulty: actual_difficulty.unwrap_or_else(|| difficulty.to_string()),

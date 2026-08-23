@@ -4,8 +4,13 @@
 use crate::cli_handlers;
 use std::fs;
 
-/// Result of a SINGLEPLAYER_ to MULTIPLAYER_ archive conversion
+/// Result of a SINGLEPLAYER_ to MULTIPLAYER_ archive conversion.
+///
+/// Only the count is consumed today (load_save_metadata logs it), but the
+/// struct is kept public with its fields for diagnostics and future callers;
+/// silence the dead-code lint explicitly rather than deleting context.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct ConversionResult {
     /// Original filename (e.g., "SINGLEPLAYER_ArchiveName_Normal.sav")
     pub original: String,

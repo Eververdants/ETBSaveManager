@@ -376,26 +376,6 @@ pub fn extract_archive_name_from_trash(filename: &str) -> &str {
         .unwrap_or_else(|| extract_archive_name(filename))
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn trash_names_map_back_to_archive_names() {
-        assert_eq!(
-            extract_archive_name_from_trash("MULTIPLAYER_Demo_Easy.sav.trash"),
-            "MULTIPLAYER_Demo_Easy"
-        );
-        assert_eq!(
-            extract_archive_name("MULTIPLAYER_Demo_Easy.sav"),
-            "MULTIPLAYER_Demo_Easy"
-        );
-        // Fallbacks never panic on unexpected names
-        assert_eq!(extract_archive_name_from_trash("weird.sav"), "weird");
-        assert_eq!(extract_archive_name_from_trash("noext"), "noext");
-    }
-}
-
 pub fn normalize_existing_path(path: &Path) -> AppResult<PathBuf> {
     Ok(path
         .canonicalize()
@@ -465,4 +445,24 @@ pub fn validate_save_games_path(path: &Path) -> AppResult<()> {
 pub fn validate_app_config_path(path: &Path) -> AppResult<()> {
     let base = get_app_config_dir()?;
     validate_path_under_base(path, &base)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn trash_names_map_back_to_archive_names() {
+        assert_eq!(
+            extract_archive_name_from_trash("MULTIPLAYER_Demo_Easy.sav.trash"),
+            "MULTIPLAYER_Demo_Easy"
+        );
+        assert_eq!(
+            extract_archive_name("MULTIPLAYER_Demo_Easy.sav"),
+            "MULTIPLAYER_Demo_Easy"
+        );
+        // Fallbacks never panic on unexpected names
+        assert_eq!(extract_archive_name_from_trash("weird.sav"), "weird");
+        assert_eq!(extract_archive_name_from_trash("noext"), "noext");
+    }
 }

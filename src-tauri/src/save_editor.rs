@@ -600,17 +600,16 @@ fn arrange_inventory_over_12(pool: Vec<String>) -> Vec<String> {
             others.push(item);
         }
     }
-    let mut idx = if placed_main { 1 } else { 0 };
-    for item in others {
+    let start_idx = if placed_main { 1 } else { 0 };
+    for (offset, item) in others.into_iter().enumerate() {
+        let idx = start_idx + offset;
         if idx >= save_shared::INVENTORY_SLOTS {
             break;
         }
         result[idx] = item;
-        idx += 1;
     }
     result
 }
-
 /// Merge duplicate PlayerData entries for the same player.
 ///
 /// A player can appear under several keys in a save: a bare steam id, the correct

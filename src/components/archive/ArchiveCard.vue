@@ -198,8 +198,7 @@ const highlightedName = computed(() => {
   // Match against BOTH names so searching "GENSAVE25" still finds an archive
   // displayed as its custom name (and vice versa).
   const hitResolved = highlightMatch(resolvedName.value, props.searchQuery);
-  const other =
-    props.archive.name !== resolvedName.value ? props.archive.name : props.archive.displayName ?? "";
+  const other = props.archive.name !== resolvedName.value ? props.archive.name : (props.archive.displayName ?? "");
   if (hitResolved.includes("<mark")) return hitResolved;
   const hitOther = other ? highlightMatch(other, props.searchQuery) : "";
   return hitOther.includes("<mark") ? hitOther : hitResolved;

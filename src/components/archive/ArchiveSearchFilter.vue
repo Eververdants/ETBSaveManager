@@ -164,6 +164,18 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 };
 
+// 聚焦搜索输入框
+const focus = () => {
+  nextTick(() => {
+    searchInputRef.value?.focus();
+  });
+};
+
+// 暴露 focus 方法给父组件
+defineExpose({
+  focus,
+});
+
 onMounted(() => {
   document.addEventListener("keydown", handleKeydown);
 });

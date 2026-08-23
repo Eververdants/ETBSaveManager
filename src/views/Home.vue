@@ -355,6 +355,7 @@ const {
 
 // Local state �?declared before composable calls that use them
 const scrollContainerRef = ref<HTMLElement | null>(null);
+const archiveSearchFilter = ref<InstanceType<typeof ArchiveSearchFilter> | null>(null);
 const showSearch = ref(false);
 // True when the search panel was opened via keyboard (Ctrl+F / F3) �?
 // keyboard-initiated opens skip the entrance animation entirely.
@@ -451,7 +452,10 @@ const toggleSearch = () => {
     // Promote to searching priority immediately �?keeps backdrop-filter
     // visible and CPU budget high for the full duration the search is open.
     scheduler.beginOperation("searching");
-    nextTick(() => protectFloatingButtonPosition());
+    nextTick(() => {
+      protectFloatingButtonPosition();
+      archiveSearchFilter.value?.focus();
+    });
   } else {
     scheduler.endOperation("searching");
   }
@@ -461,7 +465,10 @@ const openArchiveSearchPanel = () => {
   if (!showSearch.value) {
     showSearch.value = true;
   }
-  nextTick(() => protectFloatingButtonPosition());
+  nextTick(() => {
+    protectFloatingButtonPosition();
+    archiveSearchFilter.value?.focus();
+  });
 };
 
 const handleOpenArchiveSearchEvent = (event: CustomEvent) => {

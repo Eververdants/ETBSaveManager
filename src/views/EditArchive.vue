@@ -526,7 +526,11 @@ const confirmSaveArchive = async () => {
     const errorMsg = error?.message || String(error);
     console.error("Save failed:", error);
 
-    if (errorMsg.includes("锟杰撅拷锟斤拷锟斤拷") || errorMsg.includes("Access is denied") || errorMsg.includes("os error 5")) {
+    if (
+      errorMsg.includes("锟杰撅拷锟斤拷锟斤拷") ||
+      errorMsg.includes("Access is denied") ||
+      errorMsg.includes("os error 5")
+    ) {
       notify.error(t("editArchive.saveErrorAccessDenied"));
     } else if (errorMsg.includes("锟斤拷锟斤拷使锟斤拷") || errorMsg.includes("being used")) {
       notify.error(t("editArchive.saveErrorFileInUse"));
@@ -986,9 +990,13 @@ onUnmounted(() => {
   height: calc(100% - 8px);
   background: var(--accent-color);
   border-radius: var(--radius-md);
-  filter: drop-shadow(0 2px 8px rgba(var(--accent-color-rgb), 0.35)) drop-shadow(0 1px 3px rgba(var(--accent-color-rgb), 0.2));
+  filter: drop-shadow(0 2px 8px rgba(var(--accent-color-rgb), 0.35))
+    drop-shadow(0 1px 3px rgba(var(--accent-color-rgb), 0.2));
   pointer-events: none;
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.2s ease;
   z-index: 0;
 }
 
@@ -1047,17 +1055,20 @@ onUnmounted(() => {
   padding: 24px;
   margin-bottom: 16px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  height: calc(100vh - 200px); max-height: none;
+  height: calc(100vh - 200px);
+  max-height: none;
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
 }
 
 .section-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 20px;
@@ -1103,7 +1114,8 @@ onUnmounted(() => {
   }
 
   .section-card {
-    height: calc(100vh - 200px); max-height: none;
+    height: calc(100vh - 200px);
+    max-height: none;
   }
 }
 
@@ -1116,7 +1128,6 @@ onUnmounted(() => {
     font-size: 11px;
   }
 }
-
 
 .edit-archive-container {
   height: calc(100vh - 38px);
@@ -1822,7 +1833,9 @@ onUnmounted(() => {
   border-radius: var(--radius-card);
   padding: 20px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   height: calc(100vh - 200px);
@@ -3176,5 +3189,4 @@ onUnmounted(() => {
 .level-empty span {
   font-size: 14px;
 }
-
 </style>

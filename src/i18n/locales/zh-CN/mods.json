@@ -24,7 +24,7 @@
     "uninstall": "卸载"
   },
   "status": {
-        "label": "状态",
+    "label": "状态",
     "notInstalled": "未安装",
     "installed": "已安装",
     "installedDisabled": "已安装（未启用）",

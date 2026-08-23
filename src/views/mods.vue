@@ -18,12 +18,7 @@
           <button class="btn primary" :disabled="busy" @click="pickGameFolder">
             {{ t("mods.gamePath.choose") }}
           </button>
-          <button
-            v-if="gameRoot && pathValid"
-            class="btn ghost"
-            :disabled="busy"
-            @click="openWin64Folder"
-          >
+          <button v-if="gameRoot && pathValid" class="btn ghost" :disabled="busy" @click="openWin64Folder">
             {{ t("mods.gamePath.openFolder") }}
           </button>
         </div>
@@ -74,12 +69,7 @@
               {{ t("mods.ue4ss.installLatest") }}
             </button>
           </template>
-          <button
-            v-else
-            class="btn danger"
-            :disabled="busy"
-            @click="confirmUe4ssUninstall"
-          >
+          <button v-else class="btn danger" :disabled="busy" @click="confirmUe4ssUninstall">
             {{ t("mods.common.uninstall") }}
           </button>
         </div>
@@ -117,15 +107,15 @@
           </button>
         </div>
         <div class="list-item actions-row">
-          <button v-if="!status?.nsu_installed" class="btn primary" :disabled="!canInstallNsu || busy" @click="installNsuMod">
+          <button
+            v-if="!status?.nsu_installed"
+            class="btn primary"
+            :disabled="!canInstallNsu || busy"
+            @click="installNsuMod"
+          >
             {{ t("mods.nsu.install") }}
           </button>
-          <button
-            v-else
-            class="btn danger"
-            :disabled="busy"
-            @click="confirmNsuUninstall"
-          >
+          <button v-else class="btn danger" :disabled="busy" @click="confirmNsuUninstall">
             {{ t("mods.common.uninstall") }}
           </button>
           <span v-if="!status?.ue4ss_installed" class="requires-hint">
@@ -191,9 +181,7 @@ const nsuConfirmVisible = ref(false);
 
 const nsuToggleValue = computed(() => !!status.value?.nsu_enabled);
 const canInstall = computed(() => !!gameRoot.value && pathValid.value === true);
-const canInstallNsu = computed(
-  () => canInstall.value && !!status.value?.ue4ss_installed,
-);
+const canInstallNsu = computed(() => canInstall.value && !!status.value?.ue4ss_installed);
 
 // ─── Progress ──────────────────────────────────────────────────────────────
 
@@ -227,8 +215,7 @@ watch(
 const progressLabel = computed(() => {
   const phaseKey = `mods.progress.${progress.phase || "download"}`;
   const phaseText = te(phaseKey) ? t(phaseKey) : "";
-  const modText =
-    progress.modName === "ue4ss" ? "UE4SS" : t("mods.nsu.name");
+  const modText = progress.modName === "ue4ss" ? "UE4SS" : t("mods.nsu.name");
   return `${t("mods.progress.installing")} ${modText}${phaseText ? " · " + phaseText : ""}`;
 });
 
@@ -251,8 +238,7 @@ const ue4ssStatusText = computed(() => {
   const s = status.value;
   if (!s?.ue4ss_installed) return t("mods.status.notInstalled");
   if (s.ue4ss_managed && s.ue4ss_version) {
-    const channelKey =
-      s.ue4ss_channel === "latest" ? "mods.ue4ss.channelLatest" : "mods.ue4ss.channelRecommended";
+    const channelKey = s.ue4ss_channel === "latest" ? "mods.ue4ss.channelLatest" : "mods.ue4ss.channelRecommended";
     return `v${s.ue4ss_version} · ${t(channelKey)}`;
   }
   return t("mods.status.detectedUnmanaged");
@@ -267,9 +253,7 @@ const nsuStatusText = computed(() => {
   const s = status.value;
   if (!s?.nsu_installed) return t("mods.status.notInstalled");
   const ver = s.nsu_version ? ` v${s.nsu_version}` : "";
-  return s.nsu_enabled
-    ? `${t("mods.status.installed")}${ver}`
-    : `${t("mods.status.installedDisabled")}${ver}`;
+  return s.nsu_enabled ? `${t("mods.status.installed")}${ver}` : `${t("mods.status.installedDisabled")}${ver}`;
 });
 
 const ue4ssUninstallDetail = computed(() => {
@@ -458,9 +442,7 @@ async function toggleNsu(): Promise<void> {
   if (status.value) status.value.nsu_enabled = next;
   try {
     await modService.setNsuEnabled(gameRoot.value, next);
-    notify.success(
-      next ? t("mods.toast.nsuEnabledOn") : t("mods.toast.nsuEnabledOff"),
-    );
+    notify.success(next ? t("mods.toast.nsuEnabledOn") : t("mods.toast.nsuEnabledOff"));
   } catch (err) {
     if (status.value) status.value.nsu_enabled = !next;
     console.error("Failed to toggle NSU:", err);

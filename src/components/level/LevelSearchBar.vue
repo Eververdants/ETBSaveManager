@@ -1,13 +1,7 @@
 <template>
   <div class="level-search">
     <font-awesome-icon :icon="['fas', 'search']" class="level-search-icon" />
-    <input
-      :value="query"
-      type="text"
-      class="level-search-input"
-      :placeholder="placeholder"
-      @input="handleInput"
-    />
+    <input :value="query" type="text" class="level-search-input" :placeholder="placeholder" @input="handleInput" />
     <button v-if="query" class="level-search-clear" @click="handleClear">
       <font-awesome-icon :icon="['fas', 'times']" />
     </button>
@@ -61,7 +55,9 @@ const handleClear = () => {
   border-radius: var(--radius-lg);
   color: var(--text-primary);
   font-size: 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .level-search-input::placeholder {

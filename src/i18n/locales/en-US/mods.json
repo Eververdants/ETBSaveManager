@@ -24,7 +24,7 @@
     "uninstall": "Uninstall"
   },
   "status": {
-        "label": "Status",
+    "label": "Status",
     "notInstalled": "Not Installed",
     "installed": "Installed",
     "installedDisabled": "Installed (disabled)",

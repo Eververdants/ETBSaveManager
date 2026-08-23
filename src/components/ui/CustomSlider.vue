@@ -3,8 +3,12 @@
     <div class="slider-track" @click="handleTrackClick">
       <div class="slider-fill" :style="{ width: `${percentage}%` }"></div>
       <div
-ref="thumbRef" class="slider-thumb" :style="{ left: `calc(${percentage}% - 12px)` }" @mousedown="startDrag"
-        @touchstart="startDragTouch">
+        ref="thumbRef"
+        class="slider-thumb"
+        :style="{ left: `calc(${percentage}% - 12px)` }"
+        @mousedown="startDrag"
+        @touchstart="startDragTouch"
+      >
         <div class="thumb-indicator">
           <span class="thumb-value">{{ displayValue }}%</span>
         </div>
@@ -280,8 +284,9 @@ onUnmounted(() => {
 /* CSS transition 替代 GSAP 动画 */
 .slider-thumb {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .slider-thumb:hover {
@@ -292,8 +297,9 @@ onUnmounted(() => {
 .slider-thumb.grabbing {
   transform: translateY(-50%) scale(1.35);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .custom-slider.dragging .slider-thumb {

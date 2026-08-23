@@ -1,4 +1,6 @@
-use crate::common::{add_save_to_mainsave, extract_archive_name, get_local_appdata_dir};
+use crate::common::{
+    add_save_to_mainsave, extract_archive_name, get_local_appdata_dir, get_mainsave_path,
+};
 use crate::error::AppResult;
 use crate::save_shared;
 use serde::{Deserialize, Serialize};
@@ -100,14 +102,14 @@ pub struct PlayerData {
 }
 
 pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
-    println!("📦 Received new save request:");
-    println!("  Archive name: {}", save_data.archive_name);
-    println!("  Level: {}", save_data.level);
-    println!("  Game mode: {}", save_data.game_mode);
-    println!("  Archive difficulty: {}", save_data.difficulty);
-    println!("  Actual difficulty: {}", save_data.actual_difficulty);
-    println!("  Player count: {}", save_data.players.len());
-    println!("  Is main ending: {}", !save_data.main_ending);
+    tracing::info!("Received new save request:");
+    tracing::info!("  Archive name: {}", save_data.archive_name);
+    tracing::info!("  Level: {}", save_data.level);
+    tracing::info!("  Game mode: {}", save_data.game_mode);
+    tracing::info!("  Archive difficulty: {}", save_data.difficulty);
+    tracing::info!("  Actual difficulty: {}", save_data.actual_difficulty);
+    tracing::info!("  Player count: {}", save_data.players.len());
+    tracing::info!("  Is main ending: {}", !save_data.main_ending);
 
     // Validate archive_name: must not be empty, only safe filename characters
     if save_data.archive_name.trim().is_empty() {
@@ -160,7 +162,7 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     );
     let save_path = save_dir.join(&file_name);
 
-    println!("📂 Target save path: {:?}", save_path);
+    tracing::info!("Target save path: {:?}", save_path);
 
     // Construct Save object from BasicArchive.json
     // NOTE (uesave 0.7): JSON must contain "schemas" before "root" (hand-written Deserialize)
@@ -207,8 +209,14 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
             .shift_remove(&player_data_key)
             .is_some()
         {
-            println!("🗑️ Removed template PlayerData (no players provided)");
+            tracing::info!("Removed template PlayerData (no players provided)");
         }
+    }
+
+    // Refuse early when there is no MAINSAVE registry: creating the .sav without
+    // being able to register it would leave an invisible orphan file on disk.
+    if !get_mainsave_path()?.exists() {
+        return Err("MAINSAVE.sav not found — start the game once so it can be created".into());
     }
 
     // Write as .sav file
@@ -221,7 +229,7 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
         .flush()
         .map_err(|e| format!("Failed to flush buffer: {}", e))?;
 
-    println!("💾 Save successfully saved to: {:?}", save_path);
+    tracing::info!("Save successfully saved to: {:?}", save_path);
 
     // Update MAINSAVE.sav file
     let archive_name = extract_archive_name(&file_name);
@@ -235,10 +243,10 @@ pub fn remove_current_level(save: &mut Save) -> bool {
     let key = PropertyKey(0, "CurrentLevel".to_string());
 
     if save.root.properties.0.shift_remove(&key).is_some() {
-        println!("✅ CurrentLevel_0 has been completely removed");
+        tracing::info!("CurrentLevel_0 has been completely removed");
         true
     } else {
-        eprintln!("❌ CurrentLevel_0 field not found");
+        tracing::warn!("CurrentLevel_0 field not found");
         false
     }
 }
@@ -256,7 +264,7 @@ fn handle_pipes_unlocked_fun(save: &mut Save, level: &str) {
                 .shift_remove(&unlocked_fun_key)
                 .is_some()
             {
-                println!("🗑️ Deleted UnlockedFun_0 field (Pipes1)");
+                tracing::info!("Deleted UnlockedFun_0 field (Pipes1)");
             }
         }
         "Pipes2" => {
@@ -272,7 +280,7 @@ fn handle_pipes_unlocked_fun(save: &mut Save, level: &str) {
                 .properties
                 .0
                 .insert(unlocked_fun_key, Property::Bool(true));
-            println!("✅ Created UnlockedFun_0 field with value true (Pipes2)");
+            tracing::info!("Created UnlockedFun_0 field with value true (Pipes2)");
         }
         _ => {}
     }
@@ -293,7 +301,7 @@ fn update_bool_property(save: &mut Save, name: &str, value: bool) -> AppResult<(
         .0
         .insert(PropertyKey(0, name.to_string()), Property::Bool(value));
 
-    println!("✅ Set {} field to {}", name, value);
+    tracing::info!("Set {} field to {}", name, value);
     Ok(())
 }
 
@@ -306,9 +314,9 @@ fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> AppResult<()> {
     }
 
     if meg_unlocked {
-        println!("✅ MEG related fields set to true (MEG unlocked)");
+        tracing::info!("MEG related fields set to true (MEG unlocked)");
     } else {
-        println!("✅ MEG related fields set to false (MEG locked)");
+        tracing::info!("MEG related fields set to false (MEG locked)");
     }
 
     Ok(())
@@ -369,17 +377,18 @@ fn generate_levels_completed(
     level: &str,
     is_side_storyline: bool,
 ) -> AppResult<()> {
-    println!(
-        "🎮 Generating LevelsCompleted_0 data, target level: {}, side storyline: {}",
-        level, is_side_storyline
+    tracing::info!(
+        "Generating LevelsCompleted_0 data, target level: {}, side storyline: {}",
+        level,
+        is_side_storyline
     );
 
     let levels_to_generate: Vec<(&str, &str, bool)>; // (display_name, level_name, is_completed)
 
     if is_side_storyline {
         // Side storyline: generate all levels, all set as completed
-        println!(
-            "📍 Side storyline detected, generating all {} levels, all set as completed",
+        tracing::info!(
+            "Side storyline detected, generating all {} levels, all set as completed",
             ALL_LEVELS.len()
         );
         levels_to_generate = ALL_LEVELS
@@ -393,7 +402,7 @@ fn generate_levels_completed(
 
         if let Some(index) = main_index {
             // Main storyline level: generate from 1st to selected level
-            println!("📍 Main storyline level detected, index: {}", index);
+            tracing::info!("Main storyline level detected, index: {}", index);
             levels_to_generate = MAIN_STORYLINE_LEVELS[..=index]
                 .iter()
                 .enumerate()
@@ -408,8 +417,8 @@ fn generate_levels_completed(
             let all_index = ALL_LEVELS.iter().position(|(_, l)| *l == level);
 
             if let Some(index) = all_index {
-                println!(
-                    "📍 Non-main storyline level detected (main ending mode), index: {}",
+                tracing::info!(
+                    "Non-main storyline level detected (main ending mode), index: {}",
                     index
                 );
                 levels_to_generate = ALL_LEVELS[..=index]
@@ -422,16 +431,13 @@ fn generate_levels_completed(
                     .collect();
             } else {
                 // Unknown level, only generate Level0
-                println!("⚠️ Unknown level {}, using default configuration", level);
+                tracing::warn!("Unknown level {}, using default configuration", level);
                 levels_to_generate = vec![("Level 0", "Level0", false)];
             }
         }
     }
 
-    println!(
-        "📝 Will generate {} level records",
-        levels_to_generate.len()
-    );
+    tracing::info!("Will generate {} level records", levels_to_generate.len());
 
     // Get existing LevelsCompleted_0 as template
     let levels_completed_key = PropertyKey(0, "LevelsCompleted".to_string());
@@ -500,9 +506,11 @@ fn generate_levels_completed(
         );
 
         new_values.push(StructValue::Struct(level_props));
-        println!(
-            "  ✅ Added level: {} ({}) - Completed: {}",
-            display_name, level_name, is_completed
+        tracing::info!(
+            "Added level: {} ({}) - Completed: {}",
+            display_name,
+            level_name,
+            is_completed
         );
     }
 
@@ -526,7 +534,7 @@ fn generate_levels_completed(
         .0
         .insert(levels_completed_key, new_levels_completed);
 
-    println!("✅ LevelsCompleted_0 has been updated");
+    tracing::info!("LevelsCompleted_0 has been updated");
     Ok(())
 }
 
@@ -536,7 +544,7 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> AppResult<()> 
         return Ok(());
     }
 
-    println!("👥 Processing player data...");
+    tracing::info!("Processing player data...");
 
     let map_entries: Vec<_> = players
         .iter()
@@ -574,7 +582,7 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> AppResult<()> 
             // game ignores (empty backpack, sanity reset to 100), so resolve the real
             // EOS-suffixed key from the cache or an existing save; keep the raw id
             // only when no reusable PUID exists anywhere.
-            let resolved_key = crate::save_commands::resolve_player_full_key(&player.steam_id)
+            let resolved_key = crate::save_batch::resolve_player_full_key(&player.steam_id)
                 .unwrap_or_else(|| player.steam_id.clone());
 
             uesave::MapEntry {
@@ -617,7 +625,7 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> AppResult<()> 
         .properties
         .0
         .insert(PropertyKey(0, "PlayerData".to_string()), player_data_prop);
-    println!("✅ PlayerData_0 Map created");
+    tracing::info!("PlayerData_0 Map created");
 
     Ok(())
 }

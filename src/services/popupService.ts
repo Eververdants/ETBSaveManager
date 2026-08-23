@@ -12,7 +12,7 @@ const ENABLE_POPUP = true;
 export const showPopup = (options: PopupOptions): void => {
   // If popup functionality is disabled, return immediately
   if (!ENABLE_POPUP) {
-    console.log("弹窗功能已禁用");
+    console.info("弹窗功能已禁用");
     return;
   }
 

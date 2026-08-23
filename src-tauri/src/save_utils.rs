@@ -1,4 +1,4 @@
-//! Save utilities module - Save file info building
+﻿//! Save utilities module - Save file info building
 //! Optimized version: Using phf perfect hash, Cow to reduce allocation
 
 use crate::error::AppResult;
@@ -42,6 +42,9 @@ fn get_save_games_base_dir() -> Option<&'static PathBuf> {
 pub struct SaveFileInfo {
     pub id: u32,
     pub name: String,
+    /// Display name from MAINSAVE's SaveDisplayNamesLookup (what the game
+    /// shows in its lobby list). Falls back to the filename-derived name.
+    pub display_name: Option<String>,
     pub difficulty: String,
     pub difficulty_class: String,
     pub actual_difficulty: String,
@@ -53,12 +56,15 @@ pub struct SaveFileInfo {
     pub is_visible: Option<bool>,
 }
 
-/// Lightweight save file metadata — derived from filename + filesystem only,
+/// Lightweight save file metadata - derived from filename + filesystem only,
 /// no .sav parsing. Used for fast incremental loading.
 #[derive(Serialize)]
 pub struct SaveFileMeta {
     pub id: u32,
     pub name: String,
+    /// Display name from MAINSAVE's SaveDisplayNamesLookup (what the game
+    /// shows in its lobby list). Falls back to the filename-derived name.
+    pub display_name: Option<String>,
     pub difficulty: String,
     pub mode: String,
     pub date: String,
@@ -98,18 +104,17 @@ fn map_difficulty(raw: &str) -> (&'static str, &'static str) {
     }
 }
 
-/// Game mode mapping
+/// Map mode to always return "Multiplayer" for unified mode handling.
+/// Accepts both SINGLEPLAYER and MULTIPLAYER prefixes for backward compatibility
+/// during parsing, but normalizes all modes to "Multiplayer".
 #[inline]
-fn map_mode(raw: &str) -> &'static str {
-    if raw.eq_ignore_ascii_case("MULTIPLAYER") {
-        "Multiplayer"
-    } else if raw.eq_ignore_ascii_case("SINGLEPLAYER") {
-        "Singleplayer"
-    } else {
-        "Unknown"
-    }
+fn map_mode(_raw: &str) -> &'static str {
+    // Unified mode: always return "Multiplayer"
+    // Input validation ensures only valid prefixes reach here
+    "Multiplayer"
 }
 
+#[allow(dead_code)]
 pub fn build_save_info<S: Into<String>>(
     index: u32,
     path: &Path,
@@ -136,6 +141,7 @@ pub fn build_save_info<S: Into<String>>(
     Ok(SaveFileInfo {
         id: index,
         name: name.to_string(),
+        display_name: None,
         difficulty: difficulty.to_string(),
         difficulty_class: difficulty_class.to_string(),
         actual_difficulty: actual_difficulty.into(),
@@ -149,12 +155,15 @@ pub fn build_save_info<S: Into<String>>(
 }
 
 /// Build lightweight save metadata from filename + filesystem only.
-/// No .sav file opening — very fast even for 1000+ files.
+/// No .sav file opening - very fast even for 1000+ files.
+/// `display_name` comes from MAINSAVE's SaveDisplayNamesLookup (already
+/// resolved by the caller; None when no mapping exists).
 pub fn build_save_meta(
     index: u32,
     path: &Path,
     date: String,
     is_visible: bool,
+    display_name: Option<String>,
 ) -> AppResult<SaveFileMeta> {
     use std::fs;
 
@@ -176,6 +185,7 @@ pub fn build_save_meta(
     Ok(SaveFileMeta {
         id: index,
         name: name.to_string(),
+        display_name,
         difficulty: map_difficulty(difficulty_raw).0.to_string(),
         mode: map_mode(mode_raw).to_string(),
         date,
@@ -183,5 +193,48 @@ pub fn build_save_meta(
         path: path.to_str().unwrap_or_default().to_string(),
         is_visible: Some(is_visible),
         file_size,
+    })
+}
+
+/// Build SaveFileInfo with optional current_level and actual_difficulty.
+/// Used by save_loader for incremental loading where level/difficulty may not be parsed yet.
+pub fn build_save_file_info(
+    index: u32,
+    path: &Path,
+    date: String,
+    current_level: Option<String>,
+    actual_difficulty: Option<String>,
+    is_visible: bool,
+    display_name: Option<String>,
+) -> AppResult<SaveFileInfo> {
+    let file_name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .ok_or("Invalid filename")?;
+
+    let caps = get_save_file_regex()
+        .captures(file_name)
+        .ok_or_else(|| format!("Filename format mismatch: {}", file_name))?;
+
+    let mode_raw = caps.get(1).ok_or("Failed to extract game mode")?.as_str();
+    let name = caps.get(2).ok_or("Failed to extract save name")?.as_str();
+    let difficulty_raw = caps.get(3).ok_or("Failed to extract difficulty")?.as_str();
+
+    let (difficulty, difficulty_class) = map_difficulty(difficulty_raw);
+    let hidden = path.parent() != get_save_games_base_dir().map(|p| p.as_path());
+
+    Ok(SaveFileInfo {
+        id: index,
+        name: name.to_string(),
+        display_name,
+        difficulty: difficulty.to_string(),
+        difficulty_class: difficulty_class.to_string(),
+        actual_difficulty: actual_difficulty.unwrap_or_else(|| difficulty.to_string()),
+        mode: map_mode(mode_raw).to_string(),
+        date,
+        current_level: current_level.unwrap_or_default(),
+        hidden,
+        path: path.to_str().unwrap_or_default().to_string(),
+        is_visible: Some(is_visible),
     })
 }

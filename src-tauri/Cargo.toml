@@ -33,6 +33,10 @@ rayon = "1.10"
 memmap2 = "0.9"
 rusqlite = { version = "0.31", features = ["bundled"] }
 thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+zip = "2"
 
 # 仅在发布时启用优化，不影响开发编译速度
 [profile.release]

@@ -34,14 +34,40 @@ export function clearSearchHistory(): void {
 }
 
 /**
+ * Escapes HTML special characters to their entity equivalents.
+ * This prevents XSS attacks when user input is rendered via v-html.
+ *
+ * @param text - The text to escape
+ * @returns The text with HTML special characters converted to entities
+ */
+function escapeHtml(text: string): string {
+  const htmlEscapeMap: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  };
+  return text.replace(/[&<>"']/g, (char) => htmlEscapeMap[char]);
+}
+
+/**
  * Highlight matching text with <mark> tags.
+ * Escapes HTML entities in both text and query to prevent XSS attacks.
  */
 export function highlightMatch(text: string, query: string): string {
   if (!query || !text) return text;
   try {
-    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const regex = new RegExp(`(${escaped})`, "gi");
-    return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+    // Escape both text and query to prevent XSS
+    const escapedText = escapeHtml(text);
+    const escapedQuery = escapeHtml(query);
+
+    // Escape regex special characters in the query
+    const escapedPattern = escapedQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const safeRegex = new RegExp(`(${escapedPattern})`, "gi");
+
+    // Wrap matches in <mark> tags
+    return escapedText.replace(safeRegex, '<mark class="search-highlight">$1</mark>');
   } catch {
     return text;
   }
@@ -83,7 +109,11 @@ function applyFilters(
   if (searchQuery) {
     const query = searchQuery.toLowerCase();
     filtered = filtered.filter((archive) => {
-      const nameMatch = archive.name.toLowerCase().includes(query);
+      // Match the filename-derived name AND the MAINSAVE display name so a
+      // custom-named archive is findable by either name.
+      const nameMatch =
+        archive.name.toLowerCase().includes(query) ||
+        (archive.displayName?.toLowerCase().includes(query) ?? false);
       const levelMatch = archive.currentLevel?.toLowerCase().includes(query) ?? false;
       const diffMatch = archive.archiveDifficulty?.toLowerCase().includes(query) ?? false;
       const actualDiffMatch = archive.actualDifficulty?.toLowerCase().includes(query) ?? false;
@@ -119,7 +149,9 @@ function applySuggestions(archives: Ref<ArchiveData[]> | ArchiveData[], searchQu
 
   return archivesArray
     .filter((a) => {
-      const nameMatch = a.name.toLowerCase().includes(query);
+      const nameMatch =
+        a.name.toLowerCase().includes(query) ||
+        (a.displayName?.toLowerCase().includes(query) ?? false);
       const levelMatch = a.currentLevel?.toLowerCase().includes(query) ?? false;
       return nameMatch || levelMatch;
     })

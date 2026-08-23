@@ -47,6 +47,6 @@ pub async fn set_active_theme(app: AppHandle, theme_id: String) -> AppResult<()>
     let json =
         serde_json::to_string_pretty(&config).map_err(|e| format!("Failed to serialize: {}", e))?;
     fs::write(&config_path, json).map_err(|e| format!("Failed to save config: {}", e))?;
-    println!("Active theme: {}", theme_id);
+    tracing::info!("Active theme: {}", theme_id);
     Ok(())
 }

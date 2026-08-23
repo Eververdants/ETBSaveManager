@@ -1,8 +1,13 @@
 <template>
   <teleport to="body">
     <div
-v-show="shouldRender" ref="floatingActionContainer" class="floating-action-container" :class="$attrs.class"
-      @mouseenter="handleContainerMouseEnter" @mouseleave="handleContainerMouseLeave">
+      v-show="shouldRender"
+      ref="floatingActionContainer"
+      class="floating-action-container"
+      :class="$attrs.class"
+      @mouseenter="handleContainerMouseEnter"
+      @mouseleave="handleContainerMouseLeave"
+    >
       <div ref="tooltip" class="function-tooltip">
         <span class="tooltip-text">{{ getCurrentTooltip }}</span>
       </div>

@@ -86,7 +86,7 @@ fn record_schema(save: &mut uesave::Save) {
 }
 
 /// Make sure the SaveDisplayNamesLookup map property exists (with schema).
-fn ensure_map_property(mainsave: &mut uesave::Save) {
+pub(crate) fn ensure_map_property(mainsave: &mut uesave::Save) {
     let key = property_key(DISPLAY_NAMES_KEY);
     if mainsave.root.properties.0.contains_key(&key) {
         return;

@@ -190,6 +190,16 @@ pub async fn load_all_saves() -> AppResult<Vec<SaveFileInfo>> {
 
     // Parallel fetch file list and visible saves set (+ display names;
     // this also backfills missing SaveDisplayNamesLookup entries).
+
+    // Phase 0b: Rename GENSAVE archives to their in-game display names.
+    let gensave_count = crate::gensave_rename::sync_gensave_filenames();
+    if gensave_count > 0 {
+        tracing::info!(
+            "Renamed {} GENSAVE archives to display names",
+            gensave_count
+        );
+    }
+
     let (paths_result, visible_saves_result) = rayon::join(
         get_file_path::list_save_paths,
         crate::common::get_visible_saves_with_display_names,
@@ -229,6 +239,15 @@ pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
     let conversions = convert_singleplayer_archives(&save_dir);
     if !conversions.is_empty() {
         tracing::info!("Converted {} singleplayer archives", conversions.len());
+    }
+
+    // Phase 0b: Rename GENSAVE archives to their in-game display names.
+    let gensave_count = crate::gensave_rename::sync_gensave_filenames();
+    if gensave_count > 0 {
+        tracing::info!(
+            "Renamed {} GENSAVE archives to display names",
+            gensave_count
+        );
     }
 
     let (paths_result, visible_saves_result) = rayon::join(
@@ -344,7 +363,8 @@ pub async fn load_save_details_batch(paths: Vec<String>) -> AppResult<Vec<SaveFi
             let p = Path::new(&path);
             cli_handlers::parse_sav_file(p).ok().map(|save| {
                 let current_level = cli_handlers::extract_current_level(&save);
-                let actual_difficulty = cli_handlers::extract_difficulty_label(&save).into_owned();
+                let actual_difficulty =
+                    cli_handlers::extract_difficulty_label(&save).map(|c| c.into_owned());
                 SaveFileDetail {
                     path,
                     current_level,
@@ -396,13 +416,14 @@ fn process_save_file(
     // Parse .sav file for visible saves
     cli_handlers::parse_sav_file(path).ok().and_then(|save| {
         let current_level = cli_handlers::extract_current_level(&save);
-        let actual_difficulty = cli_handlers::extract_difficulty_label(&save).into_owned();
+        let actual_difficulty =
+            cli_handlers::extract_difficulty_label(&save).map(|c| c.into_owned());
         save_utils::build_save_file_info(
             index as u32,
             path,
             date,
             Some(current_level),
-            Some(actual_difficulty),
+            actual_difficulty,
             is_visible,
             display_name,
         )

@@ -90,7 +90,7 @@ pub struct SaveFileMetaPage {
 pub struct SaveFileDetail {
     pub path: String,
     pub current_level: String,
-    pub actual_difficulty: String,
+    pub actual_difficulty: Option<String>,
 }
 
 /// Difficulty mapping

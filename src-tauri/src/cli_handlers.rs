@@ -100,19 +100,23 @@ pub fn extract_current_level(save: &Save) -> String {
     }
 }
 
-/// Extract Difficulty_0.Byte.Label and map difficulty level
-/// Returns Cow to avoid allocation of static strings
+/// Extract Difficulty_0.Byte.Label and map difficulty level.
+/// Returns `None` when the save file contains no Difficulty property —
+/// multiplayer saves created by the NightmareBypass mod or certain game
+/// paths omit it entirely, in which case the caller should fall back to the
+/// filename-derived difficulty.
 #[inline]
-pub fn extract_difficulty_label(save: &Save) -> Cow<'static, str> {
+pub fn extract_difficulty_label(save: &Save) -> Option<Cow<'static, str>> {
     let difficulty_label = get_property_by_name(save, "Difficulty").and_then(|prop| match prop {
         Property::Byte(uesave::Byte::Label(label)) => Some(label.as_str()),
         _ => None,
     });
 
     match difficulty_label {
-        Some(s) if s.contains("NewEnumerator0") => Cow::Borrowed("Easy"),
-        Some(s) if s.contains("NewEnumerator1") => Cow::Borrowed("Hard"),
-        Some(s) if s.contains("NewEnumerator2") => Cow::Borrowed("Nightmare"),
-        _ => Cow::Borrowed("Normal"),
+        Some(s) if s.contains("NewEnumerator0") => Some(Cow::Borrowed("Easy")),
+        Some(s) if s.contains("NewEnumerator1") => Some(Cow::Borrowed("Hard")),
+        Some(s) if s.contains("NewEnumerator2") => Some(Cow::Borrowed("Nightmare")),
+        Some(_) => Some(Cow::Borrowed("Normal")),
+        None => None,
     }
 }

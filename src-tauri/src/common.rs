@@ -76,7 +76,7 @@ pub fn read_mainsave() -> AppResult<Save> {
 /// Read MAINSAVE with retries. The game rewrites MAINSAVE.sav concurrently,
 /// which makes a single read fail transiently — retry before giving up so
 /// callers never act on a bogus "unreadable" state.
-fn read_mainsave_with_retries() -> AppResult<Save> {
+pub(crate) fn read_mainsave_with_retries() -> AppResult<Save> {
     match read_mainsave() {
         Ok(save) => Ok(save),
         Err(first_err) => {
@@ -117,7 +117,7 @@ pub fn write_mainsave(save: &Save) -> AppResult<()> {
 }
 
 /// Acquire the process-wide MAINSAVE operation lock.
-fn lock_mainsave() -> AppResult<MutexGuard<'static, ()>> {
+pub(crate) fn lock_mainsave() -> AppResult<MutexGuard<'static, ()>> {
     Ok(MAINSAVE_LOCK
         .get_or_init(|| Mutex::new(()))
         .lock()

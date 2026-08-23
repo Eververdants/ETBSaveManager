@@ -90,7 +90,7 @@ class UpdateService {
       const apiUrl = sourceConfig.apiUrl;
       const releasesUrl = sourceConfig.releasesUrl;
 
-      console.log(`使用 ${sourceConfig.name} 检查更新...`);
+      console.info(`使用 ${sourceConfig.name} 检查更新...`);
 
       const response = await fetch(apiUrl);
       if (!response.ok) {
@@ -138,8 +138,8 @@ class UpdateService {
       // Determine if the current version is a pre-release
       const currentIsPreRelease = CURRENT_VERSION.includes("-");
 
-      console.log(`当前版本: ${CURRENT_VERSION} (${currentIsPreRelease ? "预发布" : "正式版"})`);
-      console.log(
+      console.info(`当前版本: ${CURRENT_VERSION} (${currentIsPreRelease ? "预发布" : "正式版"})`);
+      console.info(
         `找到 ${allVersions.length} 个版本:`,
         allVersions.map((v) => `${v.version}${v.prerelease ? " (预发布)" : ""}`),
       );
@@ -148,11 +148,11 @@ class UpdateService {
       const stableVersions = allVersions.filter((v) => !v.prerelease);
       const preReleaseVersions = allVersions.filter((v) => v.prerelease);
 
-      console.log(
+      console.info(
         `正式版本: ${stableVersions.length} 个`,
         stableVersions.map((v) => v.version),
       );
-      console.log(
+      console.info(
         `预发布版本: ${preReleaseVersions.length} 个`,
         preReleaseVersions.map((v) => v.version),
       );
@@ -166,13 +166,13 @@ class UpdateService {
           return this.isNewVersion(current.version, latest.version) ? current : latest;
         });
 
-        console.log(`Latest stable version: ${latestVersion.version}`);
+        console.info(`Latest stable version: ${latestVersion.version}`);
 
         // If latest stable is newer than current, use it
         if (this.isNewVersion(latestVersion.version, CURRENT_VERSION)) {
-          console.log(`✓ Found newer stable version: ${latestVersion.version}`);
+          console.info(`✓ Found newer stable version: ${latestVersion.version}`);
         } else {
-          console.log(`✗ Latest stable ${latestVersion.version} is not newer than current ${CURRENT_VERSION}`);
+          console.info(`✗ Latest stable ${latestVersion.version} is not newer than current ${CURRENT_VERSION}`);
 
           // Stable not new enough, check pre-release
           if (preReleaseVersions.length > 0) {
@@ -180,14 +180,14 @@ class UpdateService {
               return this.isNewVersion(current.version, latest.version) ? current : latest;
             });
 
-            console.log(`Latest pre-release version: ${latestPreRelease.version}`);
+            console.info(`Latest pre-release version: ${latestPreRelease.version}`);
 
             // If pre-release is newer than current, use it
             if (this.isNewVersion(latestPreRelease.version, CURRENT_VERSION)) {
               latestVersion = latestPreRelease;
-              console.log(`✓ Using pre-release version: ${latestVersion.version}`);
+              console.info(`✓ Using pre-release version: ${latestVersion.version}`);
             } else {
-              console.log(`✗ No newer version found`);
+              console.info(`✗ No newer version found`);
             }
           }
         }
@@ -196,17 +196,17 @@ class UpdateService {
         latestVersion = preReleaseVersions.reduce((latest, current) => {
           return this.isNewVersion(current.version, latest.version) ? current : latest;
         });
-        console.log(`Only pre-release versions available, using: ${latestVersion.version}`);
+        console.info(`Only pre-release versions available, using: ${latestVersion.version}`);
       }
 
       if (!latestVersion) {
         throw new Error("No available version found");
       }
 
-      console.log(
+      console.info(
         `Final selected version: ${latestVersion.version}${latestVersion.prerelease ? " (Pre-release)" : " (Stable)"}`,
       );
-      console.log("Assets:", latestVersion.assets);
+      console.info("Assets:", latestVersion.assets);
 
       if (this.isNewVersion(latestVersion.version, CURRENT_VERSION)) {
         this.status = UpdateStatus.AVAILABLE;
@@ -394,7 +394,7 @@ class UpdateService {
       // Use Tauri opener plugin to open URL in default browser
       await openUrl(url);
 
-      console.log("已打开下载链接:", url);
+      console.info("已打开下载链接:", url);
     } catch (error: unknown) {
       console.error("打开下载链接失败:", error);
       this.status = UpdateStatus.ERROR;

@@ -10,9 +10,13 @@
         <div class="settings-card">
           <label class="card-label">{{ $t("createArchive.archiveName") }}</label>
           <input
-:value="archiveName" type="text" class="settings-input"
-            :placeholder="$t('createArchive.archiveNamePlaceholder')" maxlength="50"
-            @input="$emit('update:archiveName', $event.target.value)" />
+            :value="archiveName"
+            type="text"
+            class="settings-input"
+            :placeholder="$t('createArchive.archiveNamePlaceholder')"
+            maxlength="50"
+            @input="$emit('update:archiveName', $event.target.value)"
+          />
           <transition name="error-fade">
             <div v-if="archiveName.includes('_')" class="error-message">
               <font-awesome-icon :icon="['fas', 'exclamation-triangle']" />
@@ -33,10 +37,14 @@
             <label class="card-label">{{ $t("createArchive.difficulty") }}</label>
             <div class="diff-grid">
               <div
-v-for="difficulty in difficultyLevels" :key="difficulty.value" class="diff-option" :class="{
-                selected: selectedDifficulty === difficulty.value,
-                disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal',
-              }" @click="$emit('select-difficulty', difficulty.value)">
+                v-for="difficulty in difficultyLevels"
+                :key="difficulty.value"
+                class="diff-option"
+                :class="{
+                  selected: selectedDifficulty === difficulty.value,
+                }"
+                @click="$emit('select-difficulty', difficulty.value)"
+              >
                 <font-awesome-icon :icon="difficulty.icon" class="diff-icon" />
                 <span class="diff-text">{{ getDifficultyText(difficulty.value) }}</span>
               </div>
@@ -46,19 +54,22 @@ v-for="difficulty in difficultyLevels" :key="difficulty.value" class="diff-optio
             <label class="card-label">{{ $t("createArchive.actualDifficulty") }}</label>
             <div class="diff-grid">
               <div
-v-for="difficulty in difficultyLevels" :key="`actual-${difficulty.value}`" class="diff-option"
+                v-for="difficulty in difficultyLevels"
+                :key="`actual-${difficulty.value}`"
+                class="diff-option"
                 :class="{
                   selected: selectedActualDifficulty === difficulty.value,
-                  disabled: selectedGameMode === 'singleplayer' && difficulty.value !== 'normal',
-                }" @click="$emit('select-actual-difficulty', difficulty.value)">
+                }"
+                @click="$emit('select-actual-difficulty', difficulty.value)"
+              >
                 <font-awesome-icon :icon="difficulty.icon" class="diff-icon" />
                 <span class="diff-text">{{ getDifficultyText(difficulty.value) }}</span>
               </div>
             </div>
           </div>
         </div>
-        <!-- Merge difficulty hint -->
-        <div v-if="FEATURES.MERGE_DIFFICULTY" class="difficulty-hint">
+        <!-- 难度提示：NSU 模组已安装并启用时隐藏；探测完成前也不显示 -->
+        <div v-if="FEATURES.MERGE_DIFFICULTY && nsuProbed && !nsuActive" class="difficulty-hint">
           <font-awesome-icon :icon="['fas', 'info-circle']" />
           <span>{{ $t("createArchive.difficultyMergeHint") }}</span>
         </div>
@@ -68,12 +79,13 @@ v-for="difficulty in difficultyLevels" :key="`actual-${difficulty.value}`" class
 </template>
 
 <script setup>
+import { onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { FEATURES } from "@/config/features";
+import { useNsuStatus } from "@/composables/useNsuStatus";
 
 defineProps({
   archiveName: { type: String, default: "" },
-  selectedGameMode: { type: String, default: "multiplayer" },
   selectedDifficulty: { type: String, default: "normal" },
   selectedActualDifficulty: { type: String, default: "normal" },
   difficultyLevels: {
@@ -95,6 +107,14 @@ const getDifficultyText = (difficultyKey) => {
   const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
   return te(translationKey) ? t(translationKey) : difficultyKey;
 };
+
+// NSU 模组状态：未安装并启用时，难度修改无法被游戏识别。
+// 本组件随步骤切换重新挂载，每次进入第二步都会重新探测。
+const { nsuActive, nsuProbed, refreshNsuStatus } = useNsuStatus();
+
+onMounted(() => {
+  refreshNsuStatus();
+});
 </script>
 
 <style scoped>
@@ -305,9 +325,11 @@ const getDifficultyText = (difficultyKey) => {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center,
-      color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
-      transparent 70%);
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--accent-color) 10%, transparent) 0%,
+    transparent 70%
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -324,9 +346,11 @@ const getDifficultyText = (difficultyKey) => {
 
 .diff-option.selected {
   border-color: var(--accent-color);
-  background: linear-gradient(145deg,
-      color-mix(in srgb, var(--accent-color) 15%, transparent) 0%,
-      color-mix(in srgb, var(--accent-color) 8%, transparent) 100%);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-color) 15%, transparent) 0%,
+    color-mix(in srgb, var(--accent-color) 8%, transparent) 100%
+  );
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent);
   filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--accent-color) 15%, transparent));
 }

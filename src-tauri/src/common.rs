@@ -1,11 +1,12 @@
 //! Common utilities module - Shared tools and types across modules
 
+use crate::display_name;
 use crate::error::{AppError, AppResult};
 use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::{BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Mutex, MutexGuard, OnceLock};
 use uesave::{
     Property, PropertyKey, PropertyTagDataPartial, PropertyTagPartial, PropertyType, Save, ValueVec,
 };
@@ -72,6 +73,27 @@ pub fn read_mainsave() -> AppResult<Save> {
     Ok(Save::read(&mut reader).map_err(|e| format!("Failed to parse MAINSAVE.sav: {:?}", e))?)
 }
 
+/// Read MAINSAVE with retries. The game rewrites MAINSAVE.sav concurrently,
+/// which makes a single read fail transiently — retry before giving up so
+/// callers never act on a bogus "unreadable" state.
+fn read_mainsave_with_retries() -> AppResult<Save> {
+    match read_mainsave() {
+        Ok(save) => Ok(save),
+        Err(first_err) => {
+            let mut last_err = first_err;
+            for _ in 0..3 {
+                std::thread::sleep(std::time::Duration::from_millis(60));
+                match read_mainsave() {
+                    Ok(save) => return Ok(save),
+                    Err(e) => last_err = e,
+                }
+            }
+            tracing::error!("Failed to read MAINSAVE after retries: {}", last_err);
+            Err(last_err)
+        }
+    }
+}
+
 /// Write MAINSAVE.sav file (using temp file for atomicity)
 pub fn write_mainsave(save: &Save) -> AppResult<()> {
     let save_dir = get_save_games_dir()?;
@@ -94,87 +116,82 @@ pub fn write_mainsave(save: &Save) -> AppResult<()> {
         .map_err(|e| format!("Failed to replace MAINSAVE.sav: {}", e))?)
 }
 
-/// Get visible saves list from MAINSAVE (pre-allocated capacity)
-pub fn get_visible_saves_set() -> AppResult<HashSet<String>> {
-    let _lock = MAINSAVE_LOCK
+/// Acquire the process-wide MAINSAVE operation lock.
+fn lock_mainsave() -> AppResult<MutexGuard<'static, ()>> {
+    Ok(MAINSAVE_LOCK
         .get_or_init(|| Mutex::new(()))
         .lock()
-        .map_err(|e| format!("MAINSAVE lock poisoned: {}", e))?;
+        .map_err(|e| format!("MAINSAVE lock poisoned: {}", e))?)
+}
 
-    let mainsave = match read_mainsave() {
-        Ok(save) => save,
-        Err(_) => return Ok(HashSet::new()),
-    };
+/// Get visible saves list from MAINSAVE.
+///
+/// A missing MAINSAVE.sav (fresh game install) is a genuine "nothing visible"
+/// state and yields an empty set. Any OTHER read/parse failure is retried then
+/// propagated as Err — callers must never mistake an unreadable registry for
+/// an empty visibility list (that used to flip toggles in the wrong direction).
+pub fn get_visible_saves_set() -> AppResult<HashSet<String>> {
+    Ok(get_visible_saves_with_display_names()?.0)
+}
 
-    let key = PropertyKey(0, "SingleplayerSaves".to_string());
+/// Read the visible-archive registry together with the display-name lookup,
+/// backfilling missing display-name entries in one write when needed.
+///
+/// Every archive listed in `SingleplayerSaves` (= "visible" state) must have
+/// a `SaveDisplayNamesLookup` entry; missing ones are filled with the
+/// filename-derived base name so the tool and the game agree on naming.
+/// Existing entries — custom names AND explicit empty strings — are never
+/// touched (matches the game, where empty == "unnamed").
+///
+/// Returns `(visible set, display-name map)`. When MAINSAVE is missing or no
+/// backfill was needed this is a pure read; the single write happens under
+/// the same lock as the read that decided it.
+pub(crate) fn get_visible_saves_with_display_names(
+) -> AppResult<(HashSet<String>, std::collections::HashMap<String, String>)> {
+    let _lock = lock_mainsave()?;
 
-    if let Some(Property::Array(ValueVec::Str(ref saves))) = mainsave.root.properties.0.get(&key) {
-        let mut set = HashSet::with_capacity(saves.len());
-        set.extend(saves.iter().cloned());
-        return Ok(set);
+    if !get_mainsave_path()?.exists() {
+        return Ok((HashSet::new(), Default::default()));
     }
 
-    Ok(HashSet::new())
+    let mut mainsave = read_mainsave_with_retries()?;
+
+    let key = PropertyKey(0, display_name::SINGLEPLAYER_SAVES_KEY.to_string());
+
+    let visible_set: HashSet<String> = match mainsave.root.properties.0.get(&key) {
+        Some(Property::Array(ValueVec::Str(saves))) => saves.iter().cloned().collect(),
+        _ => return Ok((HashSet::new(), Default::default())),
+    };
+
+    // Backfill pass: only writes when entries are actually missing.
+    if display_name::backfill_display_names(
+        &mut mainsave,
+        &visible_set.iter().cloned().collect::<Vec<_>>(),
+    ) {
+        tracing::info!("Backfilled missing SaveDisplayNamesLookup entries");
+        write_mainsave(&mainsave)?;
+    }
+
+    Ok((visible_set, display_name::get_display_names(&mainsave)))
 }
 
 /// Serialize MAINSAVE operations across threads to prevent race conditions
 static MAINSAVE_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 
-/// Add save name to MAINSAVE's save list
-pub fn add_save_to_mainsave(archive_name: &str) -> AppResult<()> {
-    let _lock = MAINSAVE_LOCK
-        .get_or_init(|| Mutex::new(()))
-        .lock()
-        .map_err(|e| format!("MAINSAVE lock poisoned: {}", e))?;
-
-    // During a batch create the game itself may be rewriting MAINSAVE concurrently,
-    // which makes a single read fail transiently. Retry a couple of times before
-    // giving up so newly created saves actually register as visible instead of
-    // silently staying hidden.
-    let mut mainsave = match read_mainsave() {
-        Ok(save) => save,
-        Err(_) => {
-            let mut result = None;
-            let mut last_err = String::new();
-            for _ in 0..3 {
-                std::thread::sleep(std::time::Duration::from_millis(60));
-                match read_mainsave() {
-                    Ok(save) => {
-                        result = Some(save);
-                        break;
-                    }
-                    Err(e) => last_err = e.to_string(),
-                }
-            }
-            match result {
-                Some(save) => save,
-                None => {
-                    eprintln!(
-                        "[add_save_to_mainsave] Failed to read MAINSAVE after retries: {}",
-                        last_err
-                    );
-                    return Ok(()); // Silently skip (missing/corrupt — game rebuilds it on next launch)
-                }
-            }
-        }
-    };
-
-    let key = PropertyKey(0, "SingleplayerSaves".to_string());
+/// Insert or move an archive name to the front of the SingleplayerSaves list.
+fn upsert_visible_save(mainsave: &mut Save, archive_name: &str) {
+    let key = PropertyKey(0, display_name::SINGLEPLAYER_SAVES_KEY.to_string());
 
     if let Some(Property::Array(ValueVec::Str(ref mut saves))) =
         mainsave.root.properties.0.get_mut(&key)
     {
-        if saves.iter().any(|s| s == archive_name) {
-            // Already exists — move to front (e.g. after editing)
-            saves.retain(|s| s != archive_name);
-            saves.insert(0, archive_name.to_string());
-            return write_mainsave(&mainsave);
-        }
+        // Already exists — move to front (e.g. after editing)
+        saves.retain(|s| s != archive_name);
         saves.insert(0, archive_name.to_string());
     } else {
         // New field: record schema (0.7 requires schemas for writing) + insert property
         mainsave.schemas.record(
-            "SingleplayerSaves".to_string(),
+            display_name::SINGLEPLAYER_SAVES_KEY.to_string(),
             PropertyTagPartial {
                 id: None,
                 data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(
@@ -185,35 +202,159 @@ pub fn add_save_to_mainsave(archive_name: &str) -> AppResult<()> {
         let new_prop = Property::Array(ValueVec::Str(vec![archive_name.to_string()]));
         mainsave.root.properties.0.insert(key, new_prop);
     }
-
-    write_mainsave(&mainsave)
 }
 
-/// Remove save name from MAINSAVE's save list
-pub fn remove_save_from_mainsave(archive_name: &str) -> AppResult<bool> {
-    let _lock = MAINSAVE_LOCK
-        .get_or_init(|| Mutex::new(()))
-        .lock()
-        .map_err(|e| format!("MAINSAVE lock poisoned: {}", e))?;
-
-    let mut mainsave = match read_mainsave() {
-        Ok(save) => save,
-        Err(e) => {
-            eprintln!("[remove_save_from_mainsave] Failed to read MAINSAVE: {}", e);
-            return Ok(false);
-        }
-    };
-
-    let key = PropertyKey(0, "SingleplayerSaves".to_string());
+/// Remove an archive name from the SingleplayerSaves list.
+/// Returns true when the name was present and has been removed.
+fn remove_visible_save(mainsave: &mut Save, archive_name: &str) -> bool {
+    let key = PropertyKey(0, display_name::SINGLEPLAYER_SAVES_KEY.to_string());
 
     if let Some(Property::Array(ValueVec::Str(ref mut saves))) =
         mainsave.root.properties.0.get_mut(&key)
     {
         let original_len = saves.len();
         saves.retain(|s| s != archive_name);
-        if saves.len() < original_len {
-            write_mainsave(&mainsave)?;
-            return Ok(true);
+        return saves.len() < original_len;
+    }
+
+    false
+}
+
+/// Public read accessors for the display-name lookup (no writes).
+/// Used by save_loader to attach display names to listings.
+pub fn get_display_names_map() -> AppResult<std::collections::HashMap<String, String>> {
+    Ok(get_visible_saves_with_display_names()?.1)
+}
+
+/// Add save name to MAINSAVE's save list.
+///
+/// Also registers a display-name entry (value = filename-derived base name)
+/// when none exists yet — mirrors what the game's fallback would resolve to,
+/// so the tool and the game agree on the name from creation time onward.
+/// Existing entries are never overwritten.
+///
+/// Fails loudly when MAINSAVE cannot be read after retries — never reports
+/// success without having persisted the change.
+pub fn add_save_to_mainsave(archive_name: &str) -> AppResult<()> {
+    let _lock = lock_mainsave()?;
+
+    if !get_mainsave_path()?.exists() {
+        return Err("MAINSAVE.sav not found — start the game once so it can be created".into());
+    }
+
+    let mut mainsave = read_mainsave_with_retries()?;
+    upsert_visible_save(&mut mainsave, archive_name);
+
+    // Keep the naming table in sync: create/restore flows land here.
+    // Insert-if-missing: a custom name the user gave in-game is never lost.
+    let base = display_name::base_archive_name(archive_name);
+    if display_name::insert_display_entry_if_missing(&mut mainsave, archive_name, base) {
+        tracing::debug!("Registered display name '{}' for '{}'", base, archive_name);
+    }
+
+    write_mainsave(&mainsave)
+}
+
+/// Remove save name from MAINSAVE's save list.
+/// Returns Ok(true) when removed, Ok(false) when the name was not present.
+/// The display-name entry is cleaned up in the same write so hidden/deleted
+/// archives never leave ghost mappings behind.
+/// Errors only when MAINSAVE cannot be read/written — never silently skips.
+pub fn remove_save_from_mainsave(archive_name: &str) -> AppResult<bool> {
+    let _lock = lock_mainsave()?;
+
+    if !get_mainsave_path()?.exists() {
+        return Err("MAINSAVE.sav not found — start the game once so it can be created".into());
+    }
+
+    let mut mainsave = read_mainsave_with_retries()?;
+    let removed = remove_visible_save(&mut mainsave, archive_name);
+
+    // Drop the display-name entry too (delete/hide flows), so no ghost
+    // mapping is left behind. Best-effort: the registry removal above is the
+    // state callers actually check.
+    display_name::remove_display_entry(&mut mainsave, archive_name);
+
+    if removed {
+        write_mainsave(&mainsave)?;
+    }
+
+    Ok(removed)
+}
+
+/// Set the visibility of an archive atomically: the MAINSAVE lock is held
+/// across read-decide-write, and callers pass the DESIRED state instead of
+/// relying on a read-then-flip, so concurrent toggles can neither cancel each
+/// other out nor decide from a stale snapshot.
+///
+/// `desired`: `Some(true)`/`Some(false)` pins the target state, `None` flips
+/// relative to the current state. Returns the verified visibility afterwards.
+pub fn set_save_visibility(archive_name: &str, desired: Option<bool>) -> AppResult<bool> {
+    let _lock = lock_mainsave()?;
+
+    if !get_mainsave_path()?.exists() {
+        return Err("MAINSAVE.sav not found — start the game once so it can be created".into());
+    }
+
+    let mut mainsave = read_mainsave_with_retries()?;
+
+    let currently_visible = {
+        let key = PropertyKey(0, "SingleplayerSaves".to_string());
+        matches!(
+            mainsave.root.properties.0.get(&key),
+            Some(Property::Array(ValueVec::Str(saves)))
+                if saves.iter().any(|s| s == archive_name)
+        )
+    };
+
+    let target = desired.unwrap_or(!currently_visible);
+    if target == currently_visible {
+        // Already in the requested state — nothing to persist.
+        return Ok(currently_visible);
+    }
+
+    if target {
+        upsert_visible_save(&mut mainsave, archive_name);
+        // Show flow: re-register the display name (base name) when missing,
+        // mirroring add_save_to_mainsave. Existing entries are untouched.
+        let base = display_name::base_archive_name(archive_name);
+        display_name::insert_display_entry_if_missing(&mut mainsave, archive_name, base);
+    } else {
+        remove_visible_save(&mut mainsave, archive_name);
+        // Hide flow: drop the mapping so hidden archives leave no ghost entry
+        // (the game itself only ever lists visible saves).
+        display_name::remove_display_entry(&mut mainsave, archive_name);
+    }
+
+    write_mainsave(&mainsave)?;
+    Ok(target)
+}
+
+/// Update archive name in MAINSAVE's SingleplayerSaves list after conversion.
+/// Used when renaming SINGLEPLAYER_ archives to MULTIPLAYER_ prefix, and by
+/// the editor when a save is renamed. The display-name entry's key moves with
+/// the rename (custom names survive); Ok(true) only when the old registry
+/// entry was found and replaced — callers treat Ok(false) as failure.
+pub fn update_mainsave_archive_name(old_name: &str, new_name: &str) -> AppResult<bool> {
+    let _lock = lock_mainsave()?;
+
+    let mut mainsave = read_mainsave_with_retries()?;
+
+    let key = PropertyKey(0, display_name::SINGLEPLAYER_SAVES_KEY.to_string());
+
+    if let Some(Property::Array(ValueVec::Str(ref mut saves))) =
+        mainsave.root.properties.0.get_mut(&key)
+    {
+        // Find and replace the old archive name with the new one
+        for save in saves.iter_mut() {
+            if save == old_name {
+                *save = new_name.to_string();
+                // Keep the naming table keyed by the new slot name; the
+                // mapped value (possibly a custom name) moves unchanged.
+                display_name::move_display_entry(&mut mainsave, old_name, new_name);
+                write_mainsave(&mainsave)?;
+                return Ok(true);
+            }
         }
     }
 
@@ -224,6 +365,15 @@ pub fn remove_save_from_mainsave(archive_name: &str) -> AppResult<bool> {
 #[inline(always)]
 pub fn extract_archive_name(filename: &str) -> &str {
     filename.strip_suffix(".sav").unwrap_or(filename)
+}
+
+/// Extract archive name from a trashed filename ("X.sav.trash" -> "X").
+/// Re-registering a restored archive under "X.sav.trash" would leave it
+/// permanently hidden, since listings match on the plain stem.
+pub fn extract_archive_name_from_trash(filename: &str) -> &str {
+    filename
+        .strip_suffix(".sav.trash")
+        .unwrap_or_else(|| extract_archive_name(filename))
 }
 
 pub fn normalize_existing_path(path: &Path) -> AppResult<PathBuf> {
@@ -295,4 +445,24 @@ pub fn validate_save_games_path(path: &Path) -> AppResult<()> {
 pub fn validate_app_config_path(path: &Path) -> AppResult<()> {
     let base = get_app_config_dir()?;
     validate_path_under_base(path, &base)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn trash_names_map_back_to_archive_names() {
+        assert_eq!(
+            extract_archive_name_from_trash("MULTIPLAYER_Demo_Easy.sav.trash"),
+            "MULTIPLAYER_Demo_Easy"
+        );
+        assert_eq!(
+            extract_archive_name("MULTIPLAYER_Demo_Easy.sav"),
+            "MULTIPLAYER_Demo_Easy"
+        );
+        // Fallbacks never panic on unexpected names
+        assert_eq!(extract_archive_name_from_trash("weird.sav"), "weird");
+        assert_eq!(extract_archive_name_from_trash("noext"), "noext");
+    }
 }

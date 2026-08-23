@@ -39,6 +39,7 @@ import {
   faArrowRotateRight,
   faRotateLeft,
   faArrowUpWideShort,
+  faPuzzlePiece,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { faCircle } from "@fortawesome/free-regular-svg-icons";
@@ -80,6 +81,7 @@ export function registerCriticalIcons(): void {
     faArrowRotateRight,
     faRotateLeft,
     faArrowUpWideShort,
+    faPuzzlePiece,
   );
 }
 

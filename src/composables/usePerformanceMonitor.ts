@@ -63,14 +63,14 @@ export function usePerformanceMonitor(): PerformanceMonitorReturn {
       onLowPerformance: () => {
         performanceMode.value = "low";
         animationQuality.value = "low";
-        console.log("Performance issue detected, switched to low performance mode");
+        console.info("Performance issue detected, switched to low performance mode");
         isLowPerfMode = true;
       },
       onPerformanceRecovery: () => {
         if (performanceMode.value === "low") {
           performanceMode.value = "auto";
           animationQuality.value = "medium";
-          console.log("Performance recovered, switched to auto performance mode");
+          console.info("Performance recovered, switched to auto performance mode");
           isLowPerfMode = false;
         }
       },

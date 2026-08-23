@@ -49,12 +49,12 @@ export const ENDING_LEVELS: Record<number, string[]> = {
     "Level52",
     "TunnelLevel",
   ],
-  1: ["Bunker", "GraffitiLevel", "Grassrooms_Expanded"],
+  1: ["Bunker", "PlasticMariana", "GraffitiLevel", "Grassrooms_Expanded"],
   2: ["Bunker", "TheHub", "BottomFloor", "Level922"],
   3: ["Bunker", "TheHub", "OceanMap", "LightsOut", "Level974"],
 };
 
-/** Ending configuration — `labelKey` maps to `createArchive.endings.*` in i18n */
+/** Ending configuration `labelKey` maps to `createArchive.endings.*` in i18n */
 export const ENDINGS_CONFIG = [
   { id: 0, labelKey: "main" },
   { id: 1, labelKey: "branch1" },

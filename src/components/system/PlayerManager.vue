@@ -7,8 +7,12 @@
 
     <div v-if="players.length > 0" class="player-list">
       <div
-v-for="(player, index) in players" :key="index" class="player-item"
-        :class="{ active: activePlayerIndex === index }" @click="$emit('select-player', index)">
+        v-for="(player, index) in players"
+        :key="index"
+        class="player-item"
+        :class="{ active: activePlayerIndex === index }"
+        @click="$emit('select-player', index)"
+      >
         <div class="player-avatar">
           <font-awesome-icon :icon="['fas', 'user']" />
         </div>
@@ -35,8 +39,13 @@ v-for="(player, index) in players" :key="index" class="player-item"
 
     <div class="add-player-row">
       <input
-:value="newSteamId" type="text" class="form-input" :placeholder="steamIdPlaceholder"
-        @input="$emit('update:newSteamId', $event.target.value)" @keyup.enter="$emit('add-steam-id')" />
+        :value="newSteamId"
+        type="text"
+        class="form-input"
+        :placeholder="steamIdPlaceholder"
+        @input="$emit('update:newSteamId', $event.target.value)"
+        @keyup.enter="$emit('add-steam-id')"
+      />
       <button class="add-btn" @click="$emit('add-steam-id')">
         <font-awesome-icon :icon="['fas', 'plus']" />
       </button>

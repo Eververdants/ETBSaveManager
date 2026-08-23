@@ -6,11 +6,7 @@
   "categories": {
     "newFeatures": [],
     "improvements": [],
-    "bugFixes": [
-      "修复创建存档时使用裸 Steam ID 导致存档数据未正确绑定（背包为空、理智值重置）的问题"
-    ],
-    "performance": [
-      "精简打包体积，加快启动加载"
-    ]
+    "bugFixes": ["修复创建存档时使用裸 Steam ID 导致存档数据未正确绑定（背包为空、理智值重置）的问题"],
+    "performance": ["精简打包体积，加快启动加载"]
   }
 }

@@ -5,13 +5,25 @@
         <div class="search-row">
           <font-awesome-icon icon="fa-solid fa-magnifying-glass" class="search-icon" />
           <input
-ref="inputRef" v-model="query" class="search-input" type="text"
-            :placeholder="t('archiveSearch.searchPanel.placeholder')" @keydown.enter.prevent="handleEnter"
-            @keydown.esc.prevent="closePanel" @focus="onInputFocus" @blur="onInputBlur"
-            @keydown.down.prevent="highlightNextHistory" @keydown.up.prevent="highlightPrevHistory" />
+            ref="inputRef"
+            v-model="query"
+            class="search-input"
+            type="text"
+            :placeholder="t('archiveSearch.searchPanel.placeholder')"
+            @keydown.enter.prevent="handleEnter"
+            @keydown.esc.prevent="closePanel"
+            @focus="onInputFocus"
+            @blur="onInputBlur"
+            @keydown.down.prevent="highlightNextHistory"
+            @keydown.up.prevent="highlightPrevHistory"
+          />
           <button
-class="icon-btn match-case-btn" :class="{ active: matchCase }" type="button"
-            :title="t('archiveSearch.searchPanel.matchCase')" @click="toggleMatchCase">
+            class="icon-btn match-case-btn"
+            :class="{ active: matchCase }"
+            type="button"
+            :title="t('archiveSearch.searchPanel.matchCase')"
+            @click="toggleMatchCase"
+          >
             Aa
           </button>
           <button class="icon-btn close-btn" type="button" :title="t('common.close')" @click="closePanel">
@@ -21,8 +33,9 @@ class="icon-btn match-case-btn" :class="{ active: matchCase }" type="button"
 
         <!-- Advanced query tags -->
         <div
-v-if="advancedQuery && (advancedQuery.name || advancedQuery.level || advancedQuery.difficulty)"
-          class="advanced-tags">
+          v-if="advancedQuery && (advancedQuery.name || advancedQuery.level || advancedQuery.difficulty)"
+          class="advanced-tags"
+        >
           <span v-if="advancedQuery.name" class="adv-tag adv-tag-name">
             <font-awesome-icon icon="fa-solid fa-tag" /> name:{{ advancedQuery.name }}
           </span>
@@ -43,9 +56,12 @@ v-if="advancedQuery && (advancedQuery.name || advancedQuery.level || advancedQue
             </button>
           </div>
           <div
-v-for="(item, idx) in filteredHistory" :key="idx" class="history-item"
+            v-for="(item, idx) in filteredHistory"
+            :key="idx"
+            class="history-item"
             :class="{ 'history-item-highlighted': highlightedHistoryIdx === idx }"
-            @mousedown.prevent="selectHistoryItem(item)">
+            @mousedown.prevent="selectHistoryItem(item)"
+          >
             <font-awesome-icon icon="fa-solid fa-clock-rotate-left" class="history-icon" />
             <span class="history-text">{{ item }}</span>
           </div>
@@ -55,13 +71,21 @@ v-for="(item, idx) in filteredHistory" :key="idx" class="history-item"
           <span class="result-text">{{ resultText }}</span>
           <div class="action-group">
             <button
-class="nav-btn" type="button" :disabled="!matches.length"
-              :title="t('archiveSearch.searchPanel.previous')" @click="findPrevious">
+              class="nav-btn"
+              type="button"
+              :disabled="!matches.length"
+              :title="t('archiveSearch.searchPanel.previous')"
+              @click="findPrevious"
+            >
               <font-awesome-icon icon="fa-solid fa-chevron-up" />
             </button>
             <button
-class="nav-btn" type="button" :disabled="!matches.length"
-              :title="t('archiveSearch.searchPanel.next')" @click="findNext">
+              class="nav-btn"
+              type="button"
+              :disabled="!matches.length"
+              :title="t('archiveSearch.searchPanel.next')"
+              @click="findNext"
+            >
               <font-awesome-icon icon="fa-solid fa-chevron-down" />
             </button>
           </div>

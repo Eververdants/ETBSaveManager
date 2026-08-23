@@ -119,13 +119,13 @@ async function initApp(): Promise<typeof app> {
   const startTime = performance.now();
 
   // Phase 1: Initialize critical modules in parallel
-  console.log("[Startup] Initializing critical modules...");
+  console.info("[Startup] Initializing critical modules...");
   const [, FAIcon, i18n] = await Promise.all([initStorage(), loadCriticalIcons(), initI18n()]);
 
-  console.log(`[Startup] Critical modules loaded: ${(performance.now() - startTime).toFixed(0)}ms`);
+  console.info(`[Startup] Critical modules loaded: ${(performance.now() - startTime).toFixed(0)}ms`);
 
   // Phase 2: Configure Vue app
-  console.log("[Startup] Configuring Vue app...");
+  console.info("[Startup] Configuring Vue app...");
   app.use(createPinia());
   app.use(router);
   app.use(i18n);
@@ -134,9 +134,9 @@ async function initApp(): Promise<typeof app> {
   setAppContext({ i18n: i18n.global, router, vue: vueRuntime, storage });
 
   // Phase 3: Mount app (user-visible)
-  console.log("[Startup] Mounting app...");
+  console.info("[Startup] Mounting app...");
   app.mount("#app");
-  console.log(`[Startup] App mounted: ${(performance.now() - startTime).toFixed(0)}ms`);
+  console.info(`[Startup] App mounted: ${(performance.now() - startTime).toFixed(0)}ms`);
 
   // Phase 4: Show window after render completes
   // Disable transition animations to prevent theme flash on startup
@@ -150,12 +150,12 @@ async function initApp(): Promise<typeof app> {
     });
   });
 
-  console.log("[Startup] Preparing to show window...");
+  console.info("[Startup] Preparing to show window...");
   try {
     const { getCurrentWindow } = await import("@tauri-apps/api/window");
     const appWindow = getCurrentWindow();
     await appWindow.show();
-    console.log(`[Startup] Window shown: ${(performance.now() - startTime).toFixed(0)}ms`);
+    console.info(`[Startup] Window shown: ${(performance.now() - startTime).toFixed(0)}ms`);
   } catch (error) {
     console.warn("[Startup] Failed to show window:", error instanceof Error ? error.message : error);
   }
@@ -169,7 +169,7 @@ async function initApp(): Promise<typeof app> {
   requestIdleCallback(
     () => {
       Promise.all([loadAllIcons(), loadOtherLocales(), initWindowTitle(i18n)]).then(() => {
-        console.log(`[Startup] Full initialization: ${(performance.now() - startTime).toFixed(0)}ms`);
+        console.info(`[Startup] Full initialization: ${(performance.now() - startTime).toFixed(0)}ms`);
       });
     },
     { timeout: 2000 },

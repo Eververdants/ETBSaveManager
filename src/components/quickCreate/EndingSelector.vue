@@ -4,8 +4,12 @@
     <div ref="endingGroupRef" class="ending-group">
       <div class="ending-slider" :style="sliderStyle" />
       <div
-v-for="ending in endings" :key="ending.id" class="ending-tab" :class="{ active: modelValue === ending.id }"
-        @click="handleSelect(ending.id)">
+        v-for="ending in endings"
+        :key="ending.id"
+        class="ending-tab"
+        :class="{ active: modelValue === ending.id }"
+        @click="handleSelect(ending.id)"
+      >
         <span class="ending-label-text">{{ ending.label }}</span>
       </div>
     </div>

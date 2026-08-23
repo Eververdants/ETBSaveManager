@@ -65,9 +65,10 @@ pub fn set_gpu_acceleration(disabled: bool) -> AppResult<bool> {
 
     fs::write(&config_file, content).map_err(|e| format!("Failed to write GPU config: {}", e))?;
 
-    println!(
-        "✅ GPU acceleration settings updated: disabled={}, needs_restart={}",
-        disabled, needs_restart
+    tracing::info!(
+        "GPU acceleration settings updated: disabled={}, needs_restart={}",
+        disabled,
+        needs_restart
     );
 
     Ok(needs_restart)
@@ -98,12 +99,12 @@ pub fn set_process_priority(priority: String) -> AppResult<()> {
         if unsafe { SetPriorityClass(handle, class) } == 0 {
             return Err("SetPriorityClass failed".into());
         }
-        println!("✅ Process priority set to {}", priority);
+        tracing::info!("Process priority set to {}", priority);
     }
     #[cfg(not(target_os = "windows"))]
     {
         let _ = &priority;
-        println!("⚠️ set_process_priority is Windows-only, ignoring");
+        tracing::warn!("set_process_priority is Windows-only, ignoring");
     }
     Ok(())
 }

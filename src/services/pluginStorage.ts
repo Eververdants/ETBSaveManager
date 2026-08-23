@@ -27,7 +27,7 @@ async function ensurePluginsDir(): Promise<void> {
         baseDir: BaseDirectory.AppData,
         recursive: true,
       });
-      console.log("📁 [PluginStorage] 创建插件目录");
+      console.info("📁 [PluginStorage] 创建插件目录");
     }
   } catch (error) {
     console.error("❌ [PluginStorage] 创建插件目录失败:", error);
@@ -72,7 +72,7 @@ export async function savePlugin(plugin: PluginData): Promise<boolean> {
       });
     }
 
-    console.log(`💾 [PluginStorage] 已保存插件: ${plugin.id}`);
+    console.info(`💾 [PluginStorage] 已保存插件: ${plugin.id}`);
     return true;
   } catch (error) {
     console.error(`❌ [PluginStorage] 保存插件失败 (${plugin.id}):`, error);
@@ -156,7 +156,7 @@ export async function loadAllPlugins(): Promise<PluginData[]> {
       }
     }
 
-    console.log(`📂 [PluginStorage] 已加载 ${plugins.length} 个插件`);
+    console.info(`📂 [PluginStorage] 已加载 ${plugins.length} 个插件`);
     return plugins;
   } catch (error) {
     console.error("❌ [PluginStorage] 加载插件列表失败:", error);
@@ -183,7 +183,7 @@ export async function deletePlugin(pluginId: string): Promise<boolean> {
       baseDir: BaseDirectory.AppData,
       recursive: true,
     });
-    console.log(`🗑️ [PluginStorage] 已删除插件: ${pluginId}`);
+    console.info(`🗑️ [PluginStorage] 已删除插件: ${pluginId}`);
     return true;
   } catch (error) {
     console.error(`❌ [PluginStorage] 删除插件失败 (${pluginId}):`, error);

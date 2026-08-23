@@ -2,8 +2,14 @@
 <template>
   <transition :css="false" @enter="enterAnimation" @leave="leaveAnimation">
     <div
-v-if="isVisible" ref="popupRef" class="prompt-popup" :class="popupClass" :style="popupStyle"
-      @mouseenter="pauseAutoClose" @mouseleave="resumeAutoClose">
+      v-if="isVisible"
+      ref="popupRef"
+      class="prompt-popup"
+      :class="popupClass"
+      :style="popupStyle"
+      @mouseenter="pauseAutoClose"
+      @mouseleave="resumeAutoClose"
+    >
       <div class="popup-content">
         <div v-if="computedIcon" class="popup-icon-container">
           <div class="popup-icon-wrapper" :class="iconClass">
@@ -264,9 +270,11 @@ const resumeAutoClose = () => {
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg,
-      var(--primary, #8b8178) 0%,
-      color-mix(in srgb, var(--primary) 95%, transparent) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary, #8b8178) 0%,
+    color-mix(in srgb, var(--primary) 95%, transparent) 100%
+  );
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
   filter: drop-shadow(0 6px 16px color-mix(in srgb, var(--primary) 30%, transparent));
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -403,9 +411,11 @@ const resumeAutoClose = () => {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg,
-      var(--primary, #8b8178) 0%,
-      color-mix(in srgb, var(--primary) 80%, transparent) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--primary, #8b8178) 0%,
+    color-mix(in srgb, var(--primary) 80%, transparent) 100%
+  );
   border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
   transform-origin: left center;
   box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 50%, transparent);
@@ -416,7 +426,9 @@ const resumeAutoClose = () => {
   .prompt-popup {
     background: var(--card-bg, #1c1c1e);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(255, 255, 255, 0.08) inset;
   }
 
   .prompt-popup::before {
@@ -489,7 +501,9 @@ const resumeAutoClose = () => {
 .popup-success {
   background: var(--popup-success-bg);
   border: 1px solid var(--color-success-border);
-  box-shadow: 0 20px 60px rgba(52, 199, 89, 0.12), 0 0 0 1px rgba(52, 199, 89, 0.1) inset;
+  box-shadow:
+    0 20px 60px rgba(52, 199, 89, 0.12),
+    0 0 0 1px rgba(52, 199, 89, 0.1) inset;
   animation: subtlePulse 0.6s ease-in-out;
 }
 
@@ -502,7 +516,9 @@ const resumeAutoClose = () => {
 .popup-error {
   background: var(--popup-error-bg);
   border: 1px solid var(--color-error-border);
-  box-shadow: 0 20px 60px rgba(255, 59, 48, 0.12), 0 0 0 1px rgba(255, 59, 48, 0.1) inset;
+  box-shadow:
+    0 20px 60px rgba(255, 59, 48, 0.12),
+    0 0 0 1px rgba(255, 59, 48, 0.1) inset;
   animation: subtleShake 0.4s ease-in-out;
 }
 
@@ -515,7 +531,9 @@ const resumeAutoClose = () => {
 .popup-warning {
   background: var(--popup-warning-bg);
   border: 1px solid var(--color-warning-border);
-  box-shadow: 0 20px 60px rgba(255, 149, 0, 0.12), 0 0 0 1px rgba(255, 149, 0, 0.1) inset;
+  box-shadow:
+    0 20px 60px rgba(255, 149, 0, 0.12),
+    0 0 0 1px rgba(255, 149, 0, 0.1) inset;
 }
 
 .popup-warning .popup-icon-wrapper {
@@ -527,7 +545,8 @@ const resumeAutoClose = () => {
 .popup-info {
   background: var(--popup-info-bg);
   border: 1px solid var(--color-info-border);
-  box-shadow: 0 20px 60px var(--popup-info-shadow, color-mix(in srgb, var(--accent-color) 12%, transparent)),
+  box-shadow:
+    0 20px 60px var(--popup-info-shadow, color-mix(in srgb, var(--accent-color) 12%, transparent)),
     0 0 0 1px color-mix(in srgb, var(--accent-color) 10%, transparent) inset;
 }
 
@@ -539,7 +558,6 @@ const resumeAutoClose = () => {
 
 /* Subtle animations */
 @keyframes subtlePulse {
-
   0%,
   100% {
     transform: scale(1);
@@ -551,7 +569,6 @@ const resumeAutoClose = () => {
 }
 
 @keyframes subtleShake {
-
   0%,
   100% {
     transform: translateX(0);
@@ -565,5 +582,4 @@ const resumeAutoClose = () => {
     transform: translateX(1px);
   }
 }
-
 </style>

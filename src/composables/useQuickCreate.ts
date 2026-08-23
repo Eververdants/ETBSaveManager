@@ -1,4 +1,4 @@
-﻿import { reactive, computed, nextTick } from "vue";
+import { reactive, computed, nextTick } from "vue";
 import type { ComputedRef, Reactive } from "vue";
 import {
   createDefaultUniformConfig,
@@ -9,6 +9,7 @@ import {
 import { validate } from "./useValidator";
 import { parseName } from "@/utils/nameParser";
 import scheduler from "@/services/resourceScheduler";
+import { tauriArchiveAdapter } from "@/adapters/tauri/archiveAdapter";
 import type {
   ArchiveConfig,
   UniformConfig,
@@ -594,24 +595,25 @@ export function useQuickCreate(): QuickCreateReturn {
     basicArchive: Record<string, unknown>,
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { invoke } = await import("@tauri-apps/api/core");
-
       const level = archive.finalLevel || "Level0";
 
       // Build save data
-      const saveData: Record<string, unknown> = {
-        archive_name: archive.name,
+      const saveData: Parameters<typeof tauriArchiveAdapter.createArchive>[0] = {
+        archiveName: archive.name,
         level: level,
-        game_mode: "multiplayer", // Always set to multiplayer mode
+        gameMode: "multiplayer", // Always set to multiplayer mode
         difficulty: formatDifficulty(archive.finalDifficulty),
-        actual_difficulty: formatDifficulty(archive.finalActualDifficulty),
+        actualDifficulty: formatDifficulty(archive.finalActualDifficulty),
         players: [], // Empty player list, expandable later
-        basic_archive: basicArchive,
-        main_ending: isSideStoryline(level),
-        meg_unlocked: isMEGUnlocked(level),
+        basicArchive: basicArchive,
+        mainEnding: isSideStoryline(level),
+        megUnlocked: isMEGUnlocked(level),
       };
 
-      await invoke("handle_new_save", { saveData });
+      const result = await tauriArchiveAdapter.createArchive(saveData);
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create archive");
+      }
       return { success: true };
     } catch (error) {
       console.error(`Failed to create archive "${archive.name}":`, error);

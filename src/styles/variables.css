@@ -36,8 +36,6 @@
   --radius-tag: var(--radius-pill); /* 标签胶囊 */
   --radius-tooltip: var(--radius-pill); /* 工具提示胶囊（pill 形状）*/
   --radius-image: var(--radius-lg); /* 图片容器 36px */
-
-
 }
 
 /* ==========================================

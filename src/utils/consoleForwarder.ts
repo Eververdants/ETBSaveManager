@@ -89,5 +89,5 @@ export function initConsoleForwarder(): void {
     sendToBackend("error", message);
   });
 
-  console.log("[ConsoleForwarder] 已初始化，前端日志将转发到后端控制台");
+  console.info("[ConsoleForwarder] 已初始化，前端日志将转发到后端控制台");
 }

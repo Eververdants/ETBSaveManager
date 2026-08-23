@@ -216,12 +216,12 @@ export function disableInteractions(): void {
   `;
   document.head.appendChild(style);
 
-  console.log("所有快捷键、文字选中和图片拖拽已禁用，仅保留左键操作");
+  console.info("所有快捷键、文字选中和图片拖拽已禁用，仅保留左键操作");
 }
 
 /**
  * 恢复所有交互
  */
 export function enableInteractions(): void {
-  console.log("交互已恢复");
+  console.info("交互已恢复");
 }

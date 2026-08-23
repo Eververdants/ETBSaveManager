@@ -171,7 +171,7 @@ class LogService {
     if (this.clickCount === 5) {
       this.toggleVisibility();
       this.clickCount = 0;
-      console.log(this.isVisible ? "Log panel opened" : "Log panel hidden");
+      console.info(this.isVisible ? "Log panel opened" : "Log panel hidden");
     }
   }
 
@@ -201,7 +201,7 @@ class LogService {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      console.log("Logs exported to downloads folder");
+      console.info("Logs exported to downloads folder");
     } catch (error) {
       console.error("Failed to export logs:", error);
     }

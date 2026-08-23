@@ -50,9 +50,13 @@
         </div>
         <div class="setting-action">
           <CustomDropdown
-v-model="currentLanguage" :options="languageOptions" :is-open="activeDropdown === 'language'"
-            :placeholder="t('common.select')" @change="handleLanguageChange"
-            @dropdown-open="handleDropdownOpen('language')" />
+            v-model="currentLanguage"
+            :options="languageOptions"
+            :is-open="activeDropdown === 'language'"
+            :placeholder="t('common.select')"
+            @change="handleLanguageChange"
+            @dropdown-open="handleDropdownOpen('language')"
+          />
         </div>
       </div>
     </div>
@@ -229,13 +233,19 @@ v-model="currentLanguage" :options="languageOptions" :is-open="activeDropdown ==
           <div class="sav-tools-container">
             <!-- Parse save file -->
             <div
-class="drop-zone" :class="{ 'drag-over': parseDragOver, processing: isParsing }"
-              @dragover.prevent="parseDragOver = true" @dragleave.prevent="parseDragOver = false"
-              @drop.prevent="handleParseDrop" @click="triggerParseFileInput">
+              class="drop-zone"
+              :class="{ 'drag-over': parseDragOver, processing: isParsing }"
+              @dragover.prevent="parseDragOver = true"
+              @dragleave.prevent="parseDragOver = false"
+              @drop.prevent="handleParseDrop"
+              @click="triggerParseFileInput"
+            >
               <div class="drop-zone-content">
                 <font-awesome-icon
-:icon="isParsing ? ['fas', 'spinner'] : ['fas', 'file-import']" :spin="isParsing"
-                  class="drop-icon" />
+                  :icon="isParsing ? ['fas', 'spinner'] : ['fas', 'file-import']"
+                  :spin="isParsing"
+                  class="drop-icon"
+                />
                 <div class="drop-title">
                   {{ isParsing ? t("settings.parsing") : t("settings.parseSavFile") }}
                 </div>
@@ -244,13 +254,19 @@ class="drop-zone" :class="{ 'drag-over': parseDragOver, processing: isParsing }"
 
             <!-- Pack save file -->
             <div
-class="drop-zone" :class="{ 'drag-over': packDragOver, processing: isPacking }"
-              @dragover.prevent="packDragOver = true" @dragleave.prevent="packDragOver = false"
-              @drop.prevent="handlePackDrop" @click="triggerPackFileInput">
+              class="drop-zone"
+              :class="{ 'drag-over': packDragOver, processing: isPacking }"
+              @dragover.prevent="packDragOver = true"
+              @dragleave.prevent="packDragOver = false"
+              @drop.prevent="handlePackDrop"
+              @click="triggerPackFileInput"
+            >
               <div class="drop-zone-content">
                 <font-awesome-icon
-:icon="isPacking ? ['fas', 'spinner'] : ['fas', 'file-export']" :spin="isPacking"
-                  class="drop-icon" />
+                  :icon="isPacking ? ['fas', 'spinner'] : ['fas', 'file-export']"
+                  :spin="isPacking"
+                  class="drop-icon"
+                />
                 <div class="drop-title">
                   {{ isPacking ? t("settings.packing") : t("settings.packSavFile") }}
                 </div>
@@ -566,7 +582,7 @@ export default {
         // Call backend to set window title
         await invoke("set_window_title", { title: appName });
 
-        console.log("Window title updated to:", appName);
+        console.info("Window title updated to:", appName);
       } catch (error) {
         console.error("Failed to update window title:", error);
         // Don't throw error; language switch should not fail due to title update failure
@@ -1112,11 +1128,11 @@ export default {
   border-radius: var(--radius-circle);
 }
 
-input:checked+.slider {
+input:checked + .slider {
   background-color: var(--accent-color);
 }
 
-input:checked+.slider:before {
+input:checked + .slider:before {
   transform: translateX(26px);
 }
 

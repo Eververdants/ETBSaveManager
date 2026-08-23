@@ -23,7 +23,7 @@
   },
   "singleplayerNotice": "单人模式下只能选择普通难度",
   "difficulty": "难度",
-  "difficultyMergeHint": "由于新版游戏逻辑变更，实际难度修改可能无法在游戏中生效，后续将尝试攻克此问题。",
+  "difficultyMergeHint": "如需游玩噩梦难度，请先在「模组」页面安装 Nightmare Save Unlocker（NSU）模组，否则游戏无法识别所设置的难度。",
   "actualDifficulty": "实际难度",
   "difficultyLevels": {
     "easy": "简单",
@@ -79,5 +79,7 @@
   "draftFoundTitle": "发现未完成的存档",
   "draftFoundMessage": "检测到未完成的存档创建（上次在步骤 {step}），是否恢复？",
   "restoreDraft": "恢复草稿",
-  "discardDraft": "重新开始"
+  "discardDraft": "重新开始",
+  "levelSearchPlaceholder": "搜索层级名称",
+  "levelSearchEmpty": "未找到匹配的层级"
 }

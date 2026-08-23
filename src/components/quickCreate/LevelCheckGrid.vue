@@ -17,8 +17,12 @@
 
     <div class="level-grid">
       <div
-v-for="levelKey in levels" :key="levelKey" class="level-card" :class="{ selected: isSelected(levelKey) }"
-        @click="toggleLevel(levelKey)">
+        v-for="levelKey in levels"
+        :key="levelKey"
+        class="level-card"
+        :class="{ selected: isSelected(levelKey) }"
+        @click="toggleLevel(levelKey)"
+      >
         <div class="level-image-container">
           <LazyImage :src="`/images/ETB/${levelKey}.webp`" :alt="getLevelName(levelKey)" image-class="level-image" />
           <div class="level-overlay">

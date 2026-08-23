@@ -25,8 +25,10 @@
             }}
           </span>
           <button
-class="toolbar-btn danger" :disabled="selectedArchives.size === 0"
-            @click="handleShowBatchDeleteConfirm">
+            class="toolbar-btn danger"
+            :disabled="selectedArchives.size === 0"
+            @click="handleShowBatchDeleteConfirm"
+          >
             <font-awesome-icon icon="fa-solid fa-trash-alt" />
             {{ $t("archiveSearch.multiSelect.batchDelete") }}
           </button>
@@ -35,8 +37,10 @@ class="toolbar-btn danger" :disabled="selectedArchives.size === 0"
     </transition>
 
     <div
-ref="scrollContainerRef" class="archive-list-container"
-      :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode, 'is-refreshing': loading }">
+      ref="scrollContainerRef"
+      class="archive-list-container"
+      :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode, 'is-refreshing': loading }"
+    >
       <!-- Ultra-light loading state: a single centered spinner.
            The old 12-card skeleton with shimmer animations
            was expensive enough to stall the first paint, making the
@@ -51,13 +55,17 @@ ref="scrollContainerRef" class="archive-list-container"
       <!-- Cards + empty states: rendered with full data once loading completes -->
       <template v-if="showCards">
         <div
-class="virtual-scroll-viewport" :style="{
-          height: `${rowVirtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative',
-        }">
+          class="virtual-scroll-viewport"
+          :style="{
+            height: `${rowVirtualizer.getTotalSize()}px`,
+            width: '100%',
+            position: 'relative',
+          }"
+        >
           <div
-v-for="virtualRow in rowVirtualizer.getVirtualItems()" :key="String(virtualRow.key)" class="archive-row"
+            v-for="virtualRow in rowVirtualizer.getVirtualItems()"
+            :key="String(virtualRow.key)"
+            class="archive-row"
             :style="{
               position: 'absolute',
               top: 0,
@@ -65,16 +73,23 @@ v-for="virtualRow in rowVirtualizer.getVirtualItems()" :key="String(virtualRow.k
               width: '100%',
               height: `${virtualRow.size}px`,
               transform: `translateY(${virtualRow.start}px)`,
-            }">
+            }"
+          >
             <div class="archive-grid">
               <ArchiveCard
-v-for="(archive, colIndex) in getRowItems(virtualRow.index)" :key="archive.id"
-                :data-archive-id="archive.id" :archive="archive" :index="virtualRow.index * columnsPerRow + colIndex"
-                :class="{
-                  deleting: deletingCardId === archive.id,
-                }" :is-multi-select-mode="isMultiSelectMode" :is-selected="selectedArchives.has(archive.id)"
-                :search-query="searchQuery" @toggle-visibility="handleToggleVisibility" @edit="handleEdit"
-                @delete="deleteArchive" @select="selectArchive" @toggle-select="toggleArchiveSelection" />
+                v-for="(archive, colIndex) in getRowItems(virtualRow.index)"
+                :key="archive.id"
+                :data-archive-id="archive.id"
+                :archive="archive"
+                :index="virtualRow.index * columnsPerRow + colIndex"
+                :is-multi-select-mode="isMultiSelectMode"
+                :is-selected="selectedArchives.has(archive.id)"
+                :search-query="searchQuery"
+                @toggle-visibility="handleToggleVisibility"
+                @edit="handleEdit"
+                @delete="deleteArchive"
+                @toggle-select="toggleArchiveSelection"
+              />
             </div>
           </div>
         </div>
@@ -137,18 +152,25 @@ v-for="(archive, colIndex) in getRowItems(virtualRow.index)" :key="archive.id"
     <!-- Search panel -->
     <Teleport to="body">
       <transition
-name="search-panel" @before-enter="(el: Element) => beforeSearchEnter(el as HTMLElement)"
+        name="search-panel"
+        @before-enter="(el: Element) => beforeSearchEnter(el as HTMLElement)"
         @enter="(el: Element, done: () => void) => searchEnter(el as HTMLElement, done)"
-        @leave="(el: Element, done: () => void) => searchLeave(el as HTMLElement, done)">
+        @leave="(el: Element, done: () => void) => searchLeave(el as HTMLElement, done)"
+      >
         <div v-show="showSearch && !loading" class="search-overlay" @click.self="toggleSearch">
           <ArchiveSearchFilter
-ref="archiveSearchFilter" :search-query="searchQuery"
+            ref="archiveSearchFilter"
+            :search-query="searchQuery"
             :selected-archive-difficulty="selectedArchiveDifficulty"
-            :selected-actual-difficulty="selectedActualDifficulty" :selected-visibility="selectedVisibility"
-            :search-suggestions="searchSuggestions" @update:search-query="searchQuery = $event"
+            :selected-actual-difficulty="selectedActualDifficulty"
+            :selected-visibility="selectedVisibility"
+            :search-suggestions="searchSuggestions"
+            @update:search-query="searchQuery = $event"
             @update:selected-archive-difficulty="selectedArchiveDifficulty = $event"
             @update:selected-actual-difficulty="selectedActualDifficulty = $event"
-            @update:selected-visibility="selectedVisibility = $event" @close="toggleSearch" />
+            @update:selected-visibility="selectedVisibility = $event"
+            @close="toggleSearch"
+          />
         </div>
       </transition>
     </Teleport>
@@ -156,33 +178,54 @@ ref="archiveSearchFilter" :search-query="searchQuery"
     <!-- Delete confirmation -->
     <Teleport to="body">
       <ConfirmModal
-v-model:show="showDeleteConfirm" class="single-delete-confirm"
-        :title="$t('confirmModal.deleteArchiveTitle')" :message="$t('confirmModal.deleteArchiveMessage', {
-          name: archiveToDelete?.name || '',
-        })
-          " :description="$t('confirmModal.deleteArchiveDescription')" type="danger"
-        :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isDeleting"
-        :archive-details="archiveToDelete" @confirm="confirmDelete" @cancel="cancelDelete" />
+        v-model:show="showDeleteConfirm"
+        class="single-delete-confirm"
+        :title="$t('confirmModal.deleteArchiveTitle')"
+        :message="
+          $t('confirmModal.deleteArchiveMessage', {
+            name: archiveToDelete?.name || '',
+          })
+        "
+        :description="$t('confirmModal.deleteArchiveDescription')"
+        type="danger"
+        :confirm-text="$t('confirmModal.confirm')"
+        :cancel-text="$t('confirmModal.cancel')"
+        :loading="isDeleting"
+        :archive-details="archiveToDelete"
+        @confirm="confirmDelete"
+        @cancel="cancelDelete"
+      />
     </Teleport>
 
     <!-- Batch delete confirmation -->
     <Teleport to="body">
       <ConfirmModal
-v-model:show="showBatchDeleteConfirm" class="batch-delete-confirm"
-        :title="$t('confirmModal.batchDeleteTitle')" :message="$t('confirmModal.batchDeleteMessage', {
-          count: selectedArchives.size,
-        })
-          " :description="$t('confirmModal.batchDeleteDescription')" type="danger"
-        :confirm-text="$t('confirmModal.confirm')" :cancel-text="$t('confirmModal.cancel')" :loading="isBatchDeleting"
-        @confirm="confirmBatchDelete" @cancel="cancelBatchDelete" />
+        v-model:show="showBatchDeleteConfirm"
+        class="batch-delete-confirm"
+        :title="$t('confirmModal.batchDeleteTitle')"
+        :message="
+          $t('confirmModal.batchDeleteMessage', {
+            count: selectedArchives.size,
+          })
+        "
+        :description="$t('confirmModal.batchDeleteDescription')"
+        type="danger"
+        :confirm-text="$t('confirmModal.confirm')"
+        :cancel-text="$t('confirmModal.cancel')"
+        :loading="isBatchDeleting"
+        @confirm="confirmBatchDelete"
+        @cancel="cancelBatchDelete"
+      />
     </Teleport>
 
     <!-- Batch delete progress overlay -->
     <Teleport to="body">
       <transition name="modal">
         <div
-v-if="isBatchDeleting && !showBatchDeleteConfirm" class="modal-overlay batch-delete-progress-overlay"
-          @click.self="showBatchDeleteConfirm = false">
+          v-if="isBatchDeleting && !showBatchDeleteConfirm"
+          class="modal-overlay batch-delete-progress-overlay"
+          @click.self="showBatchDeleteConfirm = false"
+        >
           <div class="batch-delete-progress">
             <div class="progress-header">
               <font-awesome-icon icon="fa-solid fa-trash-alt" class="progress-icon" />
@@ -200,8 +243,9 @@ v-if="isBatchDeleting && !showBatchDeleteConfirm" class="modal-overlay batch-del
               </div>
               <div class="progress-current-file">
                 <font-awesome-icon icon="fa-solid fa-file" class="file-icon" />
-                <span class="file-name">{{ $t("archiveSearch.multiSelect.deleting") }}:
-                  {{ batchDeleteProgress.archiveName }}</span>
+                <span class="file-name"
+                  >{{ $t("archiveSearch.multiSelect.deleting") }}: {{ batchDeleteProgress.archiveName }}</span
+                >
               </div>
             </div>
           </div>
@@ -218,8 +262,14 @@ v-if="isBatchDeleting && !showBatchDeleteConfirm" class="modal-overlay batch-del
               <h2 class="modal-title">{{ $t("performanceSettings.title") }}</h2>
               <button class="modal-close" @click="showPerformanceSettings = false">
                 <svg
-xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2">
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -227,15 +277,16 @@ xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fi
             </div>
             <div class="modal-body">
               <PerformanceSettings
-v-model:performance-mode="performanceMode"
-                v-model:animation-quality="animationQuality" v-model:hardware-acceleration="hardwareAcceleration"
-                v-model:virtualization-enabled="virtualizationEnabled" />
+                v-model:performance-mode="performanceMode"
+                v-model:animation-quality="animationQuality"
+                v-model:hardware-acceleration="hardwareAcceleration"
+                v-model:virtualization-enabled="virtualizationEnabled"
+              />
             </div>
           </div>
         </div>
       </transition>
     </Teleport>
-
   </div>
 </template>
 
@@ -290,8 +341,6 @@ const {
   showDeleteConfirm,
   archiveToDelete,
   isDeleting,
-  deletingCardId,
-  selectArchive,
   handleToggleVisibility: handleToggleVisibilityBase,
   handleEdit,
   deleteArchive,
@@ -304,10 +353,10 @@ const {
   unregisterUndoShortcuts,
 } = archiveActions;
 
-// Local state — declared before composable calls that use them
+// Local state �?declared before composable calls that use them
 const scrollContainerRef = ref<HTMLElement | null>(null);
 const showSearch = ref(false);
-// True when the search panel was opened via keyboard (Ctrl+F / F3) —
+// True when the search panel was opened via keyboard (Ctrl+F / F3) �?
 // keyboard-initiated opens skip the entrance animation entirely.
 const skipSearchAnimation = ref(false);
 const isPageActive = ref(false);
@@ -315,11 +364,11 @@ const shouldResetScroll = ref(false);
 const showCards = ref(false);
 
 // Tracks pending compositing-refresh timeouts so they can be
-// cleared on unmount — prevents stale operations after destroy.
+// cleared on unmount �?prevents stale operations after destroy.
 const pendingRefreshTimeouts: ReturnType<typeof setTimeout>[] = [];
 
 // ─── Scroll-aware performance: disable hover animations while scrolling ──
-// Applying CSS transition changes mid-scroll (hover → transform/border-color)
+// Applying CSS transition changes mid-scroll (hover �?transform/border-color)
 // forces the browser to re-evaluate paint layers every frame.  Adding an
 // 'is-scrolling' class on scroll start (and removing it after scroll stops)
 // lets us disable expensive hover-triggered transitions via CSS, keeping the
@@ -399,7 +448,7 @@ const route = useRoute();
 const toggleSearch = () => {
   showSearch.value = !showSearch.value;
   if (showSearch.value) {
-    // Promote to searching priority immediately — keeps backdrop-filter
+    // Promote to searching priority immediately �?keeps backdrop-filter
     // visible and CPU budget high for the full duration the search is open.
     scheduler.beginOperation("searching");
     nextTick(() => protectFloatingButtonPosition());
@@ -445,7 +494,7 @@ const clearAllFilters = () => {
 const handleToggleVisibility = (archive: ArchiveData) => {
   handleToggleVisibilityBase(archive, {
     // Re-sync from the backend (MAINSAVE is the source of truth) so the toggle
-    // always lands — regardless of archive id shifts after a refresh.
+    // always lands �?regardless of archive id shifts after a refresh.
     onRefresh: () => refreshArchivesSilent(),
     onSuccess: () => protectFloatingButtonPosition(),
   });
@@ -461,7 +510,7 @@ const confirmDelete = () => {
 
 // ─── Refresh guard ──────────────────────────────
 // Only prevents two refreshes from overlapping. There is deliberately no cooldown
-// interval between auto-refresh (on activation) and a manual refresh — the user can
+// interval between auto-refresh (on activation) and a manual refresh �?the user can
 // refresh again as soon as the previous run finishes.
 let _refreshInFlight = false;
 
@@ -527,7 +576,7 @@ const handleFabAction = (e: Event) => {
  *
  * The approach:
  *   1. Read layout properties on the container to force a layout pass.
- *   2. Iterate virtual rows and force layout on each — the row's
+ *   2. Iterate virtual rows and force layout on each �?the row's
  *      `translateY` compositing layer is where stale textures appear.
  *   3. Apply a near-invisible opacity tweak (99.99%) that forces WebView2
  *      to re-composite the entire layer tree on the next frame.  Cleared
@@ -579,20 +628,20 @@ const centerEditedArchive = (): void => {
 // ─── Card entrance animation ──────────────────────
 // Replaced by the CSS .cards-enter animation on the virtual-scroll-viewport.
 // The old per-card RAF reveal loop added ~700ms of delay (12 cards × 1 frame
-// each + 500ms wait) with no benefit — cards were hidden (opacity: 0) during
+// each + 500ms wait) with no benefit �?cards were hidden (opacity: 0) during
 // most of that time.  Now all cards appear with a single container fade-in
 // that completes in 200ms and doesn't block the initial render.
 //
 // Only animates cards in the initial viewport; cards created by virtual
 // scroll on user scroll skip the entrance animation entirely.
 
-// On keep-alive activation — yield to the browser first so the
+// On keep-alive activation �?yield to the browser first so the
 // sidebar's 300ms margin-left transition gets a clean first paint
 // frame before we touch any Vue state.  Steps:
 //   1. isPageActive + scrollTop (synchronous, trivial).
-//   2. setTimeout(0) defers the rest to the NEXT macrotask — by
+//   2. setTimeout(0) defers the rest to the NEXT macrotask �?by
 //      then the sidebar has its first compositor frame scheduled.
-//   3. showCards=false → spinner replaces the card grid.
+//   3. showCards=false �?spinner replaces the card grid.
 //   4. 18 RAF frames (~300ms) let the sidebar animation finish.
 //   5. Boost priority, refresh data, flip showCards=true.
 onActivated(() => {
@@ -613,12 +662,12 @@ onActivated(() => {
         requestAnimationFrame(waitAndLoad);
         return;
       }
-      invoke("set_process_priority", { priority: "high" }).catch(() => { });
+      invoke("set_process_priority", { priority: "high" }).catch(() => {});
       refreshArchivesSilent().then(() => {
         if (!isPageActive.value) return;
         showCards.value = true;
         loading.value = false;
-        invoke("set_process_priority", { priority: "normal" }).catch(() => { });
+        invoke("set_process_priority", { priority: "normal" }).catch(() => {});
         nextTick(() => {
           rowVirtualizer.value.measure();
           centerEditedArchive();
@@ -643,7 +692,7 @@ onMounted(() => {
   window.addEventListener("fab-action", handleFabAction);
 
   // Virtual scroll ResizeObserver auto-initializes via a watch on
-  // scrollContainerRef — column count is correct before any async IPC.
+  // scrollContainerRef �?column count is correct before any async IPC.
   requestIdleCallback(() => initPerformanceMonitor(), { timeout: 1500 });
   requestIdleCallback(() => initButtonProtection(), { timeout: 2000 });
 
@@ -662,14 +711,14 @@ onMounted(() => {
   // Boost process to HIGH priority during the initial load so the
   // OS scheduler allocates more CPU time to rasterisation, layout,
   // and image decoding.  Revert to NORMAL once cards are shown.
-  invoke("set_process_priority", { priority: "high" }).catch(() => { });
+  invoke("set_process_priority", { priority: "high" }).catch(() => {});
   loading.value = true;
   initializeArchives(true).then(() => {
     showCards.value = true;
     loading.value = false;
-    invoke("set_process_priority", { priority: "normal" }).catch(() => { });
+    invoke("set_process_priority", { priority: "normal" }).catch(() => {});
 
-    // Virtualizer measurement — runs after cards are in the DOM.
+    // Virtualizer measurement �?runs after cards are in the DOM.
     nextTick(() => {
       rowVirtualizer.value.measure();
       requestAnimationFrame(() => {
@@ -795,7 +844,7 @@ watch(searchQuery, (query) => {
      Keeps the container's backing store on the GPU across scroll
      frames, avoiding a re-paint on every scroll event. */
   will-change: scroll-position;
-  /* contain: paint — tells the browser the container's painted
+  /* contain: paint �?tells the browser the container's painted
      content never affects anything outside its bounds.  Limits
      paint overflow calculation to the container itself. */
   contain: paint;
@@ -837,12 +886,12 @@ watch(searchQuery, (query) => {
 
 .archive-row {
   padding: 0;
-  /* Explicit will-change hint — the row is translated on every scroll
+  /* Explicit will-change hint �?the row is translated on every scroll
      via inline translateY().  Without this hint WebView2 promotes the
      compositing layer lazily the first time the transform changes,
      causing a visible jank on the initial scroll frame. */
   will-change: transform;
-  /* content-visibility: auto — tells the browser it can skip layout,
+  /* content-visibility: auto �?tells the browser it can skip layout,
      paint, and compositing for rows that are far off-screen.  Even
      though virtual scroll keeps DOM count low, the browser still
      spends time on style recalculation and paint preparation for
@@ -862,7 +911,7 @@ watch(searchQuery, (query) => {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   /* ─── Refresh transition ───────────────────────
    * When the user taps the refresh button, the cards perform a
-   * "breathe" motion — fade + contract briefly, then spring back
+   * "breathe" motion �?fade + contract briefly, then spring back
    * when the new data arrives.  This gives clear visual feedback
    * that the data was reloaded rather than silently replacing. */
   transition:
@@ -879,8 +928,7 @@ watch(searchQuery, (query) => {
 .archive-grid :deep(.archive-card) {
   width: 100%;
   min-width: 0;
-  transition:
-    transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform-origin: center center;
 }
 
@@ -998,7 +1046,7 @@ watch(searchQuery, (query) => {
   width: 100%;
 }
 
-/* ─── Empty Card — redesigned ──────────────── */
+/* ─── Empty Card �?redesigned ──────────────── */
 
 .empty-card {
   position: relative;
@@ -1023,9 +1071,11 @@ watch(searchQuery, (query) => {
 .empty-card__bg {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 80% 50% at 50% -10%,
-      color-mix(in srgb, var(--primary) 10%, transparent) 0%,
-      transparent 70%);
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -10%,
+    color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+    transparent 70%
+  );
   pointer-events: none;
   z-index: 0;
 }
@@ -1106,9 +1156,11 @@ watch(searchQuery, (query) => {
   position: absolute;
   inset: 0;
   border-radius: var(--radius-circle);
-  background: linear-gradient(135deg,
-      color-mix(in srgb, var(--primary) 18%, transparent) 0%,
-      color-mix(in srgb, var(--primary) 6%, transparent) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 18%, transparent) 0%,
+    color-mix(in srgb, var(--primary) 6%, transparent) 100%
+  );
   border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
   transition:
     transform 0.35s var(--ease-spring, ease),
@@ -1202,7 +1254,6 @@ watch(searchQuery, (query) => {
 /* ─── Keyframes ────────────────────────────── */
 
 @keyframes empty-ring-float {
-
   0%,
   100% {
     transform: translateX(-50%) scale(1);
@@ -1216,7 +1267,6 @@ watch(searchQuery, (query) => {
 }
 
 @keyframes empty-dot-drift {
-
   0%,
   100% {
     transform: translate(0, 0);
@@ -1490,12 +1540,12 @@ watch(searchQuery, (query) => {
   transform: translateY(0);
 }
 
-/* Single delete confirmation modal overlay — covers FAB */
+/* Single delete confirmation modal overlay �?covers FAB */
 .single-delete-confirm {
   z-index: 10001 !important;
 }
 
-/* Batch delete confirmation modal overlay — covers multi-select toolbar and FAB with blur */
+/* Batch delete confirmation modal overlay �?covers multi-select toolbar and FAB with blur */
 .batch-delete-confirm {
   z-index: 10001 !important;
   background: rgba(0, 0, 0, 0.45);
@@ -1503,7 +1553,7 @@ watch(searchQuery, (query) => {
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* Batch delete progress overlay — covers full viewport including multi-select toolbar */
+/* Batch delete progress overlay �?covers full viewport including multi-select toolbar */
 .batch-delete-progress-overlay {
   z-index: 10001 !important;
   background: rgba(0, 0, 0, 0.45);

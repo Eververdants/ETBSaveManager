@@ -27,7 +27,7 @@
   },
   "singleplayerNotice": "单人模式下只能选择普通难度",
   "difficulty": "难度",
-  "difficultyMergeHint": "由于新版游戏逻辑变更，实际难度修改可能无法在游戏中生效，后续将尝试攻克此问题。",
+  "difficultyMergeHint": "如需游玩噩梦难度，请先在「模组」页面安装 Nightmare Save Unlocker（NSU）模组，否则游戏无法识别所设置的难度。",
   "actualDifficulty": "实际难度",
   "hubDoors": "枢纽门",
   "unlockAllHubDoors": "解锁全部枢纽门",
@@ -61,7 +61,14 @@
   "archiveSaved": "存档保存成功！",
   "archiveSavedMessage": "您的存档已保存完成",
   "saveSuccess": "存档保存成功",
+  "saving": "保存中...",
   "saveError": "保存失败：{error}",
+  "saveConfirm": {
+    "title": "保存存档",
+    "message": "确定要保存对此存档的修改吗？",
+    "confirm": "保存",
+    "cancel": "取消"
+  },
   "saveErrorAccessDenied": "保存失败：无法访问存档文件。请检查游戏是否正在运行，或尝试以管理员身份运行本程序。",
   "saveErrorFileInUse": "保存失败：存档文件正在被其他程序使用。请关闭游戏后重试。",
   "canProceed": "可以继续",

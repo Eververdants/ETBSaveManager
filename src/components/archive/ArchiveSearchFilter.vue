@@ -7,9 +7,14 @@
           <div class="search-input-group">
             <font-awesome-icon icon="fa-solid fa-search" class="search-icon" />
             <input
-ref="searchInputRef" v-model="searchQueryModel"
-              type="text" :placeholder="$t('archiveSearch.searchPlaceholder')" class="search-input"
-              @focus="showSuggestions = true" @blur="onSearchBlur" />
+              ref="searchInputRef"
+              v-model="searchQueryModel"
+              type="text"
+              :placeholder="$t('archiveSearch.searchPlaceholder')"
+              class="search-input"
+              @focus="showSuggestions = true"
+              @blur="onSearchBlur"
+            />
             <transition name="clear-btn" mode="out-in">
               <button v-if="searchQueryModel" key="clear-btn" class="clear-btn" @click="clearSearch">
                 <font-awesome-icon icon="fa-solid fa-times" />
@@ -20,14 +25,19 @@ ref="searchInputRef" v-model="searchQueryModel"
           <!-- 搜索建议面板 -->
           <transition name="suggestions-fade">
             <div
-v-if="showSuggestions && (suggestionList.length > 0 || searchHistoryList.length > 0)"
-              class="search-suggestions" @mousedown.prevent>
+              v-if="showSuggestions && (suggestionList.length > 0 || searchHistoryList.length > 0)"
+              class="search-suggestions"
+              @mousedown.prevent
+            >
               <!-- 搜索建议 -->
               <div v-if="suggestionList.length > 0 && searchQueryModel" class="suggestions-group">
                 <div class="suggestions-label">{{ $t("archiveSearch.suggestions") }}</div>
                 <div
-v-for="suggestion in suggestionList" :key="suggestion.id" class="suggestion-item"
-                  @mousedown.prevent="selectSuggestion(suggestion.name)">
+                  v-for="suggestion in suggestionList"
+                  :key="suggestion.id"
+                  class="suggestion-item"
+                  @mousedown.prevent="selectSuggestion(suggestion.name)"
+                >
                   <font-awesome-icon icon="fa-solid fa-file" class="suggestion-icon" />
                   <span class="suggestion-text">{{ suggestion.name }}</span>
                 </div>
@@ -41,8 +51,11 @@ v-for="suggestion in suggestionList" :key="suggestion.id" class="suggestion-item
                   </button>
                 </div>
                 <div
-v-for="(historyItem, idx) in searchHistoryList" :key="'h-' + idx"
-                  class="suggestion-item history-item" @mousedown.prevent="selectSuggestion(historyItem)">
+                  v-for="(historyItem, idx) in searchHistoryList"
+                  :key="'h-' + idx"
+                  class="suggestion-item history-item"
+                  @mousedown.prevent="selectSuggestion(historyItem)"
+                >
                   <font-awesome-icon icon="fa-solid fa-clock" class="suggestion-icon" />
                   <span class="suggestion-text">{{ historyItem }}</span>
                 </div>
@@ -57,25 +70,31 @@ v-for="(historyItem, idx) in searchHistoryList" :key="'h-' + idx"
             <div class="filter-item">
               <label class="filter-label">{{ $t("archiveSearch.archiveDifficulty") }}</label>
               <CustomDropdown
-:model-value="selectedArchiveDifficultyModel" :options="difficultyOptions"
+                :model-value="selectedArchiveDifficultyModel"
+                :options="difficultyOptions"
                 :placeholder="$t('archiveSearch.archiveDifficulty')"
-                @update:model-value="$emit('update:selectedArchiveDifficulty', $event)" />
+                @update:model-value="$emit('update:selectedArchiveDifficulty', $event)"
+              />
             </div>
 
             <div v-if="!FEATURES.MERGE_DIFFICULTY" class="filter-item">
               <label class="filter-label">{{ $t("archiveSearch.actualDifficulty") }}</label>
               <CustomDropdown
-:model-value="selectedActualDifficultyModel" :options="difficultyOptions"
+                :model-value="selectedActualDifficultyModel"
+                :options="difficultyOptions"
                 :placeholder="$t('archiveSearch.actualDifficulty')"
-                @update:model-value="$emit('update:selectedActualDifficulty', $event)" />
+                @update:model-value="$emit('update:selectedActualDifficulty', $event)"
+              />
             </div>
 
             <div class="filter-item">
               <label class="filter-label">{{ $t("archiveSearch.visibility") }}</label>
               <CustomDropdown
-:model-value="selectedVisibilityModel" :options="visibilityOptions"
+                :model-value="selectedVisibilityModel"
+                :options="visibilityOptions"
                 :placeholder="$t('archiveSearch.visibility')"
-                @update:model-value="$emit('update:selectedVisibility', $event)" />
+                @update:model-value="$emit('update:selectedVisibility', $event)"
+              />
             </div>
           </div>
         </div>
@@ -325,7 +344,7 @@ onUnmounted(() => {
   transition: opacity 0.2s ease;
 }
 
-.search-input:focus+.search-icon,
+.search-input:focus + .search-icon,
 .search-input-group:focus-within .search-icon {
   opacity: 1;
   color: var(--accent, #3b82f6);
@@ -509,7 +528,7 @@ onUnmounted(() => {
   padding: 8px;
 }
 
-.suggestions-group+.suggestions-group {
+.suggestions-group + .suggestions-group {
   border-top: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
 }
 

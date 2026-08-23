@@ -9,15 +9,19 @@
         </div>
       </div>
       <div class="stat-item">
-        <span><font-awesome-icon :icon="['fas', 'database']" /> {{ t("performanceMonitor.memory") }}:
-          {{ formatMemory(memory.usedJSHeapSize) }} / {{ formatMemory(memory.totalJSHeapSize) }}</span>
+        <span
+          ><font-awesome-icon :icon="['fas', 'database']" /> {{ t("performanceMonitor.memory") }}:
+          {{ formatMemory(memory.usedJSHeapSize) }} / {{ formatMemory(memory.totalJSHeapSize) }}</span
+        >
         <div class="rating" :class="memoryRating.class">
           <font-awesome-icon :icon="['fas', memoryRating.icon]" />
         </div>
       </div>
       <div class="stat-item">
-        <span><font-awesome-icon :icon="['fas', 'microchip']" /> {{ t("performanceMonitor.cpu") }}:
-          {{ cpuLoad.toFixed(1) }}%</span>
+        <span
+          ><font-awesome-icon :icon="['fas', 'microchip']" /> {{ t("performanceMonitor.cpu") }}:
+          {{ cpuLoad.toFixed(1) }}%</span
+        >
         <div class="rating" :class="cpuRating.class">
           <font-awesome-icon :icon="['fas', cpuRating.icon]" />
         </div>

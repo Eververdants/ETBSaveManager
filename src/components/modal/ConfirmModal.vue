@@ -1,8 +1,14 @@
 <template>
   <transition name="modal">
     <div
-v-if="show" ref="modalOverlayRef" class="modal-overlay" role="dialog" aria-modal="true" :aria-label="title"
-      @click="handleOverlayClick">
+      v-if="show"
+      ref="modalOverlayRef"
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="title"
+      @click="handleOverlayClick"
+    >
       <div class="modal-container" :style="{ maxWidth: props.maxWidth }" @click.stop>
         <div class="modal-header">
           <h3 class="modal-title">{{ displayTitle }}</h3>

@@ -23,7 +23,7 @@
   },
   "singleplayerNotice": "單人模式下只能選擇普通難度",
   "difficulty": "難度",
-  "difficultyMergeHint": "由於新版遊戲邏輯變更，實際難度修改可能無法在遊戲中生效，後續將嘗試攻克此問題。",
+  "difficultyMergeHint": "如需遊玩噩夢難度，請先在「模組」頁面安裝 Nightmare Save Unlocker（NSU）模組，否則遊戲無法識別所設定的難度。",
   "actualDifficulty": "實際難度",
   "difficultyLevels": {
     "easy": "簡單",
@@ -79,5 +79,7 @@
   "draftFoundTitle": "發現未完成的存檔",
   "draftFoundMessage": "檢測到未完成的存檔建立（上次在步驟 {step}），是否恢復？",
   "restoreDraft": "恢復草稿",
-  "discardDraft": "重新開始"
+  "discardDraft": "重新開始",
+  "levelSearchPlaceholder": "搜尋關卡名稱",
+  "levelSearchEmpty": "未找到匹配的關卡"
 }

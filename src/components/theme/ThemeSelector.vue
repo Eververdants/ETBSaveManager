@@ -2,14 +2,21 @@
   <div class="theme-selector">
     <div class="theme-scroll-container">
       <button
-v-show="needsScroll && canScrollLeft" class="scroll-btn scroll-left" :aria-label="$t('common.scrollLeft')"
-        @click="scrollLeft">
+        v-show="needsScroll && canScrollLeft"
+        class="scroll-btn scroll-left"
+        :aria-label="$t('common.scrollLeft')"
+        @click="scrollLeft"
+      >
         <font-awesome-icon :icon="['fas', 'chevron-left']" />
       </button>
       <div ref="scrollContainer" class="theme-scroll" @scroll="updateScrollState">
         <div
-v-for="theme in themes" :key="theme.id" class="theme-card" :class="{ active: currentTheme === theme.id }"
-          @click="selectTheme(theme.id)">
+          v-for="theme in themes"
+          :key="theme.id"
+          class="theme-card"
+          :class="{ active: currentTheme === theme.id }"
+          @click="selectTheme(theme.id)"
+        >
           <div class="theme-preview" :style="getPreviewStyle(theme)">
             <div class="preview-sidebar" :style="{ background: theme.colors.sidebar }"></div>
             <div class="preview-content">
@@ -26,8 +33,11 @@ v-for="theme in themes" :key="theme.id" class="theme-card" :class="{ active: cur
         </div>
       </div>
       <button
-v-show="needsScroll && canScrollRight" class="scroll-btn scroll-right"
-        :aria-label="$t('common.scrollRight')" @click="scrollRight">
+        v-show="needsScroll && canScrollRight"
+        class="scroll-btn scroll-right"
+        :aria-label="$t('common.scrollRight')"
+        @click="scrollRight"
+      >
         <font-awesome-icon :icon="['fas', 'chevron-right']" />
       </button>
     </div>

@@ -27,7 +27,7 @@
   },
   "singleplayerNotice": "單人模式下只能選擇普通難度",
   "difficulty": "難度",
-  "difficultyMergeHint": "由於新版遊戲邏輯變更，實際難度修改可能無法在遊戲中生效，後續將嘗試攻克此問題。",
+  "difficultyMergeHint": "如需遊玩噩夢難度，請先在「模組」頁面安裝 Nightmare Save Unlocker（NSU）模組，否則遊戲無法識別所設定的難度。",
   "actualDifficulty": "實際難度",
   "hubDoors": "樞紐門",
   "unlockAllHubDoors": "解鎖全部樞紐門",
@@ -61,7 +61,14 @@
   "archiveSaved": "存檔儲存成功！",
   "archiveSavedMessage": "您的存檔已儲存完成",
   "saveSuccess": "存檔儲存成功",
+  "saving": "儲存中...",
   "saveError": "儲存失敗：{error}",
+  "saveConfirm": {
+    "title": "儲存存檔",
+    "message": "確定要儲存對此存檔的變更嗎？",
+    "confirm": "儲存",
+    "cancel": "取消"
+  },
   "saveErrorAccessDenied": "儲存失敗：無法存取存檔檔案。請檢查遊戲是否正在執行，或嘗試以系統管理員身分執行本程式。",
   "saveErrorFileInUse": "儲存失敗：存檔檔案正在被其他程式使用。請關閉遊戲後重試。",
   "canProceed": "可以繼續",

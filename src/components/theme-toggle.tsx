@@ -26,7 +26,7 @@ export function ThemeToggle(): React.JSX.Element {
       aria-label={t("theme.toggleLabel")}
       title={isDark ? t("theme.switchToLight") : t("theme.switchToDark")}
       aria-pressed={isDark}
-      className="group relative inline-flex h-9 w-9 items-center justify-center border-[1.5px] border-[var(--color-ink)] text-[var(--color-ink)] transition-colors hover:bg-[var(--color-ink)] hover:text-[var(--color-paper)] dark:border-[var(--color-paper-3)] dark:text-[var(--color-paper-3)] dark:hover:bg-[var(--color-paper-3)] dark:hover:text-[var(--color-ink)]"
+      className="press group relative inline-flex h-9 w-9 items-center justify-center border-[1.5px] border-[var(--color-ink)] text-[var(--color-ink)] transition-colors hover:bg-[var(--color-ink)] hover:text-[var(--color-paper)] dark:border-[var(--color-paper-3)] dark:text-[var(--color-paper-3)] dark:hover:bg-[var(--color-paper-3)] dark:hover:text-[var(--color-ink)]"
     >
       {/* 角标刻度（4 个小三角） */}
       <span aria-hidden="true" className="absolute left-0.5 top-0.5 text-[6px] leading-none opacity-50">

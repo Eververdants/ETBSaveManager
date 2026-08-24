@@ -18,6 +18,7 @@ pnpm-debug.log*
 # 编辑器
 .idea/
 .vscode/
+.workbuddy/
 !.vscode/settings.json
 !.vscode/extensions.json
 .DS_Store

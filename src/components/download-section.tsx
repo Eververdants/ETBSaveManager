@@ -19,12 +19,12 @@ export function DownloadSection(): React.JSX.Element {
     >
       <div className="mx-auto max-w-[1400px]">
         {/* 标题区 */}
-        <header className="reveal-on-scroll mb-12 grid grid-cols-1 gap-6 border-b-[1.5px] border-[var(--color-ink)] pb-6 sm:mb-16 sm:pb-8 dark:border-[var(--color-paper-3)] lg:grid-cols-12">
+        <header className="reveal-on-scroll reveal-blur mb-12 grid grid-cols-1 gap-6 border-b-[1.5px] border-[var(--color-ink)] pb-6 sm:mb-16 sm:pb-8 dark:border-[var(--color-paper-3)] lg:grid-cols-12">
           <div className="lg:col-span-2">
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">
               {t("download.section.index")}
             </span>
-            <h2 className="mt-1 archive-headline text-4xl text-[var(--color-ink)] sm:text-5xl dark:text-[var(--color-paper)]">
+            <h2 className="underline-grow mt-1 archive-headline text-4xl text-[var(--color-ink)] sm:text-5xl dark:text-[var(--color-paper)]">
               <span className="block">{t("download.section.titleA")}</span>
               <span className="block italic text-[var(--color-ink-2)] dark:text-[var(--color-paper-3)]">
                 {t("download.section.titleB")}
@@ -80,7 +80,9 @@ export function DownloadSection(): React.JSX.Element {
 
                   {/* 平台图标 + 元数据 */}
                   <div className="mb-5 flex items-end gap-3 border-b border-dashed border-[var(--color-ink)]/25 pb-4 dark:border-[var(--color-paper-3)]/25">
-                    <WindowsMark />
+                    <span className="icon-wiggle inline-block flex-shrink-0">
+                      <WindowsMark />
+                    </span>
                     <dl className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.14em]">
                       <div>
                         <dt className="text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">
@@ -120,7 +122,7 @@ export function DownloadSection(): React.JSX.Element {
                     href={download.href}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="group/btn flex h-10 items-center justify-between gap-2 bg-[var(--color-ink)] px-3 text-[var(--color-paper)] transition-colors group-hover:bg-[var(--color-accent)] group-hover:text-[var(--color-ink)] dark:bg-[var(--color-paper-3)] dark:text-[var(--color-ink)] dark:group-hover:bg-[var(--color-accent)]"
+                    className="btn-wipe group/btn flex h-10 items-center justify-between gap-2 bg-[var(--color-ink)] px-3 text-[var(--color-paper)] transition-colors duration-300 hover:text-[var(--color-ink)] dark:bg-[var(--color-paper-3)] dark:text-[var(--color-ink)] dark:[--wipe:var(--color-accent)] dark:hover:text-[var(--color-ink)]"
                   >
                     <span className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em]">
                       <DownloadIcon />
@@ -208,6 +210,7 @@ function ArrowRight(): React.JSX.Element {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      className="arrow-slide"
       aria-hidden="true"
     >
       <path d="M5 12h14M13 5l7 7-7 7" />

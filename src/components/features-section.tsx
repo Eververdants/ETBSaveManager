@@ -22,12 +22,12 @@ export function FeaturesSection(): React.JSX.Element {
     >
       <div className="mx-auto max-w-[1400px]">
         {/* 标题区 */}
-        <header className="reveal-on-scroll mb-12 grid grid-cols-1 gap-6 border-b-[1.5px] border-[var(--color-ink)] pb-6 sm:mb-16 sm:pb-8 dark:border-[var(--color-paper-3)] lg:grid-cols-12">
+        <header className="reveal-on-scroll reveal-blur mb-12 grid grid-cols-1 gap-6 border-b-[1.5px] border-[var(--color-ink)] pb-6 sm:mb-16 sm:pb-8 dark:border-[var(--color-paper-3)] lg:grid-cols-12">
           <div className="lg:col-span-2">
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">
               § 01
             </span>
-            <h2 className="mt-1 archive-headline text-4xl text-[var(--color-ink)] sm:text-5xl dark:text-[var(--color-paper)]">
+            <h2 className="underline-grow mt-1 archive-headline text-4xl text-[var(--color-ink)] sm:text-5xl dark:text-[var(--color-paper)]">
               <span className="block">{t("features.section.index")}</span>
               <span className="block italic text-[var(--color-ink-2)] dark:text-[var(--color-paper-3)]">
                 {t("features.section.indexSubline")}
@@ -51,17 +51,19 @@ export function FeaturesSection(): React.JSX.Element {
           </div>
         </header>
 
-        {/* 卡片网格 */}
+        {/* 卡片网格：三列分别从左 / 上 / 右方向揭示 */}
         <ul className="stagger-children grid grid-cols-1 gap-px bg-[var(--color-ink)]/15 sm:grid-cols-2 lg:grid-cols-3 dark:bg-[var(--color-paper-3)]/15">
           {site.features.map((feature, idx) => (
             <li
               key={feature.id}
-              className="reveal-on-scroll bg-[var(--color-paper)] transition-colors hover:bg-[#f6f0de] dark:bg-[#15110d] dark:hover:bg-[#1d1813]"
+              className={`reveal-on-scroll ${
+                idx % 3 === 0 ? "from-left" : idx % 3 === 2 ? "from-right" : ""
+              } bg-[var(--color-paper)] transition-colors hover:bg-[#f6f0de] dark:bg-[#15110d] dark:hover:bg-[#1d1813]`}
             >
-              <article className="group relative h-full border border-transparent p-6 transition-colors hover:border-[var(--color-ink)]/40 dark:hover:border-[var(--color-paper-3)]/40">
+              <article className="shine card-lift group relative h-full border border-transparent p-6 transition-colors hover:border-[var(--color-ink)]/40 dark:hover:border-[var(--color-paper-3)]/40">
                 {/* 顶部：编号 + 分类戳 */}
                 <div className="mb-5 flex items-center justify-between">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-3)] transition-colors duration-300 group-hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper-3)]/60 dark:group-hover:text-[var(--color-accent)]">
                     {feature.ref}
                   </span>
                   <span
@@ -99,7 +101,7 @@ export function FeaturesSection(): React.JSX.Element {
                 {/* 底部：file path + 编号 */}
                 <div className="mt-6 flex items-center justify-between border-t border-dashed border-[var(--color-ink)]/20 pt-3 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[var(--color-ink-3)] transition-colors group-hover:text-[var(--color-accent-deep)] dark:border-[var(--color-paper-3)]/20 dark:text-[var(--color-paper-3)]/60 dark:group-hover:text-[var(--color-accent)]">
                   <span>root / features / {feature.id}</span>
-                  <span className="tabular-nums">↳ {String(idx + 1).padStart(2, "0")}/07</span>
+                  <span className="arrow-slide tabular-nums">↳ {String(idx + 1).padStart(2, "0")}/07</span>
                 </div>
               </article>
             </li>

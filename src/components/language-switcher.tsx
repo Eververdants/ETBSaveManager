@@ -45,7 +45,7 @@ export function LanguageSwitcher(): React.JSX.Element {
               aria-pressed={active}
               aria-label={`${t("lang.label")} · ${LANGUAGE_META[lng].label}`}
               title={LANGUAGE_META[lng].label}
-              className={`inline-flex h-full items-center px-2 transition-colors ${
+              className={`press inline-flex h-full items-center px-2 transition-colors ${
                 active
                   ? "bg-[var(--color-ink)] text-[var(--color-paper)] dark:bg-[var(--color-accent)] dark:text-[var(--color-ink)]"
                   : "text-[var(--color-ink-2)] hover:bg-[var(--color-ink)] hover:text-[var(--color-paper)] dark:text-[var(--color-paper-3)] dark:hover:bg-[var(--color-paper-3)] dark:hover:text-[var(--color-ink)]"
@@ -63,7 +63,7 @@ export function LanguageSwitcher(): React.JSX.Element {
         onClick={() => setOpen((prev) => !prev)}
         aria-label={t("lang.label")}
         aria-expanded={open}
-        className="inline-flex h-9 w-9 items-center justify-center border-[1.5px] border-[var(--color-ink)] text-[var(--color-ink-2)] transition-colors hover:bg-[var(--color-ink)] hover:text-[var(--color-paper)] dark:border-[var(--color-paper-3)] dark:text-[var(--color-paper-3)] dark:hover:bg-[var(--color-paper-3)] dark:hover:text-[var(--color-ink)] sm:hidden"
+        className="press inline-flex h-9 w-9 items-center justify-center border-[1.5px] border-[var(--color-ink)] text-[var(--color-ink-2)] transition-colors hover:bg-[var(--color-ink)] hover:text-[var(--color-paper)] dark:border-[var(--color-paper-3)] dark:text-[var(--color-paper-3)] dark:hover:bg-[var(--color-paper-3)] dark:hover:text-[var(--color-ink)] sm:hidden"
       >
         <span className="font-mono text-[11px] uppercase tracking-[0.16em]">{LANGUAGE_META[current].shortLabel}</span>
       </button>

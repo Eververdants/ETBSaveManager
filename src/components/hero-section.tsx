@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import { useCounter } from "@/hooks/use-counter";
 import { useIntersection } from "@/hooks/use-intersection";
+import { useParallax } from "@/hooks/use-parallax";
 import { useTypewriter } from "@/hooks/use-typewriter";
 import { site } from "@/content/site-content";
 
@@ -9,10 +10,11 @@ import { site } from "@/content/site-content";
  * 首屏：不对称布局，左侧巨型 Fraunces 标题，右侧 FILE_001.SAV 索引卡。
  * 视觉锚点：黄色荧光光晕 + 倾斜的档案卡 + 打字机风格的元数据行。
  *
- * 动效：
- * - 面包屑分类文字打字机效果
- * - version / build 数字滚动动画
- * - ARCHIVED 戳呼吸脉冲
+ * 动效（Premium Motion v2，时间轴对齐开场幕布 0.95s 上移）：
+ * - 面包屑 / 标题行 / 副标题 / 元数据 / CTA 分层入场（.rise + .mask-line 逐行遮罩揭示）
+ * - 标题两行从遮罩中上滑展开；卡片倾斜入场（.card-tilt-in）
+ * - CTA 百叶填充（.btn-wipe）+ 箭头滑移；理智度条填充动画（.bar-fill）
+ * - 右侧索引卡外层滚动视差（useParallax）
  */
 export function HeroSection(): React.JSX.Element {
   const { t } = useTranslation();
@@ -30,13 +32,19 @@ export function HeroSection(): React.JSX.Element {
     true, // 始终在首屏触发
   );
 
+  // 右侧档案卡：滚动视差（近层，移动稍快）
+  const cardParallax = useParallax<HTMLDivElement>(-0.05);
+
   return (
     <section id="top" className="relative overflow-hidden px-4 pt-10 pb-24 sm:pt-16 sm:pb-32">
       <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8">
         {/* 左：标题与 CTA（占 7 列） */}
-        <div className="file-rise lg:col-span-7">
+        <div className="lg:col-span-7">
           {/* 顶部：分类戳 + 文件路径（打字机效果） */}
-          <div className="mb-6 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-2)] sm:text-[11px] dark:text-[var(--color-paper-3)]">
+          <div
+            className="rise mb-6 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-2)] sm:text-[11px] dark:text-[var(--color-paper-3)]"
+            style={{ animationDelay: "0.55s" }}
+          >
             <span className="classification-stamp" style={{ color: "var(--color-alert)" }}>
               {typewriterDone ? (
                 t("hero.breadcrumb")
@@ -70,26 +78,35 @@ export function HeroSection(): React.JSX.Element {
           </div>
 
           <h1 className="archive-headline text-[clamp(3rem,8.2vw,6.25rem)] text-[var(--color-ink)] dark:text-[var(--color-paper)]">
-            <span className="block">
-              <span className="dot-monogram" data-text={t("hero.headingPrefix")}>
-                {t("hero.headingPrefix")}
-              </span>{" "}
-            </span>
-            <span className="block italic" style={{ fontVariationSettings: '"opsz" 144, "SOFT" 100, "WONK" 0' }}>
-              <span className="text-[var(--color-accent-deep)] dark:text-[var(--color-accent)]">
-                {t("hero.headingHighlight")}
+            {/* 第一行：ETB monogram — 遮罩上滑揭示 */}
+            <span className="mask-line">
+              <span style={{ animationDelay: "0.65s" }}>
+                <span className="dot-monogram" data-text={t("hero.headingPrefix")}>
+                  {t("hero.headingPrefix")}
+                </span>{" "}
               </span>
-              {t("hero.headingRest")}
+            </span>
+            {/* 第二行：Save Manager — 遮罩上滑揭示 */}
+            <span className="mask-line">
               <span
-                className="caret text-[var(--color-accent-deep)] dark:text-[var(--color-accent)]"
-                aria-hidden="true"
-              />
+                className="italic"
+                style={{ animationDelay: "0.8s", fontVariationSettings: '"opsz" 144, "SOFT" 100, "WONK" 0' }}
+              >
+                <span className="text-[var(--color-accent-deep)] dark:text-[var(--color-accent)]">
+                  {t("hero.headingHighlight")}
+                </span>
+                {t("hero.headingRest")}
+                <span
+                  className="caret text-[var(--color-accent-deep)] dark:text-[var(--color-accent)]"
+                  aria-hidden="true"
+                />
+              </span>
             </span>
           </h1>
 
           <p
-            className="mt-6 max-w-xl font-display text-lg italic text-[var(--color-ink-2)] sm:text-xl dark:text-[var(--color-paper-3)]"
-            style={{ fontVariationSettings: '"opsz" 36, "SOFT" 60' }}
+            className="rise mt-6 max-w-xl font-display text-lg italic text-[var(--color-ink-2)] sm:text-xl dark:text-[var(--color-paper-3)]"
+            style={{ animationDelay: "0.95s", fontVariationSettings: '"opsz" 36, "SOFT" 60' }}
           >
             {t("common.tagline")}
             <span className="text-[var(--color-ink-3)] dark:text-[var(--color-ink-3)]"> {t("hero.taglineSuffix")}</span>
@@ -98,7 +115,8 @@ export function HeroSection(): React.JSX.Element {
           {/* 元数据小行（数字动画） */}
           <dl
             ref={metaRef}
-            className="mt-6 grid max-w-xl grid-cols-2 gap-x-6 gap-y-2 border-y border-[var(--color-ink)]/15 py-3 font-mono text-[10.5px] uppercase tracking-[0.14em] text-[var(--color-ink-2)] sm:grid-cols-4 dark:border-[var(--color-paper-3)]/15 dark:text-[var(--color-paper-3)]"
+            className="rise mt-6 grid max-w-xl grid-cols-2 gap-x-6 gap-y-2 border-y border-[var(--color-ink)]/15 py-3 font-mono text-[10.5px] uppercase tracking-[0.14em] text-[var(--color-ink-2)] sm:grid-cols-4 dark:border-[var(--color-paper-3)]/15 dark:text-[var(--color-paper-3)]"
+            style={{ animationDelay: "1.1s" }}
           >
             <div>
               <dt className="text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">
@@ -131,19 +149,22 @@ export function HeroSection(): React.JSX.Element {
           </dl>
 
           {/* CTA 组 */}
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div
+            className="rise mt-8 flex flex-wrap items-center gap-3"
+            style={{ animationDelay: "1.25s" }}
+          >
             <a
               href={site.releasesUrl}
               target="_blank"
               rel="noreferrer noopener"
-              className="group relative inline-flex h-12 items-center gap-2 bg-[var(--color-ink)] px-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-paper)] transition-all hover:bg-[var(--color-accent)] hover:text-[var(--color-ink)] dark:bg-[var(--color-accent)] dark:text-[var(--color-ink)] dark:hover:bg-[var(--color-accent-soft)]"
+              className="btn-wipe group inline-flex h-12 items-center gap-2 bg-[var(--color-ink)] px-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-paper)] transition-colors duration-300 hover:text-[var(--color-ink)] dark:bg-[var(--color-accent)] dark:text-[var(--color-ink)] dark:[--wipe:var(--color-accent-soft)] dark:hover:text-[var(--color-ink)]"
             >
               <span
                 aria-hidden="true"
-                className="inline-block h-2 w-2 bg-[var(--color-accent)] group-hover:bg-[var(--color-ink)] dark:bg-[var(--color-ink)]"
+                className="inline-block h-2 w-2 bg-[var(--color-accent)] transition-colors duration-300 group-hover:bg-[var(--color-ink)] dark:bg-[var(--color-ink)]"
               />
               <span>{t("hero.ctaDownload")}</span>
-              <span aria-hidden="true" className="ml-1">
+              <span aria-hidden="true" className="arrow-slide ml-1">
                 →
               </span>
             </a>
@@ -152,7 +173,7 @@ export function HeroSection(): React.JSX.Element {
               target="_blank"
               rel="noreferrer noopener"
               aria-label={t("hero.ctaGithubAria")}
-              className="inline-flex h-12 items-center gap-2 border-[1.5px] border-[var(--color-ink)] px-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink)] transition-colors hover:bg-[var(--color-ink)] hover:text-[var(--color-paper)] dark:border-[var(--color-paper-3)] dark:text-[var(--color-paper-3)] dark:hover:bg-[var(--color-paper-3)] dark:hover:text-[var(--color-ink)]"
+              className="press inline-flex h-12 items-center gap-2 border-[1.5px] border-[var(--color-ink)] px-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink)] transition-colors hover:bg-[var(--color-ink)] hover:text-[var(--color-paper)] dark:border-[var(--color-paper-3)] dark:text-[var(--color-paper-3)] dark:hover:bg-[var(--color-paper-3)] dark:hover:text-[var(--color-ink)]"
             >
               <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
                 <path d="M12 .5C5.73.5.67 5.56.67 11.83c0 5.02 3.25 9.27 7.76 10.77.57.1.78-.25.78-.55v-2.13c-3.16.69-3.83-1.35-3.83-1.35-.52-1.31-1.27-1.66-1.27-1.66-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.34.95.1-.74.4-1.24.73-1.53-2.52-.29-5.17-1.26-5.17-5.6 0-1.24.44-2.25 1.17-3.04-.12-.29-.51-1.45.11-3.02 0 0 .96-.31 3.14 1.16.91-.25 1.89-.38 2.86-.39.97 0 1.95.13 2.86.39 2.18-1.47 3.14-1.16 3.14-1.16.62 1.57.23 2.73.11 3.02.73.79 1.17 1.8 1.17 3.04 0 4.35-2.65 5.31-5.18 5.59.41.36.77 1.05.77 2.13v3.16c0 .31.21.66.79.55 4.5-1.5 7.75-5.75 7.75-10.77C23.33 5.56 18.27.5 12 .5z" />
@@ -165,8 +186,8 @@ export function HeroSection(): React.JSX.Element {
           </div>
         </div>
 
-        {/* 右：FILE_001.SAV 索引卡（占 5 列） */}
-        <div className="file-rise lg:col-span-5" style={{ animationDelay: "120ms" }}>
+        {/* 右：FILE_001.SAV 索引卡（占 5 列）— 外层滚动视差 */}
+        <div ref={cardParallax} className="parallax-layer lg:col-span-5">
           <div className="mx-auto max-w-md lg:ml-auto">
             <SaveIndexCard />
           </div>
@@ -182,7 +203,7 @@ export function HeroSection(): React.JSX.Element {
 function SaveIndexCard(): React.JSX.Element {
   const { t } = useTranslation();
   return (
-    <div className="relative [transform:rotate(-1.6deg)]">
+    <div className="group card-tilt-in relative" style={{ animationDelay: "1.3s" }}>
       {/* 黄色胶带 */}
       <div
         aria-hidden="true"
@@ -196,7 +217,7 @@ function SaveIndexCard(): React.JSX.Element {
 
       {/* 卡片主体 */}
       <article
-        className="relative z-10 border-[1.5px] border-[var(--color-ink)] bg-[var(--color-paper)] shadow-[8px_8px_0_0_var(--color-ink)] transition-shadow hover:shadow-[10px_10px_0_0_var(--color-accent-deep)] dark:border-[var(--color-paper-3)] dark:bg-[#15110d] dark:shadow-[8px_8px_0_0_var(--color-paper-3)] dark:hover:shadow-[10px_10px_0_0_var(--color-accent)]"
+        className="shine relative z-10 border-[1.5px] border-[var(--color-ink)] bg-[var(--color-paper)] shadow-[8px_8px_0_0_var(--color-ink),0_24px_48px_-24px_rgba(26,23,20,0.3)] transition-shadow duration-500 hover:shadow-[10px_10px_0_0_var(--color-accent-deep),0_28px_56px_-24px_rgba(26,23,20,0.36)] dark:border-[var(--color-paper-3)] dark:bg-[#15110d] dark:shadow-[8px_8px_0_0_var(--color-paper-3),0_24px_48px_-24px_rgba(0,0,0,0.65)] dark:hover:shadow-[10px_10px_0_0_var(--color-accent),0_28px_56px_-24px_rgba(0,0,0,0.7)]"
         aria-label={t("hero.card.aria")}
       >
         {/* 顶部：档案编号 + 状态 */}
@@ -240,7 +261,7 @@ function SaveIndexCard(): React.JSX.Element {
                   aria-hidden="true"
                   className="relative inline-block h-1.5 w-16 overflow-hidden bg-[var(--color-ink-3)]/40"
                 >
-                  <span className="absolute inset-y-0 left-0 w-[73%] bg-[var(--color-accent-deep)] dark:bg-[var(--color-accent)]" />
+                  <span className="bar-fill absolute inset-y-0 left-0 w-[73%] bg-[var(--color-accent-deep)] dark:bg-[var(--color-accent)]" />
                 </span>
                 <span className="tabular-nums">73%</span>
               </dd>
@@ -292,7 +313,7 @@ function SaveIndexCard(): React.JSX.Element {
               <div
                 key={i}
                 aria-hidden="true"
-                className="aspect-square border border-[var(--color-ink)]/30 bg-[var(--color-accent)]/40 transition-colors hover:border-[var(--color-accent)] dark:border-[var(--color-paper-3)]/30 dark:bg-[var(--color-accent)]/30 dark:hover:border-[var(--color-accent-soft)]"
+                className="aspect-square border border-[var(--color-ink)]/30 bg-[var(--color-accent)]/40 transition-all duration-200 hover:scale-110 hover:border-[var(--color-accent)] dark:border-[var(--color-paper-3)]/30 dark:bg-[var(--color-accent)]/30 dark:hover:border-[var(--color-accent-soft)]"
                 style={{ background: i === 4 ? "var(--color-accent)" : undefined }}
               />
             ))}

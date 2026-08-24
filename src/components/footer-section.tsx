@@ -19,7 +19,7 @@ export function FooterSection(): React.JSX.Element {
     >
       <div className="mx-auto max-w-[1400px]">
         {/* 主行 */}
-        <div className="reveal-on-scroll grid grid-cols-1 gap-10 border-b border-[var(--color-ink)]/15 pb-10 sm:grid-cols-12 dark:border-[var(--color-paper-3)]/15">
+        <div className="reveal-on-scroll reveal-blur grid grid-cols-1 gap-10 border-b border-[var(--color-ink)]/15 pb-10 sm:grid-cols-12 dark:border-[var(--color-paper-3)]/15">
           {/* 左：巨型品牌署名 */}
           <div className="sm:col-span-7">
             <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/60">
@@ -56,7 +56,7 @@ export function FooterSection(): React.JSX.Element {
                   href={site.releasesUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="group flex items-baseline gap-2 text-[var(--color-ink)] hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper)] dark:hover:text-[var(--color-accent)]"
+                  className="link-underline group flex items-baseline gap-2 text-[var(--color-ink)] hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper)] dark:hover:text-[var(--color-accent)]"
                 >
                   <span className="tabular-nums text-[10px] text-[var(--color-ink-3)] group-hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper-3)]/60 dark:group-hover:text-[var(--color-accent)]">
                     01
@@ -69,7 +69,7 @@ export function FooterSection(): React.JSX.Element {
                   href={`${site.githubUrl}/blob/main/LICENSE`}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="group flex items-baseline gap-2 text-[var(--color-ink)] hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper)] dark:hover:text-[var(--color-accent)]"
+                  className="link-underline group flex items-baseline gap-2 text-[var(--color-ink)] hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper)] dark:hover:text-[var(--color-accent)]"
                 >
                   <span className="tabular-nums text-[10px] text-[var(--color-ink-3)] group-hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper-3)]/60 dark:group-hover:text-[var(--color-accent)]">
                     02
@@ -82,7 +82,7 @@ export function FooterSection(): React.JSX.Element {
                   href={site.githubUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="group flex items-baseline gap-2 text-[var(--color-ink)] hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper)] dark:hover:text-[var(--color-accent)]"
+                  className="link-underline group flex items-baseline gap-2 text-[var(--color-ink)] hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper)] dark:hover:text-[var(--color-accent)]"
                 >
                   <span className="tabular-nums text-[10px] text-[var(--color-ink-3)] group-hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper-3)]/60 dark:group-hover:text-[var(--color-accent)]">
                     03
@@ -95,7 +95,7 @@ export function FooterSection(): React.JSX.Element {
                   href={`${site.githubUrl}/issues`}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="group flex items-baseline gap-2 text-[var(--color-ink)] hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper)] dark:hover:text-[var(--color-accent)]"
+                  className="link-underline group flex items-baseline gap-2 text-[var(--color-ink)] hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper)] dark:hover:text-[var(--color-accent)]"
                 >
                   <span className="tabular-nums text-[10px] text-[var(--color-ink-3)] group-hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper-3)]/60 dark:group-hover:text-[var(--color-accent)]">
                     04
@@ -108,7 +108,7 @@ export function FooterSection(): React.JSX.Element {
                   href={site.redditUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="group flex items-baseline gap-2 text-[var(--color-ink)] hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper)] dark:hover:text-[var(--color-accent)]"
+                  className="link-underline group flex items-baseline gap-2 text-[var(--color-ink)] hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper)] dark:hover:text-[var(--color-accent)]"
                 >
                   <span className="tabular-nums text-[10px] text-[var(--color-ink-3)] group-hover:text-[var(--color-accent-deep)] dark:text-[var(--color-paper-3)]/60 dark:group-hover:text-[var(--color-accent)]">
                     05
@@ -136,14 +136,20 @@ export function FooterSection(): React.JSX.Element {
         </div>
       </div>
 
-      {/* 底部装饰：长 ASCII 边线 */}
+      {/* 底部装饰：长 ASCII 边线（缓慢流动） */}
       <div
         aria-hidden="true"
         className="mt-8 overflow-hidden font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--color-ink-3)] dark:text-[var(--color-paper-3)]/40"
       >
-        <div className="mx-auto max-w-[1400px] whitespace-nowrap">
-          ──────────────────── · · · · · · ──────────────────── · · · · · · ──────────────────── · · · · · ·
-          ────────────────────
+        <div className="marquee-slow">
+          <span className="px-4">
+            ──────────────────── · · · · · · ──────────────────── · · · · · · ──────────────────── · · · · · ·
+            ────────────────────
+          </span>
+          <span className="px-4" aria-hidden="true">
+            ──────────────────── · · · · · · ──────────────────── · · · · · · ──────────────────── · · · · · ·
+            ────────────────────
+          </span>
         </div>
       </div>
     </footer>

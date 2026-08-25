@@ -6,10 +6,11 @@
     <title>ETB Save Manager</title>
 
     <!-- 预连接关键资源 -->
-    <link rel="preconnect" href="/" crossorigin />
+    <!-- 注意: Vite 8 不支持 href="/" 的 preconnect，会导致 EISDIR 错误 -->
+    <!-- <link rel="preconnect" href="/" crossorigin /> -->
 
     <!-- 预加载关键CSS -->
-    <link rel="preload" href="./src/styles/variables.css" as="style" />
+    <!-- <link rel="preload" href="./src/styles/variables.css" as="style" /> -->
 
     <!-- 内联关键CSS - 避免FOUC -->
     <style>

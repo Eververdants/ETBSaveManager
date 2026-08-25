@@ -3,7 +3,9 @@ import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
 import VueI18nVitePlugin from "@intlify/unplugin-vue-i18n/vite";
 import path from "path";
+import { fileURLToPath } from "url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig(async ({ mode }) => {
@@ -35,7 +37,6 @@ export default defineConfig(async ({ mode }) => {
       // 启用Tree Shaking
       rollupOptions: {
         treeshake: {
-          preset: "smallest",
           moduleSideEffects: (id) => {
             // 明确标记有副作用的模块（如图标注册）
             if (id.includes("icons-critical") || id.includes("icons-full")) {

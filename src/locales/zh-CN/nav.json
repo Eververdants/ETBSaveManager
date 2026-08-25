@@ -1,0 +1,23 @@
+{
+  "home": "首页",
+  "saves": "存档",
+  "saves-all": "全部",
+  "saves-favorites": "收藏",
+  "saves-trash": "回收站",
+  "saves-create": "创建",
+  "games": "游戏",
+  "games-overview": "总揽",
+  "games-edit": "编辑",
+  "mods": "模组",
+  "mods-installed": "已安装",
+  "mods-browse": "浏览",
+  "mods-updates": "更新",
+  "tools": "修改",
+  "tools-game-data": "游戏数据",
+  "tools-realtime": "实时修改",
+  "tools-more": "更多",
+  "login": "登录",
+  "settings": "设置",
+  "collapseSidebar": "收起侧边栏",
+  "expandSidebar": "展开侧边栏"
+}

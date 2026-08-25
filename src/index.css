@@ -2,42 +2,252 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * =============================================
+ * 设计令牌系统 (Design Token System)
+ * 基于 2026 潘通年度色 "云上舞白" (#F2F0EB)
+ * 暖灰基调 · 自然生机 · 宁静感
+ * =============================================
+ */
+
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --primary: 222.2 47.4% 11.2%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 222.2 84% 4.9%;
-  --radius: 0.5rem;
+  /* ===== 色阶基准 (HSL) ===== */
+
+  /* Neutral — 暖灰 */
+  --neutral-50:  48 33% 97%;
+  --neutral-100: 40 24% 93%;   /* 🏆 年度主色 #F2F0EB */
+  --neutral-200: 40 18% 89%;
+  --neutral-300: 38 14% 83%;
+  --neutral-400: 37 10% 74%;
+  --neutral-500: 36  8% 62%;
+  --neutral-600: 24  5% 53%;
+  --neutral-700: 24  5% 41%;
+  --neutral-800: 22  6% 29%;
+  --neutral-900: 20  8% 19%;
+  --neutral-950: 20 10% 10%;
+
+  /* Primary — 雾霾蓝 */
+  --primary-50:  210 40% 97%;
+  --primary-100: 210 35% 91%;
+  --primary-200: 210 30% 83%;
+  --primary-300: 210 22% 72%;
+  --primary-400: 210 18% 62%;
+  --primary-500: 210 17% 53%;
+  --primary-600: 210 20% 43%;
+  --primary-700: 210 24% 33%;
+
+  /* Success — 鼠尾草绿 */
+  --success-50:  110 20% 96%;
+  --success-100: 110 18% 89%;
+  --success-200: 110 15% 80%;
+  --success-300: 110 11% 72%;
+  --success-400: 110 13% 63%;
+  --success-500: 110 13% 54%;
+  --success-600: 110 15% 44%;
+
+  /* Danger — 暖珊瑚/陶土 */
+  --danger-50:  20 33% 96%;
+  --danger-100: 20 35% 91%;
+  --danger-200: 20 32% 83%;
+  --danger-300: 20 28% 75%;
+  --danger-400: 20 25% 67%;
+  --danger-500: 20 23% 58%;
+  --danger-600: 20 22% 50%;
+
+  /* ===== 语义层 — 浅色主题 (默认) ===== */
+
+  /* 背景层 */
+  --color-bg-primary:    hsl(var(--neutral-100));
+  --color-bg-secondary:  hsl(var(--neutral-50));
+  --color-bg-tertiary:   hsl(var(--neutral-200));
+  --color-bg-inverse:    hsl(var(--neutral-900));
+  --color-bg-elevated:   hsl(0 0% 100%);
+  --color-bg-overlay:    hsl(var(--neutral-950) / 0.45);
+  --color-bg-muted:      hsl(var(--neutral-200));
+
+  /* 文本层 */
+  --color-text-primary:    hsl(var(--neutral-900));
+  --color-text-secondary:  hsl(var(--neutral-700));
+  --color-text-tertiary:   hsl(var(--neutral-600));
+  --color-text-muted:      hsl(var(--neutral-500));
+  --color-text-inverse:    hsl(var(--neutral-50));
+  --color-text-link:       hsl(var(--primary-500));
+  --color-text-link-hover: hsl(var(--primary-400));
+
+  /* 边框层 */
+  --color-border-light:    hsl(var(--neutral-200));
+  --color-border-default:  hsl(var(--neutral-300));
+  --color-border-strong:   hsl(var(--neutral-400));
+  --color-border-focus:    hsl(var(--primary-300));
+  --color-border-inverse:  hsl(var(--neutral-700));
+
+  /* 品牌状态 */
+  --color-primary:         hsl(var(--primary-500));
+  --color-primary-hover:   hsl(var(--primary-400));
+  --color-primary-active:  hsl(var(--primary-600));
+  --color-primary-fg:      hsl(0 0% 100%);
+  --color-primary-subtle:  hsl(var(--primary-50));
+
+  /* 成功状态 */
+  --color-success:         hsl(var(--success-500));
+  --color-success-hover:   hsl(var(--success-400));
+  --color-success-active:  hsl(var(--success-600));
+  --color-success-fg:      hsl(0 0% 100%);
+  --color-success-subtle:  hsl(var(--success-50));
+
+  /* 危险状态 */
+  --color-danger:          hsl(var(--danger-500));
+  --color-danger-hover:    hsl(var(--danger-400));
+  --color-danger-active:   hsl(var(--danger-600));
+  --color-danger-fg:       hsl(0 0% 100%);
+  --color-danger-subtle:   hsl(var(--danger-50));
+
+  /* 特殊效果 */
+  --color-shadow:    hsl(var(--neutral-950) / 0.08);
+  --color-shadow-lg: hsl(var(--neutral-950) / 0.12);
+  --color-ring:      hsl(var(--primary-300) / 0.4);
+
+  /* 外壳（侧边栏 + 标题栏一体化） */
+  --color-shell-bg:        hsl(var(--neutral-50));
+  --color-shell-text:      hsl(var(--neutral-600));
+  --color-shell-text-muted: hsl(var(--neutral-500));
+  --color-shell-divider:   hsl(var(--neutral-200));
+
+  /* 导航项交互态 */
+  --color-shell-item-hover:   hsl(var(--neutral-100));
+  --color-shell-item-active:  hsl(var(--primary-50));
+  --color-shell-text-active:  hsl(var(--neutral-900));
+  --color-shell-icon:         hsl(var(--neutral-500));
+  --color-shell-icon-active:  hsl(var(--primary-500));
+
+  /* 窗口控制按钮 */
+  --color-winctrl-text:      hsl(var(--neutral-500));
+  --color-winctrl-hover-bg:  hsl(var(--neutral-100));
+  --color-winctrl-hover-text: hsl(var(--neutral-700));
+  --color-winctrl-close-hover-bg: #E81123;
+  --color-winctrl-close-hover-text: hsl(0 0% 100%);
 }
 
 .dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --primary: 210 40% 98%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
+  /* ===== 语义层 — 深色主题 ===== */
+
+  /* 背景层 */
+  --color-bg-primary:    hsl(var(--neutral-950));
+  --color-bg-secondary:  hsl(var(--neutral-900));
+  --color-bg-tertiary:   hsl(var(--neutral-800));
+  --color-bg-inverse:    hsl(var(--neutral-100));
+  --color-bg-elevated:   hsl(var(--neutral-800));
+  --color-bg-overlay:    hsl(var(--neutral-950) / 0.7);
+  --color-bg-muted:      hsl(var(--neutral-800));
+
+  /* 文本层 */
+  --color-text-primary:    hsl(var(--neutral-50));
+  --color-text-secondary:  hsl(var(--neutral-400));
+  --color-text-tertiary:   hsl(var(--neutral-500));
+  --color-text-muted:      hsl(var(--neutral-600));
+  --color-text-inverse:    hsl(var(--neutral-900));
+  --color-text-link:       hsl(var(--primary-300));
+  --color-text-link-hover: hsl(var(--primary-200));
+
+  /* 边框层 */
+  --color-border-light:    hsl(var(--neutral-800));
+  --color-border-default:  hsl(var(--neutral-700));
+  --color-border-strong:   hsl(var(--neutral-600));
+  --color-border-focus:    hsl(var(--primary-400));
+  --color-border-inverse:  hsl(var(--neutral-300));
+
+  /* 品牌状态 */
+  --color-primary:         hsl(var(--primary-400));
+  --color-primary-hover:   hsl(var(--primary-300));
+  --color-primary-active:  hsl(var(--primary-500));
+  --color-primary-fg:      hsl(var(--neutral-950));
+  --color-primary-subtle:  hsl(var(--primary-700) / 0.3);
+
+  /* 成功状态 */
+  --color-success:         hsl(var(--success-400));
+  --color-success-hover:   hsl(var(--success-300));
+  --color-success-active:  hsl(var(--success-500));
+  --color-success-fg:      hsl(var(--neutral-950));
+  --color-success-subtle:  hsl(var(--success-600) / 0.3);
+
+  /* 危险状态 */
+  --color-danger:          hsl(var(--danger-400));
+  --color-danger-hover:    hsl(var(--danger-300));
+  --color-danger-active:   hsl(var(--danger-500));
+  --color-danger-fg:       hsl(var(--neutral-950));
+  --color-danger-subtle:   hsl(var(--danger-600) / 0.3);
+
+  /* 特殊效果 */
+  --color-shadow:    hsl(0 0% 0% / 0.2);
+  --color-shadow-lg: hsl(0 0% 0% / 0.35);
+  --color-ring:      hsl(var(--primary-400) / 0.3);
+
+  /* 外壳（侧边栏 + 标题栏一体化） */
+  --color-shell-bg:        hsl(var(--neutral-900));
+  --color-shell-text:      hsl(var(--neutral-500));
+  --color-shell-text-muted: hsl(var(--neutral-600));
+  --color-shell-divider:   hsl(var(--neutral-800));
+
+  /* 导航项交互态 */
+  --color-shell-item-hover:   hsl(var(--neutral-800));
+  --color-shell-item-active:  hsl(var(--neutral-800));
+  --color-shell-text-active:  hsl(var(--neutral-50));
+  --color-shell-icon:         hsl(var(--neutral-500));
+  --color-shell-icon-active:  hsl(var(--success-400));
+
+  /* 窗口控制按钮 */
+  --color-winctrl-text:      hsl(var(--neutral-500));
+  --color-winctrl-hover-bg:  hsl(0 0% 100% / 0.08);
+  --color-winctrl-hover-text: hsl(var(--neutral-300));
+  --color-winctrl-close-hover-bg: #E81123;
+  --color-winctrl-close-hover-text: hsl(0 0% 100%);
+}
+
+/* ===== 全局基础样式 ===== */
+
+html,
+body,
+#root {
+  height: 100%;
+  background-color: var(--color-shell-bg);
+  overflow: hidden;
 }
 
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+  font-size: 13px;
+  color: var(--color-text-primary);
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: var(--color-border-default);
+  transition: background-color 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-strong);
+}
+
+/* 全局过渡：任何布局变化都平滑 */
+*,
+*::before,
+*::after {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
 }

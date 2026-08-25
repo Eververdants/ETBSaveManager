@@ -17,7 +17,7 @@ export const STORAGE_KEYS = {
 
 // 默认配置
 export const DEFAULT_CONFIG = {
-  THEME: "dark" as const,
+  THEME: "light" as const,
   LANGUAGE: "zh-CN" as const,
   PAGE_SIZE: 20,
   MAX_BACKUP_COUNT: 10,
@@ -32,8 +32,9 @@ export const FILE_EXTENSIONS = {
 
 // UI 相关
 export const UI_CONFIG = {
-  SIDEBAR_WIDTH: 280,
-  HEADER_HEIGHT: 60,
+  SIDEBAR_WIDTH: 200,
+  SIDEBAR_COLLAPSED_WIDTH: 56,
+  TITLEBAR_HEIGHT: 40,
   ANIMATION_DURATION: 300,
   TOAST_DURATION: 3000,
 } as const;
@@ -50,3 +51,5 @@ export const QUERY_KEYS = {
 export const API_ENDPOINTS = {
   // 预留
 } as const;
+
+export * from "./navigation";

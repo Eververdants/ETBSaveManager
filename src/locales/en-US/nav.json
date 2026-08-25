@@ -1,0 +1,23 @@
+{
+  "home": "Home",
+  "saves": "Saves",
+  "saves-all": "All",
+  "saves-favorites": "Favorites",
+  "saves-trash": "Trash",
+  "saves-create": "Create",
+  "games": "Games",
+  "games-overview": "Overview",
+  "games-edit": "Edit",
+  "mods": "Mods",
+  "mods-installed": "Installed",
+  "mods-browse": "Browse",
+  "mods-updates": "Updates",
+  "tools": "Modify",
+  "tools-game-data": "Game Data",
+  "tools-realtime": "Real-time",
+  "tools-more": "More",
+  "login": "Sign In",
+  "settings": "Settings",
+  "collapseSidebar": "Collapse sidebar",
+  "expandSidebar": "Expand sidebar"
+}

@@ -1,0 +1,15 @@
+{
+  "title": "ETB 存档管理器",
+  "saveManagement": {
+    "title": "保存管理",
+    "description": "管理您的游戏存档文件"
+  },
+  "quickAccess": {
+    "title": "快速访问",
+    "description": "快速访问常用存档位置"
+  },
+  "settings": {
+    "title": "设置",
+    "description": "自定义应用配置"
+  }
+}

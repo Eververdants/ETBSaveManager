@@ -1,0 +1,15 @@
+{
+  "title": "ETB Save Manager",
+  "saveManagement": {
+    "title": "Save Management",
+    "description": "Manage your game save files"
+  },
+  "quickAccess": {
+    "title": "Quick Access",
+    "description": "Quick access to frequently used save locations"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Customize application settings"
+  }
+}

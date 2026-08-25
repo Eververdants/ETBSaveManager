@@ -1,14 +1,20 @@
 {
-  "version": "3.3.2",
-  "date": "2026-08-14",
-  "title": "Save Data Binding Fix & Performance",
-  "type": "patch",
+  "version": "3.4.0",
+  "date": "2026-08-27",
+  "title": "Mod Management & New Level Support",
+  "type": "minor",
   "categories": {
-    "newFeatures": [],
-    "improvements": [],
-    "bugFixes": [
-      "Fixed save data not binding when creating an archive with a bare Steam ID (empty backpack, sanity reset)"
+    "newFeatures": [
+      "Added Mods page for installing UE4SS and NSU mods",
+      "Added auto-focus functionality to search input box",
+      "Added Level 421 Plastic Mariana support"
     ],
-    "performance": ["Slimmed down the bundle for faster startup"]
+    "improvements": [
+      "Improved level selection UI in editor page",
+      "Improved player management UI",
+      "Adapted to new game mechanics"
+    ],
+    "bugFixes": [],
+    "performance": []
   }
 }

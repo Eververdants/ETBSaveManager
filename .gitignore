@@ -25,6 +25,7 @@ dist-ssr
 *.sw?
 
 .claude
+.workbuddy
 .codegraph
 .cache
 

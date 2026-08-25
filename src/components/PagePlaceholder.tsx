@@ -22,12 +22,9 @@ export default function PagePlaceholder({ labelKey }: PagePlaceholderProps) {
       className="flex h-full flex-col items-center justify-center gap-4"
       style={{ color: "var(--color-text-muted)" }}
     >
-      <motion.div
-        animate={{ rotate: [0, -5, 5, 0] }}
-        transition={{ duration: 2, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
-      >
+      <div className="animate-wobble">
         <Construction size={36} strokeWidth={1.5} className="opacity-40" />
-      </motion.div>
+      </div>
       <p className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>{t(`nav.${labelKey}`)}</p>
       <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{t("common.loading")}...</p>
     </motion.div>

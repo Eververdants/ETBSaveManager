@@ -251,3 +251,15 @@ body {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+
+/* 施工图标摇摆动画（CSS 实现，比 JS 动画更高效） */
+@keyframes wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+.animate-wobble {
+  animation: wobble 2s ease-in-out infinite;
+  animation-delay: 3s;
+}

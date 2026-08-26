@@ -841,7 +841,28 @@ pub async fn install_ue4ss(
 
             fs::create_dir_all(&win64)?;
             let mut files = Vec::new();
-            copy_tree(&base, &win64, &mut files)?;
+            if let Err(e) = copy_tree(&base, &win64, &mut files) {
+                // Record whatever DID land so uninstall can remove exactly
+                // those files instead of stranding a half-install without a
+                // manifest (get_mods_status probes DLLs and would otherwise
+                // report an installed-but-unremovable UE4SS).
+                if !files.is_empty() {
+                    let partial = InstallManifest {
+                        tool: "etb-save-manager".to_string(),
+                        mod_name: "UE4SS".to_string(),
+                        version: version.clone(),
+                        channel: Some(resolved_channel.to_string()),
+                        files,
+                    };
+                    let ue4ss_dir = win64.join("ue4ss");
+                    if fs::create_dir_all(&ue4ss_dir).is_ok() {
+                        if let Ok(bytes) = serde_json::to_vec_pretty(&partial) {
+                            let _ = fs::write(ue4ss_dir.join(MANIFEST_FILE), bytes);
+                        }
+                    }
+                }
+                return Err(e);
+            }
 
             // Write manifest so uninstall can remove exactly what we placed
             let manifest = InstallManifest {

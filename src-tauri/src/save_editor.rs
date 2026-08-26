@@ -272,45 +272,43 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     // non-main storyline ending — needs The Hub reachable (every hub-door flag
     // true), and side endings additionally need HasCompletedMainEnding set.
     // "Pipes" is main-line Pipe Dreams under its merged in-game name.
-    // Progression logic, mirroring the create flow with one correction: a
-    // level counts as SIDE only when it is exclusive to a branch ending.
-    // Levels on the main route's full table (ALL_LEVELS) — even the back half
-    // like OceanMap or LightsOut that sits beyond the 17-level MAIN_STORYLINE
-    // prefix — must NOT flip HasCompletedMainEnding just for being past The
-    // Hub. "_UnlockMain"-suffixed twin entries force the flag explicitly.
+    // Progression logic. SIDE = level exclusive to a branch ending (not on
+    // the main route's full ALL_LEVELS table) — those hard-unlock everything:
+    // all hub doors, MEG, and HasCompletedMainEnding. Main-route levels past
+    // The Hub keep their natural door state (the player opens them by
+    // playing); MEG still unlocks for them, mirroring isMEGUnlocked().
+    // "_UnlockMain"-suffixed keys force the full treatment explicitly.
     let on_main_route = ALL_LEVELS.iter().any(|(_, l)| {
         let l = *l;
         l == current_level || (l == "Pipes2" && current_level == "Pipes")
     });
-    let selected_main_index = MAIN_STORYLINE_LEVELS.iter().position(|(_, l)| {
-        let l = *l;
-        l == current_level || (l == "Pipes2" && current_level == "Pipes")
-    });
     let is_side_storyline = !on_main_route;
-    let is_after_hub = match (
-        MAIN_STORYLINE_LEVELS
-            .iter()
-            .position(|(_, l)| *l == "TheHub"),
-        selected_main_index,
-    ) {
-        (Some(hub_pos), Some(sel_pos)) => sel_pos > hub_pos,
-        _ => false,
-    };
-    if is_side_storyline || is_after_hub || force_main_ending {
+    if is_side_storyline || force_main_ending {
         tracing::info!(
-            "Selected level '{}' (side: {}, past The Hub: {}, force main ending: {}) — unlocking hub doors and MEG",
+            "Selected level '{}' (side: {}, force main ending: {}) — unlocking all hub doors and MEG",
             current_level,
             is_side_storyline,
-            is_after_hub,
             force_main_ending
         );
         apply_unlock_all_hub_doors_in_place(&mut save)?;
-        // Mirror create flow's isMEGUnlocked(): every level beyond The Hub —
-        // and all side endings — ships with MEG doors/power/security on.
         update_meg_status(&mut save, true)?;
-    }
-    if is_side_storyline || force_main_ending {
         update_bool_property(&mut save, "HasCompletedMainEnding", true)?;
+    }
+
+    // Main-route levels beyond The Hub still need MEG doors/power/security.
+    if !is_side_storyline && !force_main_ending {
+        let main_prefix_index = MAIN_STORYLINE_LEVELS.iter().position(|(_, l)| {
+            let l = *l;
+            l == current_level || (l == "Pipes2" && current_level == "Pipes")
+        });
+        let hub_index = MAIN_STORYLINE_LEVELS
+            .iter()
+            .position(|(_, l)| *l == "TheHub");
+        if let (Some(hub), Some(sel)) = (hub_index, main_prefix_index) {
+            if sel > hub {
+                update_meg_status(&mut save, true)?;
+            }
+        }
     }
 
     // Process player data

@@ -7,7 +7,7 @@ export default {
     siteName: "ETB Save Manager",
     tagline: "A modern, cross-platform save management tool for Escape The Backrooms",
     description:
-      "A declassified archive manager for the Backrooms — full CRUD with soft-delete, 3-step creation wizard across 4 endings and 54 levels, 10 themes, en/zh-CN/zh-TW UI, virtual scrolling, and a built-in performance monitor. Built with Tauri 2.0 on Windows.",
+      "A declassified archive manager for the Backrooms — full CRUD with soft-delete, 3-step creation wizard across 4 endings and 55 levels, mod management with UE4SS/NSU support, 10 themes, en/zh-CN/zh-TW UI, virtual scrolling, and a built-in performance monitor. Built with Tauri 2.0 on Windows.",
     cat: "cat. etb · save · mgr",
     catShort: "cat · save · mgr",
     root: "root",
@@ -99,7 +99,7 @@ export default {
     wizard: {
       title: "3-Step Creation Wizard",
       description:
-        "Quick Create or Standard mode — pick from 54 levels across 4 endings (Wrong Door, Empty City, The Suburbs, The Pink House), configure difficulty, edit 12-slot inventory.",
+        "Quick Create or Standard mode — pick from 55 levels across 4 endings (Wrong Door, Empty City, The Suburbs, The Pink House), configure difficulty, edit 12-slot inventory.",
     },
     themes: {
       title: "10 Built-in Themes",

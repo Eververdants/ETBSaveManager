@@ -18,21 +18,21 @@ export const site = {
   name: "ETB Save Manager",
   tagline: "A modern, cross-platform save management tool for Escape The Backrooms",
   description:
-    "A declassified archive manager for the Backrooms — full CRUD with soft-delete, 3-step creation wizard across 4 endings and 54 levels, 10 themes, en/zh-CN/zh-TW UI, virtual scrolling, built-in performance monitor, and an intelligent resource scheduler. Built with Tauri 2.0 on Windows.",
+    "A declassified archive manager for the Backrooms — full CRUD with soft-delete, 3-step creation wizard across 4 endings and 55 levels, mod management with UE4SS/NSU support, 10 themes, en/zh-CN/zh-TW UI, virtual scrolling, built-in performance monitor, and an intelligent resource scheduler. Built with Tauri 2.0 on Windows.",
 
   // 与主项目同步：版本戳 / 编译号 / 发布日（非翻译数据）
   meta: {
-    version: "3.3.2",
-    build: "20260814",
-    releaseDate: "2026-08-14",
+    version: "3.4.0",
+    build: "20260827",
+    releaseDate: "2026-08-27",
     edition: "Archive Edition",
     status: "online",
-    codename: "Player Data Binding",
+    codename: "Mod Management & New Level Support",
     framework: "Tauri 2.0",
     identifier: "com.admin.etbsavemanager",
     bundle: "nsis · msi",
     // 真实内容规模（与主项目 src/views/CreateArchive/index.vue loadLevels 对齐）
-    levelCount: 54,
+    levelCount: 55,
     endingCount: 4,
     inventorySlotCount: 12,
     inventoryItemCount: 25,
@@ -52,7 +52,7 @@ export const site = {
       id: "wizard",
       title: "3-Step Creation Wizard",
       description:
-        "Quick Create or Standard mode — pick from 54 levels across 4 endings (Wrong Door, Empty City, The Suburbs, The Pink House), configure difficulty, edit 12-slot inventory.",
+        "Quick Create or Standard mode — pick from 55 levels across 4 endings (Wrong Door, Empty City, The Suburbs, The Pink House), configure difficulty, edit 12-slot inventory.",
       iconKey: "icon-wizard",
       ref: "FILE 002",
       classification: "Standard",

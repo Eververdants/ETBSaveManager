@@ -2,6 +2,7 @@ use crate::common::{
     add_save_to_mainsave, extract_archive_name, remove_save_from_mainsave, validate_save_games_path,
 };
 use crate::error::AppResult;
+use crate::new_save::{update_bool_property, MAIN_STORYLINE_LEVELS};
 use crate::save_shared;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
@@ -258,6 +259,36 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
 
     // Update difficulty
     save_shared::update_difficulty(&mut save, actual_difficulty);
+
+    // Mirror the create flow's progression logic: a level past The Hub — or a
+    // non-main storyline ending — needs The Hub reachable (every hub-door flag
+    // true), and side endings additionally need HasCompletedMainEnding set.
+    // "Pipes" is main-line Pipe Dreams under its merged in-game name.
+    let selected_main_index = MAIN_STORYLINE_LEVELS
+        .iter()
+        .position(|(_, l)| *l == current_level || (*l == "Pipes2" && current_level == "Pipes"));
+    let is_side_storyline = selected_main_index.is_none();
+    let is_after_hub = match (
+        MAIN_STORYLINE_LEVELS
+            .iter()
+            .position(|(_, l)| *l == "TheHub"),
+        selected_main_index,
+    ) {
+        (Some(hub_pos), Some(sel_pos)) => sel_pos > hub_pos,
+        _ => false,
+    };
+    if is_side_storyline || is_after_hub {
+        tracing::info!(
+            "Selected level '{}' (side storyline: {}, past The Hub: {}) — unlocking hub doors",
+            current_level,
+            is_side_storyline,
+            is_after_hub
+        );
+        apply_unlock_all_hub_doors_in_place(&mut save)?;
+    }
+    if is_side_storyline {
+        update_bool_property(&mut save, "HasCompletedMainEnding", true)?;
+    }
 
     // Process player data
     process_player_data(&mut save, json_data)?;
@@ -1067,17 +1098,11 @@ fn create_default_levels_completed_property(save: &mut Save) -> Property {
     Property::Array(ValueVec::Struct(vec![]))
 }
 
-/// Unlock all hub doors
-/// Reads LevelsCompleted_0 in the save, fills up to ALL_LEVELS count, and sets all Bool values to true
-pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
-    tracing::info!("Unlocking all hub doors: {}", file_path);
-
-    validate_save_games_path(Path::new(file_path))?;
-
-    let file = File::open(file_path).map_err(|e| format!("Failed to open save file: {}", e))?;
-    let mut reader = BufReader::with_capacity(16384, file);
-    let mut save = Save::read(&mut reader).map_err(|e| format!("Failed to parse save: {:?}", e))?;
-
+/// In-place core of the hub-door unlock: every LevelsCompleted entry gets all
+/// of its bools set (incl. HasUnlockedHub) and missing HUB_DOOR_LEVELS entries
+/// are appended. Shared by the manual "unlock all hub doors" command and by
+/// edit_save_file's create-flow parity logic.
+fn apply_unlock_all_hub_doors_in_place(save: &mut Save) -> AppResult<()> {
     let levels_completed_key = PropertyKey(0, "LevelsCompleted".to_string());
 
     // Create default structure when LevelsCompleted_0 does not exist
@@ -1085,7 +1110,7 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
         tracing::warn!(
             "LevelsCompleted_0 field not found, automatically creating default structure..."
         );
-        let default_prop = create_default_levels_completed_property(&mut save);
+        let default_prop = create_default_levels_completed_property(save);
         save.root
             .properties
             .0
@@ -1099,7 +1124,7 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
     );
     if !is_valid_levels_completed {
         tracing::warn!("LevelsCompleted_0 format is incorrect, rebuilding default structure...");
-        let default_prop = create_default_levels_completed_property(&mut save);
+        let default_prop = create_default_levels_completed_property(save);
         save.root
             .properties
             .0
@@ -1107,7 +1132,7 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
     }
 
     // Record schemas for level struct fields up front (idempotent)
-    record_level_struct_schemas(&mut save);
+    record_level_struct_schemas(save);
 
     // Get existing LevelsCompleted_0
     let levels_completed_prop = save
@@ -1162,6 +1187,22 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
     } else {
         return Err("LevelsCompleted_0 format is incorrect".to_string().into());
     }
+
+    Ok(())
+}
+
+/// Unlock all hub doors
+/// Reads LevelsCompleted_0 in the save, fills up to ALL_LEVELS count, and sets all Bool values to true
+pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
+    tracing::info!("Unlocking all hub doors: {}", file_path);
+
+    validate_save_games_path(Path::new(file_path))?;
+
+    let file = File::open(file_path).map_err(|e| format!("Failed to open save file: {}", e))?;
+    let mut reader = BufReader::with_capacity(16384, file);
+    let mut save = Save::read(&mut reader).map_err(|e| format!("Failed to parse save: {:?}", e))?;
+
+    apply_unlock_all_hub_doors_in_place(&mut save)?;
 
     // Write back to file
     let file =

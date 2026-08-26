@@ -14,7 +14,7 @@ use uesave::{
 
 /// Main storyline level data: (DisplayName, LevelName)
 /// Arranged by game progress order - first 17 of endingLevelsData[0]
-const MAIN_STORYLINE_LEVELS: &[(&str, &str)] = &[
+pub(crate) const MAIN_STORYLINE_LEVELS: &[(&str, &str)] = &[
     ("Level 0", "Level0"),
     ("Habitable Zone", "TopFloor"),
     ("Habitable Zone", "MiddleFloor"),
@@ -287,7 +287,7 @@ fn handle_pipes_unlocked_fun(save: &mut Save, level: &str) {
 }
 
 /// Update boolean property
-fn update_bool_property(save: &mut Save, name: &str, value: bool) -> AppResult<()> {
+pub(crate) fn update_bool_property(save: &mut Save, name: &str, value: bool) -> AppResult<()> {
     save_shared::record_root_schema(
         save,
         name,

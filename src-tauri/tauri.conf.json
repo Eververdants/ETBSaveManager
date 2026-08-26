@@ -51,13 +51,5 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
-  },
-  "plugins": {
-    "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM5MDA1MkJENzI4QkI1NEUKUldST3RZdHl2VklBeVNBazlsNFFhc2dqMnMvUU91UU5QZCs1aEpxNHA0TGZUaHEvMW00YUpVZDIK",
-      "endpoints": [
-        "https://github.com/Eververdants/ETBSaveManager/releases/latest/download/latest.json"
-      ]
-    }
   }
 }

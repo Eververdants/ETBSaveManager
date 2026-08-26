@@ -207,13 +207,22 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
 
     // Refuse to save under a DIFFERENT archive's name: fs::rename replaces
     // existing targets on all platforms, so that would silently destroy the
-    // other archive's bytes with no warning. NTFS compares case-insensitively,
-    // so a case-only rename ("foo" -> "FOO") still targets the SAME file and
-    // remains an allowed in-place save.
+    // other archive's bytes with no warning. The frontend-supplied original
+    // path and our joined output path can differ in separators/case/normal-
+    // ization while naming the SAME file (a plain string compare misfires and
+    // blocks every in-place edit), so decide sameness through the filesystem:
+    // canonicalize resolves all of those on existing paths.
     if output_path.exists() {
-        let same_target = match (Path::new(&original_path).to_str(), output_path.to_str()) {
-            (Some(a), Some(b)) => a.to_lowercase() == b.to_lowercase(),
-            _ => Path::new(&original_path) == output_path,
+        let original_fs_path = Path::new(&original_path);
+        let same_target = match (
+            fs::canonicalize(original_fs_path),
+            fs::canonicalize(&output_path),
+        ) {
+            (Ok(a), Ok(b)) => a == b,
+            _ => {
+                let norm = |p: &Path| p.to_string_lossy().to_lowercase().replace('/', "\\");
+                norm(original_fs_path) == norm(&output_path)
+            }
         };
         if !same_target {
             return Err(format!(

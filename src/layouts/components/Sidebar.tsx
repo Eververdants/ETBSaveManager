@@ -229,20 +229,23 @@ function SidebarItem({
   // ---- 分组项 ----
   if (isGroup) {
     return (
-      <div className="relative">
+      <div className="relative w-full">
+        {collapsed && (
+          <div
+            className="absolute inset-0 z-10"
+            onMouseEnter={(e) =>
+              openFlyout(entry.labelKey, e.currentTarget)
+            }
+            onMouseLeave={closeFlyout}
+          />
+        )}
         <button
           type="button"
           onClick={collapsed ? undefined : () => setOpen((v) => !v)}
-          onMouseEnter={
-            collapsed
-              ? (e) => openFlyout(entry.labelKey, e.currentTarget)
-              : undefined
-          }
-          onMouseLeave={collapsed ? closeFlyout : undefined}
           aria-expanded={open}
           title={label}
           className={cn(
-            "flex w-full items-center rounded-lg pl-2.5 py-2.5 text-[13px] transition-all duration-150 ease-out",
+            "relative flex w-full items-center rounded-lg pl-2.5 py-2.5 text-[13px] transition-all duration-150 ease-out",
             containsActive || (collapsed && isFlyoutActive)
               ? "bg-[var(--color-shell-item-active)] font-medium text-[var(--color-shell-text-active)] shadow-sm"
               : "text-[var(--color-shell-text)] hover:bg-[var(--color-shell-item-hover)] hover:text-[var(--color-shell-text-active)]",

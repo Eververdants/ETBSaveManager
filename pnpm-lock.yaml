@@ -68,9 +68,6 @@ importers:
       pinia:
         specifier: ^4.0.3
         version: 4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3))
-      pinyin-pro:
-        specifier: ^3.29.3
-        version: 3.29.3
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -2400,9 +2397,6 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
-
-  pinyin-pro@3.29.3:
-    resolution: {integrity: sha512-+UU9bx6vfDw8amOJGHm0TE0rdQl8VPylsDWviQ5OOQ3e+on1xRP4OqDbiDuMT5OISgvfl/Y6ez1BBRaIP80GLQ==}
 
   pkg-types@1.3.1:
     resolution: {integrity: sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==}
@@ -5000,8 +4994,6 @@ snapshots:
       vue: 3.5.41(typescript@6.0.3)
     optionalDependencies:
       typescript: 6.0.3
-
-  pinyin-pro@3.29.3: {}
 
   pkg-types@1.3.1:
     dependencies:

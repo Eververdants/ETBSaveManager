@@ -41,11 +41,8 @@
 </template>
 
 <script>
-import { Chart, LineController, LineElement, PointElement, LinearScale, Title, CategoryScale } from "chart.js";
 import { markRaw } from "vue";
 import { useI18n } from "vue-i18n";
-
-Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale);
 
 export default {
   name: "PerformanceMonitor",
@@ -67,11 +64,13 @@ export default {
       cpuIdle: 0,
       visibilityHandler: null,
       paused: false,
-      sampleInterval: 500,
+      sampleInterval: 1000, // 采样间隔从 500ms 增加到 1000ms，减少 CPU 开销
       frameCount: 0,
       fpsData: [],
       memData: [],
       cpuData: [],
+      Chart: null, // 动态加载的 Chart 类
+      chartsLoaded: false,
     };
   },
   computed: {
@@ -189,7 +188,7 @@ export default {
       }
     },
   },
-  mounted() {
+  async mounted() {
     // 使用现代API获取页面加载时间
     const navigationEntry = performance.getEntriesByType("navigation")[0];
     if (navigationEntry) {
@@ -203,7 +202,9 @@ export default {
       this.loadTime = 0;
     }
 
-    this.initCharts();
+    // 动态加载 Chart.js - 仅在组件实际显示时加载
+    await this.loadChartJS();
+
     this.visibilityHandler = () => {
       if (document.hidden) {
         this.paused = true;
@@ -233,6 +234,27 @@ export default {
     this.cpuChart?.destroy();
   },
   methods: {
+    async loadChartJS() {
+      try {
+        // 动态导入 Chart.js - 仅在组件实际显示时加载
+        const chartModule = await import("chart.js");
+        const { Chart, LineController, LineElement, PointElement, LinearScale, Title, CategoryScale } = chartModule;
+
+        // 注册必要的组件
+        Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale);
+
+        this.Chart = markRaw(Chart);
+        this.chartsLoaded = true;
+
+        // 初始化图表
+        this.$nextTick(() => {
+          this.initCharts();
+        });
+      } catch (error) {
+        console.warn("Failed to load Chart.js:", error);
+        this.chartsLoaded = false;
+      }
+    },
     startMonitoring() {
       if (this.frame || this.paused) return;
       const loop = (now) => {
@@ -279,7 +301,10 @@ export default {
       this.frame = requestAnimationFrame(loop);
     },
     updateData() {
-      const maxPoints = 60;
+      // 如果页面不可见，跳过数据更新
+      if (this.paused) return;
+
+      const maxPoints = 30; // 从 60 点减少到 30 点，减少内存和渲染开销
 
       this.fpsData.push(this.fps);
       this.memData.push(this.memory.usedJSHeapSize / 1024 / 1024);
@@ -289,9 +314,18 @@ export default {
       if (this.memData.length > maxPoints) this.memData.shift();
       if (this.cpuData.length > maxPoints) this.cpuData.shift();
 
-      this.updateCharts();
+      // 使用 requestIdleCallback 延迟更新图表，避免阻塞主线程
+      if (typeof requestIdleCallback !== 'undefined') {
+        requestIdleCallback(() => this.updateCharts(), { timeout: 200 });
+      } else {
+        // 降级方案：使用 setTimeout
+        setTimeout(() => this.updateCharts(), 0);
+      }
     },
     initCharts() {
+      // 如果 Chart.js 未加载成功，跳过初始化
+      if (!this.chartsLoaded || !this.Chart) return;
+
       const commonOptions = {
         responsive: true,
         animation: false,
@@ -306,7 +340,7 @@ export default {
       };
 
       this.fpsChart = markRaw(
-        new Chart(this.$refs.fpsChart, {
+        new this.Chart(this.$refs.fpsChart, {
           type: "line",
           data: {
             labels: [],
@@ -317,7 +351,7 @@ export default {
       );
 
       this.memChart = markRaw(
-        new Chart(this.$refs.memChart, {
+        new this.Chart(this.$refs.memChart, {
           type: "line",
           data: {
             labels: [],
@@ -328,7 +362,7 @@ export default {
       );
 
       this.cpuChart = markRaw(
-        new Chart(this.$refs.cpuChart, {
+        new this.Chart(this.$refs.cpuChart, {
           type: "line",
           data: {
             labels: [],
@@ -339,18 +373,20 @@ export default {
       );
     },
     updateCharts() {
-      const labels = Array.from({ length: this.fpsData.length }, (_, i) => i);
+      // 如果图表未加载，跳过更新
+      if (!this.chartsLoaded || !this.fpsChart || !this.memChart || !this.cpuChart) return;
 
-      this.fpsChart.data.labels = [...labels];
-      this.fpsChart.data.datasets[0].data = [...this.fpsData];
+      // 直接更新数据引用，避免创建新数组
+      this.fpsChart.data.labels = this.fpsData.map((_, i) => i);
+      this.fpsChart.data.datasets[0].data = this.fpsData;
       this.fpsChart.update("none");
 
-      this.memChart.data.labels = [...labels];
-      this.memChart.data.datasets[0].data = [...this.memData];
+      this.memChart.data.labels = this.memData.map((_, i) => i);
+      this.memChart.data.datasets[0].data = this.memData;
       this.memChart.update("none");
 
-      this.cpuChart.data.labels = [...labels];
-      this.cpuChart.data.datasets[0].data = [...this.cpuData];
+      this.cpuChart.data.labels = this.cpuData.map((_, i) => i);
+      this.cpuChart.data.datasets[0].data = this.cpuData;
       this.cpuChart.update("none");
     },
     formatMemory(bytes) {

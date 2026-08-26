@@ -1,6 +1,5 @@
 import { ref, computed, nextTick } from "vue";
 import type { ComputedRef, Ref } from "vue";
-import { pinyin } from "pinyin-pro";
 import { fuzzySearch, type FuzzyMatchResult } from "@/utils/fuzzyMatch";
 import { getPinyinTexts } from "@/utils/pinyinMap";
 
@@ -102,18 +101,15 @@ export function useInventoryItemSelector(getItemName: (id: string) => string): I
 
   /**
    * 无精确搜索结果时的模糊匹配建议
-   * 同时匹配物品 ID、当前语言翻译名、英文显示名三种文本
+   * 同时匹配物品 ID、当前语言翻译名、英文显示名、拼音（全拼/首字母）
    */
   const fuzzyResults = computed<FuzzyMatchResult<InventoryItem>[]>(() => {
     const keyword = searchQuery.value.trim();
     if (hasExactMatches.value || !keyword) return [];
 
-    // 如果输入包含中文，同时用原文和拼音进行匹配（处理同音字）
-    const hasChinese = /[一-鿿]/.test(keyword);
-    const queries = hasChinese ? [keyword, pinyin(keyword, { toneType: "none", type: "array" }).join("")] : [keyword];
-
+    // 直接用输入进行模糊匹配，getPinyinTexts 已提供预存的拼音映射
     return fuzzySearch(
-      queries,
+      [keyword],
       availableItems.value,
       (item) =>
         [item.id, getItemName(item.id), ITEM_ENGLISH_NAMES[item.id] || "", ...getPinyinTexts(item.id)].filter(Boolean),

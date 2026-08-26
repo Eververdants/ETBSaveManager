@@ -9,6 +9,9 @@ interface Translations {
 interface CardTagStyle {
   "--w-short": string;
   "--w-full": string;
+  // CSS custom properties index signature so the object satisfies Vue's
+  // StyleValue / CSSProperties when bound via :style.
+  [key: `--${string}`]: string;
 }
 
 interface CardActions {

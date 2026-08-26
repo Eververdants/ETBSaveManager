@@ -101,9 +101,11 @@
   </div>
 </template>
 
-<script setup>
-import { computed, toRef } from "vue";
+<script setup lang="ts">
+import { computed, toRef, type Ref } from "vue";
 import { useI18n } from "vue-i18n";
+import DOMPurify from "dompurify";
+import type { ArchiveData } from "@/types";
 import LazyImage from "../ui/LazyImage.vue";
 import { useArchiveCard } from "@/composables/useArchiveCard";
 import { highlightMatch } from "@/composables/useArchiveSearchFilter";
@@ -134,27 +136,25 @@ const props = defineProps({
 
 const emit = defineEmits(["toggle-visibility", "edit", "delete", "select", "toggle-select"]);
 
-const sanitize = (html) => {
-  // Fast return if no mark tags present (most common case)
-  if (!html || !html.includes("<mark")) return html;
-  // Strip dangerous attributes from <mark> tags, keep only safe class attribute
-  html = html.replace(/<(\/?)mark\b([^>]*)>/gi, (match, isClosing, attrs) => {
-    if (isClosing) return "</mark>";
-    const cls = attrs.match(/class\s*=\s*"(?:[^"\\]|\\.)*"/i);
-    return cls ? `<mark ${cls[0]}>` : "<mark>";
+const sanitize = (html: string): string => {
+  if (!html) return html;
+  // Fast return if no HTML tags present (most common case)
+  if (!html.includes("<")) return html;
+  // Use DOMPurify with strict config - only allow <mark> tags for search highlighting
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ["mark"],
+    ALLOWED_ATTR: ["class"],
   });
-  // Remove all other HTML tags
-  return html.replace(/<(?!\/?mark\b)[^>]*>/gi, "");
 };
 
 const { t, te } = useI18n({ useScope: "global" });
 
-const getLevelName = (levelKey) => {
+const getLevelName = (levelKey: string) => {
   const translationKey = `LevelName_Display.${levelKey}`;
   return te(translationKey) ? t(translationKey) : levelKey;
 };
 
-const getDifficultyText = (difficultyKey) => {
+const getDifficultyText = (difficultyKey: string) => {
   const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
   return te(translationKey) ? t(translationKey) : difficultyKey;
 };
@@ -164,7 +164,9 @@ const translations = {
   getDifficultyText,
 };
 
-const archiveRef = toRef(props, "archive");
+// props.archive is declared as generic Object for runtime flexibility; cast
+// to the concrete shape useArchiveCard expects.
+const archiveRef = toRef(props, "archive") as Ref<ArchiveData>;
 const indexRef = computed(() => props.index);
 
 const {
@@ -176,7 +178,14 @@ const {
   editArchive,
   deleteArchive,
   handleCardClick: baseHandleCardClick,
-} = useArchiveCard(archiveRef, indexRef, emit, translations);
+} = useArchiveCard(
+  archiveRef,
+  indexRef,
+  // defineEmits narrows the event union; the composable's shared handler
+  // contract is the looser (event: string, ...args) signature it re-emits through.
+  emit as (event: string, ...args: unknown[]) => void,
+  translations,
+);
 
 // Cache tagStyle results to avoid creating new style objects on every render
 const archiveDifficultyTagStyle = computed(() =>

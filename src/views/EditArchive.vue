@@ -741,15 +741,17 @@ const handleLevelGroupClick = (index) => {
 // Displayed levels (supports cross-group search)
 const displayedLevels = computed(() => {
   const query = levelSearchQuery.value.trim().toLowerCase();
-  // When searching, show all matching levels across groups
   if (query) {
-    return availableLevels.value.filter((level) => {
-      const name = level.name.toLowerCase();
-      const key = level.levelKey.toLowerCase();
-      return name.includes(query) || key.includes(query);
-    });
+    // Search from levelGroups (not availableLevels) so the unlockMain flag
+    // on shared levels is preserved in search results.
+    return levelGroups.value
+      .flatMap((g) => g.levels)
+      .filter((level) => {
+        const name = level.name.toLowerCase();
+        const key = level.levelKey.toLowerCase();
+        return name.includes(query) || key.includes(query);
+      });
   }
-  // Otherwise show levels for the selected group
   return levelGroups.value[selectedLevelGroup.value]?.levels || [];
 });
 
@@ -2067,19 +2069,21 @@ onUnmounted(() => {
   border-top: 1px solid var(--border-color);
 }
 
-/* "Also in main ending" tag — only while searching; high-contrast */
+/* Main-ending unlock tag — only while searching; pill badge on image */
 .tag-on-image {
   position: absolute;
-  top: 8px;
+  bottom: 8px;
   left: 8px;
   z-index: 2;
-  padding: 3px 8px;
-  border-radius: var(--radius-xs);
-  background: var(--accent-color);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent-color) 0%, color-mix(in srgb, var(--accent-color) 80%, #fff 20%) 100%);
   color: #fff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
 }
 
 /* Player management - Enhanced layout with better visual hierarchy */

@@ -215,6 +215,9 @@ pub async fn load_all_saves() -> AppResult<Vec<SaveFileInfo>> {
         );
     }
 
+    // Phase 0c: Move legacy root-level .sav.trash files into the temp folder.
+    crate::save_deleter::migrate_legacy_trash();
+
     let (paths_result, visible_saves_result) = rayon::join(
         get_file_path::list_save_paths,
         crate::common::get_visible_saves_with_display_names,
@@ -268,6 +271,9 @@ pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
             gensave_count
         );
     }
+
+    // Phase 0c: Move legacy root-level .sav.trash files into the temp folder.
+    crate::save_deleter::migrate_legacy_trash();
 
     let (paths_result, visible_saves_result) = rayon::join(
         get_file_path::list_save_paths,

@@ -55,7 +55,59 @@ pub async fn delete_file(file_path: String) -> AppResult<()> {
     .await
 }
 
-/// Soft-delete: rename .sav → .sav.trash so it can be restored later.
+/// Soft-deleted archives live in this subfolder of SaveGames instead of
+/// cluttering the game's own directory. Same volume → renames stay atomic;
+/// inside SaveGames → containment validation still passes and undo survives
+/// reboots (unlike the OS temp dir, which may be cleaned at any time).
+const TRASH_SUBDIR: &str = "temp";
+
+/// Trash location for an archive: `<SaveGames>/temp/<name>.sav.trash`.
+fn new_trash_path(original_sav_path: &Path) -> AppResult<PathBuf> {
+    let filename = original_sav_path.file_name().ok_or("Invalid file path")?;
+    Ok(get_save_games_dir()?
+        .join(TRASH_SUBDIR)
+        .join(filename)
+        .with_extension("sav.trash"))
+}
+
+/// Legacy pre-upgrade location: `.sav.trash` next to the original file.
+fn legacy_trash_path(original_sav_path: &Path) -> PathBuf {
+    original_sav_path.with_extension("sav.trash")
+}
+
+/// Move any root-level `.sav.trash` files from earlier versions into the
+/// temp subfolder. Best-effort; called during metadata load.
+pub fn migrate_legacy_trash() {
+    let Ok(save_dir) = get_save_games_dir() else {
+        return;
+    };
+    let Ok(entries) = fs::read_dir(&save_dir) else {
+        return;
+    };
+    let trash_dir = save_dir.join(TRASH_SUBDIR);
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("trash") {
+            continue;
+        }
+        let Some(filename) = path.file_name() else {
+            continue;
+        };
+        if fs::create_dir_all(&trash_dir).is_err() {
+            return;
+        }
+        match fs::rename(&path, trash_dir.join(filename)) {
+            Ok(()) => tracing::info!("Migrated legacy trash file: {}", filename.to_string_lossy()),
+            Err(e) => tracing::warn!(
+                "Failed to migrate trash file '{}': {}",
+                filename.to_string_lossy(),
+                e
+            ),
+        }
+    }
+}
+
+/// Soft-delete: rename .sav → temp/<name>.sav.trash so it can be restored later.
 /// Removes from MAINSAVE records.
 #[tauri::command]
 pub async fn soft_delete_file(file_path: String) -> AppResult<()> {
@@ -74,9 +126,14 @@ pub async fn soft_delete_file(file_path: String) -> AppResult<()> {
 
         validate_save_games_path(path)?;
 
-        let trash_path = path.with_extension("sav.trash");
+        let trash_path = new_trash_path(path)?;
+        if let Some(parent) = trash_path.parent() {
+            fs::create_dir_all(parent)
+                .map_err(|e| format!("Failed to create trash folder: {}", e))?;
+        }
 
-        // Move to trash (rename)
+        // Move to trash (rename). An existing trashed copy of the same name is
+        // replaced — recycle-bin semantics, only the newest deletion is kept.
         fs::rename(path, &trash_path)
             .map_err(|e| format!("Failed to move file to trash: {}", e))?;
 
@@ -96,15 +153,19 @@ pub async fn soft_delete_file(file_path: String) -> AppResult<()> {
     .await
 }
 
-/// Restore a soft-deleted file: rename .sav.trash → .sav.
+/// Restore a soft-deleted file: rename temp/<name>.sav.trash → <name>.sav.
+/// Falls back to the legacy root-level location from older versions.
 /// Adds back to MAINSAVE records.
 #[tauri::command]
 pub async fn restore_file(file_path: String) -> AppResult<()> {
     run_blocking(move || {
         let path = Path::new(&file_path);
 
-        // The .trash path is the original path with .sav.trash extension
-        let trash_path = path.with_extension("sav.trash");
+        // New layout first, then the pre-upgrade root-level .sav.trash.
+        let mut trash_path = new_trash_path(path)?;
+        if !trash_path.exists() {
+            trash_path = legacy_trash_path(path);
+        }
 
         validate_save_games_path(&trash_path)?;
 
@@ -143,13 +204,13 @@ pub async fn restore_file(file_path: String) -> AppResult<()> {
 pub async fn permanent_delete_file(file_path: String) -> AppResult<()> {
     run_blocking(move || {
         let path = Path::new(&file_path);
-        let trash_path = path.with_extension("sav.trash");
-
-        validate_save_games_path(&trash_path)?;
-
-        if trash_path.exists() {
-            fs::remove_file(&trash_path)
-                .map_err(|e| format!("Failed to delete trash file: {}", e))?;
+        // Remove both layouts if present (new temp/ folder + legacy root).
+        for trash_path in [new_trash_path(path)?, legacy_trash_path(path)] {
+            validate_save_games_path(&trash_path)?;
+            if trash_path.exists() {
+                fs::remove_file(&trash_path)
+                    .map_err(|e| format!("Failed to delete trash file: {}", e))?;
+            }
         }
         Ok(())
     })

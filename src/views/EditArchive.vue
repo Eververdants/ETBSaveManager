@@ -187,7 +187,12 @@
                       <font-awesome-icon :icon="['fas', 'check-circle']" />
                     </div>
                   </div>
-                  <span class="level-name">{{ level.name }}</span>
+                  <span class="level-name"
+                    >{{ level.name
+                    }}<span v-if="level.unlockMain" class="unlock-main-pill">{{
+                      t("editArchive.unlockMainBadge")
+                    }}</span></span
+                  >
                 </div>
               </div>
             </Transition>
@@ -678,6 +683,9 @@ const mkLevel = (levelKey) => ({
   image: `/images/ETB/${levelKey}.webp`,
   levelKey,
 });
+// Levels shared between a branch route and the main route get an
+// informational tag so they are distinguishable during search
+const mainRouteSet = new Set(ENDING_LEVELS[0]);
 
 const levelGroups = computed(() => {
   const groups = [];
@@ -688,7 +696,9 @@ const levelGroups = computed(() => {
       levels: [],
     };
     (ENDING_LEVELS[cfg.id] || []).forEach((k) => {
-      g.levels.push(mkLevel(k));
+      const level = mkLevel(k);
+      if (cfg.id !== 0 && mainRouteSet.has(k)) level.unlockMain = true;
+      g.levels.push(level);
     });
     groups.push(g);
   });
@@ -2059,25 +2069,17 @@ onUnmounted(() => {
   border-top: 1px solid var(--border-color);
 }
 
-/* Main-ending opt-in row under the level grid */
-.unlock-main-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  font-size: 13px;
+/* "Also in main ending" tag on shared level cards */
+.unlock-main-pill {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  background: rgba(var(--accent-color-rgb), 0.18);
+  color: var(--accent-color);
+  font-size: 10px;
   font-weight: 600;
-  color: var(--text-primary);
-  border-top: 1px solid var(--border-color);
-  cursor: pointer;
-  user-select: none;
-}
-
-.unlock-main-row input {
-  accent-color: var(--accent-color);
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
+  vertical-align: middle;
 }
 
 /* Player management - Enhanced layout with better visual hierarchy */

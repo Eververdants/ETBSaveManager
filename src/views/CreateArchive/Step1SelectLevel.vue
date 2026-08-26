@@ -39,33 +39,33 @@
     <div class="section-card">
       <Transition name="level-grid-fade" mode="out-in">
         <div
-          v-if="filteredLevels.length > 0"
-          :key="selectedEnding"
+          v-if="displayList.length > 0"
+          :key="transitionKey"
           class="level-grid"
         >
           <div
-            v-for="level in filteredLevels"
-            :key="level.levelKey"
+            v-for="card in displayList"
+            :key="`${card.routeIndex}-${card.levelKey}`"
             class="level-card"
-            :class="{ selected: selectedLevel === availableLevels.indexOf(level) }"
-            @click="handleSelectLevel(availableLevels.indexOf(level), $event)"
+            :class="{ selected: isSelected(card) }"
+            @click="handleSelectLevel(card, $event)"
           >
             <div class="level-image-container">
-              <LazyImage :src="level.image" :alt="level.name" image-class="level-image" />
+              <LazyImage :src="card.image" :alt="card.name" image-class="level-image" />
               <div class="level-overlay">
-                <font-awesome-icon
-                  v-if="selectedLevel === availableLevels.indexOf(level)"
-                  :icon="['fas', 'check']"
-                  class="check-icon"
-                />
+                <font-awesome-icon v-if="isSelected(card)" :icon="['fas', 'check']" class="check-icon" />
               </div>
             </div>
             <div class="level-info">
-              <h3 class="level-name">{{ level.name }}</h3>
+              <span v-if="searchActive && card.routeLabel" class="origin-label">{{ card.routeLabel }}</span>
+              <h3 class="level-name">{{ card.name }}</h3>
+              <span v-if="card.sharedMain" class="unlock-main-pill">{{
+                $t("editArchive.unlockMainBadge")
+              }}</span>
             </div>
           </div>
         </div>
-        <div v-else :key="`empty-${selectedEnding}`" class="level-empty">
+        <div v-else key="empty" class="level-empty">
           {{ $t("createArchive.levelSearch.noResults") }}
         </div>
       </Transition>
@@ -75,8 +75,10 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, reactive, onMounted, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { gsap } from "gsap";
 import LazyImage from "@/components/ui/LazyImage.vue";
+import { ENDINGS_CONFIG, ENDING_LEVELS } from "@/data/endingsData";
 
 const props = defineProps({
   selectedLevel: { type: Number, default: -1 },
@@ -87,13 +89,48 @@ const props = defineProps({
 
 const emit = defineEmits(["select-level", "select-ending"]);
 
-// --- Level search (filters the current ending's cards by display name) ---
+// --- Level search across ALL endings (mirrors the editor's picker) ---
+const { t, te } = useI18n({ useScope: "global" });
+const lvlName = (k) => {
+  const i18nKey = `LevelName_Display.${k}`;
+  return te(i18nKey) ? t(i18nKey) : k;
+};
+const mainRoute = new Set(ENDING_LEVELS[0] || []);
+
 const searchQuery = ref("");
-const filteredLevels = computed(() => {
-  const q = searchQuery.value.trim().toLowerCase();
-  if (!q) return props.availableLevels;
-  return props.availableLevels.filter((l) => l.name.toLowerCase().includes(q));
+const searchActive = computed(() => searchQuery.value.trim() !== "");
+
+// Every route's levels, decorated so search can cross ending boundaries;
+// shared-with-main cards carry a distinguishing tag
+const allRouteCards = computed(() => {
+  const out = [];
+  ENDINGS_CONFIG.forEach((cfg, ci) => {
+    (ENDING_LEVELS[cfg.id] || []).forEach((k) => {
+      out.push({
+        name: lvlName(k),
+        image: `/images/ETB/${k}.webp`,
+        levelKey: k,
+        routeIndex: ci,
+        routeLabel: props.endings[ci]?.label || "",
+        sharedMain: ci !== 0 && mainRoute.has(k),
+      });
+    });
+  });
+  return out;
 });
+
+const displayList = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return props.availableLevels.map((l) => ({ ...l }));
+  return allRouteCards.value.filter((c) => c.name.toLowerCase().includes(q.value));
+});
+
+const transitionKey = computed(() =>
+  searchActive.value ? "search" : `ending-${props.selectedEnding}`,
+);
+
+const isSelected = (card) =>
+  props.availableLevels[props.selectedLevel]?.levelKey === card.levelKey;
 
 // Switching endings resets the query so each tab starts unfiltered
 watch(
@@ -154,24 +191,26 @@ const handleEndingClick = (index) => {
 };
 
 // --- Level card click animation ---
-const handleSelectLevel = (index, event) => {
-  const card = event.currentTarget;
-  gsap.killTweensOf(card);
+const handleSelectLevel = (card, event) => {
+  const el = event.currentTarget;
+  gsap.killTweensOf(el);
   gsap
     .timeline()
-    .to(card, {
+    .to(el, {
       scale: 0.97,
       duration: 0.08,
       ease: "power2.out",
       overwrite: true,
     })
-    .to(card, {
+    .to(el, {
       scale: 1,
       duration: 0.18,
       ease: "power2.out",
-      onComplete: () => gsap.set(card, { clearProps: "transform" }),
+      onComplete: () => gsap.set(el, { clearProps: "transform" }),
     });
-  emit("select-level", index);
+  // Emit the CARD (levelKey-bearing): parent resolves the right route/index,
+  // switching endings when a cross-route search result is picked.
+  emit("select-level", card);
 };
 </script>
 
@@ -453,6 +492,27 @@ const handleSelectLevel = (index, event) => {
 .level-info {
   padding: 14px 12px;
   background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+  text-align: center;
+}
+
+/* Origin route shown on cross-ending search results */
+.origin-label {
+  display: block;
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+/* "Also in main ending" tag on shared level cards */
+.unlock-main-pill {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  background: rgba(var(--accent-color-rgb), 0.18);
+  color: var(--accent-color);
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .level-name {

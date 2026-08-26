@@ -46,7 +46,7 @@
             :selected-ending="selectedEnding"
             :available-levels="availableLevels"
             :endings="endings"
-            @select-level="selectLevel"
+            @select-level="onStep1SelectLevel"
             @select-ending="selectEnding"
           />
 
@@ -305,6 +305,24 @@ const loadLevelsForEnding = async (endingIndex) => {
 const selectLevel = (index) => {
   selectedLevel.value = index;
   // Animation moved to Step1SelectLevel component
+};
+
+// Step1 emits the picked CARD (levelKey-bearing). Resolve its index in the
+// active list; when a cross-ending search result was chosen, switch to that
+// ending first so parent state (selectedEnding/availableLevels) stays coherent.
+const onStep1SelectLevel = async (card) => {
+  if (!card || !card.levelKey) return;
+  let idx = availableLevels.findIndex((l) => l.levelKey === card.levelKey);
+  if (idx === -1) {
+    const target = ENDINGS_CONFIG.findIndex((cfg) =>
+      (ENDING_LEVELS[cfg.id] || []).includes(card.levelKey),
+    );
+    if (target !== -1 && target !== selectedEnding.value) {
+      await selectEnding(target);
+      idx = availableLevels.findIndex((l) => l.levelKey === card.levelKey);
+    }
+  }
+  if (idx !== -1) selectLevel(idx);
 };
 
 const validateSteamId = (steamId) => {

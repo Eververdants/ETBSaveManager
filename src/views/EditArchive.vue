@@ -183,16 +183,14 @@
                 >
                   <div class="level-img-wrap">
                     <LazyImage :src="level.image" :alt="level.name" image-class="level-img" />
+                    <span v-if="level.unlockMain" class="tag-on-image">{{
+                      t("editArchive.unlockMainBadge")
+                    }}</span>
                     <div v-if="formData.currentLevel === level.levelKey" class="level-check">
                       <font-awesome-icon :icon="['fas', 'check-circle']" />
                     </div>
                   </div>
-                  <span class="level-name"
-                    >{{ level.name
-                    }}<span v-if="level.unlockMain" class="unlock-main-pill">{{
-                      t("editArchive.unlockMainBadge")
-                    }}</span></span
-                  >
+                  <span class="level-name">{{ level.name }}</span>
                 </div>
               </div>
             </Transition>
@@ -2069,17 +2067,18 @@ onUnmounted(() => {
   border-top: 1px solid var(--border-color);
 }
 
-/* "Also in main ending" tag on shared level cards */
-.unlock-main-pill {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 6px;
+/* "Also in main ending" tag pinned to the card IMAGE */
+.tag-on-image {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  padding: 2px 6px;
   border-radius: var(--radius-xs);
-  background: rgba(var(--accent-color-rgb), 0.18);
-  color: var(--accent-color);
+  background: rgba(var(--accent-color-rgb), 0.85);
+  color: #fff;
   font-size: 10px;
   font-weight: 600;
-  vertical-align: middle;
 }
 
 /* Player management - Enhanced layout with better visual hierarchy */

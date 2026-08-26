@@ -13,13 +13,13 @@
           }"
         />
         <div
-          v-for="(ending, index) in endings"
+          v-for="(tab, index) in groupTabs"
           :key="index"
           class="ending-tab"
-          :class="{ active: selectedEnding === index }"
+          :class="{ active: isTabActive(index) }"
           @click="handleEndingClick(index)"
         >
-          <span class="ending-label">{{ ending.label }}</span>
+          <span class="ending-label">{{ tab.label }}</span>
         </div>
       </div>
     </div>
@@ -52,6 +52,9 @@
           >
             <div class="level-image-container">
               <LazyImage :src="card.image" :alt="card.name" image-class="level-image" />
+              <span v-if="card.sharedMain" class="tag-on-image">{{
+                $t("editArchive.unlockMainBadge")
+              }}</span>
               <div class="level-overlay">
                 <font-awesome-icon v-if="isSelected(card)" :icon="['fas', 'check']" class="check-icon" />
               </div>
@@ -59,9 +62,6 @@
             <div class="level-info">
               <span v-if="searchActive && card.routeLabel" class="origin-label">{{ card.routeLabel }}</span>
               <h3 class="level-name">{{ card.name }}</h3>
-              <span v-if="card.sharedMain" class="unlock-main-pill">{{
-                $t("editArchive.unlockMainBadge")
-              }}</span>
             </div>
           </div>
         </div>
@@ -97,6 +97,28 @@ const lvlName = (k) => {
 };
 const mainRoute = new Set(ENDING_LEVELS[0] || []);
 
+// Tab model: the four routes plus a trailing "special" bucket (LevelCheat)
+const specialActive = ref(false);
+const localPickedKey = ref(null);
+const groupTabs = computed(() => [
+  ...props.endings.map((e) => ({ label: e.label, special: false })),
+  { label: t("editArchive.levelGroup.special"), special: true },
+]);
+const cheatCard = {
+  name: lvlName("LevelCheat"),
+  image: "/images/ETB/LevelCheat.webp",
+  levelKey: "LevelCheat",
+  routeIndex: -1,
+  routeLabel: "",
+  sharedMain: false,
+};
+
+const isTabActive = (index) => {
+  const tab = groupTabs.value[index];
+  if (!tab) return false;
+  return tab.special ? specialActive.value : !specialActive.value && props.selectedEnding === index;
+};
+
 const searchQuery = ref("");
 const searchActive = computed(() => searchQuery.value.trim() !== "");
 
@@ -121,6 +143,7 @@ const allRouteCards = computed(() => {
 
 const displayList = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
+  if (!q && specialActive.value) return [cheatCard];
   if (!q) return props.availableLevels.map((l) => ({ ...l }));
   return allRouteCards.value.filter((c) => c.name.toLowerCase().includes(q.value));
 });
@@ -130,13 +153,16 @@ const transitionKey = computed(() =>
 );
 
 const isSelected = (card) =>
+  card.levelKey === localPickedKey.value ||
   props.availableLevels[props.selectedLevel]?.levelKey === card.levelKey;
 
-// Switching endings resets the query so each tab starts unfiltered
+// Switching endings resets the query/special state so each tab starts clean
 watch(
   () => props.selectedEnding,
   () => {
     searchQuery.value = "";
+    specialActive.value = false;
+    localPickedKey.value = null;
   },
 );
 
@@ -186,6 +212,17 @@ onUnmounted(() => {
 });
 
 const handleEndingClick = (index) => {
+  const tab = groupTabs.value[index];
+  if (tab?.special) {
+    if (specialActive.value) return;
+    specialActive.value = true;
+    searchQuery.value = "";
+    localPickedKey.value = cheatCard.levelKey;
+    emit("select-level", cheatCard); // parent records the special pick
+    nextTick(() => updateSlider());
+    return;
+  }
+  specialActive.value = false;
   if (props.selectedEnding === index) return;
   emit("select-ending", index);
 };
@@ -210,6 +247,7 @@ const handleSelectLevel = (card, event) => {
     });
   // Emit the CARD (levelKey-bearing): parent resolves the right route/index,
   // switching endings when a cross-route search result is picked.
+  localPickedKey.value = card.levelKey;
   emit("select-level", card);
 };
 </script>
@@ -503,14 +541,16 @@ const handleSelectLevel = (card, event) => {
   margin-bottom: 2px;
 }
 
-/* "Also in main ending" tag on shared level cards */
-.unlock-main-pill {
-  display: inline-block;
-  margin-top: 4px;
-  padding: 1px 6px;
+/* "Also in main ending" tag pinned to the card IMAGE */
+.tag-on-image {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  padding: 2px 6px;
   border-radius: var(--radius-xs);
-  background: rgba(var(--accent-color-rgb), 0.18);
-  color: var(--accent-color);
+  background: rgba(var(--accent-color-rgb), 0.85);
+  color: #fff;
   font-size: 10px;
   font-weight: 600;
 }

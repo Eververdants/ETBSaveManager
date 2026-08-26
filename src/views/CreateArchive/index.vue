@@ -187,6 +187,13 @@ const isQuickMode = computed(() => route.query.quickMode === "true");
 const currentStep = ref(1);
 const previousStepValue = ref(1);
 const selectedLevel = ref(-1);
+// Special-tab picks (e.g. LevelCheat) live outside every route list
+const specialLevelKey = ref(null);
+
+const getSelectedLevelData = () => {
+  if (specialLevelKey.value) return { levelKey: specialLevelKey.value };
+  return availableLevels[selectedLevel.value];
+};
 const selectedEnding = ref(0);
 const archiveName = ref("");
 const selectedDifficulty = ref("normal");
@@ -242,7 +249,7 @@ const canProceed = computed(() => {
   if (isCreating.value) return false;
   switch (currentStep.value) {
     case 1:
-      return selectedLevel.value !== -1;
+      return selectedLevel.value !== -1 || !!specialLevelKey.value;
     case 2:
       return archiveName.value.trim() !== "" && !archiveName.value.includes("_");
     case 3:
@@ -322,7 +329,14 @@ const onStep1SelectLevel = async (card) => {
       idx = availableLevels.findIndex((l) => l.levelKey === card.levelKey);
     }
   }
-  if (idx !== -1) selectLevel(idx);
+  if (idx !== -1) {
+    specialLevelKey.value = null;
+    selectLevel(idx);
+  } else {
+    // Special bucket pick (e.g. LevelCheat): kept outside the route lists
+    specialLevelKey.value = card.levelKey;
+    selectedLevel.value = -1;
+  }
 };
 
 const validateSteamId = (steamId) => {
@@ -453,6 +467,7 @@ const handleItemSelect = (itemId) => {
 const resetForm = () => {
   currentStep.value = 1;
   selectedLevel.value = -1;
+  specialLevelKey.value = null;
   selectedEnding.value = 0;
   archiveName.value = "";
   selectedDifficulty.value = "normal";
@@ -487,7 +502,7 @@ const nextStep = () => {
  * Pass current archive config data back to quick mode page
  */
 const finishAndReturnToQuickMode = () => {
-  const selectedLevelData = availableLevels[selectedLevel.value];
+  const selectedLevelData = getSelectedLevelData();
 
   // Build archive config data
   const archiveConfig = {
@@ -542,7 +557,7 @@ const createArchive = async () => {
   if (isCreating.value) return;
   try {
     isCreating.value = true;
-    const selectedLevelData = availableLevels[selectedLevel.value];
+    const selectedLevelData = getSelectedLevelData();
     if (!selectedLevelData) {
       notify.error(t("createArchive.selectLevelRequired"));
       isCreating.value = false;
@@ -554,9 +569,11 @@ const createArchive = async () => {
       isCreating.value = false;
       return;
     }
-    const isMainEnding = selectedEnding.value === 0;
+    // Progression parity with the editor: SIDE = not on the main route's
+    // full table; side levels hard-unlock MEG and the main ending.
     const megLevels = ["Level0", "TopFloor", "MiddleFloor", "GarageLevel2", "BottomFloor", "TheHub"];
-    const isMEGUnlocked = !megLevels.includes(selectedLevelData.levelKey);
+    const isSideLevel = !ENDING_LEVELS[0].includes(selectedLevelData.levelKey);
+    const isMEGUnlocked = !megLevels.includes(selectedLevelData.levelKey) || isSideLevel;
     const savedName = archiveName.value.trim() || "Unnamed Archive";
     createdArchiveName.value = savedName;
     // 从已有存档查找完整 PlayerData 键（`<steam id>_+_|<EOS 账号 id>`）：
@@ -590,7 +607,7 @@ const createArchive = async () => {
         sanity: typeof p.sanity === "number" ? p.sanity : 100,
       })),
       basic_archive: basicArchive || {},
-      main_ending: !isMainEnding,
+      main_ending: isSideLevel,
       meg_unlocked: isMEGUnlocked,
     };
     if (!saveData.archive_name) {
@@ -715,6 +732,7 @@ const handleCreateAnother = () => {
   // Reset form and continue creating
   currentStep.value = 1;
   selectedLevel.value = -1;
+  specialLevelKey.value = null;
   selectedEnding.value = 0;
   archiveName.value = "";
   selectedDifficulty.value = "normal";
@@ -765,6 +783,7 @@ const handleBeforeUnload = (e) => {
   if (
     archiveName.value ||
     selectedLevel.value !== -1 ||
+    specialLevelKey.value ||
     players.length > 0 ||
     isCreating.value ||
     showSuccessModal.value

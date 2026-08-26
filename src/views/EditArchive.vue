@@ -190,6 +190,9 @@
                       <font-awesome-icon :icon="['fas', 'check-circle']" />
                     </div>
                   </div>
+                  <span v-if="levelSearchQuery.trim() && level.routeLabel" class="origin-label">{{
+                    level.routeLabel
+                  }}</span>
                   <span class="level-name">{{ level.name }}</span>
                 </div>
               </div>
@@ -696,6 +699,7 @@ const levelGroups = computed(() => {
     (ENDING_LEVELS[cfg.id] || []).forEach((k) => {
       const level = mkLevel(k);
       if (cfg.id !== 0 && mainRouteSet.has(k)) level.unlockMain = true;
+      level.routeLabel = g.label; // for cross-group search origin display
       g.levels.push(level);
     });
     groups.push(g);
@@ -2053,6 +2057,15 @@ onUnmounted(() => {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* Origin route shown on cross-group search results */
+.origin-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
 }
 
 .level-name {

@@ -99,6 +99,21 @@ pub fn convert_singleplayer_archives(save_dir: &Path) -> Vec<ConversionResult> {
 
         let new_path = save_dir.join(&new_filename);
 
+        // fs::rename replaces existing destinations on Windows
+        // (MOVEFILE_REPLACE_EXISTING), so converting over an already-present
+        // MULTIPLAYER_ twin would silently destroy the newer save (e.g. an
+        // old SINGLEPLAYER_ backup restored next to it). Skip instead,
+        // mirroring plan_renames in gensave_rename.rs.
+        if new_path.exists() {
+            tracing::warn!("Conversion: target exists — skipping '{}'", filename);
+            conversions.push(ConversionResult {
+                original: filename.to_string(),
+                converted: new_filename,
+                success: false,
+            });
+            continue;
+        }
+
         // Perform the rename operation
         match fs::rename(&path, &new_path) {
             Ok(()) => {

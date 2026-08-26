@@ -188,6 +188,26 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
 
     validate_save_games_path(&output_path)?;
 
+    // Refuse to save under a DIFFERENT archive's name: fs::rename replaces
+    // existing targets on all platforms, so that would silently destroy the
+    // other archive's bytes with no warning. NTFS compares case-insensitively,
+    // so a case-only rename ("foo" -> "FOO") still targets the SAME file and
+    // remains an allowed in-place save.
+    if output_path.exists() {
+        let same_target =
+            match (Path::new(&original_path).to_str(), output_path.to_str()) {
+                (Some(a), Some(b)) => a.to_lowercase() == b.to_lowercase(),
+                _ => Path::new(&original_path) == output_path,
+            };
+        if !same_target {
+            return Err(format!(
+                "An archive named '{}' already exists. Please choose a different name.",
+                name
+            )
+            .into());
+        }
+    }
+
     tracing::info!("Reading original save file: {:?}", original_path);
 
     let file =

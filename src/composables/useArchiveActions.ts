@@ -275,7 +275,7 @@ export function useArchiveActions(
         });
       }
 
-      toast.showSuccess(t("archiveCard.deleteSuccess"));
+      toast.showSuccess(t("archiveCard.deleteSuccess", { name: archive.name }));
       closeDeleteModal();
       onSuccess?.();
       await onRefresh?.();

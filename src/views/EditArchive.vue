@@ -341,20 +341,6 @@
       @select="handleItemSelect"
       @update:visible="showItemSelector = $event"
     />
-
-    <!-- Save confirmation dialog -->
-    <ConfirmModal
-      :show="showSaveConfirm"
-      :title="$t('editArchive.saveConfirm.title')"
-      :message="$t('editArchive.saveConfirm.message')"
-      :type="'info'"
-      :confirm-text="$t('editArchive.saveConfirm.confirm')"
-      :cancel-text="$t('editArchive.saveConfirm.cancel')"
-      :loading="isSaving"
-      @confirm="confirmSaveArchive"
-      @cancel="showSaveConfirm = false"
-      @update:show="showSaveConfirm = $event"
-    />
   </div>
 </template>
 
@@ -461,7 +447,6 @@ const currentPlayerSanity = ref(100);
 const currentPlayerSteamId = ref("");
 const parseError = ref(false);
 const availableLevels = ref([]);
-const showSaveConfirm = ref(false);
 const isSaving = ref(false);
 
 // NSU 模组状态：未安装并启用时，难度修改无法被游戏识别
@@ -474,9 +459,9 @@ const difficultyLevels = [
   { value: "nightmare", icon: ["fas", "skull"] },
 ];
 
-// Show save confirmation dialog
+// Save immediately — no confirmation dialog
 const handleSaveArchive = () => {
-  showSaveConfirm.value = true;
+  confirmSaveArchive();
 };
 
 // Confirm and execute save
@@ -539,7 +524,6 @@ const confirmSaveArchive = async () => {
     }
   } finally {
     isSaving.value = false;
-    showSaveConfirm.value = false;
   }
 };
 

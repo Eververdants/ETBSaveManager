@@ -24,21 +24,22 @@
       </div>
     </div>
 
+    <!-- Level search — outside section-card so it doesn't scroll -->
+    <div class="level-search">
+      <font-awesome-icon :icon="['fas', 'search']" class="level-search-icon" />
+      <input
+        v-model="searchQuery"
+        type="text"
+        class="level-search-input"
+        :placeholder="$t('createArchive.levelSearch.placeholder')"
+      />
+      <button v-if="searchActive" class="level-search-clear" @click="searchQuery = ''">
+        <font-awesome-icon :icon="['fas', 'times']" />
+      </button>
+    </div>
+
     <!-- Level selection cards -->
     <div class="section-card">
-      <div class="level-search">
-        <font-awesome-icon :icon="['fas', 'search']" class="level-search-icon" />
-        <input
-          v-model="searchQuery"
-          type="text"
-          class="level-search-input"
-          :placeholder="$t('createArchive.levelSearch.placeholder')"
-        />
-        <button v-if="searchActive" class="level-search-clear" @click="searchQuery = ''">
-          <font-awesome-icon :icon="['fas', 'times']" />
-        </button>
-      </div>
-
       <Transition name="level-grid-fade" mode="out-in">
         <div
           v-if="displayList.length > 0"

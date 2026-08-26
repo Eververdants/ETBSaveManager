@@ -190,10 +190,12 @@
                       <font-awesome-icon :icon="['fas', 'check-circle']" />
                     </div>
                   </div>
-                  <span v-if="levelSearchQuery.trim() && level.routeLabel" class="origin-label">{{
-                    level.routeLabel
-                  }}</span>
-                  <span class="level-name">{{ level.name }}</span>
+                  <span class="level-name">
+                    <span v-if="levelSearchQuery.trim() && level.routeLabel" class="origin-label">{{
+                      level.routeLabel
+                    }}</span>
+                    {{ level.name }}
+                  </span>
                 </div>
               </div>
             </Transition>

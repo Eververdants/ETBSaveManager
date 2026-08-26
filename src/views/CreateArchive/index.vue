@@ -847,8 +847,8 @@ const onStepLeave = (el, done) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 15px;
-  gap: 16px;
+  margin-bottom: 8px;
+  gap: 12px;
   position: relative;
 }
 
@@ -1002,7 +1002,7 @@ const onStepLeave = (el, done) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 48px;
+  padding: 10px 32px;
   background: var(--bg-secondary);
   border: 1px solid var(--divider-light);
   border-radius: var(--radius-xl);

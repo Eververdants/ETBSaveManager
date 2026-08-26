@@ -147,7 +147,7 @@ const displayList = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
   if (!q && specialActive.value) return [cheatCard];
   if (!q) return props.availableLevels.map((l) => ({ ...l }));
-  return allRouteCards.value.filter((c) => c.name.toLowerCase().includes(q.value));
+  return allRouteCards.value.filter((c) => c.name.toLowerCase().includes(q));
 });
 
 const transitionKey = computed(() =>

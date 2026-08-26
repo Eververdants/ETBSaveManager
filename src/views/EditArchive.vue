@@ -196,11 +196,6 @@
               <font-awesome-icon :icon="['fas', 'search']" class="level-empty-icon" />
               <span>{{ t("editArchive.levelSearchEmpty") }}</span>
             </div>
-            <!-- Shared level picked inside a branch tab: explicit main-ending opt-in -->
-            <label v-if="showUnlockMainToggle" class="unlock-main-row">
-              <input v-model="unlockMainEnding" type="checkbox" />
-              <span>{{ t("editArchive.unlockMainBadge") }}</span>
-            </label>
           </div>
         </div>
       </div>
@@ -495,9 +490,7 @@ const confirmSaveArchive = async () => {
       path: originalArchive.value.path,
       name: formData.name,
       mode: "Multiplayer",
-      currentLevel:
-        formData.currentLevel +
-        (unlockMainEnding.value && showUnlockMainToggle.value ? UNLOCK_MAIN_SUFFIX : ""),
+      currentLevel: formData.currentLevel,
       difficulty: formatDifficulty(formData.archiveDifficulty),
       actualDifficulty: formatDifficulty(
         FEATURES.MERGE_DIFFICULTY ? formData.archiveDifficulty : formData.actualDifficulty,
@@ -685,8 +678,6 @@ const mkLevel = (levelKey) => ({
   image: `/images/ETB/${levelKey}.webp`,
   levelKey,
 });
-const UNLOCK_MAIN_SUFFIX = "_UnlockMain";
-const mainRouteSet = new Set(ENDING_LEVELS[0]);
 
 const levelGroups = computed(() => {
   const groups = [];
@@ -736,7 +727,6 @@ const updateSlider = () => {
 const handleLevelGroupClick = (index) => {
   if (selectedLevelGroup.value === index) return;
   selectedLevelGroup.value = index;
-  unlockMainEnding.value = false;
   nextTick(() => updateSlider());
 };
 
@@ -765,19 +755,7 @@ const displayKey = computed(() => {
 
 const selectLevel = (levelKey) => {
   formData.currentLevel = levelKey;
-  unlockMainEnding.value = false;
 };
-
-// Main-ending opt-in: only offered when a main-route-shared level is picked
-// inside a branch tab. On save, the choice is encoded as the "_UnlockMain"
-// key suffix the backend already understands.
-const unlockMainEnding = ref(false);
-const showUnlockMainToggle = computed(() => {
-  const g = levelGroups.value[selectedLevelGroup.value];
-  if (!g || g.id === 0) return false;
-  const base = (formData.currentLevel || "").replace(/_UnlockMain$/, "");
-  return base !== "" && mainRouteSet.has(base);
-});
 
 // Player related
 let messageTimeout = null;

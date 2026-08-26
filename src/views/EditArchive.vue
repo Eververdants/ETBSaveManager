@@ -187,7 +187,12 @@
                       <font-awesome-icon :icon="['fas', 'check-circle']" />
                     </div>
                   </div>
-                  <span class="level-name">{{ level.name }}</span>
+                  <span class="level-name"
+                    >{{ level.name
+                    }}<span v-if="level.unlockMain" class="unlock-main-badge">{{
+                      t("editArchive.unlockMainBadge")
+                    }}</span></span
+                  >
                 </div>
               </div>
             </Transition>
@@ -649,9 +654,34 @@ const loadLevels = () => {
     }
   }
 
-  availableLevels.value = allLevels.map((levelKey) => {
-    return { name: getLevelName(levelKey), image: `/images/ETB/${levelKey}.webp`, levelKey };
+  // UI-only twin entries for levels shared between the main route and a
+  // branch: picking the twin explicitly requests main-ending unlock
+  // semantics (the backend strips the "_UnlockMain" suffix and sets
+  // HasCompletedMainEnding instead of guessing from route tables).
+  const UNLOCK_MAIN_SUFFIX = "_UnlockMain";
+  const mainSet = new Set(ENDING_LEVELS[0]);
+  const twins = [];
+  [1, 2, 3, 4].forEach((id) => {
+    (ENDING_LEVELS[id] || []).forEach((k) => {
+      if (mainSet.has(k)) {
+        twins.push({
+          name: getLevelName(k),
+          image: `/images/ETB/${k}.webp`,
+          levelKey: k + UNLOCK_MAIN_SUFFIX,
+          unlockMain: true,
+        });
+      }
+    });
   });
+
+  availableLevels.value = [
+    ...allLevels.map((levelKey) => ({
+      name: getLevelName(levelKey),
+      image: `/images/ETB/${levelKey}.webp`,
+      levelKey,
+    })),
+    ...twins,
+  ];
 };
 
 // --- Level search & grouping ---
@@ -680,7 +710,9 @@ const LEVEL_GROUP_MAP = (() => {
 })();
 
 function getLevelGroup(levelKey) {
-  if (LEVEL_GROUP_MAP[levelKey] !== undefined) return LEVEL_GROUP_MAP[levelKey];
+  // Twin entries group with their base level
+  const base = levelKey.replace(/_UnlockMain$/, "");
+  if (LEVEL_GROUP_MAP[base] !== undefined) return LEVEL_GROUP_MAP[base];
   // Levels not in any ending route (e.g. LevelCheat) fall into "special"
   return "special";
 }
@@ -2051,6 +2083,19 @@ onUnmounted(() => {
   text-overflow: ellipsis;
   background: linear-gradient(to bottom, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border-top: 1px solid var(--border-color);
+}
+
+/* "Unlocks main ending" pill on twin level entries */
+.unlock-main-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  background: rgba(var(--accent-color-rgb), 0.18);
+  color: var(--accent-color);
+  font-size: 10px;
+  font-weight: 600;
+  vertical-align: middle;
 }
 
 /* Player management - Enhanced layout with better visual hierarchy */

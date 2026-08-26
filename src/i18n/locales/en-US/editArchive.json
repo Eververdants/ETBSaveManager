@@ -91,5 +91,6 @@
   "levelSearchEmpty": "No matching levels found",
   "levelGroup": {
     "special": "Special"
-  }
+  },
+  "unlockMainBadge": "Main ending"
 }

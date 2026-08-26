@@ -2,7 +2,7 @@ use crate::common::{
     add_save_to_mainsave, extract_archive_name, remove_save_from_mainsave, validate_save_games_path,
 };
 use crate::error::AppResult;
-use crate::new_save::{update_bool_property, update_meg_status, MAIN_STORYLINE_LEVELS};
+use crate::new_save::{update_bool_property, update_meg_status, ALL_LEVELS, MAIN_STORYLINE_LEVELS};
 use crate::save_shared;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
@@ -177,9 +177,17 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     }
 
     let mode = json_data["mode"].as_str().ok_or("Invalid mode")?;
-    let current_level = json_data["currentLevel"]
+    let current_level_raw = json_data["currentLevel"]
         .as_str()
         .ok_or("Invalid currentLevel")?;
+    // Twin entries suffixed "_UnlockMain" are UI-only variants of a shared
+    // level that explicitly request the main-ending unlock semantics; the
+    // game itself only ever sees the bare level key.
+    const UNLOCK_MAIN_SUFFIX: &str = "_UnlockMain";
+    let force_main_ending = current_level_raw.ends_with(UNLOCK_MAIN_SUFFIX);
+    let current_level = current_level_raw
+        .strip_suffix(UNLOCK_MAIN_SUFFIX)
+        .unwrap_or(current_level_raw);
     let actual_difficulty = json_data["actualDifficulty"]
         .as_str()
         .ok_or("Invalid actualDifficulty")?;
@@ -264,10 +272,21 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     // non-main storyline ending — needs The Hub reachable (every hub-door flag
     // true), and side endings additionally need HasCompletedMainEnding set.
     // "Pipes" is main-line Pipe Dreams under its merged in-game name.
-    let selected_main_index = MAIN_STORYLINE_LEVELS
-        .iter()
-        .position(|(_, l)| *l == current_level || (*l == "Pipes2" && current_level == "Pipes"));
-    let is_side_storyline = selected_main_index.is_none();
+    // Progression logic, mirroring the create flow with one correction: a
+    // level counts as SIDE only when it is exclusive to a branch ending.
+    // Levels on the main route's full table (ALL_LEVELS) — even the back half
+    // like OceanMap or LightsOut that sits beyond the 17-level MAIN_STORYLINE
+    // prefix — must NOT flip HasCompletedMainEnding just for being past The
+    // Hub. "_UnlockMain"-suffixed twin entries force the flag explicitly.
+    let on_main_route = ALL_LEVELS.iter().any(|(_, l)| {
+        let l = *l;
+        l == current_level || (l == "Pipes2" && current_level == "Pipes")
+    });
+    let selected_main_index = MAIN_STORYLINE_LEVELS.iter().position(|(_, l)| {
+        let l = *l;
+        l == current_level || (l == "Pipes2" && current_level == "Pipes")
+    });
+    let is_side_storyline = !on_main_route;
     let is_after_hub = match (
         MAIN_STORYLINE_LEVELS
             .iter()
@@ -277,19 +296,20 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
         (Some(hub_pos), Some(sel_pos)) => sel_pos > hub_pos,
         _ => false,
     };
-    if is_side_storyline || is_after_hub {
+    if is_side_storyline || is_after_hub || force_main_ending {
         tracing::info!(
-            "Selected level '{}' (side storyline: {}, past The Hub: {}) — unlocking hub doors and MEG",
+            "Selected level '{}' (side: {}, past The Hub: {}, force main ending: {}) — unlocking hub doors and MEG",
             current_level,
             is_side_storyline,
-            is_after_hub
+            is_after_hub,
+            force_main_ending
         );
         apply_unlock_all_hub_doors_in_place(&mut save)?;
         // Mirror create flow's isMEGUnlocked(): every level beyond The Hub —
         // and all side endings — ships with MEG doors/power/security on.
         update_meg_status(&mut save, true)?;
     }
-    if is_side_storyline {
+    if is_side_storyline || force_main_ending {
         update_bool_property(&mut save, "HasCompletedMainEnding", true)?;
     }
 

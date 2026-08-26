@@ -2067,19 +2067,19 @@ onUnmounted(() => {
   border-top: 1px solid var(--border-color);
 }
 
-/* "Also in main ending" tag — only while searching; quiet dark chip */
+/* "Also in main ending" tag — only while searching; high-contrast */
 .tag-on-image {
   position: absolute;
   top: 8px;
   left: 8px;
   z-index: 2;
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: var(--radius-xs);
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--accent-color);
   color: #fff;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
 /* Player management - Enhanced layout with better visual hierarchy */

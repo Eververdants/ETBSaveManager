@@ -50,7 +50,7 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, Title, Ca
 export default {
   name: "PerformanceMonitor",
   setup() {
-    const { t } = useI18n();
+    const { t } = useI18n({ useScope: "global" });
     return { t };
   },
   data() {

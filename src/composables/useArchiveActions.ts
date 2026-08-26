@@ -93,7 +93,7 @@ export function useArchiveActions(
   _filters: Record<string, unknown>,
 ): ArchiveActionsReturn {
   const router: Router = useRouter();
-  const { t } = useI18n();
+  const { t } = useI18n({ useScope: "global" });
   const toast = useToast();
   const { pushAction, undo, redo, canUndo, canRedo } = useUndoRedo();
 

@@ -151,7 +151,7 @@ const emit = defineEmits([
   "update-player-sanity",
 ]);
 
-const { t, te } = useI18n();
+const { t, te } = useI18n({ useScope: "global" });
 
 /* Get slot label text (i18n) */
 const getSlotLabelText = (slotIndex) => {

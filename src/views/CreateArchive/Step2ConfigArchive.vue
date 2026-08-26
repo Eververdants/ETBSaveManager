@@ -101,7 +101,7 @@ defineProps({
 
 defineEmits(["update:archiveName", "select-difficulty", "select-actual-difficulty"]);
 
-const { t, te } = useI18n();
+const { t, te } = useI18n({ useScope: "global" });
 
 const getDifficultyText = (difficultyKey) => {
   const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;

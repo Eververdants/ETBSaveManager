@@ -440,7 +440,7 @@ const { initButtonProtection, cleanup: cleanupFloatingButton } = floatingButton;
 
 const toast = useToast();
 
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "global" });
 const route = useRoute();
 
 // Local state (scrollContainerRef, showSearch, isPageActive, shouldResetScroll declared above)

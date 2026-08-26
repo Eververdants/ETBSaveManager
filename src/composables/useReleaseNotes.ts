@@ -33,7 +33,7 @@ interface ReleaseNotesReturn {
  * Get release notes data composable
  */
 export function useReleaseNotes(): ReleaseNotesReturn {
-  const { locale } = useI18n();
+  const { locale } = useI18n({ useScope: "global" });
 
   // Current language release notes data (reactive) - now a single object
   // Chinese shows Chinese release notes, other languages show English release notes

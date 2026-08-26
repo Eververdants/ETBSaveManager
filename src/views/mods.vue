@@ -168,7 +168,7 @@ import modService, {
   type Ue4ssChannel,
 } from "../services/modService";
 
-const { t, te } = useI18n();
+const { t, te } = useI18n({ useScope: "global" });
 
 const gameRoot = ref<string>(storageService.getItem<string>(GAME_ROOT_KEY) || "");
 const pathValid = ref<boolean | null>(null);

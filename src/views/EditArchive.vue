@@ -187,12 +187,7 @@
                       <font-awesome-icon :icon="['fas', 'check-circle']" />
                     </div>
                   </div>
-                  <span class="level-name"
-                    >{{ level.name
-                    }}<span v-if="level.unlockMain" class="unlock-main-badge">{{
-                      t("editArchive.unlockMainBadge")
-                    }}</span></span
-                  >
+                  <span class="level-name">{{ level.name }}</span>
                 </div>
               </div>
             </Transition>
@@ -201,6 +196,11 @@
               <font-awesome-icon :icon="['fas', 'search']" class="level-empty-icon" />
               <span>{{ t("editArchive.levelSearchEmpty") }}</span>
             </div>
+            <!-- Shared level picked inside a branch tab: explicit main-ending opt-in -->
+            <label v-if="showUnlockMainToggle" class="unlock-main-row">
+              <input v-model="unlockMainEnding" type="checkbox" />
+              <span>{{ t("editArchive.unlockMainBadge") }}</span>
+            </label>
           </div>
         </div>
       </div>
@@ -495,7 +495,9 @@ const confirmSaveArchive = async () => {
       path: originalArchive.value.path,
       name: formData.name,
       mode: "Multiplayer",
-      currentLevel: formData.currentLevel,
+      currentLevel:
+        formData.currentLevel +
+        (unlockMainEnding.value && showUnlockMainToggle.value ? UNLOCK_MAIN_SUFFIX : ""),
       difficulty: formatDifficulty(formData.archiveDifficulty),
       actualDifficulty: formatDifficulty(
         FEATURES.MERGE_DIFFICULTY ? formData.archiveDifficulty : formData.actualDifficulty,
@@ -696,9 +698,6 @@ const levelGroups = computed(() => {
     };
     (ENDING_LEVELS[cfg.id] || []).forEach((k) => {
       g.levels.push(mkLevel(k));
-      if (cfg.id !== 0 && mainRouteSet.has(k)) {
-        g.levels.push({ ...mkLevel(k), levelKey: k + UNLOCK_MAIN_SUFFIX, unlockMain: true });
-      }
     });
     groups.push(g);
   });
@@ -737,6 +736,7 @@ const updateSlider = () => {
 const handleLevelGroupClick = (index) => {
   if (selectedLevelGroup.value === index) return;
   selectedLevelGroup.value = index;
+  unlockMainEnding.value = false;
   nextTick(() => updateSlider());
 };
 
@@ -765,7 +765,19 @@ const displayKey = computed(() => {
 
 const selectLevel = (levelKey) => {
   formData.currentLevel = levelKey;
+  unlockMainEnding.value = false;
 };
+
+// Main-ending opt-in: only offered when a main-route-shared level is picked
+// inside a branch tab. On save, the choice is encoded as the "_UnlockMain"
+// key suffix the backend already understands.
+const unlockMainEnding = ref(false);
+const showUnlockMainToggle = computed(() => {
+  const g = levelGroups.value[selectedLevelGroup.value];
+  if (!g || g.id === 0) return false;
+  const base = (formData.currentLevel || "").replace(/_UnlockMain$/, "");
+  return base !== "" && mainRouteSet.has(base);
+});
 
 // Player related
 let messageTimeout = null;
@@ -2069,17 +2081,25 @@ onUnmounted(() => {
   border-top: 1px solid var(--border-color);
 }
 
-/* "Unlocks main ending" pill on twin level entries */
-.unlock-main-badge {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 6px;
-  border-radius: var(--radius-xs);
-  background: rgba(var(--accent-color-rgb), 0.18);
-  color: var(--accent-color);
-  font-size: 10px;
+/* Main-ending opt-in row under the level grid */
+.unlock-main-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
   font-weight: 600;
-  vertical-align: middle;
+  color: var(--text-primary);
+  border-top: 1px solid var(--border-color);
+  cursor: pointer;
+  user-select: none;
+}
+
+.unlock-main-row input {
+  accent-color: var(--accent-color);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
 }
 
 /* Player management - Enhanced layout with better visual hierarchy */

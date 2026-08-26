@@ -1,3 +1,4 @@
+/* eslint-disable no-console -- console forwarder intentionally captures/overrides console methods */
 /**
  * 控制台日志转发器
  * 将前端 console 输出转发到 Tauri 后端控制台

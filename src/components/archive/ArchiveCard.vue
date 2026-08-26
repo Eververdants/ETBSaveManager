@@ -38,6 +38,7 @@
 
       <!-- Archive info -->
       <div class="archive-info">
+        <!-- eslint-disable-next-line vue/no-v-html — sanitized via DOMPurify -->
         <h3 class="archive-name" v-html="sanitize(highlightedName)"></h3>
         <div class="game-mode-info">
           <span
@@ -67,6 +68,7 @@
 
     <!-- Lower info area -->
     <div class="card-info">
+      <!-- eslint-disable-next-line vue/no-v-html — sanitized via DOMPurify -->
       <span class="current-level" v-html="sanitize(highlightedLevel)"></span>
       <div class="action-buttons">
         <button

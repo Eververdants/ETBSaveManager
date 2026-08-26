@@ -1,3 +1,4 @@
+/* eslint-disable no-console -- log service intentionally captures/overrides console methods */
 /**
  * Frontend log service
  * Captures console output and window errors for debug panel and feedback system

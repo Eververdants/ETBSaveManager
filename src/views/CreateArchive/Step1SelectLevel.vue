@@ -418,7 +418,7 @@ const handleSelectLevel = (card, event) => {
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.08)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.05));
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  height: calc(100vh - 280px);
+  height: calc(100vh - 340px);
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;

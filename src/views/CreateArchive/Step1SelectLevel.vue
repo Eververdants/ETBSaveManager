@@ -104,12 +104,12 @@ const mainRoute = new Set(ENDING_LEVELS[0] || []);
 // Cross-locale name lookup so typing "Ocean Map" finds the level even in zh-CN
 const enNames = ref({});
 const zhNames = ref({});
-try {
-  enNames.value = (await import("@/i18n/locales/en-US/LevelName_Display.json")).default;
-  zhNames.value = (await import("@/i18n/locales/zh-CN/LevelName_Display.json")).default;
-} catch {
-  // fallback silently
-}
+import("@/i18n/locales/en-US/LevelName_Display.json")
+  .then((m) => (enNames.value = m.default))
+  .catch(() => {});
+import("@/i18n/locales/zh-CN/LevelName_Display.json")
+  .then((m) => (zhNames.value = m.default))
+  .catch(() => {});
 const altName = (k) => (locale === "en-US" ? zhNames.value[k] : enNames.value[k]) || "";
 
 // Tab model: the four routes plus a trailing "special" bucket (LevelCheat)

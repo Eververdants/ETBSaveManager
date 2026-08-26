@@ -379,12 +379,12 @@ const { t, te, locale } = useI18n({ useScope: "global" });
 // Cross-locale name lookup so typing "Ocean Map" finds the level even in zh-CN
 const _enNames = ref({});
 const _zhNames = ref({});
-try {
-  _enNames.value = (await import("@/i18n/locales/en-US/LevelName_Display.json")).default;
-  _zhNames.value = (await import("@/i18n/locales/zh-CN/LevelName_Display.json")).default;
-} catch {
-  // fallback silently
-}
+import("@/i18n/locales/en-US/LevelName_Display.json")
+  .then((m) => (_enNames.value = m.default))
+  .catch(() => {});
+import("@/i18n/locales/zh-CN/LevelName_Display.json")
+  .then((m) => (_zhNames.value = m.default))
+  .catch(() => {});
 const altName = (k) => (locale.value === "en-US" ? _zhNames.value[k] : _enNames.value[k]) || "";
 const router = useRouter();
 

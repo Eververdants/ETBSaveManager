@@ -654,34 +654,11 @@ const loadLevels = () => {
     }
   }
 
-  // UI-only twin entries for levels shared between the main route and a
-  // branch: picking the twin explicitly requests main-ending unlock
-  // semantics (the backend strips the "_UnlockMain" suffix and sets
-  // HasCompletedMainEnding instead of guessing from route tables).
-  const UNLOCK_MAIN_SUFFIX = "_UnlockMain";
-  const mainSet = new Set(ENDING_LEVELS[0]);
-  const twins = [];
-  [1, 2, 3, 4].forEach((id) => {
-    (ENDING_LEVELS[id] || []).forEach((k) => {
-      if (mainSet.has(k)) {
-        twins.push({
-          name: getLevelName(k),
-          image: `/images/ETB/${k}.webp`,
-          levelKey: k + UNLOCK_MAIN_SUFFIX,
-          unlockMain: true,
-        });
-      }
-    });
-  });
-
-  availableLevels.value = [
-    ...allLevels.map((levelKey) => ({
-      name: getLevelName(levelKey),
-      image: `/images/ETB/${levelKey}.webp`,
-      levelKey,
-    })),
-    ...twins,
-  ];
+  availableLevels.value = allLevels.map((levelKey) => ({
+    name: getLevelName(levelKey),
+    image: `/images/ETB/${levelKey}.webp`,
+    levelKey,
+  }));
 };
 
 // --- Level search & grouping ---
@@ -696,40 +673,48 @@ const sliderState = reactive({
   active: false,
 });
 
-// Group levels by ending ROUTE — a shared level appears under EVERY route
-// that contains it, so each tab always shows its complete level list.
-// "_UnlockMain" twin entries follow their base level into every group.
+// Group levels by ending ROUTE. Each tab lists exactly that route's levels
+// from ENDING_LEVELS — nothing else. Levels shared with the main route get an
+// extra "_UnlockMain" twin placed right below them in BRANCH tabs only
+// (selecting it explicitly requests main-ending unlock semantics); the main
+// tab itself stays free of twins so no duplicates ever appear there.
+const mkLevel = (levelKey) => ({
+  name: getLevelName(levelKey),
+  image: `/images/ETB/${levelKey}.webp`,
+  levelKey,
+});
+const UNLOCK_MAIN_SUFFIX = "_UnlockMain";
+const mainRouteSet = new Set(ENDING_LEVELS[0]);
+
 const levelGroups = computed(() => {
   const groups = [];
-  const byId = new Map();
   ENDINGS_CONFIG.forEach((cfg) => {
     const g = {
       id: cfg.id,
       label: t(`createArchive.endings.${cfg.labelKey}`),
       levels: [],
     };
-    groups.push(g);
-    byId.set(cfg.id, g);
-  });
-  const special = {
-    id: "special",
-    label: t("editArchive.levelGroup.special"),
-    levels: [],
-  };
-
-  availableLevels.value.forEach((level) => {
-    const base = level.levelKey.replace(/_UnlockMain$/, "");
-    let placed = false;
-    ENDINGS_CONFIG.forEach((cfg) => {
-      if ((ENDING_LEVELS[cfg.id] || []).includes(base)) {
-        byId.get(cfg.id).levels.push(level);
-        placed = true;
+    (ENDING_LEVELS[cfg.id] || []).forEach((k) => {
+      g.levels.push(mkLevel(k));
+      if (cfg.id !== 0 && mainRouteSet.has(k)) {
+        g.levels.push({ ...mkLevel(k), levelKey: k + UNLOCK_MAIN_SUFFIX, unlockMain: true });
       }
     });
-    if (!placed) special.levels.push(level);
+    groups.push(g);
   });
-  // No leftover levels -> no special tab
-  if (special.levels.length > 0) groups.push(special);
+
+  // Special bucket: flat-list levels belonging to NO route (e.g. LevelCheat)
+  const known = new Set(Object.values(ENDING_LEVELS).flat());
+  const leftovers = availableLevels.value.filter(
+    (l) => !known.has(l.levelKey),
+  );
+  if (leftovers.length > 0) {
+    groups.push({
+      id: "special",
+      label: t("editArchive.levelGroup.special"),
+      levels: leftovers,
+    });
+  }
   return groups;
 });
 

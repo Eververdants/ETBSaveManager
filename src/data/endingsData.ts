@@ -52,8 +52,6 @@ export const ENDING_LEVELS: Record<number, string[]> = {
   1: ["Bunker", "PlasticMariana", "GraffitiLevel", "Grassrooms_Expanded"],
   2: ["Bunker", "TheHub", "BottomFloor", "Level922"],
   3: ["Bunker", "TheHub", "OceanMap", "LightsOut", "Level974"],
-  /** Special cheat level — not part of any storyline */
-  4: ["LevelCheat"],
 };
 
 /** Ending configuration `labelKey` maps to `createArchive.endings.*` in i18n */
@@ -62,5 +60,4 @@ export const ENDINGS_CONFIG = [
   { id: 1, labelKey: "branch1" },
   { id: 2, labelKey: "branch2" },
   { id: 3, labelKey: "branch3" },
-  { id: 4, labelKey: "cheat" },
 ];

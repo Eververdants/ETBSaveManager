@@ -638,7 +638,7 @@ const loadLevels = () => {
   // Get all unique levels from ENDING_LEVELS (0, 1, 2, 3) preserving order
   const seen = new Set();
   const allLevels = [];
-  for (const key of [0, 1, 2, 3, 4]) {
+  for (const key of [0, 1, 2, 3]) {
     for (const level of ENDING_LEVELS[key] || []) {
       if (!seen.has(level)) {
         seen.add(level);
@@ -696,42 +696,41 @@ const sliderState = reactive({
   active: false,
 });
 
-// Map each levelKey to exactly one group by priority:
-// main ending (0) -> its own branch (1/2/3, first match wins for shared levels) -> special
-const LEVEL_GROUP_MAP = (() => {
-  const map = {};
-  ENDING_LEVELS[0].forEach((k) => (map[k] = 0));
-  [1, 2, 3, 4].forEach((branchId) => {
-    ENDING_LEVELS[branchId].forEach((k) => {
-      if (map[k] === undefined) map[k] = branchId;
-    });
-  });
-  return map;
-})();
-
-function getLevelGroup(levelKey) {
-  // Twin entries group with their base level
-  const base = levelKey.replace(/_UnlockMain$/, "");
-  if (LEVEL_GROUP_MAP[base] !== undefined) return LEVEL_GROUP_MAP[base];
-  // Levels not in any ending route (e.g. LevelCheat) fall into "special"
-  return "special";
-}
-
-// Group levels by ending route; group labels recompute reactively on language change
+// Group levels by ending ROUTE — a shared level appears under EVERY route
+// that contains it, so each tab always shows its complete level list.
+// "_UnlockMain" twin entries follow their base level into every group.
 const levelGroups = computed(() => {
-  const groups = new Map();
-  // Prescribe order: ending config first, then special
+  const groups = [];
+  const byId = new Map();
   ENDINGS_CONFIG.forEach((cfg) => {
-    groups.set(cfg.id, { id: cfg.id, label: t(`createArchive.endings.${cfg.labelKey}`), levels: [] });
+    const g = {
+      id: cfg.id,
+      label: t(`createArchive.endings.${cfg.labelKey}`),
+      levels: [],
+    };
+    groups.push(g);
+    byId.set(cfg.id, g);
   });
-  groups.set("special", { id: "special", label: t("editArchive.levelGroup.special"), levels: [] });
+  const special = {
+    id: "special",
+    label: t("editArchive.levelGroup.special"),
+    levels: [],
+  };
 
   availableLevels.value.forEach((level) => {
-    const gid = getLevelGroup(level.levelKey);
-    const group = groups.has(gid) ? groups.get(gid) : groups.get("special");
-    group.levels.push(level);
+    const base = level.levelKey.replace(/_UnlockMain$/, "");
+    let placed = false;
+    ENDINGS_CONFIG.forEach((cfg) => {
+      if ((ENDING_LEVELS[cfg.id] || []).includes(base)) {
+        byId.get(cfg.id).levels.push(level);
+        placed = true;
+      }
+    });
+    if (!placed) special.levels.push(level);
   });
-  return [...groups.values()];
+  // No leftover levels -> no special tab
+  if (special.levels.length > 0) groups.push(special);
+  return groups;
 });
 
 // Update slider indicator position

@@ -321,9 +321,19 @@ pub fn set_save_visibility(archive_name: &str, desired: Option<bool>) -> AppResu
         display_name::insert_display_entry_if_missing(&mut mainsave, archive_name, base);
     } else {
         remove_visible_save(&mut mainsave, archive_name);
-        // Hide flow: drop the mapping so hidden archives leave no ghost entry
-        // (the game itself only ever lists visible saves).
-        display_name::remove_display_entry(&mut mainsave, archive_name);
+        // Hide flow: drop AUTO-GENERATED mappings so hidden archives leave no
+        // ghost entry (the game itself only ever lists visible saves), but
+        // KEEP custom in-game display names — wiping those made a hide→show
+        // cycle erase a name the player typed in-game. Hidden slots are not
+        // iterated by gensave/display sync (those walk SingleplayerSaves), so
+        // a preserved entry cannot resurface as a ghost.
+        let base = display_name::base_archive_name(archive_name);
+        let is_custom = display_name::get_display_names(&mainsave)
+            .get(archive_name)
+            .is_some_and(|v| v != base);
+        if !is_custom {
+            display_name::remove_display_entry(&mut mainsave, archive_name);
+        }
     }
 
     write_mainsave(&mainsave)?;

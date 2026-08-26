@@ -158,6 +158,23 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
 
     // Extract required fields
     let name = json_data["name"].as_str().ok_or("Invalid name")?;
+
+    // Mirror the create flow's filename-safety rules: the name is formatted
+    // straight into a .sav filename below, so blanks or illegal characters
+    // would produce broken paths / NTFS alternate-stream junk.
+    if name.trim().is_empty() {
+        return Err("Save name cannot be empty".into());
+    }
+    if !name
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '-' || c == ' ' || c == '_' || c == '(' || c == ')')
+    {
+        return Err(
+            "Save name can only contain letters, numbers, hyphens, underscores, parentheses, and spaces"
+                .into(),
+        );
+    }
+
     let mode = json_data["mode"].as_str().ok_or("Invalid mode")?;
     let current_level = json_data["currentLevel"]
         .as_str()
@@ -194,11 +211,10 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     // so a case-only rename ("foo" -> "FOO") still targets the SAME file and
     // remains an allowed in-place save.
     if output_path.exists() {
-        let same_target =
-            match (Path::new(&original_path).to_str(), output_path.to_str()) {
-                (Some(a), Some(b)) => a.to_lowercase() == b.to_lowercase(),
-                _ => Path::new(&original_path) == output_path,
-            };
+        let same_target = match (Path::new(&original_path).to_str(), output_path.to_str()) {
+            (Some(a), Some(b)) => a.to_lowercase() == b.to_lowercase(),
+            _ => Path::new(&original_path) == output_path,
+        };
         if !same_target {
             return Err(format!(
                 "An archive named '{}' already exists. Please choose a different name.",
@@ -256,6 +272,13 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     // never a half-applied edit that reports failure after the fact.
     let archive_name = extract_archive_name(&new_filename);
 
+    // Track registry mutations so a failed temp→target rename below can roll
+    // them back — otherwise MAINSAVE references only the NEW slot while the
+    // file on disk still carries the OLD one, and the archive vanishes from
+    // both the game's and the manager's list even though its data is intact.
+    let mut moved_old_entry: Option<&str> = None;
+    let mut removed_old_entry = false;
+
     // Rename flow: when the archive name changed (rename / difficulty change),
     // MOVE the registry entry and its display-name mapping old -> new so any
     // custom in-game name survives. Only when the old entry is not registered
@@ -264,10 +287,12 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     if let Some(ref old_name) = old_archive_name {
         if old_name != archive_name {
             match crate::common::update_mainsave_archive_name(old_name, archive_name) {
-                Ok(true) => {}
+                Ok(true) => moved_old_entry = Some(old_name.as_str()),
                 Ok(false) => {
-                    if let Err(e) = remove_save_from_mainsave(old_name) {
-                        tracing::warn!("Failed to remove old MAINSAVE entry '{}': {}", old_name, e);
+                    if remove_save_from_mainsave(old_name).is_ok() {
+                        removed_old_entry = true;
+                    } else {
+                        tracing::warn!("Failed to remove old MAINSAVE entry '{}'", old_name);
                     }
                 }
                 Err(e) => {
@@ -283,8 +308,26 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     }
 
     // Atomically rename temp to target path
-    fs::rename(&temp_path, &output_path)
-        .map_err(|e| format!("Failed to rename temp file: {}", e))?;
+    if let Err(e) = fs::rename(&temp_path, &output_path) {
+        // Roll the registry back to its pre-edit state; the original .sav is
+        // untouched at this point, so the user can simply retry.
+        if let Some(moved_from) = moved_old_entry {
+            if let Err(re) = crate::common::update_mainsave_archive_name(archive_name, moved_from) {
+                tracing::warn!(
+                    "Failed to roll back MAINSAVE rename '{}': {}",
+                    moved_from,
+                    re
+                );
+            }
+        }
+        if removed_old_entry {
+            if let Some(ref old_name) = old_archive_name {
+                let _ = add_save_to_mainsave(old_name);
+            }
+        }
+        let _ = fs::remove_file(&temp_path);
+        return Err(format!("Failed to rename temp file: {}", e).into());
+    }
 
     // Delete original save file only if it differs from output path
     // (rename already overwrites output_path when they are the same)

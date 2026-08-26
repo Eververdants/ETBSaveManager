@@ -122,6 +122,15 @@ fn plan_renames(save_dir: &Path, mainsave: &uesave::Save) -> Vec<RenamePlan> {
     plans
 }
 
+/// Best-effort revert of one already-applied file rename. Failures are
+/// logged (never silently swallowed) so disk/registry divergence stays
+/// diagnosable.
+fn try_revert<P: AsRef<std::path::Path>, Q: AsRef<std::path::Path>>(new_p: P, old_p: Q) {
+    if let Err(e) = std::fs::rename(&new_p, &old_p) {
+        tracing::error!("GENSAVE rename: revert failed: {e}");
+    }
+}
+
 /// Sync one archive in MAINSAVE: replace the SingleplayerSaves entry and move
 /// the SaveDisplayNamesLookup key. Returns Err when the old slot is missing
 /// from SingleplayerSaves.
@@ -221,7 +230,7 @@ pub fn sync_gensave_filenames() -> usize {
         let Ok(_guard) = lock_mainsave() else {
             tracing::error!("GENSAVE rename: lock poisoned — reverting all");
             for (old_p, new_p, _, _) in &done {
-                let _ = std::fs::rename(new_p, old_p);
+                try_revert(new_p, old_p);
             }
             return 0;
         };
@@ -230,7 +239,7 @@ pub fn sync_gensave_filenames() -> usize {
             Err(_) => {
                 tracing::error!("GENSAVE rename: read failed — reverting all");
                 for (old_p, new_p, _, _) in &done {
-                    let _ = std::fs::rename(new_p, old_p);
+                    try_revert(new_p, old_p);
                 }
                 return 0;
             }
@@ -242,7 +251,7 @@ pub fn sync_gensave_filenames() -> usize {
                     "GENSAVE rename: registry sync failed for '{old_slot}': {e} — reverting all"
                 );
                 for (old_p, new_p, _, _) in &done {
-                    let _ = std::fs::rename(new_p, old_p);
+                    try_revert(new_p, old_p);
                 }
                 return 0;
             }

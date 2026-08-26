@@ -633,7 +633,7 @@ const loadLevels = () => {
   // Get all unique levels from ENDING_LEVELS (0, 1, 2, 3) preserving order
   const seen = new Set();
   const allLevels = [];
-  for (const key of [0, 1, 2, 3]) {
+  for (const key of [0, 1, 2, 3, 4]) {
     for (const level of ENDING_LEVELS[key] || []) {
       if (!seen.has(level)) {
         seen.add(level);
@@ -671,7 +671,7 @@ const sliderState = reactive({
 const LEVEL_GROUP_MAP = (() => {
   const map = {};
   ENDING_LEVELS[0].forEach((k) => (map[k] = 0));
-  [1, 2, 3].forEach((branchId) => {
+  [1, 2, 3, 4].forEach((branchId) => {
     ENDING_LEVELS[branchId].forEach((k) => {
       if (map[k] === undefined) map[k] = branchId;
     });

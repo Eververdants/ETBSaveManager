@@ -71,7 +71,8 @@
     "main": "誤入歧扉",
     "branch1": "空無之城",
     "branch2": "死寂郊野",
-    "branch3": "胭脂之屋"
+    "branch3": "胭脂之屋",
+    "cheat": "作弊關卡"
   },
   "editArchive": "編輯此存檔",
   "createAnother": "繼續建立",
@@ -81,5 +82,9 @@
   "restoreDraft": "恢復草稿",
   "discardDraft": "重新開始",
   "levelSearchPlaceholder": "搜尋關卡名稱",
-  "levelSearchEmpty": "未找到匹配的關卡"
+  "levelSearchEmpty": "未找到匹配的關卡",
+  "levelSearch": {
+    "placeholder": "搜尋層級名稱…",
+    "noResults": "沒有符合的層級"
+  }
 }

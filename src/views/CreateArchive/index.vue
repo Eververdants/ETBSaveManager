@@ -289,6 +289,7 @@ const loadLevels = async () => {
   endingLevelsData[1] = ENDING_LEVELS[1];
   endingLevelsData[2] = ENDING_LEVELS[2];
   endingLevelsData[3] = ENDING_LEVELS[3];
+  endingLevelsData[4] = ENDING_LEVELS[4];
   loadLevelsForEnding(0);
 };
 

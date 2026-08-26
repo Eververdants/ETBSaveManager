@@ -71,7 +71,8 @@
     "main": "Wrong Door",
     "branch1": "Empty City",
     "branch2": "The Suburbs",
-    "branch3": "The Pink House"
+    "branch3": "The Pink House",
+    "cheat": "Cheat Levels"
   },
   "editArchive": "Edit Archive",
   "createAnother": "Create Another",
@@ -81,5 +82,9 @@
   "restoreDraft": "Restore Draft",
   "discardDraft": "Start Over",
   "levelSearchPlaceholder": "Search level name",
-  "levelSearchEmpty": "No matching levels found"
+  "levelSearchEmpty": "No matching levels found",
+  "levelSearch": {
+    "placeholder": "Search levels…",
+    "noResults": "No matching levels"
+  }
 }

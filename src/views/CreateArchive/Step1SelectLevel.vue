@@ -24,21 +24,40 @@
       </div>
     </div>
 
+    <!-- Level search -->
+    <div class="level-search">
+      <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="search-icon" />
+      <input
+        v-model="searchQuery"
+        type="text"
+        class="search-input"
+        :placeholder="$t('createArchive.levelSearch.placeholder')"
+      />
+    </div>
+
     <!-- Level selection cards -->
     <div class="section-card">
       <Transition name="level-grid-fade" mode="out-in">
-        <div :key="selectedEnding" class="level-grid">
+        <div
+          v-if="filteredLevels.length > 0"
+          :key="selectedEnding"
+          class="level-grid"
+        >
           <div
-            v-for="(level, index) in availableLevels"
+            v-for="level in filteredLevels"
             :key="level.levelKey"
             class="level-card"
-            :class="{ selected: selectedLevel === index }"
-            @click="handleSelectLevel(index, $event)"
+            :class="{ selected: selectedLevel === availableLevels.indexOf(level) }"
+            @click="handleSelectLevel(availableLevels.indexOf(level), $event)"
           >
             <div class="level-image-container">
               <LazyImage :src="level.image" :alt="level.name" image-class="level-image" />
               <div class="level-overlay">
-                <font-awesome-icon v-if="selectedLevel === index" :icon="['fas', 'check']" class="check-icon" />
+                <font-awesome-icon
+                  v-if="selectedLevel === availableLevels.indexOf(level)"
+                  :icon="['fas', 'check']"
+                  class="check-icon"
+                />
               </div>
             </div>
             <div class="level-info">
@@ -46,13 +65,16 @@
             </div>
           </div>
         </div>
+        <div v-else :key="`empty-${selectedEnding}`" class="level-empty">
+          {{ $t("createArchive.levelSearch.noResults") }}
+        </div>
       </Transition>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, nextTick, reactive, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, nextTick, reactive, onMounted, onUnmounted } from "vue";
 import { gsap } from "gsap";
 import LazyImage from "@/components/ui/LazyImage.vue";
 
@@ -64,6 +86,22 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["select-level", "select-ending"]);
+
+// --- Level search (filters the current ending's cards by display name) ---
+const searchQuery = ref("");
+const filteredLevels = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return props.availableLevels;
+  return props.availableLevels.filter((l) => l.name.toLowerCase().includes(q));
+});
+
+// Switching endings resets the query so each tab starts unfiltered
+watch(
+  () => props.selectedEnding,
+  () => {
+    searchQuery.value = "";
+  },
+);
 
 // --- Sliding indicator ---
 const endingGroupRef = ref(null);
@@ -211,6 +249,50 @@ const handleSelectLevel = (index, event) => {
 
 .ending-tab:active {
   transform: scale(0.96);
+}
+
+/* Level search bar */
+.level-search {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px 0 40px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.search-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15);
+}
+
+.level-empty {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 /* Card styles - optimized */

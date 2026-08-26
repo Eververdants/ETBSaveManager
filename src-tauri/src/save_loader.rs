@@ -222,7 +222,11 @@ pub async fn load_all_saves() -> AppResult<Vec<SaveFileInfo>> {
 
     let paths = paths_result?;
     let (visible_set, display_names) = visible_saves_result?;
-    let visible_saves = Arc::new(visible_set);
+    // Case-insensitive lookup: the game can rewrite MAINSAVE entries with a
+    // different casing than the on-disk filename (NTFS treats them as the
+    // same file), and an exact-match miss would list the archive as hidden.
+    let visible_saves: Arc<HashSet<String>> =
+        Arc::new(visible_set.iter().map(|s| s.to_lowercase()).collect());
     let path_count = paths.len();
 
     // Use rayon to process all save files in parallel
@@ -272,6 +276,11 @@ pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
 
     let paths = paths_result?;
     let (visible_set, display_names) = visible_saves_result?;
+    // Case-insensitive lookup: the game can rewrite MAINSAVE entries with a
+    // different casing than the on-disk filename (NTFS treats them as the
+    // same file), and an exact-match miss would list the archive as hidden.
+    let visible_lookup: std::collections::HashSet<String> =
+        visible_set.iter().map(|s| s.to_lowercase()).collect();
 
     let results: Vec<SaveFileMeta> = paths
         .into_par_iter()
@@ -280,7 +289,7 @@ pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
             let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
             let archive_name = extract_archive_name(file_name);
             let date = cli_handlers::get_modified_date(&path).unwrap_or_default();
-            let is_visible = visible_set.contains(archive_name);
+            let is_visible = visible_lookup.contains(&archive_name.to_lowercase());
 
             save_utils::build_save_meta(
                 i as u32,
@@ -321,6 +330,11 @@ pub async fn load_save_metadata_page(
 
     let paths = paths_result?;
     let (visible_set, display_names) = visible_saves_result?;
+    // Case-insensitive lookup: the game can rewrite MAINSAVE entries with a
+    // different casing than the on-disk filename (NTFS treats them as the
+    // same file), and an exact-match miss would list the archive as hidden.
+    let visible_lookup: std::collections::HashSet<String> =
+        visible_set.iter().map(|s| s.to_lowercase()).collect();
     let total = paths.len() as u32;
 
     // Clamp to valid range
@@ -334,7 +348,7 @@ pub async fn load_save_metadata_page(
         let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
         let archive_name = extract_archive_name(file_name);
         let date = cli_handlers::get_modified_date(path).unwrap_or_default();
-        let is_visible = visible_set.contains(archive_name);
+        let is_visible = visible_lookup.contains(&archive_name.to_lowercase());
 
         if let Ok(meta) = save_utils::build_save_meta(
             global_idx,
@@ -411,7 +425,7 @@ fn process_save_file(
     let file_name = path.file_name().and_then(|n| n.to_str())?;
     let archive_name = extract_archive_name(file_name);
     let date = cli_handlers::get_modified_date(path).unwrap_or_default();
-    let is_visible = visible_saves.contains(archive_name);
+    let is_visible = visible_saves.contains(&archive_name.to_lowercase());
     let display_name = display_names.and_then(|m| m.get(archive_name).cloned());
 
     // Skip parsing .sav if not visible (performance optimization)

@@ -183,7 +183,7 @@
                 >
                   <div class="level-img-wrap">
                     <LazyImage :src="level.image" :alt="level.name" image-class="level-img" />
-                    <span v-if="level.unlockMain" class="tag-on-image">{{
+                    <span v-if="level.unlockMain && levelSearchQuery.trim()" class="tag-on-image">{{
                       t("editArchive.unlockMainBadge")
                     }}</span>
                     <div v-if="formData.currentLevel === level.levelKey" class="level-check">
@@ -2067,18 +2067,19 @@ onUnmounted(() => {
   border-top: 1px solid var(--border-color);
 }
 
-/* "Also in main ending" tag pinned to the card IMAGE */
+/* "Also in main ending" tag — only while searching; quiet dark chip */
 .tag-on-image {
   position: absolute;
-  top: 6px;
-  left: 6px;
+  top: 8px;
+  left: 8px;
   z-index: 2;
   padding: 2px 6px;
   border-radius: var(--radius-xs);
-  background: rgba(var(--accent-color-rgb), 0.85);
+  background: rgba(0, 0, 0, 0.55);
   color: #fff;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 /* Player management - Enhanced layout with better visual hierarchy */

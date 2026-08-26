@@ -24,19 +24,21 @@
       </div>
     </div>
 
-    <!-- Level search -->
-    <div class="level-search">
-      <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="search-icon" />
-      <input
-        v-model="searchQuery"
-        type="text"
-        class="search-input"
-        :placeholder="$t('createArchive.levelSearch.placeholder')"
-      />
-    </div>
-
     <!-- Level selection cards -->
     <div class="section-card">
+      <div class="level-search">
+        <font-awesome-icon :icon="['fas', 'search']" class="level-search-icon" />
+        <input
+          v-model="searchQuery"
+          type="text"
+          class="level-search-input"
+          :placeholder="$t('createArchive.levelSearch.placeholder')"
+        />
+        <button v-if="searchActive" class="level-search-clear" @click="searchQuery = ''">
+          <font-awesome-icon :icon="['fas', 'times']" />
+        </button>
+      </div>
+
       <Transition name="level-grid-fade" mode="out-in">
         <div
           v-if="displayList.length > 0"
@@ -50,19 +52,20 @@
             :class="{ selected: isSelected(card) }"
             @click="handleSelectLevel(card, $event)"
           >
-            <div class="level-image-container">
-              <LazyImage :src="card.image" :alt="card.name" image-class="level-image" />
-              <span v-if="card.sharedMain" class="tag-on-image">{{
+            <div class="level-img-wrap">
+              <LazyImage :src="card.image" :alt="card.name" image-class="level-img" />
+              <!-- Distinguishing tag only while searching — keeps browsing clean -->
+              <span v-if="searchActive && card.sharedMain" class="tag-on-image">{{
                 $t("editArchive.unlockMainBadge")
               }}</span>
-              <div class="level-overlay">
-                <font-awesome-icon v-if="isSelected(card)" :icon="['fas', 'check']" class="check-icon" />
+              <div v-if="isSelected(card)" class="level-check">
+                <font-awesome-icon :icon="['fas', 'check-circle']" />
               </div>
             </div>
-            <div class="level-info">
+            <span class="level-name">
               <span v-if="searchActive && card.routeLabel" class="origin-label">{{ card.routeLabel }}</span>
-              <h3 class="level-name">{{ card.name }}</h3>
-            </div>
+              {{ card.name }}
+            </span>
           </div>
         </div>
         <div v-else key="empty" class="level-empty">
@@ -122,8 +125,7 @@ const isTabActive = (index) => {
 const searchQuery = ref("");
 const searchActive = computed(() => searchQuery.value.trim() !== "");
 
-// Every route's levels, decorated so search can cross ending boundaries;
-// shared-with-main cards carry a distinguishing tag
+// Every route's levels, decorated so search can cross ending boundaries
 const allRouteCards = computed(() => {
   const out = [];
   ENDINGS_CONFIG.forEach((cfg, ci) => {
@@ -328,47 +330,80 @@ const handleSelectLevel = (card, event) => {
   transform: scale(0.96);
 }
 
-/* Level search bar */
+/* Level search bar — same look as the editor's picker */
 .level-search {
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
-.search-icon {
+.level-search-icon {
   position: absolute;
-  left: 14px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-secondary);
-  font-size: 14px;
+  color: var(--text-tertiary);
+  font-size: 15px;
+  line-height: 1;
   pointer-events: none;
 }
 
-.search-input {
+.level-search-input {
   width: 100%;
-  height: 44px;
-  padding: 0 14px 0 40px;
+  padding: 12px 42px 12px 44px;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  background: var(--bg-secondary);
+  background: linear-gradient(145deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
   color: var(--text-primary);
   font-size: 14px;
+  line-height: 1.5;
+  border-radius: var(--radius-md);
   outline: none;
-  box-sizing: border-box;
-  transition:
-    border-color 0.25s ease,
-    box-shadow 0.25s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.search-input:focus {
+.level-search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.level-search-input:focus {
+  outline: none;
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15);
+  background: var(--card-bg);
+  box-shadow:
+    0 0 0 3px rgba(var(--accent-color-rgb), 0.12),
+    inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.level-search-clear {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--radius-circle, 50%);
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.level-search-clear:hover {
+  background: var(--accent-color);
+  color: #fff;
 }
 
 .level-empty {
-  padding: 48px 0;
-  text-align: center;
-  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 56px 16px;
+  color: var(--text-tertiary);
   font-size: 14px;
 }
 
@@ -451,8 +486,6 @@ const handleSelectLevel = (card, event) => {
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
 }
 
-/* Hover motion gated to precise pointers — touch gets :active feedback
-   instead, no sticky hover. will-change only while hovered. */
 @media (hover: hover) and (pointer: fine) {
   .level-card:hover {
     will-change: transform;
@@ -475,13 +508,13 @@ const handleSelectLevel = (card, event) => {
   transform: translateY(-2px);
 }
 
-.level-image-container {
+.level-img-wrap {
   position: relative;
   aspect-ratio: 16/9;
   overflow: hidden;
 }
 
-.level-image-container :deep(.level-image) {
+.level-img-wrap :deep(.level-img) {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -489,84 +522,60 @@ const handleSelectLevel = (card, event) => {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .level-card:hover .level-image-container :deep(.level-image) {
+  .level-card:hover .level-img-wrap :deep(.level-img) {
     transform: scale(1.1);
   }
 }
 
-.level-overlay {
+/* Selected check — top-right circle, like the editor */
+.level-check {
   position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.35s ease;
+  top: 10px;
+  right: 10px;
+  color: var(--primary, var(--accent-color));
+  font-size: 24px;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+  z-index: 2;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .level-card:hover .level-overlay {
-    opacity: 0.6;
-    background: rgba(var(--accent-color-rgb), 0.15);
-  }
+/* Distinguishing tag — only rendered while searching; quiet dark chip */
+.tag-on-image {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
-.level-card.selected .level-overlay {
-  opacity: 1;
-  background: rgba(var(--accent-color-rgb), 0.4);
-}
-
-.level-card.selected .level-overlay .check-icon {
-  transform: scale(1);
-}
-
-.check-icon {
-  color: white;
-  font-size: 32px;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
-}
-
-.level-info {
-  padding: 14px 12px;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+/* Name strip below the image — same treatment as the editor */
+.level-name {
+  display: block;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: linear-gradient(to bottom, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border-top: 1px solid var(--border-color);
+  margin: 0;
 }
 
 /* Origin route shown on cross-ending search results */
 .origin-label {
   display: block;
   font-size: 10px;
+  font-weight: 400;
   color: var(--text-secondary);
   margin-bottom: 2px;
-}
-
-/* "Also in main ending" tag pinned to the card IMAGE */
-.tag-on-image {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  z-index: 2;
-  padding: 2px 6px;
-  border-radius: var(--radius-xs);
-  background: rgba(var(--accent-color-rgb), 0.85);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.level-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  text-align: center;
-  line-height: 1.4;
-  letter-spacing: -0.01em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: color 0.3s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {

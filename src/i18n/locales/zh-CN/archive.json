@@ -20,6 +20,7 @@
     "batchDeleteUndone": "已撤销批量删除",
     "undone": "已撤销：{desc}",
     "redone": "已重做：{desc}",
-    "restoreFailed": "文件恢复失败，但存档将显示在列表中"
+    "restoreFailed": "文件恢复失败，但存档将显示在列表中",
+    "openFolderFailed": "打开存档文件夹失败"
   }
 }

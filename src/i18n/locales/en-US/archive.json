@@ -20,6 +20,7 @@
     "batchDeleteUndone": "Batch delete undone",
     "undone": "Undone: {desc}",
     "redone": "Redone: {desc}",
-    "restoreFailed": "Failed to restore file, but archive will appear in list"
+    "restoreFailed": "Failed to restore file, but archive will appear in list",
+    "openFolderFailed": "Failed to open save games folder"
   }
 }

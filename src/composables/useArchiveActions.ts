@@ -189,7 +189,7 @@ export function useArchiveActions(
             await applyVerifiedVisibility(archiveSnapshot, originalVisibility);
           } catch (e) {
             console.warn("[undo] Failed to toggle visibility:", e);
-            toast.showError(t("archiveCard.toggleVisibilityFailed"));
+            toast.showError(t("archive.actions.toggleVisibilityFailed"));
           }
         },
         redo: async () => {
@@ -197,7 +197,7 @@ export function useArchiveActions(
             await applyVerifiedVisibility(archiveSnapshot, desiredVisibility);
           } catch (e) {
             console.warn("[redo] Failed to toggle visibility:", e);
-            toast.showError(t("archiveCard.toggleVisibilityFailed"));
+            toast.showError(t("archive.actions.toggleVisibilityFailed"));
           }
         },
       });
@@ -206,7 +206,7 @@ export function useArchiveActions(
       await onRefresh?.();
     } catch (_error) {
       onError?.(_error);
-      toast.showError(t("archiveCard.toggleVisibilityFailed"));
+      toast.showError(t("archive.actions.toggleVisibilityFailed"));
     } finally {
       if (archivePath) togglingArchives.delete(archivePath);
     }
@@ -255,7 +255,7 @@ export function useArchiveActions(
                 insertSortedByName(archiveData.archives.value, removed);
               } catch (e) {
                 console.warn("[undo] Failed to restore archive:", e);
-                toast.showError(t("archiveCard.deleteFailed"));
+                toast.showError(t("archive.actions.deleteFailed"));
               }
             }
           },
@@ -275,13 +275,13 @@ export function useArchiveActions(
         });
       }
 
-      toast.showSuccess(t("archiveCard.deleteSuccess", { name: archive.name }));
+      toast.showSuccess(t("archive.actions.deleteSuccess", { name: archive.name }));
       closeDeleteModal();
       onSuccess?.();
       await onRefresh?.();
     } catch (_error) {
       onError?.(_error);
-      toast.showError(t("archiveCard.deleteFailed"));
+      toast.showError(t("archive.actions.deleteFailed"));
     } finally {
       isDeleting.value = false;
     }
@@ -308,10 +308,10 @@ export function useArchiveActions(
       if (result.success) {
         onSuccess?.();
       } else {
-        toast.showError(t("archiveCard.openFolderFailed"));
+        toast.showError(t("archive.actions.openFolderFailed"));
       }
     } catch {
-      toast.showError(t("archiveCard.openFolderFailed"));
+      toast.showError(t("archive.actions.openFolderFailed"));
     }
   };
 
@@ -349,12 +349,17 @@ export function useArchiveActions(
     }
 
     if (results.failed.length === 0) {
-      toast.showSuccess(t("archiveCard.batchDeleteSuccess"));
+      toast.showSuccess(t("archive.actions.batchDeleteSuccess", { count: results.success.length }));
       onSuccess?.(results);
       await onRefresh?.();
     } else {
       onError?.(results);
-      toast.showError(t("archiveCard.batchDeletePartialFailed"));
+      toast.showError(
+        t("archive.actions.batchDeleteComplete", {
+          success: results.success.length,
+          failed: results.failed.length,
+        }),
+      );
     }
 
     return results;

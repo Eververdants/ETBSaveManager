@@ -20,6 +20,7 @@
     "batchDeleteUndone": "已復原批次刪除",
     "undone": "已復原：{desc}",
     "redone": "已重做：{desc}",
-    "restoreFailed": "檔案還原失敗，但存檔將顯示在列表中"
+    "restoreFailed": "檔案還原失敗，但存檔將顯示在列表中",
+    "openFolderFailed": "開啟存檔資料夾失敗"
   }
 }

@@ -353,7 +353,6 @@ import InventoryItemSelector from "../components/feature/InventoryItemSelector.v
 import LazyImage from "../components/ui/LazyImage.vue";
 import CustomSlider from "../components/ui/CustomSlider.vue";
 import PlayerManager from "../components/system/PlayerManager.vue";
-import ConfirmModal from "../components/modal/ConfirmModal.vue";
 import { notify } from "../services/notificationService";
 import { editArchiveDataStore } from "../composables/useArchiveActions";
 import { useNsuStatus } from "../composables/useNsuStatus";

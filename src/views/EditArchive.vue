@@ -1121,6 +1121,7 @@ onUnmounted(() => {
 
 /* Top title */
 .page-header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1210,7 +1211,12 @@ onUnmounted(() => {
 
 /* Tab navigation - floating style */
 .tab-nav {
-  position: relative;
+  /* Absolutely centered on the HEADER itself — flex space-between would
+     center it only within the leftover space between title and actions. */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   gap: 4px;
   padding: 6px;
@@ -2876,6 +2882,11 @@ onUnmounted(() => {
   }
 
   .tab-nav {
+    /* Back into the wrapped flow on narrow screens */
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
     order: 3;
     width: 100%;
     justify-content: center;

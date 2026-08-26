@@ -377,6 +377,20 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
         tracing::info!("Deleted original save file");
     }
 
+    // Self-healing visibility guard: listings mark an archive hidden when its
+    // on-disk stem is missing from MAINSAVE's SingleplayerSaves, and anything
+    // racing the registry in between (a running game rewriting MAINSAVE, a
+    // partial earlier failure) can leave exactly that divergence. Re-assert
+    // the FINAL filename's registration before reporting success — idempotent
+    // when already consistent. Non-fatal: the .sav itself is safely written.
+    if let Err(e) = add_save_to_mainsave(archive_name) {
+        tracing::warn!(
+            "Post-save registration refresh failed for '{}': {} — archive may show as hidden",
+            archive_name,
+            e
+        );
+    }
+
     tracing::info!("Save saved to: {:?}", output_path);
 
     Ok(output_path.to_str().unwrap_or("Invalid path").to_string())

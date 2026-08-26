@@ -2,7 +2,7 @@ use crate::common::{
     add_save_to_mainsave, extract_archive_name, remove_save_from_mainsave, validate_save_games_path,
 };
 use crate::error::AppResult;
-use crate::new_save::{update_bool_property, MAIN_STORYLINE_LEVELS};
+use crate::new_save::{update_bool_property, update_meg_status, MAIN_STORYLINE_LEVELS};
 use crate::save_shared;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
@@ -279,12 +279,15 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     };
     if is_side_storyline || is_after_hub {
         tracing::info!(
-            "Selected level '{}' (side storyline: {}, past The Hub: {}) — unlocking hub doors",
+            "Selected level '{}' (side storyline: {}, past The Hub: {}) — unlocking hub doors and MEG",
             current_level,
             is_side_storyline,
             is_after_hub
         );
         apply_unlock_all_hub_doors_in_place(&mut save)?;
+        // Mirror create flow's isMEGUnlocked(): every level beyond The Hub —
+        // and all side endings — ships with MEG doors/power/security on.
+        update_meg_status(&mut save, true)?;
     }
     if is_side_storyline {
         update_bool_property(&mut save, "HasCompletedMainEnding", true)?;

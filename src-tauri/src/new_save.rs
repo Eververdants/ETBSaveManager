@@ -306,7 +306,7 @@ pub(crate) fn update_bool_property(save: &mut Save, name: &str, value: bool) -> 
 }
 
 /// Update MEG status field
-fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> AppResult<()> {
+pub(crate) fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> AppResult<()> {
     let meg_fields = ["IsMEGUnlocked", "IsMEGPowerOn", "IsMEGSecurityUnlocked"];
 
     for field in &meg_fields {

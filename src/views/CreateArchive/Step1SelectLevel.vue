@@ -94,12 +94,23 @@ const props = defineProps({
 const emit = defineEmits(["select-level", "select-ending"]);
 
 // --- Level search across ALL endings (mirrors the editor's picker) ---
-const { t, te } = useI18n({ useScope: "global" });
+const { t, te, locale } = useI18n({ useScope: "global" });
 const lvlName = (k) => {
   const i18nKey = `LevelName_Display.${k}`;
   return te(i18nKey) ? t(i18nKey) : k;
 };
 const mainRoute = new Set(ENDING_LEVELS[0] || []);
+
+// Cross-locale name lookup so typing "Ocean Map" finds the level even in zh-CN
+const enNames = ref({});
+const zhNames = ref({});
+try {
+  enNames.value = (await import("@/i18n/locales/en-US/LevelName_Display.json")).default;
+  zhNames.value = (await import("@/i18n/locales/zh-CN/LevelName_Display.json")).default;
+} catch {
+  // fallback silently
+}
+const altName = (k) => (locale === "en-US" ? zhNames.value[k] : enNames.value[k]) || "";
 
 // Tab model: the four routes plus a trailing "special" bucket (LevelCheat)
 const specialActive = ref(false);
@@ -131,13 +142,16 @@ const allRouteCards = computed(() => {
   const out = [];
   ENDINGS_CONFIG.forEach((cfg, ci) => {
     (ENDING_LEVELS[cfg.id] || []).forEach((k) => {
+      const name = lvlName(k);
       out.push({
-        name: lvlName(k),
+        name,
+        altName: altName(k),
         image: `/images/ETB/${k}.webp`,
         levelKey: k,
         routeIndex: ci,
         routeLabel: props.endings[ci]?.label || "",
         sharedMain: ci !== 0 && mainRoute.has(k),
+        _search: `${name} ${altName(k)} ${k}`.toLowerCase(),
       });
     });
   });
@@ -148,9 +162,7 @@ const displayList = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
   if (!q && specialActive.value) return [cheatCard];
   if (!q) return props.availableLevels.map((l) => ({ ...l }));
-  return allRouteCards.value.filter(
-    (c) => c.name.toLowerCase().includes(q) || c.levelKey.toLowerCase().includes(q),
-  );
+  return allRouteCards.value.filter((c) => c._search.includes(q));
 });
 
 const transitionKey = computed(() =>

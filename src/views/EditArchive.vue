@@ -374,7 +374,18 @@ const props = defineProps({
   archiveData: { type: String, default: "" },
 });
 
-const { t, te } = useI18n({ useScope: "global" });
+const { t, te, locale } = useI18n({ useScope: "global" });
+
+// Cross-locale name lookup so typing "Ocean Map" finds the level even in zh-CN
+const _enNames = ref({});
+const _zhNames = ref({});
+try {
+  _enNames.value = (await import("@/i18n/locales/en-US/LevelName_Display.json")).default;
+  _zhNames.value = (await import("@/i18n/locales/zh-CN/LevelName_Display.json")).default;
+} catch {
+  // fallback silently
+}
+const altName = (k) => (locale.value === "en-US" ? _zhNames.value[k] : _enNames.value[k]) || "";
 const router = useRouter();
 
 const getLevelName = (levelKey) => {
@@ -681,11 +692,16 @@ const sliderState = reactive({
 // extra "_UnlockMain" twin placed right below them in BRANCH tabs only
 // (selecting it explicitly requests main-ending unlock semantics); the main
 // tab itself stays free of twins so no duplicates ever appear there.
-const mkLevel = (levelKey) => ({
-  name: getLevelName(levelKey),
-  image: `/images/ETB/${levelKey}.webp`,
-  levelKey,
-});
+const mkLevel = (levelKey) => {
+  const name = getLevelName(levelKey);
+  return {
+    name,
+    altName: altName(levelKey),
+    image: `/images/ETB/${levelKey}.webp`,
+    levelKey,
+    _search: `${name} ${altName(levelKey)} ${levelKey}`.toLowerCase(),
+  };
+};
 // Levels shared between a branch route and the main route get an
 // informational tag so they are distinguishable during search
 const mainRouteSet = new Set(ENDING_LEVELS[0]);
@@ -752,11 +768,7 @@ const displayedLevels = computed(() => {
     // on shared levels is preserved in search results.
     return levelGroups.value
       .flatMap((g) => g.levels)
-      .filter((level) => {
-        const name = level.name.toLowerCase();
-        const key = level.levelKey.toLowerCase();
-        return name.includes(query) || key.includes(query);
-      });
+      .filter((level) => level._search.includes(query));
   }
   return levelGroups.value[selectedLevelGroup.value]?.levels || [];
 });

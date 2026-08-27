@@ -188,7 +188,7 @@ const toggleSelectAll = () => {
   overflow: hidden;
 }
 
-.level-image-container :deep(.level-image) {
+:deep(.level-image-container .level-image) {
   width: 100%;
   height: 100%;
   object-fit: cover;

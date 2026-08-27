@@ -634,7 +634,7 @@ select,
 }
 
 /* When titlebar is hidden, adjust sidebar position */
-:deep(.no-titlebar .sidebar) {
+.no-titlebar .sidebar {
   top: 0 !important;
   height: 100vh !important;
 }

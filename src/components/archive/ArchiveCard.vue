@@ -281,7 +281,7 @@ const toggleSelection = () => {
   transform: none !important;
 }
 
-.archive-card.deleting .card-background :deep(.lazy-image-container),
+.archive-card.deleting :deep(.card-background .lazy-image-container),
 .archive-card.deleting .archive-info,
 .archive-card.deleting .action-btn {
   transform: none !important;
@@ -313,7 +313,7 @@ const toggleSelection = () => {
   overflow: hidden;
 }
 
-.card-background :deep(.lazy-image-container) {
+:deep(.card-background .lazy-image-container) {
   width: 100%;
   height: 100%;
   transform: scale(1.005);
@@ -325,7 +325,7 @@ const toggleSelection = () => {
   transition: transform 0.3s ease;
 }
 
-.archive-card:hover .card-background :deep(.lazy-image-container) {
+.archive-card:hover :deep(.card-background .lazy-image-container) {
   transform: scale(1.02);
 }
 
@@ -648,14 +648,14 @@ const toggleSelection = () => {
 }
 
 /* Hidden state: background image slightly desaturated, preserving clarity */
-.archive-hidden .card-background :deep(.lazy-image-container) {
+.archive-hidden :deep(.card-background .lazy-image-container) {
   filter: grayscale(0.35) brightness(0.9);
   transition:
     filter 0.4s ease-in-out,
     transform 0.4s ease-in-out;
 }
 
-.archive-hidden:hover .card-background :deep(.lazy-image-container) {
+.archive-hidden:hover :deep(.card-background .lazy-image-container) {
   filter: grayscale(0.15) brightness(0.95);
   transform: scale(1.02);
 }
@@ -835,8 +835,8 @@ const toggleSelection = () => {
 }
 
 /* Search result highlight marker */
-.archive-name :deep(.search-highlight),
-.current-level :deep(.search-highlight) {
+:deep(.archive-name .search-highlight),
+:deep(.current-level .search-highlight) {
   background: rgba(var(--accent-color-rgb), 0.3);
   color: var(--accent-color);
   border-radius: var(--radius-xs);

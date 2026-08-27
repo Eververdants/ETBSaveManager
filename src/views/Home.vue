@@ -953,32 +953,32 @@ watch(searchQuery, (query) => {
      - card-info hover bg color triggers paint
    Once scrolling stops (~150ms), the is-scrolling class is
    removed and hover effects return to normal. */
-.archive-list-container.is-scrolling .archive-grid :deep(.archive-card:hover) {
+.archive-list-container.is-scrolling :deep(.archive-grid .archive-card:hover) {
   transform: none !important;
   box-shadow: none !important;
 }
 
-.archive-list-container.is-scrolling :deep(.archive-card:hover) .card-background :deep(.lazy-image-container) {
+.archive-list-container.is-scrolling :deep(.archive-card:hover .card-background .lazy-image-container) {
   filter: none !important;
   transform: none !important;
 }
 
-.archive-list-container.is-scrolling :deep(.archive-card:hover) .card-info {
+.archive-list-container.is-scrolling :deep(.archive-card:hover .card-info) {
   background-color: transparent !important;
 }
 
-.archive-list-container.is-scrolling :deep(.archive-card:hover) .difficulty-tag {
+.archive-list-container.is-scrolling :deep(.archive-card:hover .difficulty-tag) {
   width: var(--w-short, auto) !important;
   background: rgba(0, 0, 0, 0.35) !important;
   color: rgba(255, 255, 255, 0.9) !important;
   border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
-.archive-list-container.is-scrolling :deep(.difficulty-tag) .tag-short {
+.archive-list-container.is-scrolling :deep(.difficulty-tag .tag-short) {
   opacity: 1 !important;
 }
 
-.archive-list-container.is-scrolling :deep(.difficulty-tag) .tag-full {
+.archive-list-container.is-scrolling :deep(.difficulty-tag .tag-full) {
   opacity: 0 !important;
 }
 

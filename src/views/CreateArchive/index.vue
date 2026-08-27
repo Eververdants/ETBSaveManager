@@ -172,6 +172,7 @@ import Step3EditInventory from "./Step3EditInventory.vue";
 import { ENDING_LEVELS, ENDINGS_CONFIG } from "@/data/endingsData";
 import { FEATURES } from "@/config/features";
 import { getItemIdByName } from "@/utils/itemIdMap";
+import { getLevelImage } from "@/utils/levelUtils";
 
 const { t, te } = useI18n({ useScope: "global" });
 const router = useRouter();
@@ -303,7 +304,7 @@ const loadLevelsForEnding = async (endingIndex) => {
   const endingLevels = endings.value[endingIndex].levels;
   const newLevels = endingLevels.map((levelKey) => ({
     name: getLevelName(levelKey),
-    image: `/images/ETB/${levelKey}.webp`,
+    image: getLevelImage(levelKey),
     levelKey: levelKey,
   }));
   availableLevels.splice(0, availableLevels.length, ...newLevels);

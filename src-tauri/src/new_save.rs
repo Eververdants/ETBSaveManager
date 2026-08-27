@@ -79,6 +79,7 @@ pub const ALL_LEVELS: &[(&str, &str)] = &[
     ("Level Fun Expanded", "Zone4"),
     ("Level 52", "Level52"),
     ("Level 55.1", "TunnelLevel"),
+    ("LP_LevelPlasticMariana", "LP_LevelPlasticMariana"),
 ];
 
 #[derive(Debug, Deserialize, Serialize)]

@@ -1035,6 +1035,7 @@ const HUB_DOOR_LEVELS: &[(&str, &str)] = &[
     ("Level Fun Expanded", "LevelFun_Expanded"),
     ("Level 52", "Level52"),
     ("Level 55.1", "TunnelLevel"),
+    ("LP_LevelPlasticMariana", "LP_LevelPlasticMariana"),
 ];
 
 /// Record schemas for a LevelsCompleted struct element's fields

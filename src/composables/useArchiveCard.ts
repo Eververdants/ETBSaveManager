@@ -1,5 +1,6 @@
 import { ref, computed, watch, onMounted, type Ref, type ComputedRef } from "vue";
 import type { ArchiveData } from "@/types";
+import { getLevelImage } from "@/utils/levelUtils";
 
 interface Translations {
   getLevelName: (level: string) => string;
@@ -245,7 +246,7 @@ export function useArchiveCard(
     return {
       isVisible: a.isVisible,
       currentLevelName: translations.getLevelName(a.currentLevel ?? ""),
-      backgroundImage: `/images/ETB/${a.currentLevel}.webp`,
+      backgroundImage: getLevelImage(a.currentLevel ?? ""),
       archiveDifficultyText: translations.getDifficultyText(a.archiveDifficulty ?? ""),
       actualDifficultyText: translations.getDifficultyText(a.actualDifficulty ?? ""),
       archiveDifficultyClass: `difficulty-${a.archiveDifficulty}`,

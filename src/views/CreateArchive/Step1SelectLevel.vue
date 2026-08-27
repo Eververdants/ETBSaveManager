@@ -83,6 +83,7 @@ import { useI18n } from "vue-i18n";
 import { gsap } from "gsap";
 import LazyImage from "@/components/ui/LazyImage.vue";
 import { ENDINGS_CONFIG, ENDING_LEVELS } from "@/data/endingsData";
+import { getLevelImage } from "@/utils/levelUtils";
 
 const props = defineProps({
   selectedLevel: { type: Number, default: -1 },
@@ -146,7 +147,7 @@ const allRouteCards = computed(() => {
       out.push({
         name,
         altName: altName(k),
-        image: `/images/ETB/${k}.webp`,
+        image: getLevelImage(k),
         levelKey: k,
         routeIndex: ci,
         routeLabel: props.endings[ci]?.label || "",

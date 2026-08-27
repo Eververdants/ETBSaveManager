@@ -24,7 +24,7 @@
         @click="toggleLevel(levelKey)"
       >
         <div class="level-image-container">
-          <LazyImage :src="`/images/ETB/${levelKey}.webp`" :alt="getLevelName(levelKey)" image-class="level-image" />
+          <LazyImage :src="getLevelImage(levelKey)" :alt="getLevelName(levelKey)" image-class="level-image" />
           <div class="level-overlay">
             <div class="check-circle" :class="{ checked: isSelected(levelKey) }">
               <font-awesome-icon v-if="isSelected(levelKey)" :icon="['fas', 'check']" />
@@ -42,7 +42,7 @@
 <script setup>
 import { computed } from "vue";
 import LazyImage from "@/components/ui/LazyImage.vue";
-import { useLevelUtils } from "@/utils/levelUtils";
+import { useLevelUtils, getLevelImage } from "@/utils/levelUtils";
 
 const props = defineProps({
   levels: { type: Array, required: true },

@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useToast } from "./useToast";
 import type { ArchiveData } from "@/types";
 import { preloadImage } from "@/utils/imagePreloader";
+import { getLevelImage } from "@/utils/levelUtils";
 import scheduler from "@/services/resourceScheduler";
 import { FEATURES } from "@/config/features";
 
@@ -239,7 +240,7 @@ export function useArchiveData(): {
 
         for (const detail of details) {
           if (detail.current_level) {
-            preloadImage(`/images/ETB/${detail.current_level}.webp`);
+            preloadImage(getLevelImage(detail.current_level));
           }
         }
 

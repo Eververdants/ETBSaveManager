@@ -49,7 +49,7 @@ export const ENDING_LEVELS: Record<number, string[]> = {
     "Level52",
     "TunnelLevel",
   ],
-  1: ["Bunker", "PlasticMariana", "GraffitiLevel", "Grassrooms_Expanded"],
+  1: ["Bunker", "LP_LevelPlasticMariana", "GraffitiLevel", "Grassrooms_Expanded"],
   2: ["Bunker", "TheHub", "BottomFloor", "Level922"],
   3: ["Bunker", "TheHub", "OceanMap", "LightsOut", "Level974"],
 };

@@ -367,6 +367,7 @@ import { useNsuStatus } from "../composables/useNsuStatus";
 import { formatDifficulty } from "../utils/archiveCreationUtils";
 import { stripSteamIdSuffix } from "../utils/steamIdUtils";
 import { getItemIdByName } from "../utils/itemIdMap";
+import { getLevelImage } from "../utils/levelUtils";
 import { FEATURES } from "@/config/features";
 import { ENDING_LEVELS, ENDINGS_CONFIG } from "@/data/endingsData";
 
@@ -670,7 +671,7 @@ const loadLevels = () => {
 
   availableLevels.value = allLevels.map((levelKey) => ({
     name: getLevelName(levelKey),
-    image: `/images/ETB/${levelKey}.webp`,
+    image: getLevelImage(levelKey),
     levelKey,
   }));
 };
@@ -697,7 +698,7 @@ const mkLevel = (levelKey) => {
   return {
     name,
     altName: altName(levelKey),
-    image: `/images/ETB/${levelKey}.webp`,
+    image: getLevelImage(levelKey),
     levelKey,
     _search: `${name} ${altName(levelKey)} ${levelKey}`.toLowerCase(),
   };

@@ -313,6 +313,9 @@ import { useToast } from "../composables/useToast";
 import { markInitialLoadComplete } from "../composables/useArchiveCard";
 import scheduler from "../services/resourceScheduler";
 
+// Explicit name so the router-view keep-alive include list can match it.
+defineOptions({ name: "Home" });
+
 // Composables
 const archiveData = useArchiveData();
 const {

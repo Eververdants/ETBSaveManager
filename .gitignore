@@ -31,3 +31,5 @@ dist-ssr
 
 # Landing page lives on its own branch (landingpage)
 landing-page-react/
+# ZCode plan-mode artifacts
+.zcode/

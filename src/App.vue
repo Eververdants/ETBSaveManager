@@ -1,21 +1,15 @@
 <script setup>
-import { ref, onMounted, onUnmounted, shallowRef, computed, nextTick, watch } from "vue";
+import { ref, onMounted, onUnmounted, computed, nextTick, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import storage from "./services/storageService";
 import { useAppStore } from "./stores/appStore";
 import scheduler from "./services/resourceScheduler";
 import PerformanceMonitor from "./components/system/PerformanceMonitor.vue";
 import GlobalSearchPanel from "./components/feature/GlobalSearchPanel.vue";
-const Sidebar = shallowRef(null);
-const TitleBar = shallowRef(null);
-
-import SidebarComponent from "./components/layout/Sidebar.vue";
-import TitleBarComponent from "./components/layout/TitleBar.vue";
+import Sidebar from "./components/layout/Sidebar.vue";
+import TitleBar from "./components/layout/TitleBar.vue";
 import ErrorBoundary from "./components/ui/ErrorBoundary.vue";
 import FloatingActionButton from "./components/feature/FloatingActionButton.vue";
-
-Sidebar.value = SidebarComponent;
-TitleBar.value = TitleBarComponent;
 
 const router = useRouter();
 const route = useRoute();
@@ -40,8 +34,13 @@ const shouldShowPerformanceMonitor = computed(
   () => appStore.performanceMonitorEnabled && appStore.developerModeEnabled,
 );
 
-const cachedComponents = ["Home", "Settings", "CreateArchive"];
-const excludedComponents = ["BatchCreateArchive", "EditArchive"];
+// Keep-alive include list, derived from router meta as the single source of
+// truth. NOTE: keep-alive matches the component's registered name, so every
+// cached view must declare an explicit `defineOptions({ name })` (or a
+// filename-derived name that matches its route name).
+const cachedComponents = router.options.routes
+  .filter((r) => r.meta?.keepAlive)
+  .map((r) => String(r.name));
 
 // ─── Resource Scheduler ──────────────────────────────────
 // Map route names to scheduler operation types for auto-detection
@@ -212,12 +211,6 @@ const handleFindNextEventFromLock = (event) => {
 };
 
 let removeAfterEach = null;
-const handleSidebarRouteChange = (event) => {
-  const routeName = event.detail.route;
-  if (routeName && router.hasRoute(routeName)) {
-    router.push({ name: routeName });
-  }
-};
 
 let mainContentCache = null;
 
@@ -232,8 +225,6 @@ onMounted(() => {
   document.addEventListener("keydown", handleGlobalKeydown, true);
   window.addEventListener("app-global-find", handleFindEventFromLock);
   window.addEventListener("app-global-find-next", handleFindNextEventFromLock);
-
-  window.addEventListener("sidebar-route-change", handleSidebarRouteChange);
 
   // Listen for search open/close to report to scheduler
   window.addEventListener("open-archive-search", () => {
@@ -281,7 +272,6 @@ onUnmounted(() => {
   document.removeEventListener("keydown", handleGlobalKeydown, true);
   window.removeEventListener("app-global-find", handleFindEventFromLock);
   window.removeEventListener("app-global-find-next", handleFindNextEventFromLock);
-  window.removeEventListener("sidebar-route-change", handleSidebarRouteChange);
   window.removeEventListener("open-archive-search", () => {});
   window.removeEventListener("close-archive-search", () => {});
   window.removeEventListener("scheduler-fps", () => {});
@@ -315,11 +305,11 @@ async function initThemeSystem() {
 
 <template>
   <div class="app-container" :class="{ 'no-titlebar': !appStore.titleBarVisible }">
-    <component :is="TitleBar" v-if="TitleBar && appStore.titleBarVisible" />
+    <TitleBar v-if="appStore.titleBarVisible" />
     <PerformanceMonitor v-if="shouldShowPerformanceMonitor" class="performance-monitor" />
     <GlobalSearchPanel ref="globalSearchRef" :visible="showGlobalSearch" @close="closeGlobalSearch" />
     <div class="content-wrapper">
-      <component :is="Sidebar" v-if="Sidebar && appStore.sidebarVisible" @sidebar-expand="handleSidebarExpand" />
+      <Sidebar v-if="appStore.sidebarVisible" @sidebar-expand="handleSidebarExpand" />
       <main
         class="main-content"
         :class="{
@@ -330,11 +320,14 @@ async function initThemeSystem() {
       >
         <router-view v-slot="{ Component, route: viewRoute }">
           <transition name="page-fade">
-            <keep-alive :include="cachedComponents" :exclude="excludedComponents">
-              <ErrorBoundary :key="'eb-' + viewRoute.fullPath">
+            <!-- ErrorBoundary sits OUTSIDE keep-alive: keep-alive matches its
+                 direct child's name, so wrapping the other way would make the
+                 include list compare against "ErrorBoundary" and never cache. -->
+            <ErrorBoundary :key="'eb-' + viewRoute.fullPath">
+              <keep-alive :include="cachedComponents">
                 <component :is="Component" :key="viewRoute.fullPath" />
-              </ErrorBoundary>
-            </keep-alive>
+              </keep-alive>
+            </ErrorBoundary>
           </transition>
         </router-view>
       </main>

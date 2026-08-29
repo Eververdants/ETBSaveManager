@@ -174,6 +174,9 @@ import { FEATURES } from "@/config/features";
 import { getItemIdByName } from "@/utils/itemIdMap";
 import { getLevelImage } from "@/utils/levelUtils";
 
+// Explicit name so the router-view keep-alive include list can match it.
+defineOptions({ name: "CreateArchive" });
+
 const { t, te } = useI18n({ useScope: "global" });
 const router = useRouter();
 const route = useRoute();

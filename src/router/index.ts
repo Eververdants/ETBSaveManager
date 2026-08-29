@@ -28,7 +28,7 @@ const routes: RouteRecordRaw[] = [
     path: "/settings",
     name: "Settings",
     component: () => import("../views/settings.vue"),
-    meta: { keepAlive: false, priority: 2 },
+    meta: { keepAlive: true, priority: 2 },
   },
   {
     path: "/mods",

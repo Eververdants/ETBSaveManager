@@ -219,74 +219,52 @@
     </Teleport>
 
     <!-- Batch delete progress overlay -->
-    <Teleport to="body">
-      <transition name="modal">
-        <div
-          v-if="isBatchDeleting && !showBatchDeleteConfirm"
-          class="modal-overlay batch-delete-progress-overlay"
-          @click.self="showBatchDeleteConfirm = false"
-        >
-          <div class="batch-delete-progress">
-            <div class="progress-header">
-              <font-awesome-icon icon="fa-solid fa-trash-alt" class="progress-icon" />
-              <h3 class="progress-title">{{ $t("confirmModal.batchDeleteProgressTitle") }}</h3>
-            </div>
-            <div class="progress-body">
-              <div class="progress-bar-track">
-                <div class="progress-bar-fill" :style="{ width: batchDeleteProgressPercent + '%' }"></div>
-              </div>
-              <div class="progress-info">
-                <span class="progress-count">
-                  {{ batchDeleteProgress.current }} / {{ batchDeleteProgress.total }}
-                </span>
-                <span class="progress-percent">{{ batchDeleteProgressPercent }}%</span>
-              </div>
-              <div class="progress-current-file">
-                <font-awesome-icon icon="fa-solid fa-file" class="file-icon" />
-                <span class="file-name"
-                  >{{ $t("archiveSearch.multiSelect.deleting") }}: {{ batchDeleteProgress.archiveName }}</span
-                >
-              </div>
-            </div>
-          </div>
+    <BaseModal
+      :visible="isBatchDeleting && !showBatchDeleteConfirm"
+      :dismissable="false"
+      max-width="380px"
+      overlay-class="batch-delete-progress-overlay"
+      card-class="batch-delete-progress"
+    >
+      <div class="progress-header">
+        <font-awesome-icon icon="fa-solid fa-trash-alt" class="progress-icon" />
+        <h3 class="progress-title">{{ $t("confirmModal.batchDeleteProgressTitle") }}</h3>
+      </div>
+      <div class="progress-body">
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" :style="{ width: batchDeleteProgressPercent + '%' }"></div>
         </div>
-      </transition>
-    </Teleport>
+        <div class="progress-info">
+          <span class="progress-count">
+            {{ batchDeleteProgress.current }} / {{ batchDeleteProgress.total }}
+          </span>
+          <span class="progress-percent">{{ batchDeleteProgressPercent }}%</span>
+        </div>
+        <div class="progress-current-file">
+          <font-awesome-icon icon="fa-solid fa-file" class="file-icon" />
+          <span class="file-name"
+            >{{ $t("archiveSearch.multiSelect.deleting") }}: {{ batchDeleteProgress.archiveName }}</span
+          >
+        </div>
+      </div>
+    </BaseModal>
 
     <!-- Performance settings -->
-    <Teleport to="body">
-      <transition name="modal">
-        <div v-if="showPerformanceSettings" class="modal-overlay" @click.self="showPerformanceSettings = false">
-          <div class="modal-container">
-            <div class="modal-header">
-              <h2 class="modal-title">{{ $t("performanceSettings.title") }}</h2>
-              <button class="modal-close" @click="showPerformanceSettings = false">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-            <div class="modal-body">
-              <PerformanceSettings
-                v-model:performance-mode="performanceMode"
-                v-model:animation-quality="animationQuality"
-                v-model:hardware-acceleration="hardwareAcceleration"
-                v-model:virtualization-enabled="virtualizationEnabled"
-              />
-            </div>
-          </div>
-        </div>
-      </transition>
-    </Teleport>
+    <BaseModal
+      :visible="showPerformanceSettings"
+      :title="$t('performanceSettings.title')"
+      show-close
+      @close="showPerformanceSettings = false"
+    >
+      <div class="modal-body">
+        <PerformanceSettings
+          v-model:performance-mode="performanceMode"
+          v-model:animation-quality="animationQuality"
+          v-model:hardware-acceleration="hardwareAcceleration"
+          v-model:virtualization-enabled="virtualizationEnabled"
+        />
+      </div>
+    </BaseModal>
   </div>
 </template>
 
@@ -300,6 +278,7 @@ import ArchiveCard from "../components/archive/ArchiveCard.vue";
 import ArchiveSearchFilter from "../components/archive/ArchiveSearchFilter.vue";
 import ConfirmModal from "../components/modal/ConfirmModal.vue";
 import PerformanceSettings from "../components/system/PerformanceSettings.vue";
+import BaseModal from "../components/ui/BaseModal.vue";
 import { useArchiveData } from "../composables/useArchiveData";
 import type { ArchiveData } from "@/types";
 import { useArchiveList } from "../composables/useArchiveSearchFilter";
@@ -1311,53 +1290,6 @@ watch(searchQuery, (query) => {
   -webkit-backdrop-filter: var(--search-overlay-backdrop, blur(8px));
 }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1001;
-}
-
-.modal-container {
-  background: var(--card-bg);
-  border-radius: var(--radius-2xl);
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.modal-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-secondary);
-  padding: 6px;
-  border-radius: var(--radius-pill);
-}
-
-.modal-close:hover {
-  background: var(--bg-secondary);
-}
-
 .modal-body {
   padding: 20px;
 }
@@ -1365,21 +1297,6 @@ watch(searchQuery, (query) => {
 .loading {
   opacity: 0.6;
   pointer-events: none;
-}
-
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-from .modal-container,
-.modal-leave-to .modal-container {
-  transform: scale(0.9);
 }
 
 @media (max-width: 768px) {
@@ -1564,20 +1481,17 @@ watch(searchQuery, (query) => {
 }
 
 /* Batch delete progress overlay �?covers full viewport including multi-select toolbar */
-.batch-delete-progress-overlay {
+/* Batch delete progress: BaseModal overlay/card tweaks (teleported, so :global) */
+:global(.batch-delete-progress-overlay) {
   z-index: 10001 !important;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
-.batch-delete-progress {
-  background: var(--card-bg);
+:global(.batch-delete-progress) {
   border-radius: var(--radius-xl);
-  width: 380px;
-  max-width: 90vw;
   overflow: hidden;
-  filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.3));
 }
 
 .batch-delete-progress .progress-header {

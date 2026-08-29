@@ -119,42 +119,42 @@
     />
 
     <!-- Creation success modal -->
-    <Teleport to="body">
-      <Transition name="success-modal">
-        <div v-if="showSuccessModal" class="success-modal-overlay" @click.self="closeSuccessModal">
-          <div class="success-modal-card">
-            <div class="success-modal-icon-circle">
-              <svg class="success-modal-check-mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M20 6L9 17L4 12"
-                  stroke="currentColor"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </div>
-            <h2 class="success-modal-title">{{ $t("createArchive.archiveCreated") }}</h2>
-            <p class="success-modal-subtitle">{{ $t("createArchive.archiveCreatedMessage") }}</p>
-            <!-- Post-creation action options -->
-            <div class="success-modal-actions">
-              <button class="success-action-btn primary" @click="handleEditCreatedArchive">
-                <font-awesome-icon :icon="['fas', 'pen']" />
-                {{ $t("createArchive.editArchive") }}
-              </button>
-              <button class="success-action-btn secondary" @click="handleCreateAnother">
-                <font-awesome-icon :icon="['fas', 'plus']" />
-                {{ $t("createArchive.createAnother") }}
-              </button>
-              <button class="success-action-btn secondary" @click="handleGoHome">
-                <font-awesome-icon :icon="['fas', 'home']" />
-                {{ $t("createArchive.goHome") }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <BaseModal
+      :visible="showSuccessModal"
+      max-width="520px"
+      overlay-class="success-modal-overlay"
+      card-class="success-modal-card"
+      @close="closeSuccessModal"
+    >
+      <div class="success-modal-icon-circle">
+        <svg class="success-modal-check-mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M20 6L9 17L4 12"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <h2 class="success-modal-title">{{ $t("createArchive.archiveCreated") }}</h2>
+      <p class="success-modal-subtitle">{{ $t("createArchive.archiveCreatedMessage") }}</p>
+      <!-- Post-creation action options -->
+      <div class="success-modal-actions">
+        <button class="success-action-btn primary" @click="handleEditCreatedArchive">
+          <font-awesome-icon :icon="['fas', 'pen']" />
+          {{ $t("createArchive.editArchive") }}
+        </button>
+        <button class="success-action-btn secondary" @click="handleCreateAnother">
+          <font-awesome-icon :icon="['fas', 'plus']" />
+          {{ $t("createArchive.createAnother") }}
+        </button>
+        <button class="success-action-btn secondary" @click="handleGoHome">
+          <font-awesome-icon :icon="['fas', 'home']" />
+          {{ $t("createArchive.goHome") }}
+        </button>
+      </div>
+    </BaseModal>
   </div>
 </template>
 
@@ -165,6 +165,7 @@ import { isReducedMotion } from "@/utils/performance";
 import { useI18n } from "vue-i18n";
 import { useRouter, useRoute } from "vue-router";
 import InventoryItemSelector from "@/components/feature/InventoryItemSelector.vue";
+import BaseModal from "@/components/ui/BaseModal.vue";
 import { notify } from "@/services/notificationService";
 import Step1SelectLevel from "./Step1SelectLevel.vue";
 import Step2ConfigArchive from "./Step2ConfigArchive.vue";
@@ -1101,27 +1102,19 @@ const onStepLeave = (el, done) => {
   will-change: transform, opacity;
 }
 
-/* Creation success modal */
-.success-modal-overlay {
-  position: fixed;
-  inset: 0;
+/* Creation success modal: BaseModal overlay/card tweaks (teleported, so :global) */
+:global(.success-modal-overlay) {
   background: rgba(0, 0, 0, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1200;
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
-.success-modal-card {
+:global(.success-modal-card) {
   min-width: 320px;
-  max-width: min(92vw, 520px);
   background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border: 1px solid var(--divider-light);
-  border-radius: var(--radius-modal);
   padding: 32px 28px;
   text-align: center;
-  filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.28));
 }
 
 .success-modal-icon-circle {
@@ -1152,29 +1145,6 @@ const onStepLeave = (el, done) => {
 .success-modal-subtitle {
   font-size: 15px;
   color: var(--text-secondary);
-}
-
-.success-modal-enter-active,
-.success-modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.success-modal-enter-active .success-modal-card,
-.success-modal-leave-active .success-modal-card {
-  transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
-}
-
-.success-modal-enter-from,
-.success-modal-leave-to {
-  opacity: 0;
-}
-
-.success-modal-enter-from .success-modal-card,
-.success-modal-leave-to .success-modal-card {
-  transform: scale(0.94);
-  opacity: 0;
 }
 
 /* Success modal action buttons */

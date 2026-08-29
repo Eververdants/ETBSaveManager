@@ -27,7 +27,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/settings",
     name: "Settings",
-    component: () => import("../views/settings.vue"),
+    component: () => import("../views/Settings/index.vue"),
     meta: { keepAlive: true, priority: 2 },
   },
   {
@@ -57,7 +57,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/edit-archive/:archiveData?",
     name: "EditArchive",
-    component: () => import("../views/EditArchive.vue"),
+    component: () => import("../views/EditArchive/index.vue"),
     props: true,
     meta: { keepAlive: false, priority: 2 },
   },

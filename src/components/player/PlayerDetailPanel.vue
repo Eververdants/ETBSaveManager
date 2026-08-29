@@ -458,6 +458,27 @@ const getSlotLabelText = (slotIndex) => {
 }
 
 /* Responsive */
+@media (max-width: 900px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .inventory-wrap {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .backpack-slots {
+    grid-template-columns: repeat(3, 54px);
+  }
+
+  .inv-slot {
+    width: 54px;
+    height: 54px;
+  }
+}
+
 @media (max-width: 768px) {
   .detail-grid {
     grid-template-columns: 1fr;
@@ -470,6 +491,49 @@ const getSlotLabelText = (slotIndex) => {
   .hand-slots {
     flex-direction: row;
     justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .detail-block {
+    padding: 14px;
+  }
+
+  .detail-grid {
+    gap: 12px;
+  }
+
+  .inventory-wrap {
+    gap: 12px;
+  }
+
+  .hand-slots,
+  .backpack-slots {
+    gap: 8px;
+  }
+
+  .inv-slot {
+    width: 52px;
+    height: 52px;
+  }
+
+  .sanity-num {
+    font-size: 24px;
+    min-width: 60px;
+  }
+
+  .sanity-bar {
+    height: 8px;
+  }
+
+  .quick-btns {
+    gap: 6px;
+  }
+
+  .qbtn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
   }
 }
 </style>

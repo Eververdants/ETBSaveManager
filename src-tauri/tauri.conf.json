@@ -20,7 +20,8 @@
         "resizable": true,
         "fullscreen": false,
         "center": true,
-        "decorations": false
+        "decorations": false,
+        "dragDropEnabled": false
       }
     ],
     "security": {

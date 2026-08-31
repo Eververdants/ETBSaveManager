@@ -33,8 +33,8 @@ import { useArchiveActions } from "./hooks/useArchiveActions";
 import { useArchiveList } from "./hooks/useArchiveList";
 import { useMultiSelect } from "./hooks/useMultiSelect";
 import { useLevelName } from "../../utils/levelUtils";
-import type { ArchiveData } from "../../types";
-import ArchiveCard from "./components/ArchiveCard";
+// ArchiveData 类型通过 VirtualArchiveGrid 间接使用
+import VirtualArchiveGrid from "./components/VirtualArchiveGrid";
 import ArchiveSearchFilter from "./components/ArchiveSearchFilter";
 
 export default function SavesPage() {
@@ -191,7 +191,7 @@ export default function SavesPage() {
       </AnimatePresence>
 
       {/* 内容区 */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-4">
+      <div className="min-h-0 flex-1 overflow-hidden px-5 pb-6 pt-4">
         {loading && archives.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-[var(--color-text-muted)]">
             <Spinner size={28} />
@@ -215,34 +215,19 @@ export default function SavesPage() {
             onAction={list.resetFilters}
           />
         ) : (
-          <motion.div
-            layout
-            className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4"
-          >
-            {list.displayArchives.map((archive: ArchiveData, index: number) => (
-              <motion.div
-                key={archive.path || archive.id}
-                layout
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: Math.min(index * 0.015, 0.3) }}
-              >
-                <ArchiveCard
-                  archive={archive}
-                  isMultiSelectMode={multi.isMultiSelectMode}
-                  isSelected={multi.selectedIds.has(archive.id)}
-                  searchQuery={list.searchQuery}
-                  onToggleVisibility={(a) =>
-                    void actions.handleToggleVisibility(a, { onRefresh: refreshArchivesSilent })
-                  }
-                  onEdit={actions.handleEdit}
-                  onDelete={actions.deleteArchive}
-                  onSelect={actions.handleEdit}
-                  onToggleSelect={(a) => multi.toggleSelect(a.id)}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
+          <VirtualArchiveGrid
+            archives={list.displayArchives}
+            isMultiSelectMode={multi.isMultiSelectMode}
+            selectedIds={multi.selectedIds}
+            searchQuery={list.searchQuery}
+            onToggleVisibility={(a) =>
+              void actions.handleToggleVisibility(a, { onRefresh: refreshArchivesSilent })
+            }
+            onEdit={actions.handleEdit}
+            onDelete={actions.deleteArchive}
+            onSelect={actions.handleEdit}
+            onToggleSelect={(a) => multi.toggleSelect(a.id)}
+          />
         )}
       </div>
 

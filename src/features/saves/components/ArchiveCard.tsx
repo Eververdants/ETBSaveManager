@@ -11,6 +11,12 @@
  *    - 底部属性栏：开放式通透排版，不再硬塞进狭窄盒子里，空气感充足。
  * 3. 难度指示：
  *    - 回归极简优雅的微胶囊，留白通透，字距舒适。
+ * 4. 动效节奏 (Motion Rhythm)：
+ *    - 全卡片统一强 ease-out 曲线 cubic-bezier(0.16,1,0.3,1)，时长不对称：
+ *      悬浮进入 200ms、退出 150ms、按下 100ms —— 进场从容、离场干脆。
+ *    - 可视性切换：透明度 / 灰度 / 标题色 / 隐藏角标均走过渡；角标常驻挂载，
+ *      滑入滑出对称，状态变化连续可感知，不跳变。
+ *    - 显式列出过渡属性（禁 transition-all）；motion-reduce 下退化为瞬时切换。
  */
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -139,9 +145,11 @@ export default function ArchiveCard({
       // 外层容器：从容留白 p-3 (12px)，大圆角 rounded-[16px]
       className={cn(
         "group relative flex flex-col p-3 rounded-[16px] text-left cursor-pointer select-none",
-        "border transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
+        // base 时长 = 悬浮退出节奏（快收），hover 内再放慢进入；按下 100ms
+        "border transition-[transform,box-shadow,border-color,background-color,opacity] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none",
         "bg-[var(--color-bg-elevated)] shadow-[0_1px_3px_var(--color-shadow)]",
-        "hover:shadow-[0_12px_32px_-8px_var(--color-shadow-lg)] hover:-translate-y-1 hover:border-[var(--color-border-strong)]",
+        "hover:-translate-y-0.5 hover:border-[var(--color-border-strong)] hover:shadow-[0_12px_32px_-8px_var(--color-shadow-lg)] hover:duration-200",
+        "active:scale-[0.98] active:duration-100",
         isSelected
           ? "border-[var(--color-primary)] bg-[var(--color-primary-subtle)]/70 ring-2 ring-[var(--color-ring)]"
           : "border-[var(--color-border-light)]",
@@ -154,13 +162,16 @@ export default function ArchiveCard({
           src={getLevelImage(archive.currentLevel || "Level0")}
           alt={archive.name}
           className={cn(
-            "h-full w-full object-cover [&_img]:transition-transform [&_img]:duration-500 [&_img]:ease-out group-hover:[&_img]:scale-[1.04]",
+            "h-full w-full object-cover",
+            // 过滤器含 opacity/filter：不破坏 LazyImage 自带的加载淡入；灰度随可视性平滑变化
+            "[&_img]:transition-[transform,opacity,filter] [&_img]:duration-200 [&_img]:ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:[&_img]:transition-none",
+            "group-hover:[&_img]:scale-[1.04] group-hover:[&_img]:duration-300 group-hover:[&_img]:ease-[cubic-bezier(0.16,1,0.3,1)]",
             hidden && "[&_img]:grayscale-[45%]"
           )}
         />
 
         {/* 顶部微光渐变层 */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-11 bg-gradient-to-b from-black/35 via-black/10 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-11 bg-gradient-to-b from-black/35 via-black/10 to-transparent opacity-0 transition-opacity duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:duration-200 motion-reduce:transition-none" />
 
         {/* 多选勾选框 (Win11 样式) */}
         {isMultiSelectMode && (
@@ -173,17 +184,24 @@ export default function ArchiveCard({
           </div>
         )}
 
-        {/* 隐藏项目角标：WinUI 3 极简深蓝灰磨砂微光态 */}
-        {hidden && (
-          <div className="absolute left-0 top-0 z-10 inline-flex items-center gap-1 rounded-tl-[10px] rounded-br-[8px] bg-slate-900/80 dark:bg-slate-800/85 px-2 py-0.5 text-[10px] font-medium text-slate-200 shadow-sm backdrop-blur-md border-r border-b border-white/15">
-            <EyeOff size={10} className="text-slate-300" />
-            <span>{t("archiveCard.hidden")}</span>
-          </div>
-        )}
+        {/* 隐藏项目角标：常驻挂载，随可视性滑入滑出（从所属上边缘进出，对称过渡） */}
+        <div
+          aria-hidden={!hidden}
+          className={cn(
+            "absolute left-0 top-0 z-10 inline-flex origin-top-left items-center gap-1 rounded-tl-[10px] rounded-br-[8px] bg-slate-900/80 dark:bg-slate-800/85 px-2 py-0.5 text-[10px] font-medium text-slate-200 shadow-sm backdrop-blur-md border-r border-b border-white/15",
+            "transition-[transform,opacity] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none",
+            hidden
+              ? "duration-200 translate-y-0 scale-100 opacity-100"
+              : "pointer-events-none duration-150 -translate-y-1.5 scale-95 opacity-0"
+          )}
+        >
+          <EyeOff size={10} className="text-slate-300" />
+          <span>{t("archiveCard.hidden")}</span>
+        </div>
 
         {/* 浮动操作条：同心贴合右上角 */}
         {!isMultiSelectMode && (
-          <div className="absolute right-0 top-0 z-10 flex items-center opacity-0 -translate-y-1 scale-95 transition-all duration-200 ease-out group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 group-focus-within:opacity-100 group-focus-within:translate-y-0 group-focus-within:scale-100">
+          <div className="absolute right-0 top-0 z-10 flex origin-top-right items-center opacity-0 -translate-y-1 scale-95 transition-[transform,opacity] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 group-hover:duration-200 group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100 group-focus-within:duration-200">
             <div className="flex items-center gap-0.5 rounded-tr-[10px] rounded-bl-[8px] bg-neutral-950/80 p-1 shadow-md backdrop-blur-md border-l border-b border-white/15">
               <WinActionBtn
                 label={t("archiveCard.editLabel")}
@@ -213,7 +231,7 @@ export default function ArchiveCard({
         <div className="flex items-center justify-between gap-2.5">
           <p
             className={cn(
-              "line-clamp-1 text-[13.5px] font-semibold tracking-[-0.01em]",
+              "line-clamp-1 text-[13.5px] font-semibold tracking-[-0.01em] transition-colors duration-200",
               archive.isVisible ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"
             )}
             title={displayName}
@@ -283,7 +301,7 @@ function WinActionBtn({
         onClick();
       }}
       className={cn(
-        "flex h-6 w-6 items-center justify-center rounded-[6px] text-white/85 transition-all duration-150 active:scale-90",
+        "flex h-6 w-6 items-center justify-center rounded-[6px] text-white/85 transition-[color,background-color,transform] duration-150 active:scale-90 motion-reduce:transition-none",
         danger
           ? "hover:bg-red-500 hover:text-white"
           : "hover:bg-white/20 hover:text-white"

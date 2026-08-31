@@ -1,9 +1,10 @@
 /**
  * 共享组件
- * 
+ *
  * 规则：
  * 1. 只有真正跨模块共享的组件才放在这里
  * 2. 功能专用组件放在 features/{feature}/components/
  * 3. 组件必须是受控的、无业务逻辑的
  */
 export { default as PagePlaceholder } from "./PagePlaceholder";
+export { Toaster } from "./ui";

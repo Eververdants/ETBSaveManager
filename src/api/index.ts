@@ -1,15 +1,14 @@
 /**
  * API 层
- * 处理所有与 Tauri 后端或远程服务器的通信
- * 
+ * 处理所有与 Tauri 后端的通信
+ *
  * 重要规则：
- * 1. 所有 API 调用必须经过此文件
- * 2. 组件不应直接使用 invoke 或 fetch
- * 3. 错误处理应统一在此层完成
+ * 1. 所有 Tauri 调用必须经过此目录（组件/hook 不得直接使用 invoke）
+ * 2. 错误处理统一在此层完成，抛出 ApiError
+ * 3. Wire 类型字段名与 Rust 序列化保持一致（见 types/save.ts）
  */
 
 import { invoke } from "@tauri-apps/api/core";
-import type { ApiResponse } from "../types";
 
 // ============================================
 // 错误处理
@@ -25,13 +24,27 @@ export class ApiError extends Error {
   }
 }
 
-// 统一错误处理
+/**
+ * 归一化 Rust AppError（序列化为 { type, message } 形状）。
+ * 直接 String(error) 会得到 "[object Object]"，必须取 message 字段。
+ */
+export function normalizeInvokeError(error: unknown): string {
+  if (error && typeof error === "object") {
+    const err = error as Record<string, unknown>;
+    if (typeof err.message === "string" && err.message) return err.message;
+    if (typeof err.msg === "string" && err.msg) return err.msg;
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error);
+    }
+  }
+  return String(error);
+}
+
 function handleApiError(error: unknown): ApiError {
   if (error instanceof ApiError) return error;
-  if (error instanceof Error) {
-    return new ApiError("UNKNOWN", error.message);
-  }
-  return new ApiError("UNKNOWN", "An unknown error occurred");
+  return new ApiError("UNKNOWN", normalizeInvokeError(error));
 }
 
 // ============================================
@@ -46,37 +59,15 @@ export async function tauriInvoke<T>(command: string, args?: Record<string, unkn
 }
 
 // ============================================
-// 文件操作 API（示例）
+// 各领域能力请使用对应模块：
+// - saveApi    → ./save
+// - playerApi  → ./player
+// - modsApi    → ./mods
+// - systemApi  → ./system
+// - themeApi   → ./theme
 // ============================================
-export const fileApi = {
-  // 读取文件
-  async readFile(path: string): Promise<Uint8Array> {
-    return tauriInvoke<Uint8Array>("read_file", { path });
-  },
-
-  // 写入文件
-  async writeFile(path: string, data: Uint8Array): Promise<void> {
-    return tauriInvoke<void>("write_file", { path, data });
-  },
-
-  // 删除文件
-  async deleteFile(path: string): Promise<void> {
-    return tauriInvoke<void>("delete_file", { path });
-  },
-
-  // 列出目录
-  async listDirectory(path: string): Promise<string[]> {
-    return tauriInvoke<string[]>("list_directory", { path });
-  },
-};
-
-// ============================================
-// 存档管理 API（示例）
-// ============================================
-export const saveApi = {
-  // 获取存档列表
-  async getSaves(): Promise<ApiResponse<string[]>> {
-    // return tauriInvoke('get_saves');
-    return { success: true, data: [] };
-  },
-};
+export { saveApi } from "./save";
+export { playerApi } from "./player";
+export { modsApi, GAME_ROOT_KEY } from "./mods";
+export { systemApi } from "./system";
+export { themeApi } from "./theme";

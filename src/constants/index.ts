@@ -7,6 +7,18 @@
 export const APP_NAME = "ETBToolkit";
 export const APP_VERSION = "4.0.0";
 
+// 功能开关
+export const FEATURES = {
+  /**
+   * 合并"存档难度"与"实际难度"为单一难度显示。
+   * 启用时：UI 隐藏实际难度，实际难度在后端始终镜像存档难度。
+   */
+  MERGE_DIFFICULTY: true,
+} as const;
+
+// 存档难度选项（顺序即展示顺序）
+export const DIFFICULTY_LEVELS = ["easy", "normal", "hard", "nightmare"] as const;
+
 // 存储键名
 export const STORAGE_KEYS = {
   THEME: "theme",

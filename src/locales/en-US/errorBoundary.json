@@ -1,0 +1,8 @@
+{
+  "title": "An error occurred on this page",
+  "message": "Something went wrong during rendering, but the rest of the application is unaffected.",
+  "retry": "Retry",
+  "goHome": "Go Home",
+  "showDetail": "View Details",
+  "hideDetail": "Hide Details"
+}

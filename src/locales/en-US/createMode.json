@@ -1,0 +1,15 @@
+{
+  "title": "Select Create Mode",
+  "subtitle": "Choose the archive creation method that suits your needs",
+  "singleArchive": "Single Archive",
+  "multiArchive": "Multiple Archives",
+  "confirm": "Confirm",
+  "classic": {
+    "title": "Classic Mode",
+    "desc": "Step-by-step configuration for a single archive with full customization options"
+  },
+  "quick": {
+    "title": "Quick Mode",
+    "desc": "Quickly create multiple archives with simplified configuration"
+  }
+}

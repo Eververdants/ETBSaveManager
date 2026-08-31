@@ -1,0 +1,35 @@
+{
+  "title": "Quick Create",
+  "endingSelector": {
+    "label": "Select Ending Route"
+  },
+  "levelGrid": {
+    "selectAll": "Select All",
+    "clearAll": "Clear",
+    "selected": "{count}/{total} selected",
+    "noSelection": "Select at least 1 level"
+  },
+  "options": {
+    "difficulty": "Difficulty",
+    "copies": "Copies per level"
+  },
+  "preview": {
+    "title": "Creating {count} archives",
+    "empty": "Select levels to create"
+  },
+  "create": "Create {count} Archives",
+  "creating": "Creating...",
+  "result": {
+    "success": "Successfully created {count} archives",
+    "partialSuccess": "{success} created, {failed} failed",
+    "failed": "Creation failed",
+    "error": "An error occurred",
+    "successTitle": "Complete",
+    "partialTitle": "Partially Complete",
+    "successCount": "Succeeded",
+    "failedCount": "Failed",
+    "errorDetails": "Error Details",
+    "continueEditing": "Continue Editing",
+    "viewArchives": "View Archives"
+  }
+}

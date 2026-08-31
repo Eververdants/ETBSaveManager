@@ -1,5 +1,5 @@
 /**
- * en-US 语言包
+ * zh-TW 语言包
  * 每个文件对应一个命名空间前缀（如 archive.* / LevelName_Display.*）
  */
 import app from "./app.json";
@@ -25,8 +25,6 @@ import noReleaseNotes from "./noReleaseNotes.json";
 import versions from "./versions.json";
 import viewAllVersions from "./viewAllVersions.json";
 import errorBoundary from "./errorBoundary.json";
-import home from "./home.json";
-import nav from "./nav.json";
 
 export default {
   app,
@@ -52,6 +50,4 @@ export default {
   versions,
   viewAllVersions,
   errorBoundary,
-  home,
-  nav,
 };

@@ -1,0 +1,14 @@
+{
+  "description": "About application information",
+  "version": "Version",
+  "tagline": "Dedicated save management tool for Escape the Backrooms",
+  "appInfo": "Application Information",
+  "author": "Author",
+  "license": "Open Source License",
+  "releaseNotes": "Release Notes",
+  "acknowledgements": "Acknowledgements",
+  "contact": "Contact",
+  "authorName": "Eververdants",
+  "licenseName": "MIT License",
+  "developerModeActivated": "Developer mode activated!"
+}

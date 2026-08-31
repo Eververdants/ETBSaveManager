@@ -1,0 +1,15 @@
+{
+  "title": "选择创建模式",
+  "subtitle": "选择适合您需求的存档创建方式",
+  "singleArchive": "单存档创建",
+  "multiArchive": "多存档创建",
+  "confirm": "确认选择",
+  "classic": {
+    "title": "经典模式",
+    "desc": "逐步配置单个存档，支持完整的自定义选项"
+  },
+  "quick": {
+    "title": "快速模式",
+    "desc": "快速批量创建多个存档，简化配置流程"
+  }
+}

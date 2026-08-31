@@ -1,0 +1,8 @@
+{
+  "title": "页面出现异常",
+  "message": "渲染时遇到了问题，但这不影响应用其他部分。",
+  "retry": "重试",
+  "goHome": "返回首页",
+  "showDetail": "查看详情",
+  "hideDetail": "隐藏详情"
+}

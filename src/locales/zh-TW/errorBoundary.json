@@ -1,0 +1,8 @@
+{
+  "title": "頁面出現異常",
+  "message": "渲染時遇到了問題，但不影響應用程式其他部分。",
+  "retry": "重試",
+  "goHome": "返回首頁",
+  "showDetail": "檢視詳情",
+  "hideDetail": "隱藏詳情"
+}

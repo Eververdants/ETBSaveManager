@@ -1,9 +1,11 @@
 /**
- * 存档卡片 — 关卡封面 + 名称高亮 + 难度标签 + 操作按钮
+ * 存档卡片 — 层级封面承载元信息：难度徽章（左上）、隐藏态（右上 + 图片灰度）、
+ * 当前层级名（封面底部渐变）。操作按钮 hover / focus-within 浮现于封面右下，
+ * 信息区仅保留存档名称 + 修改日期，保证网格静置时焦点最少。
  * （对应 master ArchiveCard）
  */
 import { useTranslation } from "react-i18next";
-import { EyeOff, Eye, SquarePen, Trash2, CheckCircle2, Circle } from "lucide-react";
+import { EyeOff, Eye, SquarePen, Trash2, CheckCircle2, Circle, MapPin } from "lucide-react";
 
 import { LazyImage, Badge } from "../../../components/ui";
 import { getLevelImage, useLevelName } from "../../../utils/levelUtils";
@@ -46,6 +48,14 @@ const DIFFICULTY_I18N: Record<string, string> = {
   nightmare: "archiveCard.nightmare",
 };
 
+/** 难度 → 徽章色（设计系统无 warning token，困难/噩梦共用 danger） */
+const DIFFICULTY_TONE: Record<string, "success" | "primary" | "danger"> = {
+  easy: "success",
+  normal: "primary",
+  hard: "danger",
+  nightmare: "danger",
+};
+
 export default function ArchiveCard({
   archive,
   isMultiSelectMode,
@@ -61,6 +71,7 @@ export default function ArchiveCard({
   const { getLevelName } = useLevelName();
 
   const displayName = archive.displayName || archive.name;
+  const hidden = !archive.isVisible;
 
   const handleClick = () => {
     if (isMultiSelectMode) onToggleSelect(archive);
@@ -81,43 +92,31 @@ export default function ArchiveCard({
           : "border-[var(--color-border-light)] hover:-translate-y-1 hover:border-[var(--color-border-strong)] hover:shadow-[0_12px_28px_var(--color-shadow-lg)]"
       )}
     >
-      {/* 封面 */}
+      {/* 封面：层级图 + 叠加元信息 */}
       <div className="relative aspect-video overflow-hidden">
         <LazyImage
           src={getLevelImage(archive.currentLevel || "Level0")}
           alt={archive.name}
-          className="h-full w-full [&_img]:transition-transform [&_img]:duration-500 group-hover:[&_img]:scale-105"
+          className={cn(
+            "h-full w-full [&_img]:transition-transform [&_img]:duration-500 group-hover:[&_img]:scale-105",
+            hidden && "[&_img]:opacity-60 [&_img]:grayscale"
+          )}
         />
-        {!archive.isVisible && (
-          <div className="absolute inset-x-0 bottom-0 flex items-center gap-1.5 bg-black/55 px-3 py-1.5 text-[11px] font-medium text-white backdrop-blur-sm">
-            <EyeOff size={12} />
-            {t("archiveCard.hidden")}
-          </div>
-        )}
-        {isMultiSelectMode && (
-          <div className="absolute right-2 top-2 text-white drop-shadow-md">
-            {isSelected ? (
-              <CheckCircle2 size={22} style={{ color: "var(--color-primary)" }} />
-            ) : (
-              <Circle size={20} className="opacity-80" />
-            )}
-          </div>
-        )}
-      </div>
 
-      {/* 信息 */}
-      <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
-        <div className="flex items-start justify-between gap-2">
-          <p className="min-w-0 flex-1 truncate text-[13px] font-semibold text-[var(--color-text-primary)]">
-            <Highlight text={displayName} query={searchQuery} />
-          </p>
-          <Badge tone={archive.isVisible ? "success" : "neutral"}>
-            {archive.isVisible ? t("archiveCard.visible") : t("archiveCard.hidden")}
+        {/* 左上：多选圈 + 难度徽章（z-10：始终位于 LazyImage 的 error 占位层之上） */}
+        <div className="absolute left-2 top-2 z-10 flex items-center gap-1.5">
+          {isMultiSelectMode && (
+            <span className="drop-shadow-md">
+              {isSelected ? (
+                <CheckCircle2 size={20} style={{ color: "var(--color-primary)" }} />
+              ) : (
+                <Circle size={18} className="text-white opacity-80" />
+              )}
+            </span>
+          )}
+          <Badge tone={DIFFICULTY_TONE[archive.archiveDifficulty] ?? "primary"}>
+            {t(DIFFICULTY_I18N[archive.archiveDifficulty] ?? "archiveCard.normal")}
           </Badge>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Badge tone="primary">{t(DIFFICULTY_I18N[archive.archiveDifficulty] ?? "archiveCard.normal")}</Badge>
           {!FEATURES.MERGE_DIFFICULTY && archive.actualDifficulty !== archive.archiveDifficulty && (
             <Badge tone="neutral">
               {t(DIFFICULTY_I18N[archive.actualDifficulty] ?? archive.actualDifficulty)}
@@ -125,40 +124,66 @@ export default function ArchiveCard({
           )}
         </div>
 
-        <p className="mt-auto truncate text-xs text-[var(--color-text-muted)]">
-          {t("archiveCard.currentLevel")}:
-          <span className="ml-1 font-medium text-[var(--color-text-secondary)]">
-            {getLevelName(archive.currentLevel)}
+        {/* 右上：隐藏态（隐藏时图片同步灰度弱化） */}
+        {hidden && (
+          <span className="absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
+            <EyeOff size={11} />
+            {t("archiveCard.hidden")}
           </span>
-        </p>
+        )}
+
+        {/* 底部渐变：当前层级 + hover 浮现的操作 */}
+        <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-between gap-1.5 bg-gradient-to-t from-black/75 via-black/40 to-transparent px-2.5 pb-2 pt-7">
+          <span className="flex min-w-0 items-center gap-1 text-[11px] font-medium text-white drop-shadow">
+            <MapPin size={11} className="shrink-0" />
+            <span className="truncate">{getLevelName(archive.currentLevel)}</span>
+          </span>
+          {!isMultiSelectMode && (
+            <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
+              <CoverAction
+                label={t("archiveCard.editLabel")}
+                onClick={() => onEdit(archive)}
+                icon={<SquarePen size={13} />}
+              />
+              <CoverAction
+                label={archive.isVisible ? t("archiveCard.hideLabel") : t("archiveCard.showLabel")}
+                onClick={() => onToggleVisibility(archive)}
+                icon={archive.isVisible ? <EyeOff size={13} /> : <Eye size={13} />}
+              />
+              <CoverAction
+                label={t("archiveCard.deleteLabel")}
+                onClick={() => onDelete(archive)}
+                icon={<Trash2 size={13} />}
+                danger
+              />
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* 操作栏 */}
-      {!isMultiSelectMode && (
-        <div className="flex items-center justify-around border-t border-[var(--color-border-light)] bg-[var(--color-bg-secondary)] px-2 py-1.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-          <CardAction
-            label={t("archiveCard.editLabel")}
-            onClick={() => onEdit(archive)}
-            icon={<SquarePen size={14} />}
-          />
-          <CardAction
-            label={archive.isVisible ? t("archiveCard.hideLabel") : t("archiveCard.showLabel")}
-            onClick={() => onToggleVisibility(archive)}
-            icon={archive.isVisible ? <EyeOff size={14} /> : <Eye size={14} />}
-          />
-          <CardAction
-            label={t("archiveCard.deleteLabel")}
-            onClick={() => onDelete(archive)}
-            icon={<Trash2 size={14} />}
-            danger
-          />
-        </div>
-      )}
+      {/* 信息：名称 + 修改日期 */}
+      <div className="flex flex-col gap-0.5 p-2.5">
+        <p
+          className={cn(
+            "truncate text-[13px] font-semibold",
+            archive.isVisible ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"
+          )}
+        >
+          <Highlight text={displayName} query={searchQuery} />
+        </p>
+        {archive.date && (
+          <p className="truncate text-[11px] text-[var(--color-text-muted)]">
+            {t("archiveCard.lastModified")}
+            <span className="ml-1 tabular-nums">{archive.date}</span>
+          </p>
+        )}
+      </div>
     </div>
   );
 }
 
-function CardAction({
+/** 封面上的浮动操作按钮（深底胶囊，语义由 tooltip / aria-label 提供） */
+function CoverAction({
   label,
   icon,
   onClick,
@@ -179,10 +204,8 @@ function CardAction({
         onClick();
       }}
       className={cn(
-        "flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
-        danger
-          ? "text-[var(--color-danger)] hover:bg-[var(--color-danger-subtle)]"
-          : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text-primary)]"
+        "flex items-center rounded-md bg-black/55 p-1.5 text-white backdrop-blur-sm transition-colors",
+        danger ? "hover:bg-[var(--color-danger)]" : "hover:bg-black/80"
       )}
     >
       {icon}

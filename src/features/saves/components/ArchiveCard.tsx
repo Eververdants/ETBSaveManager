@@ -1,14 +1,16 @@
 /**
- * 存档卡片 — WinUI 3 现代同心圆（Concentric Radii / Nested Curvature）设计
+ * 存档卡片 — WinUI 3 极简留白与自然呼吸感 (Spacious & Balanced Rhythm)
  *
- * 核心设计原则 (Concentric Radii Formula: R_inner = R_outer - Padding):
- * 1. 外卡片容器：`p-2.5` (10px padding)，外圆角 `rounded-[16px]` (16px)。
- * 2. 内缩略图媒体槽：内圆角 `rounded-[8px]` (16px - 10px = 6px~8px 同心曲率对齐)，带来极致和谐的嵌套平滑感。
- * 3. 内部元素同心递减：
- *    - 浮动命令栏胶囊：`p-1 rounded-[10px]`，内按钮 `rounded-[6px]` (10px - 4px = 6px)。
- *    - 难度徽章与状态灯：微圆角嵌套同心小圆。
- * 4. Windows 资源管理器原生质感：
- *    - 隐藏文件拟态、高精度微边框、呼吸感 hover 动效。
+ * 核心呼吸感重构原则（靠比例、留白、层级间距实现，杜绝花哨光效）：
+ * 1. 呼吸留白节奏 (Vertical Rhythm)：
+ *    - 增加缩略图与文字区、文字行之间的舒展间距（Padding 12px、图文间隙 12px、行间 8px）。
+ *    - 彻底移除局促的花哨呼吸灯与紧绷外框，回归 WinUI 3 纯净、舒展、大气的排版。
+ * 2. 同心圆比例系统：
+ *    - 外卡片：`p-3 rounded-[16px]` (Padding 12px, 外角 16px)
+ *    - 缩略图媒体槽：`rounded-[10px]` (16px - 12px = 4~10px 柔和曲率对齐)
+ *    - 底部属性栏：开放式通透排版，不再硬塞进狭窄盒子里，空气感充足。
+ * 3. 难度指示：
+ *    - 回归极简优雅的微胶囊，留白通透，字距舒适。
  */
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -21,6 +23,10 @@ import {
   Circle,
   MapPin,
   Clock,
+  Shield,
+  Zap,
+  Flame,
+  Skull,
 } from "lucide-react";
 
 import { LazyImage } from "../../../components/ui";
@@ -63,31 +69,36 @@ const DIFFICULTY_I18N: Record<string, string> = {
   nightmare: "archiveCard.nightmare",
 };
 
-/** WinUI 难度样式：同心微胶囊 + 发光点 */
+/** WinUI 难度样式：极简通透微徽标 */
 const DIFFICULTY_CONFIG: Record<
   string,
-  { dot: string; bg: string; text: string; border: string }
+  {
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+    bg: string;
+    text: string;
+    border: string;
+  }
 > = {
   easy: {
-    dot: "bg-emerald-500",
+    icon: Shield,
     bg: "bg-emerald-500/10 dark:bg-emerald-500/15",
     text: "text-emerald-700 dark:text-emerald-300",
-    border: "border-emerald-500/20",
+    border: "border-emerald-500/25",
   },
   normal: {
-    dot: "bg-[var(--color-primary)]",
+    icon: Zap,
     bg: "bg-[var(--color-primary-subtle)]",
     text: "text-[var(--color-primary)]",
-    border: "border-[var(--color-primary)]/20",
+    border: "border-[var(--color-primary)]/25",
   },
   hard: {
-    dot: "bg-[var(--color-danger)]",
+    icon: Flame,
     bg: "bg-[var(--color-danger-subtle)]",
     text: "text-[var(--color-danger)]",
-    border: "border-[var(--color-danger)]/20",
+    border: "border-[var(--color-danger)]/25",
   },
   nightmare: {
-    dot: "bg-purple-500",
+    icon: Skull,
     bg: "bg-purple-500/10 dark:bg-purple-500/20",
     text: "text-purple-700 dark:text-purple-300",
     border: "border-purple-500/25",
@@ -112,6 +123,7 @@ export default function ArchiveCard({
   const hidden = !archive.isVisible;
   const diffConfig =
     DIFFICULTY_CONFIG[archive.archiveDifficulty] ?? DIFFICULTY_CONFIG.normal;
+  const DiffIcon = diffConfig.icon;
 
   const handleClick = () => {
     if (isMultiSelectMode) onToggleSelect(archive);
@@ -124,20 +136,20 @@ export default function ArchiveCard({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={(e) => e.key === "Enter" && handleClick()}
-      // 外层容器：Padding 10px (p-2.5)，外圆角 16px (rounded-[16px])
+      // 外层容器：从容留白 p-3 (12px)，大圆角 rounded-[16px]
       className={cn(
-        "group relative flex flex-col p-2.5 rounded-[16px] text-left cursor-pointer select-none",
+        "group relative flex flex-col p-3 rounded-[16px] text-left cursor-pointer select-none",
         "border transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
         "bg-[var(--color-bg-elevated)] shadow-[0_1px_3px_var(--color-shadow)]",
-        "hover:shadow-[0_10px_28px_-6px_var(--color-shadow-lg)] hover:-translate-y-1 hover:border-[var(--color-border-strong)]",
+        "hover:shadow-[0_12px_32px_-8px_var(--color-shadow-lg)] hover:-translate-y-1 hover:border-[var(--color-border-strong)]",
         isSelected
           ? "border-[var(--color-primary)] bg-[var(--color-primary-subtle)]/70 ring-2 ring-[var(--color-ring)]"
           : "border-[var(--color-border-light)]",
         hidden && "opacity-60 hover:opacity-100"
       )}
     >
-      {/* 缩略图容器：同心圆角 8px (16px - 10px = 6~8px)，内外曲率完全同心 */}
-      <div className="relative aspect-[16/9.5] w-full overflow-hidden rounded-[8px] bg-[var(--color-bg-muted)] border border-[var(--color-border-light)]/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+      {/* 缩略图容器：同心圆角 10px，比例舒展 */}
+      <div className="relative aspect-[16/9.5] w-full overflow-hidden rounded-[10px] bg-[var(--color-bg-muted)] border border-[var(--color-border-light)]/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
         <LazyImage
           src={getLevelImage(archive.currentLevel || "Level0")}
           alt={archive.name}
@@ -161,18 +173,18 @@ export default function ArchiveCard({
           </div>
         )}
 
-        {/* 隐藏项目角标 (Windows 拟态) */}
+        {/* 隐藏项目角标：WinUI 3 极简深蓝灰磨砂微光态 */}
         {hidden && (
-          <div className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-[6px] bg-black/55 px-1.5 py-0.5 text-[10px] font-medium text-white/90 shadow-sm backdrop-blur-md border border-white/10">
-            <EyeOff size={10} className="text-white/80" />
+          <div className="absolute left-0 top-0 z-10 inline-flex items-center gap-1 rounded-tl-[10px] rounded-br-[8px] bg-slate-900/80 dark:bg-slate-800/85 px-2 py-0.5 text-[10px] font-medium text-slate-200 shadow-sm backdrop-blur-md border-r border-b border-white/15">
+            <EyeOff size={10} className="text-slate-300" />
             <span>{t("archiveCard.hidden")}</span>
           </div>
         )}
 
-        {/* 浮动操作胶囊条：同心微圆角 (外壳 10px / 内按钮 6px) */}
+        {/* 浮动操作条：同心贴合右上角 */}
         {!isMultiSelectMode && (
-          <div className="absolute right-1.5 top-1.5 z-10 flex items-center gap-1 opacity-0 -translate-y-1 scale-90 transition-all duration-200 ease-out group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 group-focus-within:opacity-100 group-focus-within:translate-y-0 group-focus-within:scale-100">
-            <div className="flex items-center gap-0.5 rounded-[10px] bg-neutral-950/75 p-1 shadow-lg backdrop-blur-md border border-white/15">
+          <div className="absolute right-0 top-0 z-10 flex items-center opacity-0 -translate-y-1 scale-95 transition-all duration-200 ease-out group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 group-focus-within:opacity-100 group-focus-within:translate-y-0 group-focus-within:scale-100">
+            <div className="flex items-center gap-0.5 rounded-tr-[10px] rounded-bl-[8px] bg-neutral-950/80 p-1 shadow-md backdrop-blur-md border-l border-b border-white/15">
               <WinActionBtn
                 label={t("archiveCard.editLabel")}
                 onClick={() => onEdit(archive)}
@@ -195,13 +207,13 @@ export default function ArchiveCard({
         )}
       </div>
 
-      {/* 信息区：Windows 资源管理器元数据排版 */}
-      <div className="flex flex-col gap-1.5 px-0.5 pt-2.5 pb-0.5">
-        {/* 第一行：文件名与状态 */}
-        <div className="flex items-start justify-between gap-1.5">
+      {/* 信息区：舒展呼吸感排版 (从容内距 + 空气感属性栏) */}
+      <div className="flex flex-col gap-2.5 px-0.5 pt-3 pb-0.5">
+        {/* 第一行：主标题 + 难度徽章 */}
+        <div className="flex items-center justify-between gap-2.5">
           <p
             className={cn(
-              "line-clamp-1 text-[13px] font-semibold leading-tight tracking-tight",
+              "line-clamp-1 text-[13.5px] font-semibold tracking-[-0.01em]",
               archive.isVisible ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"
             )}
             title={displayName}
@@ -209,37 +221,39 @@ export default function ArchiveCard({
             <Highlight text={displayName} query={searchQuery} />
           </p>
 
-          {/* 难度微胶囊 (同心圆角 6px) */}
+          {/* 难度指示：纯净微胶囊 (无多余背景块，靠内衬与微字号释放空间) */}
           <span
             className={cn(
-              "inline-flex shrink-0 items-center gap-1 rounded-[6px] px-1.5 py-0.5 text-[10px] font-medium leading-none border",
+              "inline-flex shrink-0 items-center gap-1.5 rounded-[6px] py-0.5 px-2 border transition-all duration-200",
               diffConfig.bg,
               diffConfig.text,
               diffConfig.border
             )}
           >
-            <span className={cn("h-1.5 w-1.5 rounded-full", diffConfig.dot)} />
-            {t(DIFFICULTY_I18N[archive.archiveDifficulty] ?? "archiveCard.normal")}
+            <DiffIcon size={11} className="shrink-0 opacity-80" />
+            <span className="text-[10px] font-medium tracking-wide">
+              {t(DIFFICULTY_I18N[archive.archiveDifficulty] ?? "archiveCard.normal")}
+            </span>
           </span>
         </div>
 
-        {/* 第二行：层级位置 + 修改时间 */}
-        <div className="flex items-center justify-between text-[11px] text-[var(--color-text-muted)] pt-0.5">
+        {/* 第二行：通透属性行 (层级位置 + 修改时间，留白开阔自然) */}
+        <div className="flex items-center justify-between text-[11.5px] text-[var(--color-text-muted)] pt-0.5">
           {/* 层级信息 */}
-          <span
-            className="flex min-w-0 items-center gap-1 truncate pr-1 hover:text-[var(--color-text-secondary)] transition-colors"
+          <div
+            className="flex min-w-0 items-center gap-1.5 truncate pr-2 hover:text-[var(--color-text-secondary)] transition-colors"
             title={getLevelName(archive.currentLevel)}
           >
-            <MapPin size={11} className="shrink-0 text-[var(--color-primary)] opacity-80" />
-            <span className="truncate">{getLevelName(archive.currentLevel)}</span>
-          </span>
+            <MapPin size={12} className="shrink-0 text-[var(--color-primary)] opacity-85" />
+            <span className="truncate font-medium">{getLevelName(archive.currentLevel)}</span>
+          </div>
 
           {/* 最后修改时间 */}
           {archive.date && (
-            <span className="flex shrink-0 items-center gap-1 text-[10px] tabular-nums opacity-75">
-              <Clock size={10} className="shrink-0 opacity-80" />
+            <div className="flex shrink-0 items-center gap-1 text-[10.5px] tabular-nums opacity-75">
+              <Clock size={11} className="shrink-0 opacity-70" />
               <span>{archive.date}</span>
-            </span>
+            </div>
           )}
         </div>
       </div>
@@ -279,6 +293,7 @@ function WinActionBtn({
     </button>
   );
 }
+
 
 
 

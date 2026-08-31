@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "motion/react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
-import { UI_CONFIG, findNavEntryByPath } from "../../constants";
+import { UI_CONFIG, findNavChildByPath, findNavEntryByPath } from "../../constants";
 import { useAppStore } from "../../stores";
 import WindowControls from "./WindowControls";
 
@@ -21,14 +21,15 @@ export default function TitleBar({
   const collapsed = useAppStore((s) => s.sidebarCollapsed);
 
   const entry = useMemo(() => findNavEntryByPath(location.pathname), [location.pathname]);
+  const child = useMemo(() => findNavChildByPath(location.pathname), [location.pathname]);
   const locationText = useMemo(() => {
     if (!entry) return "";
     if (entry.kind === "leaf") {
       return t(`nav.${entry.labelKey}`);
     }
-    const child = entry.children.find((c) => c.path === location.pathname);
-    return `${t(`nav.${entry.labelKey}`)} · ${child ? t(`nav.${child.labelKey}`) : ""}`;
-  }, [entry, location.pathname, t]);
+    const groupLabel = t(`nav.${entry.labelKey}`);
+    return child ? `${groupLabel} · ${t(`nav.${child.labelKey}`)}` : groupLabel;
+  }, [entry, child, location.pathname, t]);
 
   return (
     <header

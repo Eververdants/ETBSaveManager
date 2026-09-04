@@ -4,7 +4,6 @@
  */
 
 // 应用信息
-export const APP_NAME = "ETBToolkit";
 export const APP_VERSION = "4.0.0";
 
 // 功能开关
@@ -25,6 +24,8 @@ export const STORAGE_KEYS = {
   LANGUAGE: "i18nextLng",
   SAVE_PATH: "save-path",
   APP_STATE: "app-storage",
+  LAST_UPDATE_CHECK: "lastUpdateCheck",
+  PERFORMANCE_MONITOR: "performanceMonitor",
 } as const;
 
 // 默认配置
@@ -33,13 +34,6 @@ export const DEFAULT_CONFIG = {
   LANGUAGE: "zh-CN" as const,
   PAGE_SIZE: 20,
   MAX_BACKUP_COUNT: 10,
-} as const;
-
-// 文件类型
-export const FILE_EXTENSIONS = {
-  SAVE: ".sav",
-  BACKUP: ".bak",
-  CONFIG: ".json",
 } as const;
 
 // UI 相关
@@ -51,17 +45,7 @@ export const UI_CONFIG = {
   TOAST_DURATION: 3000,
 } as const;
 
-// Query Keys（TanStack Query）
-export const QUERY_KEYS = {
-  SAVES: "saves",
-  BACKUPS: "backups",
-  SETTINGS: "settings",
-  USER: "user",
-} as const;
-
-// API 端点（如需后端 API）
-export const API_ENDPOINTS = {
-  // 预留
-} as const;
+// 注：QUERY_KEYS / API_ENDPOINTS / FILE_EXTENSIONS / APP_NAME 曾在此定义，
+// 均全局零引用，按 AGENTS.md「无死代码」移除。
 
 export * from "./navigation";

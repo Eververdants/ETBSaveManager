@@ -62,10 +62,3 @@ export function preloadImage(url: string): Promise<boolean> {
 export function isImagePreloaded(url: string): boolean {
   return preloadCache.has(url);
 }
-
-// Legacy compat for existing callers that use markImageAsPreloaded
-export function markImageAsPreloaded(url: string): void {
-  if (!preloadCache.has(url)) {
-    preloadCache.set(url, Promise.resolve(true));
-  }
-}

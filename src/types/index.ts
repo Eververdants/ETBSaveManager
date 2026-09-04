@@ -9,22 +9,6 @@ export type Theme = "light" | "dark" | "system";
 // 语言类型
 export type Language = "zh-CN" | "zh-TW" | "en-US";
 
-// API 响应包装
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: ApiError;
-}
-
-// API 错误
-export interface ApiError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
-
-// 组件 Props 基础类型
-export interface BaseComponentProps {
-  className?: string;
-  children?: React.ReactNode;
-}
+// 注：ApiError 的权威实现是 `api/index.ts` 中的 class。
+// 此处曾重复定义同名 interface（及 ApiResponse / BaseComponentProps），
+// 三者全局零引用，按 AGENTS.md「无死代码」移除。

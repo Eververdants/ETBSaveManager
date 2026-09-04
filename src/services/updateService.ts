@@ -5,7 +5,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 
 import { UPDATE_SOURCES } from "../constants/update";
 import type { UpdateInfo, UpdateSourceConfig } from "../types";
-import { APP_VERSION } from "../constants";
+import { APP_VERSION, STORAGE_KEYS } from "../constants";
 import { storage } from "../utils/storage";
 
 export const UpdateStatus = {
@@ -264,14 +264,14 @@ export class UpdateService {
 
   /** 24 小时限流 */
   canCheckUpdate(): boolean {
-    const lastCheck = storage.getItem<string>("lastUpdateCheck");
+    const lastCheck = storage.getItem<string>(STORAGE_KEYS.LAST_UPDATE_CHECK);
     if (!lastCheck) return true;
     const hoursSinceLastCheck = (Date.now() - parseInt(lastCheck, 10)) / (1000 * 60 * 60);
     return hoursSinceLastCheck >= 24;
   }
 
   recordLastCheck(): void {
-    storage.setItem("lastUpdateCheck", Date.now().toString());
+    storage.setItem(STORAGE_KEYS.LAST_UPDATE_CHECK, Date.now().toString());
   }
 
   getCurrentUpdateSource(): UpdateSourceConfig {

@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ENDING_LEVELS, ENDINGS_CONFIG } from "../constants/endings";
-import { getLevelImage } from "../utils/levelUtils";
+import { getLevelImage, useLevelName } from "../utils/levelUtils";
 import type { LevelGroup } from "../components/save";
 
 // en/zh 名称表：输入 "Ocean Map" 也能在中文界面下搜到关卡
@@ -17,14 +17,13 @@ type NameMap = Record<string, string>;
 
 export function useLevelGroups() {
   const { t, i18n } = useTranslation();
+  // 关卡显示名复用 utils/levelUtils 的权威实现（原先此处重复了一份）
+  const { getLevelName: getLevelDisplayName } = useLevelName();
 
   const altName = (levelKey: string): string => {
     const map = i18n.language === "en-US" ? (zhNames as NameMap) : (enNames as NameMap);
     return map[levelKey] || "";
   };
-
-  const getLevelDisplayName = (levelKey: string): string =>
-    t(`LevelName_Display.${levelKey}`, { defaultValue: levelKey });
 
   const groups = useMemo<LevelGroup[]>(() => {
     const mainRouteSet = new Set(ENDING_LEVELS[0]);

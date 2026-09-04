@@ -29,19 +29,21 @@
 
 ### 1.1 先搜索，再创建
 
-任何新功能、组件、service、composable、utility、Rust command 开始前，必须先搜索：
+本项目是 **React 19 + TypeScript + Tauri v2**（非 Vue）。所有规则按 React 语义理解。
+
+任何新功能、组件、service、hook、utility、Rust command 开始前，必须先搜索：
 
 - 现有组件
 - 现有 service
 - 现有 store
-- 现有 composable
+- 现有 hook
 - 现有 utility
 - 现有 Rust command
 - 现有类型定义
 
 **找不到已有实现，才允许新增。**
 
-示例：需要 Toast 时，先搜索 `Notification` / `Toast` / `useToast` / `NotificationService`。  
+示例：需要 Toast 时，先搜索 `Toast` / `toast` / `toastStore` / `Toaster`。  
 只有确认不存在，才允许创建新的 Toast 能力。
 
 ---
@@ -54,17 +56,18 @@
 
 | 能力 | 权威实现 |
 |------|----------|
-| 通知 | `NotificationService` |
-| 确认框 | `DialogService` |
-| 文件选择 | `FileService` |
-| 存档读取 | `SaveService` |
-| Mod 扫描 | `ModService` |
+| 通知 | `stores/toastStore` 导出的 `toast` |
+| 确认框 | `components/ui/ConfirmDialog` |
+| 文件选择 | 经 hook 封装的 `@tauri-apps/plugin-dialog` |
+| 存档读取 | `api/save` 的 `saveApi` |
+| Mod 扫描 | `api/mods` 的 `modsApi` |
+| 窗口控制 | `api/system` 的 `windowControls` |
 
 禁止：
 
-- `SavePage.vue` 自己读取存档
-- `HomePage.vue` 再读一次
-- `BackupPage.vue` 又写一遍
+- `SavesPage.tsx` 自己调 `invoke` 读存档
+- `EditArchivePage.tsx` 再调一次
+- `SettingsPage.tsx` 又写一遍
 
 **Agent 发现已有能力时，必须复用，而不是重新实现。**
 
@@ -75,13 +78,13 @@
 层级必须保持：
 
 ```text
-View / Page
+View / Page (features/*/XxxPage.tsx)
     ↓
-Composable / Store / Service
+Hook / Store / Service
     ↓
-Tauri Command
+api/ (tauriInvoke)
     ↓
-Rust
+Rust Command (src-tauri/)
 ```
 
 禁止页面直接：
@@ -89,14 +92,15 @@ Rust
 - 处理复杂业务逻辑
 - 访问文件系统
 - 拼装 Rust IPC 参数
+- 调用 `invoke()` 或 Tauri 插件入口
 - 实现跨页面共享逻辑
 - 编写大量数据转换
 
 错误示例：
 
 ```ts
-// SavePage.vue
-const files = await invoke(...)
+// SavesPage.tsx
+const files = await invoke("load_all_saves")
 const parsed = ...
 const filtered = ...
 const sorted = ...
@@ -105,16 +109,17 @@ const sorted = ...
 正确示例：
 
 ```ts
-// SavePage.vue
-const saves = await saveService.list()
+// features/saves/hooks/useArchiveList.ts
+const saves = await saveApi.loadAllSaves()
 ```
 
 ---
 
 ### 1.4 Shared Component 必须真正通用
 
-- 业务专属组件放在对应模块：`modules/save/components/`
+- 业务专属组件放在对应模块：`features/{name}/components/`
 - 全项目通用组件放在：`components/ui/`
+- 跨模块共享的领域组件放在：`components/save/`
 
 禁止：
 
@@ -256,14 +261,14 @@ Core Service
 
 Agent 不应一上来就：
 
-> “我来创建 SaveEditor.vue”
+> “我来创建 SaveEditor.tsx”
 
 而应该先回答：
 
 - 当前有没有 Save Editor？
 - 当前编辑能力在哪里？
 - 哪些组件可以复用？
-- 哪些逻辑应该进入 service？
+- 哪些逻辑应该进入 hook / service？
 
 ---
 
@@ -330,7 +335,7 @@ Agent 最需要的不是“怎么写”，而是**知道什么时候不该写**�
       创建新 Service，并记录边界
 ```
 
-同样适用于 store、composable、utility、Rust command。
+同样适用于 store、hook、utility、Rust command。
 
 ---
 
@@ -338,9 +343,11 @@ Agent 最需要的不是“怎么写”，而是**知道什么时候不该写**�
 
 以下阈值不是禁止，而是触发审核：
 
+（与 `docs/development-rules.md` 保持一致）
+
 ```text
-Vue SFC            > 300 行
-Composable         > 200 行
+React Component    > 300 行
+Hook               > 200 行
 Service            > 300 行
 Function           > 80 行
 单文件             > 500 行
@@ -363,11 +370,11 @@ Function           > 80 行
 
 ```text
 docs/
-├── architecture.md
-├── module-boundaries.md
-├── ui-system.md
-├── data-flow.md
-└── development-rules.md
+├── architecture.md        # 技术栈与真实目录结构（目录以本文件为准）
+├── module-boundaries.md   # 模块依赖白名单与禁止项
+├── ui-system.md           # Design Token 与组件库清单
+├── data-flow.md           # 状态与数据流
+└── development-rules.md   # 规模阈值与 PR 检查单
 ```
 
 示例：`module-boundaries.md` 中应明确模块依赖规则：
@@ -417,7 +424,7 @@ Save
 [ ] 是否出现 any？
 [ ] 是否重复类型定义？
 [ ] 是否出现巨型组件？
-[ ] 是否出现巨型 composable？
+[ ] 是否出现巨型 hook？
 [ ] 是否重复 API 调用？
 ```
 

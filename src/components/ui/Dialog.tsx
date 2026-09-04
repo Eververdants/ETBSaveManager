@@ -21,6 +21,13 @@ export interface DialogProps {
   dismissable?: boolean;
   showClose?: boolean;
   contentClassName?: string;
+  /** 内容区容器类名。需要内部滚动 / flex 撑满时覆盖默认内边距 */
+  bodyClassName?: string;
+  /**
+   * 自定义 Esc 行为。返回 true 表示已消费该按键，不再触发默认关闭。
+   * 例：搜索类弹窗先清空关键词，再按一次才关闭。
+   */
+  onEscape?: () => boolean;
 }
 
 export default function Dialog({
@@ -33,6 +40,8 @@ export default function Dialog({
   dismissable = true,
   showClose = true,
   contentClassName,
+  bodyClassName,
+  onEscape,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const clickOutsideRef = useClickOutside<HTMLDivElement>(() => {
@@ -51,9 +60,15 @@ export default function Dialog({
     }
 
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && dismissable) {
-        e.stopPropagation();
-        onClose();
+      if (e.key === "Escape") {
+        if (onEscape?.()) {
+          e.stopPropagation();
+          return;
+        }
+        if (dismissable) {
+          e.stopPropagation();
+          onClose();
+        }
         return;
       }
       if (e.key === "Tab" && panel) {
@@ -76,7 +91,7 @@ export default function Dialog({
     };
     document.addEventListener("keydown", handleKey, true);
     return () => document.removeEventListener("keydown", handleKey, true);
-  }, [open, dismissable, onClose]);
+  }, [open, dismissable, onClose, onEscape]);
 
   return createPortal(
     <AnimatePresence>
@@ -127,7 +142,7 @@ export default function Dialog({
                   )}
                 </div>
               )}
-              <div className="px-5 py-3">{children}</div>
+              <div className={cn("px-5 py-3", bodyClassName)}>{children}</div>
               {footer && (
                 <div className="flex items-center justify-end gap-2 border-t border-[var(--color-border-light)] bg-[var(--color-bg-secondary)] px-5 py-3">
                   {footer}

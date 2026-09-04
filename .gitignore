@@ -13,6 +13,7 @@ dist-ssr/
 .vscode/*
 !.vscode/extensions.json
 .idea/
+.workbuddy/*
 
 # OS
 .DS_Store

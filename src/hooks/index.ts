@@ -1,94 +1,17 @@
 /**
- * 自定义 Hooks
+ * 自定义 Hooks — 跨模块共享
  * 所有自定义 Hook 必须以 'use' 开头
+ *
+ * 说明：此前本文件还导出了 useToggle / useDebounce / useLoading /
+ * usePrevious / useMediaQuery，五个 hook 全局零引用（useLoading 是
+ * stores/uiStore 的唯一消费者，连带让该 store 成为孤儿）。
+ * 按 AGENTS.md「无死代码」要求一并移除，需要时再按真实需求新增。
  */
+import { useEffect, useRef } from "react";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useUIStore } from "../stores";
-
-// ============================================
-// useToggle - 布尔值切换
-// ============================================
-export function useToggle(initialValue = false): [boolean, () => void] {
-  const [value, setValue] = useState(initialValue);
-  const toggle = useCallback(() => setValue((v) => !v), []);
-  return [value, toggle];
-}
-
-// ============================================
-// useDebounce - 防抖值
-// ============================================
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
-// ============================================
-// useLoading - 加载状态管理
-// ============================================
-export function useLoading() {
-  const { isLoading, setLoading, error, setError } = useUIStore();
-
-  const withLoading = useCallback(
-    async <T>(fn: () => Promise<T>): Promise<T | null> => {
-      try {
-        setLoading(true);
-        setError(null);
-        return await fn();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [setLoading, setError]
-  );
-
-  return { isLoading, error, withLoading };
-}
-
-// ============================================
-// usePrevious - 上一次的值
-// ============================================
-export function usePrevious<T>(value: T): T | undefined {
-  const ref = useRef<T | undefined>(undefined);
-  useEffect(() => {
-    ref.current = value;
-  }, [value]);
-  return ref.current;
-}
-
-// ============================================
-// useMediaQuery - 媒体查询
-// ============================================
-export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(() => {
-    if (typeof window !== "undefined") {
-      return window.matchMedia(query).matches;
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia(query);
-    const handler = (event: MediaQueryListEvent) => setMatches(event.matches);
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
-  }, [query]);
-
-  return matches;
-}
-
-// ============================================
-// useClickOutside - 点击外部检测
-// ============================================
+/**
+ * useClickOutside - 点击外部检测
+ */
 export function useClickOutside<T extends HTMLElement>(
   callback: () => void
 ): React.RefObject<T | null> {

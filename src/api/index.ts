@@ -64,10 +64,10 @@ export async function tauriInvoke<T>(command: string, args?: Record<string, unkn
 // - playerApi  → ./player
 // - modsApi    → ./mods
 // - systemApi  → ./system
-// - themeApi   → ./theme
+// - windowControls → ./system（@tauri-apps/api/window 封装，供标题栏使用）
+// - IS_TAURI   → ./system（运行环境探测）
 // ============================================
 export { saveApi } from "./save";
 export { playerApi } from "./player";
 export { modsApi, GAME_ROOT_KEY } from "./mods";
-export { systemApi } from "./system";
-export { themeApi } from "./theme";
+export { systemApi, windowControls, IS_TAURI } from "./system";

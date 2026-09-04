@@ -3,7 +3,6 @@
  */
 import { tauriInvoke } from "./index";
 import type {
-  ArchiveData,
   CreateArchiveOptions,
   SaveFileDetail,
   SaveFileMeta,
@@ -114,19 +113,3 @@ export const saveApi = {
     return tauriInvoke<void>("open_save_games_folder");
   },
 };
-
-/** UI 侧 ArchiveData 映射（snake_case wire → camelCase UI） */
-export function mapArchive(item: SaveItem): ArchiveData {
-  return {
-    id: item.id ?? 0,
-    name: item.name ?? "",
-    displayName: item.display_name ?? null,
-    currentLevel: item.current_level ?? "",
-    gameMode: item.mode ?? "",
-    archiveDifficulty: item.difficulty ?? "",
-    actualDifficulty: item.actual_difficulty ?? item.difficulty ?? "",
-    isVisible: item.is_visible ?? true,
-    path: item.path ?? "",
-    date: item.date ?? "",
-  };
-}

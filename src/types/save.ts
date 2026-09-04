@@ -29,23 +29,8 @@ export interface ParsedNameInfo {
   highlights: NameHighlight[];
 }
 
-export interface ParsedRecord {
-  name: string;
-  level: string | null;
-  difficulty: string | null;
-  actualDifficulty: string | null;
-  backpack: string | null;
-  parsed: ParsedNameInfo;
-  warnings: string[];
-}
-
-export interface ParseResult {
-  records: ParsedRecord[];
-  errors: string[];
-  warnings: string[];
-  info: string[];
-  stats: { total: number; levelDetected: number; difficultyDetected: number; duplicates: number };
-}
+// 注：ParsedRecord / ParseResult 曾在此定义，属已移除的批量 CSV 解析（utils/nameParser），
+// 全仓零引用，按 AGENTS.md「无死代码」一并移除。
 
 // ============================================
 // 存档（Wire 类型 — snake_case，与 Rust 对齐）

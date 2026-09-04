@@ -1,14 +1,15 @@
 /**
  * 窗口控制按钮（最小化 / 最大化 / 关闭）
+ *
+ * 窗口能力统一来自 `api/system` 的 `windowControls` 封装，
+ * 组件本身不直接依赖 Tauri window API（模块边界要求）。
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Copy, Minus, Square, X } from "lucide-react";
 
 import { cn } from "../../utils";
-
-const IS_TAURI = "__TAURI_INTERNALS__" in window;
+import { windowControls } from "../../api";
 
 function WindowControlButton({
   onClick,
@@ -43,15 +44,15 @@ function WindowControlButton({
 export default function WindowControls() {
   const { t } = useTranslation();
   const [isMaximized, setIsMaximized] = useState(false);
-  const appWindow = useMemo(() => (IS_TAURI ? getCurrentWindow() : null), []);
+  const available = windowControls.isAvailable();
 
   useEffect(() => {
-    if (!appWindow) return;
+    if (!available) return;
     let unlisten: (() => void) | undefined;
     let disposed = false;
-    const sync = async () => setIsMaximized(await appWindow.isMaximized());
+    const sync = async () => setIsMaximized(await windowControls.isMaximized());
     void sync();
-    appWindow.onResized(() => void sync()).then((fn) => {
+    void windowControls.onResized(() => void sync()).then((fn) => {
       if (disposed) fn();
       else unlisten = fn;
     });
@@ -59,22 +60,22 @@ export default function WindowControls() {
       disposed = true;
       unlisten?.();
     };
-  }, [appWindow]);
+  }, [available]);
 
-  if (!appWindow) return null;
+  if (!available) return null;
 
   return (
     <div className="flex h-full items-stretch">
-      <WindowControlButton label={t("common.minimize")} onClick={() => void appWindow.minimize()}>
+      <WindowControlButton label={t("common.minimize")} onClick={() => void windowControls.minimize()}>
         <Minus size={14} />
       </WindowControlButton>
       <WindowControlButton
         label={isMaximized ? t("common.restore") : t("common.maximize")}
-        onClick={() => void appWindow.toggleMaximize()}
+        onClick={() => void windowControls.toggleMaximize()}
       >
         {isMaximized ? <Copy size={12} /> : <Square size={11} />}
       </WindowControlButton>
-      <WindowControlButton label={t("common.close")} danger onClick={() => void appWindow.close()}>
+      <WindowControlButton label={t("common.close")} danger onClick={() => void windowControls.close()}>
         <X size={14} />
       </WindowControlButton>
     </div>

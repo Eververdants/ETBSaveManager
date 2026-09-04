@@ -59,7 +59,7 @@
     "happy-dom": "^20.11.12",
     "jsdom": "^30.0.1",
     "prettier": "^3.9.5",
-    "sharp": "^0.35.3",
+    "sharp": "^0.35.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.68.0",
     "vite": "^8.2.1",

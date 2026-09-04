@@ -3,11 +3,11 @@
 ## State Management
 
 ```
-Component → useAppStore / useUIStore → Zustand → localStorage (persist)
+Component → useAppStore → Zustand → localStorage (persist)
 ```
 
-- `useAppStore` — 持久化状态（主题、语言、侧边栏）
-- `useUIStore` — 临时状态（加载、错误）
+- `useAppStore` — 持久化状态（主题、侧边栏、开发者模式）
+- 语言由 i18next 自管（localStorage i18nextLng），不存入 Zustand
 
 ## API Calls
 
@@ -22,4 +22,4 @@ Component → api/ (tauriInvoke) → Tauri IPC → Rust Command
 ## Data Fetching (TanStack Query)
 
 - 配置：retry=1, staleTime=5min, refetchOnWindowFocus=false
-- Query Keys 定义在 `constants/index.ts`
+- 配置位于 `main.tsx` 的 `QueryClient` 初始化处

@@ -31,7 +31,7 @@
 | Input / Dropdown / Switch / Checkbox / Slider | 表单控件 |
 | Tabs | 胶囊页签（滑动高亮） |
 | EmptyState | 空状态 |
-| Badge / Spinner / ProgressBar | 反馈元素 |
+| Feedback | 反馈元素（Badge / Spinner / ProgressBar，统一从该文件导出） |
 | LazyImage | 懒加载图片（并发 1 队列 + IntersectionObserver） |
 
 ### 存档领域共享组件（components/save/）— 创建/编辑流程共用

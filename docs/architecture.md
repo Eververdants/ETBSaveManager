@@ -44,7 +44,7 @@ src/
 ├── layouts/        # AppShell / TitleBar / Sidebar
 ├── locales/        # i18n 翻译（文件名即命名空间前缀）
 ├── services/       # 纯前端服务（updateService）
-├── stores/         # Zustand（app/archive/history/toast/editArchive/ui）
+├── stores/         # Zustand（app/archive/history/toast/editArchive）
 ├── types/          # 全局类型（save.ts 为领域类型权威定义）
 └── utils/          # 纯工具（nameParser/configResolver/validator/关卡图片…）
 ```

@@ -221,7 +221,10 @@ pub(crate) fn get_visible_saves_with_display_names(
     let _lock = match lock_mainsave() {
         Ok(guard) => guard,
         Err(e) => {
-            tracing::error!("MAINSAVE lock unavailable — treating registry as empty: {}", e);
+            tracing::error!(
+                "MAINSAVE lock unavailable — treating registry as empty: {}",
+                e
+            );
             return (HashSet::new(), Default::default());
         }
     };
@@ -229,7 +232,10 @@ pub(crate) fn get_visible_saves_with_display_names(
     let mainsave_path = match get_mainsave_path() {
         Ok(p) => p,
         Err(e) => {
-            tracing::error!("Cannot resolve MAINSAVE path — treating registry as empty: {}", e);
+            tracing::error!(
+                "Cannot resolve MAINSAVE path — treating registry as empty: {}",
+                e
+            );
             return (HashSet::new(), Default::default());
         }
     };

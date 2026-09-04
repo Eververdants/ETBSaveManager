@@ -28,8 +28,7 @@ src/
 │   ├── save.ts     # 存档加载/删除/回收站/创建/转换
 │   ├── player.ts   # 玩家数据 / EOS 键 / 编辑保存 / Hub 门
 │   ├── mods.ts     # UE4SS / NSU 安装管理
-│   ├── system.ts   # 窗口 / GPU / 进程 / 路径
-│   └── theme.ts    # Rust 端主题配置
+│   └── system.ts   # 窗口 / GPU / 进程 / 路径
 ├── components/     # 跨模块共享组件
 │   ├── ui/         # Design System（Button/Card/Dialog/Toast/Dropdown/Tabs…）
 │   └── save/       # 存档领域共享组件（创建/编辑流程共用）

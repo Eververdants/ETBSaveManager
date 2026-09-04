@@ -17,7 +17,6 @@ mod save_loader;
 pub mod save_shared;
 mod save_utils;
 mod system_commands;
-mod theme_commands;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -65,8 +64,6 @@ pub fn run() {
             save_converter::convert_sav_to_json,
             save_converter::convert_json_to_sav,
             system_commands::set_window_title,
-            theme_commands::get_theme_config,
-            theme_commands::set_active_theme,
             mods::validate_game_path,
             mods::get_mods_status,
             mods::detect_game_path,

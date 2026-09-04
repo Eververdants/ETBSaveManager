@@ -41,6 +41,14 @@
       class="archive-list-container"
       :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode, 'is-refreshing': loading }"
     >
+      <!-- MAINSAVE registry unreadable: the list still loads, but visibility
+           info is gone and registry writes will fail. Explain instead of
+           leaving the user with a silently degraded list. -->
+      <MainsaveWarningBanner
+        v-if="mainsaveStatus && !mainsaveStatus.missing && !mainsaveStatus.readable"
+        :error="mainsaveStatus.error"
+      />
+
       <!-- Ultra-light loading state: a single centered spinner.
            The old 12-card skeleton with shimmer animations
            was expensive enough to stall the first paint, making the
@@ -108,10 +116,7 @@
         </div>
 
         <!-- Empty state: no archives exist yet -->
-        <div
-          v-if="displayArchives.length === 0 && dataLoadComplete && archives.length === 0"
-          class="empty-state"
-        >
+        <div v-if="displayArchives.length === 0 && dataLoadComplete && archives.length === 0" class="empty-state">
           <EmptyState
             variant="welcome"
             :icon="['fas', 'plus']"
@@ -211,9 +216,7 @@
           <div class="progress-bar-fill" :style="{ width: batchDeleteProgressPercent + '%' }"></div>
         </div>
         <div class="progress-info">
-          <span class="progress-count">
-            {{ batchDeleteProgress.current }} / {{ batchDeleteProgress.total }}
-          </span>
+          <span class="progress-count"> {{ batchDeleteProgress.current }} / {{ batchDeleteProgress.total }} </span>
           <span class="progress-percent">{{ batchDeleteProgressPercent }}%</span>
         </div>
         <div class="progress-current-file">
@@ -252,6 +255,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { protectFloatingButtonPosition } from "../utils/floatingButtonProtection.js";
 import ArchiveCard from "../components/archive/ArchiveCard.vue";
 import ArchiveSearchFilter from "../components/archive/ArchiveSearchFilter.vue";
+import MainsaveWarningBanner from "../components/archive/MainsaveWarningBanner.vue";
 import ConfirmModal from "../components/modal/ConfirmModal.vue";
 import PerformanceSettings from "../components/system/PerformanceSettings.vue";
 import BaseModal from "../components/ui/BaseModal.vue";
@@ -279,6 +283,7 @@ const {
   loading,
   dataLoadComplete,
   incrementalLoadState,
+  mainsaveStatus,
   initializeArchives,
   refreshArchives: refreshArchivesBase,
   refreshArchivesSilent,
@@ -1005,7 +1010,6 @@ watch(searchQuery, (query) => {
   padding: 48px 24px;
   width: 100%;
 }
-
 
 .search-overlay {
   position: fixed;

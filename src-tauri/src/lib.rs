@@ -45,6 +45,7 @@ pub fn run() {
             save_loader::load_save_metadata,
             save_loader::load_save_metadata_page,
             save_loader::load_save_details_batch,
+            save_loader::get_mainsave_status,
             save_deleter::delete_file,
             save_deleter::soft_delete_file,
             save_deleter::restore_file,

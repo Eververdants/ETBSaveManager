@@ -288,7 +288,7 @@ pub async fn handle_file(
     run_blocking(move || {
         // Handle special request to read MAINSAVE file
         if action.as_deref() == Some("read") && file_path == "MAINSAVE.sav" {
-            let visible_saves: Vec<String> = get_visible_saves_set()?.into_iter().collect();
+            let visible_saves: Vec<String> = get_visible_saves_set().into_iter().collect();
             let response = json!({
                 "success": true,
                 "data": {

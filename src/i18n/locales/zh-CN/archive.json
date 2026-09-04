@@ -22,5 +22,11 @@
     "redone": "已重做：{desc}",
     "restoreFailed": "文件恢复失败，但存档将显示在列表中",
     "openFolderFailed": "打开存档文件夹失败"
+  },
+  "mainsaveWarning": {
+    "title": "存档注册表 (MAINSAVE.sav) 无法解析",
+    "description": "读取游戏存档注册表失败，可见性信息不可用：所有存档可能显示为隐藏，显示/隐藏、新建、删除等操作也会失败。存档文件本身不受影响。若游戏近期更新过，可能是新版本的存档格式尚未兼容，请把下方错误详情反馈给开发者。",
+    "errorLabel": "错误详情：",
+    "dismiss": "关闭"
   }
 }

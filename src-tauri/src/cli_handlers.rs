@@ -16,6 +16,14 @@ const SMALL_FILE_THRESHOLD: u64 = 32768;
 const MEDIUM_FILE_THRESHOLD: u64 = 524288;
 
 /// Parse .sav file into a Save object (three-tier file size strategy)
+///
+/// Deliberately STRICT (`Save::read`), unlike `common::read_mainsave` which
+/// uses lenient mode. Lenient mode degrades unparseable properties to
+/// `Property::Raw`, whose untagged serde form (a bare number array in JSON)
+/// does not survive the JSON round-trip this parser feeds (convert_sav_to_json
+/// → editor → convert_json_to_sav): it deserializes back as Set/Array and the
+/// file gets corrupted on write. Revisit only after Raw gains a tagged JSON
+/// representation (uesave fork/patch).
 pub fn parse_sav_file(path: &Path) -> AppResult<Save> {
     let file = File::open(path).map_err(|e| format!("打开文件失败: {}", e))?;
     let file_size = file

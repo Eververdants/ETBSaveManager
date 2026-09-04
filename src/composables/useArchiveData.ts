@@ -47,6 +47,15 @@ interface FileHandleResponse {
   };
 }
 
+/** Mirrors the Rust `MainsaveStatus` probe. When `readable` is false the
+ *  list still loads, but visibility info is unavailable (everything shows
+ *  as hidden) and registry writes fail — the UI surfaces a banner. */
+interface MainsaveStatus {
+  missing: boolean;
+  readable: boolean;
+  error: string | null;
+}
+
 interface ArchiveStats {
   total: number;
   visible: number;
@@ -78,6 +87,7 @@ export function useArchiveData(): {
   dataLoadComplete: Ref<boolean>;
   archiveStats: ComputedRef<ArchiveStats>;
   incrementalLoadState: Ref<IncrementalLoadState>;
+  mainsaveStatus: Ref<MainsaveStatus | null>;
   loadVisibleSaves: () => Promise<void>;
   loadRealArchives: () => Promise<ArchiveData[]>;
   initializeArchives: (silent?: boolean) => Promise<void>;
@@ -90,6 +100,7 @@ export function useArchiveData(): {
   const toast = useToast();
   const archives = ref<ArchiveData[]>([]);
   const visibleSaves = ref(new Set<string>());
+  const mainsaveStatus = ref<MainsaveStatus | null>(null);
 
   const loading = ref(false);
   const dataLoadComplete = ref(false);
@@ -284,10 +295,22 @@ export function useArchiveData(): {
     };
   };
 
+  /** Probe MAINSAVE registry health for the degraded-state banner.
+   *  Never throws — an unknown state (probe itself failed) shows no banner
+   *  rather than a possibly-wrong warning. */
+  const checkMainsaveStatus = async (): Promise<void> => {
+    try {
+      mainsaveStatus.value = await invoke<MainsaveStatus>("get_mainsave_status");
+    } catch (error) {
+      console.error("Failed to probe MAINSAVE status:", error);
+      mainsaveStatus.value = null;
+    }
+  };
+
   /** Load ALL metadata (instant, filename-only), load visible saves,
    *  then kick off Phase 2 detail loading in the background. */
   const loadMergedArchives = async (): Promise<ArchiveData[]> => {
-    const [, metaArchives] = await Promise.all([loadVisibleSaves(), loadMetadata()]);
+    const [, metaArchives] = await Promise.all([loadVisibleSaves(), loadMetadata(), checkMainsaveStatus()]);
     return metaArchives;
   };
 
@@ -462,6 +485,7 @@ export function useArchiveData(): {
     dataLoadComplete,
     archiveStats,
     incrementalLoadState,
+    mainsaveStatus,
     loadVisibleSaves,
     loadRealArchives,
     initializeArchives,

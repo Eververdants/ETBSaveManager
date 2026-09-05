@@ -12,6 +12,7 @@ use std::fs;
 const FOLDERS_FILE: &str = "archive_folders.json";
 
 #[derive(Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchiveFolderFile {
     #[serde(default)]
     pub folders: Vec<ArchiveFolderEntry>,
@@ -21,10 +22,14 @@ pub struct ArchiveFolderFile {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchiveFolderEntry {
     pub id: String,
     pub name: String,
+    #[serde(default)]
     pub created_at: i64,
+    #[serde(default)]
+    pub parent_id: Option<String>,
 }
 
 fn config_path() -> AppResult<std::path::PathBuf> {

@@ -154,7 +154,7 @@ export function LazyImage({ src, alt = "", className, imageClassName }: LazyImag
         </div>
       )}
       <img
-        src={displayedSrc}
+        src={displayedSrc || undefined}
         alt={alt}
         decoding="async"
         draggable={false}

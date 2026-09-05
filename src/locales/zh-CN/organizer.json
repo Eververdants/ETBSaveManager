@@ -29,5 +29,8 @@
   "organizeDone": "整理完成：新建 {{created}} 个文件夹，归档 {{moved}} 个存档",
   "saveFailed": "文件夹数据保存失败",
   "loadFailed": "文件夹数据加载失败",
-  "openFolder": "打开"
+  "openFolder": "打开",
+  "changeCover": "更换封面",
+  "resetCover": "恢复自动封面",
+  "coverNoArchives": "文件夹内还没有存档"
 }

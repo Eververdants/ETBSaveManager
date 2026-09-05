@@ -15,6 +15,7 @@ import {
   FolderMinus,
   FolderOpen,
   FolderPlus,
+  Image as ImageIcon,
   ListChecks,
   Pencil,
   Redo2,
@@ -43,6 +44,7 @@ export interface MenusFoldersApi {
   folderIdOf: (archive: ArchiveData) => string | null;
   folderOptions: FolderOption[];
   getDescendantIds: (folderId: string) => string[];
+  getFolderArchives: (folderId: string) => ArchiveData[];
 }
 
 export interface SavesMenusDeps {
@@ -70,6 +72,7 @@ export interface SavesMenusDeps {
   onMoveArchives: (paths: string[], folderId: string | null) => void;
   onMoveFolder: (folderId: string, parentId: string | null) => void;
   onMoveToNewFolder: (paths: string[]) => void;
+  onSetFolderCover: (folderId: string, archivePath: string | null) => void;
   onOrganize: (rule: OrganizeRule) => void;
   onClearAll: () => void;
 }
@@ -262,7 +265,37 @@ export function useSavesMenus(deps: SavesMenusDeps) {
     [open, t, deps, buildMoveToItems]
   );
 
-  /** 文件夹卡片右键：打开 / 重命名 / 移动到文件夹 / 删除 */
+  /** 「更换封面」子菜单：文件夹内存档列表 + 恢复自动封面 */
+  const buildCoverItems = useCallback(
+    (folder: ArchiveFolderWithCount): ContextMenuItem[] => {
+      const archives = deps.folders?.getFolderArchives(folder.id) ?? [];
+      const items: ContextMenuItem[] = [];
+      if (archives.length === 0) {
+        items.push({ label: t("organizer.coverNoArchives"), disabled: true });
+      }
+      for (const a of archives) {
+        items.push({
+          label: a.displayName || a.name,
+          icon: ImageIcon,
+          checked:
+            !!folder.coverArchivePath &&
+            folder.coverArchivePath.toLowerCase() === a.path.toLowerCase(),
+          onSelect: () => deps.onSetFolderCover(folder.id, a.path),
+        });
+      }
+      if (archives.length > 0) items.push({ separator: true });
+      items.push({
+        label: t("organizer.resetCover"),
+        icon: ImageIcon,
+        disabled: !folder.hasManualCover,
+        onSelect: () => deps.onSetFolderCover(folder.id, null),
+      });
+      return items;
+    },
+    [t, deps]
+  );
+
+  /** 文件夹卡片右键：打开 / 重命名 / 移动到文件夹 / 更换封面 / 删除 */
   const openFolderMenu = useCallback(
     (e: React.MouseEvent, folder: ArchiveFolderWithCount) => {
       open(e, [
@@ -277,6 +310,11 @@ export function useSavesMenus(deps: SavesMenusDeps) {
           icon: FolderInput,
           children: buildFolderMoveToItems(folder),
         },
+        {
+          label: t("organizer.changeCover"),
+          icon: ImageIcon,
+          children: buildCoverItems(folder),
+        },
         { separator: true },
         {
           label: t("organizer.deleteFolder"),
@@ -286,7 +324,7 @@ export function useSavesMenus(deps: SavesMenusDeps) {
         },
       ]);
     },
-    [open, t, deps, buildFolderMoveToItems]
+    [open, t, deps, buildFolderMoveToItems, buildCoverItems]
   );
 
   /** 多选模式右键（卡片与空白一致）：全选 / 批量删除 / 退出 */

@@ -1,20 +1,28 @@
 /**
  * ArchiveFolderCard — 整理文件夹卡片
  *
- * 与 MemoizedArchiveCard 同高度契约（见 virtualGridLayout.ts）：
- * 根节点 h-full 填满定位容器的显式高度；图标区 flex-1 吸收剩余高度，
+ * 封面设计（默认随文件夹内容自动更新，也可手动指定单张）：
+ * - 1 张封面（手动指定或唯一存档）→ 单图铺满
+ * - 2 张 → 左右分屏；3 张 → 左大右二；4 张 → 2×2 拼贴
+ * - 空文件夹 → 主色渐变底 + 半透明文件夹图标
+ * - 统一叠加顶部深色渐变与毛玻璃文件夹徽标，与存档卡片的悬浮操作条语言一致
+ *
+ * 高度契约与 MemoizedArchiveCard 一致（见 virtualGridLayout.ts）：
+ * 根节点 h-full 填满定位容器的显式高度；封面区 flex-1 吸收剩余高度，
  * 信息区 shrink-0 保证文本完整，布局侧无需感知卡片类型差异。
  */
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Folder } from "lucide-react";
 
+import { LazyImage } from "../../../components/ui";
 import { cn } from "../../../utils";
 
 export interface ArchiveFolderCardData {
   id: string;
   name: string;
   count: number;
+  coverImages?: string[];
 }
 
 export interface ArchiveFolderCardProps<F extends ArchiveFolderCardData = ArchiveFolderCardData> {
@@ -30,6 +38,7 @@ export default function ArchiveFolderCard<F extends ArchiveFolderCardData = Arch
   onOpen,
 }: ArchiveFolderCardProps<F>) {
   const { t } = useTranslation();
+  const coverImages = folder.coverImages ?? [];
 
   const handleClick = useCallback(() => onOpen(folder), [onOpen, folder]);
 
@@ -51,26 +60,53 @@ export default function ArchiveFolderCard<F extends ArchiveFolderCardData = Arch
           : "border-[var(--color-border-light)]"
       )}
     >
-      {/* 图标区：flex-1 填满剩余高度，与存档卡片图片区一致 */}
+      {/* 封面区：flex-1 填满剩余高度，与存档卡片图片区一致 */}
       <div
         className={cn(
-          "relative w-full min-h-0 flex-1 overflow-hidden rounded-[10px] flex items-center justify-center",
-          "border border-[var(--color-border-light)]/80",
-          isDropTarget
-            ? "bg-[var(--color-primary-subtle)]"
-            : "bg-[var(--color-bg-muted)]"
+          "relative w-full min-h-0 flex-1 overflow-hidden rounded-[10px]",
+          "border border-[var(--color-border-light)]/80 bg-[var(--color-bg-muted)]"
         )}
       >
-        <Folder
-          size={42}
-          strokeWidth={1.1}
+        {coverImages.length === 0 ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--color-primary-subtle)] via-transparent to-[var(--color-bg-muted)]">
+            <Folder
+              size={42}
+              strokeWidth={1.1}
+              className="text-[var(--color-primary)] opacity-40 transition-transform duration-200 ease-out group-hover:scale-105"
+            />
+          </div>
+        ) : coverImages.length === 1 ? (
+          <LazyImage
+            src={coverImages[0]}
+            alt=""
+            className="h-full w-full [&_img]:transition-transform [&_img]:duration-200 [&_img]:ease-out group-hover:[&_img]:scale-[1.04]"
+          />
+        ) : (
+          <div className="absolute inset-0 grid h-full auto-rows-fr grid-cols-2 gap-[2px]">
+            {coverImages.slice(0, 4).map((src, i) => (
+              <LazyImage
+                key={`${src}-${i}`}
+                src={src}
+                alt=""
+                className={cn(
+                  "h-full w-full [&_img]:transition-transform [&_img]:duration-200 [&_img]:ease-out group-hover:[&_img]:scale-[1.04]",
+                  coverImages.length === 3 && i === 0 && "row-span-2"
+                )}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* 顶部渐变 + 毛玻璃文件夹徽标 */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black/30 to-transparent" />
+        <div
           className={cn(
-            "transition-transform duration-200 group-hover:scale-105",
-            isDropTarget
-              ? "text-[var(--color-primary)]"
-              : "text-[var(--color-primary)] opacity-55"
+            "absolute left-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-[7px]",
+            "bg-neutral-950/70 backdrop-blur-md border border-white/15"
           )}
-        />
+        >
+          <Folder size={12} className="text-white/90" />
+        </div>
       </div>
 
       {/* 信息区：shrink-0，行结构与存档卡片一致以对齐高度 */}

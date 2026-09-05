@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { toast, useArchiveFolderStore } from "../../../stores";
 import type { OrganizeGroup, OrganizeRule } from "../../../stores";
 import type { ArchiveData, ArchiveFolder } from "../../../types";
+import { getLevelImage } from "../../../utils/levelUtils";
 
 /** 存档难度 key → i18n key（TitleSearchCenter 共用） */
 export const DIFFICULTY_LABELS: Record<string, string> = {
@@ -25,6 +26,10 @@ export const DIFFICULTY_LABELS: Record<string, string> = {
 export interface ArchiveFolderWithCount extends ArchiveFolder {
   count: number;
   parentId: string | null;
+  /** 封面图（1 张 = 手动或唯一存档；最多 4 张 = 自动合成；空 = 无存档占位） */
+  coverImages: string[];
+  /** 是否手动指定了封面（「恢复自动封面」的可用性） */
+  hasManualCover: boolean;
 }
 
 /** 移动子菜单用的扁平选项（label 为含路径全名，如 "难度 / 噩梦"） */
@@ -44,6 +49,7 @@ export function useArchiveFolders(archives: ArchiveData[]) {
   const setCurrentFolder = useArchiveFolderStore((s) => s.setCurrentFolder);
   const storeCreateFolder = useArchiveFolderStore((s) => s.createFolder);
   const renameFolder = useArchiveFolderStore((s) => s.renameFolder);
+  const setFolderCover = useArchiveFolderStore((s) => s.setFolderCover);
   const moveFolder = useArchiveFolderStore((s) => s.moveFolder);
   const deleteFolder = useArchiveFolderStore((s) => s.deleteFolder);
   const moveArchives = useArchiveFolderStore((s) => s.moveArchives);
@@ -62,14 +68,37 @@ export function useArchiveFolders(archives: ArchiveData[]) {
     [assignments]
   );
 
+  /** 文件夹内的存档（按列表顺序） */
+  const getFolderArchives = useCallback(
+    (folderId: string): ArchiveData[] => archives.filter((a) => folderIdOf(a) === folderId),
+    [archives, folderIdOf]
+  );
+
   const foldersWithCounts = useMemo<ArchiveFolderWithCount[]>(
     () =>
-      folders.map((folder) => ({
-        ...folder,
-        parentId: folder.parentId ?? null,
-        count: archives.reduce((n, a) => (folderIdOf(a) === folder.id ? n + 1 : n), 0),
-      })),
-    [folders, archives, folderIdOf]
+      folders.map((folder) => {
+        // 封面：手动指定优先（存档仍存在时），否则取文件夹内前 4 张自动合成
+        let coverImages: string[] = [];
+        if (folder.coverArchivePath) {
+          const cover = archives.find(
+            (a) => a.path.toLowerCase() === folder.coverArchivePath!.toLowerCase()
+          );
+          if (cover) coverImages = [getLevelImage(cover.currentLevel || "Level0")];
+        }
+        if (coverImages.length === 0) {
+          coverImages = getFolderArchives(folder.id)
+            .slice(0, 4)
+            .map((a) => getLevelImage(a.currentLevel || "Level0"));
+        }
+        return {
+          ...folder,
+          parentId: folder.parentId ?? null,
+          count: archives.reduce((n, a) => (folderIdOf(a) === folder.id ? n + 1 : n), 0),
+          coverImages,
+          hasManualCover: !!folder.coverArchivePath,
+        };
+      }),
+    [folders, archives, folderIdOf, getFolderArchives]
   );
 
   const currentFolder = useMemo(
@@ -218,6 +247,8 @@ export function useArchiveFolders(archives: ArchiveData[]) {
     setCurrentFolder,
     createFolder,
     renameFolder,
+    setFolderCover,
+    getFolderArchives,
     moveFolder,
     deleteFolder,
     moveArchives,

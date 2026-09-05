@@ -48,6 +48,8 @@ interface ArchiveFolderState {
   /** 在指定父文件夹下创建文件夹（缺省为根目录），返回新 id */
   createFolder: (name: string, parentId?: string | null) => string;
   renameFolder: (id: string, name: string) => void;
+  /** 指定文件夹封面存档；path 为 null 表示恢复自动封面 */
+  setFolderCover: (id: string, coverArchivePath: string | null) => void;
   /** 移动文件夹到新的父级（parent 为 null 表示移回根目录）；目标是自身或后代时拒绝并返回 false */
   moveFolder: (id: string, newParentId: string | null) => boolean;
   /** 删除文件夹（连同其子文件夹），其中存档回到未归档；若正在浏览被删范围则返回根目录 */
@@ -157,6 +159,13 @@ export const useArchiveFolderStore = create<ArchiveFolderState>()((set, get) => 
   renameFolder: (id, name) => {
     set((s) => ({
       folders: s.folders.map((f) => (f.id === id ? { ...f, name } : f)),
+    }));
+    schedulePersist(get);
+  },
+
+  setFolderCover: (id, coverArchivePath) => {
+    set((s) => ({
+      folders: s.folders.map((f) => (f.id === id ? { ...f, coverArchivePath } : f)),
     }));
     schedulePersist(get);
   },

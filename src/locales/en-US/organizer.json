@@ -29,5 +29,8 @@
   "organizeDone": "Organized: {{created}} folders created, {{moved}} saves filed",
   "saveFailed": "Failed to save folder data",
   "loadFailed": "Failed to load folder data",
-  "openFolder": "Open"
+  "openFolder": "Open",
+  "changeCover": "Change Cover",
+  "resetCover": "Reset Auto Cover",
+  "coverNoArchives": "No saves in this folder yet"
 }

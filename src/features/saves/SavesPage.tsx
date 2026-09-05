@@ -131,6 +131,7 @@ export default function SavesPage() {
       folderIdOf: foldersView.folderIdOf,
       folderOptions: foldersView.folderOptions,
       getDescendantIds: foldersView.getDescendantIds,
+      getFolderArchives: foldersView.getFolderArchives,
     },
     organizeCount: foldersView.scopedArchives.length,
     onNewFolder: () => setFolderDialog({ mode: "create" }),
@@ -145,6 +146,7 @@ export default function SavesPage() {
     onMoveArchives: foldersView.moveArchives,
     onMoveFolder: foldersView.moveFolder,
     onMoveToNewFolder: (paths) => setFolderDialog({ mode: "create", movePaths: paths }),
+    onSetFolderCover: foldersView.setFolderCover,
     onOrganize: foldersView.executeOrganize,
     onClearAll: () => setFolderConfirm({ kind: "clearAll" }),
   });

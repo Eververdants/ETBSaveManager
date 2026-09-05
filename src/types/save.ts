@@ -82,6 +82,8 @@ export interface ArchiveFolder {
   createdAt: number;
   /** 父文件夹 id；根目录文件夹为 null（wire 可缺省） */
   parentId?: string | null;
+  /** 手动指定的封面存档路径；空则按文件夹内存档自动合成（wire 可缺省） */
+  coverArchivePath?: string | null;
 }
 
 /** 文件夹持久化文件：分组定义 + 存档归属（存档文件路径小写 → 文件夹 id） */

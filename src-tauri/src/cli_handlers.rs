@@ -54,12 +54,19 @@ pub fn parse_sav_file(path: &Path) -> AppResult<Save> {
 /// Get file last modified date in "YYYY-MM-DD" format
 #[inline]
 pub fn get_modified_date(path: &Path) -> AppResult<String> {
-    let modified = path
+    let meta = path
         .metadata()
-        .and_then(|m| m.modified())
         .map_err(|e| format!("获取修改时间失败: {}", e))?;
+    get_modified_date_from(&meta).ok_or_else(|| "获取修改时间失败".into())
+}
+
+/// 从已取回的 Metadata 读取修改日期，供调用方复用同一次 stat 结果，
+/// 避免同一路径为「日期」和「大小」各 stat 一次
+#[inline]
+pub fn get_modified_date_from(meta: &std::fs::Metadata) -> Option<String> {
+    let modified = meta.modified().ok()?;
     let datetime: DateTime<Local> = DateTime::from(modified);
-    Ok(datetime.format("%Y-%m-%d").to_string())
+    Some(datetime.format("%Y-%m-%d").to_string())
 }
 
 /// Helper function: find property by name (ignoring type ID)

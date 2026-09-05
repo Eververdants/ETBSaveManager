@@ -294,13 +294,20 @@ pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
         .filter_map(|(i, path)| {
             let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
             let archive_name = extract_archive_name(file_name);
-            let date = cli_handlers::get_modified_date(&path).unwrap_or_default();
+            // 单次 stat 同时取修改日期与文件大小（此前各 stat 一次）
+            let file_meta = path.metadata().ok();
+            let date = file_meta
+                .as_ref()
+                .and_then(cli_handlers::get_modified_date_from)
+                .unwrap_or_default();
+            let file_size = file_meta.as_ref().map(|m| m.len()).unwrap_or(0);
             let is_visible = visible_lookup.contains(&archive_name.to_lowercase());
 
             save_utils::build_save_meta(
                 i as u32,
                 &path,
                 date,
+                file_size,
                 is_visible,
                 display_names.get(archive_name).cloned(),
             )
@@ -353,13 +360,20 @@ pub async fn load_save_metadata_page(
         let global_idx = (start + rel_i) as u32;
         let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
         let archive_name = extract_archive_name(file_name);
-        let date = cli_handlers::get_modified_date(path).unwrap_or_default();
+        // 单次 stat 同时取修改日期与文件大小（与 load_save_metadata 一致）
+        let file_meta = path.metadata().ok();
+        let date = file_meta
+            .as_ref()
+            .and_then(cli_handlers::get_modified_date_from)
+            .unwrap_or_default();
+        let file_size = file_meta.as_ref().map(|m| m.len()).unwrap_or(0);
         let is_visible = visible_lookup.contains(&archive_name.to_lowercase());
 
         if let Ok(meta) = save_utils::build_save_meta(
             global_idx,
             path,
             date,
+            file_size,
             is_visible,
             display_names.get(archive_name).cloned(),
         ) {

@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 import { Button, Dialog } from "../../components/ui";
+import { EASE } from "../../constants";
 import {
   ArchiveNameCard,
   DifficultySelector,
@@ -87,8 +88,9 @@ export default function CreateWizardPage() {
             key={step}
             initial={{ opacity: 0, x: stepDirection * 32 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: stepDirection * -32 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            /* 退出瞬时完成：mode="wait" 下旧步骤不等淡出播完，消除换步中间的停顿 */
+            exit={{ opacity: 0, transition: { duration: 0 } }}
+            transition={{ duration: 0.2, ease: EASE.OUT }}
             className={isLastStep ? "h-full" : undefined}
           >
             {/* Step 1：关卡 */}

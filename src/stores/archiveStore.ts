@@ -23,7 +23,7 @@ import { getLevelImage } from "../utils/levelUtils";
 import { FEATURES } from "../constants";
 import type { ArchiveData, SaveFileMeta } from "../types";
 
-const DETAILS_BATCH_SIZE = 50;
+const DETAILS_BATCH_SIZE = 16;
 
 export interface ArchiveStats {
   total: number;
@@ -33,7 +33,6 @@ export interface ArchiveStats {
 
 interface ArchiveState {
   archives: ArchiveData[];
-  visibleSaves: Set<string>;
   loading: boolean;
   dataLoadComplete: boolean;
   archiveStats: () => ArchiveStats;
@@ -81,8 +80,6 @@ function mapMetaToArchive(meta: SaveFileMeta): ArchiveData {
   };
 }
 
-/** 单例守卫状态（数据本体存于 zustand state） */
-let visibleSaves = new Set<string>();
 /** 已完成详情加载的存档路径（小写），用于去重与刷新时沿用 */
 const detailsLoaded = new Set<string>();
 /** 详情请求在途的存档路径（小写） */
@@ -113,7 +110,6 @@ function applyDetails(target: ArchiveData[], details: Awaited<ReturnType<typeof 
 
 export const useArchiveStore = create<ArchiveState>()((set, get) => ({
   archives: [],
-  visibleSaves: new Set<string>(),
   loading: false,
   dataLoadComplete: false,
 
@@ -135,16 +131,16 @@ export const useArchiveStore = create<ArchiveState>()((set, get) => ({
     }
 
     try {
-      const [saves, metaList] = await Promise.all([saveApi.readVisibleSaves(), saveApi.loadSaveMetadata()]);
+      // meta.is_visible 已含 MAINSAVE 可见性，无需再读一遍 MAINSAVE.sav
+      const metaList = await saveApi.loadSaveMetadata();
       const merged = mergeWithKnownDetails(
         (Array.isArray(metaList) ? metaList : []).map(mapMetaToArchive).sort((a, b) => a.name.localeCompare(b.name)),
         previousArchives
       );
-      visibleSaves = new Set(saves);
 
       if (loadGeneration !== refreshGeneration) return; // 已被更新的加载取代
 
-      set({ archives: merged, visibleSaves, dataLoadComplete: true });
+      set({ archives: merged, dataLoadComplete: true });
     } catch (error) {
       console.error("Failed to initialize archives:", error);
       if (!silent) {
@@ -164,15 +160,14 @@ export const useArchiveStore = create<ArchiveState>()((set, get) => ({
     set({ loading: true });
     const loadGeneration = ++refreshGeneration;
     try {
-      const [saves, metaList] = await Promise.all([saveApi.readVisibleSaves(), saveApi.loadSaveMetadata()]);
+      const metaList = await saveApi.loadSaveMetadata();
       const merged = mergeWithKnownDetails(
         (Array.isArray(metaList) ? metaList : []).map(mapMetaToArchive).sort((a, b) => a.name.localeCompare(b.name)),
         get().archives
       );
-      visibleSaves = new Set(saves);
 
       if (loadGeneration !== refreshGeneration) return;
-      set({ archives: merged, visibleSaves });
+      set({ archives: merged });
     } catch (error) {
       console.error("Failed to refresh archives:", error);
     } finally {
@@ -183,15 +178,14 @@ export const useArchiveStore = create<ArchiveState>()((set, get) => ({
   refreshArchivesSilent: async () => {
     const loadGeneration = ++refreshGeneration;
     try {
-      const [saves, metaList] = await Promise.all([saveApi.readVisibleSaves(), saveApi.loadSaveMetadata()]);
+      const metaList = await saveApi.loadSaveMetadata();
       const merged = mergeWithKnownDetails(
         (Array.isArray(metaList) ? metaList : []).map(mapMetaToArchive).sort((a, b) => a.name.localeCompare(b.name)),
         get().archives
       );
-      visibleSaves = new Set(saves);
 
       if (loadGeneration !== refreshGeneration) return;
-      set({ archives: merged, visibleSaves });
+      set({ archives: merged });
     } catch (error) {
       console.error("Failed to refresh archives silently:", error);
     }
@@ -206,25 +200,30 @@ export const useArchiveStore = create<ArchiveState>()((set, get) => ({
     }
     if (pending.length === 0) return;
 
-    const batch = pending.slice(0, DETAILS_BATCH_SIZE);
-    for (const path of batch) detailInFlight.add(path.toLowerCase());
-    try {
-      const details = await saveApi.loadSaveDetailsBatch(batch);
-      if (details.length > 0) {
-        set((state) => ({ archives: applyDetails(state.archives, details) }));
-        for (const detail of details) {
-          if (detail.current_level) preloadImage(getLevelImage(detail.current_level));
+    // 小批多次：每批解析完立即回填 store，视口卡片尽早拿到真实关卡图；
+    // 循环处理全部 pending（此前超出首批的部分要等下一次可视区变化才补）
+    for (let offset = 0; offset < pending.length; offset += DETAILS_BATCH_SIZE) {
+      const batch = pending.slice(offset, offset + DETAILS_BATCH_SIZE);
+      for (const path of batch) detailInFlight.add(path.toLowerCase());
+      try {
+        const details = await saveApi.loadSaveDetailsBatch(batch);
+        if (details.length > 0) {
+          set((state) => ({ archives: applyDetails(state.archives, details) }));
+          for (const detail of details) {
+            if (detail.current_level) preloadImage(getLevelImage(detail.current_level));
+          }
         }
+        // 无论是否解析出详情都标记完成，避免不可读存档被反复请求
+        for (const path of batch) {
+          const key = path.toLowerCase();
+          detailInFlight.delete(key);
+          detailsLoaded.add(key);
+        }
+      } catch (error) {
+        console.error("Failed to load visible archive details:", error);
+        for (const path of batch) detailInFlight.delete(path.toLowerCase());
+        return; // 出错即止，避免后续批次连锁失败
       }
-      // 无论是否解析出详情都标记完成，避免不可读存档被反复请求
-      for (const path of batch) {
-        const key = path.toLowerCase();
-        detailInFlight.delete(key);
-        detailsLoaded.add(key);
-      }
-    } catch (error) {
-      console.error("Failed to load visible archive details:", error);
-      for (const path of batch) detailInFlight.delete(path.toLowerCase());
     }
   },
 

@@ -156,17 +156,17 @@ pub fn build_save_info<S: Into<String>>(
 
 /// Build lightweight save metadata from filename + filesystem only.
 /// No .sav file opening - very fast even for 1000+ files.
+/// `date` / `file_size` come from a single stat performed by the caller;
 /// `display_name` comes from MAINSAVE's SaveDisplayNamesLookup (already
 /// resolved by the caller; None when no mapping exists).
 pub fn build_save_meta(
     index: u32,
     path: &Path,
     date: String,
+    file_size: u64,
     is_visible: bool,
     display_name: Option<String>,
 ) -> AppResult<SaveFileMeta> {
-    use std::fs;
-
     let file_name = path
         .file_name()
         .and_then(|n| n.to_str())
@@ -179,8 +179,6 @@ pub fn build_save_meta(
     let mode_raw = caps.get(1).ok_or("Failed to extract game mode")?.as_str();
     let name = caps.get(2).ok_or("Failed to extract save name")?.as_str();
     let difficulty_raw = caps.get(3).ok_or("Failed to extract difficulty")?.as_str();
-
-    let file_size = fs::metadata(path).map(|m| m.len()).unwrap_or(0);
 
     Ok(SaveFileMeta {
         id: index,

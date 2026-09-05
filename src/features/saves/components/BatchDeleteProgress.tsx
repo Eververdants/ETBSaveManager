@@ -3,6 +3,7 @@
  */
 import { AnimatePresence, motion } from "motion/react";
 
+import { EASE } from "../../../constants";
 import { ProgressBar } from "../../../components/ui";
 
 export interface BatchDeleteProgressProps {
@@ -20,6 +21,7 @@ export default function BatchDeleteProgress({ open, current, total, name }: Batc
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 16 }}
+          transition={{ duration: 0.2, ease: EASE.OUT }}
           className="pointer-events-none fixed inset-x-0 bottom-10 z-[120] flex justify-center"
         >
           <div className="pointer-events-auto w-[320px] rounded-xl border border-[var(--color-border-light)] bg-[var(--color-bg-elevated)] p-4 shadow-[0_12px_32px_var(--color-shadow-lg)]">

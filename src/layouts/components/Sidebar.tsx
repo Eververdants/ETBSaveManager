@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 
-import { NAV_ENTRIES, UI_CONFIG } from "../../constants";
+import { EASE, NAV_ENTRIES, UI_CONFIG } from "../../constants";
 import { useAppStore } from "../../stores";
 import { cn } from "../../utils";
 import SafeAreaOverlay from "./SafeAreaOverlay";
@@ -82,7 +82,7 @@ export default function Sidebar() {
           ? UI_CONFIG.SIDEBAR_COLLAPSED_WIDTH
           : UI_CONFIG.SIDEBAR_WIDTH,
       }}
-      transition={{ duration: UI_CONFIG.SIDEBAR_ANIMATION_MS / 1000, ease: "easeOut" }}
+      transition={{ duration: UI_CONFIG.SIDEBAR_ANIMATION_MS / 1000, ease: EASE.OUT }}
       style={{ backgroundColor: "var(--color-shell-bg)" }}
       className="relative flex shrink-0 flex-col pb-2"
     >

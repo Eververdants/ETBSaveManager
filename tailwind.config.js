@@ -101,6 +101,14 @@ export default {
         "medium":  "0 4px 12px var(--color-shadow-lg)",
         "strong":  "0 8px 24px var(--color-shadow-lg)",
       },
+
+      /* ===== 统一缓动：覆盖同名 token，使 ease / ease-out / ease-in-out 全部为 cubic-bezier
+         （与 src/constants/index.ts 的 EASE、index.css 保持一致）===== */
+      transitionTimingFunction: {
+        DEFAULT:  "cubic-bezier(0.2, 0, 0, 1)",
+        "out":    "cubic-bezier(0.2, 0, 0, 1)",
+        "in-out": "cubic-bezier(0.45, 0, 0.55, 1)",
+      },
     },
   },
   plugins: [],

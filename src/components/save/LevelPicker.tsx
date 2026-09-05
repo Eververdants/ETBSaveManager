@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { CheckCircle2, Search, X } from "lucide-react";
 
 import { LazyImage } from "../ui";
+import { EASE } from "../../constants";
 import { cn } from "../../utils";
 
 export interface LevelCardItem {
@@ -109,7 +110,7 @@ export default function LevelPicker({
                   <motion.span
                     layoutId="level-picker-pill"
                     className="absolute inset-0 rounded-lg bg-[var(--color-primary)] shadow-sm"
-                    transition={{ duration: 0.25, ease: [0.34, 1.56, 0.64, 1] }}
+                    transition={{ duration: 0.25, ease: EASE.OUT }}
                   />
                 )}
                 <span className="relative z-10">{group.label}</span>
@@ -151,8 +152,9 @@ export default function LevelPicker({
             key={searchActive ? "search" : `group-${activeGroup}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            /* 退出瞬时完成：切换分组 / 搜索时旧网格立即移除，消除中间停顿 */
+            exit={{ opacity: 0, transition: { duration: 0 } }}
+            transition={{ duration: 0.15, ease: EASE.OUT }}
           >
             {displayList.length > 0 ? (
               <div className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-4 p-1">

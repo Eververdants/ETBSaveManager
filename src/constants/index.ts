@@ -36,6 +36,19 @@ export const DEFAULT_CONFIG = {
   MAX_BACKUP_COUNT: 10,
 } as const;
 
+/**
+ * 全项目唯一缓动权威定义（cubic-bezier 控制点）。
+ * motion 端用数组（EASE.OUT / EASE.IN_OUT），
+ * CSS / Tailwind 端用同一曲线的 cubic-bezier() 字符串
+ * （tailwind.config.js transitionTimingFunction 与 index.css 保持一致）。
+ */
+export const EASE = {
+  /** 减速曲线：立即响应、平滑收尾，全程无中途停顿。进场 / 展开 / 反馈默认 */
+  OUT: [0.2, 0, 0, 1] as [number, number, number, number],
+  /** 正弦式对称曲线：速度连续反向，用于摇摆等循环往返运动 */
+  IN_OUT: [0.45, 0, 0.55, 1] as [number, number, number, number],
+} as const;
+
 // UI 相关
 export const UI_CONFIG = {
   SIDEBAR_WIDTH: 200,

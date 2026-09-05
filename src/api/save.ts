@@ -16,12 +16,6 @@ interface ToggleVisibilityResponse {
   isVisible: boolean;
 }
 
-/** handle_file read MAINSAVE.sav 的返回 */
-interface ReadSavesResponse {
-  success: boolean;
-  data?: { SingleplayerSaves?: string[] };
-}
-
 export const saveApi = {
   /** 加载全部存档（完整解析，较慢） */
   async loadAllSaves(): Promise<SaveItem[]> {
@@ -83,15 +77,6 @@ export const saveApi = {
       throw new Error("Backend reported toggle failure");
     }
     return { isVisible: parsed.isVisible };
-  },
-
-  /** 读取 MAINSAVE.sav 中的可见存档名列表 */
-  async readVisibleSaves(): Promise<string[]> {
-    const res = await tauriInvoke<ReadSavesResponse>("handle_file", {
-      action: "read",
-      filePath: "MAINSAVE.sav",
-    });
-    return res?.data?.SingleplayerSaves ?? [];
   },
 
   /** 创建新存档 */

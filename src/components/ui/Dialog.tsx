@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 
 import { useClickOutside } from "../../hooks";
+import { EASE } from "../../constants";
 import { cn } from "../../utils";
 
 export interface DialogProps {
@@ -100,7 +101,7 @@ export default function Dialog({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          transition={{ duration: 0.15, ease: EASE.OUT }}
           className="fixed inset-0 z-[100] flex items-center justify-center p-6"
           style={{ backgroundColor: "var(--color-bg-overlay)" }}
           onKeyDown={(e) => e.stopPropagation()}
@@ -113,7 +114,7 @@ export default function Dialog({
               initial={{ opacity: 0, scale: 0.95, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 8 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
+              transition={{ duration: 0.18, ease: EASE.OUT }}
               className={cn(
                 "w-full overflow-hidden rounded-xl border border-[var(--color-border-light)]",
                 "bg-[var(--color-bg-elevated)] shadow-[0_16px_48px_var(--color-shadow-lg)]",

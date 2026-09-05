@@ -7,12 +7,14 @@
  * its own queue — eliminating the blank frame between the old src and
  * the new one.
  *
- * Concurrency is limited to 4 simultaneous loads to prevent disk I/O
- * contention when Phase 2 kicks off 50+ preloads per batch.
+ * All preloaded images are small local static assets (~6KB average,
+ * 49 images ≈ 300KB total), so the concurrency cap only needs to keep
+ * the custom-protocol file reads from stampeding: 8 simultaneous loads
+ * saturate the webview pipeline without measurable main-thread cost.
  */
 
 const preloadCache = new Map<string, Promise<boolean>>();
-const MAX_CONCURRENT = 2;
+const MAX_CONCURRENT = 8;
 let inFlight = 0;
 const pending: Array<{ url: string; resolve: (v: boolean) => void }> = [];
 

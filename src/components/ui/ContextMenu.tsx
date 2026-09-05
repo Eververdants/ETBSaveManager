@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Check, ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+import { EASE } from "../../constants";
 import { cn } from "../../utils";
 
 export interface ContextMenuItem {
@@ -229,7 +230,7 @@ export default function ContextMenu({
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.12, ease: "easeOut" }}
+            transition={{ duration: 0.12, ease: EASE.OUT }}
             className={cn(PANEL_CLASS, "fixed z-[110] min-w-[200px] max-w-[300px]")}
             style={{ left: pos.x, top: pos.y, transformOrigin: "top left" }}
             onContextMenu={(e) => e.preventDefault()}

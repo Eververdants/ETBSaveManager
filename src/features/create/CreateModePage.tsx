@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { ChevronLeft, Layers, Zap } from "lucide-react";
 
+import { EASE } from "../../constants";
+
 export default function CreateModePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -54,10 +56,13 @@ export default function CreateModePage() {
                 key={mode.key}
                 type="button"
                 initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, delay: index * 0.08 }}
-                whileHover={{ y: -4 }}
-                whileTap={{ scale: 0.98 }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.25, delay: index * 0.08, ease: EASE.OUT },
+                }}
+                whileHover={{ y: -4, transition: { duration: 0.15, ease: EASE.OUT } }}
+                whileTap={{ scale: 0.98, transition: { duration: 0.1, ease: EASE.OUT } }}
                 onClick={() => navigate(mode.path)}
                 className="group flex flex-col items-center gap-4 rounded-2xl border border-[var(--color-border-light)] bg-[var(--color-bg-elevated)] p-8 text-center shadow-[0_2px_8px_var(--color-shadow)] transition-colors hover:border-[var(--color-border-strong)]"
               >

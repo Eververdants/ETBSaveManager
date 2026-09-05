@@ -16,13 +16,14 @@ import { FolderOpen, PackageOpen, SearchX, SquarePen } from "lucide-react";
 import { ConfirmDialog, ContextMenu, EmptyState, Spinner } from "../../components/ui";
 import { useArchiveStore } from "../../stores";
 import type { ArchiveData, ArchiveFolder } from "../../types";
+import { preloadImage } from "../../utils/imagePreloader";
 import { useArchiveActions } from "./hooks/useArchiveActions";
 import { useArchiveFolders } from "./hooks/useArchiveFolders";
 import type { ArchiveFolderWithCount } from "./hooks/useArchiveFolders";
 import { useArchiveList } from "./hooks/useArchiveList";
 import { useMultiSelect } from "./hooks/useMultiSelect";
 import { useSavesMenus } from "./hooks/useSavesMenus";
-import { useLevelName } from "../../utils/levelUtils";
+import { ALL_LEVEL_IMAGE_URLS, useLevelName } from "../../utils/levelUtils";
 import BatchDeleteProgress from "./components/BatchDeleteProgress";
 import FolderBreadcrumb from "./components/FolderBreadcrumb";
 import FolderNameDialog from "./components/FolderNameDialog";
@@ -67,6 +68,13 @@ export default function SavesPage() {
   useEffect(() => {
     void initializeArchives();
   }, [initializeArchives]);
+
+  // ---- 关卡缩略图全量预载（合计 ~300KB 本地小图）----
+  // 挂载即入队全部关卡图，视口内卡片与文件夹封面直接命中缓存，
+  // 消除「卡片已在视口、图片才开始加载」的延迟
+  useEffect(() => {
+    for (const url of ALL_LEVEL_IMAGE_URLS) void preloadImage(url);
+  }, []);
 
   // ---- 撤销快捷键（Ctrl+Z / Ctrl+Shift+Z）----
   useEffect(() => actions.registerUndoShortcuts(), [actions.registerUndoShortcuts]);

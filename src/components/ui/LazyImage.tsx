@@ -1,76 +1,17 @@
 /**
- * 懒加载图片 — IntersectionObserver + 全局并发预加载队列
+ * 懒加载图片 — IntersectionObserver + 全局共享预加载队列（utils/imagePreloader）
  * 行为与 master LazyImage.vue 对齐：
- * - src 为空时不发请求；进视口 200px 内才排队加载
- * - 并发 1 + ≥20ms 错峰，避免大量 WebP 解码阻塞主线程
- * - imagePreloader 已预加载的图片直接命中
+ * - src 为空时不发请求；进视口 200px 内才开始加载
+ * - 加载统一走共享预加载器（按 URL 去重 + 并发上限），本组件不再维护
+ *   私有队列；imagePreloader 已预加载（含预加载中）的图片直接命中
  */
 import { useEffect, useRef, useState } from "react";
 import { Image as ImageIcon } from "lucide-react";
 
-import { isImagePreloaded, preloadImage } from "../../utils/imagePreloader";
+import { preloadImage } from "../../utils/imagePreloader";
 import { cn } from "../../utils";
 
-const PRELOAD_QUEUE_MAX = 1;
 const PRELOAD_ROOT_MARGIN = "200px";
-const MIN_LOAD_GAP_MS = 20;
-
-const preloadQueue: Array<{ url: string; resolve: (ok: boolean) => void }> = [];
-let preloadActive = 0;
-const loadedImages = new Set<string>();
-let lastLoadStartMs = 0;
-
-function staggerGap(): Promise<void> {
-  const now = performance.now();
-  const elapsed = now - lastLoadStartMs;
-  if (elapsed < MIN_LOAD_GAP_MS) {
-    const wait = MIN_LOAD_GAP_MS - elapsed;
-    return new Promise((resolve) =>
-      setTimeout(() => {
-        lastLoadStartMs = performance.now();
-        resolve();
-      }, wait)
-    );
-  }
-  lastLoadStartMs = now;
-  return Promise.resolve();
-}
-
-function processQueue() {
-  while (preloadActive < PRELOAD_QUEUE_MAX && preloadQueue.length > 0) {
-    const { url, resolve } = preloadQueue.shift()!;
-    preloadActive++;
-    const img = new Image();
-    img.onload = () => {
-      loadedImages.add(url);
-      preloadActive--;
-      resolve(true);
-      processQueue();
-    };
-    img.onerror = () => {
-      preloadActive--;
-      resolve(false);
-      processQueue();
-    };
-    img.src = url;
-  }
-}
-
-function enqueuePreload(url: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    if (loadedImages.has(url)) {
-      resolve(true);
-      return;
-    }
-    if (isImagePreloaded(url)) {
-      loadedImages.add(url);
-      resolve(true);
-      return;
-    }
-    preloadQueue.push({ url, resolve });
-    processQueue();
-  });
-}
 
 export interface LazyImageProps {
   src: string;
@@ -112,31 +53,18 @@ export function LazyImage({ src, alt = "", className, imageClassName }: LazyImag
     let cancelled = false;
     const loadId = ++loadIdRef.current;
 
-    const apply = (url: string, ok: boolean) => {
-      if (cancelled || loadId !== loadIdRef.current || url !== src) return;
-      setDisplayedSrc(url);
+    // 预载完成再设置 src：避免 <img> 与预加载器对同一 URL 双下载
+    void (async () => {
+      const ok = await preloadImage(src);
+      if (cancelled || loadId !== loadIdRef.current) return;
+      setDisplayedSrc(src);
       setError(!ok);
       setLoaded(true);
-    };
-
-    void (async () => {
-      if (isImagePreloaded(src)) {
-        await preloadImage(src);
-        if (cancelled || loadId !== loadIdRef.current) return;
-        apply(src, true);
-        return;
-      }
-      if (loaded && displayedSrc === src) return;
-      await staggerGap();
-      if (cancelled || loadId !== loadIdRef.current) return;
-      const ok = await enqueuePreload(src);
-      apply(src, ok);
     })();
 
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nearViewport, src]);
 
   return (
@@ -158,11 +86,7 @@ export function LazyImage({ src, alt = "", className, imageClassName }: LazyImag
         alt={alt}
         decoding="async"
         draggable={false}
-        onLoad={() => {
-          loadedImages.add(displayedSrc);
-          setLoaded(true);
-          setError(false);
-        }}
+        onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
         className={cn(
           "absolute inset-0 h-full w-full object-cover transition-opacity duration-200",

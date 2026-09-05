@@ -9,6 +9,7 @@ import { CircleCheck, CircleX, Info, TriangleAlert, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useToastStore, type ToastItem, type ToastType } from "../../stores";
+import { EASE } from "../../constants";
 import { cn } from "../../utils";
 
 const ICONS: Record<ToastType, typeof Info> = {
@@ -60,7 +61,11 @@ function ToastCard({ toast }: { toast: ToastItem }) {
       initial={{ opacity: 0, x: 40, scale: 0.96 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 40, scale: 0.96 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      transition={{
+        duration: 0.2,
+        ease: EASE.OUT,
+        layout: { duration: 0.2, ease: EASE.OUT },
+      }}
       onMouseEnter={pause}
       onMouseLeave={resume}
       className={cn(

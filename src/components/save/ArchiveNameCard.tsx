@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { Input } from "../ui";
 import { Card } from "../ui";
+import { EASE } from "../../constants";
 import SectionTitle from "./SectionTitle";
 
 export interface ArchiveNameCardProps {
@@ -51,7 +52,7 @@ export default function ArchiveNameCard({
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.2, ease: EASE.OUT }}
               className="mt-2.5 flex items-center gap-2 rounded-md bg-[var(--color-danger-subtle)] px-3 py-2 text-[13px] text-[var(--color-danger)]"
             >
               <TriangleAlert size={14} className="shrink-0" />

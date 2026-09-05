@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Trash2, X } from "lucide-react";
 
 import { Button } from "../../../components/ui";
+import { EASE } from "../../../constants";
 
 export interface MultiSelectBarProps {
   visible: boolean;
@@ -35,7 +36,7 @@ export default function MultiSelectBar({
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.18 }}
+          transition={{ duration: 0.18, ease: EASE.OUT }}
           className="shrink-0 overflow-hidden border-b border-[var(--color-border-light)] bg-[var(--color-primary-subtle)]"
         >
           <div className="flex items-center gap-2 px-5 py-2">

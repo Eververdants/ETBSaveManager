@@ -6,6 +6,8 @@ import { motion } from "motion/react";
 import { Construction } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { EASE } from "../constants";
+
 interface PagePlaceholderProps {
   /** i18n key，位于 nav 命名空间下 */
   labelKey: string;
@@ -18,7 +20,7 @@ export default function PagePlaceholder({ labelKey }: PagePlaceholderProps) {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 0.3, ease: EASE.OUT }}
       className="flex h-full flex-col items-center justify-center gap-4"
       style={{ color: "var(--color-text-muted)" }}
     >

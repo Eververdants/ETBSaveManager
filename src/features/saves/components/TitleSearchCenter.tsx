@@ -11,7 +11,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { Check, Clock, Search, X } from "lucide-react";
 
-import { FEATURES, DIFFICULTY_LEVELS } from "../../../constants";
+import { EASE, FEATURES, DIFFICULTY_LEVELS } from "../../../constants";
 import { useClickOutside } from "../../../hooks";
 import { cn } from "../../../utils";
 import { addSearchHistory, clearSearchHistory, getSearchHistory, useArchiveList } from "../hooks/useArchiveList";
@@ -122,7 +122,7 @@ export default function TitleSearchCenter({
             initial={{ opacity: 0, y: -6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
+            transition={{ duration: 0.15, ease: EASE.OUT }}
             className={cn(
               "absolute left-1/2 top-[calc(100%+6px)] z-[105] w-[560px] max-w-[calc(100vw-16px)] -translate-x-1/2",
               "overflow-hidden rounded-xl border border-[var(--color-border-light)]",

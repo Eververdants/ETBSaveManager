@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import { ChevronDown } from "lucide-react";
 
-import type { NavChild, NavGroup } from "../../constants";
+import { EASE, type NavChild, type NavGroup } from "../../constants";
 import { useAppStore } from "../../stores";
 import { cn } from "../../utils";
 import type { SidebarFlyoutProps } from "./SidebarItem";
@@ -164,7 +164,7 @@ export default function SidebarGroupItem({
             opacity: collapsed ? 0 : 1,
             width: collapsed ? 0 : "auto",
           }}
-          transition={{ duration: 0.12, ease: "easeOut" }}
+          transition={{ duration: 0.12, ease: EASE.OUT }}
           className="ml-2.5 whitespace-nowrap overflow-hidden"
         >
           {label}
@@ -174,7 +174,7 @@ export default function SidebarGroupItem({
             opacity: collapsed ? 0 : 1,
             width: collapsed ? 0 : "auto",
           }}
-          transition={{ duration: 0.12, ease: "easeOut" }}
+          transition={{ duration: 0.12, ease: EASE.OUT }}
           className="ml-auto mr-2.5 shrink-0 overflow-hidden"
         >
           <ChevronDown
@@ -189,7 +189,7 @@ export default function SidebarGroupItem({
 
       <motion.div
         animate={{ gridTemplateRows: open ? "1fr" : "0fr" }}
-        transition={{ duration: 0.18, ease: "easeOut" }}
+        transition={{ duration: 0.18, ease: EASE.OUT }}
         style={{ display: "grid", gridTemplateRows: "0fr", overflow: "hidden" }}
       >
         <div style={{ minHeight: 0 }}>

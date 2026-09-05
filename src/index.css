@@ -243,12 +243,12 @@ body {
   background-color: var(--color-border-strong);
 }
 
-/* 全局过渡：任何布局变化都平滑 */
+/* 全局过渡：任何布局变化都平滑（曲线与 src/constants/index.ts 的 EASE 一致） */
 *,
 *::before,
 *::after {
   transition-property: color, background-color, border-color, box-shadow, opacity, transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
   transition-duration: 150ms;
 }
 
@@ -260,7 +260,7 @@ body {
 }
 
 .animate-wobble {
-  animation: wobble 2s ease-in-out infinite;
+  animation: wobble 2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   animation-delay: 3s;
 }
 
@@ -290,7 +290,7 @@ body {
   background: var(--color-bg-elevated);
   border: 4px solid var(--color-primary);
   box-shadow: 0 1px 3px var(--color-shadow);
-  transition: transform 0.15s ease-out;
+  transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .slider::-webkit-slider-thumb:hover {

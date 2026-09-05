@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
-import { UI_CONFIG, findNavChildByPath, findNavEntryByPath } from "../../constants";
+import { EASE, UI_CONFIG, findNavChildByPath, findNavEntryByPath } from "../../constants";
 import { useAppStore, useArchiveFolderStore } from "../../stores";
 import WindowControls from "./WindowControls";
 
@@ -70,7 +70,7 @@ export default function TitleBar({
               key={locationText}
               initial={{ opacity: 0, x: -4 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              transition={{ duration: 0.15, ease: EASE.OUT }}
               data-tauri-drag-region
               className="truncate text-xs text-[var(--color-shell-text-muted)]"
             >
@@ -86,7 +86,7 @@ export default function TitleBar({
                 key={folderName}
                 initial={{ opacity: 0, x: -4 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
+                transition={{ duration: 0.15, ease: EASE.OUT }}
                 data-tauri-drag-region
                 className="max-w-[220px] truncate text-xs text-[var(--color-shell-text-muted)]"
               >

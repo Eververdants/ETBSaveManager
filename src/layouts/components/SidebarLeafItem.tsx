@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 
 import type { NavLeaf } from "../../constants";
+import { EASE } from "../../constants";
 import { useAppStore } from "../../stores";
 import { cn } from "../../utils";
 
@@ -46,7 +47,7 @@ export default function SidebarLeafItem({ entry }: { entry: NavLeaf }) {
               opacity: collapsed ? 0 : 1,
               width: collapsed ? 0 : "auto",
             }}
-            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.2, ease: EASE.OUT }}
             className="ml-2.5 whitespace-nowrap overflow-hidden"
           >
             {label}

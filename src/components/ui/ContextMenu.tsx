@@ -248,6 +248,7 @@ export default function ContextMenu({
             transition={{ duration: 0.12, ease: [0.2, 0, 0, 1] }}
             className={cn(PANEL_CLASS, "fixed z-[110] min-w-[200px] max-w-[300px]")}
             style={{ left: pos.x, top: pos.y, transformOrigin: "top left" }}
+            onContextMenu={(e) => e.preventDefault()}
           >
             {menu.items.map((item, i) => renderItem(item, false, i))}
           </motion.div>
@@ -260,6 +261,7 @@ export default function ContextMenu({
           role="menu"
           className={cn(PANEL_CLASS, "fixed z-[111] min-w-[180px] max-w-[280px]")}
           style={{ left: submenu.x, top: submenu.y }}
+          onContextMenu={(e) => e.preventDefault()}
           onMouseEnter={() => {
             if (submenuCloseTimer.current !== null) {
               window.clearTimeout(submenuCloseTimer.current);

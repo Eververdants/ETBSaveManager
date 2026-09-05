@@ -21,12 +21,18 @@ import { getLevelImage } from "../../../utils/levelUtils";
 import { preloadImage, isImagePreloaded } from "../../../utils/imagePreloader";
 import type { ArchiveData } from "../../../types";
 import MemoizedArchiveCard from "./MemoizedArchiveCard";
+import ArchiveFolderCard from "./ArchiveFolderCard";
+import type { ArchiveFolderCardData } from "./ArchiveFolderCard";
 
 export interface VirtualArchiveGridProps {
   archives: ArchiveData[];
   isMultiSelectMode: boolean;
   selectedIds: Set<number>;
   searchQuery?: string;
+  /** 文件夹卡片（渲染在存档之前；仅根目录视图传入） */
+  folders?: ArchiveFolderCardData[];
+  onFolderOpen?: (folder: ArchiveFolderCardData) => void;
+  onFolderContextMenu?: (e: React.MouseEvent, folder: ArchiveFolderCardData) => void;
   onToggleVisibility: (archive: ArchiveData) => void;
   onEdit: (archive: ArchiveData) => void;
   onDelete: (archive: ArchiveData) => void;
@@ -92,6 +98,9 @@ export default function VirtualArchiveGrid({
   isMultiSelectMode,
   selectedIds,
   searchQuery,
+  folders,
+  onFolderOpen,
+  onFolderContextMenu,
   onToggleVisibility,
   onEdit,
   onDelete,
@@ -106,8 +115,11 @@ export default function VirtualArchiveGrid({
   const [layoutWidthOverride, setLayoutWidthOverride] = useState<number | null>(null);
   const prevCollapsedRef = useRef(sidebarCollapsed);
 
+  const folderCount = folders?.length ?? 0;
+  const itemCount = folderCount + archives.length;
+
   const { visibleItems, totalHeight, containerWidth } = useVirtualGrid({
-    itemCount: archives.length,
+    itemCount,
     containerRef,
     config: GRID_CONFIG,
     layoutWidthOverride,
@@ -142,15 +154,16 @@ export default function VirtualArchiveGrid({
     return () => clearTimeout(timer);
   }, [sidebarCollapsed, containerWidth]);
 
-  // 预加载缓冲区图片
+  // 预加载缓冲区图片（跳过文件夹槽位）
   useEffect(() => {
     const urls = visibleItems
-      .map((item) => archives[item.index]?.currentLevel)
+      .filter((item) => item.index >= folderCount)
+      .map((item) => archives[item.index - folderCount]?.currentLevel)
       .filter(Boolean)
       .map((level) => getLevelImage(level!));
 
     schedulePreload(urls);
-  }, [visibleItems, archives]);
+  }, [visibleItems, archives, folderCount]);
 
   // 稳定的回调函数
   const handlers = useMemo(
@@ -161,11 +174,22 @@ export default function VirtualArchiveGrid({
       onSelect,
       onToggleSelect,
       onCardContextMenu,
+      onFolderOpen,
+      onFolderContextMenu,
     }),
-    [onToggleVisibility, onEdit, onDelete, onSelect, onToggleSelect, onCardContextMenu]
+    [
+      onToggleVisibility,
+      onEdit,
+      onDelete,
+      onSelect,
+      onToggleSelect,
+      onCardContextMenu,
+      onFolderOpen,
+      onFolderContextMenu,
+    ]
   );
 
-  if (archives.length === 0) return null;
+  if (itemCount === 0) return null;
 
   return (
     <div
@@ -182,7 +206,38 @@ export default function VirtualArchiveGrid({
       >
         {/* 可见卡片：布局在开合首尾各更新一次，位置即最终位置，无中间态 */}
         {visibleItems.map((item) => {
-          const archive = archives[item.index];
+          // 文件夹槽位排前，其余为存档卡片
+          if (item.index < folderCount) {
+            const folder = folders![item.index];
+            return (
+              <div
+                key={`folder-${folder.id}`}
+                style={{
+                  position: "absolute",
+                  left: item.left,
+                  top: item.top,
+                  width: item.width,
+                  height: item.height,
+                }}
+                onContextMenu={
+                  handlers.onFolderContextMenu
+                    ? (e) => {
+                        e.stopPropagation();
+                        handlers.onFolderContextMenu!(e, folder);
+                      }
+                    : undefined
+                }
+              >
+                <ArchiveFolderCard
+                  folder={folder}
+                  isDropTarget={false}
+                  onOpen={handlers.onFolderOpen ?? (() => {})}
+                />
+              </div>
+            );
+          }
+
+          const archive = archives[item.index - folderCount];
           if (!archive) return null;
 
           return (

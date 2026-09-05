@@ -11,16 +11,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { PackageOpen, SearchX, SquarePen } from "lucide-react";
+import { FolderOpen, PackageOpen, SearchX, SquarePen } from "lucide-react";
 
 import { ConfirmDialog, ContextMenu, EmptyState, Spinner } from "../../components/ui";
 import { useArchiveStore } from "../../stores";
 import { useArchiveActions } from "./hooks/useArchiveActions";
+import { useArchiveFolders } from "./hooks/useArchiveFolders";
 import { useArchiveList } from "./hooks/useArchiveList";
 import { useMultiSelect } from "./hooks/useMultiSelect";
 import { useSavesMenus } from "./hooks/useSavesMenus";
 import { useLevelName } from "../../utils/levelUtils";
 import BatchDeleteProgress from "./components/BatchDeleteProgress";
+import FolderBreadcrumb from "./components/FolderBreadcrumb";
 import MultiSelectBar from "./components/MultiSelectBar";
 import TitleSearchCenter from "./components/TitleSearchCenter";
 import VirtualArchiveGrid from "./components/VirtualArchiveGrid";
@@ -38,7 +40,14 @@ export default function SavesPage() {
 
   const list = useArchiveList(archives);
   const actions = useArchiveActions();
-  const multi = useMultiSelect(list.displayArchives);
+  const foldersView = useArchiveFolders(archives);
+
+  // 网盘行为：搜索 / 筛选时跨全部文件夹；平时按当前目录取存档
+  const searching = list.hasActiveFilters;
+  const gridArchives = searching ? list.displayArchives : foldersView.scopedArchives;
+  const gridFolders =
+    !searching && !foldersView.isInFolder ? foldersView.foldersWithCounts : [];
+  const multi = useMultiSelect(gridArchives);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -127,19 +136,31 @@ export default function SavesPage() {
   );
 
   const showWelcome = dataLoadComplete && archives.length === 0;
-  const showNoMatch = dataLoadComplete && archives.length > 0 && list.displayArchives.length === 0;
+  const gridEmpty = gridArchives.length === 0 && gridFolders.length === 0;
+  const showNoMatch = dataLoadComplete && archives.length > 0 && gridEmpty && searching;
+  const showFolderEmpty =
+    dataLoadComplete && archives.length > 0 && gridEmpty && foldersView.isInFolder;
 
   return (
     <div className="relative flex h-full flex-col" onContextMenu={handlePageContextMenu}>
       <MultiSelectBar
         visible={multi.isMultiSelectMode}
         selectedCount={multi.selectedCount}
-        totalCount={list.displayArchives.length}
+        totalCount={gridArchives.length}
         onExit={multi.toggleMultiSelectMode}
         onSelectAll={multi.selectAll}
         onDeselectAll={multi.deselectAll}
         onBatchDelete={() => void handleBatchDelete()}
       />
+
+      {/* 文件夹面包屑（仅文件夹内且未搜索时） */}
+      {!searching && foldersView.currentFolder && (
+        <FolderBreadcrumb
+          folderName={foldersView.currentFolder.name}
+          count={foldersView.scopedArchives.length}
+          onExit={() => foldersView.setCurrentFolder(null)}
+        />
+      )}
 
       {/* 内容区 */}
       <div className="min-h-0 flex-1 overflow-hidden px-5 pb-6 pt-4">
@@ -165,12 +186,20 @@ export default function SavesPage() {
             actionText={t("archiveSearch.clearFilters")}
             onAction={list.resetFilters}
           />
+        ) : showFolderEmpty ? (
+          <EmptyState
+            icon={FolderOpen}
+            title={t("organizer.folderEmpty")}
+            description={t("organizer.folderEmptyHint")}
+          />
         ) : (
           <VirtualArchiveGrid
-            archives={list.displayArchives}
+            archives={gridArchives}
+            folders={gridFolders}
             isMultiSelectMode={multi.isMultiSelectMode}
             selectedIds={multi.selectedIds}
             searchQuery={list.searchQuery}
+            onFolderOpen={(f) => foldersView.setCurrentFolder(f.id)}
             onToggleVisibility={handleToggleVisibility}
             onEdit={actions.handleEdit}
             onDelete={actions.deleteArchive}

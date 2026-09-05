@@ -290,6 +290,8 @@ class ResourceScheduler {
   private monitorRafId: number | null = null;
   private monitoring = false;
   private _cssVarsApplied = false;
+  /** Cache last performance-mode value written to DOM to avoid redundant writes */
+  private _lastPerformanceMode: string | null = null;
 
   // ─── Device Capabilities ────────────────────────────────
   /** Number of logical CPU cores */
@@ -325,6 +327,8 @@ class ResourceScheduler {
   private _prediction: Prediction | null = null;
   private _predictionPhase: PredictionState["phase"] = "idle";
   private _predictionTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Operation types started by predict() — must not be ended by cancelPrediction if a real op took over. */
+  private _predictedOperations = new Set<OperationType>();
 
   // ─── Operation Lifecycle ───────────────────────────────
 
@@ -336,6 +340,8 @@ class ResourceScheduler {
    * cleared — the real operation has started.
    */
   beginOperation(type: OperationType, metadata?: OperationContext["metadata"]): void {
+    const wasPredicted = this._predictedOperations.has(type);
+
     // Auto-clear prediction when the real operation starts
     if (this._prediction?.type === type) {
       this.clearPrediction();
@@ -347,6 +353,11 @@ class ResourceScheduler {
       // Update metadata if already active
       if (metadata) {
         existing.metadata = metadata;
+      }
+      // Real op took over from prediction — remove from predicted set so
+      // cancelPrediction does NOT end this real op.
+      if (wasPredicted) {
+        this._predictedOperations.delete(type);
       }
       return;
     }
@@ -434,6 +445,9 @@ class ResourceScheduler {
     // Only commit resources if confidence is high enough
     if (confidence >= 0.7) {
       this._predictionPhase = "committed";
+      // Track that this operation was started by prediction so cancelPrediction
+      // can safely end it (and only it).
+      this._predictedOperations.add(type);
       // Immediately begin allocating resources for the predicted operation
       this.beginOperation(type, { totalItems: 0, completedItems: 0 });
     } else {
@@ -458,7 +472,12 @@ class ResourceScheduler {
     if (!this._prediction) return;
     const predictedType = this._prediction.type;
     this.clearPrediction();
-    this.endOperation(predictedType);
+    // Only end the operation if it was started by the prediction AND not
+    // taken over by a real beginOperation call.
+    if (this._predictedOperations.has(predictedType)) {
+      this._predictedOperations.delete(predictedType);
+      this.endOperation(predictedType);
+    }
     this.deprewarm();
   }
 
@@ -470,6 +489,10 @@ class ResourceScheduler {
       clearTimeout(this._predictionTimer);
       this._predictionTimer = null;
     }
+    // Any ops still marked as predicted at this point were started by the
+    // prediction and never taken over by a real beginOperation. Remove them
+    // so cancelPrediction doesn't end real ops that started afterward.
+    this._predictedOperations.clear();
   }
 
   /**
@@ -890,7 +913,13 @@ class ResourceScheduler {
     if (!dominant) return;
     const profile = DEFAULT_PROFILES[dominant.type];
     if (profile?.renderPriority) {
-      document.documentElement.dataset.performanceMode = "auto";
+      // Only write when the value actually changes — avoids per-frame style recalc
+      if (this._lastPerformanceMode !== "auto") {
+        this._lastPerformanceMode = "auto";
+        document.documentElement.dataset.performanceMode = "auto";
+      }
+    } else if (this._lastPerformanceMode !== null) {
+      this._lastPerformanceMode = null;
     }
   }
 

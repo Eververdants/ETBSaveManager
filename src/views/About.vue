@@ -163,7 +163,7 @@ import { useReleaseNotes } from "@/composables";
 import { notify } from "@/services/notificationService";
 import { useAppStore } from "@/stores/appStore";
 
-import { APP_VERSION } from "../config/version";
+import { APP_VERSION } from "@/config/version";
 
 const { t } = useI18n({ useScope: "global" });
 const version = APP_VERSION;

@@ -4,14 +4,15 @@
  */
 import { createI18n } from "vue-i18n";
 import type { I18n, Composer } from "vue-i18n";
-import storage from "../services/storageService";
+import storage from "@/services/storageService";
 
 // Singleton instance
 let i18nInstance: I18n | null = null;
 
-// Language pack cache
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// Language pack cache — messages are dynamic imports, typed loosely
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const messagesCache: Record<string, any> = {};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const releaseNotesCache: Record<string, any> = {};
 
 /**
@@ -97,28 +98,32 @@ export const createI18nInstance = async (): Promise<I18n> => {
   const locale = getUserLocale();
   const messages = await loadLocaleMessages(locale);
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   i18nInstance = createI18n({
     legacy: false,
     locale,
     fallbackLocale: "en-US",
-    messages: { [locale]: messages } as any,
+    messages: { [locale]: messages },
     silentTranslationWarn: true,
     missingWarn: false,
     fallbackWarn: false,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
   // Lazily load other languages
-  requestIdleCallback(
-    async () => {
-      const otherLocales = ["zh-CN", "zh-TW", "en-US"].filter((l) => l !== locale);
-      for (const loc of otherLocales) {
-        const msg = await loadLocaleMessages(loc);
-        (i18nInstance!.global as Composer).setLocaleMessage(loc, msg as Record<string, unknown>);
-      }
-    },
-    { timeout: 5000 },
-  );
+  const loadRemaining = async (): Promise<void> => {
+    const otherLocales = ["zh-CN", "zh-TW", "en-US"].filter((l) => l !== locale);
+    for (const loc of otherLocales) {
+      const msg = await loadLocaleMessages(loc);
+      (i18nInstance!.global as Composer).setLocaleMessage(loc, msg as Record<string, unknown>);
+    }
+  };
+
+  if (typeof requestIdleCallback !== "undefined") {
+    requestIdleCallback(loadRemaining, { timeout: 5000 });
+  } else {
+    // Fallback for environments without requestIdleCallback (e.g. test runners)
+    setTimeout(loadRemaining, 0);
+  }
 
   return i18nInstance;
 };

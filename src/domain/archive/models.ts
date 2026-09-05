@@ -38,7 +38,12 @@ export interface ArchiveDetail {
   actualDifficulty: string;
 }
 
-export interface ArchiveConfig {
+/**
+ * Raw archive config as parsed from user input (before enrichment).
+ * Differs from the app-level ArchiveConfig in @/types/archive:
+ * here parsedInfo is a simple key/value map and difficulty is a raw string.
+ */
+export interface ParsedArchiveConfig {
   id: string;
   name: string;
   parsedInfo: {

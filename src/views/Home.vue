@@ -41,6 +41,14 @@
       class="archive-list-container"
       :class="{ 'no-scroll': showSearch, 'multi-select-mode': isMultiSelectMode, 'is-refreshing': loading }"
     >
+      <!-- MAINSAVE registry unreadable: the list still loads, but visibility
+           info is gone and registry writes will fail. Explain instead of
+           leaving the user with a silently degraded list. -->
+      <MainsaveWarningBanner
+        v-if="mainsaveStatus && !mainsaveStatus.missing && !mainsaveStatus.readable"
+        :error="mainsaveStatus.error"
+      />
+
       <!-- Ultra-light loading state: a single centered spinner.
            The old 12-card skeleton with shimmer animations
            was expensive enough to stall the first paint, making the
@@ -96,55 +104,28 @@
 
         <!-- Empty state: filters active, no matching archives -->
         <div v-if="displayArchives.length === 0 && archives.length > 0 && hasActiveFilters" class="empty-state">
-          <div class="empty-card">
-            <div class="empty-card__bg" aria-hidden="true"></div>
-            <div class="empty-card__deco" aria-hidden="true">
-              <div class="empty-card__deco-ring"></div>
-              <div class="empty-card__deco-dot empty-card__deco-dot--1"></div>
-              <div class="empty-card__deco-dot empty-card__deco-dot--2"></div>
-            </div>
-            <div class="empty-card__icon-wrap">
-              <div class="empty-card__icon-bg"></div>
-              <font-awesome-icon :icon="['fas', 'search']" class="empty-card__icon" />
-            </div>
-            <h3 class="empty-card__title">{{ $t("archiveSearch.noResults") }}</h3>
-            <p class="empty-card__desc">
-              {{ $t("archiveSearch.noMatchingArchives") }}
-            </p>
-            <p class="empty-card__hint">
-              {{ $t("archiveSearch.adjustSearchOrClearFilters") }}
-            </p>
-            <button class="empty-card__action" @click="clearAllFilters">
-              <font-awesome-icon :icon="['fas', 'xmark']" class="empty-card__action-icon" />
-              <span>{{ $t("archiveSearch.clearFilters") }}</span>
-            </button>
-          </div>
+          <EmptyState
+            :icon="['fas', 'search']"
+            :title="$t('archiveSearch.noResults')"
+            :description="$t('archiveSearch.noMatchingArchives')"
+            :hint="$t('archiveSearch.adjustSearchOrClearFilters')"
+            :action-icon="['fas', 'xmark']"
+            :action-text="$t('archiveSearch.clearFilters')"
+            @action="clearAllFilters"
+          />
         </div>
 
         <!-- Empty state: no archives exist yet -->
         <div v-if="displayArchives.length === 0 && dataLoadComplete && archives.length === 0" class="empty-state">
-          <div class="empty-card empty-card--welcome">
-            <div class="empty-card__bg" aria-hidden="true"></div>
-            <div class="empty-card__deco" aria-hidden="true">
-              <div class="empty-card__deco-ring"></div>
-              <div class="empty-card__deco-ring empty-card__deco-ring--outer"></div>
-              <div class="empty-card__deco-dot empty-card__deco-dot--1"></div>
-              <div class="empty-card__deco-dot empty-card__deco-dot--2"></div>
-              <div class="empty-card__deco-dot empty-card__deco-dot--3"></div>
-            </div>
-            <div class="empty-card__icon-wrap">
-              <div class="empty-card__icon-bg"></div>
-              <font-awesome-icon :icon="['fas', 'plus']" class="empty-card__icon" />
-            </div>
-            <h3 class="empty-card__title">{{ $t("archiveSearch.noArchives") }}</h3>
-            <p class="empty-card__desc">
-              {{ $t("archiveSearch.createNewArchive") }}
-            </p>
-            <button class="empty-card__action" @click="createNewArchive">
-              <font-awesome-icon :icon="['fas', 'plus']" class="empty-card__action-icon" />
-              <span>{{ $t("archiveSearch.createArchive") }}</span>
-            </button>
-          </div>
+          <EmptyState
+            variant="welcome"
+            :icon="['fas', 'plus']"
+            :title="$t('archiveSearch.noArchives')"
+            :description="$t('archiveSearch.createNewArchive')"
+            :action-icon="['fas', 'plus']"
+            :action-text="$t('archiveSearch.createArchive')"
+            @action="createNewArchive"
+          />
         </div>
       </template>
     </div>
@@ -219,74 +200,50 @@
     </Teleport>
 
     <!-- Batch delete progress overlay -->
-    <Teleport to="body">
-      <transition name="modal">
-        <div
-          v-if="isBatchDeleting && !showBatchDeleteConfirm"
-          class="modal-overlay batch-delete-progress-overlay"
-          @click.self="showBatchDeleteConfirm = false"
-        >
-          <div class="batch-delete-progress">
-            <div class="progress-header">
-              <font-awesome-icon icon="fa-solid fa-trash-alt" class="progress-icon" />
-              <h3 class="progress-title">{{ $t("confirmModal.batchDeleteProgressTitle") }}</h3>
-            </div>
-            <div class="progress-body">
-              <div class="progress-bar-track">
-                <div class="progress-bar-fill" :style="{ width: batchDeleteProgressPercent + '%' }"></div>
-              </div>
-              <div class="progress-info">
-                <span class="progress-count">
-                  {{ batchDeleteProgress.current }} / {{ batchDeleteProgress.total }}
-                </span>
-                <span class="progress-percent">{{ batchDeleteProgressPercent }}%</span>
-              </div>
-              <div class="progress-current-file">
-                <font-awesome-icon icon="fa-solid fa-file" class="file-icon" />
-                <span class="file-name"
-                  >{{ $t("archiveSearch.multiSelect.deleting") }}: {{ batchDeleteProgress.archiveName }}</span
-                >
-              </div>
-            </div>
-          </div>
+    <BaseModal
+      :visible="isBatchDeleting && !showBatchDeleteConfirm"
+      :dismissable="false"
+      max-width="380px"
+      overlay-class="batch-delete-progress-overlay"
+      card-class="batch-delete-progress"
+    >
+      <div class="progress-header">
+        <font-awesome-icon icon="fa-solid fa-trash-alt" class="progress-icon" />
+        <h3 class="progress-title">{{ $t("confirmModal.batchDeleteProgressTitle") }}</h3>
+      </div>
+      <div class="progress-body">
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" :style="{ width: batchDeleteProgressPercent + '%' }"></div>
         </div>
-      </transition>
-    </Teleport>
+        <div class="progress-info">
+          <span class="progress-count"> {{ batchDeleteProgress.current }} / {{ batchDeleteProgress.total }} </span>
+          <span class="progress-percent">{{ batchDeleteProgressPercent }}%</span>
+        </div>
+        <div class="progress-current-file">
+          <font-awesome-icon icon="fa-solid fa-file" class="file-icon" />
+          <span class="file-name"
+            >{{ $t("archiveSearch.multiSelect.deleting") }}: {{ batchDeleteProgress.archiveName }}</span
+          >
+        </div>
+      </div>
+    </BaseModal>
 
     <!-- Performance settings -->
-    <Teleport to="body">
-      <transition name="modal">
-        <div v-if="showPerformanceSettings" class="modal-overlay" @click.self="showPerformanceSettings = false">
-          <div class="modal-container">
-            <div class="modal-header">
-              <h2 class="modal-title">{{ $t("performanceSettings.title") }}</h2>
-              <button class="modal-close" @click="showPerformanceSettings = false">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-            <div class="modal-body">
-              <PerformanceSettings
-                v-model:performance-mode="performanceMode"
-                v-model:animation-quality="animationQuality"
-                v-model:hardware-acceleration="hardwareAcceleration"
-                v-model:virtualization-enabled="virtualizationEnabled"
-              />
-            </div>
-          </div>
-        </div>
-      </transition>
-    </Teleport>
+    <BaseModal
+      :visible="showPerformanceSettings"
+      :title="$t('performanceSettings.title')"
+      show-close
+      @close="showPerformanceSettings = false"
+    >
+      <div class="modal-body">
+        <PerformanceSettings
+          v-model:performance-mode="performanceMode"
+          v-model:animation-quality="animationQuality"
+          v-model:hardware-acceleration="hardwareAcceleration"
+          v-model:virtualization-enabled="virtualizationEnabled"
+        />
+      </div>
+    </BaseModal>
   </div>
 </template>
 
@@ -295,23 +252,29 @@ import { ref, computed, onMounted, onUnmounted, onActivated, onDeactivated, next
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import { invoke } from "@tauri-apps/api/core";
-import { protectFloatingButtonPosition } from "../utils/floatingButtonProtection.js";
-import ArchiveCard from "../components/archive/ArchiveCard.vue";
-import ArchiveSearchFilter from "../components/archive/ArchiveSearchFilter.vue";
-import ConfirmModal from "../components/modal/ConfirmModal.vue";
-import PerformanceSettings from "../components/system/PerformanceSettings.vue";
-import { useArchiveData } from "../composables/useArchiveData";
+import { protectFloatingButtonPosition } from "@/utils/floatingButtonProtection";
+import ArchiveCard from "@/components/archive/ArchiveCard.vue";
+import ArchiveSearchFilter from "@/components/archive/ArchiveSearchFilter.vue";
+import MainsaveWarningBanner from "@/components/archive/MainsaveWarningBanner.vue";
+import ConfirmModal from "@/components/modal/ConfirmModal.vue";
+import PerformanceSettings from "@/components/system/PerformanceSettings.vue";
+import BaseModal from "@/components/ui/BaseModal.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
+import { useArchiveData } from "@/composables/useArchiveData";
 import type { ArchiveData } from "@/types";
-import { useArchiveList } from "../composables/useArchiveSearchFilter";
-import { useArchiveActions } from "../composables/useArchiveActions";
-import { useVirtualScroll } from "../composables/useVirtualScroll";
-import { useMultiSelect } from "../composables/useMultiSelect";
-import { usePerformanceMonitor } from "../composables/usePerformanceMonitor";
-import { useAnimations } from "../composables/useAnimations";
-import { useFloatingButton } from "../composables/useFloatingButton";
-import { useToast } from "../composables/useToast";
-import { markInitialLoadComplete } from "../composables/useArchiveCard";
-import scheduler from "../services/resourceScheduler";
+import { useArchiveList } from "@/composables/useArchiveSearchFilter";
+import { useArchiveActions } from "@/composables/useArchiveActions";
+import { useVirtualScroll } from "@/composables/useVirtualScroll";
+import { useMultiSelect } from "@/composables/useMultiSelect";
+import { usePerformanceMonitor } from "@/composables/usePerformanceMonitor";
+import { useAnimations } from "@/composables/useAnimations";
+import { useFloatingButton } from "@/composables/useFloatingButton";
+import { useToast } from "@/composables/useToast";
+import { markInitialLoadComplete } from "@/composables/useArchiveCard";
+import scheduler from "@/services/resourceScheduler";
+
+// Explicit name so the router-view keep-alive include list can match it.
+defineOptions({ name: "Home" });
 
 // Composables
 const archiveData = useArchiveData();
@@ -320,6 +283,7 @@ const {
   loading,
   dataLoadComplete,
   incrementalLoadState,
+  mainsaveStatus,
   initializeArchives,
   refreshArchives: refreshArchivesBase,
   refreshArchivesSilent,
@@ -440,7 +404,7 @@ const { initButtonProtection, cleanup: cleanupFloatingButton } = floatingButton;
 
 const toast = useToast();
 
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "global" });
 const route = useRoute();
 
 // Local state (scrollContainerRef, showSearch, isPageActive, shouldResetScroll declared above)
@@ -651,6 +615,15 @@ const centerEditedArchive = (): void => {
 //   3. showCards=false �?spinner replaces the card grid.
 //   4. 18 RAF frames (~300ms) let the sidebar animation finish.
 //   5. Boost priority, refresh data, flip showCards=true.
+let activateTimer: ReturnType<typeof setTimeout> | null = null;
+declare global {
+  interface Window {
+    __toggleSidebar?: () => void;
+    __toggleTitleBar?: () => void;
+    themeManager?: { setTheme: (theme: string) => void };
+  }
+}
+
 onActivated(() => {
   isPageActive.value = true;
 
@@ -658,7 +631,10 @@ onActivated(() => {
     (scrollContainerRef.value as HTMLElement).scrollTop = 0;
   }
 
-  setTimeout(() => {
+  // Clear any leftover timer from a previous activation that didn't finish
+  if (activateTimer) clearTimeout(activateTimer);
+  activateTimer = setTimeout(() => {
+    activateTimer = null;
     showCards.value = false;
     loading.value = true;
 
@@ -692,6 +668,11 @@ onActivated(() => {
 // On keep-alive deactivation
 onDeactivated(() => {
   isPageActive.value = false;
+  // Cancel the activate timer so it doesn't fire after we've navigated away
+  if (activateTimer) {
+    clearTimeout(activateTimer);
+    activateTimer = null;
+  }
 });
 
 onMounted(() => {
@@ -953,32 +934,32 @@ watch(searchQuery, (query) => {
      - card-info hover bg color triggers paint
    Once scrolling stops (~150ms), the is-scrolling class is
    removed and hover effects return to normal. */
-.archive-list-container.is-scrolling .archive-grid :deep(.archive-card:hover) {
+.archive-list-container.is-scrolling :deep(.archive-grid .archive-card:hover) {
   transform: none !important;
   box-shadow: none !important;
 }
 
-.archive-list-container.is-scrolling :deep(.archive-card:hover) .card-background :deep(.lazy-image-container) {
+.archive-list-container.is-scrolling :deep(.archive-card:hover .card-background .lazy-image-container) {
   filter: none !important;
   transform: none !important;
 }
 
-.archive-list-container.is-scrolling :deep(.archive-card:hover) .card-info {
+.archive-list-container.is-scrolling :deep(.archive-card:hover .card-info) {
   background-color: transparent !important;
 }
 
-.archive-list-container.is-scrolling :deep(.archive-card:hover) .difficulty-tag {
+.archive-list-container.is-scrolling :deep(.archive-card:hover .difficulty-tag) {
   width: var(--w-short, auto) !important;
   background: rgba(0, 0, 0, 0.35) !important;
   color: rgba(255, 255, 255, 0.9) !important;
   border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
-.archive-list-container.is-scrolling :deep(.difficulty-tag) .tag-short {
+.archive-list-container.is-scrolling :deep(.difficulty-tag .tag-short) {
   opacity: 1 !important;
 }
 
-.archive-list-container.is-scrolling :deep(.difficulty-tag) .tag-full {
+.archive-list-container.is-scrolling :deep(.difficulty-tag .tag-full) {
   opacity: 0 !important;
 }
 
@@ -1036,12 +1017,6 @@ watch(searchQuery, (query) => {
     opacity: 1;
     transform: none;
   }
-
-  /* Kill perpetual decorative motion on the empty state */
-  .empty-card__deco-ring,
-  .empty-card__deco-dot {
-    animation: none;
-  }
 }
 
 .empty-state {
@@ -1051,249 +1026,6 @@ watch(searchQuery, (query) => {
   min-height: calc(100vh - 200px);
   padding: 48px 24px;
   width: 100%;
-}
-
-/* ─── Empty Card �?redesigned ──────────────── */
-
-.empty-card {
-  position: relative;
-  text-align: center;
-  max-width: 420px;
-  width: 100%;
-  padding: 56px 48px 48px;
-  background: var(--card-bg);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  isolation: isolate;
-  transition:
-    transform 0.35s var(--ease-spring, cubic-bezier(0.25, 0.46, 0.45, 0.94)),
-    box-shadow 0.35s var(--ease-default, ease);
-}
-
-.empty-card:hover {
-  transform: translateY(-4px);
-}
-
-/* Background sheen layer */
-.empty-card__bg {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse 80% 50% at 50% -10%,
-    color-mix(in srgb, var(--primary) 10%, transparent) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Decorative orbiting dots */
-.empty-card__deco {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.empty-card__deco-ring {
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  height: 120px;
-  border-radius: var(--radius-circle);
-  border: 1px solid color-mix(in srgb, var(--primary) 15%, transparent);
-  animation: empty-ring-float 4s ease-in-out infinite;
-}
-
-.empty-card--welcome .empty-card__deco-ring--outer {
-  width: 170px;
-  height: 170px;
-  top: -9px;
-  border-color: color-mix(in srgb, var(--primary) 8%, transparent);
-  animation-delay: -1s;
-  animation-duration: 5s;
-}
-
-.empty-card__deco-dot {
-  position: absolute;
-  border-radius: var(--radius-circle);
-  background: color-mix(in srgb, var(--primary) 25%, transparent);
-  animation: empty-dot-drift 6s ease-in-out infinite;
-}
-
-.empty-card__deco-dot--1 {
-  width: 6px;
-  height: 6px;
-  top: 48px;
-  left: calc(50% + 68px);
-}
-
-.empty-card__deco-dot--2 {
-  width: 4px;
-  height: 4px;
-  top: 84px;
-  left: calc(50% - 80px);
-  animation-delay: -2s;
-}
-
-.empty-card--welcome .empty-card__deco-dot--3 {
-  width: 5px;
-  height: 5px;
-  top: 128px;
-  left: calc(50% + 52px);
-  animation-delay: -3.5s;
-}
-
-/* Icon area */
-.empty-card__icon-wrap {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  margin-bottom: 28px;
-}
-
-.empty-card__icon-bg {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-circle);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--primary) 18%, transparent) 0%,
-    color-mix(in srgb, var(--primary) 6%, transparent) 100%
-  );
-  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
-  transition:
-    transform 0.35s var(--ease-spring, ease),
-    box-shadow 0.35s ease;
-}
-
-.empty-card:hover .empty-card__icon-bg {
-  transform: scale(1.08);
-  box-shadow: 0 0 40px color-mix(in srgb, var(--primary) 15%, transparent);
-}
-
-.empty-card__icon {
-  position: relative;
-  z-index: 1;
-  font-size: 1.75rem;
-  color: var(--primary);
-  transition: transform 0.35s var(--ease-spring, ease);
-}
-
-.empty-card:hover .empty-card__icon {
-  transform: scale(1.1) rotate(-4deg);
-}
-
-/* Typography */
-.empty-card__title {
-  position: relative;
-  z-index: 1;
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 10px;
-  letter-spacing: -0.01em;
-}
-
-.empty-card__desc {
-  position: relative;
-  z-index: 1;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: var(--text-secondary);
-  margin: 0 0 6px;
-}
-
-.empty-card__hint {
-  position: relative;
-  z-index: 1;
-  font-size: 0.85rem;
-  color: var(--text-tertiary);
-  margin: 0 0 28px;
-}
-
-/* Action button */
-.empty-card__action {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 70%, #000 30%) 100%);
-  color: var(--text-inverse, #fff);
-  border: none;
-  padding: 13px 32px;
-  border-radius: var(--radius-button);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform 0.25s var(--ease-spring, ease),
-    box-shadow 0.25s ease;
-  box-shadow:
-    0 4px 14px color-mix(in srgb, var(--primary) 25%, transparent),
-    0 1px 3px color-mix(in srgb, var(--primary) 15%, transparent);
-}
-
-.empty-card__action:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow:
-    0 8px 24px color-mix(in srgb, var(--primary) 30%, transparent),
-    0 2px 6px color-mix(in srgb, var(--primary) 20%, transparent);
-}
-
-.empty-card__action:active {
-  transform: scale(0.97);
-}
-
-.empty-card__action-icon {
-  font-size: 0.8rem;
-  opacity: 0.9;
-}
-
-/* ─── Keyframes ────────────────────────────── */
-
-@keyframes empty-ring-float {
-  0%,
-  100% {
-    transform: translateX(-50%) scale(1);
-    opacity: 1;
-  }
-
-  50% {
-    transform: translateX(-50%) scale(1.06);
-    opacity: 0.6;
-  }
-}
-
-@keyframes empty-dot-drift {
-  0%,
-  100% {
-    transform: translate(0, 0);
-    opacity: 0.6;
-  }
-
-  25% {
-    transform: translate(4px, -6px);
-    opacity: 1;
-  }
-
-  50% {
-    transform: translate(-2px, 4px);
-    opacity: 0.5;
-  }
-
-  75% {
-    transform: translate(6px, 2px);
-    opacity: 0.8;
-  }
 }
 
 .search-overlay {
@@ -1308,53 +1040,6 @@ watch(searchQuery, (query) => {
   -webkit-backdrop-filter: var(--search-overlay-backdrop, blur(8px));
 }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1001;
-}
-
-.modal-container {
-  background: var(--card-bg);
-  border-radius: var(--radius-2xl);
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.modal-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-secondary);
-  padding: 6px;
-  border-radius: var(--radius-pill);
-}
-
-.modal-close:hover {
-  background: var(--bg-secondary);
-}
-
 .modal-body {
   padding: 20px;
 }
@@ -1362,21 +1047,6 @@ watch(searchQuery, (query) => {
 .loading {
   opacity: 0.6;
   pointer-events: none;
-}
-
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-from .modal-container,
-.modal-leave-to .modal-container {
-  transform: scale(0.9);
 }
 
 @media (max-width: 768px) {
@@ -1561,20 +1231,17 @@ watch(searchQuery, (query) => {
 }
 
 /* Batch delete progress overlay �?covers full viewport including multi-select toolbar */
-.batch-delete-progress-overlay {
+/* Batch delete progress: BaseModal overlay/card tweaks (teleported, so :global) */
+:global(.batch-delete-progress-overlay) {
   z-index: 10001 !important;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
-.batch-delete-progress {
-  background: var(--card-bg);
+:global(.batch-delete-progress) {
   border-radius: var(--radius-xl);
-  width: 380px;
-  max-width: 90vw;
   overflow: hidden;
-  filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.3));
 }
 
 .batch-delete-progress .progress-header {

@@ -1,4 +1,4 @@
-import { notify } from "../services/notificationService";
+import { notify } from "@/services/notificationService";
 import type { NotificationOptions } from "@/types";
 
 /**

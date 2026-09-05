@@ -95,6 +95,10 @@ export function useUndoRedo(): {
    * Undo a specific action by id (e.g. a delete-toast Undo button),
    * regardless of its position in the history stack.
    * Returns the undone action's description, or null if the id was not found.
+   *
+   * Clears the future (redo) stack because selectively undoing an action
+   * invalidates the linear redo sequence — replaying future actions after
+   * a non-linear undo would produce inconsistent state.
    */
   async function undoById(id: string): Promise<string | null> {
     const index = past.value.findIndex((a) => a.id === id);
@@ -110,6 +114,8 @@ export function useUndoRedo(): {
       if (typeof action.redo === "function") {
         future.value.push(action);
       }
+      // Future stack is now stale — clear it to prevent inconsistent redo
+      future.value.splice(0, future.value.length);
       return action.description;
     } catch (error) {
       console.error("[useUndoRedo] Undo failed:", error);
@@ -151,6 +157,11 @@ export function useUndoRedo(): {
 
   /**
    * Clear all history.
+   *
+   * WARNING: This is a GLOBAL operation. Because past/future are module-level
+   * singletons shared across all consumers, calling clear() discards undo/redo
+   * state for EVERY consumer — not just the caller. If you need per-consumer
+   * isolation, namespace your stacks instead of using this singleton.
    */
   function clear(): void {
     past.value.splice(0, past.value.length);

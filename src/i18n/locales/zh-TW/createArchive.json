@@ -81,5 +81,9 @@
   "restoreDraft": "恢復草稿",
   "discardDraft": "重新開始",
   "levelSearchPlaceholder": "搜尋關卡名稱",
-  "levelSearchEmpty": "未找到匹配的關卡"
+  "levelSearchEmpty": "未找到匹配的關卡",
+  "levelSearch": {
+    "placeholder": "搜尋層級名稱…",
+    "noResults": "沒有符合的層級"
+  }
 }

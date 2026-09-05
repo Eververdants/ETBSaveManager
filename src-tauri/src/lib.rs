@@ -37,7 +37,6 @@ pub fn run() {
     // Build Tauri application
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_fs::init())
@@ -46,6 +45,7 @@ pub fn run() {
             save_loader::load_save_metadata,
             save_loader::load_save_metadata_page,
             save_loader::load_save_details_batch,
+            save_loader::get_mainsave_status,
             save_deleter::delete_file,
             save_deleter::soft_delete_file,
             save_deleter::restore_file,

@@ -14,6 +14,7 @@
               class="search-input"
               @focus="showSuggestions = true"
               @blur="onSearchBlur"
+              @keydown.enter.prevent="onSearchEnter"
             />
             <transition name="clear-btn" mode="out-in">
               <button v-if="searchQueryModel" key="clear-btn" class="clear-btn" @click="clearSearch">
@@ -106,7 +107,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, type PropType } from "vue";
 import { useI18n } from "vue-i18n";
-import CustomDropdown from "../ui/CustomDropdown.vue";
+import CustomDropdown from "@/components/ui/CustomDropdown.vue";
 import type { ArchiveData } from "@/types";
 import {
   getSearchHistory,
@@ -211,6 +212,16 @@ const onSearchBlur = () => {
     addSearchHistory(props.searchQuery);
     searchHistoryList.value = getSearchHistory();
   }
+};
+
+// Enter commits the query into history and closes the search overlay
+const onSearchEnter = () => {
+  if (props.searchQuery) {
+    addSearchHistory(props.searchQuery);
+    searchHistoryList.value = getSearchHistory();
+  }
+  showSuggestions.value = false;
+  emit("close");
 };
 
 const selectSuggestion = (text: string) => {

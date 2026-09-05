@@ -1,5 +1,6 @@
 import { ref, computed, watch, onMounted, type Ref, type ComputedRef } from "vue";
 import type { ArchiveData } from "@/types";
+import { getLevelImage } from "@/utils/levelUtils";
 
 interface Translations {
   getLevelName: (level: string) => string;
@@ -9,6 +10,9 @@ interface Translations {
 interface CardTagStyle {
   "--w-short": string;
   "--w-full": string;
+  // CSS custom properties index signature so the object satisfies Vue's
+  // StyleValue / CSSProperties when bound via :style.
+  [key: `--${string}`]: string;
 }
 
 interface CardActions {
@@ -48,7 +52,13 @@ const getTextWidth = (() => {
   let canvas: HTMLCanvasElement | null = null;
   let ctx: CanvasRenderingContext2D | null = null;
   return (text: string): number => {
-    if (textWidthCache.has(text)) return textWidthCache.get(text)!;
+    if (textWidthCache.has(text)) {
+      // LRU: re-insert to mark as most-recently-used (Map preserves insertion order)
+      const width = textWidthCache.get(text)!;
+      textWidthCache.delete(text);
+      textWidthCache.set(text, width);
+      return width;
+    }
     if (!canvas) {
       canvas = document.createElement("canvas");
       ctx = canvas.getContext("2d")!;
@@ -57,8 +67,9 @@ const getTextWidth = (() => {
     const width = Math.ceil(ctx!.measureText(text).width);
     textWidthCache.set(text, width);
     if (textWidthCache.size > MAX_CACHE_SIZE) {
-      const firstKey = textWidthCache.keys().next().value;
-      if (firstKey) textWidthCache.delete(firstKey);
+      // Evict least-recently-used (first key in insertion order)
+      const lruKey = textWidthCache.keys().next().value;
+      if (lruKey) textWidthCache.delete(lruKey);
     }
     return width;
   };
@@ -169,15 +180,19 @@ export function useArchiveCardVisibility(archive: Ref<ArchiveData>): {
 } {
   const localVisible = ref(archive.value?.isVisible);
   const isAnimating = ref(false);
+  let visibilityTimeout: ReturnType<typeof setTimeout> | null = null;
 
   watch(
     () => archive.value?.isVisible,
     (newVal) => {
       if (newVal !== localVisible.value) {
+        // Clear previous timeout so rapid toggles don't stack
+        if (visibilityTimeout) clearTimeout(visibilityTimeout);
         isAnimating.value = true;
         localVisible.value = newVal;
-        setTimeout(() => {
+        visibilityTimeout = setTimeout(() => {
           isAnimating.value = false;
+          visibilityTimeout = null;
         }, 250);
       }
     },
@@ -242,7 +257,7 @@ export function useArchiveCard(
     return {
       isVisible: a.isVisible,
       currentLevelName: translations.getLevelName(a.currentLevel ?? ""),
-      backgroundImage: `/images/ETB/${a.currentLevel}.webp`,
+      backgroundImage: getLevelImage(a.currentLevel ?? ""),
       archiveDifficultyText: translations.getDifficultyText(a.archiveDifficulty ?? ""),
       actualDifficultyText: translations.getDifficultyText(a.actualDifficulty ?? ""),
       archiveDifficultyClass: `difficulty-${a.archiveDifficulty}`,

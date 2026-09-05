@@ -81,5 +81,9 @@
   "restoreDraft": "恢复草稿",
   "discardDraft": "重新开始",
   "levelSearchPlaceholder": "搜索层级名称",
-  "levelSearchEmpty": "未找到匹配的层级"
+  "levelSearchEmpty": "未找到匹配的层级",
+  "levelSearch": {
+    "placeholder": "搜索层级名称…",
+    "noResults": "没有匹配的层级"
+  }
 }

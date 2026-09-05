@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { highlightMatch, getSearchHistory, addSearchHistory, clearSearchHistory } from "../useArchiveSearchFilter";
+import {
+  highlightMatch,
+  getSearchHistory,
+  addSearchHistory,
+  clearSearchHistory,
+} from "@/composables/useArchiveSearchFilter";
 
 // Mock sessionStorage
 const sessionStorageMock = (() => {

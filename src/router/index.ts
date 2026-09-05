@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
-import Home from "../views/Home.vue";
+import Home from "@/views/Home.vue";
 
 interface RouteMeta {
   keepAlive: boolean;
@@ -27,13 +27,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/settings",
     name: "Settings",
-    component: () => import("../views/settings.vue"),
-    meta: { keepAlive: false, priority: 2 },
+    component: () => import("../views/Settings/index.vue"),
+    meta: { keepAlive: true, priority: 2 },
   },
   {
     path: "/mods",
     name: "Mods",
-    component: () => import("../views/mods.vue"),
+    component: () => import("../views/Mods.vue"),
     meta: { keepAlive: false, priority: 3 },
   },
   {
@@ -57,7 +57,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/edit-archive/:archiveData?",
     name: "EditArchive",
-    component: () => import("../views/EditArchive.vue"),
+    component: () => import("../views/EditArchive/index.vue"),
     props: true,
     meta: { keepAlive: false, priority: 2 },
   },

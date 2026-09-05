@@ -79,17 +79,16 @@ function parseAdvancedQuery(raw: string): AdvancedQuery | null {
   let remaining = trimmed;
 
   // Match prefixes: name:xxx, level:xxx, difficulty:xxx
+  // No "g" flag — single match per call, no lastIndex state to manage
   const prefixRegex = /^(name|level|difficulty):(\S+)\s*/;
-  let match: RegExpExecArray | null;
-  const regex = new RegExp(prefixRegex.source, "g");
-  while ((match = regex.exec(remaining)) !== null) {
+  const match = prefixRegex.exec(remaining);
+  if (match) {
     const key = match[1] as "name" | "level" | "difficulty";
     const value = match[2];
     if (key === "name") result.name = value;
     else if (key === "level") result.level = value;
     else if (key === "difficulty") result.difficulty = value;
     parts.push(match[0]);
-    regex.lastIndex = 0;
   }
 
   // Remove matched prefixes from the remaining text
@@ -110,6 +109,9 @@ export function useGlobalSearchPanel(): GlobalSearchPanelReturn {
   const showHistory = ref(false);
   let searchTimer: ReturnType<typeof setTimeout> | null = null;
   let scrollSnapshot: ScrollSnapshot | null = null;
+  // Cache the last regex to avoid rebuilding on every search call
+  let cachedRegexKey = "";
+  let cachedRegex: RegExp | null = null;
 
   const advancedQuery = computed<AdvancedQuery | null>(() => {
     const q = query.value.trim();
@@ -199,7 +201,12 @@ export function useGlobalSearchPanel(): GlobalSearchPanelReturn {
     clearHighlights();
     const keyword = getEffectiveSearchText();
     if (!keyword) return;
-    const regex = new RegExp(escapeRegExp(keyword), matchCase.value ? "g" : "gi");
+    const regexKey = `${keyword}:${matchCase.value}`;
+    if (regexKey !== cachedRegexKey || !cachedRegex) {
+      cachedRegex = new RegExp(escapeRegExp(keyword), matchCase.value ? "g" : "gi");
+      cachedRegexKey = regexKey;
+    }
+    const regex = cachedRegex;
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     const textNodes: Text[] = [];
     let node = walker.nextNode();
@@ -314,6 +321,11 @@ export function useGlobalSearchPanel(): GlobalSearchPanelReturn {
     saveHistory([]);
   };
 
+  const resetRegexCache = (): void => {
+    cachedRegexKey = "";
+    cachedRegex = null;
+  };
+
   const cleanup = (): void => {
     if (searchTimer) {
       clearTimeout(searchTimer);
@@ -321,6 +333,7 @@ export function useGlobalSearchPanel(): GlobalSearchPanelReturn {
     }
     clearHighlights();
     restoreScrollSnapshot();
+    resetRegexCache();
   };
 
   return {

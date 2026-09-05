@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { getLevelName, useLevelUtils } from "../levelUtils";
+import { getLevelName, useLevelUtils } from "@/utils/levelUtils";
 
 // Mock vue-i18n
 vi.mock("vue-i18n", () => ({

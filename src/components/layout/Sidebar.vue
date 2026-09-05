@@ -83,8 +83,8 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from "vue";
-import { useRoute } from "vue-router";
-import { topMenuItems, bottomMenuItems } from "../../config/sidebarMenu.js";
+import { useRoute, useRouter } from "vue-router";
+import { topMenuItems, bottomMenuItems } from "@/config/sidebarMenu";
 import { gsap } from "gsap";
 import storageService from "@/services/storageService";
 import { useAppStore } from "@/stores/appStore";
@@ -92,6 +92,7 @@ import { getAppContext } from "@/appContext.js";
 
 const emit = defineEmits(["sidebar-action", "sidebar-expand"]);
 const route = useRoute();
+const router = useRouter();
 
 const useSidebarState = () => {
   const isExpanded = ref(false);
@@ -299,8 +300,8 @@ const useSidebarActions = (activeItemId, safeT) => {
       window.dispatchEvent(new CustomEvent("sidebar-action", { detail: { action: item.action, item } }));
     }
 
-    if (item.route) {
-      window.dispatchEvent(new CustomEvent("sidebar-route-change", { detail: { route: item.route } }));
+    if (item.route && router.hasRoute(item.route)) {
+      router.push({ name: item.route });
     }
 
     if (currentPressedItem) {

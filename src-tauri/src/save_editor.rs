@@ -2,6 +2,7 @@ use crate::common::{
     add_save_to_mainsave, extract_archive_name, remove_save_from_mainsave, validate_save_games_path,
 };
 use crate::error::AppResult;
+use crate::new_save::{update_bool_property, update_meg_status, ALL_LEVELS, MAIN_STORYLINE_LEVELS};
 use crate::save_shared;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
@@ -158,10 +159,35 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
 
     // Extract required fields
     let name = json_data["name"].as_str().ok_or("Invalid name")?;
+
+    // Mirror the create flow's filename-safety rules: the name is formatted
+    // straight into a .sav filename below, so blanks or illegal characters
+    // would produce broken paths / NTFS alternate-stream junk.
+    if name.trim().is_empty() {
+        return Err("Save name cannot be empty".into());
+    }
+    if !name
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '-' || c == ' ' || c == '_' || c == '(' || c == ')')
+    {
+        return Err(
+            "Save name can only contain letters, numbers, hyphens, underscores, parentheses, and spaces"
+                .into(),
+        );
+    }
+
     let mode = json_data["mode"].as_str().ok_or("Invalid mode")?;
-    let current_level = json_data["currentLevel"]
+    let current_level_raw = json_data["currentLevel"]
         .as_str()
         .ok_or("Invalid currentLevel")?;
+    // Twin entries suffixed "_UnlockMain" are UI-only variants of a shared
+    // level that explicitly request the main-ending unlock semantics; the
+    // game itself only ever sees the bare level key.
+    const UNLOCK_MAIN_SUFFIX: &str = "_UnlockMain";
+    let force_main_ending = current_level_raw.ends_with(UNLOCK_MAIN_SUFFIX);
+    let current_level = current_level_raw
+        .strip_suffix(UNLOCK_MAIN_SUFFIX)
+        .unwrap_or(current_level_raw);
     let actual_difficulty = json_data["actualDifficulty"]
         .as_str()
         .ok_or("Invalid actualDifficulty")?;
@@ -188,12 +214,49 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
 
     validate_save_games_path(&output_path)?;
 
+    // Refuse to save under a DIFFERENT archive's name: fs::rename replaces
+    // existing targets on all platforms, so that would silently destroy the
+    // other archive's bytes with no warning. The frontend-supplied original
+    // path and our joined output path can differ in separators/case/normal-
+    // ization while naming the SAME file (a plain string compare misfires and
+    // blocks every in-place edit), so decide sameness through the filesystem:
+    // canonicalize resolves all of those on existing paths.
+    if output_path.exists() {
+        let original_fs_path = Path::new(&original_path);
+        let same_target = match (
+            fs::canonicalize(original_fs_path),
+            fs::canonicalize(&output_path),
+        ) {
+            (Ok(a), Ok(b)) => a == b,
+            _ => {
+                let norm = |p: &Path| p.to_string_lossy().to_lowercase().replace('/', "\\");
+                norm(original_fs_path) == norm(&output_path)
+            }
+        };
+        if !same_target {
+            return Err(format!(
+                "An archive named '{}' already exists. Please choose a different name.",
+                name
+            )
+            .into());
+        }
+    }
+
     tracing::info!("Reading original save file: {:?}", original_path);
 
     let file =
         File::open(&original_path).map_err(|e| format!("Failed to open save file: {}", e))?;
     let mut reader = BufReader::with_capacity(16384, file);
-    let mut save = Save::read(&mut reader).map_err(|e| format!("Failed to parse save: {:?}", e))?;
+    let mut save = crate::common::parse_save_lenient(&mut reader)
+        .map_err(|e| format!("Failed to parse save: {:?}", e))?;
+
+    let degraded = crate::common::raw_property_names(&save);
+    if !degraded.is_empty() {
+        tracing::warn!(
+            "Save contains properties uesave cannot parse — preserved as raw bytes: {}",
+            degraded.join(", ")
+        );
+    }
 
     // Auto-merge duplicate PlayerData entries for the same player
     // (bare id + EOS-suffixed key + all-zeros key from older app versions coexist;
@@ -213,6 +276,49 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
 
     // Update difficulty
     save_shared::update_difficulty(&mut save, actual_difficulty);
+
+    // Mirror the create flow's progression logic: a level past The Hub — or a
+    // non-main storyline ending — needs The Hub reachable (every hub-door flag
+    // true), and side endings additionally need HasCompletedMainEnding set.
+    // "Pipes" is main-line Pipe Dreams under its merged in-game name.
+    // Progression logic. SIDE = level exclusive to a branch ending (not on
+    // the main route's full ALL_LEVELS table) — those hard-unlock everything:
+    // all hub doors, MEG, and HasCompletedMainEnding. Main-route levels past
+    // The Hub keep their natural door state (the player opens them by
+    // playing); MEG still unlocks for them, mirroring isMEGUnlocked().
+    // "_UnlockMain"-suffixed keys force the full treatment explicitly.
+    let on_main_route = ALL_LEVELS.iter().any(|(_, l)| {
+        let l = *l;
+        l == current_level || (l == "Pipes2" && current_level == "Pipes")
+    });
+    let is_side_storyline = !on_main_route;
+    if is_side_storyline || force_main_ending {
+        tracing::info!(
+            "Selected level '{}' (side: {}, force main ending: {}) — unlocking all hub doors and MEG",
+            current_level,
+            is_side_storyline,
+            force_main_ending
+        );
+        apply_unlock_all_hub_doors_in_place(&mut save)?;
+        update_meg_status(&mut save, true)?;
+        update_bool_property(&mut save, "HasCompletedMainEnding", true)?;
+    }
+
+    // Main-route levels beyond The Hub still need MEG doors/power/security.
+    if !is_side_storyline && !force_main_ending {
+        let main_prefix_index = MAIN_STORYLINE_LEVELS.iter().position(|(_, l)| {
+            let l = *l;
+            l == current_level || (l == "Pipes2" && current_level == "Pipes")
+        });
+        let hub_index = MAIN_STORYLINE_LEVELS
+            .iter()
+            .position(|(_, l)| *l == "TheHub");
+        if let (Some(hub), Some(sel)) = (hub_index, main_prefix_index) {
+            if sel > hub {
+                update_meg_status(&mut save, true)?;
+            }
+        }
+    }
 
     // Process player data
     process_player_data(&mut save, json_data)?;
@@ -236,6 +342,13 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     // never a half-applied edit that reports failure after the fact.
     let archive_name = extract_archive_name(&new_filename);
 
+    // Track registry mutations so a failed temp→target rename below can roll
+    // them back — otherwise MAINSAVE references only the NEW slot while the
+    // file on disk still carries the OLD one, and the archive vanishes from
+    // both the game's and the manager's list even though its data is intact.
+    let mut moved_old_entry: Option<&str> = None;
+    let mut removed_old_entry = false;
+
     // Rename flow: when the archive name changed (rename / difficulty change),
     // MOVE the registry entry and its display-name mapping old -> new so any
     // custom in-game name survives. Only when the old entry is not registered
@@ -244,10 +357,12 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     if let Some(ref old_name) = old_archive_name {
         if old_name != archive_name {
             match crate::common::update_mainsave_archive_name(old_name, archive_name) {
-                Ok(true) => {}
+                Ok(true) => moved_old_entry = Some(old_name.as_str()),
                 Ok(false) => {
-                    if let Err(e) = remove_save_from_mainsave(old_name) {
-                        tracing::warn!("Failed to remove old MAINSAVE entry '{}': {}", old_name, e);
+                    if remove_save_from_mainsave(old_name).is_ok() {
+                        removed_old_entry = true;
+                    } else {
+                        tracing::warn!("Failed to remove old MAINSAVE entry '{}'", old_name);
                     }
                 }
                 Err(e) => {
@@ -263,8 +378,26 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     }
 
     // Atomically rename temp to target path
-    fs::rename(&temp_path, &output_path)
-        .map_err(|e| format!("Failed to rename temp file: {}", e))?;
+    if let Err(e) = fs::rename(&temp_path, &output_path) {
+        // Roll the registry back to its pre-edit state; the original .sav is
+        // untouched at this point, so the user can simply retry.
+        if let Some(moved_from) = moved_old_entry {
+            if let Err(re) = crate::common::update_mainsave_archive_name(archive_name, moved_from) {
+                tracing::warn!(
+                    "Failed to roll back MAINSAVE rename '{}': {}",
+                    moved_from,
+                    re
+                );
+            }
+        }
+        if removed_old_entry {
+            if let Some(ref old_name) = old_archive_name {
+                let _ = add_save_to_mainsave(old_name);
+            }
+        }
+        let _ = fs::remove_file(&temp_path);
+        return Err(format!("Failed to rename temp file: {}", e).into());
+    }
 
     // Delete original save file only if it differs from output path
     // (rename already overwrites output_path when they are the same)
@@ -272,6 +405,20 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     if original_path != output_path && original_path.exists() {
         fs::remove_file(original_path).map_err(|e| format!("Failed to delete old file: {}", e))?;
         tracing::info!("Deleted original save file");
+    }
+
+    // Self-healing visibility guard: listings mark an archive hidden when its
+    // on-disk stem is missing from MAINSAVE's SingleplayerSaves, and anything
+    // racing the registry in between (a running game rewriting MAINSAVE, a
+    // partial earlier failure) can leave exactly that divergence. Re-assert
+    // the FINAL filename's registration before reporting success — idempotent
+    // when already consistent. Non-fatal: the .sav itself is safely written.
+    if let Err(e) = add_save_to_mainsave(archive_name) {
+        tracing::warn!(
+            "Post-save registration refresh failed for '{}': {} — archive may show as hidden",
+            archive_name,
+            e
+        );
     }
 
     tracing::info!("Save saved to: {:?}", output_path);
@@ -821,6 +968,14 @@ fn process_player_data(save: &mut Save, json_data: &JsonValue) -> AppResult<()> 
                 tracing::info!("All players removed, deleting PlayerData_0 field");
                 save.root.properties.0.shift_remove(&player_data_key);
             }
+        } else if matches!(player_data_prop, Property::Raw(_)) {
+            // Lenient parse degraded PlayerData itself: silently skipping here
+            // would report success while dropping the user's player edits.
+            return Err(
+                "Player data in this save could not be parsed (preserved as raw bytes), \
+                 so player changes cannot be applied. Level and difficulty edits still work."
+                    .into(),
+            );
         }
     } else if !steam_ids_from_frontend.is_empty() {
         // Create new PlayerData_0 field
@@ -897,6 +1052,7 @@ const HUB_DOOR_LEVELS: &[(&str, &str)] = &[
     ("Level Fun Expanded", "LevelFun_Expanded"),
     ("Level 52", "Level52"),
     ("Level 55.1", "TunnelLevel"),
+    ("LP_LevelPlasticMariana", "LP_LevelPlasticMariana"),
 ];
 
 /// Record schemas for a LevelsCompleted struct element's fields
@@ -995,17 +1151,11 @@ fn create_default_levels_completed_property(save: &mut Save) -> Property {
     Property::Array(ValueVec::Struct(vec![]))
 }
 
-/// Unlock all hub doors
-/// Reads LevelsCompleted_0 in the save, fills up to ALL_LEVELS count, and sets all Bool values to true
-pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
-    tracing::info!("Unlocking all hub doors: {}", file_path);
-
-    validate_save_games_path(Path::new(file_path))?;
-
-    let file = File::open(file_path).map_err(|e| format!("Failed to open save file: {}", e))?;
-    let mut reader = BufReader::with_capacity(16384, file);
-    let mut save = Save::read(&mut reader).map_err(|e| format!("Failed to parse save: {:?}", e))?;
-
+/// In-place core of the hub-door unlock: every LevelsCompleted entry gets all
+/// of its bools set (incl. HasUnlockedHub) and missing HUB_DOOR_LEVELS entries
+/// are appended. Shared by the manual "unlock all hub doors" command and by
+/// edit_save_file's create-flow parity logic.
+fn apply_unlock_all_hub_doors_in_place(save: &mut Save) -> AppResult<()> {
     let levels_completed_key = PropertyKey(0, "LevelsCompleted".to_string());
 
     // Create default structure when LevelsCompleted_0 does not exist
@@ -1013,7 +1163,7 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
         tracing::warn!(
             "LevelsCompleted_0 field not found, automatically creating default structure..."
         );
-        let default_prop = create_default_levels_completed_property(&mut save);
+        let default_prop = create_default_levels_completed_property(save);
         save.root
             .properties
             .0
@@ -1027,7 +1177,7 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
     );
     if !is_valid_levels_completed {
         tracing::warn!("LevelsCompleted_0 format is incorrect, rebuilding default structure...");
-        let default_prop = create_default_levels_completed_property(&mut save);
+        let default_prop = create_default_levels_completed_property(save);
         save.root
             .properties
             .0
@@ -1035,7 +1185,7 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
     }
 
     // Record schemas for level struct fields up front (idempotent)
-    record_level_struct_schemas(&mut save);
+    record_level_struct_schemas(save);
 
     // Get existing LevelsCompleted_0
     let levels_completed_prop = save
@@ -1090,6 +1240,23 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
     } else {
         return Err("LevelsCompleted_0 format is incorrect".to_string().into());
     }
+
+    Ok(())
+}
+
+/// Unlock all hub doors
+/// Reads LevelsCompleted_0 in the save, fills up to ALL_LEVELS count, and sets all Bool values to true
+pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
+    tracing::info!("Unlocking all hub doors: {}", file_path);
+
+    validate_save_games_path(Path::new(file_path))?;
+
+    let file = File::open(file_path).map_err(|e| format!("Failed to open save file: {}", e))?;
+    let mut reader = BufReader::with_capacity(16384, file);
+    let mut save = crate::common::parse_save_lenient(&mut reader)
+        .map_err(|e| format!("Failed to parse save: {:?}", e))?;
+
+    apply_unlock_all_hub_doors_in_place(&mut save)?;
 
     // Write back to file
     let file =

@@ -16,6 +16,7 @@ import { config as faConfig } from "@fortawesome/fontawesome-svg-core";
 faConfig.autoAddCss = false;
 
 import * as vueRuntime from "vue";
+import type { I18n, Composer } from "vue-i18n";
 import App from "./App.vue";
 
 import { setAppContext } from "./appContext";
@@ -36,12 +37,10 @@ import "@vue-flow/core/dist/theme-default.css";
 import "@vue-flow/controls/dist/style.css";
 
 // Lazy-loaded module references
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let i18nInstance: any = null;
+let i18nInstance: I18n | null = null;
 
 // Load critical icons (required for startup)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const loadCriticalIcons = async (): Promise<any> => {
+const loadCriticalIcons = async () => {
   const { FontAwesomeIcon: FAIcon } = await import("@fortawesome/vue-fontawesome");
   const { registerCriticalIcons } = await import("./utils/icons-critical");
 
@@ -56,46 +55,10 @@ const loadAllIcons = async (): Promise<void> => {
   registerIcons();
 };
 
-// Initialize i18n (lightweight)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const initI18n = async (): Promise<any> => {
-  const { createI18n } = await import("vue-i18n");
-
-  // Inline language detection to avoid extra imports
-  const getSavedLocale = (): string => {
-    const saved = storage.getItem<string>("language");
-    if (saved && ["zh-CN", "en-US", "zh-TW"].includes(saved)) return saved;
-    const lang = navigator.language || "zh-CN";
-    if (["zh-TW", "zh-HK", "zh-MO"].includes(lang)) return "zh-TW";
-    if (lang.startsWith("zh")) return "zh-CN";
-    if (lang.startsWith("en")) return "en-US";
-    return "zh-CN";
-  };
-
-  // Dynamically import language files
-  const locale = getSavedLocale();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const messages: Record<string, any> = {};
-
-  // Only load current language
-  if (locale === "zh-CN") {
-    messages["zh-CN"] = (await import("./i18n/locales/zh-CN/index")).default;
-  } else if (locale === "en-US") {
-    messages["en-US"] = (await import("./i18n/locales/en-US/index")).default;
-  } else if (locale === "zh-TW") {
-    messages["zh-TW"] = (await import("./i18n/locales/zh-TW/index")).default;
-  }
-
-  i18nInstance = createI18n({
-    legacy: false,
-    locale,
-    fallbackLocale: "en-US",
-    messages,
-    silentTranslationWarn: true,
-    missingWarn: false,
-    fallbackWarn: false,
-  });
-
+// Initialize i18n — delegates to the loader singleton
+const initI18n = async (): Promise<I18n> => {
+  const { createI18nInstance } = await import("./i18n/loader");
+  i18nInstance = await createI18nInstance();
   return i18nInstance;
 };
 
@@ -103,13 +66,15 @@ const initI18n = async (): Promise<any> => {
 const loadOtherLocales = async (): Promise<void> => {
   if (!i18nInstance) return;
 
-  const currentLocale = i18nInstance.global.locale.value;
+  const global = i18nInstance.global as Composer;
+  const currentLocale = global.locale.value;
   const locales = ["zh-CN", "en-US", "zh-TW"].filter((l) => l !== currentLocale);
 
   for (const locale of locales) {
-    if (!i18nInstance.global.messages.value[locale]) {
-      const messages = (await import(`./i18n/locales/${locale}/index.ts`)).default;
-      i18nInstance.global.setLocaleMessage(locale, messages);
+    const msgs = global.messages.value as Record<string, unknown>;
+    if (!msgs[locale]) {
+      const messages = (await import(`./i18n/locales/${locale}/index`)).default;
+      global.setLocaleMessage(locale, messages as Record<string, unknown>);
     }
   }
 };
@@ -131,7 +96,7 @@ async function initApp(): Promise<typeof app> {
   app.use(i18n);
   app.component("FontAwesomeIcon", FAIcon);
 
-  setAppContext({ i18n: i18n.global, router, vue: vueRuntime, storage });
+  setAppContext({ i18n: i18n.global as Composer, router, vue: vueRuntime, storage });
 
   // Phase 3: Mount app (user-visible)
   console.info("[Startup] Mounting app...");
@@ -179,12 +144,12 @@ async function initApp(): Promise<typeof app> {
 }
 
 // Window title setup (delayed)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function initWindowTitle(i18n: any): Promise<void> {
+async function initWindowTitle(i18nInstance: I18n): Promise<void> {
   try {
     const { getCurrentWindow } = await import("@tauri-apps/api/window");
     const appWindow = getCurrentWindow();
-    const title = i18n.global.t("app.name");
+    const composer = i18nInstance.global as Composer;
+    const title = composer.t("app.name");
     await appWindow.setTitle(title);
 
     // Watch store for language changes (replaces window event listener)
@@ -193,7 +158,7 @@ async function initWindowTitle(i18n: any): Promise<void> {
     watch(
       () => appStore.language,
       async () => {
-        const newTitle = i18n.global.t("app.name");
+        const newTitle = composer.t("app.name");
         await appWindow.setTitle(newTitle);
       },
     );

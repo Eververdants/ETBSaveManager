@@ -1,16 +1,17 @@
 import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
-import tailwindcss from "@tailwindcss/vite";
 import VueI18nVitePlugin from "@intlify/unplugin-vue-i18n/vite";
 import path from "path";
+import { fileURLToPath } from "url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig(async ({ mode }) => {
   const isProd = mode === "production";
 
   return {
-    plugins: [vue(), tailwindcss(), VueI18nVitePlugin({})],
+    plugins: [vue(), VueI18nVitePlugin({})],
     base: "./",
     assetsInclude: ["**/*.md"],
     publicDir: "public",
@@ -35,7 +36,6 @@ export default defineConfig(async ({ mode }) => {
       // 启用Tree Shaking
       rollupOptions: {
         treeshake: {
-          preset: "smallest",
           moduleSideEffects: (id) => {
             // 明确标记有副作用的模块（如图标注册）
             if (id.includes("icons-critical") || id.includes("icons-full")) {
@@ -63,9 +63,12 @@ export default defineConfig(async ({ mode }) => {
             if (id.includes("vue-i18n")) {
               return "i18n";
             }
-            // FontAwesome - 延迟加载
+            // FontAwesome - 按类型分割，优化加载
+            if (id.includes("@fortawesome/free-brands-svg-icons")) {
+              return "icons-brands"; // 品牌图标仅 About 页面使用
+            }
             if (id.includes("@fortawesome")) {
-              return "icons";
+              return "icons-solid"; // 实心图标为主
             }
             // Tauri API - 延迟加载
             if (id.includes("@tauri-apps")) {
@@ -82,10 +85,6 @@ export default defineConfig(async ({ mode }) => {
             // 虚拟滚动 - 首页需要
             if (id.includes("@tanstack/vue-virtual")) {
               return "virtual-scroll";
-            }
-            // 中文拼音库 - 较大 (~866KB)，单独 chunk
-            if (id.includes("pinyin-pro")) {
-              return "pinyin";
             }
             // HTML 清理库 - 较大 (~1.5MB)，单独 chunk
             if (id.includes("dompurify")) {

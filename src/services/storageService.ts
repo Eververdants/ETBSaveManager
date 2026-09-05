@@ -83,9 +83,11 @@ export function setItem(key: string, value: unknown): void {
   }
 
   if (initialized) {
-    // Critical keys: write to file immediately to prevent data loss on crash
+    // Critical keys: write to file immediately to prevent data loss on crash.
+    // We kick off the save synchronously (no microtask deferral) so the caller
+    // can await persistence via flush() before e.g. closing the window.
     if (CRITICAL_KEYS.includes(key)) {
-      Promise.resolve().then(() => saveToFile());
+      saveToFile().catch((e) => console.warn("[Storage] critical save failed:", e));
     } else {
       debouncedSave();
     }

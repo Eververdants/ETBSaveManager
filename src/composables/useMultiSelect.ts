@@ -41,9 +41,15 @@ export function useMultiSelect(
     return displayArchives.value.length > 0 && selectedArchives.value.size === displayArchives.value.length;
   });
 
+  let scrollTopBeforeMultiSelect = 0;
+  let scrollLeftBeforeMultiSelect = 0;
+
   const enterMultiSelectMode = (): void => {
     isMultiSelectMode.value = true;
     selectedArchives.value = new Set();
+    // Save current scroll position before locking — position:fixed jumps to top
+    scrollTopBeforeMultiSelect = window.scrollY || document.documentElement.scrollTop || 0;
+    scrollLeftBeforeMultiSelect = window.scrollX || document.documentElement.scrollLeft || 0;
     // Disable page scrolling
     document.body.style.overflow = "hidden";
     document.body.style.position = "fixed";
@@ -61,6 +67,8 @@ export function useMultiSelect(
     document.body.style.width = "";
     document.body.style.height = "";
     document.documentElement.style.overflow = "";
+    // Restore the scroll position that was lost when position:fixed was applied
+    window.scrollTo(scrollLeftBeforeMultiSelect, scrollTopBeforeMultiSelect);
   };
 
   const toggleArchiveSelection = (archiveId: number): void => {

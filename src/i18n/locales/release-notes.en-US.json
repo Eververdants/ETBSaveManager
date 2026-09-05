@@ -6,10 +6,13 @@
   "categories": {
     "newFeatures": [
       "Added Mods page for installing UE4SS and NSU mods",
+      "GENSAVE archives are now renamed automatically to match their in-game display names",
+      "Level selection now supports search, with placeholder and empty-state messages",
       "Added auto-focus functionality to search input box",
       "Added Level 421 Plastic Mariana support"
     ],
     "improvements": [
+      "Improved archive display-name management and visibility handling",
       "Improved level selection UI in editor page",
       "Improved player management UI",
       "Adapted to new game mechanics"

@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { highlightMatch } from "../useArchiveSearchFilter";
+import { highlightMatch } from "@/composables/useArchiveSearchFilter";
 
 describe("XSS Vulnerability - Bug Condition Exploration", () => {
   describe("Script Tag Injection", () => {

@@ -4,6 +4,69 @@
 use crate::cli_handlers;
 use std::fs;
 
+/// Health report for the MAINSAVE registry, for UI diagnostics.
+///
+/// The list loader degrades gracefully when MAINSAVE is unreadable (the list
+/// still renders; visibility is treated as hidden and write operations fail).
+/// This probe lets the UI explain that state to the user instead of leaving
+/// it a silent mystery — and the reported error is what users should quote
+/// in feedback so the parser gap can be fixed.
+#[derive(Debug, serde::Serialize)]
+pub struct MainsaveStatus {
+    /// MAINSAVE.sav does not exist (fresh game install) — normal, not an error.
+    pub missing: bool,
+    /// MAINSAVE exists and parses cleanly.
+    pub readable: bool,
+    /// Read/parse failure reason when neither `missing` nor `readable`.
+    pub error: Option<String>,
+}
+
+fn mainsave_status_sync() -> MainsaveStatus {
+    let path = match crate::common::get_mainsave_path() {
+        Ok(p) => p,
+        Err(e) => {
+            return MainsaveStatus {
+                missing: false,
+                readable: false,
+                error: Some(e.to_string()),
+            };
+        }
+    };
+
+    if !path.exists() {
+        return MainsaveStatus {
+            missing: true,
+            readable: false,
+            error: None,
+        };
+    }
+
+    match crate::common::read_mainsave_with_retries() {
+        Ok(_) => MainsaveStatus {
+            missing: false,
+            readable: true,
+            error: None,
+        },
+        Err(e) => MainsaveStatus {
+            missing: false,
+            readable: false,
+            error: Some(e.to_string()),
+        },
+    }
+}
+
+/// Diagnostic probe for the MAINSAVE registry (see `MainsaveStatus`).
+#[tauri::command]
+pub async fn get_mainsave_status() -> MainsaveStatus {
+    tokio::task::spawn_blocking(mainsave_status_sync)
+        .await
+        .unwrap_or_else(|e| MainsaveStatus {
+            missing: false,
+            readable: false,
+            error: Some(format!("Task was cancelled: {}", e)),
+        })
+}
+
 /// Result of a SINGLEPLAYER_ to MULTIPLAYER_ archive conversion.
 ///
 /// Only the count is consumed today (load_save_metadata logs it), but the
@@ -98,6 +161,21 @@ pub fn convert_singleplayer_archives(save_dir: &Path) -> Vec<ConversionResult> {
         };
 
         let new_path = save_dir.join(&new_filename);
+
+        // fs::rename replaces existing destinations on Windows
+        // (MOVEFILE_REPLACE_EXISTING), so converting over an already-present
+        // MULTIPLAYER_ twin would silently destroy the newer save (e.g. an
+        // old SINGLEPLAYER_ backup restored next to it). Skip instead,
+        // mirroring plan_renames in gensave_rename.rs.
+        if new_path.exists() {
+            tracing::warn!("Conversion: target exists — skipping '{}'", filename);
+            conversions.push(ConversionResult {
+                original: filename.to_string(),
+                converted: new_filename,
+                success: false,
+            });
+            continue;
+        }
 
         // Perform the rename operation
         match fs::rename(&path, &new_path) {
@@ -200,14 +278,21 @@ pub async fn load_all_saves() -> AppResult<Vec<SaveFileInfo>> {
         );
     }
 
-    let (paths_result, visible_saves_result) = rayon::join(
+    // Phase 0c: Move legacy root-level .sav.trash files into the temp folder.
+    crate::save_deleter::migrate_legacy_trash();
+
+    let (paths_result, visible_state) = rayon::join(
         get_file_path::list_save_paths,
         crate::common::get_visible_saves_with_display_names,
     );
 
     let paths = paths_result?;
-    let (visible_set, display_names) = visible_saves_result?;
-    let visible_saves = Arc::new(visible_set);
+    let (visible_set, display_names) = visible_state;
+    // Case-insensitive lookup: the game can rewrite MAINSAVE entries with a
+    // different casing than the on-disk filename (NTFS treats them as the
+    // same file), and an exact-match miss would list the archive as hidden.
+    let visible_saves: Arc<HashSet<String>> =
+        Arc::new(visible_set.iter().map(|s| s.to_lowercase()).collect());
     let path_count = paths.len();
 
     // Use rayon to process all save files in parallel
@@ -250,13 +335,21 @@ pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
         );
     }
 
-    let (paths_result, visible_saves_result) = rayon::join(
+    // Phase 0c: Move legacy root-level .sav.trash files into the temp folder.
+    crate::save_deleter::migrate_legacy_trash();
+
+    let (paths_result, visible_state) = rayon::join(
         get_file_path::list_save_paths,
         crate::common::get_visible_saves_with_display_names,
     );
 
     let paths = paths_result?;
-    let (visible_set, display_names) = visible_saves_result?;
+    let (visible_set, display_names) = visible_state;
+    // Case-insensitive lookup: the game can rewrite MAINSAVE entries with a
+    // different casing than the on-disk filename (NTFS treats them as the
+    // same file), and an exact-match miss would list the archive as hidden.
+    let visible_lookup: std::collections::HashSet<String> =
+        visible_set.iter().map(|s| s.to_lowercase()).collect();
 
     let results: Vec<SaveFileMeta> = paths
         .into_par_iter()
@@ -265,7 +358,7 @@ pub async fn load_save_metadata() -> AppResult<Vec<SaveFileMeta>> {
             let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
             let archive_name = extract_archive_name(file_name);
             let date = cli_handlers::get_modified_date(&path).unwrap_or_default();
-            let is_visible = visible_set.contains(archive_name);
+            let is_visible = visible_lookup.contains(&archive_name.to_lowercase());
 
             save_utils::build_save_meta(
                 i as u32,
@@ -299,13 +392,18 @@ pub async fn load_save_metadata_page(
 ) -> AppResult<save_utils::SaveFileMetaPage> {
     let start_time = Instant::now();
 
-    let (paths_result, visible_saves_result) = rayon::join(
+    let (paths_result, visible_state) = rayon::join(
         get_file_path::list_save_paths,
         crate::common::get_visible_saves_with_display_names,
     );
 
     let paths = paths_result?;
-    let (visible_set, display_names) = visible_saves_result?;
+    let (visible_set, display_names) = visible_state;
+    // Case-insensitive lookup: the game can rewrite MAINSAVE entries with a
+    // different casing than the on-disk filename (NTFS treats them as the
+    // same file), and an exact-match miss would list the archive as hidden.
+    let visible_lookup: std::collections::HashSet<String> =
+        visible_set.iter().map(|s| s.to_lowercase()).collect();
     let total = paths.len() as u32;
 
     // Clamp to valid range
@@ -319,7 +417,7 @@ pub async fn load_save_metadata_page(
         let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
         let archive_name = extract_archive_name(file_name);
         let date = cli_handlers::get_modified_date(path).unwrap_or_default();
-        let is_visible = visible_set.contains(archive_name);
+        let is_visible = visible_lookup.contains(&archive_name.to_lowercase());
 
         if let Ok(meta) = save_utils::build_save_meta(
             global_idx,
@@ -396,7 +494,7 @@ fn process_save_file(
     let file_name = path.file_name().and_then(|n| n.to_str())?;
     let archive_name = extract_archive_name(file_name);
     let date = cli_handlers::get_modified_date(path).unwrap_or_default();
-    let is_visible = visible_saves.contains(archive_name);
+    let is_visible = visible_saves.contains(&archive_name.to_lowercase());
     let display_name = display_names.and_then(|m| m.get(archive_name).cloned());
 
     // Skip parsing .sav if not visible (performance optimization)

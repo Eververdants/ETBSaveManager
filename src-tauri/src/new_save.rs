@@ -14,7 +14,7 @@ use uesave::{
 
 /// Main storyline level data: (DisplayName, LevelName)
 /// Arranged by game progress order - first 17 of endingLevelsData[0]
-const MAIN_STORYLINE_LEVELS: &[(&str, &str)] = &[
+pub(crate) const MAIN_STORYLINE_LEVELS: &[(&str, &str)] = &[
     ("Level 0", "Level0"),
     ("Habitable Zone", "TopFloor"),
     ("Habitable Zone", "MiddleFloor"),
@@ -79,6 +79,7 @@ pub const ALL_LEVELS: &[(&str, &str)] = &[
     ("Level Fun Expanded", "Zone4"),
     ("Level 52", "Level52"),
     ("Level 55.1", "TunnelLevel"),
+    ("LP_LevelPlasticMariana", "LP_LevelPlasticMariana"),
 ];
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -287,7 +288,7 @@ fn handle_pipes_unlocked_fun(save: &mut Save, level: &str) {
 }
 
 /// Update boolean property
-fn update_bool_property(save: &mut Save, name: &str, value: bool) -> AppResult<()> {
+pub(crate) fn update_bool_property(save: &mut Save, name: &str, value: bool) -> AppResult<()> {
     save_shared::record_root_schema(
         save,
         name,
@@ -306,7 +307,7 @@ fn update_bool_property(save: &mut Save, name: &str, value: bool) -> AppResult<(
 }
 
 /// Update MEG status field
-fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> AppResult<()> {
+pub(crate) fn update_meg_status(save: &mut Save, meg_unlocked: bool) -> AppResult<()> {
     let meg_fields = ["IsMEGUnlocked", "IsMEGPowerOn", "IsMEGSecurityUnlocked"];
 
     for field in &meg_fields {

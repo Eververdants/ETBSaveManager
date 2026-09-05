@@ -8,7 +8,8 @@ use std::io::{BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use uesave::{
-    Property, PropertyKey, PropertyTagDataPartial, PropertyTagPartial, PropertyType, Save, ValueVec,
+    Property, PropertyKey, PropertyTagDataPartial, PropertyTagPartial, PropertyType, Save,
+    StructValue, ValueVec,
 };
 
 /// Cache local app data directory path
@@ -62,6 +63,77 @@ pub fn get_app_config_dir() -> AppResult<PathBuf> {
         .clone()
 }
 
+/// Parse a GVAS stream in uesave's lenient mode.
+///
+/// A property whose TYPE NAME is known but whose VALUE cannot be parsed (new
+/// FText history type, unsupported map/array element type, ...) degrades to
+/// `Property::Raw` carrying the original bytes, which are re-emitted
+/// byte-for-byte on write — so a save the game itself wrote stays usable even
+/// when uesave does not understand part of it. Strict `Save::read` fails the
+/// whole file instead, which is how users end up with a tool that cannot open
+/// their saves at all.
+///
+/// Scope notes:
+/// - Unknown property TYPE NAMES still fail (the tag is parsed before the
+///   fallback can engage); those need a uesave patch.
+/// - The edit flow is safe with Raw properties: it edits the Rust struct in
+///   place and writes binary — Raw bytes round-trip byte-for-byte. The JSON
+///   editor (`convert_sav_to_json`) is the one path that must NOT see Raw:
+///   `Property` is `serde(untagged)` and a Raw property (a bare number array
+///   in JSON) deserializes back as Set/Array, corrupting the file on write —
+///   it is guarded there (see `raw_property_names`).
+pub fn parse_save_lenient<R: std::io::Read>(reader: R) -> Result<Save, uesave::ParseError> {
+    uesave::SaveReader::new().error_to_raw(true).read(reader)
+}
+
+/// Paths of properties that were degraded to `Property::Raw` during a lenient
+/// parse — root level plus nested struct bodies, map values and struct/set
+/// array elements (the places a property list can recurse into). Used for
+/// support diagnostics and to keep Raw out of the JSON editor, whose
+/// round-trip cannot represent it faithfully.
+pub fn raw_property_names(save: &Save) -> Vec<String> {
+    let mut out = Vec::new();
+    collect_raw_property_names(&save.root.properties, "", &mut out);
+    out
+}
+
+fn collect_raw_property_names(
+    props: &uesave::Properties,
+    prefix: &str,
+    out: &mut Vec<String>,
+) {
+    for (key, prop) in props.0.iter() {
+        let path = if prefix.is_empty() {
+            key.1.clone()
+        } else {
+            format!("{prefix}.{}", key.1)
+        };
+        if matches!(prop, Property::Raw(_)) {
+            out.push(path.clone());
+        }
+        match prop {
+            Property::Struct(StructValue::Struct(nested)) => {
+                collect_raw_property_names(nested, &path, out);
+            }
+            Property::Map(entries) => {
+                for entry in entries {
+                    if let Property::Struct(StructValue::Struct(nested)) = &entry.value {
+                        collect_raw_property_names(nested, &path, out);
+                    }
+                }
+            }
+            Property::Array(ValueVec::Struct(values)) | Property::Set(ValueVec::Struct(values)) => {
+                for value in values {
+                    if let StructValue::Struct(nested) = value {
+                        collect_raw_property_names(nested, &path, out);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
 /// Read MAINSAVE.sav file (optimized buffer size)
 pub fn read_mainsave() -> AppResult<Save> {
     let mainsave_path = get_mainsave_path()?;
@@ -70,7 +142,18 @@ pub fn read_mainsave() -> AppResult<Save> {
         File::open(&mainsave_path).map_err(|e| format!("Failed to open MAINSAVE.sav: {}", e))?;
     let mut reader = BufReader::with_capacity(IO_BUFFER_SIZE, file);
 
-    Ok(Save::read(&mut reader).map_err(|e| format!("Failed to parse MAINSAVE.sav: {:?}", e))?)
+    let save = parse_save_lenient(&mut reader)
+        .map_err(|e| format!("Failed to parse MAINSAVE.sav: {:?}", e))?;
+
+    let degraded = raw_property_names(&save);
+    if !degraded.is_empty() {
+        tracing::warn!(
+            "MAINSAVE.sav contains properties uesave cannot parse — preserved as raw bytes: {}",
+            degraded.join(", ")
+        );
+    }
+
+    Ok(save)
 }
 
 /// Read MAINSAVE with retries. The game rewrites MAINSAVE.sav concurrently,
@@ -124,44 +207,94 @@ pub(crate) fn lock_mainsave() -> AppResult<MutexGuard<'static, ()>> {
         .map_err(|e| format!("MAINSAVE lock poisoned: {}", e))?)
 }
 
-/// Get visible saves list from MAINSAVE.
-///
-/// A missing MAINSAVE.sav (fresh game install) is a genuine "nothing visible"
-/// state and yields an empty set. Any OTHER read/parse failure is retried then
-/// propagated as Err — callers must never mistake an unreadable registry for
-/// an empty visibility list (that used to flip toggles in the wrong direction).
-pub fn get_visible_saves_set() -> AppResult<HashSet<String>> {
-    Ok(get_visible_saves_with_display_names()?.0)
+/// Visible-archive registry of a parsed MAINSAVE (pure helper).
+fn visible_saves_of(mainsave: &Save) -> HashSet<String> {
+    let key = PropertyKey(0, display_name::SINGLEPLAYER_SAVES_KEY.to_string());
+    match mainsave.root.properties.0.get(&key) {
+        Some(Property::Array(ValueVec::Str(saves))) => saves.iter().cloned().collect(),
+        _ => HashSet::new(),
+    }
+}
+
+/// Get visible saves list from MAINSAVE. Read-only, never fails: an
+/// unreadable registry degrades to an empty set (see
+/// `get_visible_saves_with_display_names` for the read/write contract).
+pub fn get_visible_saves_set() -> HashSet<String> {
+    get_visible_saves_with_display_names().0
 }
 
 /// Read the visible-archive registry together with the display-name lookup,
 /// backfilling missing display-name entries in one write when needed.
 ///
-/// Every archive listed in `SingleplayerSaves` (= "visible" state) must have
-/// a `SaveDisplayNamesLookup` entry; missing ones are filled with the
-/// filename-derived base name so the tool and the game agree on naming.
-/// Existing entries — custom names AND explicit empty strings — are never
-/// touched (matches the game, where empty == "unnamed").
+/// This is the READ accessor for listing/display paths and it never fails:
 ///
-/// Returns `(visible set, display-name map)`. When MAINSAVE is missing or no
-/// backfill was needed this is a pure read; the single write happens under
-/// the same lock as the read that decided it.
+/// - A missing MAINSAVE.sav (fresh game install) is a genuine "nothing
+///   visible" state and yields an empty set.
+/// - An unreadable/unparsable MAINSAVE (e.g. written by a newer game build
+///   with property types uesave does not know) is logged loudly and yields an
+///   empty set. The archive list itself is scanned from the filesystem, so a
+///   broken registry file must not take the whole listing down. (3.4.0
+///   propagated this error instead, which hard-failed list loading for users
+///   on old saves; 3.3.x silently degraded — this restores that behavior
+///   while keeping a diagnostic trail.)
+/// - The display-name backfill write is best-effort: a failed write (e.g.
+///   MAINSAVE locked by the running game) is logged and retried on the next
+///   load, never propagated.
+///
+/// WRITE paths (visibility toggles, renames, register/unregister) must NOT
+/// decide from this function: they read MAINSAVE themselves under the lock
+/// and fail loudly, so an unreadable registry can never be silently treated
+/// as "nothing visible" where a mutation is about to happen.
+///
+/// Returns `(visible set, display-name map)`. Every archive listed in
+/// `SingleplayerSaves` (= "visible" state) gets a `SaveDisplayNamesLookup`
+/// entry filled with the filename-derived base name; existing entries —
+/// custom names AND explicit empty strings — are never touched (matches the
+/// game, where empty == "unnamed"). The single write happens under the same
+/// lock as the read that decided it.
 pub(crate) fn get_visible_saves_with_display_names(
-) -> AppResult<(HashSet<String>, std::collections::HashMap<String, String>)> {
-    let _lock = lock_mainsave()?;
+) -> (HashSet<String>, std::collections::HashMap<String, String>) {
+    let _lock = match lock_mainsave() {
+        Ok(guard) => guard,
+        Err(e) => {
+            tracing::error!(
+                "MAINSAVE lock unavailable — treating registry as empty: {}",
+                e
+            );
+            return (HashSet::new(), Default::default());
+        }
+    };
 
-    if !get_mainsave_path()?.exists() {
-        return Ok((HashSet::new(), Default::default()));
+    let mainsave_path = match get_mainsave_path() {
+        Ok(p) => p,
+        Err(e) => {
+            tracing::error!(
+                "Cannot resolve MAINSAVE path — treating registry as empty: {}",
+                e
+            );
+            return (HashSet::new(), Default::default());
+        }
+    };
+
+    if !mainsave_path.exists() {
+        return (HashSet::new(), Default::default());
     }
 
-    let mut mainsave = read_mainsave_with_retries()?;
-
-    let key = PropertyKey(0, display_name::SINGLEPLAYER_SAVES_KEY.to_string());
-
-    let visible_set: HashSet<String> = match mainsave.root.properties.0.get(&key) {
-        Some(Property::Array(ValueVec::Str(saves))) => saves.iter().cloned().collect(),
-        _ => return Ok((HashSet::new(), Default::default())),
+    let mut mainsave = match read_mainsave_with_retries() {
+        Ok(save) => save,
+        Err(e) => {
+            tracing::error!(
+                "MAINSAVE.sav is unreadable — listing continues with visibility degraded to hidden: {}",
+                e
+            );
+            return (HashSet::new(), Default::default());
+        }
     };
+
+    let visible_set = visible_saves_of(&mainsave);
+    if visible_set.is_empty() {
+        return (HashSet::new(), Default::default());
+    }
 
     // Backfill pass: only writes when entries are actually missing.
     if display_name::backfill_display_names(
@@ -169,10 +302,18 @@ pub(crate) fn get_visible_saves_with_display_names(
         &visible_set.iter().cloned().collect::<Vec<_>>(),
     ) {
         tracing::info!("Backfilled missing SaveDisplayNamesLookup entries");
-        write_mainsave(&mainsave)?;
+        if let Err(e) = write_mainsave(&mainsave) {
+            // Cosmetic sync only — the listing below is still correct from
+            // the in-memory state; the backfill retries on the next load.
+            tracing::error!(
+                "Backfill write failed — display names may be incomplete until the next load: {}",
+                e
+            );
+        }
     }
 
-    Ok((visible_set, display_name::get_display_names(&mainsave)))
+    let names = display_name::get_display_names(&mainsave);
+    (visible_set, names)
 }
 
 /// Serialize MAINSAVE operations across threads to prevent race conditions
@@ -218,12 +359,6 @@ fn remove_visible_save(mainsave: &mut Save, archive_name: &str) -> bool {
     }
 
     false
-}
-
-/// Public read accessors for the display-name lookup (no writes).
-/// Used by save_loader to attach display names to listings.
-pub fn get_display_names_map() -> AppResult<std::collections::HashMap<String, String>> {
-    Ok(get_visible_saves_with_display_names()?.1)
 }
 
 /// Add save name to MAINSAVE's save list.
@@ -321,9 +456,19 @@ pub fn set_save_visibility(archive_name: &str, desired: Option<bool>) -> AppResu
         display_name::insert_display_entry_if_missing(&mut mainsave, archive_name, base);
     } else {
         remove_visible_save(&mut mainsave, archive_name);
-        // Hide flow: drop the mapping so hidden archives leave no ghost entry
-        // (the game itself only ever lists visible saves).
-        display_name::remove_display_entry(&mut mainsave, archive_name);
+        // Hide flow: drop AUTO-GENERATED mappings so hidden archives leave no
+        // ghost entry (the game itself only ever lists visible saves), but
+        // KEEP custom in-game display names — wiping those made a hide→show
+        // cycle erase a name the player typed in-game. Hidden slots are not
+        // iterated by gensave/display sync (those walk SingleplayerSaves), so
+        // a preserved entry cannot resurface as a ghost.
+        let base = display_name::base_archive_name(archive_name);
+        let is_custom = display_name::get_display_names(&mainsave)
+            .get(archive_name)
+            .is_some_and(|v| v != base);
+        if !is_custom {
+            display_name::remove_display_entry(&mut mainsave, archive_name);
+        }
     }
 
     write_mainsave(&mainsave)?;
@@ -464,5 +609,187 @@ mod tests {
         // Fallbacks never panic on unexpected names
         assert_eq!(extract_archive_name_from_trash("weird.sav"), "weird");
         assert_eq!(extract_archive_name_from_trash("noext"), "noext");
+    }
+
+    /// Minimal Save fixture mirroring uesave 0.7's serde derives (same shape
+    /// as the display_name tests).
+    fn fixture_save() -> Save {
+        let json = r#"{
+            "header":{"magic":1196343156,"save_game_version":3,
+              "package_version":{"ue4":522,"ue5":null},
+              "engine_version_major":4,"engine_version_minor":27,
+              "engine_version_patch":2,"engine_version_build":0,
+              "engine_version":"","custom_version":null},
+            "schemas":{"schemas":{}},
+            "root":{"save_game_type":"","properties":{}},
+            "extra":[]
+        }"#;
+        serde_json::from_str(json).unwrap()
+    }
+
+    #[test]
+    fn visible_saves_reads_registry_and_tolerates_missing_property() {
+        let mut save = fixture_save();
+
+        // No registry property yet — empty set, never panics.
+        assert!(visible_saves_of(&save).is_empty());
+
+        save.schemas.record(
+            display_name::SINGLEPLAYER_SAVES_KEY.to_string(),
+            PropertyTagPartial {
+                id: None,
+                data: PropertyTagDataPartial::Array(Box::new(PropertyTagDataPartial::Other(
+                    PropertyType::StrProperty,
+                ))),
+            },
+        );
+        save.root.properties.0.insert(
+            PropertyKey(0, display_name::SINGLEPLAYER_SAVES_KEY.to_string()),
+            Property::Array(ValueVec::Str(vec![
+                "MULTIPLAYER_A_Easy".to_string(),
+                "MULTIPLAYER_B_Hard".to_string(),
+            ])),
+        );
+
+        let set = visible_saves_of(&save);
+        assert_eq!(set.len(), 2);
+        assert!(set.contains("MULTIPLAYER_A_Easy"));
+        assert!(set.contains("MULTIPLAYER_B_Hard"));
+    }
+
+    #[test]
+    fn raw_property_scan_reaches_nested_structs() {
+        let mut save = fixture_save();
+
+        // Outer struct containing a degraded property one level down.
+        let mut inner: uesave::Properties = Default::default();
+        inner.0.insert(
+            PropertyKey(0, "Broken".to_string()),
+            Property::Raw(vec![1, 2, 3]),
+        );
+        inner.0.insert(PropertyKey(0, "Healthy".to_string()), Property::Int(7));
+        save.root.properties.0.insert(
+            PropertyKey(0, "Outer".to_string()),
+            Property::Struct(StructValue::Struct(inner)),
+        );
+        save.root.properties.0.insert(
+            PropertyKey(0, "RootRaw".to_string()),
+            Property::Raw(vec![9]),
+        );
+
+        let mut names = raw_property_names(&save);
+        names.sort();
+        assert_eq!(names, vec!["Outer.Broken".to_string(), "RootRaw".to_string()]);
+    }
+
+    /// Lenient-mode contract: a property whose value uesave cannot parse
+    /// degrades to `Property::Raw`, the file still parses, and writing it
+    /// back reproduces the input byte-for-byte. This is what keeps a save the
+    /// game itself wrote usable when uesave does not understand part of it
+    /// (the "old MAINSAVE the tool cannot open" class of failures).
+    #[test]
+    fn lenient_mode_round_trips_unparseable_property_byte_for_byte() {
+        // Base file with one surviving property and one Text property. Text
+        // fields are private, so the fixture is built through serde. The
+        // NormalInt value is chosen above i16::MAX so untagged serde resolves
+        // it to Property::Int, not Int8/Int16. save_game_version must be 2
+        // (what real ETB saves use) so the header round-trips: with version 3
+        // the reader expects a ue5 package version the writer never wrote.
+        let base_json = r#"{
+            "header": {
+                "magic": 1396790855,
+                "save_game_version": 2,
+                "package_version": {"ue4": 522, "ue5": null},
+                "engine_version_major": 4,
+                "engine_version_minor": 27,
+                "engine_version_patch": 2,
+                "engine_version_build": 0,
+                "engine_version": "++UE4+Release-4.27",
+                "custom_version": [3, []]
+            },
+            "schemas": {"schemas": {
+                "NormalInt": {"data": {"Other": "IntProperty"}},
+                "TextProp": {"data": {"Other": "TextProperty"}}
+            }},
+            "root": {"save_game_type": "", "properties": {
+                "NormalInt_0": 70000,
+                "TextProp_0": {"flags": 0, "variant": {"None": {"culture_invariant": "QUIRKMARKER"}}}
+            }},
+            "extra": []
+        }"#;
+        let base: Save = serde_json::from_str(base_json).expect("fixture must deserialize");
+        let mut bytes = Vec::new();
+        base.write(&mut bytes).expect("baseline write");
+
+        // The Text value on disk: flags(4) + history i8(-1) + has-flag(4) +
+        // length-prefixed "QUIRKMARKER\0". Patch the history type to an
+        // unimplemented value — the exact shape of a real-world "the game
+        // wrote something uesave does not know" failure, with the tag size
+        // still valid and consistent.
+        let mut needle = Vec::new();
+        needle.extend_from_slice(&0u32.to_le_bytes());
+        needle.push(0xFF);
+        needle.extend_from_slice(&1u32.to_le_bytes());
+        needle.extend_from_slice(&12i32.to_le_bytes());
+        needle.extend_from_slice(b"QUIRKMARKER\0");
+        let pos = bytes
+            .windows(needle.len())
+            .position(|w| w == needle.as_slice())
+            .expect("Text value marker not found in baseline bytes");
+        let mut quirked = bytes.clone();
+        quirked[pos + 4] = 0x42;
+
+        // Strict mode (the pre-fix behavior) hard-fails the whole file — and
+        // specifically on the FText history type, not on some earlier desync.
+        let strict = Save::read(&mut std::io::Cursor::new(quirked.as_slice()));
+        let err_text = format!("{:?}", strict.as_ref().err());
+        assert!(strict.is_err());
+        assert!(
+            err_text.contains("unimplemented variant for FTextHistory"),
+            "expected FText history failure, got: {err_text}"
+        );
+
+        // Lenient mode parses it; only the bad property degrades to Raw.
+        let parsed = parse_save_lenient(std::io::Cursor::new(quirked.as_slice())).unwrap();
+        let raw = match parsed
+            .root
+            .properties
+            .0
+            .get(&PropertyKey(0, "TextProp".to_string()))
+        {
+            Some(Property::Raw(v)) => v.clone(),
+            other => panic!("expected Property::Raw for TextProp, got {:?}", other),
+        };
+        assert_eq!(raw.len(), needle.len());
+
+        // The surviving property is untouched.
+        assert_eq!(
+            parsed
+                .root
+                .properties
+                .0
+                .get(&PropertyKey(0, "NormalInt".to_string())),
+            Some(&Property::Int(70000))
+        );
+
+        // Writing the lenient parse reproduces the quirked file byte-for-byte.
+        let mut rewritten = Vec::new();
+        parsed.write(&mut rewritten).expect("rewrite");
+        assert_eq!(
+            rewritten, quirked,
+            "Raw property must round-trip byte-for-byte"
+        );
+
+        // Re-reading the rewrite is stable, and diagnostics see the Raw name.
+        let reparsed = parse_save_lenient(std::io::Cursor::new(rewritten.as_slice())).unwrap();
+        assert!(matches!(
+            reparsed
+                .root
+                .properties
+                .0
+                .get(&PropertyKey(0, "TextProp".to_string())),
+            Some(Property::Raw(v)) if v == &raw
+        ));
+        assert_eq!(raw_property_names(&reparsed), vec!["TextProp".to_string()]);
     }
 }

@@ -15,7 +15,7 @@ document.createElement = ((tag: string) => {
   return originalCreateElement(tag);
 }) as typeof document.createElement;
 
-import { useArchiveCardStyle, markInitialLoadComplete, resetInitialLoad } from "../useArchiveCard";
+import { useArchiveCardStyle, markInitialLoadComplete, resetInitialLoad } from "@/composables/useArchiveCard";
 
 describe("useArchiveCardStyle", () => {
   let style: ReturnType<typeof useArchiveCardStyle>;

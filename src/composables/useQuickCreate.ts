@@ -113,6 +113,7 @@ interface QuickCreateReturn {
   toggleArchiveSelection: (archiveId: string) => void;
   batchUpdateSelected: (updates: Record<string, unknown>) => void;
   batchCreateArchives: () => Promise<QuickCreateBatchResult>;
+  cancelBatchCreate: () => void;
   resetState: () => void;
   recalculateArchives: () => void;
   registerBeforeUnloadWarning: () => void;
@@ -621,6 +622,17 @@ export function useQuickCreate(): QuickCreateReturn {
     }
   };
 
+  // AbortController for batch creation — lets the UI cancel a long batch
+  let batchCreateAbortController: AbortController | null = null;
+
+  /** Cancel an in-flight batch creation. No-op if none is running. */
+  const cancelBatchCreate = (): void => {
+    if (batchCreateAbortController) {
+      batchCreateAbortController.abort();
+      batchCreateAbortController = null;
+    }
+  };
+
   /**
    * Batch create archives
    * Requirements: 14.1, 14.2, 14.3, 17.3
@@ -658,6 +670,8 @@ export function useQuickCreate(): QuickCreateReturn {
     // Set creating state
     state.isCreating = true;
     state.creationProgress = 0;
+    const abortController = new AbortController();
+    batchCreateAbortController = abortController;
 
     const results: BatchProgressResult = {
       success: 0,
@@ -668,6 +682,11 @@ export function useQuickCreate(): QuickCreateReturn {
 
     // Create in batches
     for (let i = 0; i < archivesToCreate.length; i += BATCH_SIZE) {
+      // Allow cancellation between batches
+      if (abortController.signal.aborted) {
+        results.failed += archivesToCreate.length - i;
+        break;
+      }
       const batch = archivesToCreate.slice(i, i + BATCH_SIZE);
 
       // Create current batch in parallel
@@ -713,6 +732,7 @@ export function useQuickCreate(): QuickCreateReturn {
     // Finish creation
     state.creationProgress = 100;
     state.isCreating = false;
+    batchCreateAbortController = null;
     scheduler.endOperation("batch-creating");
 
     return results;
@@ -801,6 +821,7 @@ export function useQuickCreate(): QuickCreateReturn {
 
     // Batch creation
     batchCreateArchives,
+    cancelBatchCreate,
 
     // State management
     resetState,

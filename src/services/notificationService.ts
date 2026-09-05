@@ -1,7 +1,7 @@
 import { createApp, h, ref } from "vue";
 import NotificationPopup from "@/components/ui/NotificationPopup.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import type { NotificationOptions } from "../types";
+import type { NotificationOptions } from "@/types/ui";
 
 interface NotificationPopupInstance {
   add(options: NotificationOptions): string;

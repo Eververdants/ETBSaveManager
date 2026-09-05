@@ -5,7 +5,7 @@
  * @see docs/SMART_INPUT_STANDARD.md
  */
 
-import type { ParsedNameInfo, ParseResult, ParsedRecord } from "../types";
+import type { ParsedNameInfo, ParseResult, ParsedRecord } from "@/types/parser";
 
 // ============ Keyword mapping configuration ============
 

@@ -38,6 +38,7 @@
 
       <!-- Archive info -->
       <div class="archive-info">
+        <!-- eslint-disable-next-line vue/no-v-html — sanitized via DOMPurify -->
         <h3 class="archive-name" v-html="sanitize(highlightedName)"></h3>
         <div class="game-mode-info">
           <span
@@ -67,6 +68,7 @@
 
     <!-- Lower info area -->
     <div class="card-info">
+      <!-- eslint-disable-next-line vue/no-v-html — sanitized via DOMPurify -->
       <span class="current-level" v-html="sanitize(highlightedLevel)"></span>
       <div class="action-buttons">
         <button
@@ -101,10 +103,12 @@
   </div>
 </template>
 
-<script setup>
-import { computed, toRef } from "vue";
+<script setup lang="ts">
+import { computed, toRef, type Ref } from "vue";
 import { useI18n } from "vue-i18n";
-import LazyImage from "../ui/LazyImage.vue";
+import DOMPurify from "dompurify";
+import type { ArchiveData } from "@/types";
+import LazyImage from "@/components/ui/LazyImage.vue";
 import { useArchiveCard } from "@/composables/useArchiveCard";
 import { highlightMatch } from "@/composables/useArchiveSearchFilter";
 import { FEATURES } from "@/config/features";
@@ -134,27 +138,25 @@ const props = defineProps({
 
 const emit = defineEmits(["toggle-visibility", "edit", "delete", "select", "toggle-select"]);
 
-const sanitize = (html) => {
-  // Fast return if no mark tags present (most common case)
-  if (!html || !html.includes("<mark")) return html;
-  // Strip dangerous attributes from <mark> tags, keep only safe class attribute
-  html = html.replace(/<(\/?)mark\b([^>]*)>/gi, (match, isClosing, attrs) => {
-    if (isClosing) return "</mark>";
-    const cls = attrs.match(/class\s*=\s*"(?:[^"\\]|\\.)*"/i);
-    return cls ? `<mark ${cls[0]}>` : "<mark>";
+const sanitize = (html: string): string => {
+  if (!html) return html;
+  // Fast return if no HTML tags present (most common case)
+  if (!html.includes("<")) return html;
+  // Use DOMPurify with strict config - only allow <mark> tags for search highlighting
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ["mark"],
+    ALLOWED_ATTR: ["class"],
   });
-  // Remove all other HTML tags
-  return html.replace(/<(?!\/?mark\b)[^>]*>/gi, "");
 };
 
 const { t, te } = useI18n({ useScope: "global" });
 
-const getLevelName = (levelKey) => {
+const getLevelName = (levelKey: string) => {
   const translationKey = `LevelName_Display.${levelKey}`;
   return te(translationKey) ? t(translationKey) : levelKey;
 };
 
-const getDifficultyText = (difficultyKey) => {
+const getDifficultyText = (difficultyKey: string) => {
   const translationKey = `createArchive.difficultyLevels.${difficultyKey}`;
   return te(translationKey) ? t(translationKey) : difficultyKey;
 };
@@ -164,7 +166,9 @@ const translations = {
   getDifficultyText,
 };
 
-const archiveRef = toRef(props, "archive");
+// props.archive is declared as generic Object for runtime flexibility; cast
+// to the concrete shape useArchiveCard expects.
+const archiveRef = toRef(props, "archive") as Ref<ArchiveData>;
 const indexRef = computed(() => props.index);
 
 const {
@@ -176,7 +180,14 @@ const {
   editArchive,
   deleteArchive,
   handleCardClick: baseHandleCardClick,
-} = useArchiveCard(archiveRef, indexRef, emit, translations);
+} = useArchiveCard(
+  archiveRef,
+  indexRef,
+  // defineEmits narrows the event union; the composable's shared handler
+  // contract is the looser (event: string, ...args) signature it re-emits through.
+  emit as (event: string, ...args: unknown[]) => void,
+  translations,
+);
 
 // Cache tagStyle results to avoid creating new style objects on every render
 const archiveDifficultyTagStyle = computed(() =>
@@ -270,7 +281,7 @@ const toggleSelection = () => {
   transform: none !important;
 }
 
-.archive-card.deleting .card-background :deep(.lazy-image-container),
+.archive-card.deleting :deep(.card-background .lazy-image-container),
 .archive-card.deleting .archive-info,
 .archive-card.deleting .action-btn {
   transform: none !important;
@@ -302,7 +313,7 @@ const toggleSelection = () => {
   overflow: hidden;
 }
 
-.card-background :deep(.lazy-image-container) {
+:deep(.card-background .lazy-image-container) {
   width: 100%;
   height: 100%;
   transform: scale(1.005);
@@ -314,7 +325,7 @@ const toggleSelection = () => {
   transition: transform 0.3s ease;
 }
 
-.archive-card:hover .card-background :deep(.lazy-image-container) {
+.archive-card:hover :deep(.card-background .lazy-image-container) {
   transform: scale(1.02);
 }
 
@@ -637,14 +648,14 @@ const toggleSelection = () => {
 }
 
 /* Hidden state: background image slightly desaturated, preserving clarity */
-.archive-hidden .card-background :deep(.lazy-image-container) {
+.archive-hidden :deep(.card-background .lazy-image-container) {
   filter: grayscale(0.35) brightness(0.9);
   transition:
     filter 0.4s ease-in-out,
     transform 0.4s ease-in-out;
 }
 
-.archive-hidden:hover .card-background :deep(.lazy-image-container) {
+.archive-hidden:hover :deep(.card-background .lazy-image-container) {
   filter: grayscale(0.15) brightness(0.95);
   transform: scale(1.02);
 }
@@ -824,8 +835,8 @@ const toggleSelection = () => {
 }
 
 /* Search result highlight marker */
-.archive-name :deep(.search-highlight),
-.current-level :deep(.search-highlight) {
+:deep(.archive-name .search-highlight),
+:deep(.current-level .search-highlight) {
   background: rgba(var(--accent-color-rgb), 0.3);
   color: var(--accent-color);
   border-radius: var(--radius-xs);

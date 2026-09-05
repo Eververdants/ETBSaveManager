@@ -20,6 +20,13 @@
     "batchDeleteUndone": "Batch delete undone",
     "undone": "Undone: {desc}",
     "redone": "Redone: {desc}",
-    "restoreFailed": "Failed to restore file, but archive will appear in list"
+    "restoreFailed": "Failed to restore file, but archive will appear in list",
+    "openFolderFailed": "Failed to open save games folder"
+  },
+  "mainsaveWarning": {
+    "title": "Cannot parse the save registry (MAINSAVE.sav)",
+    "description": "Reading the game's save registry failed, so visibility info is unavailable: all archives may show as hidden, and show/hide, create and delete actions will fail. The archive files themselves are unaffected. If the game updated recently, its new save format may not be supported yet — please report the error details below to the developers.",
+    "errorLabel": "Error details:",
+    "dismiss": "Dismiss"
   }
 }

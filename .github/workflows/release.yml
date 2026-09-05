@@ -90,8 +90,6 @@ jobs:
         run: pnpm tauri build --target ${{ matrix.arch }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Upload bundle artifacts
         uses: actions/upload-artifact@v7
@@ -99,8 +97,6 @@ jobs:
           name: bundles-${{ matrix.label }}
           path: |
             src-tauri/target/${{ matrix.arch }}/release/bundle/nsis/*-setup.exe
-            src-tauri/target/${{ matrix.arch }}/release/bundle/latest.json
-            src-tauri/target/${{ matrix.arch }}/release/bundle/*.sig
           if-no-files-found: error
           # Keep artifacts long enough to publish manually later
           retention-days: 30
@@ -134,7 +130,5 @@ jobs:
           make_latest: true
           files: |
             artifacts/**/*-setup.exe
-            artifacts/**/latest.json
-            artifacts/**/*.sig
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

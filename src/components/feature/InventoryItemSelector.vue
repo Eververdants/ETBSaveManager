@@ -123,7 +123,7 @@
 import { computed, watch, onMounted, onUnmounted, nextTick, toRef } from "vue";
 import { useI18n } from "vue-i18n";
 import { useInventoryItemSelector } from "@/composables/useInventoryItemSelector";
-import LazyImage from "../ui/LazyImage.vue";
+import LazyImage from "@/components/ui/LazyImage.vue";
 
 const props = defineProps({
   visible: { type: Boolean, default: false },

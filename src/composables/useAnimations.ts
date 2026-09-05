@@ -1,5 +1,5 @@
 import { gsap } from "gsap";
-import { getAnimationParams } from "../utils/performance";
+import { getAnimationParams } from "@/utils/performance";
 import scheduler from "@/services/resourceScheduler";
 import type { Ref } from "vue";
 
@@ -78,6 +78,13 @@ export function useAnimations(
     const params = getAnimationParams("search", performanceMode.value, effectiveQuality);
 
     requestAnimationFrame(() => {
+      // Element may have been removed (e.g. rapid open/close) — skip to avoid
+      // animating a detached DOM node.
+      if (!el.isConnected) {
+        done();
+        if (skipRef) skipRef.value = false;
+        return;
+      }
       gsap.to(el, {
         opacity: 1,
         y: 0,

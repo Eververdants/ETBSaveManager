@@ -34,6 +34,23 @@ pub async fn convert_sav_to_json(file_path: String) -> AppResult<Value> {
         }
 
         let save = cli_handlers::parse_sav_file(path)?;
+
+        // Guard: a lenient parse degrades unparseable properties to
+        // `Property::Raw`, whose untagged serde form (a bare number array in
+        // JSON) deserializes back as Set/Array — saving from the JSON editor
+        // would corrupt the file. Refuse up front; the normal edit flow
+        // (binary in-place) is unaffected.
+        let raw_props = crate::common::raw_property_names(&save);
+        if !raw_props.is_empty() {
+            return Err(format!(
+                "This save contains data the tool cannot fully parse ({}). \
+                 The JSON editor would corrupt it on save, so it is unavailable \
+                 for this archive; the normal editor still works.",
+                raw_props.join(", ")
+            )
+            .into());
+        }
+
         // NOTE (uesave 0.7): serialize directly to a string to preserve field order
         // (header → schemas → root → extra); serde_json::to_value would reorder keys
         // alphabetically (BTreeMap) and break Deserialize on the way back.

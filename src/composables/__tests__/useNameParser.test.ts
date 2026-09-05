@@ -12,8 +12,8 @@ import {
   isCommentLine,
   isHeaderRow,
   mapColumns,
-} from "../../utils/nameParser";
-import type { ParsedNameInfo, ParseResult } from "../../types";
+} from "@/utils/nameParser";
+import type { ParsedNameInfo, ParseResult } from "@/types/parser";
 
 // =============================================================================
 // detectDelimiter

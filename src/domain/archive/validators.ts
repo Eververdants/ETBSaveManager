@@ -3,7 +3,7 @@
  * Business validation logic for archive operations
  */
 
-import type { ArchiveConfig } from "./models";
+import type { ParsedArchiveConfig } from "./models";
 
 export interface ValidationResult {
   valid: boolean;
@@ -35,7 +35,7 @@ export function validateArchiveName(name: string): ValidationResult {
 /**
  * Validate archive configuration
  */
-export function validateArchiveConfig(config: ArchiveConfig): ValidationResult {
+export function validateArchiveConfig(config: ParsedArchiveConfig): ValidationResult {
   const errors: string[] = [];
 
   if (!config.name || config.name.trim().length === 0) {

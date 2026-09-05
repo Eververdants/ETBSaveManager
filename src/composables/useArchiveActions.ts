@@ -62,6 +62,7 @@ interface ArchiveActionsReturn {
   createNewArchive: () => void;
   openSaveGamesFolder: (callbacks?: Pick<ArchiveActionsCallbacks, "onSuccess">) => Promise<void>;
   batchDeleteArchives: (archiveList: ArchiveData[], callbacks?: BatchDeleteCallbacks) => Promise<DeleteResults>;
+  cancelBatchDelete: () => void;
   registerUndoShortcuts: () => void;
   unregisterUndoShortcuts: () => void;
   canUndo: import("vue").ComputedRef<boolean>;
@@ -93,7 +94,7 @@ export function useArchiveActions(
   _filters: Record<string, unknown>,
 ): ArchiveActionsReturn {
   const router: Router = useRouter();
-  const { t } = useI18n();
+  const { t } = useI18n({ useScope: "global" });
   const toast = useToast();
   const { pushAction, undo, redo, canUndo, canRedo } = useUndoRedo();
 
@@ -189,7 +190,7 @@ export function useArchiveActions(
             await applyVerifiedVisibility(archiveSnapshot, originalVisibility);
           } catch (e) {
             console.warn("[undo] Failed to toggle visibility:", e);
-            toast.showError(t("archiveCard.toggleVisibilityFailed"));
+            toast.showError(t("archive.actions.toggleVisibilityFailed"));
           }
         },
         redo: async () => {
@@ -197,7 +198,7 @@ export function useArchiveActions(
             await applyVerifiedVisibility(archiveSnapshot, desiredVisibility);
           } catch (e) {
             console.warn("[redo] Failed to toggle visibility:", e);
-            toast.showError(t("archiveCard.toggleVisibilityFailed"));
+            toast.showError(t("archive.actions.toggleVisibilityFailed"));
           }
         },
       });
@@ -206,7 +207,7 @@ export function useArchiveActions(
       await onRefresh?.();
     } catch (_error) {
       onError?.(_error);
-      toast.showError(t("archiveCard.toggleVisibilityFailed"));
+      toast.showError(t("archive.actions.toggleVisibilityFailed"));
     } finally {
       if (archivePath) togglingArchives.delete(archivePath);
     }
@@ -255,7 +256,7 @@ export function useArchiveActions(
                 insertSortedByName(archiveData.archives.value, removed);
               } catch (e) {
                 console.warn("[undo] Failed to restore archive:", e);
-                toast.showError(t("archiveCard.deleteFailed"));
+                toast.showError(t("archive.actions.deleteFailed"));
               }
             }
           },
@@ -275,13 +276,13 @@ export function useArchiveActions(
         });
       }
 
-      toast.showSuccess(t("archiveCard.deleteSuccess"));
+      toast.showSuccess(t("archive.actions.deleteSuccess", { name: archive.name }));
       closeDeleteModal();
       onSuccess?.();
       await onRefresh?.();
     } catch (_error) {
       onError?.(_error);
-      toast.showError(t("archiveCard.deleteFailed"));
+      toast.showError(t("archive.actions.deleteFailed"));
     } finally {
       isDeleting.value = false;
     }
@@ -308,10 +309,21 @@ export function useArchiveActions(
       if (result.success) {
         onSuccess?.();
       } else {
-        toast.showError(t("archiveCard.openFolderFailed"));
+        toast.showError(t("archive.actions.openFolderFailed"));
       }
     } catch {
-      toast.showError(t("archiveCard.openFolderFailed"));
+      toast.showError(t("archive.actions.openFolderFailed"));
+    }
+  };
+
+  // AbortSignal for in-flight batch delete — lets the UI cancel a long operation
+  let batchDeleteAbortController: AbortController | null = null;
+
+  /** Cancel an in-flight batch delete. No-op if none is running. */
+  const cancelBatchDelete = (): void => {
+    if (batchDeleteAbortController) {
+      batchDeleteAbortController.abort();
+      batchDeleteAbortController = null;
     }
   };
 
@@ -321,8 +333,16 @@ export function useArchiveActions(
   ): Promise<DeleteResults> => {
     const { onSuccess, onError, onRefresh, onProgress } = callbacks;
     const results: DeleteResults = { success: [], failed: [] };
+    batchDeleteAbortController = new AbortController();
+    const signal = batchDeleteAbortController.signal;
 
     for (let i = 0; i < archiveList.length; i++) {
+      // Allow cancellation between items
+      if (signal.aborted) {
+        results.failed.push({ id: archiveList[i].id, error: "Cancelled by user" });
+        continue;
+      }
+
       const archive = archiveList[i];
       onProgress?.(i + 1, archiveList.length, archive.name);
 
@@ -348,13 +368,20 @@ export function useArchiveActions(
       }
     }
 
+    batchDeleteAbortController = null;
+
     if (results.failed.length === 0) {
-      toast.showSuccess(t("archiveCard.batchDeleteSuccess"));
+      toast.showSuccess(t("archive.actions.batchDeleteSuccess", { count: results.success.length }));
       onSuccess?.(results);
       await onRefresh?.();
     } else {
       onError?.(results);
-      toast.showError(t("archiveCard.batchDeletePartialFailed"));
+      toast.showError(
+        t("archive.actions.batchDeleteComplete", {
+          success: results.success.length,
+          failed: results.failed.length,
+        }),
+      );
     }
 
     return results;
@@ -401,6 +428,7 @@ export function useArchiveActions(
     createNewArchive,
     openSaveGamesFolder,
     batchDeleteArchives,
+    cancelBatchDelete,
     registerUndoShortcuts,
     unregisterUndoShortcuts,
     canUndo,

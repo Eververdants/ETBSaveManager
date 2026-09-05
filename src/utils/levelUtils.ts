@@ -1,6 +1,13 @@
 import { useI18n } from "vue-i18n";
 
 /**
+ * Get the image path for a level key.
+ */
+export function getLevelImage(levelKey: string): string {
+  return `/images/ETB/${levelKey}.webp`;
+}
+
+/**
  * Get display name for a level key from i18n
  * Falls back to the raw key if no translation exists
  */

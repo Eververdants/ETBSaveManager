@@ -35,8 +35,8 @@ vi.mock("@/adapters/tauri/archiveAdapter", () => ({
   },
 }));
 
-import { useToast } from "../useToast";
-import { useArchiveActions } from "../useArchiveActions";
+import { useToast } from "@/composables/useToast";
+import { useArchiveActions } from "@/composables/useArchiveActions";
 import type { ArchiveData } from "@/types";
 
 const toast = useToast() as unknown as {

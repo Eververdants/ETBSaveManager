@@ -27,7 +27,7 @@
   --radius-circle: 50%; /* 圆形：头像、图标按钮 */
 
   /* ── 组件特定圆角 ── */
-  --radius-sidebar: var(--radius-xl); /* 侧边栏 44px */
+  --radius-sidebar: var(--radius-lg); /* 侧边栏 36px */
   --radius-card: var(--radius-lg); /* 卡片 36px */
   --radius-modal: var(--radius-2xl); /* 模态框 52px */
   --radius-dropdown: var(--radius-pill); /* 下拉菜单胶囊（pill 形状）*/

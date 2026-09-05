@@ -1,11 +1,16 @@
 /* eslint-disable no-console -- log service intentionally captures/overrides console methods */
 /**
  * Frontend log service
- * Captures console output and window errors for debug panel and feedback system
+ * Captures console output and window errors for debug panel and feedback system.
+ *
+ * This is the SINGLE console hijacker in the app. It wraps console methods
+ * and forwards to the backend via sendToBackend() from consoleForwarder.ts.
+ * Do NOT also call initConsoleForwarder()'s (now-removed) console override.
  */
 
 import type { LogEntry } from "@/types/ui";
 import type { App } from "vue";
+import { sendToBackend } from "@/utils/consoleForwarder";
 
 class LogService {
   logs: LogEntry[];
@@ -43,21 +48,25 @@ class LogService {
     console.log = (...args: unknown[]) => {
       this.addLog("log", args);
       originalLog.apply(console, args);
+      sendToBackend("log", args);
     };
 
     console.error = (...args: unknown[]) => {
       this.addLog("error", args);
       originalError.apply(console, args);
+      sendToBackend("error", args);
     };
 
     console.warn = (...args: unknown[]) => {
       this.addLog("warn", args);
       originalWarn.apply(console, args);
+      sendToBackend("warn", args);
     };
 
     console.info = (...args: unknown[]) => {
       this.addLog("info", args);
       originalInfo.apply(console, args);
+      sendToBackend("info", args);
     };
 
     this._consoleHijacked = true;

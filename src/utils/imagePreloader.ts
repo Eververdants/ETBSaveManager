@@ -39,6 +39,10 @@ function processPending(): void {
 /**
  * Start preloading an image URL.  Subsequent calls with the same URL
  * return the same promise — no duplicate network/disk reads.
+ *
+ * On failure, the URL is removed from the cache so a later call retries
+ * instead of returning the cached rejection (transient errors shouldn't
+ * permanently blacklist a URL for the session).
  */
 export function preloadImage(url: string): Promise<boolean> {
   const existing = preloadCache.get(url);
@@ -48,8 +52,13 @@ export function preloadImage(url: string): Promise<boolean> {
     pending.push({ url, resolve });
   });
 
-  // Ensure the promise doesn't cause unhandled rejection
-  promise.catch(() => false);
+  // On failure, evict from cache so the next call retries
+  promise.then((ok) => {
+    if (!ok) {
+      preloadCache.delete(url);
+    }
+    return ok;
+  });
   preloadCache.set(url, promise);
   processPending();
   return promise;

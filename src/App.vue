@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import storage from "./services/storageService";
@@ -15,13 +15,14 @@ const router = useRouter();
 const route = useRoute();
 const sidebarExpanded = ref(false);
 const showGlobalSearch = ref(false);
-const globalSearchRef = ref(null);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const globalSearchRef = ref<any>(null);
 const appStore = useAppStore();
 const fabCurrentIndex = ref(0);
 
 // Bridge FAB click events from App-level persistent FAB down to Home,
 // which is the page that owns the handlers (kept alive, different component branch).
-const emitFabAction = (action) => {
+const emitFabAction = (action: string) => {
   window.dispatchEvent(new CustomEvent("fab-action", { detail: { action } }));
 };
 
@@ -44,7 +45,7 @@ const cachedComponents = router.options.routes
 
 // ─── Resource Scheduler ──────────────────────────────────
 // Map route names to scheduler operation types for auto-detection
-const ROUTE_OPERATION_MAP = {
+const ROUTE_OPERATION_MAP: Record<string, string> = {
   Home: "previewing",
   CreateArchive: "editing",
   EditArchive: "editing",
@@ -56,21 +57,22 @@ const ROUTE_OPERATION_MAP = {
 };
 
 // Track last route operation for cleanup on navigation
-let lastRouteOp = null;
+let lastRouteOp: string | null = null;
 
 // Report the current route as an operation when it changes
 watch(
   () => route.name,
-  (name, oldName) => {
+  (name, _oldName) => {
+    const routeName = name as string;
     // End previous route operation
     if (lastRouteOp && ROUTE_OPERATION_MAP[lastRouteOp]) {
-      scheduler.endOperation(ROUTE_OPERATION_MAP[lastRouteOp]);
+      scheduler.endOperation(ROUTE_OPERATION_MAP[lastRouteOp] as typeof scheduler.dominantOperation);
     }
     // Begin new route operation
-    const opType = ROUTE_OPERATION_MAP[name];
+    const opType = ROUTE_OPERATION_MAP[routeName];
     if (opType) {
-      scheduler.beginOperation(opType);
-      lastRouteOp = name;
+      scheduler.beginOperation(opType as typeof scheduler.dominantOperation);
+      lastRouteOp = routeName;
     } else {
       lastRouteOp = null;
     }
@@ -79,7 +81,7 @@ watch(
     // The route transition takes ~300ms (sidebar animation + fade);
     // by predicting early we pre-allocate CPU/GPU resources before
     // initializeArchives() actually fires its IPC calls.
-    if (oldName && name === "Home" && oldName !== "Home") {
+    if (_oldName && name === "Home" && _oldName !== "Home") {
       scheduler.predict("loading-archives", {
         source: "route-change",
         leadTime: 400, // sidebar animation + fade before data loads
@@ -90,7 +92,7 @@ watch(
   { immediate: true },
 );
 
-const handleSidebarExpand = (expanded) => {
+const handleSidebarExpand = (expanded: boolean) => {
   sidebarExpanded.value = expanded;
 };
 
@@ -157,7 +159,7 @@ const handleFindNavigateShortcut = (backward = false) => {
   openGlobalSearch({ navigate: true, backward });
 };
 
-const handleGlobalKeydown = (event) => {
+const handleGlobalKeydown = (event: KeyboardEvent) => {
   const key = String(event.key || "").toLowerCase();
   const isFindShortcut = (event.ctrlKey || event.metaKey) && key === "f";
 
@@ -206,13 +208,13 @@ const handleFindEventFromLock = () => {
   handleFindShortcut();
 };
 
-const handleFindNextEventFromLock = (event) => {
-  handleFindNavigateShortcut(!!event?.detail?.backward);
+const handleFindNextEventFromLock = (event: Event) => {
+  handleFindNavigateShortcut(!!(event as CustomEvent)?.detail?.backward);
 };
 
-let removeAfterEach = null;
+let removeAfterEach: (() => void) | null = null;
 
-let mainContentCache = null;
+let mainContentCache: Element | null = null;
 
 const getMainContent = () => {
   if (!mainContentCache) {
@@ -221,26 +223,33 @@ const getMainContent = () => {
   return mainContentCache;
 };
 
+// Event handler refs — defined here so addEventListener and removeEventListener
+// use the SAME function reference (anonymous arrows in onUnmounted won't match).
+const onOpenArchiveSearch = () => {
+  scheduler.beginOperation("searching");
+};
+const onCloseArchiveSearch = () => {
+  scheduler.endOperation("searching");
+};
+const onSchedulerFps = (e: Event) => {
+  scheduler.feedFps((e as CustomEvent).detail);
+};
+const onSchedulerMemory = (e: Event) => {
+  scheduler.feedMemory((e as CustomEvent).detail);
+};
+
 onMounted(() => {
   document.addEventListener("keydown", handleGlobalKeydown, true);
   window.addEventListener("app-global-find", handleFindEventFromLock);
   window.addEventListener("app-global-find-next", handleFindNextEventFromLock);
 
   // Listen for search open/close to report to scheduler
-  window.addEventListener("open-archive-search", () => {
-    scheduler.beginOperation("searching");
-  });
-  window.addEventListener("close-archive-search", () => {
-    scheduler.endOperation("searching");
-  });
+  window.addEventListener("open-archive-search", onOpenArchiveSearch);
+  window.addEventListener("close-archive-search", onCloseArchiveSearch);
 
   // Listen for performance data to feed back into scheduler
-  window.addEventListener("scheduler-fps", function (e) {
-    scheduler.feedFps(e.detail);
-  });
-  window.addEventListener("scheduler-memory", function (e) {
-    scheduler.feedMemory(e.detail);
-  });
+  window.addEventListener("scheduler-fps", onSchedulerFps);
+  window.addEventListener("scheduler-memory", onSchedulerMemory);
 
   // Start the resource scheduler
   scheduler.start();
@@ -272,10 +281,10 @@ onUnmounted(() => {
   document.removeEventListener("keydown", handleGlobalKeydown, true);
   window.removeEventListener("app-global-find", handleFindEventFromLock);
   window.removeEventListener("app-global-find-next", handleFindNextEventFromLock);
-  window.removeEventListener("open-archive-search", () => {});
-  window.removeEventListener("close-archive-search", () => {});
-  window.removeEventListener("scheduler-fps", () => {});
-  window.removeEventListener("scheduler-memory", () => {});
+  window.removeEventListener("open-archive-search", onOpenArchiveSearch);
+  window.removeEventListener("close-archive-search", onCloseArchiveSearch);
+  window.removeEventListener("scheduler-fps", onSchedulerFps);
+  window.removeEventListener("scheduler-memory", onSchedulerMemory);
   scheduler.stop();
   if (removeAfterEach) removeAfterEach();
   mainContentCache = null;
@@ -293,10 +302,11 @@ async function initThemeSystem() {
     await storage.initStorage();
   }
 
-  let theme = storage.getItem("theme") || window.__initialTheme || "light";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let theme = storage.getItem<string>("theme") || (window as any).__initialTheme || "light";
 
   if (window.themeManager) {
-    window.themeManager.setTheme(theme);
+    (window.themeManager as unknown as { setTheme: (t: string) => void }).setTheme(theme);
   } else {
     document.documentElement.setAttribute("data-theme", theme);
   }

@@ -84,6 +84,38 @@ export interface UseResourceSchedulerReturn {
   isPredicted: (type: OperationType) => boolean;
 }
 
+// ─── Singleton router-guard registration ──────────────────
+// Multiple components may call useResourceScheduler(). Without a guard,
+// each call registers its own global router.beforeEach/afterEach, and the
+// first to unmount removes its guard while a navigation in flight may have
+// paired begin/end across instances. Track how many composable instances are
+// active and only register/unregister the guards once.
+let schedulerGuardRefCount = 0;
+let schedulerGuardRemoveBefore: (() => void) | null = null;
+let schedulerGuardRemoveAfter: (() => void) | null = null;
+
+function registerSchedulerGuards(): void {
+  if (schedulerGuardRemoveBefore) return; // already registered
+  const router = useRouter();
+  schedulerGuardRemoveBefore = router.beforeEach((_to, _from) => {
+    scheduler.beginOperation("navigating");
+  });
+  schedulerGuardRemoveAfter = router.afterEach((_to, _from) => {
+    scheduler.endOperation("navigating");
+  });
+}
+
+function unregisterSchedulerGuards(): void {
+  if (schedulerGuardRemoveBefore) {
+    schedulerGuardRemoveBefore();
+    schedulerGuardRemoveBefore = null;
+  }
+  if (schedulerGuardRemoveAfter) {
+    schedulerGuardRemoveAfter();
+    schedulerGuardRemoveAfter = null;
+  }
+}
+
 /**
  * Vue composable for the resource scheduler.
  * Creates reactive state bound to the scheduler singleton.
@@ -114,20 +146,17 @@ export function useResourceScheduler(): UseResourceSchedulerReturn {
     state.value = { ...newState };
   });
 
-  // Auto-detect route navigation
-  const router = useRouter();
-  const removeGuard = router.beforeEach((_to, _from) => {
-    scheduler.beginOperation("navigating");
-  });
-  const removeAfterEach = router.afterEach((_to, _from) => {
-    scheduler.endOperation("navigating");
-  });
+  // Auto-detect route navigation — singleton guard registration
+  registerSchedulerGuards();
+  schedulerGuardRefCount++;
 
   // Cleanup on unmount
   onUnmounted(() => {
     unsubscribe();
-    removeGuard();
-    removeAfterEach();
+    schedulerGuardRefCount--;
+    if (schedulerGuardRefCount <= 0) {
+      unregisterSchedulerGuards();
+    }
   });
 
   const beginOperation = (type: OperationType, metadata?: OperationContext["metadata"]) =>

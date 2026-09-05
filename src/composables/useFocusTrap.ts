@@ -101,6 +101,11 @@ export function useFocusTrap(containerRef: Ref<HTMLElement | null>, options: Foc
     // Save currently focused element for restoration
     previouslyFocused = document.activeElement as HTMLElement | null;
 
+    // Remove any existing listener before adding a new one — prevents stale
+    // listeners from accumulating if the container changes between activations.
+    if (keydownHandler) {
+      document.removeEventListener("keydown", keydownHandler);
+    }
     // Add trap listener
     keydownHandler = trapKeydown;
     document.addEventListener("keydown", keydownHandler);

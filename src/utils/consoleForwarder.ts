@@ -1,94 +1,65 @@
-/* eslint-disable no-console -- console forwarder intentionally captures/overrides console methods */
 /**
- * 控制台日志转发器
- * 将前端 console 输出转发到 Tauri 后端控制台
+ * Console forwarder — sends log messages to the Tauri backend.
+ *
+ * This module is a UTILITY, not a console hijacker. The actual console
+ * override lives in logService.ts, which calls sendToBackend() here.
+ * This avoids double-hijacking when both modules are initialized.
  */
 
-let isInitialized = false;
+// 格式化参数为字符串
+function formatArgs(args: unknown[]): string {
+  return args
+    .map((arg: unknown) => {
+      if (arg === null) return "null";
+      if (arg === undefined) return "undefined";
+      if (arg instanceof Error) {
+        return `${arg.name}: ${arg.message}\n${arg.stack || ""}`;
+      }
+      if (typeof arg === "object") {
+        try {
+          return JSON.stringify(arg, null, 2);
+        } catch {
+          return String(arg);
+        }
+      }
+      return String(arg);
+    })
+    .join(" ");
+}
 
 /**
- * 初始化控制台转发
- * 拦截 console.log/warn/error/info/debug，转发到后端
+ * Asynchronously send a log message to the Tauri backend.
+ * Called by logService after it captures console output.
+ */
+export async function sendToBackend(level: string, args: readonly unknown[]): Promise<void> {
+  try {
+    const message = formatArgs([...args]);
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("add_backend_log", { level, message });
+  } catch {
+    // 静默失败，避免循环
+  }
+}
+
+let listenersAdded = false;
+
+/**
+ * Install global error listeners (window.error + unhandledrejection)
+ * that forward to the backend. Safe to call once.
  */
 export function initConsoleForwarder(): void {
-  if (isInitialized) return;
-  isInitialized = true;
-
-  // 保存原始方法
-  const originalLog = console.log;
-  const originalWarn = console.warn;
-  const originalError = console.error;
-  const originalInfo = console.info;
-  const originalDebug = console.debug;
-
-  // 格式化参数为字符串
-  const formatArgs = (args: unknown[]): string => {
-    return args
-      .map((arg: unknown) => {
-        if (arg === null) return "null";
-        if (arg === undefined) return "undefined";
-        if (arg instanceof Error) {
-          return `${arg.name}: ${arg.message}\n${arg.stack || ""}`;
-        }
-        if (typeof arg === "object") {
-          try {
-            return JSON.stringify(arg, null, 2);
-          } catch {
-            return String(arg);
-          }
-        }
-        return String(arg);
-      })
-      .join(" ");
-  };
-
-  // 异步发送日志到后端
-  const sendToBackend = async (level: string, message: string): Promise<void> => {
-    try {
-      const { invoke } = await import("@tauri-apps/api/core");
-      await invoke("add_backend_log", { level, message });
-    } catch {
-      // 静默失败，避免循环
-    }
-  };
-
-  // 重写 console 方法
-  console.log = (...args: unknown[]) => {
-    originalLog.apply(console, args);
-    sendToBackend("info", formatArgs(args));
-  };
-
-  console.warn = (...args: unknown[]) => {
-    originalWarn.apply(console, args);
-    sendToBackend("warn", formatArgs(args));
-  };
-
-  console.error = (...args: unknown[]) => {
-    originalError.apply(console, args);
-    sendToBackend("error", formatArgs(args));
-  };
-
-  console.info = (...args: unknown[]) => {
-    originalInfo.apply(console, args);
-    sendToBackend("info", formatArgs(args));
-  };
-
-  console.debug = (...args: unknown[]) => {
-    originalDebug.apply(console, args);
-    sendToBackend("debug", formatArgs(args));
-  };
+  if (listenersAdded) return;
+  listenersAdded = true;
 
   // 捕获未处理的错误
   window.addEventListener("error", (event: ErrorEvent) => {
     const message = `Uncaught Error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`;
-    sendToBackend("error", message);
+    sendToBackend("error", [message]);
   });
 
   // 捕获未处理的 Promise 拒绝
   window.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
     const message = `Unhandled Promise Rejection: ${event.reason}`;
-    sendToBackend("error", message);
+    sendToBackend("error", [message]);
   });
-
-  console.info("[ConsoleForwarder] 已初始化，前端日志将转发到后端控制台");
 }

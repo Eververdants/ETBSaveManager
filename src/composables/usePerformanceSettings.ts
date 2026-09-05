@@ -105,6 +105,18 @@ export function usePerformanceSettings(
     }
   };
 
+  const stopPerformanceMonitoring = (): void => {
+    if (fpsMonitorInterval) {
+      cancelAnimationFrame(fpsMonitorInterval);
+      fpsMonitorInterval = null;
+    }
+
+    if (longTaskObserver) {
+      longTaskObserver.disconnect();
+      longTaskObserver = null;
+    }
+  };
+
   const startPerformanceMonitoring = (): void => {
     const monitorFPS = (): void => {
       frameCount++;
@@ -132,19 +144,10 @@ export function usePerformanceSettings(
         longTaskObserver.observe({ entryTypes: ["longtask"] });
       } catch (e) {
         console.warn("长任务监控不支持:", e);
+        // Observer failed — stop the RAF loop too so it doesn't leak closures
+        cancelAnimationFrame(fpsMonitorInterval);
+        fpsMonitorInterval = null;
       }
-    }
-  };
-
-  const stopPerformanceMonitoring = (): void => {
-    if (fpsMonitorInterval) {
-      cancelAnimationFrame(fpsMonitorInterval);
-      fpsMonitorInterval = null;
-    }
-
-    if (longTaskObserver) {
-      longTaskObserver.disconnect();
-      longTaskObserver = null;
     }
   };
 

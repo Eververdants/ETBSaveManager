@@ -1,5 +1,5 @@
 /**
- * 存档页右键菜单 — 页面 / 卡片 / 多选三种菜单项的构建与开关
+ * 存档页右键菜单 — 页面 / 卡片 / 文件夹 / 多选 / 整理 FAB 的菜单项构建与开关
  *
  * 页面持有唯一 useContextMenu 实例；菜单项快照在 open 调用时构建，
  * 因此回调永远拿到当次渲染的 actions / 状态。
@@ -10,9 +10,16 @@ import {
   CheckSquare,
   Eye,
   EyeOff,
+  Folder,
+  FolderInput,
+  FolderMinus,
   FolderOpen,
+  FolderPlus,
+  ListChecks,
+  Pencil,
   Redo2,
   RefreshCw,
+  Sparkles,
   SquarePen,
   Trash2,
   Undo2,
@@ -20,10 +27,22 @@ import {
 } from "lucide-react";
 
 import { useContextMenu } from "../../../components/ui";
+import type { ContextMenuItem } from "../../../components/ui";
+import type { OrganizeRule } from "../../../stores";
 import type { ArchiveData } from "../../../types";
 import type { useArchiveActions } from "./useArchiveActions";
+import type { ArchiveFolderWithCount } from "./useArchiveFolders";
 
 type ArchiveActions = ReturnType<typeof useArchiveActions>;
+
+/** 文件夹视图 API（useArchiveFolders 的裁剪子集） */
+export interface MenusFoldersApi {
+  foldersWithCounts: ArchiveFolderWithCount[];
+  isInFolder: boolean;
+  currentFolder: ArchiveFolderWithCount | null;
+  hasAssignments: boolean;
+  folderIdOf: (archive: ArchiveData) => string | null;
+}
 
 export interface SavesMenusDeps {
   actions: ArchiveActions;
@@ -39,13 +58,70 @@ export interface SavesMenusDeps {
   onDeselectAll: () => void;
   onToggleMultiSelect: () => void;
   onBatchDelete: () => void;
+  /** 文件夹能力（数据层就绪后传入） */
+  folders?: MenusFoldersApi;
+  archivesCount: number;
+  onNewFolder: () => void;
+  onRenameFolder: (folder: ArchiveFolderWithCount) => void;
+  onDeleteFolder: (folder: ArchiveFolderWithCount) => void;
+  onOpenFolderCard: (folder: ArchiveFolderWithCount) => void;
+  onMoveArchives: (paths: string[], folderId: string | null) => void;
+  onMoveToNewFolder: (paths: string[]) => void;
+  onOrganize: (rule: OrganizeRule) => void;
+  onClearAll: () => void;
 }
 
 export function useSavesMenus(deps: SavesMenusDeps) {
   const { t } = useTranslation();
   const { menu, open, close } = useContextMenu();
 
-  /** 空白区域右键：刷新 / 文件夹 / 新建 / 多选 / 撤销重做 */
+  /** 整理规则子菜单 */
+  const organizeRuleItems = useCallback(
+    (): ContextMenuItem[] => [
+      {
+        label: t("organizer.organizeByArchiveDifficulty"),
+        onSelect: () => deps.onOrganize("archiveDifficulty"),
+      },
+      {
+        label: t("organizer.organizeByActualDifficulty"),
+        onSelect: () => deps.onOrganize("actualDifficulty"),
+      },
+      {
+        label: t("organizer.organizeByVisibility"),
+        onSelect: () => deps.onOrganize("visibility"),
+      },
+    ],
+    [t, deps]
+  );
+
+  /** 「移动到文件夹」子菜单：全部文件夹 + 移出 + 新建 */
+  const buildMoveToItems = useCallback(
+    (archive: ArchiveData): ContextMenuItem[] => {
+      const currentId = deps.folders?.folderIdOf(archive) ?? null;
+      const items: ContextMenuItem[] = (deps.folders?.foldersWithCounts ?? []).map((f) => ({
+        label: f.name,
+        icon: Folder,
+        checked: currentId === f.id,
+        onSelect: () => deps.onMoveArchives([archive.path], f.id),
+      }));
+      items.push({ separator: true });
+      items.push({
+        label: t("organizer.removeFromFolder"),
+        icon: FolderMinus,
+        disabled: !currentId,
+        onSelect: () => deps.onMoveArchives([archive.path], null),
+      });
+      items.push({
+        label: t("organizer.newFolder"),
+        icon: FolderPlus,
+        onSelect: () => deps.onMoveToNewFolder([archive.path]),
+      });
+      return items;
+    },
+    [t, deps]
+  );
+
+  /** 空白区域右键：刷新 / 文件夹 / 新建 / 整理 / 多选 / 撤销重做 */
   const openPageMenu = useCallback(
     (e: React.MouseEvent) => {
       open(e, [
@@ -58,6 +134,21 @@ export function useSavesMenus(deps: SavesMenusDeps) {
         { label: t("common.openFolder"), icon: FolderOpen, onSelect: deps.onOpenFolder },
         { separator: true },
         { label: t("archiveSearch.createArchive"), icon: SquarePen, onSelect: deps.onCreate },
+        { label: t("organizer.newFolder"), icon: FolderPlus, onSelect: deps.onNewFolder },
+        { separator: true },
+        {
+          label: t("organizer.quickOrganize"),
+          icon: Sparkles,
+          disabled: deps.archivesCount === 0,
+          onSelect: () => deps.onOrganize("archiveDifficulty"),
+        },
+        {
+          label: t("organizer.moreOrganize"),
+          icon: ListChecks,
+          disabled: deps.archivesCount === 0,
+          children: organizeRuleItems(),
+        },
+        { separator: true },
         {
           label: t("common.multiSelectDelete"),
           icon: CheckSquare,
@@ -80,10 +171,10 @@ export function useSavesMenus(deps: SavesMenusDeps) {
         },
       ]);
     },
-    [open, t, deps]
+    [open, t, deps, organizeRuleItems]
   );
 
-  /** 存档卡片右键：编辑 / 隐藏显示 / 删除 */
+  /** 存档卡片右键：编辑 / 隐藏显示 / 移动到文件夹 / 删除 */
   const openCardMenu = useCallback(
     (e: React.MouseEvent, archive: ArchiveData) => {
       open(e, [
@@ -97,12 +188,39 @@ export function useSavesMenus(deps: SavesMenusDeps) {
           icon: archive.isVisible ? EyeOff : Eye,
           onSelect: () => deps.onToggleVisibility(archive),
         },
+        {
+          label: t("organizer.moveToFolder"),
+          icon: FolderInput,
+          children: buildMoveToItems(archive),
+        },
         { separator: true },
         {
           label: t("archiveCard.deleteLabel"),
           icon: Trash2,
           danger: true,
           onSelect: () => deps.actions.deleteArchive(archive),
+        },
+      ]);
+    },
+    [open, t, deps, buildMoveToItems]
+  );
+
+  /** 文件夹卡片右键：打开 / 重命名 / 删除 */
+  const openFolderMenu = useCallback(
+    (e: React.MouseEvent, folder: ArchiveFolderWithCount) => {
+      open(e, [
+        {
+          label: t("organizer.allArchives"),
+          icon: FolderOpen,
+          onSelect: () => deps.onOpenFolderCard(folder),
+        },
+        { label: t("organizer.renameFolder"), icon: Pencil, onSelect: () => deps.onRenameFolder(folder) },
+        { separator: true },
+        {
+          label: t("organizer.deleteFolder"),
+          icon: Trash2,
+          danger: true,
+          onSelect: () => deps.onDeleteFolder(folder),
         },
       ]);
     },
@@ -142,5 +260,63 @@ export function useSavesMenus(deps: SavesMenusDeps) {
     [open, t, deps]
   );
 
-  return { menu, close, openPageMenu, openCardMenu, openMultiSelectMenu };
+  /** 整理 FAB：向上弹出的整理菜单（快捷整理 + 规则 + 文件夹管理） */
+  const openOrganizeMenu = useCallback(
+    (rect: DOMRect) => {
+      const folders = deps.folders;
+      open(
+        { x: rect.left, y: rect.top - 4 },
+        [
+          {
+            label: t("organizer.quickOrganize"),
+            icon: Sparkles,
+            disabled: deps.archivesCount === 0,
+            onSelect: () => deps.onOrganize("archiveDifficulty"),
+          },
+          {
+            label: t("organizer.moreOrganize"),
+            icon: ListChecks,
+            disabled: deps.archivesCount === 0,
+            children: organizeRuleItems(),
+          },
+          { separator: true },
+          { label: t("organizer.newFolder"), icon: FolderPlus, onSelect: deps.onNewFolder },
+          ...(folders?.isInFolder && folders.currentFolder
+            ? [
+                {
+                  label: t("organizer.renameFolder"),
+                  icon: Pencil,
+                  onSelect: () => deps.onRenameFolder(folders.currentFolder!),
+                },
+                {
+                  label: t("organizer.deleteFolder"),
+                  icon: Trash2,
+                  danger: true,
+                  onSelect: () => deps.onDeleteFolder(folders.currentFolder!),
+                },
+              ]
+            : []),
+          { separator: true },
+          {
+            label: t("organizer.clearAll"),
+            icon: FolderMinus,
+            disabled: !folders?.hasAssignments,
+            onSelect: deps.onClearAll,
+          },
+        ],
+        { placement: "top" }
+      );
+    },
+    [open, t, deps, organizeRuleItems]
+  );
+
+  return {
+    menu,
+    close,
+    openPageMenu,
+    openCardMenu,
+    openFolderMenu,
+    openMultiSelectMenu,
+    openOrganizeMenu,
+  };
 }

@@ -15,15 +15,19 @@ import { FolderOpen, PackageOpen, SearchX, SquarePen } from "lucide-react";
 
 import { ConfirmDialog, ContextMenu, EmptyState, Spinner } from "../../components/ui";
 import { useArchiveStore } from "../../stores";
+import type { ArchiveFolder } from "../../types";
 import { useArchiveActions } from "./hooks/useArchiveActions";
 import { useArchiveFolders } from "./hooks/useArchiveFolders";
+import type { ArchiveFolderWithCount } from "./hooks/useArchiveFolders";
 import { useArchiveList } from "./hooks/useArchiveList";
 import { useMultiSelect } from "./hooks/useMultiSelect";
 import { useSavesMenus } from "./hooks/useSavesMenus";
 import { useLevelName } from "../../utils/levelUtils";
 import BatchDeleteProgress from "./components/BatchDeleteProgress";
 import FolderBreadcrumb from "./components/FolderBreadcrumb";
+import FolderNameDialog from "./components/FolderNameDialog";
 import MultiSelectBar from "./components/MultiSelectBar";
+import OrganizeMenuButton from "./components/OrganizeMenuButton";
 import TitleSearchCenter from "./components/TitleSearchCenter";
 import VirtualArchiveGrid from "./components/VirtualArchiveGrid";
 
@@ -53,6 +57,12 @@ export default function SavesPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [batchDelete, setBatchDelete] = useState({ open: false, current: 0, total: 0, name: "" });
   const [titlebarSlot, setTitlebarSlot] = useState<HTMLElement | null>(null);
+  const [folderDialog, setFolderDialog] = useState<
+    { mode: "create"; movePaths?: string[] } | { mode: "rename"; folder: ArchiveFolder } | null
+  >(null);
+  const [folderConfirm, setFolderConfirm] = useState<
+    { kind: "deleteFolder"; folder: ArchiveFolderWithCount } | { kind: "clearAll" } | null
+  >(null);
 
   // ---- 初始化 ----
   useEffect(() => {
@@ -116,9 +126,25 @@ export default function SavesPage() {
     onDeselectAll: multi.deselectAll,
     onToggleMultiSelect: multi.toggleMultiSelectMode,
     onBatchDelete: () => void handleBatchDelete(),
+    folders: {
+      foldersWithCounts: foldersView.foldersWithCounts,
+      isInFolder: foldersView.isInFolder,
+      currentFolder: foldersView.currentFolder,
+      hasAssignments: foldersView.hasAssignments,
+      folderIdOf: foldersView.folderIdOf,
+    },
+    archivesCount: archives.length,
+    onNewFolder: () => setFolderDialog({ mode: "create" }),
+    onRenameFolder: (folder) => setFolderDialog({ mode: "rename", folder }),
+    onDeleteFolder: (folder) => setFolderConfirm({ kind: "deleteFolder", folder }),
+    onOpenFolderCard: (folder) => foldersView.setCurrentFolder(folder.id),
+    onMoveArchives: foldersView.moveArchives,
+    onMoveToNewFolder: (paths) => setFolderDialog({ mode: "create", movePaths: paths }),
+    onOrganize: foldersView.executeOrganize,
+    onClearAll: () => setFolderConfirm({ kind: "clearAll" }),
   });
 
-  // 右键分发：多选模式 → 多选菜单，否则页面菜单（卡片菜单由网格拦截，不冒泡到此）
+  // 右键分发：多选模式 → 多选菜单，否则页面菜单（卡片/文件夹菜单由网格拦截，不冒泡到此）
   const handlePageContextMenu = useCallback(
     (e: React.MouseEvent) => {
       if (multi.isMultiSelectMode) menus.openMultiSelectMenu(e);
@@ -133,6 +159,11 @@ export default function SavesPage() {
       else menus.openCardMenu(e, archive);
     },
     [multi.isMultiSelectMode, menus]
+  );
+
+  const handleFolderContextMenu = useCallback(
+    (e: React.MouseEvent, folder: ArchiveFolderWithCount) => menus.openFolderMenu(e, folder),
+    [menus]
   );
 
   const showWelcome = dataLoadComplete && archives.length === 0;
@@ -200,6 +231,7 @@ export default function SavesPage() {
             selectedIds={multi.selectedIds}
             searchQuery={list.searchQuery}
             onFolderOpen={(f) => foldersView.setCurrentFolder(f.id)}
+            onFolderContextMenu={handleFolderContextMenu}
             onToggleVisibility={handleToggleVisibility}
             onEdit={actions.handleEdit}
             onDelete={actions.deleteArchive}
@@ -243,6 +275,66 @@ export default function SavesPage() {
         current={batchDelete.current}
         total={batchDelete.total}
         name={batchDelete.name}
+      />
+
+      {/* 整理入口（右下角浮动按钮，菜单经页面级 ContextMenu 实例向上弹出） */}
+      {!loading && archives.length > 0 && (
+        <OrganizeMenuButton onOpen={(rect) => menus.openOrganizeMenu(rect)} />
+      )}
+
+      {/* 文件夹新建 / 重命名 */}
+      <FolderNameDialog
+        open={folderDialog !== null}
+        mode={folderDialog?.mode ?? "create"}
+        selfName={folderDialog?.mode === "rename" ? folderDialog.folder.name : undefined}
+        existingNames={foldersView.foldersWithCounts.map((f) => f.name)}
+        onClose={() => setFolderDialog(null)}
+        onSubmit={(name) => {
+          if (!folderDialog) return;
+          if (folderDialog.mode === "rename") {
+            foldersView.renameFolder(folderDialog.folder.id, name);
+          } else {
+            const id = foldersView.createFolder(name);
+            if (folderDialog.movePaths?.length) {
+              foldersView.moveArchives(folderDialog.movePaths, id);
+            }
+          }
+        }}
+      />
+
+      {/* 删除文件夹确认 */}
+      <ConfirmDialog
+        open={folderConfirm?.kind === "deleteFolder"}
+        type="danger"
+        title={t("organizer.deleteFolder")}
+        message={t("organizer.deleteFolderMessage", {
+          name: folderConfirm?.kind === "deleteFolder" ? folderConfirm.folder.name : "",
+        })}
+        description={t("organizer.deleteFolderDescription", {
+          count: folderConfirm?.kind === "deleteFolder" ? folderConfirm.folder.count : 0,
+        })}
+        confirmText={t("common.delete")}
+        onCancel={() => setFolderConfirm(null)}
+        onConfirm={() => {
+          if (folderConfirm?.kind !== "deleteFolder") return;
+          foldersView.deleteFolder(folderConfirm.folder.id);
+          setFolderConfirm(null);
+        }}
+      />
+
+      {/* 全部移出文件夹确认 */}
+      <ConfirmDialog
+        open={folderConfirm?.kind === "clearAll"}
+        type="danger"
+        title={t("organizer.clearAll")}
+        message={t("organizer.clearAllMessage")}
+        description={t("organizer.clearAllDescription")}
+        confirmText={t("common.confirm")}
+        onCancel={() => setFolderConfirm(null)}
+        onConfirm={() => {
+          foldersView.clearAssignments();
+          setFolderConfirm(null);
+        }}
       />
 
       {/* 标题栏搜索中心（portal 注入 TitleBar 插槽，layouts 不引用 features） */}

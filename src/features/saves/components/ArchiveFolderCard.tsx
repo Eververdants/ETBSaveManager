@@ -17,18 +17,18 @@ export interface ArchiveFolderCardData {
   count: number;
 }
 
-export interface ArchiveFolderCardProps {
-  folder: ArchiveFolderCardData;
+export interface ArchiveFolderCardProps<F extends ArchiveFolderCardData = ArchiveFolderCardData> {
+  folder: F;
   /** 有存档正拖拽悬停（网盘式投放高亮） */
   isDropTarget?: boolean;
-  onOpen: (folder: ArchiveFolderCardData) => void;
+  onOpen: (folder: F) => void;
 }
 
-export default function ArchiveFolderCard({
+export default function ArchiveFolderCard<F extends ArchiveFolderCardData = ArchiveFolderCardData>({
   folder,
   isDropTarget,
   onOpen,
-}: ArchiveFolderCardProps) {
+}: ArchiveFolderCardProps<F>) {
   const { t } = useTranslation();
 
   const handleClick = useCallback(() => onOpen(folder), [onOpen, folder]);

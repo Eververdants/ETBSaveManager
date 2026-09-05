@@ -67,8 +67,8 @@ export function useArchiveFolders(archives: ArchiveData[]) {
   );
 
   const currentFolder = useMemo(
-    () => folders.find((f) => f.id === currentFolderId) ?? null,
-    [folders, currentFolderId]
+    () => foldersWithCounts.find((f) => f.id === currentFolderId) ?? null,
+    [foldersWithCounts, currentFolderId]
   );
 
   /** 当前视图存档：根目录 = 未归档；文件夹内 = 归属于该文件夹 */
@@ -126,6 +126,7 @@ export function useArchiveFolders(archives: ArchiveData[]) {
     scopedArchives,
     hasAssignments,
     loaded,
+    folderIdOf,
     setCurrentFolder,
     createFolder,
     renameFolder,

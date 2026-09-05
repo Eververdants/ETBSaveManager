@@ -24,15 +24,15 @@ import MemoizedArchiveCard from "./MemoizedArchiveCard";
 import ArchiveFolderCard from "./ArchiveFolderCard";
 import type { ArchiveFolderCardData } from "./ArchiveFolderCard";
 
-export interface VirtualArchiveGridProps {
+export interface VirtualArchiveGridProps<F extends ArchiveFolderCardData = ArchiveFolderCardData> {
   archives: ArchiveData[];
   isMultiSelectMode: boolean;
   selectedIds: Set<number>;
   searchQuery?: string;
   /** 文件夹卡片（渲染在存档之前；仅根目录视图传入） */
-  folders?: ArchiveFolderCardData[];
-  onFolderOpen?: (folder: ArchiveFolderCardData) => void;
-  onFolderContextMenu?: (e: React.MouseEvent, folder: ArchiveFolderCardData) => void;
+  folders?: F[];
+  onFolderOpen?: (folder: F) => void;
+  onFolderContextMenu?: (e: React.MouseEvent, folder: F) => void;
   onToggleVisibility: (archive: ArchiveData) => void;
   onEdit: (archive: ArchiveData) => void;
   onDelete: (archive: ArchiveData) => void;
@@ -93,7 +93,7 @@ function schedulePreload(urls: string[]) {
 /**
  * 虚拟存档网格
  */
-export default function VirtualArchiveGrid({
+export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = ArchiveFolderCardData>({
   archives,
   isMultiSelectMode,
   selectedIds,
@@ -107,7 +107,7 @@ export default function VirtualArchiveGrid({
   onSelect,
   onToggleSelect,
   onCardContextMenu,
-}: VirtualArchiveGridProps) {
+}: VirtualArchiveGridProps<F>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sidebarCollapsed = useAppStore((s) => s.sidebarCollapsed);
 

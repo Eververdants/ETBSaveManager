@@ -30,6 +30,9 @@ pub struct ArchiveFolderEntry {
     pub created_at: i64,
     #[serde(default)]
     pub parent_id: Option<String>,
+    /// 手动指定的封面存档路径；空则按文件夹内存档自动合成
+    #[serde(default)]
+    pub cover_archive_path: Option<String>,
 }
 
 fn config_path() -> AppResult<std::path::PathBuf> {

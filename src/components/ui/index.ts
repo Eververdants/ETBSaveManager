@@ -13,6 +13,8 @@ export type { ConfirmDialogProps } from "./ConfirmDialog";
 export { default as Toaster } from "./Toaster";
 export { Input } from "./Input";
 export { default as Dropdown } from "./Dropdown";
+export { default as ContextMenu, useContextMenu } from "./ContextMenu";
+export type { ContextMenuItem, ContextMenuPosition, ContextMenuState } from "./ContextMenu";
 export { default as Switch } from "./Switch";
 export { default as Checkbox } from "./Checkbox";
 export { default as Slider } from "./Slider";

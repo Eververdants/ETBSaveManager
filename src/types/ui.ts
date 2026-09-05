@@ -35,6 +35,7 @@ export interface PopupOptions {
   cancelText?: string;
   onConfirm?: () => void;
   onCancel?: () => void;
+  onClose?: () => void;
 }
 
 /** Notification popup options */

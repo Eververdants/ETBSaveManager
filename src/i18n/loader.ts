@@ -9,9 +9,10 @@ import storage from "@/services/storageService";
 // Singleton instance
 let i18nInstance: I18n | null = null;
 
-// Language pack cache
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// Language pack cache — messages are dynamic imports, typed loosely
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const messagesCache: Record<string, any> = {};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const releaseNotesCache: Record<string, any> = {};
 
 /**
@@ -97,15 +98,15 @@ export const createI18nInstance = async (): Promise<I18n> => {
   const locale = getUserLocale();
   const messages = await loadLocaleMessages(locale);
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   i18nInstance = createI18n({
     legacy: false,
     locale,
     fallbackLocale: "en-US",
-    messages: { [locale]: messages } as any,
+    messages: { [locale]: messages },
     silentTranslationWarn: true,
     missingWarn: false,
     fallbackWarn: false,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
   // Lazily load other languages

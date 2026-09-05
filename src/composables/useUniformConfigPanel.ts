@@ -24,8 +24,8 @@ interface UniformConfigPanelReturn {
   handleSmartRuleChange: (rule: keyof SmartRules, checked: boolean) => void;
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type EmitFunction = (event: string, value: any) => void;
+type EmitValue = UniformConfig | SmartRules | DifficultyLevel | string | number | boolean | null | undefined;
+type EmitFunction = (event: string, value: EmitValue) => void;
 
 const MAIN_LEVEL_KEYS: string[] = [
   "Level0",

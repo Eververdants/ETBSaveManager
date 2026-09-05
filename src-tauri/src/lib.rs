@@ -1,3 +1,4 @@
+pub mod archive_folders;
 pub mod cli_handlers;
 pub mod common;
 pub mod display_name;
@@ -57,6 +58,8 @@ pub fn run() {
             save_converter::ensure_dir_exists,
             save_converter::handle_new_save,
             save_deleter::open_save_games_folder,
+            archive_folders::load_archive_folders,
+            archive_folders::save_archive_folders,
             gpu_settings::get_gpu_acceleration_status,
             gpu_settings::set_gpu_acceleration,
             gpu_settings::set_process_priority,

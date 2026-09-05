@@ -3,6 +3,7 @@
  */
 import { tauriInvoke } from "./index";
 import type {
+  ArchiveFolderFile,
   CreateArchiveOptions,
   SaveFileDetail,
   SaveFileMeta,
@@ -111,5 +112,15 @@ export const saveApi = {
   /** 打开存档文件夹 */
   async openSaveGamesFolder(): Promise<void> {
     return tauriInvoke<void>("open_save_games_folder");
+  },
+
+  /** 读取存档文件夹（整理分组）配置 */
+  async loadArchiveFolders(): Promise<ArchiveFolderFile> {
+    return tauriInvoke<ArchiveFolderFile>("load_archive_folders");
+  },
+
+  /** 整体保存存档文件夹（整理分组）配置 */
+  async saveArchiveFolders(data: ArchiveFolderFile): Promise<void> {
+    return tauriInvoke<void>("save_archive_folders", { data });
   },
 };

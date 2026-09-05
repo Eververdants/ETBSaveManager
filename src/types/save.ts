@@ -72,6 +72,23 @@ export interface SaveFileDetail {
 }
 
 // ============================================
+// 存档文件夹（应用层整理分组，archive_folders.json）
+// ============================================
+
+/** 单个整理文件夹 */
+export interface ArchiveFolder {
+  id: string;
+  name: string;
+  createdAt: number;
+}
+
+/** 文件夹持久化文件：分组定义 + 存档归属（存档文件路径小写 → 文件夹 id） */
+export interface ArchiveFolderFile {
+  folders: ArchiveFolder[];
+  assignments: Record<string, string>;
+}
+
+// ============================================
 // 存档（UI 类型 — camelCase）
 // ============================================
 

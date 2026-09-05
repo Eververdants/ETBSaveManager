@@ -82,7 +82,7 @@ export default function Sidebar() {
           ? UI_CONFIG.SIDEBAR_COLLAPSED_WIDTH
           : UI_CONFIG.SIDEBAR_WIDTH,
       }}
-      transition={{ duration: UI_CONFIG.SIDEBAR_ANIMATION_MS / 1000, ease: [0.2, 0, 0, 1] }}
+      transition={{ duration: UI_CONFIG.SIDEBAR_ANIMATION_MS / 1000, ease: "easeOut" }}
       style={{ backgroundColor: "var(--color-shell-bg)" }}
       className="relative flex shrink-0 flex-col pb-2"
     >

@@ -60,7 +60,7 @@ function ToastCard({ toast }: { toast: ToastItem }) {
       initial={{ opacity: 0, x: 40, scale: 0.96 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 40, scale: 0.96 }}
-      transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       onMouseEnter={pause}
       onMouseLeave={resume}
       className={cn(

@@ -88,7 +88,7 @@ export default function CreateWizardPage() {
             initial={{ opacity: 0, x: stepDirection * 32 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: stepDirection * -32 }}
-            transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className={isLastStep ? "h-full" : undefined}
           >
             {/* Step 1：关卡 */}

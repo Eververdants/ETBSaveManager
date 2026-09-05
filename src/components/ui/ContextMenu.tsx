@@ -229,7 +229,7 @@ export default function ContextMenu({
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.12, ease: [0.2, 0, 0, 1] }}
+            transition={{ duration: 0.12, ease: "easeOut" }}
             className={cn(PANEL_CLASS, "fixed z-[110] min-w-[200px] max-w-[300px]")}
             style={{ left: pos.x, top: pos.y, transformOrigin: "top left" }}
             onContextMenu={(e) => e.preventDefault()}

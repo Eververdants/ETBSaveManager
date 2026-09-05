@@ -164,7 +164,7 @@ export default function SidebarGroupItem({
             opacity: collapsed ? 0 : 1,
             width: collapsed ? 0 : "auto",
           }}
-          transition={{ duration: 0.12, ease: [0.2, 0, 0, 1] }}
+          transition={{ duration: 0.12, ease: "easeOut" }}
           className="ml-2.5 whitespace-nowrap overflow-hidden"
         >
           {label}
@@ -174,7 +174,7 @@ export default function SidebarGroupItem({
             opacity: collapsed ? 0 : 1,
             width: collapsed ? 0 : "auto",
           }}
-          transition={{ duration: 0.12, ease: [0.2, 0, 0, 1] }}
+          transition={{ duration: 0.12, ease: "easeOut" }}
           className="ml-auto mr-2.5 shrink-0 overflow-hidden"
         >
           <ChevronDown
@@ -189,7 +189,7 @@ export default function SidebarGroupItem({
 
       <motion.div
         animate={{ gridTemplateRows: open ? "1fr" : "0fr" }}
-        transition={{ duration: 0.18, ease: [0.2, 0, 0, 1] }}
+        transition={{ duration: 0.18, ease: "easeOut" }}
         style={{ display: "grid", gridTemplateRows: "0fr", overflow: "hidden" }}
       >
         <div style={{ minHeight: 0 }}>

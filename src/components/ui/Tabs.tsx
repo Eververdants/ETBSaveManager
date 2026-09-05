@@ -48,7 +48,7 @@ export default function Tabs({ items, active, onChange, className, compact }: Ta
           layout
           className="absolute top-0.5 bottom-0.5 rounded-md bg-[var(--color-bg-elevated)] shadow-sm"
           animate={{ left: indicator.left, width: indicator.width }}
-          transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
           style={{ left: indicator.left, width: indicator.width }}
         />
       )}

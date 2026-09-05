@@ -11,7 +11,7 @@
  *    态重排；动画期间容器实测尺寸更新被冻结，网格不产生任何重渲染
  * 4. 预加载缓冲区图片，滚动时图片已就绪
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { UI_CONFIG } from "../../../constants";
 import { useAppStore } from "../../../stores";
@@ -28,6 +28,11 @@ import type { ArchiveFolderCardData } from "./ArchiveFolderCard";
 const DRAG_MIME = "application/x-etb-archive";
 /** 拖拽移动文件夹时的 dataTransfer MIME 标记 */
 const DRAG_MIME_FOLDER = "application/x-etb-folder";
+
+/** 拖拽自动滚动：距容器上下边缘多少 px 开始滚动 / 最大速度（px/帧）/ dragover 停止触发后多久自动停 */
+const DRAG_SCROLL_EDGE = 72;
+const DRAG_SCROLL_MAX_SPEED = 16;
+const DRAG_SCROLL_TIMEOUT_MS = 120;
 
 type DragItem = { kind: "archive" | "folder"; id: string };
 
@@ -136,6 +141,55 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
   const [dropFolderId, setDropFolderId] = useState<string | null>(null);
   /** 正在拖拽的项（文件夹自拖自放不触发高亮与投放） */
   const dragItemRef = useRef<DragItem | null>(null);
+  /** 拖拽自动滚动状态 */
+  const dragScrollRafRef = useRef<number | null>(null);
+  const dragScrollSpeedRef = useRef(0);
+  const dragScrollLastAtRef = useRef(0);
+
+  const stopDragScroll = useCallback(() => {
+    if (dragScrollRafRef.current !== null) {
+      cancelAnimationFrame(dragScrollRafRef.current);
+      dragScrollRafRef.current = null;
+    }
+    dragScrollSpeedRef.current = 0;
+  }, []);
+
+  // rAF 循环按当前速度滚动；dragover 停止触发（拖拽离开容器 / 结束）后自动停止
+  const runDragScroll = useCallback(() => {
+    dragScrollRafRef.current = requestAnimationFrame(() => {
+      const container = containerRef.current;
+      if (!container || performance.now() - dragScrollLastAtRef.current > DRAG_SCROLL_TIMEOUT_MS) {
+        dragScrollRafRef.current = null;
+        dragScrollSpeedRef.current = 0;
+        return;
+      }
+      if (dragScrollSpeedRef.current !== 0) {
+        container.scrollTop += dragScrollSpeedRef.current;
+      }
+      runDragScroll();
+    });
+  }, []);
+
+  /** dragover 时根据指针到容器上下边缘的距离更新滚动速度 */
+  const updateDragScroll = useCallback(
+    (clientY: number) => {
+      const container = containerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      let speed = 0;
+      if (clientY < rect.top + DRAG_SCROLL_EDGE) {
+        const intensity = Math.max((rect.top + DRAG_SCROLL_EDGE - clientY) / DRAG_SCROLL_EDGE, 0.25);
+        speed = -Math.ceil(DRAG_SCROLL_MAX_SPEED * intensity);
+      } else if (clientY > rect.bottom - DRAG_SCROLL_EDGE) {
+        const intensity = Math.max((clientY - (rect.bottom - DRAG_SCROLL_EDGE)) / DRAG_SCROLL_EDGE, 0.25);
+        speed = Math.ceil(DRAG_SCROLL_MAX_SPEED * intensity);
+      }
+      dragScrollSpeedRef.current = speed;
+      dragScrollLastAtRef.current = performance.now();
+      if (dragScrollRafRef.current === null) runDragScroll();
+    },
+    [runDragScroll]
+  );
 
   // 侧边栏开合：立即按「动画结束后」的容器宽度布局，卡片直接滑入最终位置
   const [layoutWidthOverride, setLayoutWidthOverride] = useState<number | null>(null);
@@ -248,10 +302,13 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
         if (!acceptsDrag(e)) return;
         e.preventDefault();
         e.dataTransfer.dropEffect = "move";
+        // 指针贴近上下边缘时自动滚动，长列表拖拽可用
+        updateDragScroll(e.clientY);
       }}
       onDrop={(e) => {
         if (!acceptsDrag(e)) return;
         e.preventDefault();
+        stopDragScroll();
         setDropFolderId(null);
         // 投放到空白区域 = 移入当前文件夹；根目录下 = 移回未归档 / 根目录
         if (e.dataTransfer.types.includes(DRAG_MIME)) {
@@ -294,6 +351,7 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
                 onDragEnd={() => {
                   dragItemRef.current = null;
                   setDropFolderId(null);
+                  stopDragScroll();
                 }}
                 onContextMenu={
                   handlers.onFolderContextMenu
@@ -373,6 +431,7 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
               onDragEnd={() => {
                 dragItemRef.current = null;
                 setDropFolderId(null);
+                stopDragScroll();
               }}
               onContextMenu={
                 handlers.onCardContextMenu

@@ -113,7 +113,7 @@ export default function Dialog({
               initial={{ opacity: 0, scale: 0.95, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 8 }}
-              transition={{ duration: 0.18, ease: [0.2, 0, 0, 1] }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
               className={cn(
                 "w-full overflow-hidden rounded-xl border border-[var(--color-border-light)]",
                 "bg-[var(--color-bg-elevated)] shadow-[0_16px_48px_var(--color-shadow-lg)]",

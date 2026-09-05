@@ -92,7 +92,7 @@ export default function Dropdown({
             initial={{ opacity: 0, y: upward ? 4 : -4, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: upward ? 4 : -4, scale: 0.98 }}
-            transition={{ duration: 0.14, ease: [0.2, 0, 0, 1] }}
+            transition={{ duration: 0.14, ease: "easeOut" }}
             className={cn(
               "absolute z-50 max-h-60 overflow-y-auto rounded-lg border p-1",
               "border-[var(--color-border-light)] bg-[var(--color-bg-elevated)]",

@@ -4,7 +4,7 @@
 import { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 import { UI_CONFIG, findNavChildByPath, findNavEntryByPath } from "../../constants";
@@ -65,39 +65,33 @@ export default function TitleBar({
       {(locationText || folderName) && (
         <>
           <span data-tauri-drag-region className="mx-2 select-none text-[var(--color-shell-divider)]">/</span>
-          <AnimatePresence mode="wait">
-            {locationText && (
-              <motion.span
-                key={locationText}
-                initial={{ opacity: 0, x: -4 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 4 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
-                data-tauri-drag-region
-                className="truncate text-xs text-[var(--color-shell-text-muted)]"
-              >
-                {locationText}
-              </motion.span>
-            )}
-          </AnimatePresence>
+          {locationText && (
+            <motion.span
+              key={locationText}
+              initial={{ opacity: 0, x: -4 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              data-tauri-drag-region
+              className="truncate text-xs text-[var(--color-shell-text-muted)]"
+            >
+              {locationText}
+            </motion.span>
+          )}
           {folderName && (
             <>
               <span data-tauri-drag-region className="mx-1.5 select-none text-[var(--color-shell-divider)]">
                 ›
               </span>
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={folderName}
-                  initial={{ opacity: 0, x: -4 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 4 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  data-tauri-drag-region
-                  className="max-w-[220px] truncate text-xs text-[var(--color-shell-text-muted)]"
-                >
-                  {folderName}
-                </motion.span>
-              </AnimatePresence>
+              <motion.span
+                key={folderName}
+                initial={{ opacity: 0, x: -4 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                data-tauri-drag-region
+                className="max-w-[220px] truncate text-xs text-[var(--color-shell-text-muted)]"
+              >
+                {folderName}
+              </motion.span>
             </>
           )}
         </>

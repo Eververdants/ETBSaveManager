@@ -185,14 +185,14 @@ export default function ContextMenu({
     submenuCloseTimer.current = window.setTimeout(() => setSubmenu(null), 150);
   };
 
-  const renderItem = (item: ContextMenuItem, inSubmenu: boolean) => {
+  const renderItem = (item: ContextMenuItem, inSubmenu: boolean, index: number) => {
     if (item.separator) {
-      return <div key="sep" className="mx-2 my-1 h-px bg-[var(--color-border-light)]" />;
+      return <div key={`sep-${index}`} className="mx-2 my-1 h-px bg-[var(--color-border-light)]" />;
     }
     const Icon = item.icon;
     return (
       <button
-        key={item.label}
+        key={`${index}-${item.label}`}
         type="button"
         role="menuitem"
         disabled={item.disabled}
@@ -249,7 +249,7 @@ export default function ContextMenu({
             className={cn(PANEL_CLASS, "fixed z-[110] min-w-[200px] max-w-[300px]")}
             style={{ left: pos.x, top: pos.y, transformOrigin: "top left" }}
           >
-            {menu.items.map((item) => renderItem(item, false))}
+            {menu.items.map((item, i) => renderItem(item, false, i))}
           </motion.div>
         )}
       </AnimatePresence>
@@ -268,7 +268,7 @@ export default function ContextMenu({
           }}
           onMouseLeave={() => setSubmenu(null)}
         >
-          {submenu.items.map((item) => renderItem(item, true))}
+          {submenu.items.map((item, i) => renderItem(item, true, i))}
         </div>
       )}
     </>,

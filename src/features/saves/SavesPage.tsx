@@ -27,7 +27,6 @@ import BatchDeleteProgress from "./components/BatchDeleteProgress";
 import FolderBreadcrumb from "./components/FolderBreadcrumb";
 import FolderNameDialog from "./components/FolderNameDialog";
 import MultiSelectBar from "./components/MultiSelectBar";
-import OrganizeMenuButton from "./components/OrganizeMenuButton";
 import TitleSearchCenter from "./components/TitleSearchCenter";
 import VirtualArchiveGrid from "./components/VirtualArchiveGrid";
 
@@ -133,7 +132,7 @@ export default function SavesPage() {
       folderOptions: foldersView.folderOptions,
       getDescendantIds: foldersView.getDescendantIds,
     },
-    archivesCount: archives.length,
+    organizeCount: foldersView.scopedArchives.length,
     onNewFolder: () => setFolderDialog({ mode: "create" }),
     onRenameFolder: (folder) => setFolderDialog({ mode: "rename", folder }),
     onDeleteFolder: (folder) =>
@@ -288,11 +287,6 @@ export default function SavesPage() {
         total={batchDelete.total}
         name={batchDelete.name}
       />
-
-      {/* 整理入口（右下角浮动按钮，菜单经页面级 ContextMenu 实例向上弹出） */}
-      {!loading && archives.length > 0 && (
-        <OrganizeMenuButton onOpen={(rect) => menus.openOrganizeMenu(rect)} />
-      )}
 
       {/* 文件夹新建 / 重命名 */}
       <FolderNameDialog

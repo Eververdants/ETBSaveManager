@@ -35,8 +35,6 @@ export interface ContextMenuPosition {
 
 export interface ContextMenuState extends ContextMenuPosition {
   items: ContextMenuItem[];
-  /** "top"：菜单底部锚定在 y（向上弹出，用于浮动按钮） */
-  placement?: "top";
 }
 
 interface SubmenuState {
@@ -50,18 +48,14 @@ export function useContextMenu() {
   const [menu, setMenu] = useState<ContextMenuState | null>(null);
 
   const open = useCallback(
-    (
-      source: ContextMenuPosition | React.MouseEvent,
-      items: ContextMenuItem[],
-      options?: { placement?: "top" }
-    ) => {
+    (source: ContextMenuPosition | React.MouseEvent, items: ContextMenuItem[]) => {
       const mouse = source as React.MouseEvent;
       if (typeof mouse.clientX === "number" && typeof mouse.clientY === "number") {
         mouse.preventDefault();
-        setMenu({ x: mouse.clientX, y: mouse.clientY, items, ...options });
+        setMenu({ x: mouse.clientX, y: mouse.clientY, items });
         return;
       }
-      setMenu({ ...(source as ContextMenuPosition), items, ...options });
+      setMenu({ ...(source as ContextMenuPosition), items });
     },
     []
   );
@@ -97,26 +91,16 @@ export default function ContextMenu({
     setSubmenu(null);
   }, [menu]);
 
-  // 主面板视口内钳制：placement "top" 时底部锚定在 y（向上弹出），否则右溢出左移、下溢出上移
+  // 主面板视口内钳制（右溢出左移、下溢出上移）
   useLayoutEffect(() => {
     if (!menu || !pos || !rootRef.current) return;
     const rect = rootRef.current.getBoundingClientRect();
-    let x = pos.x;
-    let y = pos.y;
-    if (menu.placement === "top") {
-      y = pos.y - rect.height;
-      if (y < 8) y = pos.y;
-      if (x + rect.width > window.innerWidth - 8) {
-        x = window.innerWidth - rect.width - 8;
-      }
-    } else {
-      if (x + rect.width > window.innerWidth - 8) {
-        x = clamp(window.innerWidth - rect.width - 8, 8, pos.x);
-      }
-      if (y + rect.height > window.innerHeight - 8) {
-        y = clamp(window.innerHeight - rect.height - 8, 8, pos.y);
-      }
-    }
+    const x = pos.x + rect.width > window.innerWidth - 8
+      ? clamp(window.innerWidth - rect.width - 8, 8, pos.x)
+      : pos.x;
+    const y = pos.y + rect.height > window.innerHeight - 8
+      ? clamp(window.innerHeight - rect.height - 8, 8, pos.y)
+      : pos.y;
     if (x !== pos.x || y !== pos.y) setPos({ x, y });
   }, [menu, pos]);
 

@@ -54,8 +54,11 @@ interface ArchiveFolderState {
   deleteFolder: (id: string) => void;
   /** 批量移动存档；folderId 传 null 表示移回未归档 */
   moveArchives: (paths: string[], folderId: string | null) => void;
-  /** 应用一键整理计划（根目录下同名文件夹复用），返回新建数与实际移动数 */
-  applyOrganizePlan: (groups: OrganizeGroup[]) => { created: number; moved: number };
+  /** 应用一键整理计划（在 parentId 下建立/复用同名文件夹），返回新建数与实际移动数 */
+  applyOrganizePlan: (
+    groups: OrganizeGroup[],
+    parentId?: string | null
+  ) => { created: number; moved: number };
   /** 全部移出文件夹（保留文件夹本身） */
   clearAssignments: () => void;
 }
@@ -202,7 +205,7 @@ export const useArchiveFolderStore = create<ArchiveFolderState>()((set, get) => 
     schedulePersist(get);
   },
 
-  applyOrganizePlan: (groups) => {
+  applyOrganizePlan: (groups, parentId = null) => {
     const folders = [...get().folders];
     const assignments = { ...get().assignments };
     let created = 0;
@@ -210,12 +213,18 @@ export const useArchiveFolderStore = create<ArchiveFolderState>()((set, get) => 
 
     for (const group of groups) {
       if (group.paths.length === 0) continue;
-      // 一键整理始终在根目录建立规则文件夹，同名根文件夹复用
+      // 整理始终以「当前目录」为基准：规则文件夹建在 parentId 下，
+      // 同层级同名文件夹复用，不会跨层级误合并
       let folder = folders.find(
-        (f) => f.name === group.folderName && (f.parentId ?? null) === null
+        (f) => f.name === group.folderName && (f.parentId ?? null) === parentId
       );
       if (!folder) {
-        folder = { id: newFolderId(), name: group.folderName, createdAt: Date.now(), parentId: null };
+        folder = {
+          id: newFolderId(),
+          name: group.folderName,
+          createdAt: Date.now(),
+          parentId,
+        };
         folders.push(folder);
         created++;
       }

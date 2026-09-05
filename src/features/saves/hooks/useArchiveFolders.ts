@@ -162,10 +162,11 @@ export function useArchiveFolders(archives: ArchiveData[]) {
     [storeCreateFolder, currentFolderId]
   );
 
-  /** 按规则生成一键整理计划并执行（规则即最终布局，在根目录建立） */
+  /** 按规则整理「当前目录」：归档当前目录下的存档，规则文件夹建在当前目录 */
   const executeOrganize = useCallback(
     (rule: OrganizeRule) => {
-      if (archives.length === 0) return;
+      const scope = scopedArchives;
+      if (scope.length === 0) return;
 
       const groups = new Map<string, string[]>();
       const push = (name: string, path: string) => {
@@ -174,7 +175,7 @@ export function useArchiveFolders(archives: ArchiveData[]) {
         else groups.set(name, [path]);
       };
 
-      for (const archive of archives) {
+      for (const archive of scope) {
         if (!archive.path) continue;
         if (rule === "visibility") {
           push(
@@ -192,12 +193,12 @@ export function useArchiveFolders(archives: ArchiveData[]) {
         folderName,
         paths,
       }));
-      const result = applyOrganizePlan(plan);
+      const result = applyOrganizePlan(plan, currentFolderId);
       toast.success(
         t("organizer.organizeDone", { created: result.created, moved: result.moved })
       );
     },
-    [archives, applyOrganizePlan, t]
+    [scopedArchives, applyOrganizePlan, currentFolderId, t]
   );
 
   return {

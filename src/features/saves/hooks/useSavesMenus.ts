@@ -1,5 +1,5 @@
 /**
- * 存档页右键菜单 — 页面 / 卡片 / 文件夹 / 多选 / 整理 FAB 的菜单项构建与开关
+ * 存档页右键菜单 — 页面 / 卡片 / 文件夹 / 多选的菜单项构建与开关
  *
  * 页面持有唯一 useContextMenu 实例；菜单项快照在 open 调用时构建，
  * 因此回调永远拿到当次渲染的 actions / 状态。
@@ -61,7 +61,8 @@ export interface SavesMenusDeps {
   onBatchDelete: () => void;
   /** 文件夹能力（数据层就绪后传入） */
   folders?: MenusFoldersApi;
-  archivesCount: number;
+  /** 当前目录下可整理的存档数（一键整理的可用性：整理以当前目录为基准） */
+  organizeCount: number;
   onNewFolder: () => void;
   onRenameFolder: (folder: ArchiveFolderWithCount) => void;
   onDeleteFolder: (folder: ArchiveFolderWithCount) => void;
@@ -149,10 +150,11 @@ export function useSavesMenus(deps: SavesMenusDeps) {
     [t, deps]
   );
 
-  /** 空白区域右键：刷新 / 文件夹 / 新建 / 整理 / 多选 / 撤销重做 */
+  /** 空白区域右键：刷新 / 文件夹 / 新建 / 整理 / 目录管理 / 多选 / 撤销重做 */
   const openPageMenu = useCallback(
     (e: React.MouseEvent) => {
-      open(e, [
+      const folders = deps.folders;
+      const items: ContextMenuItem[] = [
         {
           label: t("common.refreshList"),
           icon: RefreshCw,
@@ -167,15 +169,41 @@ export function useSavesMenus(deps: SavesMenusDeps) {
         {
           label: t("organizer.quickOrganize"),
           icon: Sparkles,
-          disabled: deps.archivesCount === 0,
+          disabled: deps.organizeCount === 0,
           onSelect: () => deps.onOrganize("archiveDifficulty"),
         },
         {
           label: t("organizer.moreOrganize"),
           icon: ListChecks,
-          disabled: deps.archivesCount === 0,
+          disabled: deps.organizeCount === 0,
           children: organizeRuleItems(),
         },
+      ];
+
+      // 文件夹管理（此前在整理胶囊里，胶囊移除后并入页面菜单）
+      if (folders?.isInFolder && folders.currentFolder) {
+        const current = folders.currentFolder;
+        items.push({ separator: true });
+        items.push({
+          label: t("organizer.renameFolder"),
+          icon: Pencil,
+          onSelect: () => deps.onRenameFolder(current),
+        });
+        items.push({
+          label: t("organizer.deleteFolder"),
+          icon: Trash2,
+          danger: true,
+          onSelect: () => deps.onDeleteFolder(current),
+        });
+      }
+      items.push({
+        label: t("organizer.clearAll"),
+        icon: FolderMinus,
+        disabled: !folders?.hasAssignments,
+        onSelect: deps.onClearAll,
+      });
+
+      items.push(
         { separator: true },
         {
           label: t("common.multiSelectDelete"),
@@ -196,8 +224,9 @@ export function useSavesMenus(deps: SavesMenusDeps) {
           shortcut: "Ctrl+Shift+Z",
           disabled: !deps.actions.canRedo,
           onSelect: () => void deps.actions.redo(),
-        },
-      ]);
+        }
+      );
+      open(e, items);
     },
     [open, t, deps, organizeRuleItems]
   );
@@ -293,63 +322,5 @@ export function useSavesMenus(deps: SavesMenusDeps) {
     [open, t, deps]
   );
 
-  /** 整理 FAB：向上弹出的整理菜单（快捷整理 + 规则 + 文件夹管理） */
-  const openOrganizeMenu = useCallback(
-    (rect: DOMRect) => {
-      const folders = deps.folders;
-      open(
-        { x: rect.left, y: rect.top - 4 },
-        [
-          {
-            label: t("organizer.quickOrganize"),
-            icon: Sparkles,
-            disabled: deps.archivesCount === 0,
-            onSelect: () => deps.onOrganize("archiveDifficulty"),
-          },
-          {
-            label: t("organizer.moreOrganize"),
-            icon: ListChecks,
-            disabled: deps.archivesCount === 0,
-            children: organizeRuleItems(),
-          },
-          { separator: true },
-          { label: t("organizer.newFolder"), icon: FolderPlus, onSelect: deps.onNewFolder },
-          ...(folders?.isInFolder && folders.currentFolder
-            ? [
-                {
-                  label: t("organizer.renameFolder"),
-                  icon: Pencil,
-                  onSelect: () => deps.onRenameFolder(folders.currentFolder!),
-                },
-                {
-                  label: t("organizer.deleteFolder"),
-                  icon: Trash2,
-                  danger: true,
-                  onSelect: () => deps.onDeleteFolder(folders.currentFolder!),
-                },
-              ]
-            : []),
-          { separator: true },
-          {
-            label: t("organizer.clearAll"),
-            icon: FolderMinus,
-            disabled: !folders?.hasAssignments,
-            onSelect: deps.onClearAll,
-          },
-        ],
-        { placement: "top" }
-      );
-    },
-    [open, t, deps, organizeRuleItems]
-  );
-
-  return {
-    menu,
-    close,
-    openPageMenu,
-    openCardMenu,
-    openFolderMenu,
-    openMultiSelectMenu,
-    openOrganizeMenu,
-  };
+  return { menu, close, openPageMenu, openCardMenu, openFolderMenu, openMultiSelectMenu };
 }

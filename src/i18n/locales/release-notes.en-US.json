@@ -1,23 +1,22 @@
 {
-  "version": "3.4.0",
-  "date": "2026-08-27",
-  "title": "Mod Management & New Level Support",
-  "type": "minor",
+  "version": "3.4.1",
+  "date": "2026-09-06",
+  "title": "Bug Fixes & Performance",
+  "type": "patch",
   "categories": {
-    "newFeatures": [
-      "Added Mods page for installing UE4SS and NSU mods",
-      "GENSAVE archives are now renamed automatically to match their in-game display names",
-      "Level selection now supports search, with placeholder and empty-state messages",
-      "Added auto-focus functionality to search input box",
-      "Added Level 421 Plastic Mariana support"
-    ],
+    "newFeatures": [],
     "improvements": [
-      "Improved archive display-name management and visibility handling",
-      "Improved level selection UI in editor page",
-      "Improved player management UI",
-      "Adapted to new game mechanics"
+      "Batch operations now cancellable",
+      "Save parsing more resilient to malformed properties",
+      "Extra themes lazy-loaded for faster startup"
     ],
-    "bugFixes": [],
-    "performance": []
+    "bugFixes": [
+      "Fixed path traversal vulnerability",
+      "Fixed memory leaks and event listener issues",
+      "Fixed minor bugs in search, popups, theme switching"
+    ],
+    "performance": [
+      "Resource scheduler and image preloader optimizations"
+    ]
   }
 }

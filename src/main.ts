@@ -56,46 +56,11 @@ const loadAllIcons = async (): Promise<void> => {
   registerIcons();
 };
 
-// Initialize i18n (lightweight)
+// Initialize i18n — delegates to the loader singleton
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const initI18n = async (): Promise<any> => {
-  const { createI18n } = await import("vue-i18n");
-
-  // Inline language detection to avoid extra imports
-  const getSavedLocale = (): string => {
-    const saved = storage.getItem<string>("language");
-    if (saved && ["zh-CN", "en-US", "zh-TW"].includes(saved)) return saved;
-    const lang = navigator.language || "zh-CN";
-    if (["zh-TW", "zh-HK", "zh-MO"].includes(lang)) return "zh-TW";
-    if (lang.startsWith("zh")) return "zh-CN";
-    if (lang.startsWith("en")) return "en-US";
-    return "zh-CN";
-  };
-
-  // Dynamically import language files
-  const locale = getSavedLocale();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const messages: Record<string, any> = {};
-
-  // Only load current language
-  if (locale === "zh-CN") {
-    messages["zh-CN"] = (await import("./i18n/locales/zh-CN/index")).default;
-  } else if (locale === "en-US") {
-    messages["en-US"] = (await import("./i18n/locales/en-US/index")).default;
-  } else if (locale === "zh-TW") {
-    messages["zh-TW"] = (await import("./i18n/locales/zh-TW/index")).default;
-  }
-
-  i18nInstance = createI18n({
-    legacy: false,
-    locale,
-    fallbackLocale: "en-US",
-    messages,
-    silentTranslationWarn: true,
-    missingWarn: false,
-    fallbackWarn: false,
-  });
-
+  const { createI18nInstance } = await import("./i18n/loader");
+  i18nInstance = await createI18nInstance();
   return i18nInstance;
 };
 
@@ -108,7 +73,7 @@ const loadOtherLocales = async (): Promise<void> => {
 
   for (const locale of locales) {
     if (!i18nInstance.global.messages.value[locale]) {
-      const messages = (await import(`./i18n/locales/${locale}/index.ts`)).default;
+      const messages = (await import(`./i18n/locales/${locale}/index`)).default;
       i18nInstance.global.setLocaleMessage(locale, messages);
     }
   }

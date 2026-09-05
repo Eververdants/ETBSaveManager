@@ -4,7 +4,7 @@
  */
 import { createI18n } from "vue-i18n";
 import type { I18n, Composer } from "vue-i18n";
-import storage from "../services/storageService";
+import storage from "@/services/storageService";
 
 // Singleton instance
 let i18nInstance: I18n | null = null;
@@ -109,16 +109,20 @@ export const createI18nInstance = async (): Promise<I18n> => {
   } as any);
 
   // Lazily load other languages
-  requestIdleCallback(
-    async () => {
-      const otherLocales = ["zh-CN", "zh-TW", "en-US"].filter((l) => l !== locale);
-      for (const loc of otherLocales) {
-        const msg = await loadLocaleMessages(loc);
-        (i18nInstance!.global as Composer).setLocaleMessage(loc, msg as Record<string, unknown>);
-      }
-    },
-    { timeout: 5000 },
-  );
+  const loadRemaining = async (): Promise<void> => {
+    const otherLocales = ["zh-CN", "zh-TW", "en-US"].filter((l) => l !== locale);
+    for (const loc of otherLocales) {
+      const msg = await loadLocaleMessages(loc);
+      (i18nInstance!.global as Composer).setLocaleMessage(loc, msg as Record<string, unknown>);
+    }
+  };
+
+  if (typeof requestIdleCallback !== "undefined") {
+    requestIdleCallback(loadRemaining, { timeout: 5000 });
+  } else {
+    // Fallback for environments without requestIdleCallback (e.g. test runners)
+    setTimeout(loadRemaining, 0);
+  }
 
   return i18nInstance;
 };

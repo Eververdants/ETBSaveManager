@@ -25,6 +25,7 @@ import noReleaseNotes from "./noReleaseNotes.json";
 import versions from "./versions.json";
 import viewAllVersions from "./viewAllVersions.json";
 import errorBoundary from "./errorBoundary.json";
+import organizer from "./organizer.json";
 
 export default {
   app,
@@ -50,4 +51,5 @@ export default {
   versions,
   viewAllVersions,
   errorBoundary,
+  organizer,
 };

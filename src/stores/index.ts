@@ -4,6 +4,8 @@
  */
 export { useAppStore } from "./appStore";
 export { useArchiveStore } from "./archiveStore";
+export { useArchiveFolderStore } from "./archiveFolderStore";
+export type { OrganizeRule, OrganizeGroup } from "./archiveFolderStore";
 export { useEditArchiveStore } from "./editArchiveStore";
 export { useHistoryStore } from "./historyStore";
 export { useToastStore, toast } from "./toastStore";

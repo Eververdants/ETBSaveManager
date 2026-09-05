@@ -27,6 +27,7 @@ import viewAllVersions from "./viewAllVersions.json";
 import errorBoundary from "./errorBoundary.json";
 import home from "./home.json";
 import nav from "./nav.json";
+import organizer from "./organizer.json";
 
 export default {
   app,
@@ -54,4 +55,5 @@ export default {
   errorBoundary,
   home,
   nav,
+  organizer,
 };

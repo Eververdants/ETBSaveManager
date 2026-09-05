@@ -15,15 +15,9 @@ import { FEATURES, DIFFICULTY_LEVELS } from "../../../constants";
 import { useClickOutside } from "../../../hooks";
 import { cn } from "../../../utils";
 import { addSearchHistory, clearSearchHistory, getSearchHistory, useArchiveList } from "../hooks/useArchiveList";
+import { DIFFICULTY_LABELS } from "../hooks/useArchiveFolders";
 
 type ArchiveList = ReturnType<typeof useArchiveList>;
-
-const DIFFICULTY_LABELS: Record<string, string> = {
-  easy: "archiveCard.easy",
-  normal: "archiveCard.normal",
-  hard: "archiveCard.hard",
-  nightmare: "archiveCard.nightmare",
-};
 
 export interface TitleSearchCenterProps {
   open: boolean;

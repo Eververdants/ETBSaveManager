@@ -3,8 +3,8 @@
  * Uses GitHub as the sole update source
  */
 
-import storage from "../services/storageService";
-import type { UpdateSourceConfig } from "../types";
+import storage from "@/services/storageService";
+import type { UpdateSourceConfig } from "@/types/update";
 
 export const UPDATE_SOURCES: Record<string, UpdateSourceConfig> = {
   GITHUB: {

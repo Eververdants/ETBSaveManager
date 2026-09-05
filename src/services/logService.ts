@@ -4,7 +4,7 @@
  * Captures console output and window errors for debug panel and feedback system
  */
 
-import type { LogEntry } from "../types";
+import type { LogEntry } from "@/types/ui";
 import type { App } from "vue";
 
 class LogService {

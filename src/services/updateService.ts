@@ -1,6 +1,6 @@
-import { getCurrentUpdateSource } from "../config/updateConfig";
+import { getCurrentUpdateSource } from "@/config/updateConfig";
 import storage from "./storageService";
-import type { UpdateInfo, UpdateSourceConfig } from "../types";
+import type { UpdateInfo, UpdateSourceConfig } from "@/types/update";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
 // Version information

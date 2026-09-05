@@ -1,6 +1,7 @@
 // 性能检测和优化工具函数
 
-import type { DevicePerformanceInfo, AnimationParams, PerformanceMonitorOptions } from "../types";
+import type { DevicePerformanceInfo, PerformanceMonitorOptions } from "@/types/performance";
+import type { AnimationParams } from "@/types/ui";
 
 // 设备性能检测函数
 export const detectDevicePerformance = (): DevicePerformanceInfo => {

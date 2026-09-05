@@ -1,7 +1,7 @@
 import { createApp, h } from "vue";
 import PromptPopup from "@/components/modal/PromptPopup.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import type { PopupOptions } from "../types";
+import type { PopupOptions } from "@/types/ui";
 
 let popupApp: ReturnType<typeof createApp> | null = null;
 let mountPoint: HTMLDivElement | null = null;

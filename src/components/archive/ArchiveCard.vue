@@ -108,7 +108,7 @@ import { computed, toRef, type Ref } from "vue";
 import { useI18n } from "vue-i18n";
 import DOMPurify from "dompurify";
 import type { ArchiveData } from "@/types";
-import LazyImage from "../ui/LazyImage.vue";
+import LazyImage from "@/components/ui/LazyImage.vue";
 import { useArchiveCard } from "@/composables/useArchiveCard";
 import { highlightMatch } from "@/composables/useArchiveSearchFilter";
 import { FEATURES } from "@/config/features";

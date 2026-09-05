@@ -84,7 +84,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { topMenuItems, bottomMenuItems } from "../../config/sidebarMenu.js";
+import { topMenuItems, bottomMenuItems } from "@/config/sidebarMenu";
 import { gsap } from "gsap";
 import storageService from "@/services/storageService";
 import { useAppStore } from "@/stores/appStore";

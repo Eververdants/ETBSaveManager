@@ -29,7 +29,7 @@ import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import { gsap } from "gsap";
 import { isReducedMotion } from "@/utils/performance";
-import storage from "../../services/storageService";
+import storage from "@/services/storageService";
 
 defineOptions({ inheritAttrs: false });
 

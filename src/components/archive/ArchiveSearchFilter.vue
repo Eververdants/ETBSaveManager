@@ -107,7 +107,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, type PropType } from "vue";
 import { useI18n } from "vue-i18n";
-import CustomDropdown from "../ui/CustomDropdown.vue";
+import CustomDropdown from "@/components/ui/CustomDropdown.vue";
 import type { ArchiveData } from "@/types";
 import {
   getSearchHistory,

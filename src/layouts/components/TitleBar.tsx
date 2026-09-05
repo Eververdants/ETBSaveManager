@@ -75,6 +75,11 @@ export default function TitleBar({
         </>
       )}
 
+      <div data-tauri-drag-region className="flex min-w-0 flex-1 items-center justify-center">
+        {/* 通用插槽：页面可通过 portal 注入标题栏中部内容（如存档页搜索框） */}
+        <div id="titlebar-center-slot" className="pointer-events-auto flex min-w-0 items-center" />
+      </div>
+
       <div className="ml-auto flex h-full items-stretch">
         <WindowControls />
       </div>

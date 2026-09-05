@@ -43,6 +43,7 @@ class ThemeManager {
   private _currentThemeId: Ref<string | null>;
   private _isInitialized: Ref<boolean>;
   private _transitionEnabled: boolean = false;
+  private _transitionTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this._currentThemeId = ref<string | null>(null);
@@ -152,8 +153,12 @@ class ThemeManager {
       }
 
       if (this._transitionEnabled) {
-        setTimeout(() => {
+        // Clear previous timeout so rapid theme switches don't prematurely
+        // remove the transitioning class before the new transition completes.
+        if (this._transitionTimeout) clearTimeout(this._transitionTimeout);
+        this._transitionTimeout = setTimeout(() => {
           document.documentElement.classList.remove("theme-transitioning");
+          this._transitionTimeout = null;
         }, TRANSITION_DURATION);
       }
 

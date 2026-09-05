@@ -225,10 +225,12 @@ export function useArchiveData(): {
    *  empty list — callers keep their current data when this rejects. */
   const loadMetadata = async (): Promise<ArchiveData[]> => {
     const metaList = await invoke<SaveFileMeta[]>("load_save_metadata");
-    if (metaList && Array.isArray(metaList)) {
+    if (Array.isArray(metaList)) {
       return metaList.map(mapMetaToArchive).sort((a, b) => a.name.localeCompare(b.name));
     }
-    return [];
+    // Non-array response indicates a backend error — propagate so callers
+    // can show an error state instead of an empty list.
+    throw new Error("Backend returned non-array response for save metadata");
   };
 
   /**

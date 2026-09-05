@@ -5,6 +5,8 @@ import type { PerformanceMonitor } from "@/utils/performance";
 
 let monitorInitialized = false;
 let globalPerformanceMonitor: PerformanceMonitor | null = null;
+// Promise-based guard prevents race: concurrent callers await the same init
+const initPromise: Promise<void> | null = null;
 
 interface PerformanceMonitorReturn {
   showPerformanceSettings: Ref<boolean>;
@@ -47,6 +49,12 @@ export function usePerformanceMonitor(): PerformanceMonitorReturn {
   const initPerformanceMonitor = (): void => {
     if (monitorInitialized) {
       startDisplayWatcher();
+      return;
+    }
+    // If init is already in progress, just schedule the display watcher
+    // after it completes — don't create a second PerformanceObserver.
+    if (initPromise) {
+      initPromise.then(() => startDisplayWatcher());
       return;
     }
     monitorInitialized = true;

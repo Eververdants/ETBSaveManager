@@ -615,6 +615,15 @@ const centerEditedArchive = (): void => {
 //   3. showCards=false �?spinner replaces the card grid.
 //   4. 18 RAF frames (~300ms) let the sidebar animation finish.
 //   5. Boost priority, refresh data, flip showCards=true.
+let activateTimer: ReturnType<typeof setTimeout> | null = null;
+declare global {
+  interface Window {
+    __toggleSidebar?: () => void;
+    __toggleTitleBar?: () => void;
+    themeManager?: { setTheme: (theme: string) => void };
+  }
+}
+
 onActivated(() => {
   isPageActive.value = true;
 
@@ -622,7 +631,10 @@ onActivated(() => {
     (scrollContainerRef.value as HTMLElement).scrollTop = 0;
   }
 
-  setTimeout(() => {
+  // Clear any leftover timer from a previous activation that didn't finish
+  if (activateTimer) clearTimeout(activateTimer);
+  activateTimer = setTimeout(() => {
+    activateTimer = null;
     showCards.value = false;
     loading.value = true;
 
@@ -656,6 +668,11 @@ onActivated(() => {
 // On keep-alive deactivation
 onDeactivated(() => {
   isPageActive.value = false;
+  // Cancel the activate timer so it doesn't fire after we've navigated away
+  if (activateTimer) {
+    clearTimeout(activateTimer);
+    activateTimer = null;
+  }
 });
 
 onMounted(() => {

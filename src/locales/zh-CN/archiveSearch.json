@@ -12,7 +12,7 @@
   "hidden": "隐藏",
   "clearFilters": "清除筛选",
   "activeFilters": "个活跃筛选",
-  "found": "找到 {count} / {total} 个存档",
+  "found": "找到 {{count}} / {{total}} 个存档",
   "noResults": "未找到匹配的存档",
   "noMatchingArchives": "没有找到符合条件的存档",
   "adjustSearchOrClearFilters": "请尝试调整搜索条件或清除筛选器",
@@ -30,7 +30,7 @@
     "selectAll": "全选",
     "deselectAll": "取消全选",
     "exit": "退出多选",
-    "selected": "已选择 {count} / {total} 个",
+    "selected": "已选择 {{count}} / {{total}} 个",
     "batchDelete": "批量删除",
     "deleting": "正在删除"
   },

@@ -12,7 +12,7 @@
   "hidden": "隱藏",
   "clearFilters": "清除篩選",
   "activeFilters": "個作用中篩選",
-  "found": "找到 {count} / {total} 個存檔",
+  "found": "找到 {{count}} / {{total}} 個存檔",
   "noResults": "未找到相符的存檔",
   "noMatchingArchives": "沒有找到符合條件的存檔",
   "adjustSearchOrClearFilters": "請嘗試調整搜尋條件或清除篩選器",
@@ -30,7 +30,7 @@
     "selectAll": "全選",
     "deselectAll": "取消全選",
     "exit": "退出多選",
-    "selected": "已選擇 {count} / {total} 個",
+    "selected": "已選擇 {{count}} / {{total}} 個",
     "batchDelete": "批次刪除",
     "deleting": "正在刪除"
   },

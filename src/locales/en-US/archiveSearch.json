@@ -12,7 +12,7 @@
   "hidden": "Hidden",
   "clearFilters": "Clear Filters",
   "activeFilters": "active filters",
-  "found": "Found {count} / {total} archives",
+  "found": "Found {{count}} / {{total}} archives",
   "noResults": "No matching archives found",
   "noMatchingArchives": "No archives match the current criteria",
   "adjustSearchOrClearFilters": "Try adjusting the search or clearing filters",
@@ -30,7 +30,7 @@
     "selectAll": "Select All",
     "deselectAll": "Deselect All",
     "exit": "Exit Multi-select",
-    "selected": "{count} / {total} selected",
+    "selected": "{{count}} / {{total}} selected",
     "batchDelete": "Batch Delete",
     "deleting": "Deleting"
   },

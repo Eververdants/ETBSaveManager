@@ -247,7 +247,16 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     let file =
         File::open(&original_path).map_err(|e| format!("Failed to open save file: {}", e))?;
     let mut reader = BufReader::with_capacity(16384, file);
-    let mut save = Save::read(&mut reader).map_err(|e| format!("Failed to parse save: {:?}", e))?;
+    let mut save = crate::common::parse_save_lenient(&mut reader)
+        .map_err(|e| format!("Failed to parse save: {:?}", e))?;
+
+    let degraded = crate::common::raw_property_names(&save);
+    if !degraded.is_empty() {
+        tracing::warn!(
+            "Save contains properties uesave cannot parse — preserved as raw bytes: {}",
+            degraded.join(", ")
+        );
+    }
 
     // Auto-merge duplicate PlayerData entries for the same player
     // (bare id + EOS-suffixed key + all-zeros key from older app versions coexist;
@@ -959,6 +968,14 @@ fn process_player_data(save: &mut Save, json_data: &JsonValue) -> AppResult<()> 
                 tracing::info!("All players removed, deleting PlayerData_0 field");
                 save.root.properties.0.shift_remove(&player_data_key);
             }
+        } else if matches!(player_data_prop, Property::Raw(_)) {
+            // Lenient parse degraded PlayerData itself: silently skipping here
+            // would report success while dropping the user's player edits.
+            return Err(
+                "Player data in this save could not be parsed (preserved as raw bytes), \
+                 so player changes cannot be applied. Level and difficulty edits still work."
+                    .into(),
+            );
         }
     } else if !steam_ids_from_frontend.is_empty() {
         // Create new PlayerData_0 field
@@ -1236,7 +1253,8 @@ pub fn unlock_all_hub_doors(file_path: &str) -> AppResult<String> {
 
     let file = File::open(file_path).map_err(|e| format!("Failed to open save file: {}", e))?;
     let mut reader = BufReader::with_capacity(16384, file);
-    let mut save = Save::read(&mut reader).map_err(|e| format!("Failed to parse save: {:?}", e))?;
+    let mut save = crate::common::parse_save_lenient(&mut reader)
+        .map_err(|e| format!("Failed to parse save: {:?}", e))?;
 
     apply_unlock_all_hub_doors_in_place(&mut save)?;
 

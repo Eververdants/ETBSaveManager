@@ -8,7 +8,8 @@ use std::io::{BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use uesave::{
-    Property, PropertyKey, PropertyTagDataPartial, PropertyTagPartial, PropertyType, Save, ValueVec,
+    Property, PropertyKey, PropertyTagDataPartial, PropertyTagPartial, PropertyType, Save,
+    StructValue, ValueVec,
 };
 
 /// Cache local app data directory path
@@ -75,27 +76,62 @@ pub fn get_app_config_dir() -> AppResult<PathBuf> {
 /// Scope notes:
 /// - Unknown property TYPE NAMES still fail (the tag is parsed before the
 ///   fallback can engage); those need a uesave patch.
-/// - Binary path only. Do NOT feed the result through the JSON editor flow:
+/// - The edit flow is safe with Raw properties: it edits the Rust struct in
+///   place and writes binary — Raw bytes round-trip byte-for-byte. The JSON
+///   editor (`convert_sav_to_json`) is the one path that must NOT see Raw:
 ///   `Property` is `serde(untagged)` and a Raw property (a bare number array
-///   in JSON) deserializes back as Set/Array, corrupting it on write.
-///   Per-archive parsing (`cli_handlers::parse_sav_file`) deliberately stays
-///   strict until Raw gets a tagged JSON representation.
+///   in JSON) deserializes back as Set/Array, corrupting the file on write —
+///   it is guarded there (see `raw_property_names`).
 pub fn parse_save_lenient<R: std::io::Read>(reader: R) -> Result<Save, uesave::ParseError> {
     uesave::SaveReader::new().error_to_raw(true).read(reader)
 }
 
-/// Names of root-level properties that were degraded to `Property::Raw`
-/// during a lenient parse. Shallow on purpose: MAINSAVE's actionable
-/// properties (registry, display names) all live at the root, and this is
-/// only used for support diagnostics.
-fn raw_property_names(save: &Save) -> Vec<String> {
-    save.root
-        .properties
-        .0
-        .iter()
-        .filter(|(_, prop)| matches!(prop, Property::Raw(_)))
-        .map(|(key, _)| key.1.clone())
-        .collect()
+/// Paths of properties that were degraded to `Property::Raw` during a lenient
+/// parse — root level plus nested struct bodies, map values and struct/set
+/// array elements (the places a property list can recurse into). Used for
+/// support diagnostics and to keep Raw out of the JSON editor, whose
+/// round-trip cannot represent it faithfully.
+pub fn raw_property_names(save: &Save) -> Vec<String> {
+    let mut out = Vec::new();
+    collect_raw_property_names(&save.root.properties, "", &mut out);
+    out
+}
+
+fn collect_raw_property_names(
+    props: &uesave::Properties,
+    prefix: &str,
+    out: &mut Vec<String>,
+) {
+    for (key, prop) in props.0.iter() {
+        let path = if prefix.is_empty() {
+            key.1.clone()
+        } else {
+            format!("{prefix}.{}", key.1)
+        };
+        if matches!(prop, Property::Raw(_)) {
+            out.push(path.clone());
+        }
+        match prop {
+            Property::Struct(StructValue::Struct(nested)) => {
+                collect_raw_property_names(nested, &path, out);
+            }
+            Property::Map(entries) => {
+                for entry in entries {
+                    if let Property::Struct(StructValue::Struct(nested)) = &entry.value {
+                        collect_raw_property_names(nested, &path, out);
+                    }
+                }
+            }
+            Property::Array(ValueVec::Struct(values)) | Property::Set(ValueVec::Struct(values)) => {
+                for value in values {
+                    if let StructValue::Struct(nested) = value {
+                        collect_raw_property_names(nested, &path, out);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
 }
 
 /// Read MAINSAVE.sav file (optimized buffer size)
@@ -619,6 +655,31 @@ mod tests {
         assert_eq!(set.len(), 2);
         assert!(set.contains("MULTIPLAYER_A_Easy"));
         assert!(set.contains("MULTIPLAYER_B_Hard"));
+    }
+
+    #[test]
+    fn raw_property_scan_reaches_nested_structs() {
+        let mut save = fixture_save();
+
+        // Outer struct containing a degraded property one level down.
+        let mut inner: uesave::Properties = Default::default();
+        inner.0.insert(
+            PropertyKey(0, "Broken".to_string()),
+            Property::Raw(vec![1, 2, 3]),
+        );
+        inner.0.insert(PropertyKey(0, "Healthy".to_string()), Property::Int(7));
+        save.root.properties.0.insert(
+            PropertyKey(0, "Outer".to_string()),
+            Property::Struct(StructValue::Struct(inner)),
+        );
+        save.root.properties.0.insert(
+            PropertyKey(0, "RootRaw".to_string()),
+            Property::Raw(vec![9]),
+        );
+
+        let mut names = raw_property_names(&save);
+        names.sort();
+        assert_eq!(names, vec!["Outer.Broken".to_string(), "RootRaw".to_string()]);
     }
 
     /// Lenient-mode contract: a property whose value uesave cannot parse

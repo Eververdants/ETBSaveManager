@@ -17,13 +17,16 @@ const MEDIUM_FILE_THRESHOLD: u64 = 524288;
 
 /// Parse .sav file into a Save object (three-tier file size strategy)
 ///
-/// Deliberately STRICT (`Save::read`), unlike `common::read_mainsave` which
-/// uses lenient mode. Lenient mode degrades unparseable properties to
-/// `Property::Raw`, whose untagged serde form (a bare number array in JSON)
-/// does not survive the JSON round-trip this parser feeds (convert_sav_to_json
-/// → editor → convert_json_to_sav): it deserializes back as Set/Array and the
-/// file gets corrupted on write. Revisit only after Raw gains a tagged JSON
-/// representation (uesave fork/patch).
+/// Uses uesave's LENIENT mode (see `common::parse_save_lenient`): a property
+/// whose value cannot be parsed degrades to `Property::Raw` (original bytes
+/// preserved, re-emitted byte-for-byte on write) instead of failing the whole
+/// file. The tag `size` anchors the fallback, so a value-level divergence
+/// self-heals at the next property boundary — this is what keeps old archives
+/// editable when uesave mis-parses part of them.
+///
+/// Callers that round-trip the result through JSON must guard against Raw
+/// (untagged serde misreads it as Set/Array): `convert_sav_to_json` refuses
+/// such saves. The edit flow is safe — it edits the Rust struct in place.
 pub fn parse_sav_file(path: &Path) -> AppResult<Save> {
     let file = File::open(path).map_err(|e| format!("打开文件失败: {}", e))?;
     let file_size = file
@@ -38,7 +41,8 @@ pub fn parse_sav_file(path: &Path) -> AppResult<Save> {
         file.read_to_end(&mut buffer)
             .map_err(|e| format!("读取文件内容失败: {}", e))?;
         return Ok(
-            Save::read(&mut Cursor::new(&buffer)).map_err(|e| format!("解析存档失败: {:?}", e))?
+            crate::common::parse_save_lenient(Cursor::new(&buffer))
+                .map_err(|e| format!("解析存档失败: {:?}", e))?,
         );
     }
 
@@ -49,14 +53,16 @@ pub fn parse_sav_file(path: &Path) -> AppResult<Save> {
         file.read_exact(&mut buffer)
             .map_err(|e| format!("读取文件内容失败: {}", e))?;
         return Ok(
-            Save::read(&mut Cursor::new(&buffer)).map_err(|e| format!("解析存档失败: {:?}", e))?
+            crate::common::parse_save_lenient(Cursor::new(&buffer))
+                .map_err(|e| format!("解析存档失败: {:?}", e))?,
         );
     }
 
     // Large files: use memory mapping
     // SAFETY: The file is not mutated during the mapping lifetime, and the returned Save owns a copy of the data via Cursor.
     let mmap = unsafe { Mmap::map(&file) }.map_err(|e| format!("内存映射失败: {}", e))?;
-    Ok(Save::read(&mut Cursor::new(&mmap[..])).map_err(|e| format!("解析存档失败: {:?}", e))?)
+    Ok(crate::common::parse_save_lenient(Cursor::new(&mmap[..]))
+        .map_err(|e| format!("解析存档失败: {:?}", e))?)
 }
 
 /// Get file last modified date in "YYYY-MM-DD" format

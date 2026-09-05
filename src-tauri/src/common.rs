@@ -97,11 +97,7 @@ pub fn raw_property_names(save: &Save) -> Vec<String> {
     out
 }
 
-fn collect_raw_property_names(
-    props: &uesave::Properties,
-    prefix: &str,
-    out: &mut Vec<String>,
-) {
+fn collect_raw_property_names(props: &uesave::Properties, prefix: &str, out: &mut Vec<String>) {
     for (key, prop) in props.0.iter() {
         let path = if prefix.is_empty() {
             key.1.clone()
@@ -667,7 +663,9 @@ mod tests {
             PropertyKey(0, "Broken".to_string()),
             Property::Raw(vec![1, 2, 3]),
         );
-        inner.0.insert(PropertyKey(0, "Healthy".to_string()), Property::Int(7));
+        inner
+            .0
+            .insert(PropertyKey(0, "Healthy".to_string()), Property::Int(7));
         save.root.properties.0.insert(
             PropertyKey(0, "Outer".to_string()),
             Property::Struct(StructValue::Struct(inner)),
@@ -679,7 +677,10 @@ mod tests {
 
         let mut names = raw_property_names(&save);
         names.sort();
-        assert_eq!(names, vec!["Outer.Broken".to_string(), "RootRaw".to_string()]);
+        assert_eq!(
+            names,
+            vec!["Outer.Broken".to_string(), "RootRaw".to_string()]
+        );
     }
 
     /// Lenient-mode contract: a property whose value uesave cannot parse

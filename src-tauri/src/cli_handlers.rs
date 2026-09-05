@@ -40,10 +40,8 @@ pub fn parse_sav_file(path: &Path) -> AppResult<Save> {
         let mut buffer = Vec::with_capacity(file_size as usize);
         file.read_to_end(&mut buffer)
             .map_err(|e| format!("读取文件内容失败: {}", e))?;
-        return Ok(
-            crate::common::parse_save_lenient(Cursor::new(&buffer))
-                .map_err(|e| format!("解析存档失败: {:?}", e))?,
-        );
+        return Ok(crate::common::parse_save_lenient(Cursor::new(&buffer))
+            .map_err(|e| format!("解析存档失败: {:?}", e))?);
     }
 
     // Medium files: pre-allocate buffer of exact size
@@ -52,10 +50,8 @@ pub fn parse_sav_file(path: &Path) -> AppResult<Save> {
         let mut buffer = vec![0u8; file_size as usize];
         file.read_exact(&mut buffer)
             .map_err(|e| format!("读取文件内容失败: {}", e))?;
-        return Ok(
-            crate::common::parse_save_lenient(Cursor::new(&buffer))
-                .map_err(|e| format!("解析存档失败: {:?}", e))?,
-        );
+        return Ok(crate::common::parse_save_lenient(Cursor::new(&buffer))
+            .map_err(|e| format!("解析存档失败: {:?}", e))?);
     }
 
     // Large files: use memory mapping

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { ArchiveConfig, ValidationResult } from "../../types";
+import type { ArchiveConfig, ValidationResult } from "@/types/archive";
 import {
   isEmptyName,
   findDuplicateNames,
@@ -9,7 +9,7 @@ import {
   getArchiveWarnings,
   hasArchiveErrors,
   getValidationStats,
-} from "../useValidator";
+} from "@/composables/useValidator";
 
 // =============================================================================
 // isEmptyName

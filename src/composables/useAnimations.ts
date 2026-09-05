@@ -1,5 +1,5 @@
 import { gsap } from "gsap";
-import { getAnimationParams } from "../utils/performance";
+import { getAnimationParams } from "@/utils/performance";
 import scheduler from "@/services/resourceScheduler";
 import type { Ref } from "vue";
 

@@ -5,8 +5,8 @@
  * 供编辑存档/创建存档页面决定是否显示难度修改提示。
  */
 import { ref } from "vue";
-import storageService from "../services/storageService";
-import modService, { GAME_ROOT_KEY } from "../services/modService";
+import storageService from "@/services/storageService";
+import modService, { GAME_ROOT_KEY } from "@/services/modService";
 
 export function useNsuStatus() {
   /** 仅当 NSU 已安装且已启用时为 true —— 否则游戏无法识别难度修改。 */

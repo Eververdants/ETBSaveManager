@@ -6,8 +6,8 @@ import {
   resolveAll,
   hasIndividualSettings,
   DEFAULT_CONFIG,
-} from "../useConfigResolver";
-import type { ArchiveConfig, UniformConfig, SmartRules, DifficultyLevel } from "../../types";
+} from "@/composables/useConfigResolver";
+import type { ArchiveConfig, UniformConfig, SmartRules, DifficultyLevel } from "@/types/archive";
 import { FEATURES } from "@/config/features";
 
 const createArchiveConfig = (overrides: Partial<ArchiveConfig> = {}): ArchiveConfig => ({

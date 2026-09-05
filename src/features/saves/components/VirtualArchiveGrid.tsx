@@ -16,6 +16,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { UI_CONFIG } from "../../../constants";
 import { useAppStore } from "../../../stores";
 import { useVirtualGrid } from "../hooks/useVirtualGrid";
+import type { GridConfig } from "../hooks/virtualGridLayout";
 import { getLevelImage } from "../../../utils/levelUtils";
 import { preloadImage, isImagePreloaded } from "../../../utils/imagePreloader";
 import type { ArchiveData } from "../../../types";
@@ -41,6 +42,23 @@ const SIDEBAR_ANIMATION_GRACE_MS = UI_CONFIG.SIDEBAR_ANIMATION_MS + 50;
 // 侧边栏两种宽度之差 = 容器宽度的变化量，用于预测动画结束后的布局宽度
 const SIDEBAR_WIDTH_DELTA = UI_CONFIG.SIDEBAR_WIDTH - UI_CONFIG.SIDEBAR_COLLAPSED_WIDTH;
 // 页面级上下留白由 SavesPage 内容区的 pt-4 / pb-6 提供，布局数学不再重复计算
+
+// 模块级常量：保持引用稳定，useVirtualGrid 内的布局 memo 不随重渲染重建
+const GRID_CONFIG: Partial<GridConfig> = {
+  minColumnWidth: MIN_COLUMN_WIDTH,
+  gap: GAP,
+  overscanRows: OVERSCAN_ROWS,
+};
+
+// 滚动条沟槽恒定保留：内容宽度只由外壳决定，与「当前是否出现滚动条」
+// 解耦。否则总高度变化 → 滚动条增减 → 内容宽度变化 → 布局再变 → 滚动条
+// 再增减，在内容高度接近视口时形成振荡（卡片在新旧排布间反复闪烁），
+// 且布局宽度覆盖的预测值永远无法与实测值对齐
+const CONTAINER_STYLE: React.CSSProperties = {
+  scrollBehavior: "auto", // 禁用 CSS smooth，滚动位置完全由事件驱动
+  transform: "translateZ(0)", // GPU 加速
+  scrollbarGutter: "stable",
+};
 
 /**
  * 预加载缓冲区图片（使用全局预加载器）
@@ -88,11 +106,7 @@ export default function VirtualArchiveGrid({
   const { visibleItems, totalHeight, containerWidth } = useVirtualGrid({
     itemCount: archives.length,
     containerRef,
-    config: {
-      minColumnWidth: MIN_COLUMN_WIDTH,
-      gap: GAP,
-      overscanRows: OVERSCAN_ROWS,
-    },
+    config: GRID_CONFIG,
     layoutWidthOverride,
   });
 
@@ -153,12 +167,7 @@ export default function VirtualArchiveGrid({
     <div
       ref={containerRef}
       className="h-full w-full overflow-y-auto overflow-x-hidden"
-      style={{
-        // 平滑滚动
-        scrollBehavior: "auto", // 禁用 CSS smooth，我们自己控制
-        // GPU 加速
-        transform: "translateZ(0)",
-      }}
+      style={CONTAINER_STYLE}
     >
       {/* 占位容器 */}
       <div

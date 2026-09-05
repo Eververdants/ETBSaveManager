@@ -49,8 +49,7 @@ export default function SavesPage() {
   // 网盘行为：搜索 / 筛选时跨全部文件夹；平时按当前目录取存档
   const searching = list.hasActiveFilters;
   const gridArchives = searching ? list.displayArchives : foldersView.scopedArchives;
-  const gridFolders =
-    !searching && !foldersView.isInFolder ? foldersView.foldersWithCounts : [];
+  const gridFolders = !searching ? foldersView.viewFolders : [];
   const multi = useMultiSelect(gridArchives);
 
   const [searchOpen, setSearchOpen] = useState(false);
@@ -61,7 +60,7 @@ export default function SavesPage() {
     { mode: "create"; movePaths?: string[] } | { mode: "rename"; folder: ArchiveFolder } | null
   >(null);
   const [folderConfirm, setFolderConfirm] = useState<
-    { kind: "deleteFolder"; folder: ArchiveFolderWithCount } | { kind: "clearAll" } | null
+    { kind: "deleteFolder"; folder: ArchiveFolderWithCount; count: number } | { kind: "clearAll" } | null
   >(null);
 
   // ---- 初始化 ----
@@ -127,18 +126,25 @@ export default function SavesPage() {
     onToggleMultiSelect: multi.toggleMultiSelectMode,
     onBatchDelete: () => void handleBatchDelete(),
     folders: {
-      foldersWithCounts: foldersView.foldersWithCounts,
       isInFolder: foldersView.isInFolder,
       currentFolder: foldersView.currentFolder,
       hasAssignments: foldersView.hasAssignments,
       folderIdOf: foldersView.folderIdOf,
+      folderOptions: foldersView.folderOptions,
+      getDescendantIds: foldersView.getDescendantIds,
     },
     archivesCount: archives.length,
     onNewFolder: () => setFolderDialog({ mode: "create" }),
     onRenameFolder: (folder) => setFolderDialog({ mode: "rename", folder }),
-    onDeleteFolder: (folder) => setFolderConfirm({ kind: "deleteFolder", folder }),
+    onDeleteFolder: (folder) =>
+      setFolderConfirm({
+        kind: "deleteFolder",
+        folder,
+        count: foldersView.getSubtreeArchiveCount(folder.id),
+      }),
     onOpenFolderCard: (folder) => foldersView.setCurrentFolder(folder.id),
     onMoveArchives: foldersView.moveArchives,
+    onMoveFolder: foldersView.moveFolder,
     onMoveToNewFolder: (paths) => setFolderDialog({ mode: "create", movePaths: paths }),
     onOrganize: foldersView.executeOrganize,
     onClearAll: () => setFolderConfirm({ kind: "clearAll" }),
@@ -184,12 +190,12 @@ export default function SavesPage() {
         onBatchDelete={() => void handleBatchDelete()}
       />
 
-      {/* 文件夹面包屑（仅文件夹内且未搜索时） */}
+      {/* 文件夹面包屑（仅文件夹内且未搜索时，支持多级链路） */}
       {!searching && foldersView.currentFolder && (
         <FolderBreadcrumb
-          folderName={foldersView.currentFolder.name}
+          segments={foldersView.currentPath.map((f) => ({ id: f.id, name: f.name }))}
           count={foldersView.scopedArchives.length}
-          onExit={() => foldersView.setCurrentFolder(null)}
+          onNavigate={(id) => foldersView.setCurrentFolder(id)}
         />
       )}
 
@@ -233,6 +239,10 @@ export default function SavesPage() {
             onFolderOpen={(f) => foldersView.setCurrentFolder(f.id)}
             onFolderContextMenu={handleFolderContextMenu}
             onDropArchiveToFolder={(path, folderId) => foldersView.moveArchives([path], folderId)}
+            onDropFolderToFolder={(folderId, targetId) => foldersView.moveFolder(folderId, targetId)}
+            isValidFolderDrop={(folderId, targetId) =>
+              !foldersView.getDescendantIds(folderId).includes(targetId)
+            }
             containerFolderId={foldersView.currentFolderId}
             onToggleVisibility={handleToggleVisibility}
             onEdit={actions.handleEdit}
@@ -313,7 +323,7 @@ export default function SavesPage() {
           name: folderConfirm?.kind === "deleteFolder" ? folderConfirm.folder.name : "",
         })}
         description={t("organizer.deleteFolderDescription", {
-          count: folderConfirm?.kind === "deleteFolder" ? folderConfirm.folder.count : 0,
+          count: folderConfirm?.kind === "deleteFolder" ? folderConfirm.count : 0,
         })}
         confirmText={t("common.delete")}
         onCancel={() => setFolderConfirm(null)}

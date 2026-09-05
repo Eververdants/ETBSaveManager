@@ -80,6 +80,8 @@ export interface ArchiveFolder {
   id: string;
   name: string;
   createdAt: number;
+  /** 父文件夹 id；根目录文件夹为 null（wire 可缺省） */
+  parentId?: string | null;
 }
 
 /** 文件夹持久化文件：分组定义 + 存档归属（存档文件路径小写 → 文件夹 id） */

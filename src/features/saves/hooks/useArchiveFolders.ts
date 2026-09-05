@@ -1,8 +1,9 @@
 /**
- * 存档文件夹派生逻辑 — 根目录 / 文件夹视图、文件夹计数、整理计划
+ * 存档文件夹派生逻辑 — 目录视图、文件夹计数、祖先链、整理计划
  *
- * 归属关系以存档文件路径（小写）查询；孤儿归属（存档已删除）在派生
- * 时被自然忽略，不需要显式清理。
+ * 文件夹可嵌套（parentId 指向父级，根目录为 null）；归属关系以存档
+ * 文件路径（小写）查询，孤儿归属（存档或文件夹已删除）在派生时被
+ * 自然忽略，不需要显式清理。
  *
  * 搜索 / 筛选生效时视图与文件夹无关（跨全部文件夹搜索，网盘行为）。
  */
@@ -23,6 +24,13 @@ export const DIFFICULTY_LABELS: Record<string, string> = {
 
 export interface ArchiveFolderWithCount extends ArchiveFolder {
   count: number;
+  parentId: string | null;
+}
+
+/** 移动子菜单用的扁平选项（label 为含路径全名，如 "难度 / 噩梦"） */
+export interface FolderOption {
+  id: string;
+  label: string;
 }
 
 export function useArchiveFolders(archives: ArchiveData[]) {
@@ -34,8 +42,9 @@ export function useArchiveFolders(archives: ArchiveData[]) {
   const loaded = useArchiveFolderStore((s) => s.loaded);
   const load = useArchiveFolderStore((s) => s.load);
   const setCurrentFolder = useArchiveFolderStore((s) => s.setCurrentFolder);
-  const createFolder = useArchiveFolderStore((s) => s.createFolder);
+  const storeCreateFolder = useArchiveFolderStore((s) => s.createFolder);
   const renameFolder = useArchiveFolderStore((s) => s.renameFolder);
+  const moveFolder = useArchiveFolderStore((s) => s.moveFolder);
   const deleteFolder = useArchiveFolderStore((s) => s.deleteFolder);
   const moveArchives = useArchiveFolderStore((s) => s.moveArchives);
   const applyOrganizePlan = useArchiveFolderStore((s) => s.applyOrganizePlan);
@@ -53,15 +62,12 @@ export function useArchiveFolders(archives: ArchiveData[]) {
     [assignments]
   );
 
-  /** 各文件夹的存档数量（孤儿归属不计入） */
   const foldersWithCounts = useMemo<ArchiveFolderWithCount[]>(
     () =>
       folders.map((folder) => ({
         ...folder,
-        count: archives.reduce(
-          (n, a) => (folderIdOf(a) === folder.id ? n + 1 : n),
-          0
-        ),
+        parentId: folder.parentId ?? null,
+        count: archives.reduce((n, a) => (folderIdOf(a) === folder.id ? n + 1 : n), 0),
       })),
     [folders, archives, folderIdOf]
   );
@@ -69,6 +75,73 @@ export function useArchiveFolders(archives: ArchiveData[]) {
   const currentFolder = useMemo(
     () => foldersWithCounts.find((f) => f.id === currentFolderId) ?? null,
     [foldersWithCounts, currentFolderId]
+  );
+
+  /** 当前视图的文件夹卡片：根目录显示根文件夹，文件夹内显示其子文件夹 */
+  const viewFolders = useMemo(
+    () =>
+      foldersWithCounts.filter((f) => (f.parentId ?? null) === (currentFolderId ?? null)),
+    [foldersWithCounts, currentFolderId]
+  );
+
+  /** 根目录到当前文件夹的链路（面包屑，含当前文件夹） */
+  const currentPath = useMemo(() => {
+    const chain: ArchiveFolderWithCount[] = [];
+    let cursor: ArchiveFolderWithCount | null = currentFolder;
+    while (cursor) {
+      chain.unshift(cursor);
+      const parentId = cursor.parentId;
+      cursor = parentId
+        ? (foldersWithCounts.find((f) => f.id === parentId) ?? null)
+        : null;
+    }
+    return chain;
+  }, [currentFolder, foldersWithCounts]);
+
+  /** 扁平文件夹选项（移动子菜单用） */
+  const folderOptions = useMemo<FolderOption[]>(() => {
+    const nameOf = new Map(foldersWithCounts.map((f) => [f.id, f.name]));
+    const parentOf = new Map(foldersWithCounts.map((f) => [f.id, f.parentId]));
+    return foldersWithCounts.map((folder) => {
+      const parts = [folder.name];
+      let parent = parentOf.get(folder.id) ?? null;
+      while (parent) {
+        parts.unshift(nameOf.get(parent) ?? "?");
+        parent = parentOf.get(parent) ?? null;
+      }
+      return { id: folder.id, label: parts.join(" / ") };
+    });
+  }, [foldersWithCounts]);
+
+  /** folderId 的全部后代文件夹 id（不含自身） */
+  const getDescendantIds = useCallback(
+    (folderId: string): string[] => {
+      const result: string[] = [];
+      const stack = [folderId];
+      while (stack.length > 0) {
+        const current = stack.pop()!;
+        for (const folder of foldersWithCounts) {
+          if (folder.parentId === current && !result.includes(folder.id)) {
+            result.push(folder.id);
+            stack.push(folder.id);
+          }
+        }
+      }
+      return result;
+    },
+    [foldersWithCounts]
+  );
+
+  /** folderId 及其后代文件夹中的存档总数（删除确认文案用） */
+  const getSubtreeArchiveCount = useCallback(
+    (folderId: string): number => {
+      const ids = new Set([folderId, ...getDescendantIds(folderId)]);
+      return archives.reduce((n, a) => {
+        const fid = folderIdOf(a);
+        return fid && ids.has(fid) ? n + 1 : n;
+      }, 0);
+    },
+    [archives, folderIdOf, getDescendantIds]
   );
 
   /** 当前视图存档：根目录 = 未归档；文件夹内 = 归属于该文件夹 */
@@ -83,7 +156,13 @@ export function useArchiveFolders(archives: ArchiveData[]) {
     [archives, folderIdOf]
   );
 
-  /** 按规则生成一键整理计划（仅收编未归档时也全量覆盖，规则即最终布局） */
+  /** 在当前视图下创建文件夹（根视图 → 根目录；文件夹内 → 该文件夹） */
+  const createFolder = useCallback(
+    (name: string) => storeCreateFolder(name, currentFolderId),
+    [storeCreateFolder, currentFolderId]
+  );
+
+  /** 按规则生成一键整理计划并执行（规则即最终布局，在根目录建立） */
   const executeOrganize = useCallback(
     (rule: OrganizeRule) => {
       if (archives.length === 0) return;
@@ -98,7 +177,10 @@ export function useArchiveFolders(archives: ArchiveData[]) {
       for (const archive of archives) {
         if (!archive.path) continue;
         if (rule === "visibility") {
-          push(archive.isVisible ? t("organizer.groupVisible") : t("organizer.groupHidden"), archive.path);
+          push(
+            archive.isVisible ? t("organizer.groupVisible") : t("organizer.groupHidden"),
+            archive.path
+          );
         } else {
           const raw =
             rule === "archiveDifficulty" ? archive.archiveDifficulty : archive.actualDifficulty;
@@ -120,16 +202,22 @@ export function useArchiveFolders(archives: ArchiveData[]) {
 
   return {
     foldersWithCounts,
+    viewFolders,
     currentFolder,
     currentFolderId,
+    currentPath,
+    folderOptions,
     isInFolder: currentFolder !== null,
     scopedArchives,
     hasAssignments,
     loaded,
     folderIdOf,
+    getDescendantIds,
+    getSubtreeArchiveCount,
     setCurrentFolder,
     createFolder,
     renameFolder,
+    moveFolder,
     deleteFolder,
     moveArchives,
     executeOrganize,

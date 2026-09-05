@@ -26,6 +26,10 @@ import type { ArchiveFolderCardData } from "./ArchiveFolderCard";
 
 /** 拖拽移动存档时的 dataTransfer MIME 标记 */
 const DRAG_MIME = "application/x-etb-archive";
+/** 拖拽移动文件夹时的 dataTransfer MIME 标记 */
+const DRAG_MIME_FOLDER = "application/x-etb-folder";
+
+type DragItem = { kind: "archive" | "folder"; id: string };
 
 export interface VirtualArchiveGridProps<F extends ArchiveFolderCardData = ArchiveFolderCardData> {
   archives: ArchiveData[];
@@ -38,6 +42,10 @@ export interface VirtualArchiveGridProps<F extends ArchiveFolderCardData = Archi
   onFolderContextMenu?: (e: React.MouseEvent, folder: F) => void;
   /** 拖拽存档投放：folderId 为 null 表示移回未归档 */
   onDropArchiveToFolder?: (archivePath: string, folderId: string | null) => void;
+  /** 拖拽文件夹投放（嵌套）：targetId 为 null 表示移回根目录 */
+  onDropFolderToFolder?: (folderId: string, targetId: string | null) => void;
+  /** 文件夹拖放有效性校验（拖入自身后代形成环的拖拽不响应） */
+  isValidFolderDrop?: (folderId: string, targetId: string) => boolean;
   /** 空白区域代表的文件夹（当前浏览的文件夹，根目录为 null） */
   containerFolderId?: string | null;
   onToggleVisibility: (archive: ArchiveData) => void;
@@ -109,6 +117,8 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
   onFolderOpen,
   onFolderContextMenu,
   onDropArchiveToFolder,
+  onDropFolderToFolder,
+  isValidFolderDrop,
   containerFolderId,
   onToggleVisibility,
   onEdit,
@@ -121,6 +131,8 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
   const sidebarCollapsed = useAppStore((s) => s.sidebarCollapsed);
   /** 当前拖拽悬停的文件夹（投放高亮） */
   const [dropFolderId, setDropFolderId] = useState<string | null>(null);
+  /** 正在拖拽的项（文件夹自拖自放不触发高亮与投放） */
+  const dragItemRef = useRef<DragItem | null>(null);
 
   // 侧边栏开合：立即按「动画结束后」的容器宽度布局，卡片直接滑入最终位置
   const [layoutWidthOverride, setLayoutWidthOverride] = useState<number | null>(null);
@@ -188,6 +200,8 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
       onFolderOpen,
       onFolderContextMenu,
       onDropArchiveToFolder,
+      onDropFolderToFolder,
+      isValidFolderDrop,
       containerFolderId,
     }),
     [
@@ -200,9 +214,15 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
       onFolderOpen,
       onFolderContextMenu,
       onDropArchiveToFolder,
+      onDropFolderToFolder,
+      isValidFolderDrop,
       containerFolderId,
     ]
   );
+
+  /** 投放目标是否接受当前拖拽物（存档或文件夹） */
+  const acceptsDrag = (e: React.DragEvent): boolean =>
+    e.dataTransfer.types.includes(DRAG_MIME) || e.dataTransfer.types.includes(DRAG_MIME_FOLDER);
 
   if (itemCount === 0) return null;
 
@@ -212,17 +232,22 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
       className="h-full w-full overflow-y-auto overflow-x-hidden"
       style={CONTAINER_STYLE}
       onDragOver={(e) => {
-        if (!e.dataTransfer.types.includes(DRAG_MIME)) return;
+        if (!acceptsDrag(e)) return;
         e.preventDefault();
         e.dataTransfer.dropEffect = "move";
       }}
       onDrop={(e) => {
-        if (!e.dataTransfer.types.includes(DRAG_MIME)) return;
+        if (!acceptsDrag(e)) return;
         e.preventDefault();
         setDropFolderId(null);
-        const path = e.dataTransfer.getData(DRAG_MIME);
-        // 投放到空白区域 = 移入当前文件夹；根目录下 = 移回未归档
-        if (path) handlers.onDropArchiveToFolder?.(path, handlers.containerFolderId ?? null);
+        // 投放到空白区域 = 移入当前文件夹；根目录下 = 移回未归档 / 根目录
+        if (e.dataTransfer.types.includes(DRAG_MIME)) {
+          const path = e.dataTransfer.getData(DRAG_MIME);
+          if (path) handlers.onDropArchiveToFolder?.(path, handlers.containerFolderId ?? null);
+          return;
+        }
+        const folderId = e.dataTransfer.getData(DRAG_MIME_FOLDER);
+        if (folderId) handlers.onDropFolderToFolder?.(folderId, handlers.containerFolderId ?? null);
       }}
     >
       {/* 占位容器 */}
@@ -240,12 +265,22 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
             return (
               <div
                 key={`folder-${folder.id}`}
+                draggable={!isMultiSelectMode}
                 style={{
                   position: "absolute",
                   left: item.left,
                   top: item.top,
                   width: item.width,
                   height: item.height,
+                }}
+                onDragStart={(e) => {
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData(DRAG_MIME_FOLDER, folder.id);
+                  dragItemRef.current = { kind: "folder", id: folder.id };
+                }}
+                onDragEnd={() => {
+                  dragItemRef.current = null;
+                  setDropFolderId(null);
                 }}
                 onContextMenu={
                   handlers.onFolderContextMenu
@@ -256,7 +291,15 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
                     : undefined
                 }
                 onDragOver={(e) => {
-                  if (!e.dataTransfer.types.includes(DRAG_MIME)) return;
+                  if (!acceptsDrag(e)) return;
+                  // 文件夹不可拖入自身或其后代（高亮阶段即拦截）
+                  if (dragItemRef.current?.kind === "folder") {
+                    const dragId = dragItemRef.current.id;
+                    if (dragId === folder.id) return;
+                    if (handlers.isValidFolderDrop && !handlers.isValidFolderDrop(dragId, folder.id)) {
+                      return;
+                    }
+                  }
                   e.preventDefault();
                   e.dataTransfer.dropEffect = "move";
                   setDropFolderId(folder.id);
@@ -270,8 +313,20 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
                   e.preventDefault();
                   e.stopPropagation();
                   setDropFolderId(null);
-                  const path = e.dataTransfer.getData(DRAG_MIME);
-                  if (path) handlers.onDropArchiveToFolder?.(path, folder.id);
+                  if (dragItemRef.current?.kind === "folder") {
+                    const dragId = dragItemRef.current.id;
+                    if (dragId === folder.id) return;
+                    if (handlers.isValidFolderDrop && !handlers.isValidFolderDrop(dragId, folder.id)) {
+                      return;
+                    }
+                  }
+                  const archivePath = e.dataTransfer.getData(DRAG_MIME);
+                  if (archivePath) {
+                    handlers.onDropArchiveToFolder?.(archivePath, folder.id);
+                    return;
+                  }
+                  const folderId = e.dataTransfer.getData(DRAG_MIME_FOLDER);
+                  if (folderId) handlers.onDropFolderToFolder?.(folderId, folder.id);
                 }}
               >
                 <ArchiveFolderCard
@@ -300,8 +355,12 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
               onDragStart={(e) => {
                 e.dataTransfer.effectAllowed = "move";
                 e.dataTransfer.setData(DRAG_MIME, archive.path);
+                dragItemRef.current = { kind: "archive", id: archive.path };
               }}
-              onDragEnd={() => setDropFolderId(null)}
+              onDragEnd={() => {
+                dragItemRef.current = null;
+                setDropFolderId(null);
+              }}
               onContextMenu={
                 handlers.onCardContextMenu
                   ? (e) => {

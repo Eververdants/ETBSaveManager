@@ -45,17 +45,35 @@ interface ArchiveFolderState {
   loaded: boolean;
   load: () => Promise<void>;
   setCurrentFolder: (id: string | null) => void;
-  /** 创建文件夹，返回新 id */
-  createFolder: (name: string) => string;
+  /** 在指定父文件夹下创建文件夹（缺省为根目录），返回新 id */
+  createFolder: (name: string, parentId?: string | null) => string;
   renameFolder: (id: string, name: string) => void;
-  /** 删除文件夹，其中存档回到未归档；若正在浏览则返回根目录 */
+  /** 移动文件夹到新的父级（parent 为 null 表示移回根目录）；目标是自身或后代时拒绝并返回 false */
+  moveFolder: (id: string, newParentId: string | null) => boolean;
+  /** 删除文件夹（连同其子文件夹），其中存档回到未归档；若正在浏览被删范围则返回根目录 */
   deleteFolder: (id: string) => void;
   /** 批量移动存档；folderId 传 null 表示移回未归档 */
   moveArchives: (paths: string[], folderId: string | null) => void;
-  /** 应用一键整理计划（同名文件夹复用），返回新建数与实际移动数 */
+  /** 应用一键整理计划（根目录下同名文件夹复用），返回新建数与实际移动数 */
   applyOrganizePlan: (groups: OrganizeGroup[]) => { created: number; moved: number };
   /** 全部移出文件夹（保留文件夹本身） */
   clearAssignments: () => void;
+}
+
+/** 收集 folderId 的全部后代文件夹 id（不含自身） */
+function collectDescendantIds(folders: ArchiveFolder[], folderId: string): string[] {
+  const result: string[] = [];
+  const stack = [folderId];
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+    for (const folder of folders) {
+      if ((folder.parentId ?? null) === current && !result.includes(folder.id)) {
+        result.push(folder.id);
+        stack.push(folder.id);
+      }
+    }
+  }
+  return result;
 }
 
 let saveTimer: number | null = null;
@@ -102,7 +120,10 @@ export const useArchiveFolderStore = create<ArchiveFolderState>()((set, get) => 
     try {
       const data = await saveApi.loadArchiveFolders();
       set({
-        folders: Array.isArray(data?.folders) ? data.folders : [],
+        folders: (Array.isArray(data?.folders) ? data.folders : []).map((f) => ({
+          ...f,
+          parentId: f.parentId ?? null,
+        })),
         assignments: data?.assignments ?? {},
         loaded: true,
       });
@@ -118,8 +139,13 @@ export const useArchiveFolderStore = create<ArchiveFolderState>()((set, get) => 
     writePersistedFolderId(id);
   },
 
-  createFolder: (name) => {
-    const folder: ArchiveFolder = { id: newFolderId(), name, createdAt: Date.now() };
+  createFolder: (name, parentId = null) => {
+    const folder: ArchiveFolder = {
+      id: newFolderId(),
+      name,
+      createdAt: Date.now(),
+      parentId,
+    };
     set((s) => ({ folders: [...s.folders, folder] }));
     schedulePersist(get);
     return folder.id;
@@ -132,16 +158,30 @@ export const useArchiveFolderStore = create<ArchiveFolderState>()((set, get) => 
     schedulePersist(get);
   },
 
+  moveFolder: (id, newParentId) => {
+    if (id === newParentId) return false;
+    const descendants = collectDescendantIds(get().folders, id);
+    if (newParentId && descendants.includes(newParentId)) return false;
+
+    set((s) => ({
+      folders: s.folders.map((f) => (f.id === id ? { ...f, parentId: newParentId } : f)),
+    }));
+    schedulePersist(get);
+    return true;
+  },
+
   deleteFolder: (id) => {
     set((s) => {
+      const removed = new Set([id, ...collectDescendantIds(s.folders, id)]);
       const assignments = { ...s.assignments };
       for (const key of Object.keys(assignments)) {
-        if (assignments[key] === id) delete assignments[key];
+        if (assignments[key] && removed.has(assignments[key])) delete assignments[key];
       }
       return {
-        folders: s.folders.filter((f) => f.id !== id),
+        folders: s.folders.filter((f) => !removed.has(f.id)),
         assignments,
-        currentFolderId: s.currentFolderId === id ? null : s.currentFolderId,
+        currentFolderId:
+          s.currentFolderId && removed.has(s.currentFolderId) ? null : s.currentFolderId,
       };
     });
     writePersistedFolderId(get().currentFolderId);
@@ -170,9 +210,12 @@ export const useArchiveFolderStore = create<ArchiveFolderState>()((set, get) => 
 
     for (const group of groups) {
       if (group.paths.length === 0) continue;
-      let folder = folders.find((f) => f.name === group.folderName);
+      // 一键整理始终在根目录建立规则文件夹，同名根文件夹复用
+      let folder = folders.find(
+        (f) => f.name === group.folderName && (f.parentId ?? null) === null
+      );
       if (!folder) {
-        folder = { id: newFolderId(), name: group.folderName, createdAt: Date.now() };
+        folder = { id: newFolderId(), name: group.folderName, createdAt: Date.now(), parentId: null };
         folders.push(folder);
         created++;
       }

@@ -31,17 +31,18 @@ import type { ContextMenuItem } from "../../../components/ui";
 import type { OrganizeRule } from "../../../stores";
 import type { ArchiveData } from "../../../types";
 import type { useArchiveActions } from "./useArchiveActions";
-import type { ArchiveFolderWithCount } from "./useArchiveFolders";
+import type { ArchiveFolderWithCount, FolderOption } from "./useArchiveFolders";
 
 type ArchiveActions = ReturnType<typeof useArchiveActions>;
 
 /** 文件夹视图 API（useArchiveFolders 的裁剪子集） */
 export interface MenusFoldersApi {
-  foldersWithCounts: ArchiveFolderWithCount[];
   isInFolder: boolean;
   currentFolder: ArchiveFolderWithCount | null;
   hasAssignments: boolean;
   folderIdOf: (archive: ArchiveData) => string | null;
+  folderOptions: FolderOption[];
+  getDescendantIds: (folderId: string) => string[];
 }
 
 export interface SavesMenusDeps {
@@ -66,6 +67,7 @@ export interface SavesMenusDeps {
   onDeleteFolder: (folder: ArchiveFolderWithCount) => void;
   onOpenFolderCard: (folder: ArchiveFolderWithCount) => void;
   onMoveArchives: (paths: string[], folderId: string | null) => void;
+  onMoveFolder: (folderId: string, parentId: string | null) => void;
   onMoveToNewFolder: (paths: string[]) => void;
   onOrganize: (rule: OrganizeRule) => void;
   onClearAll: () => void;
@@ -94,15 +96,15 @@ export function useSavesMenus(deps: SavesMenusDeps) {
     [t, deps]
   );
 
-  /** 「移动到文件夹」子菜单：全部文件夹 + 移出 + 新建 */
+  /** 「移动到文件夹」子菜单：扁平文件夹列表（路径全名）+ 移出 + 新建 */
   const buildMoveToItems = useCallback(
     (archive: ArchiveData): ContextMenuItem[] => {
       const currentId = deps.folders?.folderIdOf(archive) ?? null;
-      const items: ContextMenuItem[] = (deps.folders?.foldersWithCounts ?? []).map((f) => ({
-        label: f.name,
+      const items: ContextMenuItem[] = (deps.folders?.folderOptions ?? []).map((o) => ({
+        label: o.label,
         icon: Folder,
-        checked: currentId === f.id,
-        onSelect: () => deps.onMoveArchives([archive.path], f.id),
+        checked: currentId === o.id,
+        onSelect: () => deps.onMoveArchives([archive.path], o.id),
       }));
       items.push({ separator: true });
       items.push({
@@ -115,6 +117,32 @@ export function useSavesMenus(deps: SavesMenusDeps) {
         label: t("organizer.newFolder"),
         icon: FolderPlus,
         onSelect: () => deps.onMoveToNewFolder([archive.path]),
+      });
+      return items;
+    },
+    [t, deps]
+  );
+
+  /** 文件夹移动子菜单：排除自身与后代（防成环），并按当前归属勾选 */
+  const buildFolderMoveToItems = useCallback(
+    (folder: ArchiveFolderWithCount): ContextMenuItem[] => {
+      const folders = deps.folders;
+      if (!folders) return [];
+      const excluded = new Set([folder.id, ...folders.getDescendantIds(folder.id)]);
+      const items: ContextMenuItem[] = folders.folderOptions
+        .filter((o) => !excluded.has(o.id))
+        .map((o) => ({
+          label: o.label,
+          icon: Folder,
+          checked: folder.parentId === o.id,
+          onSelect: () => deps.onMoveFolder(folder.id, o.id),
+        }));
+      items.push({ separator: true });
+      items.push({
+        label: t("organizer.removeFromFolder"),
+        icon: FolderMinus,
+        disabled: folder.parentId === null,
+        onSelect: () => deps.onMoveFolder(folder.id, null),
       });
       return items;
     },
@@ -205,16 +233,21 @@ export function useSavesMenus(deps: SavesMenusDeps) {
     [open, t, deps, buildMoveToItems]
   );
 
-  /** 文件夹卡片右键：打开 / 重命名 / 删除 */
+  /** 文件夹卡片右键：打开 / 重命名 / 移动到文件夹 / 删除 */
   const openFolderMenu = useCallback(
     (e: React.MouseEvent, folder: ArchiveFolderWithCount) => {
       open(e, [
         {
-          label: t("organizer.allArchives"),
+          label: t("organizer.openFolder"),
           icon: FolderOpen,
           onSelect: () => deps.onOpenFolderCard(folder),
         },
         { label: t("organizer.renameFolder"), icon: Pencil, onSelect: () => deps.onRenameFolder(folder) },
+        {
+          label: t("organizer.moveToFolder"),
+          icon: FolderInput,
+          children: buildFolderMoveToItems(folder),
+        },
         { separator: true },
         {
           label: t("organizer.deleteFolder"),
@@ -224,7 +257,7 @@ export function useSavesMenus(deps: SavesMenusDeps) {
         },
       ]);
     },
-    [open, t, deps]
+    [open, t, deps, buildFolderMoveToItems]
   );
 
   /** 多选模式右键（卡片与空白一致）：全选 / 批量删除 / 退出 */

@@ -1,6 +1,5 @@
 import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
-import tailwindcss from "@tailwindcss/vite";
 import VueI18nVitePlugin from "@intlify/unplugin-vue-i18n/vite";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -12,7 +11,7 @@ export default defineConfig(async ({ mode }) => {
   const isProd = mode === "production";
 
   return {
-    plugins: [vue(), tailwindcss(), VueI18nVitePlugin({})],
+    plugins: [vue(), VueI18nVitePlugin({})],
     base: "./",
     assetsInclude: ["**/*.md"],
     publicDir: "public",

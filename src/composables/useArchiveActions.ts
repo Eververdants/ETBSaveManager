@@ -62,6 +62,7 @@ interface ArchiveActionsReturn {
   createNewArchive: () => void;
   openSaveGamesFolder: (callbacks?: Pick<ArchiveActionsCallbacks, "onSuccess">) => Promise<void>;
   batchDeleteArchives: (archiveList: ArchiveData[], callbacks?: BatchDeleteCallbacks) => Promise<DeleteResults>;
+  cancelBatchDelete: () => void;
   registerUndoShortcuts: () => void;
   unregisterUndoShortcuts: () => void;
   canUndo: import("vue").ComputedRef<boolean>;
@@ -315,14 +316,33 @@ export function useArchiveActions(
     }
   };
 
+  // AbortSignal for in-flight batch delete — lets the UI cancel a long operation
+  let batchDeleteAbortController: AbortController | null = null;
+
+  /** Cancel an in-flight batch delete. No-op if none is running. */
+  const cancelBatchDelete = (): void => {
+    if (batchDeleteAbortController) {
+      batchDeleteAbortController.abort();
+      batchDeleteAbortController = null;
+    }
+  };
+
   const batchDeleteArchives = async (
     archiveList: ArchiveData[],
     callbacks: BatchDeleteCallbacks = {},
   ): Promise<DeleteResults> => {
     const { onSuccess, onError, onRefresh, onProgress } = callbacks;
     const results: DeleteResults = { success: [], failed: [] };
+    batchDeleteAbortController = new AbortController();
+    const signal = batchDeleteAbortController.signal;
 
     for (let i = 0; i < archiveList.length; i++) {
+      // Allow cancellation between items
+      if (signal.aborted) {
+        results.failed.push({ id: archiveList[i].id, error: "Cancelled by user" });
+        continue;
+      }
+
       const archive = archiveList[i];
       onProgress?.(i + 1, archiveList.length, archive.name);
 
@@ -347,6 +367,8 @@ export function useArchiveActions(
         results.failed.push({ id: archive.id, error });
       }
     }
+
+    batchDeleteAbortController = null;
 
     if (results.failed.length === 0) {
       toast.showSuccess(t("archive.actions.batchDeleteSuccess", { count: results.success.length }));
@@ -406,6 +428,7 @@ export function useArchiveActions(
     createNewArchive,
     openSaveGamesFolder,
     batchDeleteArchives,
+    cancelBatchDelete,
     registerUndoShortcuts,
     unregisterUndoShortcuts,
     canUndo,

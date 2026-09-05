@@ -32,5 +32,6 @@
   "openFolder": "Open",
   "changeCover": "Change Cover",
   "resetCover": "Reset Auto Cover",
-  "coverNoArchives": "No saves in this folder yet"
+  "coverNoArchives": "No saves in this folder yet",
+  "subfolderCount": "{{count}} subfolders"
 }

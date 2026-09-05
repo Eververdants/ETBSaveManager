@@ -32,5 +32,6 @@
   "openFolder": "開啟",
   "changeCover": "更換封面",
   "resetCover": "恢復自動封面",
-  "coverNoArchives": "資料夾內還沒有存檔"
+  "coverNoArchives": "資料夾內還沒有存檔",
+  "subfolderCount": "{{count}} 個子資料夾"
 }

@@ -26,6 +26,8 @@ export const DIFFICULTY_LABELS: Record<string, string> = {
 export interface ArchiveFolderWithCount extends ArchiveFolder {
   count: number;
   parentId: string | null;
+  /** 直接子文件夹数量 */
+  subfolderCount: number;
   /** 封面图（1 张 = 手动或唯一存档；最多 4 张 = 自动合成；空 = 无存档占位） */
   coverImages: string[];
   /** 是否手动指定了封面（「恢复自动封面」的可用性） */
@@ -76,8 +78,39 @@ export function useArchiveFolders(archives: ArchiveData[]) {
   );
 
   const foldersWithCounts = useMemo<ArchiveFolderWithCount[]>(
-    () =>
-      folders.map((folder) => {
+    () => {
+      // 每个文件夹的直接存档数
+      const directCounts = new Map<string, number>();
+      for (const archive of archives) {
+        const fid = folderIdOf(archive);
+        if (!fid) continue;
+        directCounts.set(fid, (directCounts.get(fid) ?? 0) + 1);
+      }
+      // parent -> children 索引
+      const childrenOf = new Map<string | null, string[]>();
+      for (const folder of folders) {
+        const parent = folder.parentId ?? null;
+        const list = childrenOf.get(parent) ?? [];
+        list.push(folder.id);
+        childrenOf.set(parent, list);
+      }
+      // 子树存档数（网盘语义：文件夹计数包含后代文件夹内的存档）；
+      // 访问守卫防脏数据成环时死递归
+      const subtree = new Map<string, number>();
+      const visiting = new Set<string>();
+      const subtreeCount = (id: string): number => {
+        const cached = subtree.get(id);
+        if (cached !== undefined) return cached;
+        if (visiting.has(id)) return 0;
+        visiting.add(id);
+        let total = directCounts.get(id) ?? 0;
+        for (const child of childrenOf.get(id) ?? []) total += subtreeCount(child);
+        visiting.delete(id);
+        subtree.set(id, total);
+        return total;
+      };
+
+      return folders.map((folder) => {
         // 封面：手动指定优先（存档仍存在时），否则取文件夹内前 4 张自动合成
         let coverImages: string[] = [];
         if (folder.coverArchivePath) {
@@ -94,11 +127,13 @@ export function useArchiveFolders(archives: ArchiveData[]) {
         return {
           ...folder,
           parentId: folder.parentId ?? null,
-          count: archives.reduce((n, a) => (folderIdOf(a) === folder.id ? n + 1 : n), 0),
+          count: subtreeCount(folder.id),
+          subfolderCount: (childrenOf.get(folder.id) ?? []).length,
           coverImages,
           hasManualCover: !!folder.coverArchivePath,
         };
-      }),
+      });
+    },
     [folders, archives, folderIdOf, getFolderArchives]
   );
 

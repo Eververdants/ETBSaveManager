@@ -200,11 +200,11 @@ export default function SavesPage() {
         onBatchDelete={() => void handleBatchDelete()}
       />
 
-      {/* 文件夹面包屑（仅文件夹内且未搜索时，支持多级链路） */}
+      {/* 文件夹面包屑（仅文件夹内且未搜索时，支持多级链路；计数含子文件夹） */}
       {!searching && foldersView.currentFolder && (
         <FolderBreadcrumb
           segments={foldersView.currentPath.map((f) => ({ id: f.id, name: f.name }))}
-          count={foldersView.scopedArchives.length}
+          count={foldersView.currentFolder.count}
           onNavigate={(id) => foldersView.setCurrentFolder(id)}
         />
       )}

@@ -13,7 +13,7 @@
  */
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Folder } from "lucide-react";
+import { Folder, Folders } from "lucide-react";
 
 import { LazyImage } from "../../../components/ui";
 import { cn } from "../../../utils";
@@ -22,6 +22,7 @@ export interface ArchiveFolderCardData {
   id: string;
   name: string;
   count: number;
+  subfolderCount?: number;
   coverImages?: string[];
 }
 
@@ -51,7 +52,7 @@ export default function ArchiveFolderCard<F extends ArchiveFolderCardData = Arch
       style={{ contain: "layout style paint" }}
       className={cn(
         "group relative flex h-full flex-col p-3 rounded-[16px] text-left cursor-pointer select-none",
-        "border bg-[var(--color-bg-elevated)] shadow-[0_1px_3px_var(--color-shadow)]",
+        "border bg-[var(--color-bg-secondary)] shadow-[0_1px_3px_var(--color-shadow)]",
         "transition-[transform,box-shadow,border-color,background-color] duration-150 ease-out",
         "hover:-translate-y-0.5 hover:border-[var(--color-border-strong)] hover:shadow-[0_12px_32px_-8px_var(--color-shadow-lg)]",
         "active:scale-[0.98]",
@@ -109,18 +110,37 @@ export default function ArchiveFolderCard<F extends ArchiveFolderCardData = Arch
         </div>
       </div>
 
-      {/* 信息区：shrink-0，行结构与存档卡片一致以对齐高度 */}
+      {/* 信息区：shrink-0，行结构与存档卡片对齐高度，但版式明显区分 */}
       <div className="flex shrink-0 flex-col gap-2.5 px-0.5 pt-3 pb-0.5">
-        <p
-          className="line-clamp-1 text-[13.5px] font-semibold tracking-[-0.01em] text-[var(--color-text-primary)]"
-          title={folder.name}
-        >
-          {folder.name}
-        </p>
-        <div className="flex items-center text-[11.5px] text-[var(--color-text-muted)] pt-0.5">
-          <span className="tabular-nums">
-            {t("organizer.folderItemsCount", { count: folder.count })}
+        {/* 名称行：文件夹图标 + 名称，右侧计数徽章（对应存档卡片的难度徽章位） */}
+        <div className="flex items-center justify-between gap-2.5">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <Folder size={13} className="shrink-0 text-[var(--color-primary)] opacity-85" />
+            <p
+              className="line-clamp-1 text-[13.5px] font-semibold tracking-[-0.01em] text-[var(--color-text-primary)]"
+              title={folder.name}
+            >
+              {folder.name}
+            </p>
+          </div>
+          <span
+            className="inline-flex shrink-0 items-center rounded-full bg-[var(--color-bg-muted)] px-2 py-0.5 text-[10.5px] font-medium tabular-nums text-[var(--color-text-secondary)]"
+            title={t("organizer.folderItemsCount", { count: folder.count })}
+          >
+            {folder.count}
           </span>
+        </div>
+
+        {/* 属性行：子文件夹数量（无子文件夹时保持行高与存档卡片对齐） */}
+        <div className="flex min-h-[17px] items-center gap-1.5 pt-0.5 text-[11.5px] text-[var(--color-text-muted)]">
+          {(folder.subfolderCount ?? 0) > 0 && (
+            <>
+              <Folders size={12} className="shrink-0 opacity-70" />
+              <span className="tabular-nums">
+                {t("organizer.subfolderCount", { count: folder.subfolderCount })}
+              </span>
+            </>
+          )}
         </div>
       </div>
     </div>

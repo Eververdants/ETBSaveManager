@@ -32,5 +32,6 @@
   "openFolder": "打开",
   "changeCover": "更换封面",
   "resetCover": "恢复自动封面",
-  "coverNoArchives": "文件夹内还没有存档"
+  "coverNoArchives": "文件夹内还没有存档",
+  "subfolderCount": "{{count}} 个子文件夹"
 }

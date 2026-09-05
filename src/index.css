@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /*
  * =============================================
@@ -9,6 +7,98 @@
  * 暖灰基调 · 自然生机 · 宁静感
  * =============================================
  */
+
+@theme {
+  /* ===== 色阶 (完整 50-950) ===== */
+
+  /* Neutral — 暖灰 */
+  --color-neutral-50:  48 33% 97%;
+  --color-neutral-100: 40 24% 93%;   /* 🏆 年度主色 #F2F0EB */
+  --color-neutral-200: 40 18% 89%;
+  --color-neutral-300: 38 14% 83%;
+  --color-neutral-400: 37 10% 74%;
+  --color-neutral-500: 36  8% 62%;
+  --color-neutral-600: 24  5% 53%;
+  --color-neutral-700: 24  5% 41%;
+  --color-neutral-800: 22  6% 29%;
+  --color-neutral-900: 20  8% 19%;
+  --color-neutral-950: 20 10% 10%;
+
+  /* Primary — 雾霾蓝 */
+  --color-primary-50:  210 40% 97%;
+  --color-primary-100: 210 35% 91%;
+  --color-primary-200: 210 30% 83%;
+  --color-primary-300: 210 22% 72%;
+  --color-primary-400: 210 18% 62%;
+  --color-primary-500: 210 17% 53%;
+  --color-primary-600: 210 20% 43%;
+  --color-primary-700: 210 24% 33%;
+
+  /* Success — 鼠尾草绿 */
+  --color-success-50:  110 20% 96%;
+  --color-success-100: 110 18% 89%;
+  --color-success-200: 110 15% 80%;
+  --color-success-300: 110 11% 72%;
+  --color-success-400: 110 13% 63%;
+  --color-success-500: 110 13% 54%;
+  --color-success-600: 110 15% 44%;
+
+  /* Danger — 暖珊瑚/陶土 */
+  --color-danger-50:  20 33% 96%;
+  --color-danger-100: 20 35% 91%;
+  --color-danger-200: 20 32% 83%;
+  --color-danger-300: 20 28% 75%;
+  --color-danger-400: 20 25% 67%;
+  --color-danger-500: 20 23% 58%;
+  --color-danger-600: 20 22% 50%;
+
+  /* ===== 语义别名 ===== */
+  --color-background:   var(--color-bg-primary);
+  --color-foreground:   var(--color-text-primary);
+  --color-bg-secondary:  var(--color-bg-secondary);
+  --color-bg-tertiary:   var(--color-bg-tertiary);
+  --color-bg-elevated:   var(--color-bg-elevated);
+  --color-bg-inverse:    var(--color-bg-inverse);
+  --color-bg-muted:      var(--color-bg-muted);
+
+  --color-text-secondary:  var(--color-text-secondary);
+  --color-text-tertiary:   var(--color-text-tertiary);
+  --color-text-muted:      var(--color-text-muted);
+  --color-text-inverse:    var(--color-text-inverse);
+  --color-text-link:       var(--color-text-link);
+
+  --color-border-light:   var(--color-border-light);
+  --color-border-default: var(--color-border-default);
+  --color-border-strong:  var(--color-border-strong);
+  --color-border-focus:   var(--color-border-focus);
+
+  --color-card:          var(--color-bg-elevated);
+  --color-card-foreground: var(--color-text-primary);
+  --color-muted:         var(--color-bg-muted);
+  --color-muted-foreground: var(--color-text-muted);
+  --color-accent:        var(--color-primary);
+  --color-accent-foreground: var(--color-primary-fg);
+  --color-destructive:   var(--color-danger);
+  --color-destructive-foreground: var(--color-danger-fg);
+  --color-ring:          var(--color-ring);
+
+  /* ===== 圆角 ===== */
+  --radius-lg: 0.625rem;
+  --radius-md: calc(0.625rem - 2px);
+  --radius-sm: calc(0.625rem - 4px);
+
+  /* ===== 阴影 ===== */
+  --shadow-soft:   0 1px 3px var(--color-shadow), 0 1px 2px var(--color-shadow);
+  --shadow-medium: 0 4px 12px var(--color-shadow-lg);
+  --shadow-strong: 0 8px 24px var(--color-shadow-lg);
+
+  /* ===== 统一缓动 ===== */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   /* ===== 色阶基准 (HSL) ===== */
@@ -197,7 +287,7 @@
 
   /* 窗口控制按钮 */
   --color-winctrl-text:      hsl(var(--neutral-500));
-  --color-winctrl-hover-bg:  hsl(0 0% 100% / 0.08);
+  --color-winctrl-hover_bg:  hsl(0 0% 100% / 0.08);
   --color-winctrl-hover-text: hsl(var(--neutral-300));
   --color-winctrl-close-hover-bg: #E81123;
   --color-winctrl-close-hover-text: hsl(0 0% 100%);

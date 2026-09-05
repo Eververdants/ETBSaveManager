@@ -55,6 +55,8 @@ export interface VirtualArchiveGridProps<F extends ArchiveFolderCardData = Archi
   onToggleSelect: (archive: ArchiveData) => void;
   /** 卡片右键（在 wrapper 上拦截，冒泡前调用；卡片组件本身不感知） */
   onCardContextMenu?: (e: React.MouseEvent, archive: ArchiveData) => void;
+  /** 可视区存档变化（渐进加载详情的挂载点） */
+  onVisibleArchivesChange?: (archives: ArchiveData[]) => void;
 }
 
 const MIN_COLUMN_WIDTH = 220;
@@ -126,6 +128,7 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
   onSelect,
   onToggleSelect,
   onCardContextMenu,
+  onVisibleArchivesChange,
 }: VirtualArchiveGridProps<F>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sidebarCollapsed = useAppStore((s) => s.sidebarCollapsed);
@@ -223,6 +226,16 @@ export default function VirtualArchiveGrid<F extends ArchiveFolderCardData = Arc
   /** 投放目标是否接受当前拖拽物（存档或文件夹） */
   const acceptsDrag = (e: React.DragEvent): boolean =>
     e.dataTransfer.types.includes(DRAG_MIME) || e.dataTransfer.types.includes(DRAG_MIME_FOLDER);
+
+  // 可视区存档变化 → 渐进加载详情（store 侧按路径去重 + 批处理）
+  useEffect(() => {
+    if (!onVisibleArchivesChange) return;
+    const visible = visibleItems
+      .filter((item) => item.index >= folderCount)
+      .map((item) => archives[item.index - folderCount])
+      .filter((a): a is ArchiveData => Boolean(a));
+    onVisibleArchivesChange(visible);
+  }, [visibleItems, archives, folderCount, onVisibleArchivesChange]);
 
   if (itemCount === 0) return null;
 

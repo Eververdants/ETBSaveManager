@@ -15,7 +15,7 @@ import { FolderOpen, PackageOpen, SearchX, SquarePen } from "lucide-react";
 
 import { ConfirmDialog, ContextMenu, EmptyState, Spinner } from "../../components/ui";
 import { useArchiveStore } from "../../stores";
-import type { ArchiveFolder } from "../../types";
+import type { ArchiveData, ArchiveFolder } from "../../types";
 import { useArchiveActions } from "./hooks/useArchiveActions";
 import { useArchiveFolders } from "./hooks/useArchiveFolders";
 import type { ArchiveFolderWithCount } from "./hooks/useArchiveFolders";
@@ -40,6 +40,7 @@ export default function SavesPage() {
   const initializeArchives = useArchiveStore((s) => s.initializeArchives);
   const refreshArchives = useArchiveStore((s) => s.refreshArchives);
   const refreshArchivesSilent = useArchiveStore((s) => s.refreshArchivesSilent);
+  const ensureArchiveDetails = useArchiveStore((s) => s.ensureArchiveDetails);
 
   const list = useArchiveList(archives);
   const actions = useArchiveActions();
@@ -173,6 +174,14 @@ export default function SavesPage() {
     [menus]
   );
 
+  // 可视区存档详情渐进加载（store 按路径去重 + 批处理）
+  const handleVisibleArchivesChange = useCallback(
+    (visible: ArchiveData[]) => {
+      void ensureArchiveDetails(visible.map((a) => a.path));
+    },
+    [ensureArchiveDetails]
+  );
+
   const showWelcome = dataLoadComplete && archives.length === 0;
   const gridEmpty = gridArchives.length === 0 && gridFolders.length === 0;
   const showNoMatch = dataLoadComplete && archives.length > 0 && gridEmpty && searching;
@@ -251,6 +260,7 @@ export default function SavesPage() {
             onSelect={actions.handleEdit}
             onToggleSelect={(a) => multi.toggleSelect(a.id)}
             onCardContextMenu={handleCardContextMenu}
+            onVisibleArchivesChange={handleVisibleArchivesChange}
           />
         )}
       </div>

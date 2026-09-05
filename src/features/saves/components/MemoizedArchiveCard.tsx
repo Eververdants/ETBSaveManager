@@ -6,6 +6,11 @@
  * 2. 移除 motion 动画，使用纯 CSS transition
  * 3. 使用 CSS contain 隔离渲染
  * 4. 图片预加载由父组件处理
+ *
+ * 高度契约（虚拟网格依赖，改动前先看 virtualGridLayout.ts）：
+ * 根节点 h-full 填满定位容器的显式高度；图片区 flex-1 吸收剩余高度
+ * （不再使用固定宽高比），信息区 shrink-0 保证文本完整。布局侧按
+ * "图片区宽高比 × 卡宽 + 固定内容高度" 计算同一高度，间距因此精确。
  */
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -111,7 +116,7 @@ const MemoizedArchiveCard = memo(function MemoizedArchiveCard({
       onKeyDown={(e) => e.key === "Enter" && handleClick()}
       style={{ contain: "layout style paint" }}
       className={cn(
-        "group relative flex flex-col p-3 rounded-[16px] text-left cursor-pointer select-none",
+        "group relative flex h-full flex-col p-3 rounded-[16px] text-left cursor-pointer select-none",
         "border bg-[var(--color-bg-elevated)] shadow-[0_1px_3px_var(--color-shadow)]",
         "transition-[transform,box-shadow,border-color,background-color,opacity] duration-150 ease-out",
         "hover:-translate-y-0.5 hover:border-[var(--color-border-strong)] hover:shadow-[0_12px_32px_-8px_var(--color-shadow-lg)]",
@@ -122,8 +127,8 @@ const MemoizedArchiveCard = memo(function MemoizedArchiveCard({
         hidden && "opacity-60 hover:opacity-100"
       )}
     >
-      {/* 图片区域 */}
-      <div className="relative aspect-[16/9.5] w-full overflow-hidden rounded-[10px] bg-[var(--color-bg-muted)] border border-[var(--color-border-light)]/80">
+      {/* 图片区域：flex-1 填满剩余高度，宽度变化时高度随之微调 */}
+      <div className="relative w-full min-h-0 flex-1 overflow-hidden rounded-[10px] bg-[var(--color-bg-muted)] border border-[var(--color-border-light)]/80">
         <LazyImage
           src={getLevelImage(archive.currentLevel || "Level0")}
           alt={archive.name}
@@ -200,8 +205,8 @@ const MemoizedArchiveCard = memo(function MemoizedArchiveCard({
         )}
       </div>
 
-      {/* 信息区 */}
-      <div className="flex flex-col gap-2.5 px-0.5 pt-3 pb-0.5">
+      {/* 信息区：shrink-0 保证文本行完整，高度计入 CARD_FIXED_CONTENT_HEIGHT */}
+      <div className="flex shrink-0 flex-col gap-2.5 px-0.5 pt-3 pb-0.5">
         {/* 标题 + 难度 */}
         <div className="flex items-center justify-between gap-2.5">
           <p

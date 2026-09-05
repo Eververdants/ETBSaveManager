@@ -40,6 +40,8 @@ export const DEFAULT_CONFIG = {
 export const UI_CONFIG = {
   SIDEBAR_WIDTH: 200,
   SIDEBAR_COLLAPSED_WIDTH: 56,
+  /** 侧边栏开合宽度动画时长 (ms)；存档网格依赖它做「先面板、后重排」的时序编排 */
+  SIDEBAR_ANIMATION_MS: 150,
   TITLEBAR_HEIGHT: 40,
   ANIMATION_DURATION: 300,
   TOAST_DURATION: 3000,

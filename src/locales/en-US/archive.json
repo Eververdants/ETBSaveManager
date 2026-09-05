@@ -10,6 +10,7 @@
   "actions": {
     "deleteSuccess": "{name} deleted",
     "undo": "Undo",
+    "redo": "Redo",
     "undoDeleteOf": "Undo delete of \"{name}\"",
     "undoFailed": "Undo failed",
     "deleteFailed": "Delete failed: {error}",

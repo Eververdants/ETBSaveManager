@@ -10,6 +10,7 @@
   "actions": {
     "deleteSuccess": "{name} 已刪除",
     "undo": "復原",
+    "redo": "重做",
     "undoDeleteOf": "復原刪除「{name}」",
     "undoFailed": "復原失敗",
     "deleteFailed": "刪除失敗：{error}",

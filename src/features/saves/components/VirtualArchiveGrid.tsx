@@ -32,6 +32,8 @@ export interface VirtualArchiveGridProps {
   onDelete: (archive: ArchiveData) => void;
   onSelect: (archive: ArchiveData) => void;
   onToggleSelect: (archive: ArchiveData) => void;
+  /** 卡片右键（在 wrapper 上拦截，冒泡前调用；卡片组件本身不感知） */
+  onCardContextMenu?: (e: React.MouseEvent, archive: ArchiveData) => void;
 }
 
 const MIN_COLUMN_WIDTH = 220;
@@ -95,6 +97,7 @@ export default function VirtualArchiveGrid({
   onDelete,
   onSelect,
   onToggleSelect,
+  onCardContextMenu,
 }: VirtualArchiveGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sidebarCollapsed = useAppStore((s) => s.sidebarCollapsed);
@@ -157,8 +160,9 @@ export default function VirtualArchiveGrid({
       onDelete,
       onSelect,
       onToggleSelect,
+      onCardContextMenu,
     }),
-    [onToggleVisibility, onEdit, onDelete, onSelect, onToggleSelect]
+    [onToggleVisibility, onEdit, onDelete, onSelect, onToggleSelect, onCardContextMenu]
   );
 
   if (archives.length === 0) return null;
@@ -191,6 +195,14 @@ export default function VirtualArchiveGrid({
                 width: item.width,
                 height: item.height,
               }}
+              onContextMenu={
+                handlers.onCardContextMenu
+                  ? (e) => {
+                      e.stopPropagation();
+                      handlers.onCardContextMenu!(e, archive);
+                    }
+                  : undefined
+              }
             >
               <MemoizedArchiveCard
                 archive={archive}

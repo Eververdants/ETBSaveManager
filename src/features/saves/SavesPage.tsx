@@ -2,27 +2,28 @@
  * 存档列表页（master Home → /saves/all）
  *
  * 页面只负责 UI 编排：
- * - 工具栏 → components/SavesToolbar
+ * - 标题栏搜索 → components/TitleSearchCenter（portal 注入 TitleBar 插槽）
+ * - 右键菜单 → hooks/useSavesMenus（页面 / 卡片 / 多选）
  * - 多选条 → components/MultiSelectBar
  * - 批量进度 → components/BatchDeleteProgress
  * - 列表状态 → hooks/useArchiveList；动作 → hooks/useArchiveActions
  */
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { AnimatePresence, motion } from "motion/react";
 import { PackageOpen, SearchX, SquarePen } from "lucide-react";
 
-import { ConfirmDialog, EmptyState, Spinner } from "../../components/ui";
+import { ConfirmDialog, ContextMenu, EmptyState, Spinner } from "../../components/ui";
 import { useArchiveStore } from "../../stores";
 import { useArchiveActions } from "./hooks/useArchiveActions";
 import { useArchiveList } from "./hooks/useArchiveList";
 import { useMultiSelect } from "./hooks/useMultiSelect";
+import { useSavesMenus } from "./hooks/useSavesMenus";
 import { useLevelName } from "../../utils/levelUtils";
 import BatchDeleteProgress from "./components/BatchDeleteProgress";
 import MultiSelectBar from "./components/MultiSelectBar";
-import SavesToolbar from "./components/SavesToolbar";
+import TitleSearchCenter from "./components/TitleSearchCenter";
 import VirtualArchiveGrid from "./components/VirtualArchiveGrid";
-import ArchiveSearchFilter from "./components/ArchiveSearchFilter";
 
 export default function SavesPage() {
   const { t } = useTranslation();
@@ -42,6 +43,7 @@ export default function SavesPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [batchDelete, setBatchDelete] = useState({ open: false, current: 0, total: 0, name: "" });
+  const [titlebarSlot, setTitlebarSlot] = useState<HTMLElement | null>(null);
 
   // ---- 初始化 ----
   useEffect(() => {
@@ -50,6 +52,22 @@ export default function SavesPage() {
 
   // ---- 撤销快捷键（Ctrl+Z / Ctrl+Shift+Z）----
   useEffect(() => actions.registerUndoShortcuts(), [actions.registerUndoShortcuts]);
+
+  // ---- 标题栏插槽 + Ctrl+K 唤起搜索 ----
+  useEffect(() => {
+    setTitlebarSlot(document.getElementById("titlebar-center-slot"));
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const handleRefresh = useCallback(async () => {
     if (isRefreshing) return;
@@ -70,24 +88,49 @@ export default function SavesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multi.selectedArchives, actions.batchDeleteArchives]);
 
+  const handleToggleVisibility = useCallback(
+    (archive: Parameters<typeof actions.handleToggleVisibility>[0]) =>
+      void actions.handleToggleVisibility(archive, { onRefresh: refreshArchivesSilent }),
+    [actions.handleToggleVisibility, refreshArchivesSilent]
+  );
+
+  const menus = useSavesMenus({
+    actions,
+    isRefreshing,
+    onRefresh: () => void handleRefresh(),
+    onOpenFolder: () => void actions.openSaveGamesFolder(),
+    onCreate: actions.createNewArchive,
+    onToggleVisibility: handleToggleVisibility,
+    isMultiSelectMode: multi.isMultiSelectMode,
+    selectedCount: multi.selectedCount,
+    onSelectAll: multi.selectAll,
+    onDeselectAll: multi.deselectAll,
+    onToggleMultiSelect: multi.toggleMultiSelectMode,
+    onBatchDelete: () => void handleBatchDelete(),
+  });
+
+  // 右键分发：多选模式 → 多选菜单，否则页面菜单（卡片菜单由网格拦截，不冒泡到此）
+  const handlePageContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      if (multi.isMultiSelectMode) menus.openMultiSelectMenu(e);
+      else menus.openPageMenu(e);
+    },
+    [multi.isMultiSelectMode, menus]
+  );
+
+  const handleCardContextMenu = useCallback(
+    (e: React.MouseEvent, archive: Parameters<typeof menus.openCardMenu>[1]) => {
+      if (multi.isMultiSelectMode) menus.openMultiSelectMenu(e);
+      else menus.openCardMenu(e, archive);
+    },
+    [multi.isMultiSelectMode, menus]
+  );
+
   const showWelcome = dataLoadComplete && archives.length === 0;
   const showNoMatch = dataLoadComplete && archives.length > 0 && list.displayArchives.length === 0;
 
   return (
-    <div className="relative flex h-full flex-col">
-      <SavesToolbar
-        count={archives.length}
-        searchOpen={searchOpen}
-        hasActiveFilters={list.hasActiveFilters}
-        isRefreshing={isRefreshing}
-        isMultiSelectMode={multi.isMultiSelectMode}
-        onToggleSearch={() => setSearchOpen((v) => !v)}
-        onRefresh={() => void handleRefresh()}
-        onOpenFolder={() => void actions.openSaveGamesFolder()}
-        onToggleMultiSelect={multi.toggleMultiSelectMode}
-        onCreate={actions.createNewArchive}
-      />
-
+    <div className="relative flex h-full flex-col" onContextMenu={handlePageContextMenu}>
       <MultiSelectBar
         visible={multi.isMultiSelectMode}
         selectedCount={multi.selectedCount}
@@ -97,20 +140,6 @@ export default function SavesPage() {
         onDeselectAll={multi.deselectAll}
         onBatchDelete={() => void handleBatchDelete()}
       />
-
-      {/* 搜索遮罩 */}
-      <AnimatePresence>
-        {searchOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="absolute inset-0 z-20 bg-[var(--color-bg-overlay)]"
-            onClick={() => setSearchOpen(false)}
-          />
-        )}
-      </AnimatePresence>
 
       {/* 内容区 */}
       <div className="min-h-0 flex-1 overflow-hidden px-5 pb-6 pt-4">
@@ -142,39 +171,18 @@ export default function SavesPage() {
             isMultiSelectMode={multi.isMultiSelectMode}
             selectedIds={multi.selectedIds}
             searchQuery={list.searchQuery}
-            onToggleVisibility={(a) =>
-              void actions.handleToggleVisibility(a, { onRefresh: refreshArchivesSilent })
-            }
+            onToggleVisibility={handleToggleVisibility}
             onEdit={actions.handleEdit}
             onDelete={actions.deleteArchive}
             onSelect={actions.handleEdit}
             onToggleSelect={(a) => multi.toggleSelect(a.id)}
+            onCardContextMenu={handleCardContextMenu}
           />
         )}
       </div>
 
-      {/* 搜索筛选面板（浮于内容上方） */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30">
-        <div className="pointer-events-auto">
-          <ArchiveSearchFilter
-            visible={searchOpen}
-            onClose={() => setSearchOpen(false)}
-            searchQuery={list.searchQuery}
-            onSearchQueryChange={list.setSearchQuery}
-            archiveDifficulty={list.archiveDifficulty}
-            onArchiveDifficultyChange={list.setArchiveDifficulty}
-            actualDifficulty={list.actualDifficulty}
-            onActualDifficultyChange={list.setActualDifficulty}
-            visibility={list.visibility}
-            onVisibilityChange={list.setVisibility}
-            suggestions={list.searchSuggestions}
-            totalCount={archives.length}
-            filteredCount={list.displayArchives.length}
-            onResetFilters={list.resetFilters}
-            onCommit={() => setSearchOpen(false)}
-          />
-        </div>
-      </div>
+      {/* 右键菜单（页面 / 卡片 / 多选共用一个实例） */}
+      <ContextMenu menu={menus.menu} onClose={menus.close} />
 
       {/* 单个删除确认 */}
       <ConfirmDialog
@@ -207,6 +215,18 @@ export default function SavesPage() {
         total={batchDelete.total}
         name={batchDelete.name}
       />
+
+      {/* 标题栏搜索中心（portal 注入 TitleBar 插槽，layouts 不引用 features） */}
+      {titlebarSlot &&
+        createPortal(
+          <TitleSearchCenter
+            open={searchOpen}
+            onOpenChange={setSearchOpen}
+            list={list}
+            totalCount={archives.length}
+          />,
+          titlebarSlot
+        )}
     </div>
   );
 }

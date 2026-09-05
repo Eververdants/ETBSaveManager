@@ -157,16 +157,16 @@ import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { open as openFileDialog } from "@tauri-apps/plugin-dialog";
-import ConfirmModal from "../components/modal/ConfirmModal.vue";
-import storageService from "../services/storageService";
-import notify from "../services/notificationService";
+import ConfirmModal from "@/components/modal/ConfirmModal.vue";
+import storageService from "@/services/storageService";
+import notify from "@/services/notificationService";
 import { invoke } from "@tauri-apps/api/core";
 import modService, {
   GAME_ROOT_KEY,
   type ModsStatus,
   type ModInstallProgress,
   type Ue4ssChannel,
-} from "../services/modService";
+} from "@/services/modService";
 
 const { t, te } = useI18n({ useScope: "global" });
 

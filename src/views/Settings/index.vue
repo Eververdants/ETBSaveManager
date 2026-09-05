@@ -28,11 +28,11 @@
 import { onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { invoke } from "@tauri-apps/api/core";
-import storage from "../../services/storageService";
-import { notify } from "../../services/notificationService";
-import { useAppStore } from "../../stores/appStore";
-import { getAppContext } from "../../appContext";
-import { APP_VERSION } from "../../config/version";
+import storage from "@/services/storageService";
+import { notify } from "@/services/notificationService";
+import { useAppStore } from "@/stores/appStore";
+import { getAppContext } from "@/appContext";
+import { APP_VERSION } from "@/config/version";
 import AppearanceSection from "./sections/AppearanceSection.vue";
 import AdvancedSection from "./sections/AdvancedSection.vue";
 import SystemUpdateSection from "./sections/SystemUpdateSection.vue";

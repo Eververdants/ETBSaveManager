@@ -38,9 +38,9 @@
 import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { invoke } from "@tauri-apps/api/core";
-import storage from "../../../services/storageService";
-import { notify } from "../../../services/notificationService";
-import { useAppStore } from "../../../stores/appStore";
+import storage from "@/services/storageService";
+import { notify } from "@/services/notificationService";
+import { useAppStore } from "@/stores/appStore";
 
 const { t } = useI18n({ useScope: "global" });
 const appStore = useAppStore();

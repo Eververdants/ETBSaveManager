@@ -41,9 +41,9 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
-import { updateService } from "../../../services/updateService.js";
-import { notify } from "../../../services/notificationService";
-import { useAppStore } from "../../../stores/appStore";
+import { updateService } from "@/services/updateService";
+import { notify } from "@/services/notificationService";
+import { useAppStore } from "@/stores/appStore";
 
 const { t } = useI18n({ useScope: "global" });
 const appStore = useAppStore();

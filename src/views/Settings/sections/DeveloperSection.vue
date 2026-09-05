@@ -147,10 +147,10 @@
 <script setup>
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
-import storage from "../../../services/storageService";
-import { notify } from "../../../services/notificationService";
-import { useAppStore } from "../../../stores/appStore";
-import { useSavTools } from "../../../composables/useSavTools";
+import storage from "@/services/storageService";
+import { notify } from "@/services/notificationService";
+import { useAppStore } from "@/stores/appStore";
+import { useSavTools } from "@/composables/useSavTools";
 
 const { t } = useI18n({ useScope: "global" });
 const appStore = useAppStore();

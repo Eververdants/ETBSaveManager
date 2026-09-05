@@ -64,11 +64,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
-import CustomDropdown from "../../../components/ui/CustomDropdown.vue";
-import ThemeSelector from "../../../components/theme/ThemeSelector.vue";
-import storage from "../../../services/storageService";
-import { notify } from "../../../services/notificationService";
-import { useAppStore } from "../../../stores/appStore";
+import CustomDropdown from "@/components/ui/CustomDropdown.vue";
+import ThemeSelector from "@/components/theme/ThemeSelector.vue";
+import storage from "@/services/storageService";
+import { notify } from "@/services/notificationService";
+import { useAppStore } from "@/stores/appStore";
 
 const emit = defineEmits(["language-change"]);
 

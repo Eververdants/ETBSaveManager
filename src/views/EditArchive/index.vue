@@ -92,15 +92,15 @@ import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { invoke } from "@tauri-apps/api/core";
-import InventoryItemSelector from "../../components/feature/InventoryItemSelector.vue";
+import InventoryItemSelector from "@/components/feature/InventoryItemSelector.vue";
 import BasicTab from "./tabs/BasicTab.vue";
 import LevelTab from "./tabs/LevelTab.vue";
 import PlayerTab from "./tabs/PlayerTab.vue";
-import { notify } from "../../services/notificationService";
-import { editArchiveDataStore } from "../../composables/useArchiveActions";
-import { formatDifficulty } from "../../utils/archiveCreationUtils";
-import { stripSteamIdSuffix } from "../../utils/steamIdUtils";
-import { getItemIdByName } from "../../utils/itemIdMap";
+import { notify } from "@/services/notificationService";
+import { editArchiveDataStore } from "@/composables/useArchiveActions";
+import { formatDifficulty } from "@/utils/archiveCreationUtils";
+import { stripSteamIdSuffix } from "@/utils/steamIdUtils";
+import { getItemIdByName } from "@/utils/itemIdMap";
 import { FEATURES } from "@/config/features";
 
 const props = defineProps({

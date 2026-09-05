@@ -6,8 +6,9 @@
 
 import { ref, readonly } from "vue";
 import type { Ref, DeepReadonly } from "vue";
-import { themeStorage } from "../services/themeStorage";
-import storage from "../services/storageService";
+import { themeStorage } from "@/services/themeStorage";
+import storage from "@/services/storageService";
+import { loadTheme, isExtraTheme } from "./themes/loadTheme";
 
 interface PresetTheme {
   id: string;
@@ -136,6 +137,11 @@ class ThemeManager {
     }
 
     try {
+      // Lazy-load extra theme CSS on first activation
+      if (isExtraTheme(themeId)) {
+        loadTheme(themeId);
+      }
+
       document.documentElement.setAttribute("data-theme", themeId);
       this._currentThemeId.value = themeId;
 

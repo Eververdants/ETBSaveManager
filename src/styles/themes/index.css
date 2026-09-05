@@ -2,9 +2,9 @@
  * ============================================
  * 🎨 主题系统入口文件 (Theme System Entry)
  * ============================================
- * 
+ *
  * 文件结构说明：
- * 
+ *
  * themes/
  * ├── _colors.css      - 基础色板定义
  * ├── _semantic.css    - 语义化颜色（状态、版本标签等）
@@ -12,15 +12,19 @@
  * ├── light.css        - 亮色主题
  * ├── dark.css         - 暗色主题
  * └── index.css        - 入口文件（本文件）
- * 
+ *
  * 使用方法：
  * 1. 在 main.js 中导入: import './styles/themes/index.css'
  * 2. 通过 data-theme 属性切换主题: document.documentElement.setAttribute('data-theme', 'dark')
- * 
+ *
  * 自定义主题：
  * 1. 复制 light.css 或 dark.css 作为模板
  * 2. 修改颜色变量值
  * 3. 添加新的 [data-theme="your-theme"] 选择器
+ *
+ * 加载策略：基础色板 + light/dark 主题随入口打包，
+ * 其余主题（ocean, forest, sunset 等）通过 JS 按需加载，
+ * 避免首次加载解析全部主题 CSS。
  */
 
 /* 基础色板 - 定义所有可用颜色 */
@@ -37,27 +41,3 @@
 
 /* 暗色主题 */
 @import "./dark.css";
-
-/* 🌊 海洋主题 */
-@import "./ocean.css";
-
-/* 🌲 森林主题 */
-@import "./forest.css";
-
-/* 🌅 日落主题 */
-@import "./sunset.css";
-
-/* 💜 薰衣草主题 */
-@import "./lavender.css";
-
-/* 🌸 玫瑰主题 */
-@import "./rose.css";
-
-/* 🍃 薄荷主题 (浅色) */
-@import "./mint.css";
-
-/* 🍑 蜜桃主题 (浅色) */
-@import "./peach.css";
-
-/* ☁️ 天空主题 (浅色) */
-@import "./sky.css";

@@ -232,6 +232,8 @@ export default function SavesPage() {
             searchQuery={list.searchQuery}
             onFolderOpen={(f) => foldersView.setCurrentFolder(f.id)}
             onFolderContextMenu={handleFolderContextMenu}
+            onDropArchiveToFolder={(path, folderId) => foldersView.moveArchives([path], folderId)}
+            containerFolderId={foldersView.currentFolderId}
             onToggleVisibility={handleToggleVisibility}
             onEdit={actions.handleEdit}
             onDelete={actions.deleteArchive}

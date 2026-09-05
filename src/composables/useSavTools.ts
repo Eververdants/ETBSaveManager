@@ -6,6 +6,20 @@ import { useI18n } from "vue-i18n";
 import { notify } from "@/services/notificationService";
 
 /**
+ * Validates that a file path does not contain directory traversal sequences.
+ * Throws if the path contains ".." segments that could escape the intended directory.
+ */
+function assertNoPathTraversal(filePath: string): void {
+  // Normalize both separators to "/" for uniform checking
+  const normalized = filePath.replace(/\\/g, "/");
+  // Split on "/" and check for ".." segments (ignoring "." and empty segments)
+  const segments = normalized.split("/");
+  if (segments.includes("..")) {
+    throw new Error(`Path traversal detected in file path: ${filePath}`);
+  }
+}
+
+/**
  * Developer sav <-> JSON conversion tools (drag-and-drop or file dialog).
  */
 export function useSavTools() {
@@ -77,6 +91,9 @@ export function useSavTools() {
 
   async function processSavFile(filePath: string) {
     try {
+      // Validate path before any filesystem operation
+      assertNoPathTraversal(filePath);
+
       // Call backend to parse save file
       const result = (await invoke("convert_sav_to_json", {
         filePath: filePath,
@@ -129,6 +146,9 @@ export function useSavTools() {
 
   async function processJsonFile(filePath: string) {
     try {
+      // Validate path before any filesystem operation
+      assertNoPathTraversal(filePath);
+
       // Read JSON file content
       const jsonContent = await readTextFile(filePath);
 

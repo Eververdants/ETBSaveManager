@@ -1,4 +1,4 @@
-import { ref, shallowRef, computed, watch, type Ref, type ComputedRef } from "vue";
+import { ref, shallowRef, computed, watch, onScopeDispose, type Ref, type ComputedRef } from "vue";
 import type { ArchiveData } from "@/types";
 
 const SEARCH_HISTORY_KEY = "archive-search-history";
@@ -54,6 +54,12 @@ function escapeHtml(text: string): string {
 /**
  * Highlight matching text with <mark> tags.
  * Escapes HTML entities in both text and query to prevent XSS attacks.
+ *
+ * WARNING: Returns a raw HTML string intended ONLY for `v-html` binding.
+ * The caller MUST ensure both `text` and `query` are user-controlled input
+ * that has NOT been pre-escaped. Passing already-escaped or unescaped
+ * content from an untrusted source may result in XSS. When in doubt, pass
+ * the raw user input directly — this function handles escaping internally.
  */
 export function highlightMatch(text: string, query: string): string {
   if (!query || !text) return text;
@@ -304,6 +310,14 @@ export function useArchiveList(archives: Ref<ArchiveData[]>): {
     },
     { immediate: true },
   );
+
+  // Clean up debounce timer when the composable scope is disposed (unmount/HMR)
+  onScopeDispose(() => {
+    if (searchDebounce) {
+      clearTimeout(searchDebounce);
+      searchDebounce = null;
+    }
+  });
 
   const hasActiveFilters = computed(
     (): boolean =>

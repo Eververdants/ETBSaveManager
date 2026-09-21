@@ -27,8 +27,8 @@ importers:
         specifier: ^11.2.4
         version: 11.2.4(@vue/compiler-dom@3.5.42)(eslint@10.9.1(jiti@2.7.0)(supports-color@8.1.1))(rollup@4.55.1)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(sass-embedded@1.97.2)(sass@1.97.2)(terser@5.49.2)(yaml@2.9.0))(vue-i18n@11.4.10(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))
       '@tanstack/vue-virtual':
-        specifier: ^3.13.36
-        version: 3.13.36(vue@3.5.42(typescript@6.0.3))
+        specifier: ^3.13.39
+        version: 3.13.39(vue@3.5.42(typescript@6.0.3))
       '@tauri-apps/api':
         specifier: ^2.11.1
         version: 2.11.1
@@ -1068,11 +1068,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@tanstack/virtual-core@3.17.8':
-    resolution: {integrity: sha512-BfEvehNpOT75r5Ksc5xW6NZuXujTfb7nlSEyVu4XHG3gdxNg1KqXruWbDewXOUaUYIo4oRbSfkjIajz4MAT8tA==}
+  '@tanstack/virtual-core@3.17.11':
+    resolution: {integrity: sha512-+ILjvtHup6Y2hzQ6YzwMgX1Q+oQpxEGOXCEsCNaPoIP0VxMbizIBTmYTDtkerkIQS8/CbP1BRuyt8V/8BCsy1g==}
 
-  '@tanstack/vue-virtual@3.13.36':
-    resolution: {integrity: sha512-gKpExv4RbB9luVG+SucTXoqPZv/gzu/Yvz6BNO+8kpNxJ2x+I/ulryzl5W9BRciahZGp5Tls3Dp5XP1ztVGbMw==}
+  '@tanstack/vue-virtual@3.13.39':
+    resolution: {integrity: sha512-AG8sI+6nfrDvN6ixuHJL9LaJTf3//0V5VITZYW3UOaIuSVexnEzsbMu4LH/JhMfRTxwhUXPnLqkl1DlzkZbRtg==}
     peerDependencies:
       vue: ^2.7.0 || ^3.0.0
 
@@ -1335,6 +1335,11 @@ packages:
 
   '@volar/typescript@2.4.28':
     resolution: {integrity: sha512-Ja6yvWrbis2QtN4ClAKreeUZPVYMARDYZl9LMEv1iQ1QdepB6wn0jTRxA9MftYmYa4DQ4k/DaSZpFPUfxl8giw==}
+    peerDependencies:
+      typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   '@vue-flow/background@1.3.2':
     resolution: {integrity: sha512-eJPhDcLj1wEo45bBoqTXw1uhl0yK2RaQGnEINqvvBsAFKh/camHJd5NPmOdS1w+M9lggc9igUewxaEd3iCQX2w==}
@@ -3353,11 +3358,11 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.55.1':
     optional: true
 
-  '@tanstack/virtual-core@3.17.8': {}
+  '@tanstack/virtual-core@3.17.11': {}
 
-  '@tanstack/vue-virtual@3.13.36(vue@3.5.42(typescript@6.0.3))':
+  '@tanstack/vue-virtual@3.13.39(vue@3.5.42(typescript@6.0.3))':
     dependencies:
-      '@tanstack/virtual-core': 3.17.8
+      '@tanstack/virtual-core': 3.17.11
       vue: 3.5.42(typescript@6.0.3)
 
   '@tauri-apps/api@2.11.1': {}
@@ -3625,11 +3630,13 @@ snapshots:
 
   '@volar/source-map@2.4.28': {}
 
-  '@volar/typescript@2.4.28':
+  '@volar/typescript@2.4.28(typescript@6.0.3)':
     dependencies:
       '@volar/language-core': 2.4.28
       path-browserify: 1.0.1
       vscode-uri: 3.2.0
+    optionalDependencies:
+      typescript: 6.0.3
 
   '@vue-flow/background@1.3.2(@vue-flow/core@1.48.2(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))':
     dependencies:
@@ -4939,7 +4946,7 @@ snapshots:
 
   vue-tsc@3.3.11(typescript@6.0.3):
     dependencies:
-      '@volar/typescript': 2.4.28
+      '@volar/typescript': 2.4.28(typescript@6.0.3)
       '@vue/language-core': 3.3.11
       typescript: 6.0.3
 

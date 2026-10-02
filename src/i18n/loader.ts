@@ -136,6 +136,11 @@ export const createI18nInstance = async (): Promise<I18n> => {
  */
 export const getI18n = (): I18n | null => i18nInstance;
 
+// Monotonic sequence for locale switches: two rapid switches both awaiting
+// their (uncached) pack load resolve out of order, and the last-resolved
+// import would otherwise win instead of the last-requested locale.
+let switchSequence = 0;
+
 /**
  * Switch language
  * @returns Whether the switch was applied (false when the instance is not
@@ -146,11 +151,18 @@ export const switchLanguage = async (newLocale: string): Promise<boolean> => {
     return false;
   }
 
+  const seq = ++switchSequence;
+
   // Ensure language pack is loaded
 
   const msgValues = (i18nInstance.global as Composer).messages.value as Record<string, unknown>;
   if (!msgValues[newLocale]) {
     const messages = await loadLocaleMessages(newLocale);
+    // A newer switchLanguage call superseded this one — drop the stale apply
+    // (the pack itself is cached, so nothing is lost).
+    if (seq !== switchSequence) {
+      return false;
+    }
     (i18nInstance.global as Composer).setLocaleMessage(newLocale, messages as Record<string, unknown>);
   }
 

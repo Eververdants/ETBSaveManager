@@ -41,7 +41,9 @@ pub fn extract_player_data(save: &Save) -> (Vec<String>, Vec<f64>, Vec<Vec<Strin
             continue;
         };
 
-        // Extract sanity value
+        // Extract sanity value. Default to the game's 100 (matching the write
+        // path): 0 is not distinguishable from a real value downstream, so a
+        // missing/degraded property would otherwise round-trip as sanity 0.
         let sanity = props
             .0
             .iter()
@@ -50,7 +52,7 @@ pub fn extract_player_data(save: &Save) -> (Vec<String>, Vec<f64>, Vec<Vec<Strin
                 Property::Float(v) => Some(v.0 as f64),
                 _ => None,
             })
-            .unwrap_or(0.0);
+            .unwrap_or(100.0);
 
         // Extract inventory (up to 12 slots)
         let inventory = props

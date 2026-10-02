@@ -41,6 +41,12 @@ pub async fn delete_file(file_path: String) -> AppResult<()> {
             return Err("Only .sav save files can be deleted".to_string().into());
         }
 
+        // MAINSAVE is the registry every listing/visibility operation reads:
+        // it must never be deletable through this generic command.
+        if filename.eq_ignore_ascii_case("MAINSAVE.sav") || filename.eq_ignore_ascii_case("MAINSAVE_temp.sav") {
+            return Err("MAINSAVE.sav cannot be deleted".to_string().into());
+        }
+
         validate_save_games_path(path)?;
 
         fs::remove_file(&file_path).map_err(|e| format!("Failed to delete file: {}", e))?;
@@ -181,6 +187,11 @@ pub async fn soft_delete_file(file_path: String) -> AppResult<()> {
             return Err("Only .sav save files can be soft-deleted"
                 .to_string()
                 .into());
+        }
+
+        // Same registry protection as delete_file.
+        if filename.eq_ignore_ascii_case("MAINSAVE.sav") || filename.eq_ignore_ascii_case("MAINSAVE_temp.sav") {
+            return Err("MAINSAVE.sav cannot be deleted".to_string().into());
         }
 
         validate_save_games_path(path)?;

@@ -713,7 +713,9 @@ fn extract_zip(zip_path: &Path, staging: &Path) -> AppResult<usize> {
     Ok(count)
 }
 
-/// Find the deepest-first file matching any marker name inside `root`.
+/// Find the shallowest file matching any marker name inside `root`.
+/// Shallowest wins deliberately: the outermost match is the install base —
+/// `find_ue4ss_base` and the NSU lookup rely on this.
 fn find_marker(root: &Path, markers: &[&str]) -> Option<PathBuf> {
     let mut best: Option<(usize, PathBuf)> = None;
     for entry in WalkDir::new(root).max_depth(6).into_iter().flatten() {

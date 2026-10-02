@@ -454,7 +454,9 @@ fn load_save_metadata_page_sync(
 
     // Clamp to valid range
     let start = offset.min(total) as usize;
-    let end = (offset + limit).min(total) as usize;
+    // saturating_add: a u32 overflow would wrap and can make end < start,
+    // panicking the slice below (release profile is panic=abort).
+    let end = offset.saturating_add(limit).min(total) as usize;
     let page_paths = &paths[start..end];
 
     let mut results: Vec<SaveFileMeta> = Vec::with_capacity(page_paths.len());

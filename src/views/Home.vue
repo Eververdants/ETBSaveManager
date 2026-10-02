@@ -633,6 +633,11 @@ declare global {
 onActivated(() => {
   isPageActive.value = true;
 
+  // Register here (not onMounted) so the window-level undo/redo shortcut only
+  // lives while Home is the active page — keep-alive deactivation would
+  // otherwise leave it hijacking Ctrl+Z on every other route.
+  registerUndoShortcuts();
+
   if (scrollContainerRef.value) {
     (scrollContainerRef.value as HTMLElement).scrollTop = 0;
   }
@@ -685,6 +690,8 @@ onActivated(() => {
 // On keep-alive deactivation
 onDeactivated(() => {
   isPageActive.value = false;
+  // Undo/redo shortcuts must not fire while Home is cached but not visible.
+  unregisterUndoShortcuts();
   // Cancel the activate timer so it doesn't fire after we've navigated away
   if (activateTimer) {
     clearTimeout(activateTimer);
@@ -751,7 +758,8 @@ onMounted(() => {
 
   isPageActive.value = true;
   markInitialLoadComplete();
-  registerUndoShortcuts();
+  // No registerUndoShortcuts() here: the shortcut lifecycle is tied to
+  // onActivated/onDeactivated so it never outlives the page's active state.
 });
 
 onUnmounted(() => {

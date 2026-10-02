@@ -392,13 +392,20 @@ export function useArchiveActions(
   // would silently fail and leak the listener (re-firing undo/redo while
   // Home is keep-alive cached on other routes).
   const handleUndoKeyDown = (e: KeyboardEvent): void => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "z") {
-      e.preventDefault();
-      if (e.shiftKey) {
-        redo();
-      } else {
-        undo();
-      }
+    // Shift produces the uppercase key ("Z"), so compare case-insensitively —
+    // a case-sensitive check made Ctrl+Shift+Z (redo) unreachable.
+    const key = e.key.toLowerCase();
+    if (!(e.ctrlKey || e.metaKey) || key !== "z") return;
+    // Don't hijack native text undo inside editable fields.
+    const target = e.target as HTMLElement | null;
+    if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+      return;
+    }
+    e.preventDefault();
+    if (e.shiftKey) {
+      redo();
+    } else {
+      undo();
     }
   };
 

@@ -407,8 +407,20 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
         return Err(e);
     }
 
-    // Atomically rename temp to target path
-    if let Err(e) = fs::rename(&temp_path, &output_path) {
+    // Atomically rename temp to target path. Re-run the duplicate guard
+    // immediately before the rename: the earlier check ran before the
+    // possibly seconds-long MAINSAVE read/modify/write, and fs::rename
+    // replaces any existing target — a colliding archive created in between
+    // would otherwise be destroyed.
+    let rename_result: AppResult<()> = if output_path.exists()
+        && !is_same_save_target(Path::new(&original_path), &output_path)
+    {
+        Err(AppError::DuplicateName(name.to_string()))
+    } else {
+        fs::rename(&temp_path, &output_path)
+            .map_err(|e| format!("Failed to rename temp file: {}", e).into())
+    };
+    if let Err(e) = rename_result {
         // Roll the registry back to its pre-edit state; the original .sav is
         // untouched at this point, so the user can simply retry.
         if let Some(moved_from) = moved_old_entry {

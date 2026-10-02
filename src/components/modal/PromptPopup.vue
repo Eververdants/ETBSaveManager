@@ -193,7 +193,9 @@ const startProgress = () => {
 const pauseAutoClose = () => {
   if (props.duration > 0 && progressTimeline.value) {
     isPaused.value = true;
-    remainingTime.value = progressTimeline.value.time() * 1000; // Save remaining time
+    // Pause/resume the running timeline itself: time() is elapsed, not
+    // remaining, and rebuilding the tween from a wrong "remaining" value
+    // made a hovered popup close early and leak the orphaned timeline.
     progressTimeline.value.pause();
   }
 };
@@ -201,16 +203,7 @@ const pauseAutoClose = () => {
 const resumeAutoClose = () => {
   if (props.duration > 0 && progressTimeline.value && isPaused.value) {
     isPaused.value = false;
-    progressTimeline.value = gsap.fromTo(
-      progressRef.value,
-      { scaleX: remainingTime.value / props.duration, transformOrigin: "left center" },
-      {
-        scaleX: 0,
-        duration: remainingTime.value / 1000,
-        ease: "linear",
-        onComplete: closePopup,
-      },
-    );
+    progressTimeline.value.resume();
   }
 };
 </script>

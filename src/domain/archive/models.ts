@@ -87,7 +87,8 @@ export interface ParsedArchiveConfig {
 
 export interface CreateArchivePlayer {
   steamId: string;
-  inventory: number[];
+  /** Item names as stored in the save; written back verbatim by the backend. */
+  inventory: string[];
   sanity: number;
 }
 

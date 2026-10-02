@@ -195,7 +195,6 @@ import Step2ConfigArchive from "./Step2ConfigArchive.vue";
 import Step3EditInventory from "./Step3EditInventory.vue";
 import { ENDING_LEVELS, ENDINGS_CONFIG } from "@/data/endingsData";
 import { FEATURES } from "@/config/features";
-import { getItemIdByName } from "@/utils/itemIdMap";
 import { getLevelImage } from "@/utils/levelUtils";
 
 // Explicit name so the router-view keep-alive include list can match it.
@@ -695,9 +694,9 @@ const createArchive = async () => {
       players: players.map((p) => ({
         // 纯 steam id；若该玩家在已有存档里存在完整键（含 EOS 后缀），复用，保证数据能绑定
         steamId: uniqueIdMap[p.steamId] || p.steamId || "",
-        inventory: Array.isArray(p.inventory)
-          ? p.inventory.filter((item) => item !== null && item !== undefined).map((item) => getItemIdByName(item))
-          : [],
+        // 物品名称原样传给后端（存档内存的就是 Name 字符串），
+        // 避免经 ID 映射表把表外物品悄悄替换成 "None"
+        inventory: Array.isArray(p.inventory) ? p.inventory.filter((item) => Boolean(item)) : [],
         sanity: typeof p.sanity === "number" ? p.sanity : 100,
       })),
       basicArchive: basicArchive || {},

@@ -99,7 +99,11 @@ pub struct SaveData {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PlayerData {
     pub steam_id: String,
-    pub inventory: Vec<i32>,
+    /// Item names as stored in the save's Inventory array (NameProperty).
+    /// Names pass straight through: the id<->name table only covers known
+    /// items, and routing through ids silently rewrote anything else to
+    /// "None", deleting the item from the backpack.
+    pub inventory: Vec<String>,
     pub sanity: f32,
 }
 
@@ -572,12 +576,14 @@ fn update_player_data(save: &mut Save, players: &[PlayerData]) -> AppResult<()> 
     let map_entries: Vec<_> = players
         .iter()
         .map(|player| {
-            // Create inventory items list
+            // Create inventory items list — names are written verbatim
+            // (empty slots stay/ become "None", the game's empty marker)
             let mut inventory_items: Vec<String> = player
                 .inventory
                 .iter()
                 .take(save_shared::INVENTORY_SLOTS)
-                .map(|&id| save_shared::map_item_id_to_name(id).to_string())
+                .filter(|name| !name.is_empty())
+                .cloned()
                 .collect();
 
             inventory_items.resize(save_shared::INVENTORY_SLOTS, "None".to_string());

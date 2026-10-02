@@ -121,7 +121,6 @@ import { detectDuplicateNameError } from "@/domain/archive/nameConflict";
 import { tauriArchiveAdapter } from "@/adapters/tauri/archiveAdapter";
 import { formatDifficulty } from "@/utils/archiveCreationUtils";
 import { stripSteamIdSuffix } from "@/utils/steamIdUtils";
-import { getItemIdByName } from "@/utils/itemIdMap";
 import { FEATURES } from "@/config/features";
 
 const props = defineProps({
@@ -280,8 +279,11 @@ const confirmSaveArchive = async () => {
         player.originalSteamId && originalBase === player.steamId.trim()
           ? player.originalSteamId
           : player.steamId.trim();
-      playerInventory[steamId] = player.inventory.map((itemId) => ({
-        item: { id: getItemIdByName(itemId) },
+      // Names go to the backend verbatim: the save stores Name strings, and
+      // mapping through the id table would silently replace any item outside
+      // it with "None" (item loss on save).
+      playerInventory[steamId] = player.inventory.map((item) => ({
+        item: { name: item || "None" },
       }));
       playerSanity[steamId] = player.sanity ?? 100;
     });

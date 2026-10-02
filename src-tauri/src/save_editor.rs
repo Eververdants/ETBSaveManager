@@ -65,14 +65,21 @@ fn process_pipes_level(save: &mut Save, level: &str) -> String {
     }
 }
 
-/// Extract inventory items from JSON data
+/// Extract inventory items from JSON data.
+/// Items arrive as the save's own Name strings and are written back verbatim:
+/// converting through the id table would silently replace any item outside
+/// the 25-entry table (game updates, mods) with "None", deleting it.
 fn extract_inventory_items(json_data: &JsonValue, steam_id: &str) -> Vec<String> {
     let mut items = Vec::with_capacity(save_shared::INVENTORY_SLOTS);
 
     if let Some(inventory) = json_data["playerInventory"][steam_id].as_array() {
         for item_value in inventory.iter().take(save_shared::INVENTORY_SLOTS) {
-            let item_id = item_value["item"]["id"].as_i64().unwrap_or(-1) as i32;
-            items.push(save_shared::map_item_id_to_name(item_id).to_string());
+            let item_name = item_value["item"]["name"].as_str().unwrap_or("");
+            if item_name.is_empty() {
+                items.push("None".to_string());
+            } else {
+                items.push(item_name.to_string());
+            }
         }
     }
 

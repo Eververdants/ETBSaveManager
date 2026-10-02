@@ -3,12 +3,34 @@ import PromptPopup from "@/components/modal/PromptPopup.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import type { PopupOptions } from "@/types/ui";
 
-let popupApp: ReturnType<typeof createApp> | null = null;
-let mountPoint: HTMLDivElement | null = null;
-let currentOnClose: (() => void) | null = null;
+type PopupApp = ReturnType<typeof createApp>;
+
+interface ActivePopup {
+  app: PopupApp;
+  el: HTMLDivElement;
+  onClose: (() => void) | null;
+  /** Guard so a user onClose callback can never fire more than once. */
+  settled: boolean;
+}
+
+let activePopup: ActivePopup | null = null;
 
 // Release toggle - set to false to disable popup functionality
 const ENABLE_POPUP = true;
+
+/** Fire a popup's onClose exactly once, even if close is signalled twice
+ * (e.g. an auto-close leave animation completing after a manual close). */
+const fireOnClose = (popup: ActivePopup): void => {
+  if (popup.settled) return;
+  popup.settled = true;
+  if (popup.onClose) {
+    try {
+      popup.onClose();
+    } catch (e) {
+      console.warn("[PopupService] onClose threw:", e);
+    }
+  }
+};
 
 export const showPopup = (options: PopupOptions): void => {
   // If popup functionality is disabled, return immediately
@@ -19,56 +41,47 @@ export const showPopup = (options: PopupOptions): void => {
 
   // If a popup already exists, fire its onClose before replacing it —
   // state that depends on onClose (e.g. focus restoration) must not be skipped.
-  if (popupApp && mountPoint) {
-    if (currentOnClose) {
-      const close = currentOnClose;
-      currentOnClose = null;
-      try {
-        close();
-      } catch (e) {
-        console.warn("[PopupService] previous onClose threw:", e);
-      }
-    }
-    popupApp.unmount();
-    document.body.removeChild(mountPoint);
+  const previous = activePopup;
+  if (previous) {
+    activePopup = null;
+    fireOnClose(previous);
+    previous.app.unmount();
+    previous.el.remove();
   }
 
-  // Create a new mount point
-  mountPoint = document.createElement("div");
-  document.body.appendChild(mountPoint);
+  // Each popup gets its own identity, so a stale close signal from a replaced
+  // popup can never tear down (or fire callbacks of) the popup that replaced it.
+  const popup: ActivePopup = { app: null as unknown as PopupApp, el: null as unknown as HTMLDivElement, onClose: options.onClose ?? null, settled: false };
 
-  // Track the user's onClose so we can call it if this popup is replaced
-  currentOnClose = options.onClose ?? null;
+  // Create a new mount point
+  const el = document.createElement("div");
+  document.body.appendChild(el);
+  popup.el = el;
 
   // Create app instance
-  popupApp = createApp({
+  const app = createApp({
     render: () =>
       h(PromptPopup, {
         ...options,
         onClose: () => {
-          currentOnClose = null;
-          if (options.onClose) {
-            try {
-              options.onClose();
-            } catch (e) {
-              console.warn("[PopupService] onClose threw:", e);
-            }
-          }
-          if (popupApp && mountPoint) {
-            popupApp.unmount();
-            document.body.removeChild(mountPoint);
-            popupApp = null;
-            mountPoint = null;
+          fireOnClose(popup);
+          // Only tear down while this instance is still the live popup.
+          if (activePopup === popup) {
+            activePopup = null;
+            app.unmount();
+            el.remove();
           }
         },
       }),
   });
 
   // Register Font Awesome component
-  popupApp.component("FontAwesomeIcon", FontAwesomeIcon);
+  app.component("FontAwesomeIcon", FontAwesomeIcon);
+  popup.app = app;
+  activePopup = popup;
 
   // Mount the app
-  popupApp.mount(mountPoint);
+  app.mount(el);
 };
 
 // Convenience methods

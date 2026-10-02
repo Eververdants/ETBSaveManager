@@ -185,7 +185,15 @@ const archiveNames = computed(() => {
   return names;
 });
 
-const canCreate = computed(() => simplifiedState.value.selectedLevelKeys.length > 0 && !quickCreateState.isCreating);
+// Synchronous submit latch, independent of the composable's isCreating flag
+// (which is only raised inside the batch runner after its own awaits). Keeps
+// the Create button dead through the whole run, including the success-modal
+// delay before navigation.
+const submitting = ref(false);
+
+const canCreate = computed(
+  () => simplifiedState.value.selectedLevelKeys.length > 0 && !quickCreateState.isCreating && !submitting.value,
+);
 
 const setDifficulty = (d: string) => {
   simplifiedState.value.difficulty = d as DifficultyLevel;
@@ -198,7 +206,8 @@ const setCopies = (n: number) => {
 const goBack = () => router.push("/select-create-mode");
 
 const handleCreate = async () => {
-  if (!canCreate.value) return;
+  if (!canCreate.value || submitting.value) return;
+  submitting.value = true;
   try {
     // Add archives to quick create state
     for (const levelKey of simplifiedState.value.selectedLevelKeys) {
@@ -223,12 +232,14 @@ const handleCreate = async () => {
   if (creationResult.value && creationResult.value.success > 0 && creationResult.value.failed === 0) {
     notify.success(t("quickCreate.result.successTitle"));
     setTimeout(() => {
+      submitting.value = false;
       closeResultModal();
       resetState();
       simplifiedState.value.selectedLevelKeys = [];
       router.push("/");
     }, 1500);
   } else {
+    submitting.value = false;
     showResultModal.value = true;
   }
 };

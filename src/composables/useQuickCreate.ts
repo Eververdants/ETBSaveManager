@@ -713,6 +713,11 @@ export function useQuickCreate(): QuickCreateReturn {
       return { success: 0, failed: 0, errors: [] };
     }
 
+    // Raise the creating flag synchronously, before any await: the view's
+    // submit guard reads this flag, and a second click landing inside the
+    // template-load await below would otherwise start a duplicate batch.
+    state.isCreating = true;
+
     // Report batch-creating operation to resource scheduler
     scheduler.beginOperation("batch-creating", {
       totalItems: archivesToCreate.length,
@@ -724,6 +729,7 @@ export function useQuickCreate(): QuickCreateReturn {
     if (!basicArchive) {
       // Early return must still end the scheduler operation, otherwise the
       // critical "batch-creating" op leaks for the whole session.
+      state.isCreating = false;
       scheduler.endOperation("batch-creating");
       return {
         success: 0,
@@ -732,8 +738,8 @@ export function useQuickCreate(): QuickCreateReturn {
       };
     }
 
-    // Set creating state
-    state.isCreating = true;
+    // Set creating state (progress reset; the creating flag itself was raised
+    // synchronously at the top of this function)
     state.creationProgress = 0;
     const abortController = new AbortController();
     batchCreateAbortController = abortController;

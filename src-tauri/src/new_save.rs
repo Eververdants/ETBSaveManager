@@ -199,7 +199,7 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<String> {
     handle_pipes_unlocked_fun(&mut save, &save_data.level);
 
     // Update difficulty settings
-    save_shared::update_difficulty(&mut save, &save_data.actual_difficulty);
+    save_shared::update_difficulty(&mut save, &save_data.actual_difficulty)?;
 
     // Handle MainEnding parameter
     update_bool_property(&mut save, "HasCompletedMainEnding", save_data.main_ending)?;

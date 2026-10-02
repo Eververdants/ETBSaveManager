@@ -279,7 +279,7 @@ pub fn edit_save_file(json_data: &JsonValue, output_dir: &str) -> AppResult<Stri
     }
 
     // Update difficulty
-    save_shared::update_difficulty(&mut save, actual_difficulty);
+    save_shared::update_difficulty(&mut save, actual_difficulty)?;
 
     // Mirror the create flow's progression logic: a level past The Hub — or a
     // non-main storyline ending — needs The Hub reachable (every hub-door flag

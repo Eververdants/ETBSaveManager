@@ -7,6 +7,8 @@ use uesave::{
     PropertyType, Save, StructType, StructValue, ValueVec,
 };
 
+use crate::error::AppResult;
+
 /// Inventory slot count
 pub const INVENTORY_SLOTS: usize = 12;
 /// Inventory property name
@@ -200,9 +202,19 @@ pub fn modify_current_level(save: &mut Save, new_level_name: String) -> bool {
 /// Update difficulty settings
 ///
 /// Removes all existing Difficulty fields, then creates a new one
-/// if the difficulty is not "Normal".
-pub fn update_difficulty(save: &mut Save, difficulty: &str) {
-    tracing::info!("Processing difficulty settings: {}", difficulty);
+/// if the difficulty is not "Normal". Matching is case-insensitive; an
+/// unrecognized value is an error — silently defaulting used to write saves
+/// that play as Easy while their filename claims otherwise.
+pub fn update_difficulty(save: &mut Save, difficulty: &str) -> AppResult<()> {
+    let normalized = match difficulty.to_lowercase().as_str() {
+        "easy" => "Easy",
+        "normal" => "Normal",
+        "hard" => "Hard",
+        "nightmare" => "Nightmare",
+        _ => return Err(format!("Unknown difficulty value '{}'", difficulty).into()),
+    };
+
+    tracing::info!("Processing difficulty settings: {} -> {}", difficulty, normalized);
 
     // Delete all difficulty fields
     let difficulty_keys: Vec<(u32, String)> = save
@@ -220,15 +232,11 @@ pub fn update_difficulty(save: &mut Save, difficulty: &str) {
     }
 
     // If not Normal difficulty, create a new difficulty field
-    if difficulty != "Normal" {
-        let label = match difficulty {
+    if normalized != "Normal" {
+        let label = match normalized {
             "Easy" => "E_Difficulty::NewEnumerator0",
             "Hard" => "E_Difficulty::NewEnumerator1",
-            "Nightmare" => "E_Difficulty::NewEnumerator2",
-            _ => {
-                tracing::warn!("Unknown difficulty value '{}', using default", difficulty);
-                "E_Difficulty::NewEnumerator0"
-            }
+            _ => "E_Difficulty::NewEnumerator2",
         };
 
         record_root_schema(
@@ -247,6 +255,8 @@ pub fn update_difficulty(save: &mut Save, difficulty: &str) {
     } else {
         tracing::debug!("Skipping difficulty field creation (Normal difficulty)");
     }
+
+    Ok(())
 }
 
 /// Helper: schema for a StructProperty tag

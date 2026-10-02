@@ -37,6 +37,12 @@ pub(crate) const MAIN_STORYLINE_LEVELS: &[(&str, &str)] = &[
 
 /// All level data (complete list from endingLevelsData[0]): (DisplayName, LevelName)
 /// Used for generating all levels in side storyline
+/// Full main-route level table. Membership here means "reachable on the main
+/// route" for the edit flow's progression logic — branch-exclusive levels
+/// (Bunker, LP_LevelPlasticMariana, GraffitiLevel, Grassrooms_Expanded,
+/// Level922, Level974) must NOT be listed: they get the side-storyline
+/// treatment (all hub doors + MEG + main ending) instead. Keep this table in
+/// sync with ENDING_LEVELS[0] in src/data/endingsData.ts.
 pub const ALL_LEVELS: &[(&str, &str)] = &[
     ("Level 0", "Level0"),
     ("Habitable Zone", "TopFloor"),
@@ -80,7 +86,6 @@ pub const ALL_LEVELS: &[(&str, &str)] = &[
     ("Level Fun Expanded", "Zone4"),
     ("Level 52", "Level52"),
     ("Level 55.1", "TunnelLevel"),
-    ("LP_LevelPlasticMariana", "LP_LevelPlasticMariana"),
 ];
 
 #[derive(Debug, Deserialize, Serialize)]

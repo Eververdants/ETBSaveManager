@@ -96,5 +96,9 @@
   "levelGroup": {
     "special": "Special"
   },
+  "unsavedTitle": "Unsaved changes",
+  "unsavedMessage": "Leaving now will discard all unsaved changes to this archive. Leave anyway?",
+  "unsavedConfirm": "Discard and leave",
+  "unsavedCancel": "Keep editing",
   "unlockMainBadge": "Main ending unlocked"
 }

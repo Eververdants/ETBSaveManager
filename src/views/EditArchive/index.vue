@@ -95,6 +95,19 @@
       @cancel="resolveNameConflict(false)"
     />
 
+    <!-- Unsaved-changes guard: offered when leaving with modified form state -->
+    <ConfirmModal
+      :show="showLeaveConfirm"
+      type="warning"
+      :title="$t('editArchive.unsavedTitle')"
+      :message="$t('editArchive.unsavedMessage')"
+      :confirm-text="$t('editArchive.unsavedConfirm')"
+      :cancel-text="$t('editArchive.unsavedCancel')"
+      @update:show="showLeaveConfirm = $event"
+      @confirm="confirmLeave"
+      @cancel="cancelLeave"
+    />
+
     <!-- Item selector -->
     <InventoryItemSelector
       :visible="showItemSelector"
@@ -108,7 +121,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
-import { useRouter } from "vue-router";
+import { useRouter, onBeforeRouteLeave } from "vue-router";
 import { invoke } from "@tauri-apps/api/core";
 import InventoryItemSelector from "@/components/feature/InventoryItemSelector.vue";
 import ConfirmModal from "@/components/modal/ConfirmModal.vue";
@@ -308,6 +321,7 @@ const confirmSaveArchive = async () => {
     });
 
     notify.success(t("editArchive.saveSuccess"));
+    savedFormSnapshot = buildFormSnapshot();
     router.push({ name: "Home" });
   } catch (error) {
     const errorMsg = error?.message || String(error);
@@ -334,7 +348,51 @@ const confirmSaveArchive = async () => {
 };
 
 // Initialize
-const initArchiveData = () => {
+// Unsaved-changes tracking: a JSON snapshot of the editable form state,
+// captured after load and after every successful save. onBeforeRouteLeave
+// re-serializes and compares — a watcher latch is not enough because player
+// data lands asynchronously after mount.
+const showLeaveConfirm = ref(false);
+let pendingLeaveRoute = null;
+let savedFormSnapshot = null;
+
+const buildFormSnapshot = () =>
+  JSON.stringify({
+    name: formData.name,
+    currentLevel: formData.currentLevel,
+    archiveDifficulty: formData.archiveDifficulty,
+    actualDifficulty: formData.actualDifficulty,
+    players: formData.players.map((p) => ({
+      steamId: p.steamId,
+      inventory: [...p.inventory],
+      sanity: p.sanity,
+      username: p.username,
+      isOfflinePlayer: p.isOfflinePlayer,
+    })),
+  });
+
+onBeforeRouteLeave((to) => {
+  if (savedFormSnapshot === null || buildFormSnapshot() === savedFormSnapshot) {
+    return true;
+  }
+  pendingLeaveRoute = to;
+  showLeaveConfirm.value = true;
+  return false;
+});
+
+const confirmLeave = () => {
+  showLeaveConfirm.value = false;
+  savedFormSnapshot = null; // user chose to discard
+  router.push(pendingLeaveRoute || { name: "Home" });
+  pendingLeaveRoute = null;
+};
+
+const cancelLeave = () => {
+  showLeaveConfirm.value = false;
+  pendingLeaveRoute = null;
+};
+
+const initArchiveData = async () => {
   try {
     if (props.archiveData) {
       let data;
@@ -378,7 +436,8 @@ const initArchiveData = () => {
       formData.actualDifficulty = FEATURES.MERGE_DIFFICULTY
         ? formData.archiveDifficulty
         : data.actualDifficulty || "normal";
-      loadPlayerData(data);
+      await loadPlayerData(data);
+      savedFormSnapshot = buildFormSnapshot();
     }
   } catch (e) {
     console.error("Archive data init failed:", e);

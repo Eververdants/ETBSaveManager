@@ -102,5 +102,9 @@
   "levelGroup": {
     "special": "特殊"
   },
+  "unsavedTitle": "有未儲存的變更",
+  "unsavedMessage": "離開將遺失目前存檔的所有未儲存修改，確定要離開嗎？",
+  "unsavedConfirm": "放棄變更並離開",
+  "unsavedCancel": "繼續編輯",
   "unlockMainBadge": "已解鎖主線結局"
 }

@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { onScopeDispose, ref } from "vue";
 import { tauriArchiveAdapter } from "@/adapters/tauri/archiveAdapter";
 
 /**
@@ -72,6 +72,10 @@ export function useArchiveNameCheck() {
       isChecking.value = false;
     }, CHECK_DEBOUNCE_MS);
   };
+
+  // A pending debounce timer firing after the edit/create view unmounts
+  // would still issue the IPC check and write to dead refs.
+  onScopeDispose(clearPending);
 
   return { nameConflict, suggestedName, isChecking, scheduleCheck, reset };
 }

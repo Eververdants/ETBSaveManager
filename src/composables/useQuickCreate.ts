@@ -11,7 +11,6 @@ import { validate } from "./useValidator";
 import { parseName } from "@/utils/nameParser";
 import scheduler from "@/services/resourceScheduler";
 import { tauriArchiveAdapter } from "@/adapters/tauri/archiveAdapter";
-import { archiveService } from "@/domain/archive/service";
 import type {
   ArchiveConfig,
   UniformConfig,
@@ -251,35 +250,36 @@ export function useQuickCreate(): QuickCreateReturn {
     const metadata = await tauriArchiveAdapter.loadArchiveMetadata();
     if (!metadata.success || !metadata.data) return; // fail open — backend guard still protects
 
+    // Keys are lowercased: NTFS is case-insensitive, and the backend's
+    // duplicate guard is Path::exists() — an exact-case set would let
+    // "hotel" through while "Hotel" is on disk and kill the batch midway.
+    // (SaveFileMeta.name is already the bare archive-name segment.)
     const taken = new Set<string>();
     for (const item of metadata.data) {
-      // Metadata carries full .sav filenames; only the archive-name segment
-      // participates in collisions.
-      const parsed = archiveService.parseArchiveName(item.name);
-      taken.add(parsed ? parsed.archiveName : item.name);
+      taken.add(item.name.toLowerCase());
     }
     // Archives in the list but not selected this run still occupy their names.
     const creatingIds = new Set(archives.map((a) => a.id));
     for (const a of state.archives) {
-      if (!creatingIds.has(a.id)) taken.add(a.name);
+      if (!creatingIds.has(a.id)) taken.add(a.name.toLowerCase());
     }
 
     for (const archive of archives) {
-      if (!taken.has(archive.name)) {
+      if (!taken.has(archive.name.toLowerCase())) {
         // Free — claim it so a later twin in the same batch gets suffixed.
-        taken.add(archive.name);
+        taken.add(archive.name.toLowerCase());
         continue;
       }
       const baseName = archive.name;
       let suffix = 1;
       let finalName = `${baseName}-${suffix}`;
-      while (taken.has(finalName)) {
+      while (taken.has(finalName.toLowerCase())) {
         suffix++;
         finalName = `${baseName}-${suffix}`;
       }
       archive.name = finalName;
       archive.parsedInfo = parseName(finalName);
-      taken.add(finalName);
+      taken.add(finalName.toLowerCase());
     }
   };
 

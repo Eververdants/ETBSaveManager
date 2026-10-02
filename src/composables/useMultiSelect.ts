@@ -38,7 +38,12 @@ export function useMultiSelect(
   const batchDeleteProgress = ref<BatchDeleteProgress>({ current: 0, total: 0, archiveName: "" });
 
   const isAllSelected = computed(() => {
-    return displayArchives.value.length > 0 && selectedArchives.value.size === displayArchives.value.length;
+    // Compare membership, not sizes: the selection survives filter changes,
+    // so it can hold ids that are not in the current display list and sizes
+    // never agree again ("all selected" unreachable).
+    return (
+      displayArchives.value.length > 0 && displayArchives.value.every((a) => selectedArchives.value.has(a.id))
+    );
   });
 
   let scrollTopBeforeMultiSelect = 0;

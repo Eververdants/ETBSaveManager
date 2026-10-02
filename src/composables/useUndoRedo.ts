@@ -110,12 +110,14 @@ export function useUndoRedo(): {
       if (typeof action.undo === "function") {
         await action.undo();
       }
+      // Clear the stale future stack BEFORE pushing this action — clearing
+      // after the push erased the action it just added, making it permanently
+      // un-redoable and contradicting undo()'s behavior.
+      future.value.splice(0, future.value.length);
       // Push to redo stack (only if it has a redo function)
       if (typeof action.redo === "function") {
         future.value.push(action);
       }
-      // Future stack is now stale — clear it to prevent inconsistent redo
-      future.value.splice(0, future.value.length);
       return action.description;
     } catch (error) {
       console.error("[useUndoRedo] Undo failed:", error);

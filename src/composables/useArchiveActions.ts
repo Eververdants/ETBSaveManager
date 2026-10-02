@@ -139,6 +139,11 @@ export function useArchiveActions(
     const { onSuccess, onError, onRefresh } = callbacks;
     const archivePath = updatedArchive.path;
 
+    // Set once the backend toggle is verified — onSuccess/onRefresh then run
+    // OUTSIDE the try, so a caller-supplied refresh failure cannot masquerade
+    // as a failed toggle (the catch shows toggleVisibilityFailed).
+    let succeeded = false;
+
     try {
       if (!archivePath) {
         throw new Error("Archive has no file path");
@@ -203,13 +208,21 @@ export function useArchiveActions(
         },
       });
 
-      onSuccess?.();
-      await onRefresh?.();
+      succeeded = true;
     } catch (_error) {
       onError?.(_error);
       toast.showError(t("archive.actions.toggleVisibilityFailed"));
     } finally {
       if (archivePath) togglingArchives.delete(archivePath);
+    }
+
+    if (succeeded) {
+      onSuccess?.();
+      try {
+        await onRefresh?.();
+      } catch (e) {
+        console.warn("[toggleVisibility] post-success refresh failed:", e);
+      }
     }
   };
 
@@ -245,6 +258,10 @@ export function useArchiveActions(
       const index = findArchiveIndex(archiveData.archives.value, archive);
       if (index !== -1) {
         const removed = archiveData.archives.value.splice(index, 1)[0];
+        // Undo restores a snapshot, not the live object: a refresh between
+        // delete and undo replaces the list with fresh objects, and inserting
+        // the stale one would resurrect outdated level/date fields.
+        const removedSnapshot = { ...removed };
 
         // Register undo action
         pushAction({
@@ -253,7 +270,7 @@ export function useArchiveActions(
             if (archive.path) {
               try {
                 await tauriArchiveAdapter.restoreArchive(archive.path);
-                insertSortedByName(archiveData.archives.value, removed);
+                insertSortedByName(archiveData.archives.value, removedSnapshot);
               } catch (e) {
                 console.warn("[undo] Failed to restore archive:", e);
                 toast.showError(t("archive.actions.deleteFailed"));

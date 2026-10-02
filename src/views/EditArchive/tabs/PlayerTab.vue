@@ -77,6 +77,7 @@ const emit = defineEmits([
   "edit-slot",
   "sanity-change",
   "steam-id-change",
+  "steam-id-error",
 ]);
 
 const { t } = useI18n({ useScope: "global" });
@@ -102,11 +103,24 @@ const onSteamIdBlur = () => {
   const player = props.players[props.activePlayerIndex];
   if (!player) return;
   const val = currentPlayerSteamId.value.trim();
-  if (val && /^\d+$/.test(val)) {
-    emit("steam-id-change", { playerIndex: props.activePlayerIndex, steamId: val });
-  } else {
+  if (!val || !/^\d+$/.test(val)) {
     currentPlayerSteamId.value = player.steamId;
+    return;
   }
+  // Same rules as addPlayer: an online id is 17 digits and must be unique.
+  // Two players sharing an id overwrite each other's inventory/sanity on
+  // save (both are keyed by steam id).
+  if (val.length !== 17) {
+    emit("steam-id-error", t("editArchive.steamIdLengthError"));
+    currentPlayerSteamId.value = player.steamId;
+    return;
+  }
+  if (props.players.some((p, i) => i !== props.activePlayerIndex && p.steamId === val)) {
+    emit("steam-id-error", t("editArchive.steamIdDuplicate", { steamId: val }));
+    currentPlayerSteamId.value = player.steamId;
+    return;
+  }
+  emit("steam-id-change", { playerIndex: props.activePlayerIndex, steamId: val });
 };
 </script>
 

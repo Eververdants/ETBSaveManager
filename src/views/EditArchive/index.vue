@@ -76,6 +76,7 @@
           @edit-slot="editSlot"
           @sanity-change="onSanityChange"
           @steam-id-change="onSteamIdChange"
+          @steam-id-error="onSteamIdError"
         />
       </div>
     </div>
@@ -514,6 +515,12 @@ const onSteamIdChange = ({ playerIndex, steamId }) => {
   if (formData.players[playerIndex]) {
     formData.players[playerIndex].steamId = steamId;
   }
+};
+
+// Validation failures from the inline editor (length/duplicate) surface
+// through the same message area the add-player form uses
+const onSteamIdError = (message) => {
+  showMessage(message, "error");
 };
 
 const editSlot = (playerIndex, slotIndex) => {

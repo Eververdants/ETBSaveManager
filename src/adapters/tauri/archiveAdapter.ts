@@ -340,7 +340,7 @@ export class TauriArchiveAdapter {
    * accept camelCase aliases, so the camelCase domain model must be
    * translated field-by-field before invoking.
    */
-  async createArchive(options: CreateArchiveOptions): Promise<ArchiveServiceResult<void>> {
+  async createArchive(options: CreateArchiveOptions): Promise<ArchiveServiceResult<string>> {
     try {
       const saveData = {
         archive_name: options.archiveName,
@@ -357,8 +357,8 @@ export class TauriArchiveAdapter {
         main_ending: options.mainEnding,
         meg_unlocked: options.megUnlocked,
       };
-      await invoke("handle_new_save", { saveData });
-      return { success: true };
+      const savedPath = await invoke<string>("handle_new_save", { saveData });
+      return { success: true, data: savedPath };
     } catch (error) {
       return {
         success: false,

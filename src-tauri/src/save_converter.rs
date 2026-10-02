@@ -157,6 +157,6 @@ pub async fn ensure_dir_exists(path: String) -> AppResult<()> {
 
 /// Handle new save creation.
 #[tauri::command]
-pub async fn handle_new_save(save_data: new_save::SaveData) -> AppResult<()> {
+pub async fn handle_new_save(save_data: new_save::SaveData) -> AppResult<String> {
     run_blocking(move || new_save::create_new_save(save_data)).await
 }

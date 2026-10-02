@@ -188,6 +188,7 @@ import { notify } from "@/services/notificationService";
 import { tauriArchiveAdapter } from "@/adapters/tauri/archiveAdapter";
 import { tauriPlayerAdapter } from "@/adapters/tauri/playerAdapter";
 import { useArchiveNameCheck } from "@/composables/useArchiveNameCheck";
+import { editArchiveDataStore } from "@/composables/useArchiveActions";
 import { detectDuplicateNameError } from "@/domain/archive/nameConflict";
 import Step1SelectLevel from "./Step1SelectLevel.vue";
 import Step2ConfigArchive from "./Step2ConfigArchive.vue";
@@ -245,6 +246,10 @@ const players = reactive([]);
 let successModalTimer = null;
 
 const createdArchiveName = ref("");
+// Full snapshot of the archive that was just created (path included), so the
+// success modal's "edit archive" action can open a working editor — the
+// editor's save/load-player calls all require the on-disk path.
+const createdArchiveInfo = ref(null);
 
 // Ending data - store levels data
 const endingLevelsData = reactive({
@@ -713,6 +718,15 @@ const createArchive = async () => {
     if (!result.success) {
       throw new Error(result.error || "Failed to create archive");
     }
+    createdArchiveInfo.value = {
+      name: savedName,
+      path: result.data || "",
+      currentLevel: selectedLevelData.levelKey || "Level0",
+      gameMode: "multiplayer",
+      archiveDifficulty: selectedDifficulty.value,
+      actualDifficulty: FEATURES.MERGE_DIFFICULTY ? selectedDifficulty.value : selectedActualDifficulty.value,
+      isVisible: true,
+    };
     createParticleExplosion();
     openSuccessModal();
   } catch (error) {
@@ -815,9 +829,15 @@ const closeSuccessModal = () => {
 // Post-creation action options
 const handleEditCreatedArchive = () => {
   showSuccessModal.value = false;
+  // Hand the full archive (path included) to the editor via the same store
+  // the Home edit flow uses; without `path` the editor cannot load players
+  // or save.
+  if (createdArchiveInfo.value) {
+    editArchiveDataStore.set("current", JSON.stringify(createdArchiveInfo.value));
+  }
   router.push({
     name: "EditArchive",
-    params: { archiveData: JSON.stringify({ name: createdArchiveName.value }) },
+    params: { archiveData: createdArchiveInfo.value ? JSON.stringify(createdArchiveInfo.value) : createdArchiveName.value },
   });
 };
 

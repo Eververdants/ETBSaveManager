@@ -103,7 +103,7 @@ pub struct PlayerData {
     pub sanity: f32,
 }
 
-pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
+pub fn create_new_save(save_data: SaveData) -> AppResult<String> {
     tracing::info!("Received new save request:");
     tracing::info!("  Archive name: {}", save_data.archive_name);
     tracing::info!("  Level: {}", save_data.level);
@@ -246,7 +246,9 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<()> {
     let archive_name = extract_archive_name(&file_name);
     add_save_to_mainsave(archive_name)?;
 
-    Ok(())
+    // Return the written .sav path so the frontend can hand the new archive
+    // straight to the editor (which keys everything off `path`).
+    Ok(save_path.to_string_lossy().into_owned())
 }
 
 /// Delete the entire CurrentLevel_0 field

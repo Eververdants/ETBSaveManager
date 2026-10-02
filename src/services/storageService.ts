@@ -101,6 +101,7 @@ export function setItem(key: string, value: unknown): void {
  */
 export function removeItem(key: string): void {
   delete cache[key];
+  removeFromLocalStorage(key);
   if (initialized) {
     debouncedSave();
   }
@@ -111,8 +112,25 @@ export function removeItem(key: string): void {
  */
 export function clear(): void {
   cache = { _migrated: true };
+  for (const key of KEYS_TO_KEEP_IN_LOCALSTORAGE) {
+    removeFromLocalStorage(key);
+  }
   if (initialized) {
     debouncedSave();
+  }
+}
+
+/**
+ * Drop a key's localStorage mirror. Migration and the index.html pre-paint
+ * script read localStorage directly, so a "removed" keep-key (theme/language/
+ * locale) would resurrect on the next startup if only the cache were cleared.
+ */
+function removeFromLocalStorage(key: string): void {
+  if (!KEYS_TO_KEEP_IN_LOCALSTORAGE.includes(key)) return;
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {
+    console.warn("Failed to remove localStorage item:", key, e);
   }
 }
 
@@ -139,9 +157,19 @@ function debouncedSave(): void {
 }
 
 /**
- * Save to file
+ * Save to file. Writes are chained single-flight: two overlapping
+ * writeTextFile calls to the same path could otherwise land out of order or
+ * fail with a Windows sharing violation (silently skipped by the catch).
  */
-async function saveToFile(): Promise<void> {
+let saveChain: Promise<void> = Promise.resolve();
+
+function saveToFile(): Promise<void> {
+  const run = saveChain.catch(() => {}).then(doSaveToFile);
+  saveChain = run;
+  return run;
+}
+
+async function doSaveToFile(): Promise<void> {
   try {
     const { BaseDirectory, writeTextFile } = await import("@tauri-apps/plugin-fs");
     const filePath = `${STORAGE_DIR}/${STORAGE_FILE}`;
@@ -188,6 +216,12 @@ function restoreFlushBackup(): void {
         restored[key] = value;
       }
     }
+    // The migration flag must survive the restore: losing it re-runs
+    // localStorage migration, which re-imports stale theme/language/locale
+    // values (resurrecting settings the user just cleared).
+    if (cache._migrated === true) {
+      restored._migrated = true;
+    }
     cache = restored;
     debouncedSave();
     console.info("[Storage] Restored pending changes from beforeunload backup");
@@ -220,16 +254,22 @@ function setupLifecycleFlush(): void {
       clearTimeout(saveTimeout);
       saveTimeout = null;
     }
-    // Best-effort file save: it is async, so the webview may be torn down
-    // before it lands — the synchronous localStorage backup below is what
-    // restoreFlushBackup() reads on the next startup.
-    saveToFile();
+    // Snapshot and timestamp BEFORE kicking the async file save: if the write
+    // lands, its _savedAt is newer than this backup's _flushedAt and the next
+    // startup correctly skips the restore; if it never lands, this backup is
+    // the only copy of the pending changes. (The previous order stamped the
+    // backup after starting the write, so the backup always looked newer and
+    // the restore path fired on nearly every clean startup.)
     const pendingJson = JSON.stringify({ ...cache, _flushedAt: Date.now() });
     try {
       localStorage.setItem(FLUSH_BACKUP_KEY, pendingJson);
     } catch (e) {
       console.warn("[Storage] beforeunload flush failed:", e);
     }
+    // Best-effort file save: it is async, so the webview may be torn down
+    // before it lands — the synchronous localStorage backup above is what
+    // restoreFlushBackup() reads on the next startup.
+    saveToFile();
   });
 }
 

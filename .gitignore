@@ -34,3 +34,4 @@ src/node_modules
 landing-page-react/
 # ZCode plan-mode artifacts
 .zcode/
+.mimosa/

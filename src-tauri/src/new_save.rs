@@ -234,15 +234,31 @@ pub fn create_new_save(save_data: SaveData) -> AppResult<String> {
         return Err("MAINSAVE.sav not found — start the game once so it can be created".into());
     }
 
-    // Write as .sav file
-    let file =
-        fs::File::create(&save_path).map_err(|e| format!("Failed to create output file: {}", e))?;
-    let mut writer = BufWriter::new(file);
-    save.write(&mut writer)
-        .map_err(|e| format!("Failed to write save: {:?}", e))?;
-    writer
-        .flush()
-        .map_err(|e| format!("Failed to flush buffer: {}", e))?;
+    // Write to a temp file first, then atomically rename (same discipline as
+    // edit_save_file): a crash, disk-full or AV interference mid-write must
+    // not strand a half-written .sav that shows up as a broken archive and
+    // then blocks its own re-creation via the duplicate-name guard.
+    let temp_path = save_path.with_extension("sav.tmp");
+    let write_result: AppResult<()> = (|| {
+        let file = fs::File::create(&temp_path)
+            .map_err(|e| format!("Failed to create temp file: {}", e))?;
+        let mut writer = BufWriter::new(file);
+        save.write(&mut writer)
+            .map_err(|e| format!("Failed to write save: {:?}", e))?;
+        writer
+            .flush()
+            .map_err(|e| format!("Failed to flush buffer: {}", e))?;
+        Ok(())
+    })();
+    if let Err(e) = write_result {
+        let _ = fs::remove_file(&temp_path);
+        return Err(e);
+    }
+
+    if let Err(e) = fs::rename(&temp_path, &save_path) {
+        let _ = fs::remove_file(&temp_path);
+        return Err(format!("Failed to finalize save file: {}", e).into());
+    }
 
     tracing::info!("Save successfully saved to: {:?}", save_path);
 

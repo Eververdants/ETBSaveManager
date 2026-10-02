@@ -215,5 +215,8 @@
     "note": "You can disable this feature anytime in settings",
     "accept": "Enable",
     "decline": "Not now"
-  }
+  },
+  "languageSwitchFailed": "Failed to switch language",
+  "languageInitFailed": "Failed to initialize language",
+  "themeChangeFailed": "Theme change failed: {error}"
 }

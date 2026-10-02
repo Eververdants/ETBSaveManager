@@ -296,7 +296,10 @@ class UpdateService {
     const parseVersion = (version: string): ParsedVersion => {
       // Split main version and pre-release identifier
       const [mainVersion, ...preReleaseParts] = version.split("-");
-      const [major, minor, patch] = mainVersion.split(".").map(Number);
+      // Default missing components to 0: an abbreviated tag like "1.2" would
+      // otherwise produce undefined fields, and every comparison against
+      // undefined is false — silently disabling update detection.
+      const [major = 0, minor = 0, patch = 0] = mainVersion.split(".").map(Number);
 
       // Parse pre-release version
       let preRelease: ParsedVersion["preRelease"] = null;

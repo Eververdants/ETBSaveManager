@@ -215,5 +215,8 @@
     "note": "您可以随时在设置中关闭此功能",
     "accept": "启用",
     "decline": "暂时不启用"
-  }
+  },
+  "languageSwitchFailed": "语言切换失败",
+  "languageInitFailed": "语言初始化失败",
+  "themeChangeFailed": "主题切换失败：{error}"
 }

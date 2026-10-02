@@ -104,7 +104,7 @@ async function handleThemeChange(option) {
     // Rollback to previous theme
     currentTheme.value = previousTheme;
     await themeManager.setTheme(previousTheme);
-    notify.error("Theme change failed: " + (error.message || error));
+    notify.error(t("settings.themeChangeFailed", { error: error.message || error }));
   }
 }
 

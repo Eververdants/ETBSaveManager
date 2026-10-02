@@ -53,7 +53,7 @@ const isProcessing = ref(false);
 const updateInfo = ref(null);
 
 async function checkForUpdates(isManual = true) {
-  if (isProcessing.value) return;
+  if (isProcessing.value) return false;
 
   isProcessing.value = true;
   checkingUpdate.value = true;
@@ -88,9 +88,10 @@ async function checkForUpdates(isManual = true) {
         notify.success(t("settings.latestVersion"));
       }
     }
+    return true;
   } catch (error) {
     // Auto-check on entering settings: silently ignore errors (no popup)
-    if (!isManual) return;
+    if (!isManual) return false;
 
     let errorText = t("settings.updateFailed");
     if (error.type === "Rate Limit") {
@@ -104,6 +105,7 @@ async function checkForUpdates(isManual = true) {
     }
 
     notify.error(errorText, { duration: 8000 });
+    return false;
   } finally {
     checkingUpdate.value = false;
     isProcessing.value = false;
@@ -131,10 +133,12 @@ async function downloadAndInstall() {
 }
 
 onMounted(async () => {
-  // Auto-check for updates on startup — silent on already up-to-date, once per day
+  // Auto-check for updates on startup — silent on already up-to-date, once per day.
+  // Only stamp lastCheck when the check actually succeeded: a failed check
+  // (rate limit, offline) must not block a retry for the next 24h.
   if (updateService.canCheckUpdate && updateService.canCheckUpdate()) {
-    await checkForUpdates(false);
-    updateService.recordLastCheck();
+    const ok = await checkForUpdates(false);
+    if (ok) updateService.recordLastCheck();
   }
 });
 </script>

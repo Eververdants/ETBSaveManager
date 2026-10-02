@@ -335,6 +335,13 @@ const useNotificationActions = (getNotificationsByPosition, startTimer) => {
   const closeAll = () => {
     timers.forEach((t) => cancelAnimationFrame(t));
     timers.clear();
+    // Fire onClose for every notification before clearing, matching
+    // closeNotification's contract (skipping it left listeners unaware).
+    for (const notification of notifications.value) {
+      if (notification.onClose && typeof notification.onClose === "function") {
+        notification.onClose(notification.id);
+      }
+    }
     notifications.value = [];
   };
 

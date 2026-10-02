@@ -24,7 +24,7 @@
               {{
                 players[activePlayerIndex].username ||
                 (players[activePlayerIndex].isOfflinePlayer
-                  ? `${players[activePlayerIndex].steamId}(Local)`
+                  ? `${players[activePlayerIndex].steamId}${t("common.localPlayerSuffix")}`
                   : players[activePlayerIndex].steamId)
               }}
             </span>
@@ -53,8 +53,11 @@
 </template>
 
 <script setup>
+import { useI18n } from "vue-i18n";
 import PlayerManager from "@/components/system/PlayerManager.vue";
 import PlayerDetailPanel from "@/components/player/PlayerDetailPanel.vue";
+
+const { t } = useI18n({ useScope: "global" });
 
 defineProps({
   newSteamId: { type: String, default: "" },

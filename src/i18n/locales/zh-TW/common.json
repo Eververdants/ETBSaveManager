@@ -33,5 +33,16 @@
   "localPlayerSuffix": "(本地)",
   "playerNameDisplay": "玩家 {id}",
   "steamId": "Steam ID",
-  "emptyBackpack": "預設空背包"
+  "emptyBackpack": "預設空背包",
+  "auto": "自動",
+  "recommended": "推薦",
+  "normal": "標準",
+  "low": "低",
+  "high": "高",
+  "medium": "中",
+  "disabled": "已停用",
+  "deviceType": "裝置類型",
+  "mobile": "行動裝置",
+  "desktop": "桌面裝置",
+  "taskCount": "任務數"
 }

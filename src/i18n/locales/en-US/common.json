@@ -33,5 +33,16 @@
   "localPlayerSuffix": "(Local)",
   "playerNameDisplay": "Player {id}",
   "steamId": "Steam ID",
-  "emptyBackpack": "Empty Backpack"
+  "emptyBackpack": "Empty Backpack",
+  "auto": "Auto",
+  "recommended": "Recommended",
+  "normal": "Normal",
+  "low": "Low",
+  "high": "High",
+  "medium": "Medium",
+  "disabled": "Disabled",
+  "deviceType": "Device type",
+  "mobile": "Mobile",
+  "desktop": "Desktop",
+  "taskCount": "Task count"
 }

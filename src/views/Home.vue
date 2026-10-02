@@ -141,6 +141,7 @@
         <div v-show="showSearch && !loading" class="search-overlay" @click.self="toggleSearch">
           <ArchiveSearchFilter
             ref="archiveSearchFilter"
+            :open="showSearch"
             :search-query="searchQuery"
             :selected-archive-difficulty="selectedArchiveDifficulty"
             :selected-actual-difficulty="selectedActualDifficulty"
@@ -150,7 +151,7 @@
             @update:selected-archive-difficulty="selectedArchiveDifficulty = $event"
             @update:selected-actual-difficulty="selectedActualDifficulty = $event"
             @update:selected-visibility="selectedVisibility = $event"
-            @close="toggleSearch"
+            @close="closeSearch"
           />
         </div>
       </transition>
@@ -410,6 +411,12 @@ const route = useRoute();
 // Local state (scrollContainerRef, showSearch, isPageActive, shouldResetScroll declared above)
 
 // Methods
+// Escape in the filter must close the panel, not toggle it open again.
+const closeSearch = () => {
+  showSearch.value = false;
+  scheduler.endOperation("searching");
+};
+
 const toggleSearch = () => {
   showSearch.value = !showSearch.value;
   if (showSearch.value) {

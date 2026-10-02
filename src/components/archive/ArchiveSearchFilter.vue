@@ -124,6 +124,11 @@ const props = defineProps({
   selectedActualDifficulty: { type: String, default: "" },
   selectedVisibility: { type: String, default: "" },
   searchSuggestions: { type: Array as PropType<ArchiveData[]>, default: () => [] },
+  /** Whether the panel is currently visible. The document-level Escape
+   * handler must only fire while the panel is open — the component stays
+   * mounted inside a v-show wrapper, so an unguarded handler turned Escape
+   * into a global "open the search panel" key on every page. */
+  open: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -159,7 +164,7 @@ const selectedVisibilityModel = computed({
 });
 
 const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key === "Escape") {
+  if (event.key === "Escape" && props.open) {
     event.stopPropagation();
     emit("close");
   }

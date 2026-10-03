@@ -43,7 +43,9 @@ pub async fn delete_file(file_path: String) -> AppResult<()> {
 
         // MAINSAVE is the registry every listing/visibility operation reads:
         // it must never be deletable through this generic command.
-        if filename.eq_ignore_ascii_case("MAINSAVE.sav") || filename.eq_ignore_ascii_case("MAINSAVE_temp.sav") {
+        if filename.eq_ignore_ascii_case("MAINSAVE.sav")
+            || filename.eq_ignore_ascii_case("MAINSAVE_temp.sav")
+        {
             return Err("MAINSAVE.sav cannot be deleted".to_string().into());
         }
 

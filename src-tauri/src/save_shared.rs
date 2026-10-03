@@ -214,7 +214,11 @@ pub fn update_difficulty(save: &mut Save, difficulty: &str) -> AppResult<()> {
         _ => return Err(format!("Unknown difficulty value '{}'", difficulty).into()),
     };
 
-    tracing::info!("Processing difficulty settings: {} -> {}", difficulty, normalized);
+    tracing::info!(
+        "Processing difficulty settings: {} -> {}",
+        difficulty,
+        normalized
+    );
 
     // Delete all difficulty fields
     let difficulty_keys: Vec<(u32, String)> = save

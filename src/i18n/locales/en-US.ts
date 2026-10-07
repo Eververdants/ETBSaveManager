@@ -14,6 +14,7 @@ export default {
     archive: "archive",
     obtain: "obtain",
     screens: "screens",
+    faq: "faq",
     source: "source",
     sourceAriaLabel: "GitHub",
     classificationStandard: "Standard",
@@ -230,6 +231,30 @@ export default {
       "win-x64": "Windows x64",
       "win-x86": "Windows x86",
       "win-arm64": "Windows ARM64",
+    },
+  },
+
+  faq: {
+    section: {
+      index: "§ 04",
+      titleA: "Questions",
+      titleB: "/ answers",
+      intro: "Straight answers about ETB Save Manager — what it does, what it costs, and how it handles your data.",
+      introSuffix: "No fine print.",
+    },
+    items: {
+      q1: "What is ETB Save Manager?",
+      a1: "A free, open-source save file manager for Escape The Backrooms. It lets you create, edit, back up, duplicate, hide, and restore save files from a fast desktop app built with Tauri 2.0 for Windows 10/11.",
+      q2: "Is ETB Save Manager free?",
+      a2: "Yes. It is released under the MIT license, is completely free, and its full source code is available on GitHub.",
+      q3: "Which platforms are supported?",
+      a3: "Windows 10 and 11, with native installers for x64 (NSIS, ~4.7 MB), x86 (MSI, ~3.8 MB), and ARM64 (MSI, ~4.1 MB). The app is offline-first.",
+      q4: "How many levels and endings does the wizard support?",
+      a4: "All 55 levels across the game's 4 endings — Wrong Door, Empty City, The Suburbs, and The Pink House — plus difficulty configuration and a 12-slot inventory editor.",
+      q5: "Does it need an internet connection or send data anywhere?",
+      a5: "No. The app is offline-first and works entirely on your local save files. There is no telemetry of any kind.",
+      q6: "What languages does the interface support?",
+      a6: "English, 简体中文, and 繁體中文.",
     },
   },
 

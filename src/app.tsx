@@ -6,6 +6,7 @@ import { HeroSection } from "@/components/hero-section";
 import { FeaturesSection } from "@/components/features-section";
 import { ScreensSection } from "@/components/screens-section";
 import { DownloadSection } from "@/components/download-section";
+import { FaqSection } from "@/components/faq-section";
 import { FooterSection } from "@/components/footer-section";
 import { MetadataStrip } from "@/components/metadata-strip";
 
@@ -77,6 +78,7 @@ export function App(): React.JSX.Element {
           <FeaturesSection />
           <ScreensSection />
           <DownloadSection />
+          <FaqSection />
         </main>
         <FooterSection />
       </div>

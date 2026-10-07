@@ -14,6 +14,7 @@ export default {
     archive: "檔案",
     obtain: "取得",
     screens: "截圖",
+    faq: "問答",
     source: "原始碼",
     sourceAriaLabel: "GitHub 儲存庫",
     classificationStandard: "標準",
@@ -225,6 +226,30 @@ export default {
       "win-x64": "Windows x64",
       "win-x86": "Windows x86",
       "win-arm64": "Windows ARM64",
+    },
+  },
+
+  faq: {
+    section: {
+      index: "§ 04",
+      titleA: "常見問題",
+      titleB: "/ 解答",
+      intro: "關於 ETB 存檔管理的直接解答 —— 它能做什麼、是否付費、如何處理你的資料。",
+      introSuffix: "沒有隱藏條款。",
+    },
+    items: {
+      q1: "ETB 存檔管理是什麼？",
+      a1: "一款免費開源的《逃離後室》存檔管理工具。基於 Tauri 2.0 的 Windows 桌面應用程式，可建立、編輯、備份、複製、隱藏與還原存檔。",
+      q2: "它是免費的嗎？",
+      a2: "是。採用 MIT 授權條款發布，完全免費，原始碼全部公開於 GitHub。",
+      q3: "支援哪些平台？",
+      a3: "Windows 10 與 Windows 11，提供 x64（NSIS，約 4.7 MB）、x86（MSI，約 3.8 MB）與 ARM64（MSI，約 4.1 MB）原生安裝包，離線優先。",
+      q4: "建立嚮導支援多少關卡和結局？",
+      a4: "支援全部 55 個關卡與 4 種結局（誤入歧扉 / 空無之城 / 死寂郊野 / 胭脂之屋），並可設定難度、編輯 12 槽庫存。",
+      q5: "需要連線嗎？會上傳我的資料嗎？",
+      a5: "不需要，也絕不會上傳。應用程式完全離線運作，只處理本機存檔檔案，無任何遙測。",
+      q6: "介面支援哪些語言？",
+      a6: "繁體中文、简体中文與 English。",
     },
   },
 

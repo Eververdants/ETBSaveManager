@@ -17,7 +17,7 @@ import { site } from "@/content/site-content";
 export function NavBar(): React.JSX.Element {
   const { t } = useTranslation();
   const scrollProgress = useScrollProgress();
-  const activeSection = useActiveSection(["top", "features", "screens", "download"]);
+  const activeSection = useActiveSection(["top", "features", "screens", "download", "faq"]);
 
   return (
     <header className="rise sticky top-0 z-30 w-full border-b-[1.5px] border-[var(--color-ink)]/90 bg-[var(--color-paper)]/90 backdrop-blur-md dark:border-[var(--color-paper-3)]/60 dark:bg-[#0a0907]/90" style={{ animationDelay: "0.35s" }}>
@@ -90,6 +90,17 @@ export function NavBar(): React.JSX.Element {
                 }`}
               >
                 {t("common.obtain")}
+              </a>
+              <span aria-hidden="true">/</span>
+              <a
+                href="#faq"
+                className={`link-underline transition-colors ${
+                  activeSection === "faq"
+                    ? "is-active text-[var(--color-ink)] dark:text-[var(--color-paper)]"
+                    : "text-[var(--color-ink-2)] hover:text-[var(--color-ink)] dark:hover:text-[var(--color-paper)]"
+                }`}
+              >
+                {t("common.faq")}
               </a>
             </nav>
           </div>

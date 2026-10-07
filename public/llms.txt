@@ -1,0 +1,19 @@
+# ETB Save Manager
+
+> A free, open-source save file manager for the game Escape The Backrooms, built with Tauri 2.0 for Windows 10/11. Version 3.4.0 "Archive Edition", released 2026-08-27, MIT license.
+
+ETB Save Manager lets players create, edit, back up, duplicate, hide, soft-delete, and restore Escape The Backrooms save files from a fast desktop app. A 3-step creation wizard starts a new run at any of the game's 55 levels across its 4 endings (Wrong Door, Empty City, The Suburbs, The Pink House), with difficulty configuration and a 12-slot inventory editor stocked from 25 items. It also includes mod management with UE4SS/NSU support.
+
+Key facts:
+
+- Price: free, MIT license, source available on GitHub
+- Platform: Windows 10/11 (x64 NSIS ~4.7 MB, x86 MSI ~3.8 MB, ARM64 MSI ~4.1 MB)
+- Stack: Tauri 2.0, offline-first, no telemetry
+- Features: full save CRUD with undo/redo, 55 levels / 4 endings wizard, 10 built-in themes (Light, Dark + 8 palettes), trilingual UI (English, 简体中文, 繁體中文), GPU-accelerated virtual scrolling, built-in FPS/memory performance monitor, smart resource scheduling
+- Works entirely offline on local save files
+
+## Links
+
+- [Landing page](https://eververdants.github.io/ETBSaveManager/)
+- [GitHub repository](https://github.com/Eververdants/ETBSaveManager)
+- [Releases (latest build)](https://github.com/Eververdants/ETBSaveManager/releases/latest)

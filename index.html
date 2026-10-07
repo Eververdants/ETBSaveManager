@@ -9,18 +9,19 @@
     <meta name="theme-color" content="#0a0907" media="(prefers-color-scheme: dark)" />
     <meta
       name="description"
-      content="E.T.B. Save Manager — A modern Tauri 2.0 save file manager for Escape The Backrooms. Full CRUD, 11 themes, multilingual UI, virtual scrolling, smart resource scheduling."
+      content="E.T.B. Save Manager — a free, open-source save file manager for Escape The Backrooms. Full CRUD, 3-step creation wizard across 55 levels and 4 endings, 10 themes, trilingual UI, virtual scrolling, smart resource scheduling. Built with Tauri 2.0."
     />
     <meta name="color-scheme" content="light dark" />
+    <link rel="canonical" href="https://eververdants.github.io/ETBSaveManager/" />
 
     <!-- Open Graph -->
     <meta property="og:title" content="E.T.B. Save Manager — Archive Edition" />
     <meta
       property="og:description"
-      content="The ultimate save file manager for Escape The Backrooms. Full CRUD, 11 themes, 3 languages, Tauri 2.0, smart resource scheduling."
+      content="The ultimate save file manager for Escape The Backrooms. Full CRUD, 10 themes, 3 languages, Tauri 2.0, smart resource scheduling."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://github.com/Eververdants/ETBSaveManager" />
+    <meta property="og:url" content="https://eververdants.github.io/ETBSaveManager/" />
     <meta property="og:image" content="https://eververdants.github.io/ETBSaveManager/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -30,7 +31,7 @@
     <meta name="twitter:title" content="E.T.B. Save Manager — Archive Edition" />
     <meta
       name="twitter:description"
-      content="A modern Tauri 2.0 save manager for Escape The Backrooms — CRUD, 11 themes, multilingual, smart scheduling."
+      content="A modern Tauri 2.0 save manager for Escape The Backrooms — CRUD, 10 themes, multilingual, smart scheduling."
     />
     <meta name="twitter:image" content="https://eververdants.github.io/ETBSaveManager/og-image.png" />
 
@@ -40,10 +41,13 @@
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "E.T.B. Save Manager",
+        "url": "https://eververdants.github.io/ETBSaveManager/",
+        "downloadUrl": "https://github.com/Eververdants/ETBSaveManager/releases/latest",
         "operatingSystem": "Windows 10/11",
         "applicationCategory": "GameApplication",
-        "description": "Save file manager for Escape The Backrooms with full CRUD, 11 themes, multilingual UI, virtual scrolling, and intelligent resource scheduling.",
-        "version": "3.4.0",
+        "description": "Save file manager for Escape The Backrooms with full CRUD, 3-step creation wizard across 55 levels and 4 endings, 10 themes, trilingual UI, virtual scrolling, and intelligent resource scheduling.",
+        "softwareVersion": "3.4.0",
+        "fileSize": "~4.7 MB",
         "license": "MIT",
         "author": {
           "@type": "Person",
@@ -53,14 +57,208 @@
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
-        }
+        },
+        "featureList": [
+          "Full save management: create, edit, copy, hide, soft-delete and restore with undo/redo",
+          "3-step save creation wizard across 55 levels and 4 endings",
+          "12-slot inventory editor with 25 items",
+          "10 built-in themes",
+          "Trilingual UI: English, 简体中文, 繁體中文",
+          "Mod management with UE4SS/NSU support",
+          "Virtual scrolling for thousands of saves",
+          "Built-in performance monitor (FPS, memory, animation quality)",
+          "Smart resource scheduling with priority-based background task queue"
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is ETB Save Manager?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "ETB Save Manager is a free, open-source save file manager for the game Escape The Backrooms. It lets you create, edit, back up, duplicate, hide, and restore save files from a clean desktop interface built with Tauri 2.0 for Windows 10/11."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is ETB Save Manager free?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. ETB Save Manager is released under the MIT license, is completely free, and its full source code is available on GitHub."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which platforms does ETB Save Manager support?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "ETB Save Manager runs on Windows 10 and Windows 11, with installers for x64 (NSIS, ~4.7 MB), x86 (MSI, ~3.8 MB), and ARM64 (MSI, ~4.1 MB). It is built with Tauri 2.0 and is offline-first."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How many levels and endings does the save wizard support?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The 3-step creation wizard supports all 55 levels of Escape The Backrooms across its 4 endings: Wrong Door, Empty City, The Suburbs, and The Pink House. You can also configure difficulty and edit a 12-slot inventory with 25 items."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does ETB Save Manager send any data or require an internet connection?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The app has no telemetry and works entirely offline on your local save files. Nothing leaves your machine."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What languages is the interface available in?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The interface is available in English, Simplified Chinese (简体中文), and Traditional Chinese (繁體中文)."
+            }
+          }
+        ]
       }
     </script>
 
     <title>E.T.B. Save Manager — Archive Edition · v3.4.0</title>
+
+    <style>
+      /* Pre-hydration fallback content (replaced by React on mount) */
+      #seo-static {
+        max-width: 46rem;
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        color: #1a1714;
+        background: #f5f1ea;
+        line-height: 1.65;
+      }
+      #seo-static h1 {
+        font-size: 2.25rem;
+        line-height: 1.15;
+        margin: 0 0 1rem;
+      }
+      #seo-static h2 {
+        font-size: 1.4rem;
+        margin: 2rem 0 0.75rem;
+      }
+      #seo-static h3 {
+        font-size: 1.05rem;
+        margin: 1.25rem 0 0.25rem;
+      }
+      #seo-static a {
+        color: #1a1714;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="seo-static">
+        <h1>ETB Save Manager — Save File Manager for Escape The Backrooms</h1>
+        <p>
+          <strong>ETB Save Manager</strong> is a free, open-source save file manager for the horror game
+          <em>Escape The Backrooms</em>. Version 3.4.0 (Archive Edition) gives you full control over your saves:
+          create, edit, back up, duplicate, hide, soft-delete, and restore them from a fast desktop app built with
+          Tauri 2.0 for Windows 10 and 11. It is released under the MIT license, works completely offline, and sends
+          no telemetry.
+        </p>
+
+        <h2>What is ETB Save Manager?</h2>
+        <p>
+          Escape The Backrooms stores your progress in local save files, and losing one means losing dozens of hours
+          of exploration. ETB Save Manager is a declassified archive manager for those saves. Instead of digging
+          through folders and hoping a file copy worked, you get a searchable library of every save — with favorites,
+          batch operations, and full undo/redo. A 3-step creation wizard lets you start a new run at any of the
+          game's 55 levels across its 4 endings (Wrong Door, Empty City, The Suburbs, The Pink House), configure
+          difficulty, and edit a 12-slot inventory stocked from 25 items including the Flashlight, Almond Water, and
+          the Flare Gun. Mod management with UE4SS/NSU support rounds out the toolkit.
+        </p>
+        <p>
+          Every operation happens on your machine. There is no account, no cloud sync, and no installer bloat — the
+          Windows x64 build is about 4.7 MB.
+        </p>
+
+        <h2>Key features</h2>
+        <h3>Full save management</h3>
+        <p>
+          Create, edit, copy, hide, soft-delete, and restore saves. Mark favorites, run batch operations, and rely on
+          full undo/redo if a change doesn't look right.
+        </p>
+        <h3>3-step creation wizard</h3>
+        <p>
+          Quick Create or Standard mode — pick from 55 levels across 4 endings, configure difficulty, and edit a
+          12-slot inventory before you ever load the game.
+        </p>
+        <h3>10 built-in themes</h3>
+        <p>
+          Light and Dark modes plus 8 vibrant palettes: forest, lavender, mint, ocean, peach, rose, sky, and sunset.
+        </p>
+        <h3>Trilingual UI</h3>
+        <p>The complete interface is available in English, 简体中文, and 繁體中文.</p>
+        <h3>Virtual scrolling</h3>
+        <p>
+          GPU-accelerated virtual scrolling keeps the archive list smooth even with thousands of saves, loading
+          entries incrementally.
+        </p>
+        <h3>Performance monitor</h3>
+        <p>
+          Built-in FPS, memory, and animation-quality diagnostics let you tune GPU rendering and effect budgets in
+          real time — useful on older hardware.
+        </p>
+        <h3>Smart resource scheduling</h3>
+        <p>
+          The app detects what you're doing and dynamically allocates CPU, rendering, and I/O budgets through a
+          priority-based background task queue with real-time FPS and memory feedback loops.
+        </p>
+
+        <h2>Download for Windows</h2>
+        <p>
+          The latest build (v3.4.0, build 20260827, released 2026-08-27) is available as
+          <a href="https://github.com/Eververdants/ETBSaveManager/releases/latest">Windows x64 (NSIS, ~4.7 MB)</a>,
+          <a href="https://github.com/Eververdants/ETBSaveManager/releases/latest">x86 (MSI, ~3.8 MB)</a>, and
+          <a href="https://github.com/Eververdants/ETBSaveManager/releases/latest">ARM64 (MSI, ~4.1 MB)</a>
+          installers, fetched straight from GitHub Releases. The source code is on
+          <a href="https://github.com/Eververdants/ETBSaveManager">GitHub under the MIT license</a>.
+        </p>
+
+        <h2>Frequently asked questions</h2>
+        <h3>Is ETB Save Manager free?</h3>
+        <p>
+          Yes. It is completely free and open source under the MIT license, with the full source code available on
+          GitHub.
+        </p>
+        <h3>Which platforms are supported?</h3>
+        <p>
+          Windows 10 and 11, with native installers for x64, x86, and ARM64. The app is built with Tauri 2.0, which
+          keeps the binary small and fast.
+        </p>
+        <h3>How many levels and endings does the wizard support?</h3>
+        <p>
+          All 55 levels across the game's 4 endings — Wrong Door, Empty City, The Suburbs, and The Pink House — plus
+          difficulty configuration and a 12-slot inventory editor.
+        </p>
+        <h3>Does it need an internet connection or send data anywhere?</h3>
+        <p>
+          No. The app is offline-first and works entirely on your local save files. There is no telemetry of any
+          kind.
+        </p>
+        <h3>What languages does the interface support?</h3>
+        <p>English, Simplified Chinese (简体中文), and Traditional Chinese (繁體中文).</p>
+        <h3>Does it support mods?</h3>
+        <p>
+          Yes. ETB Save Manager includes mod management with UE4SS and NSU support, so you can keep mods and saves
+          organized together.
+        </p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
